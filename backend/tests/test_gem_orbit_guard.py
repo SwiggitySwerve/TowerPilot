@@ -50,10 +50,8 @@ def world(monkeypatch):
     monkeypatch.setattr(shard.settings, "instance", lambda *a: {"serial": "x"})
     fake = types.ModuleType("device.overlays")
     fake.windows = lambda serial: state.windows
-    fake.game_on_screen = lambda wins: any(
-        w.startswith("com.TechTreeGames.TheTower") for w in wins)
-    fake.offending = lambda wins: ([], [w for w in wins
-                                        if not w.startswith("com.TechTreeGames")])
+    fake.GAME_PKG = "com.TechTreeGames.TheTower"
+    fake.EXPECTED_PREFIXES = (fake.GAME_PKG, "StatusBar", "app.lawnchair")
     import device
     monkeypatch.setitem(sys.modules, "device.overlays", fake)
     monkeypatch.setattr(device, "overlays", fake, raising=False)
@@ -83,20 +81,38 @@ def test_a_menu_with_digits_in_the_wave_box_is_still_a_menu(world):
     assert shard.battlefield_live(POINTS) == (False, "screen:lab")
 
 
-def test_a_foreign_window_over_the_game_refuses(world):
-    """The Play Store drew over the game 29 times on 2026-10-12 while this
-    kept tapping. A screencap still shows the last game frame, so only the
-    window list can catch it."""
+def test_a_window_in_front_of_the_game_refuses(world):
+    """A screencap still shows the last game frame while another app is drawn
+    over it, so only the window list can catch this."""
+    world.windows = [
+        "com.android.vending/com.android.vending.AssetBrowserActivity",
+        "com.TechTreeGames.TheTower/com.unity3d.player.UnityPlayerActivity"]
+    assert shard.battlefield_live(POINTS) == (
+        False, "in_front:com.android.vending")
+
+
+def test_an_app_BEHIND_the_game_is_not_an_overlay(world):
+    """MEASURED 2026-10-13: the Play Store sat at #1 behind the game at #0 all
+    day while the game played normally. `dumpsys` lists front to back and keeps
+    backgrounded activities, so "is it in the list" would refuse every set
+    forever - which is exactly what the first version of this guard did."""
     world.windows = [
         "com.TechTreeGames.TheTower/com.unity3d.player.UnityPlayerActivity",
-        "com.android.vending/com.android.vending.AssetBrowserActivity"]
-    ok, why = shard.battlefield_live(POINTS)
-    assert ok is False and why == "overlay:com.android.vending"
+        "com.android.vending/com.android.vending.AssetBrowserActivity",
+        "app.lawnchair/app.lawnchair.LawnchairLauncher"]
+    assert shard.battlefield_live(POINTS) == (True, "live")
 
 
-def test_the_game_not_being_on_screen_at_all_refuses(world):
-    world.windows = ["com.android.vending/com.android.vending.AssetBrowserActivity"]
-    assert shard.battlefield_live(POINTS) == (False, "game_not_in_front")
+def test_system_chrome_in_front_is_not_an_overlay(world):
+    world.windows = [
+        "StatusBar",
+        "com.TechTreeGames.TheTower/com.unity3d.player.UnityPlayerActivity"]
+    assert shard.battlefield_live(POINTS) == (True, "live")
+
+
+def test_the_game_not_on_screen_at_all_refuses(world):
+    world.windows = ["app.lawnchair/app.lawnchair.LawnchairLauncher"]
+    assert shard.battlefield_live(POINTS) == (False, "game_not_on_screen")
 
 
 def test_a_window_list_that_cannot_be_read_is_not_permission(world, monkeypatch):

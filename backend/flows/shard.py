@@ -257,15 +257,24 @@ def battlefield_live(points, frame=None) -> tuple[bool, str]:
     try:
         from device import overlays
         wins = overlays.windows(settings.instance()["serial"])
-        if wins and not overlays.game_on_screen(wins):
-            return False, "game_not_in_front"
-        ads, unknown = overlays.offending(wins)
-        if ads or unknown:
-            return False, "overlay:" + (ads + unknown)[0].split("/")[0]
     except Exception as exc:                      # noqa: BLE001
         # The window list is EVIDENCE, and evidence that cannot be read is not
         # permission: an adb hiccup must not turn into a blind tap.
         return False, f"windows_unreadable:{type(exc).__name__}"
+    if not wins:
+        return False, "no_windows"
+    # IN FRONT, not merely present. `dumpsys window windows` lists front to
+    # back, and a backgrounded activity stays in it: the Play Store sat at #1
+    # behind the game (#0) all day on 2026-10-13 while the game played
+    # normally, so "is it in the list" would refuse every set forever. What
+    # matters is whether anything that is not system chrome is ABOVE the game.
+    for w in wins:
+        if w.startswith(overlays.GAME_PKG):
+            break
+        if not any(w.startswith(p) for p in overlays.EXPECTED_PREFIXES):
+            return False, "in_front:" + w.split("/")[0]
+    else:
+        return False, "game_not_on_screen"
     y0, y1, x0, x1 = _probe_box(points)
     time.sleep(ORBIT_MOTION_GAP)
     after = capture.grab()
