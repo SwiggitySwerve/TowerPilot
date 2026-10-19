@@ -30,6 +30,7 @@ from device import capture
 from device import overlays
 from vision import wave_reader
 from vision import detect
+from vision import fleet_scan
 from runtime import logger
 from device import act
 from interactions import shopper
@@ -122,6 +123,67 @@ def marks():
     return fleets.marks(run_tier(), CONFIG)
 
 
+def fleet_gate(rs, frame, mark: int, wave: int) -> str | None:
+    """Why the fleet Nuke may fire for `mark` on this frame, or None = hold.
+
+    A fleet is ONE big outlined pentagon of a random type (saboteur red,
+    commander orange, overcharge blue; vision/fleet_scan.py reads shape +
+    colour) and brings a Scatter swarm - the pale triangles - that is what
+    kills the tower: GAME STATS "Killed By Scatter" at 3753, 4498 and 4498
+    (2026-10-18), 3-8 waves after the spawn, while a 10-wave "is it dying?"
+    hold kept the Nuke idle. So every SIGHTED fleet is nuked on sight (user,
+    2026-10-18): the Nuke refreshes in ~300 waves and fleets come every 750,
+    holding it saves nothing. Blue or not only labels the event.
+
+    The gate still refuses to fire before a fleet is on screen, so the
+    schedule alone never burns the Nuke (a wrong tier row, a mark the run
+    skipped past). Once sighted the decision sticks for the mark, so a
+    pentagon that scrolls off between frames still gets its Nuke.
+    `fleet.sighting.enabled: false` restores the plain schedule. The caller
+    has already applied nuke_on_fleet.after_waves / window_waves."""
+    cfg = (CONFIG.get("fleet") or {}).get("sighting") or {}
+    if not cfg.get("enabled", True):
+        return "schedule"
+    seen = rs.fleet_seen.setdefault(mark, {"types": {}, "blue": False})
+    try:
+        from player.bootstrap_layout import manifest
+        x, y, w, h = manifest()["side_menu"]["column"]
+        counts = fleet_scan.scan(
+            frame, exclude=(x, y, x + w, y + h),
+            min_area=float(cfg.get("min_area", fleet_scan.MIN_AREA)))
+    except Exception as e:                  # noqa: BLE001 - vision must not kill the loop
+        logger.event("fleet_scan_error", mark=mark, error=repr(e))
+        return None
+    for t, n in counts.items():
+        if n and n > seen["types"].get(t, 0):
+            seen["types"][t] = n
+            logger.event("fleet_sighting", mark=mark, wave=wave, type=t, count=n,
+                         shot=logger.shot(frame, f"fleet_seen_{t}_w{wave}"))
+    if counts.get(fleet_scan.BLUE):
+        seen["blue"] = True
+    if seen["blue"]:
+        return "blue_fleet"
+    if seen["types"]:
+        return "fleet_" + max(seen["types"], key=seen["types"].get)
+    return None
+
+
+def fleet_fire_skipped(rs, frame, mark: int, wave: int, why: str) -> None:
+    """fire_button returns False WITHOUT an event when the button is absent
+    or not ready - the intro sprint locks the ability row, so the 1495 fleet
+    on 2026-10-18 was sighted, never tapped, and nothing in the log said why.
+    One event per mark, with the button state the decision was made on."""
+    seen = rs.fleet_seen.setdefault(mark, {"types": {}, "blue": False})
+    if seen.get("skip_logged"):
+        return
+    seen["skip_logged"] = True
+    st = detect.button_state(frame, "nuke")
+    logger.event("fleet_fire_skipped", mark=mark, wave=wave, why=why,
+                 present=bool(st.present), ready=bool(st.ready),
+                 score=round(float(st.score or 0), 3),
+                 shot=logger.shot(frame, f"fleet_skip_w{wave}"))
+
+
 # consecutive badge-free frames before the Second Wind window counts as closed.
 # The loop runs at ~1.4 fps under load, so 3 frames is ~2s - long enough to
 # ride out a glyph obscured by combat, short enough that the wall watch opens
@@ -147,6 +209,7 @@ class RunState:
                                       # fixed point taps the wrong ability)
         self.nuked_marks: set[int] = set()   # fleet marks already nuked/passed
         self.fleet_try_at = 0.0              # throttle for fleet-nuke retries
+        self.fleet_seen: dict[int, dict] = {}  # mark -> sighted types / blue flag
         self.wave_hwm: int | None = None     # highest confirmed wave THIS run
                                              # (the unseen-boundary detector)
         self.last_fire = {"nuke": 0.0, "demon_mode": 0.0}
@@ -1584,15 +1647,20 @@ def _fast_wall_watch(rs: "RunState", ab: dict) -> str:
                             rs.nuked_marks.add(m)
                             continue
                         if wv >= m + after and now_m >= rs.fleet_try_at:
+                            why = fleet_gate(rs, frame, m, wv)
+                            if why is None:
+                                break
                             rs.fleet_try_at = now_m + throttle
                             if fire_button(frame, "nuke", f"fleet_{m}",
                                            require_ready=fleet_ready):
                                 rs.nuked_marks.add(m)
                                 logger.event(
-                                    "fleet_nuke", mark=m, wave=wv,
+                                    "fleet_nuke", mark=m, wave=wv, why=why,
                                     fast_watch=True,
                                     shot=logger.shot(frame,
                                                      f"fleet_nuke_w{wv}"))
+                            else:
+                                fleet_fire_skipped(rs, frame, m, wv, why)
                         break           # only the nearest pending mark
         ext, state = detect.wall_overheal(frame)
         if state == "immune":
@@ -1975,6 +2043,9 @@ def watch_frame(rs: "RunState", frame) -> str | None:
                 rs.nuked_marks.add(m)
                 continue
             if wave_now >= m + after and now >= rs.fleet_try_at:
+                why = fleet_gate(rs, frame, m, wave_now)
+                if why is None:
+                    break
                 # THROTTLED: a confirmed fire costs ~1.1s (tap + settle +
                 # re-read). Retrying every frame for a 60-wave window would
                 # cripple the observe loop while the nuke is on cooldown.
@@ -1982,8 +2053,10 @@ def watch_frame(rs: "RunState", frame) -> str | None:
                 if fire_button(frame, "nuke", f"fleet_{m}",
                                require_ready=fleet_ready):
                     rs.nuked_marks.add(m)
-                    logger.event("fleet_nuke", mark=m, wave=wave_now,
+                    logger.event("fleet_nuke", mark=m, wave=wave_now, why=why,
                                  shot=logger.shot(frame, f"fleet_nuke_w{wave_now}"))
+                else:
+                    fleet_fire_skipped(rs, frame, m, wave_now, why)
             break                    # only the nearest pending mark matters
 
     demon_mode_always(rs, frame, wave_now, now)

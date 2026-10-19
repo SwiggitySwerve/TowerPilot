@@ -123,6 +123,19 @@ the blast (one survived an on-time nuke and killed the run at wave 3516).
 `throttle_sec` paces retries; `require_ready` is per-site. Deliberately not
 Second-Wind-gated. *Knobs:* `fleet_mark` rule / `nuke_on_fleet`.
 
+Inside that window the tap waits for a SIGHTING (`orchestrator.fleet_gate`,
+`vision/fleet_scan.py`): the fleet is one big outlined pentagon - saboteur
+red, commander orange, overcharge blue - found by shape + colour, no
+template. Once seen the Nuke fires at once whatever the colour: the fleet's
+Scatter swarm killed the tower 3-8 waves after spawn (3753, 4498 x2 on
+2026-10-18) while a 10-wave "is it dying?" hold kept the Nuke idle, and the
+Nuke refreshes long before the next fleet anyway. Events: `fleet_sighting`
+(type, count, shot), `fleet_nuke.why` (`blue_fleet` / `fleet_<type>` /
+`schedule`), `fleet_fire_skipped` (button absent or not ready - the intro
+sprint locks the row at 1495). `fleet.sighting.enabled: false` restores the
+blind schedule; `fleet.sighting.min_area` tunes the pentagon size (live
+T15: fleet 1848-1882 px, ordinary pentagons <= 582).
+
 ### Demon Mode on cooldown (global behaviour, quest kills)
 `policies.global_behaviors.demon_mode_always: true` fires Demon Mode whenever
 the button reads ready, on every run, outside the Second Wind hold and the
