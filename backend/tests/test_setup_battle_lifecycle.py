@@ -51,14 +51,14 @@ def setup_flow(tmp_path, monkeypatch):
             sc.screen = 'home'
 
     sc.check_stop = check_stop
-    sc.grab = lambda: frames[sc.screen]
+    sc.grab = lambda **kwargs: frames[sc.screen]
     sc.tap = tap
     sc.pause = lambda seconds: setattr(sc, 'clock', sc.clock + seconds)
     sc.progress = lambda *a, **k: None
     monkeypatch.setattr(operations, 'environment_operation', lambda: (None, 'setup-op'))
     monkeypatch.setattr(fc, 'time', SimpleNamespace(time=lambda: sc.clock,
                                                    monotonic=lambda: sc.clock))
-    monkeypatch.setattr(fc, '_read', lambda f, scale=2.: [(100, 100, t) for t in TEXT.get(name_of(f), [])])
+    monkeypatch.setattr(fc, '_read', lambda f, scale=2., **kwargs: [(100, 100, t) for t in TEXT.get(name_of(f), [])])
     monkeypatch.setattr(fc, '_sprint_glyph', lambda f: (None, None))
     monkeypatch.setattr(fc, '_row_buttons', lambda f, *a, **k: ((200, 1410, 300, 70), (580, 1410, 300, 70)))
     monkeypatch.setattr(fc, '_button_crop', lambda f, box: np.ones((70, 300, 3), np.uint8))
