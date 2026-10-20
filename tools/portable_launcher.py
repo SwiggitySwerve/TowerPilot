@@ -5,9 +5,9 @@ used to be a console window the user had to leave open - close it by
 accident and the dashboard went with it (2026-09-15: "can this have an icon
 in the taskbar and not run in the console?").
 
-Now `Start Tower Pilot.cmd` starts pythonw (no console at all) and this
-module puts an icon in the notification area: click it to open the
-dashboard, right-click to quit. The pieces:
+The source launcher starts Python without a console, and the portable
+build uses its bundled pythonw. This module puts an icon in the notification
+area: click it to open the dashboard, right-click to quit. The pieces:
 
 * `redirect_output` - pythonw gives a process no stdout/stderr at all, so
   the first print (or werkzeug's first log line) would raise. Both go to
@@ -16,6 +16,8 @@ dashboard, right-click to quit. The pieces:
 * `serving` - a second double-click finds the port already answering and
   just opens the browser rather than starting a second dashboard on a port
   that is taken.
+* startup waits for the dashboard to answer before opening the browser or
+  showing the tray; a crash or timeout is logged and reported in a dialog.
 * the dashboard runs in a daemon thread; the icon owns the main thread
   (pystray needs it on Windows). Quitting stops the icon, the daemon thread
   goes with the process, and RUNNERS ARE LEFT ALONE - they are detached
@@ -48,8 +50,9 @@ TOOLTIP = TITLE + ' - ' + URL
 
 
 def redirect_output():
-    """Send stdout/stderr to the launcher log when there is no console."""
-    if sys.stdout is not None and sys.stderr is not None:
+    """Log windowless launches, including any inherited parent streams."""
+    if (sys.stdout is not None and sys.stderr is not None
+            and os.environ.get('TOWER_PILOT_WINDOWLESS') != '1'):
         return None
     LOG.parent.mkdir(parents=True, exist_ok=True)
     stream = open(LOG, 'a', encoding='utf-8', buffering=1)
@@ -71,13 +74,31 @@ def open_ui():
     webbrowser.open(SETUP)
 
 
-def open_when_ready(attempts=60, delay=.5):
+def open_when_ready(attempts=60, delay=.5, stopped=None):
     for _ in range(attempts):
+        if stopped is not None and stopped.is_set():
+            return False
         if serving():
             open_ui()
             return True
-        time.sleep(delay)
+        if stopped is None:
+            time.sleep(delay)
+        else:
+            stopped.wait(delay)
     return False
+
+
+def report_startup_failure(message: str) -> None:
+    """Make a hidden startup failure visible and point to its traceback."""
+    message += ('\n\nSee the launcher logs in:\n' + str(LOG.parent)
+                + '\n\nRetry Start Tower Pilot after correcting the error.')
+    print(message, file=sys.stderr, flush=True)
+    if sys.platform == 'win32':
+        import ctypes
+        try:
+            ctypes.windll.user32.MessageBoxW(None, message, TITLE, 0x10)
+        except OSError:
+            traceback.print_exc()
 
 
 def serve():
@@ -132,8 +153,22 @@ def main(tray=None):
         print('A dashboard is already serving on ' + URL + '; opening it.')
         open_ui()
         return 0
-    threading.Thread(target=serve, daemon=True).start()
-    threading.Thread(target=open_when_ready, daemon=True).start()
+    stopped = threading.Event()
+
+    def run_dashboard():
+        try:
+            serve()
+        except BaseException:  # Flask also uses SystemExit for a bind failure.
+            traceback.print_exc()
+        finally:
+            stopped.set()
+
+    threading.Thread(target=run_dashboard, daemon=True).start()
+    if not open_when_ready(stopped=stopped):
+        message = ('The dashboard stopped before it was ready.' if stopped.is_set()
+                   else 'The dashboard did not become ready before startup timed out.')
+        report_startup_failure(message)
+        return 1
     return (tray or run_tray)()
 
 
