@@ -247,8 +247,15 @@ Nothing under `accounts/`, `templates/`, `logs/`, `runs/` or `config.yaml` is
 tracked; `tests/test_release_clean.py` fails if account data slips into git.
 
 ## 5. Tests
-`python -m pytest` from the repo root (offline). `backend/tests/_fakes.py`
-fakes every screen-touching module; `settings` stays real. Notable:
+`python -m pytest` from the repo root (offline; setup in
+[README.md - Development](../README.md#development)).
+`backend/tests/_fakes.py` fakes every screen-touching module.
+`backend/tests/conftest.py` replaces `settings.CONFIG` with the shipped
+`config.example.yaml` before any test module imports it (retaking
+`bind_device()`'s snapshots from it) and points `runtime.logger` events and
+screenshots at each test's `tmp_path`; `test_suite_isolation.py` guards both.
+Notable:
 `test_flow_capture.py` (consented capture decisions), `test_bootstrap_manifest.py`
 (manifest <-> allowlist), `test_release_clean.py`, `test_ui_contract.py`.
-Frontend: `node --test frontend/tests/`.
+Frontend: `node --test "frontend/tests/*.test.cjs"` (Node 22+; the directory
+form fails).

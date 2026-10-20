@@ -1,4 +1,9 @@
 # Tower Pilot
+> **Status:** Active
+> **Type:** Project guide
+> **Created:** 2026-08-24
+> **Updated:** 2026-10-19
+> **Tags:** autopilot, the-tower, distribution
 
 **0.5-beta — Windows x64 portable release.** Download the `windows-x64` ZIP,
 extract the whole folder, and double-click **Start Tower Pilot.cmd**. Python and
@@ -16,12 +21,6 @@ for development. Both now carry the full source, the agent rule book
 Licensed under [MIT](LICENSE): extend the app, add configs and manifests, and
 share your improvements. Third-party libraries retain their own licenses.
 The license does not grant rights to The Tower's artwork or other game assets.
-
-> **Status:** Active
-> **Type:** Knowledge
-> **Created:** 2026-08-24
-> **Updated:** 2026-09-10
-> **Tags:** autopilot, the-tower, distribution
 
 Vision-driven autopilot for **The Tower** running in an Android emulator
 (MuMu Player, BlueStacks, LDPlayer): screenshots in over adb, human-like
@@ -172,7 +171,7 @@ in the folder it belongs to, never a patch inside a monolith.
 | [backend/runtime/](backend/runtime/) | Process plumbing: event log, run-stats collector, tray launcher, test harness. |
 | [backend/BEHAVIORS.md](backend/BEHAVIORS.md) | **The in-run behavior map**: every click family (rescue, gems, rewards, UW toggles, sprint, chores), why it exists, and which knob configures it. |
 | [backend/config.example.yaml](backend/config.example.yaml) | The machine config template. Copied to `config.yaml` (git-ignored) on first start; the dashboard edits it with timestamped backups. |
-| [backend/profiles/](backend/profiles/) | Player profiles ([schema](backend/profiles/SCHEMA.md)). `default.yaml` is the generic starter; account creation writes a local profile and scanning updates its discoveries. |
+| [backend/profiles/](backend/profiles/) | Player profiles. [default.yaml](backend/profiles/default.yaml) is the generic starter; account creation writes a local profile and scanning updates its discoveries. |
 | [backend/templates/](backend/templates/) | Image templates the vision layer matches against, cut at native 1080x2560. `cards/preset_*`, `presets/*` and `modules/*` are account-specific. |
 | [docs/](docs/) | Emulator setup guides. |
 
@@ -234,20 +233,54 @@ with its own choreography ships its own script in the same file.
 
 ---
 
-## Verifying changes
+## Development
 
-```bash
-python -m pytest
+Work from a source checkout. In PowerShell, from the project folder:
+
+```powershell
+py -3.12 -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.venv\Scripts\python.exe -m pytest
+node --test "frontend/tests/*.test.cjs"
 ```
 
-The automated suite runs offline from the repo root - every
-screen-touching module is faked, and the compiler regression locks run
-against the frozen account in `backend/tests/fixtures/`. Watch the first
-live occurrence of any new behaviour in
+`requirements-dev.txt` pulls in `requirements.txt` and adds pytest;
+`requirements.txt` alone has no test runner. Run pytest from the repo root
+with no path: `pytest.ini` points it at `backend/tests`, puts `backend` and
+`backend/tests` on the import path and adds `-q -p no:cacheprovider`.
+
+The dashboard tests need [Node.js](https://nodejs.org/) 22 or newer; the
+release workflow runs them on Node 22. Keep the quoted `*.test.cjs` glob:
+Node expands it itself, so the line works in PowerShell and Git Bash, while
+the directory form `node --test frontend/tests/` fails.
+
+The pure operation ledger is independently installable from the root
+`pyproject.toml`. See [local workflow boundaries and package verification](docs/WORKFLOW_ARCHITECTURE_PROPOSAL.md#implementation-boundaries)
+for its build command and dependency boundary. The application retains one
+local launcher and release.
+
+The backend suite runs offline and needs no emulator.
+The runner tests use `backend/tests/_fakes.py`, which replaces the
+screen-touching modules, so they capture and tap nothing; download paths are
+monkeypatched.
+`backend/tests/conftest.py` swaps the in-memory `settings.CONFIG` for the
+shipped `config.example.yaml` before any test module reads it, and sends event
+logs and screenshots to each test's temporary directory instead of
+`backend/logs/`. Device lease roots and operation ledgers also use temporary
+directories, including legacy dashboard fixtures that retain the checkout root.
+The suite still touches the checkout: importing `settings`
+creates `backend/config.yaml` from the example when it is missing, dashboard
+tests that do not patch the dashboard's `CONFIG_PATH` read this machine's
+`backend/config.yaml`, and a few dashboard tests create and then delete
+`zz_*.yaml` profiles in `backend/profiles/`. The compiler regression locks run
+against the frozen account in `backend/tests/fixtures/`.
+
+Watch the first live occurrence of any new behaviour in
 `backend/logs/<instance>/events_*.jsonl` before trusting it.
 
 Run recipes: [Farm, Tournament and Shard farming](docs/RUN_TEMPLATES.md).
 
-Recent live results and remaining limits:
-[BlueStacks and MuMu validation notes](docs/BLUESTACKS_SETUP_TEST.md).
+Setup and recognition guidance: [Account setup](docs/ACCOUNT_SETUP.md).
+Current run controls and verification limits:
+[Run lifecycle](docs/RUN_LIFECYCLE_PLAN.md#verification-result).
 Preserve profiles and run settings when resetting recognition images.

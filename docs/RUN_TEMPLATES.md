@@ -1,4 +1,7 @@
 # Shipped run templates
+> **Status:** Active
+> **Type:** User guide
+> **Updated:** 2026-10-19
 
 Farm, Tournament, Shard farming and Dissonance are available above the run list in Control. Choose a template, name it, choose your tier and equipment, then add it. Advanced settings are expanded. Adding a run does not start it or schedule it.
 
@@ -27,11 +30,15 @@ No game artwork, personal preset names, learned coordinates or account snapshots
 
 ## Diamond collection
 
-Ad Gems and free Store gems are separate switches: `ad_gems` watches the six-gem CLAIM button on the battle HUD, while `free_store_gems` runs the Store visit. Store collection is off in the shipped recipes until selected. The HUD collector rechecks a fresh frame before tapping and records whether the offer disappears; it never opens the Store.
+Ad Gems and free Store gems are separate switches: `ad_gems` watches the six-gem CLAIM button on the battle HUD, while `free_store_gems` runs the Store visit. Store collection is off in the shipped recipes until selected. The HUD collector rechecks a fresh frame before tapping and confirms disappearance only while the battle remains visible. A dry run or a screen change is not a confirmed claim. It never opens the Store. A saved CLAIM image is optional: without one, the collector requires the CLAIM label and the six-gem amount on the same offer.
 
-Rotating diamonds use the existing `gem_orbit` timed-click collector. Shipped recipes disable floating-image matching and enable timed orbit clicks. Account geometry can override the reference point. MuMu was verified at native point (420, 685), every roughly two seconds: both the Ad Gems claim and rotating diamond disappeared and the gem balance rose from 1398 to 1406 in the live test. The point is derived from center (540,805), radius 170 and angle 135 degrees; local settings preserve it separately from shipped templates. No rotating-diamond PNG is required for this mode.
+Rotating diamonds use the existing `gem_orbit` timed-click collector. Shipped recipes disable floating-image matching and enable timed orbit clicks. Account geometry can override the reference point through `center`, `radius`, `angle_deg`, `interval_sec`, `taps`, `jitter_frac`, and `spread_deg` in the gathering policy. No rotating-diamond PNG is required. Before a tap set, the collector checks that the game is in front and the arc is moving rather than covered by a static panel. Each tap also checks a fresh battle frame, and a screen change stops the remaining taps. Ad-gem claims share the foreground-window check. A `gem_orbit_tap` event proves an attempted tap, not a collected reward; verify a balance increase when tuning the orbit for an account.
 
-Control also offers **Collect diamonds only**. This keeps the HUD Ad Gems watcher and the selected run's timed orbit clicks active without starting a battle or changing equipment. It waits while the battle HUD is absent and appears as **Diamond collector** in Runner; **Stop now** stops it. Starting another automation requires stopping this collector first.
+Overview's Live control shows whether Ad Gems and floating gems are enabled for the selected run. **Start** uses both settings during farming. **Collect diamonds only** uses the same collection sequence on an existing battle without starting a battle or changing equipment. It requires learned wave digits, waits while the battle HUD is absent or a recognized dialog is open, and appears as **Diamond collector** in Live control. **Stop now** stops the driver without touching the game. **Finish current run, then stop** exits after an observed battle reaches its results or Home screen. Starting another automation requires stopping this collector first.
+
+The orbit `center` is measured with the upgrade panel **open**. Closing that panel moves the tower down by half the HUD's layout shift; the collector follows that shift automatically and abandons a tap set if the layout changes while it is checking or tapping.
+
+Ad-gem offers wait for a random delay from the gathering policy's `gem_delay_sec` range (default 3–10 seconds). Waiting never blocks farming; the next claim attempt re-verifies the live battle and offer. The policy's `ad_gem_options` controls polling, confirmation/retry cooldowns and button inset through [Settings](SETTINGS.md). Ad-gem taps sample across the freshly verified button rectangle, preserving the configured inset after shared position jitter and press drift. A rectangle too small for that margin is skipped. Press timing still uses the shared `tap` settings; other controls retain their existing position jitter. These are timing characteristics, not evidence that automation avoids telemetry detection or account flags.
 
 ## Dissonance and perk bans
 
