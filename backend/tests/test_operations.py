@@ -389,6 +389,7 @@ def test_status_does_not_combine_old_operation_with_new_shared_artifact(dashboar
 
 @pytest.mark.parametrize('domain_status,expected', [('done', 'succeeded'), ('error', 'failed'), ('running', 'failed')])
 def test_screen_analysis_clean_exit_uses_tagged_domain_outcome(tmp_path, monkeypatch, domain_status, expected):
+    import numpy as np
     from player import screen_analysis
     _, ctx = target(tmp_path)
     store = Operations(tmp_path / 'ops.db')
@@ -401,10 +402,14 @@ def test_screen_analysis_clean_exit_uses_tagged_domain_outcome(tmp_path, monkeyp
     with worker_operation():
         screen_analysis._write_state(path, {'status': 'running', 'message': 'progress'})
         assert json.loads(path.read_text())['operation_id'] == op['id']
-        screen_analysis._write_state(path, {'status': domain_status, 'message': 'domain outcome'})
+        screenshot = screen_analysis._save_screenshot(
+            directory / 'screen_analysis.png', np.zeros((24, 24, 3), dtype=np.uint8))
+        screen_analysis._write_state(path, {
+            'status': domain_status, 'message': 'domain outcome', 'screenshot': screenshot})
     final = store.get(op['id'])
     assert final['status'] == expected
     assert final['result_refs']['screen_analysis.json']['revision'] == file_revision(path)
+    assert final['result_refs']['screen_analysis.png']['revision'] == screenshot['revision']
     if expected == 'failed':
         assert final['error']['code'] == 'analysis_incomplete'
 
@@ -451,10 +456,9 @@ def test_apply_is_revision_fenced_and_retry_returns_same_outcome(dashboard, monk
 
 
 def test_apply_retries_saved_profile_after_config_failure_without_capture(dashboard, monkeypatch):
-    dash, _, ctx = dashboard
-    from player import playerprofile, readiness
+    dash, cfg, ctx = dashboard
+    from player import playerprofile
     monkeypatch.setattr(playerprofile, 'validate', lambda profile: [])
-    monkeypatch.setattr(readiness, 'wall_bar_roi', lambda cfg: None)
     store = service.ledger(dash.ROOT)
     op, _ = store.accept('calibrate', ctx, {})
     directory = Path(ctx['artifact_dir'])
@@ -464,10 +468,12 @@ def test_apply_retries_saved_profile_after_config_failure_without_capture(dashbo
     op = store.transition(op['id'], op['revision'], 'running')
     op = store.transition(op['id'], op['revision'], 'awaiting_apply', result_refs={'calibrate_state.json': {'path': str(state), 'revision': file_revision(state)}})
     attempts = []
-    def save_config(cfg):
-        attempts.append(copy.deepcopy(cfg))
+    def save_config(data):
+        attempts.append(copy.deepcopy(data))
         if len(attempts) == 1:
             raise OSError('simulated config write failure')
+        cfg.clear()
+        cfg.update(copy.deepcopy(attempts[-1]))
     monkeypatch.setattr(dash, 'save_config', save_config)
     with dash.app.test_client() as client:
         failed = client.post('/api/calibrate/apply', json={'operation_id': op['id'], 'expected_revision': op['revision']})

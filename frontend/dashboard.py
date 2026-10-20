@@ -81,13 +81,15 @@ _CAPABILITIES = ['battle_controls', 'run_history', 'stream_backends', 'runtime_i
 
 @app.get('/api/runtime')
 def api_runtime():
+    active = operation_api.ledger(ROOT).active()
     workers = [dict(operation_id=op['id'], kind=op['kind'], status=op['status'],
                     instance=op['context'].get('instance'), worker=op.get('worker'),
                     alive=operation_api.worker_alive(op.get('worker')))
-               for op in operation_api.ledger(ROOT).active()]
+               for op in active if not operation_api.synchronous_persistence(op)]
+    persistence = [operation_api.public(op) for op in active if operation_api.synchronous_persistence(op)]
     return jsonify(server=build_info.compare(Path(ROOT).parent, _BUILD),
                    capabilities=_CAPABILITIES, api_contract=1, port=PORT,
-                   workers=workers, process_refresh=_procs_status())
+                   workers=workers, persistence_operations=persistence, process_refresh=_procs_status())
 
 
 @app.errorhandler(operation_api.Conflict)
@@ -1952,6 +1954,38 @@ def api_scan_start():
 
 
 # ------------------------------------------------------------ calibrator
+def _operation_artifact_bytes(operation, filename, *, allow_shared=False):
+    """Read the bytes named by the operation, then verify those same bytes."""
+    ref = operation['result_refs'].get(filename)
+    if ref is None:
+        if not allow_shared:
+            raise operation_api.Conflict(f'No saved {filename} for this operation')
+        path = Path(operation['context']['artifact_dir']) / filename
+    elif not isinstance(ref, dict) or not ref.get('path') or not ref.get('revision'):
+        raise operation_api.Conflict(f'Invalid saved reference for {filename}')
+    else:
+        path = Path(ref['path'])
+    try:
+        contents = path.read_bytes()
+    except OSError as exc:
+        raise operation_api.Conflict(f'Saved {filename} is unavailable: {exc}') from exc
+    revision = hashlib.sha256(contents).hexdigest()
+    if ref is not None and revision != ref['revision']:
+        raise operation_api.Conflict(f'Saved {filename} changed after this operation')
+    return contents, {'path': str(path), 'revision': revision}
+
+
+def _operation_artifact_json(operation, filename, *, allow_shared=False):
+    contents, ref = _operation_artifact_bytes(operation, filename, allow_shared=allow_shared)
+    try:
+        result = json.loads(contents)
+    except (ValueError, UnicodeError) as exc:
+        raise operation_api.Conflict(f'Saved {filename} is not valid JSON') from exc
+    if not isinstance(result, dict) or result.get('operation_id') != operation['id']:
+        raise operation_api.Conflict(f'Saved {filename} belongs to another operation')
+    return result, ref
+
+
 def _taps_allowed(cfg: dict) -> bool:
     inst = cfg.get("active_instance", "main")
     return bool(((cfg.get("instances") or {}).get(inst) or {}).get("allow_taps"))
@@ -1975,15 +2009,17 @@ def api_screen_analysis_status():
     operation = _requested_operation(cfg, ('screen_analysis',))
     if operation:
         cfg = operation['context']['config']
-    directory = _calibration_dir(cfg)
     try:
-        with open(os.path.join(directory, "screen_analysis.json"), encoding="utf-8") as fh:
-            result = json.load(fh)
+        if operation:
+            result, _ = _operation_artifact_json(operation, 'screen_analysis.json', allow_shared=True)
+        else:
+            with open(os.path.join(_calibration_dir(cfg), "screen_analysis.json"), encoding="utf-8") as fh:
+                result = json.load(fh)
+    except operation_api.Conflict as exc:
+        result = {'status': 'unavailable', 'message': str(exc)}
     except (OSError, ValueError):
         result = {"status": "idle"}
     if operation:
-        if result.get('operation_id') != operation['id']:
-            result = {'status': 'unavailable', 'message': 'The shared analysis artifact belongs to another operation'}
         result['operation'] = operation_api.public(operation)
         if operation['status'] in ('accepted', 'running', 'cancelling'):
             result.update(status='running')
@@ -1999,10 +2035,9 @@ def api_screen_analysis_frame():
     if operation:
         if operation['status'] != 'succeeded':
             raise operation_api.Conflict('Wait for this screen analysis to complete')
-        cfg = operation['context']['config']
-        ref = operation['result_refs'].get('screen_analysis.png')
-        if not ref or operation_api.file_revision(ref['path']) != ref['revision']:
-            raise operation_api.Conflict('This screen analysis image has been replaced')
+        from io import BytesIO
+        contents, _ = _operation_artifact_bytes(operation, 'screen_analysis.png')
+        return send_file(BytesIO(contents), mimetype='image/png', max_age=0)
     return send_file(os.path.join(_calibration_dir(cfg), "screen_analysis.png"), mimetype="image/png", max_age=0)
 
 
@@ -2013,6 +2048,16 @@ def api_calibrate_start():
     pictures the repo never ships. Same guards as the scan, plus taps: the
     calibrator navigates, so a read-only instance cannot run it."""
     body = request.get_json(force=True) or {}
+    routes = body.get('routes')
+    if 'routes' in body:
+        if (not isinstance(routes, list) or body.get('bootstrap') is not True
+                or any(body.get(key) for key in ('flows', 'battle_only', 'observe'))):
+            return jsonify(ok=False, error='Routes require bootstrap only, without flows, battle_only or observe'), 400
+        from player.bootstrap import validate_route_selection
+        try:
+            validate_route_selection(routes)
+        except ValueError as exc:
+            return jsonify(ok=False, error=str(exc)), 400
     retry = operation_api.retry(ROOT, load_config(), "calibrate", body, _profile_path(load_config().get('active_profile')))
     if retry:
         return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
@@ -2052,6 +2097,8 @@ def api_calibrate_start():
             "--phases", phases]
     if bootstrap:
         args.append("--bootstrap")
+        if routes is not None:
+            args.extend(['--routes', ','.join(routes)])
         # The consented action-capture stage (start+cancel a battle, walk
         # event/store/guild). Bootstrap-only and only when the frontend's
         # popup passed flows=true; never inferred.
@@ -2118,19 +2165,40 @@ def api_calibrate_status():
     if operation:
         cfg = operation['context']['config']
     inst = cfg.get("active_instance", "main")
-    out = {"state": {}, "report": {}, "manifest": {}}
+    out = {"state": {}, "report": {}, "manifest": {}, "card_manifest": {}}
     for fname, key in (("calibrate_state.json", "state"),
                        ("calibrate_report.json", "report"), ("module_manifest.json", "manifest"),
                        ("card_manifest.json", "card_manifest")):
         try:
-            with open(os.path.join(_calibration_dir(cfg), fname), encoding="utf-8") as fh:
-                out[key] = json.load(fh)
+            if operation:
+                active = operation['status'] in ('accepted', 'running', 'cancelling')
+                # Manifests predate operation identity; only a sealed reference
+                # can associate them with a historical capture.
+                if key in ('manifest', 'card_manifest'):
+                    if fname not in operation['result_refs']:
+                        continue
+                    contents, _ = _operation_artifact_bytes(operation, fname)
+                    out[key] = json.loads(contents)
+                elif key == 'report' and not active and fname not in operation['result_refs']:
+                    continue
+                else:
+                    out[key], _ = _operation_artifact_json(operation, fname, allow_shared=True)
+            else:
+                with open(os.path.join(_calibration_dir(cfg), fname), encoding="utf-8") as fh:
+                    out[key] = json.load(fh)
+        except operation_api.Conflict as exc:
+            out.setdefault('artifact_errors', {})[key] = str(exc)
         except (OSError, ValueError):
             pass
     from player.calibration_report import describe_report
     out["report"] = describe_report(out["report"])
     if operation and out['state'].get('operation_id') != operation['id']:
         out.update(state={}, report={}, manifest={}, card_manifest={})
+    if not out['card_manifest']:
+        cards = out['state'].get('phases', {}).get('cards', {})
+        inventory = (cards.get('results') or {}).get('inventory')
+        if cards.get('status') == 'done' and isinstance(inventory, dict):
+            out['card_manifest'] = inventory
     # Start and status must use the same live process source. A cached negative
     # immediately after Popen used to make the UI declare completion.
     processes = [] if operation else [pr for pr in _procs() if pr["runner"] == "calibrate"]
@@ -2164,28 +2232,34 @@ def api_calibrate_status():
 
 
 @app.post("/api/calibrate/apply")
+@_serialize_config
 def api_calibrate_apply():
     """Apply only successfully completed observations to the current profile."""
     import copy
-    if _procs():
-        return jsonify({"ok": False, "error": "Wait for calibration to stop before applying results."}), 409
-    cfg = load_config()
     body = request.get_json(silent=True) or {}
     operation = None
+    legacy_write = None
     if body.get('operation_id'):
         try:
             prior = operation_api.resolve(ROOT, body['operation_id'])
         except KeyError:
             raise operation_api.Conflict('Unknown operation') from None
-        if prior['status'] == 'succeeded' and body.get('expected_revision') in (prior['revision'], prior['result_refs'].get('apply_request_revision')):
-            return jsonify(ok=True, profile=prior['context']['profile'], operation=operation_api.public(prior), readiness=prior.get('readiness'))
+        if prior['kind'] not in ('calibrate', 'observe'):
+            raise operation_api.Conflict('Operation is not a calibration')
+        applied = prior['status'] == 'succeeded' or prior['result_refs'].get('apply_status') == 'succeeded'
+        if applied and body.get('expected_revision') in (prior['revision'], prior['result_refs'].get('apply_request_revision')):
+            return jsonify(ok=True, applied=True, profile=prior['context']['profile'], operation=operation_api.public(prior), readiness=prior.get('readiness'))
+    if _procs():
+        return jsonify({"ok": False, "error": "Wait for calibration to stop before applying results."}), 409
+    cfg = load_config()
+    if body.get('operation_id'):
         operation = operation_api.require_revision(ROOT, body, ('awaiting_apply', 'failed', 'interrupted'))
         if operation['kind'] not in ('calibrate', 'observe'):
             raise operation_api.Conflict('Operation is not a calibration')
         original = operation['context']
         current = operation_api.context(ROOT, cfg, {}, _profile_path(cfg.get('active_profile')))
         allowed_config_revisions = (original['config_revision'], operation['result_refs'].get('apply_config_revision'))
-        if (any(current.get(k) != original.get(k) for k in ('account', 'instance', 'serial', 'rendering', 'profile'))
+        if (any(current.get(k) != original.get(k) for k in ('account', 'instance', 'serial', 'rendering', 'profile', 'device_key'))
                 or current['config_revision'] not in allowed_config_revisions):
             raise operation_api.Conflict('Return to the original unchanged account, device and profile before applying')
         cfg = original['config']
@@ -2202,12 +2276,24 @@ def api_calibrate_apply():
     if not path or not os.path.isfile(path):
         return jsonify({"ok": False, "error": "Choose a profile first."}), 400
     try:
-        with open(os.path.join(_calibration_dir(cfg), "calibrate_state.json"), encoding="utf-8") as fh:
-            state = json.load(fh)
+        if operation:
+            state, state_ref = _operation_artifact_json(
+                operation, 'calibrate_state.json', allow_shared=operation['status'] == 'interrupted')
+        else:
+            with open(os.path.join(_calibration_dir(cfg), "calibrate_state.json"), encoding="utf-8") as fh:
+                state = json.load(fh)
+            if state.get('operation_id'):
+                raise operation_api.Conflict('These observations belong to an operation; apply its ID and revision')
         if not state.get("player"):
             raise ValueError("No completed account observations yet")
         if os.path.exists(os.path.join(_calibration_dir(cfg), "module_restore.json")):
             raise ValueError("Restore the saved module equipment before applying discoveries.")
+        if operation is None:
+            store = operation_api.ledger(ROOT)
+            legacy_write, _ = store.accept('profile_write',
+                operation_api.context(ROOT, cfg, {}, path), {'action': 'apply_saved_observations'})
+            legacy_write = store.transition(legacy_write['id'], legacy_write['revision'], 'running',
+                                            worker=_profile_write_worker(), step='profile_write')
         with _profile_lock(path):
             if operation:
                 if operation_api.file_revision(path) != operation['context']['profile_revision']:
@@ -2215,15 +2301,13 @@ def api_calibrate_apply():
                         persisted = yaml.safe_load(current_profile)
                     if operation_api.digest(persisted) != operation['result_refs'].get('apply_profile_digest'):
                         raise operation_api.Conflict('Profile changed after preparation; discoveries remain saved for review')
-                ref = operation['result_refs'].get('calibrate_state.json')
-                if ref is None and operation['status'] == 'interrupted' and state.get('operation_id') == operation['id']:
-                    artifact = os.path.join(operation['context']['artifact_dir'], 'calibrate_state.json')
-                    ref = {'path': artifact, 'revision': operation_api.file_revision(artifact)}
-                    operation['result_refs']['calibrate_state.json'] = ref
-                if not ref or operation_api.file_revision(ref['path']) != ref['revision']:
-                    raise operation_api.Conflict('Observations changed after this operation; review the newer operation')
+                refs = dict(operation['result_refs'])
+                refs['calibrate_state.json'] = state_ref
+                refs.setdefault('apply_capture_outcome', {
+                    key: operation.get(key) for key in ('status', 'error', 'step', 'recovery_action')})
+                refs.update(apply_request_revision=operation['revision'], apply_status='applying', apply_error=None)
                 import psutil
-                operation = operation_api.ledger(ROOT).transition(operation['id'], operation['revision'], 'applying', step='apply', worker={'pid': os.getpid(), 'creation_time': psutil.Process().create_time()}, result_refs=dict(operation['result_refs'], apply_request_revision=operation['revision']))
+                operation = operation_api.ledger(ROOT).transition(operation['id'], operation['revision'], 'applying', step='apply', worker={'pid': os.getpid(), 'creation_time': psutil.Process().create_time()}, result_refs=refs)
             with open(path, encoding="utf-8") as fh:
                 profile = yaml.safe_load(fh)
             player = profile.setdefault("player", {})
@@ -2234,7 +2318,7 @@ def api_calibrate_apply():
             for key, value in state["player"].items():
                 if key == "wall_bar":
                     continue
-                if key in ("category_presets", "uws"):
+                if key in ("category_presets", "uws", "abilities"):
                     player.setdefault(key, {}).update(copy.deepcopy(value))
                 else:
                     player[key] = copy.deepcopy(value)
@@ -2258,6 +2342,10 @@ def api_calibrate_apply():
             if operation:
                 operation = operation_api.ledger(ROOT).transition(operation['id'], operation['revision'], 'applying', step='profile_write_intent', result_refs=dict(operation['result_refs'], apply_profile_digest=operation_api.digest(profile)))
             _save_yaml_backup(path, profile)
+            saved_profile = Path(path).read_bytes()
+            if operation_api.digest(yaml.safe_load(saved_profile)) != operation_api.digest(profile):
+                raise ValueError('Applied profile could not be verified by reading it back')
+            profile_revision = hashlib.sha256(saved_profile).hexdigest()
         from player.readiness import wall_bar_roi
         if wall_bar and not wall_bar_roi(cfg):
             inst = cfg.setdefault("instances", {}).setdefault(cfg.get("active_instance", "main"), {})
@@ -2265,6 +2353,16 @@ def api_calibrate_apply():
             if operation:
                 operation = operation_api.ledger(ROOT).transition(operation['id'], operation['revision'], 'applying', step='config_write_intent', result_refs=dict(operation['result_refs'], apply_config_revision=operation_api.digest(cfg)))
             save_config(cfg)
+            if operation:
+                persisted_cfg = load_config()
+                persisted_context = operation_api.context(ROOT, persisted_cfg, {}, path)
+                if (wall_bar_roi(persisted_cfg) != list(wall_bar)
+                        or any(persisted_context.get(key) != operation['context'].get(key)
+                               for key in ('account', 'instance', 'serial', 'rendering', 'profile', 'device_key'))):
+                    raise ValueError('Applied wall region could not be verified by reading configuration back')
+                operation = operation_api.ledger(ROOT).transition(
+                    operation['id'], operation['revision'], 'applying', step='config_verified',
+                    result_refs=dict(operation['result_refs'], apply_config_revision=operation_api.digest(persisted_cfg)))
         extra = {}
         if operation:
             readiness_result = None
@@ -2277,18 +2375,43 @@ def api_calibrate_apply():
                         readiness_result = readiness.check(ROOT, cfg, runs[selected])
                 except Exception as exc:  # applied data remains confirmed; readiness must fail closed
                     readiness_result = {'ready': False, 'error': str(exc), 'missing': []}
-            operation = operation_api.ledger(ROOT).transition(operation['id'], operation['revision'], 'succeeded', step='applied', readiness=readiness_result, error=None, recovery_action=None)
+            captured = operation['result_refs']['apply_capture_outcome']
+            capture_incomplete = captured['status'] in ('failed', 'interrupted')
+            operation = operation_api.ledger(ROOT).transition(
+                operation['id'], operation['revision'], captured['status'] if capture_incomplete else 'succeeded',
+                step=captured['step'] if capture_incomplete else 'applied', readiness=readiness_result,
+                error=captured['error'] if capture_incomplete else None,
+                recovery_action=captured['recovery_action'] if capture_incomplete else None,
+                result_refs=dict(operation['result_refs'], apply_status='succeeded', apply_error=None,
+                                 apply_profile_revision=profile_revision))
             extra['operation'] = operation_api.public(operation)
             extra['readiness'] = readiness_result
-        return jsonify({"ok": True, "profile": name, "wall_bar": wall_bar,
+        if legacy_write:
+            legacy_write = operation_api.ledger(ROOT).transition(
+                legacy_write['id'], legacy_write['revision'], 'succeeded', step='profile_written',
+                result_refs={'apply_profile_revision': profile_revision})
+        return jsonify({"ok": True, "applied": True, "profile": name, "wall_bar": wall_bar,
                         "remaining_run_checks": problems, **extra})
-    except operation_api.Conflict:
+    except operation_api.Conflict as exc:
+        if legacy_write:
+            operation_api.ledger(ROOT).transition(legacy_write['id'], legacy_write['revision'], 'failed',
+                error={'code': 'apply_failed', 'message': str(exc)})
         raise
     except Exception as e:  # request boundary: preserve an explicit recoverable apply outcome
         if not isinstance(e, (OSError, ValueError)):
             app.logger.exception('Calibration apply failed')
         if operation and operation['status'] == 'applying':
-            operation_api.ledger(ROOT).transition(operation['id'], operation['revision'], 'awaiting_apply', error={'code': 'apply_failed', 'message': str(e)}, recovery_action='Review the profile and retry applying saved discoveries')
+            captured = operation['result_refs']['apply_capture_outcome']
+            capture_incomplete = captured['status'] in ('failed', 'interrupted')
+            error = {'code': 'apply_failed', 'message': str(e)}
+            operation_api.ledger(ROOT).transition(
+                operation['id'], operation['revision'], captured['status'] if capture_incomplete else 'awaiting_apply',
+                error=captured['error'] if capture_incomplete else error,
+                recovery_action=captured['recovery_action'] if capture_incomplete else 'Review the profile and retry applying saved discoveries',
+                result_refs=dict(operation['result_refs'], apply_status='failed', apply_error=error))
+        if legacy_write:
+            operation_api.ledger(ROOT).transition(legacy_write['id'], legacy_write['revision'], 'failed',
+                error={'code': 'apply_failed', 'message': str(e)})
         return jsonify({"ok": False, "error": str(e)}), 400 if isinstance(e, (OSError, ValueError)) else 500
 
 
@@ -2307,16 +2430,23 @@ def api_scan_status():
         cfg = operation['context']['config']
     inst = cfg.get("active_instance", "main")
     state = {}
+    artifact_error = None
     try:
-        with open(os.path.join(_calibration_dir(cfg), "scan_state.json"),
-                  encoding="utf-8") as fh:
-            state = json.load(fh)
+        if operation:
+            state, _ = _operation_artifact_json(operation, 'scan_state.json', allow_shared=True)
+        else:
+            with open(os.path.join(_calibration_dir(cfg), "scan_state.json"),
+                      encoding="utf-8") as fh:
+                state = json.load(fh)
+    except operation_api.Conflict as exc:
+        artifact_error = str(exc)
     except (OSError, ValueError):
         pass
     if operation and state.get('operation_id') != operation['id']:
         state = {}
     return jsonify({"running": operation['status'] in ('accepted', 'running', 'cancelling') if operation else any(pr["runner"] == "scan" for pr in _procs_cached()),
-                    "state": state, "operation": operation_api.public(operation) if operation else None})
+                    "state": state, "operation": operation_api.public(operation) if operation else None,
+                    "artifact_error": artifact_error})
 
 
 @app.get("/api/profiles")
@@ -4157,7 +4287,70 @@ def api_template_save(rel):
 
 
 # ------------------------------------------- account scan -> profile
+def _profile_write_worker():
+    import psutil
+    return {'pid': os.getpid(), 'creation_time': psutil.Process().create_time()}
+
+
+def _promotion_response(source, promotion):
+    return jsonify(dict(promotion['result_refs']['profile_promote'],
+                        operation=operation_api.public(source) if source else None,
+                        promotion=operation_api.public(promotion)))
+
+
+def _persist_promotion(source, cfg, command, key, dest, text, result, promotion=None):
+    """Reserve device ownership and retain an exact, retryable write receipt."""
+    store = operation_api.ledger(ROOT)
+    if promotion is None:
+        context = source['context'] if source else operation_api.context(
+            ROOT, cfg, {}, _profile_path(cfg.get('active_profile')))
+        promotion, created = store.accept('profile_promote', context, command, key)
+        if not created:
+            raise operation_api.Conflict('Promotion changed; refresh before retrying')
+    running = 'running' if promotion['status'] == 'accepted' else 'applying'
+    promotion = store.transition(promotion['id'], promotion['revision'], running,
+                                 worker=_profile_write_worker(), step='profile_write')
+    try:
+        from runtime.files import atomic_text
+        # atomic_text uses text-mode newlines; the intent must name the bytes
+        # it will persist on this OS, including CRLF on Windows.
+        text_revision = hashlib.sha256(text.replace('\n', os.linesep).encode('utf-8')).hexdigest() if text is not None else None
+        with _profile_lock(dest):
+            previous = operation_api.file_revision(dest)
+            intent = promotion['result_refs'].get('profile_promote_intent')
+            if intent is None:
+                if previous is not None and not command['overwrite']:
+                    raise operation_api.Conflict('Destination profile already exists; review before replacing it')
+                intent = {'previous_revision': previous, 'revision': text_revision,
+                          'header': result.pop('_header'),
+                          'response': dict(result)}
+                intent['response']['profile_revision'] = intent['revision']
+                promotion = store.transition(promotion['id'], promotion['revision'], running,
+                    step='profile_write_intent', result_refs={'profile_promote_intent': intent})
+            if previous != intent['revision']:
+                if previous != intent['previous_revision']:
+                    raise operation_api.Conflict('Destination changed after promotion; saved receipt cannot overwrite it')
+                if text_revision != intent['revision']:
+                    raise operation_api.Conflict('Promotion inputs changed; the original write remains unconfirmed')
+                atomic_text(dest, text)
+            if operation_api.file_revision(dest) != intent['revision']:
+                raise ValueError('Promoted profile could not be verified by reading it back')
+        promotion = store.transition(promotion['id'], promotion['revision'], 'succeeded',
+            step='profile_written', error=None,
+            result_refs=dict(promotion['result_refs'], profile_promote=intent['response']))
+        return _promotion_response(source, promotion)
+    except Exception as exc:
+        store.transition(promotion['id'], promotion['revision'], 'failed',
+                         error={'code': 'promotion_failed', 'message': str(exc)})
+        if isinstance(exc, operation_api.Conflict):
+            raise
+        if not isinstance(exc, (OSError, ValueError)):
+            app.logger.exception('Profile promotion failed')
+        return jsonify(ok=False, error=str(exc)), 400 if isinstance(exc, (OSError, ValueError)) else 500
+
+
 @app.post("/api/profile-promote")
+@_serialize_config
 def api_profile_promote():
     """Turn a scan draft (profiles/<inst>.draft.yaml, `player:` only) into a
     runnable profile: the draft's `player:` block on top of the starter's
@@ -4168,6 +4361,11 @@ def api_profile_promote():
     blueprint or two, and the fix is an edit to that profile, which needs
     the file to exist first. Nothing is activated here."""
     body = request.get_json(force=True) or {}
+    operation = None
+    if body.get('operation_id'):
+        operation = operation_api.require_revision(ROOT, body, ('succeeded', 'failed', 'interrupted'))
+        if operation['kind'] != 'scan':
+            raise operation_api.Conflict('Operation is not an account scan')
     draft = str(body.get("draft") or "").strip()
     for suffix in (".draft.yaml", ".draft", ".yaml"):
         if draft.casefold().endswith(suffix):
@@ -4180,21 +4378,60 @@ def api_profile_promote():
         return jsonify({"ok": False, "error": "name: letters, digits, _ - . only"}), 400
     if _is_starter(name):
         return jsonify({"ok": False, "error": _STARTER_READ_ONLY, "starter": True}), 409
+    command = dict(source_operation_id=operation['id'] if operation else None,
+                   source_revision=operation['revision'] if operation else None,
+                   draft=draft, name=name, base=base, overwrite=bool(body.get('overwrite')))
+    key = 'profile-promote:' + operation['id'] if operation else None
+    promotion = operation_api.ledger(ROOT).find_by_key(key) if key else None
+    if promotion:
+        if (promotion['kind'] != 'profile_promote' or promotion['request'] != command
+                or promotion['context'] != operation['context']):
+            raise operation_api.Conflict('This scan already belongs to a different promotion request')
+        promotion = operation_api.resolve(ROOT, promotion['id'])
+        if promotion['status'] == 'succeeded':
+            return _promotion_response(operation, promotion)
+        if promotion['status'] in ('accepted', 'running', 'cancelling', 'applying'):
+            raise operation_api.Conflict('Promotion is still running; refresh its receipt before retrying')
+    if operation and _procs():
+        raise operation_api.Conflict('Wait for scanning to stop before applying results')
+    cfg = load_config()
+    if operation:
+        current = operation_api.context(ROOT, cfg, {}, _profile_path(cfg.get('active_profile')))
+        if any(current.get(field) != operation['context'].get(field)
+               for field in ('account', 'instance', 'serial', 'rendering', 'profile', 'config_revision', 'device_key')):
+            raise operation_api.Conflict('Return to the original unchanged account, device and profile before applying')
+        intent = promotion['result_refs'].get('profile_promote_intent') if promotion else None
+        own_write = intent and current['profile_path'] == _profile_path(name) and current['profile_revision'] == intent['revision']
+        if current['profile_revision'] != operation['context']['profile_revision'] and not own_write:
+            raise operation_api.Conflict('Profile changed after scanning; saved discoveries remain available')
     draft_path = os.path.join(_profiles_dir(), f"{draft}.draft.yaml")
     base_path = _profile_path(base)
     dest = _profile_path(name)
-    if not os.path.exists(draft_path):
+    if not operation and not os.path.exists(draft_path):
         return jsonify({"ok": False, "error": f"no draft for {draft!r} - run the "
                         "account scan first"}), 400
     if not base_path or not os.path.exists(base_path) or _is_draft(base):
         return jsonify({"ok": False, "error": f"base profile {base!r} not found"}), 400
     if not dest:
         return jsonify({"ok": False, "error": "bad profile name"}), 400
-    if os.path.exists(dest) and not body.get("overwrite"):
+    intent = promotion['result_refs'].get('profile_promote_intent') if promotion else None
+    if intent and operation_api.file_revision(dest) == intent['revision']:
+        return _persist_promotion(operation, cfg, command, key, dest, None, None, promotion)
+    if not operation:
+        from player import accounts
+        if draft == accounts.draft_name(cfg) and _requested_operation(cfg, ('scan',)):
+            raise operation_api.Conflict('These observations belong to an operation; apply its ID and revision')
+    if os.path.exists(dest) and not command['overwrite'] and not intent:
         return jsonify({"ok": False, "exists": True,
                         "error": f"profiles/{name}.yaml exists - tick overwrite"}), 409
-    with open(draft_path, encoding="utf-8") as fh:
-        draft_doc = yaml.safe_load(fh) or {}
+    if operation:
+        from player import accounts
+        if draft != accounts.draft_name(operation['context']['config']):
+            raise operation_api.Conflict('The draft belongs to another account scan')
+        draft_doc, _ = _operation_artifact_json(operation, 'scan_state.json')
+    else:
+        with open(draft_path, encoding="utf-8") as fh:
+            draft_doc = yaml.safe_load(fh) or {}
     with open(base_path, encoding="utf-8") as fh:
         doc = yaml.safe_load(fh) or {}
     player = draft_doc.get("player")
@@ -4222,17 +4459,15 @@ def api_profile_promote():
         problems = _profile_check(check)
     except Exception as e:                      # noqa: BLE001
         problems = [f"validator unavailable: {type(e).__name__}: {e}"]
-    header = (f"# Promoted from profiles/{draft}.draft.yaml over profiles/{base}.yaml"
+    header = intent['header'] if intent else (f"# Promoted from profiles/{draft}.draft.yaml over profiles/{base}.yaml"
               f" on {datetime.datetime.now():%Y-%m-%d %H:%M}.\n"
               "# Machine-specific and git-ignored.\n")
     text = yaml.safe_dump(doc, sort_keys=False, allow_unicode=True,
                           default_flow_style=None)
     yaml.safe_load(text)
-    from runtime.files import atomic_text
-    with _profile_lock(dest):
-        atomic_text(dest, header + text)
-    return jsonify({"ok": True, "name": name, "path": dest, "problems": problems,
-                    "abilities_verified": player["abilities_verified"]})
+    result = dict(ok=True, applied=True, name=name, path=dest, problems=problems,
+                  abilities_verified=player['abilities_verified'], _header=header)
+    return _persist_promotion(operation, cfg, command, key, dest, header + text, result, promotion)
 
 
 if __name__ == "__main__":
