@@ -16,7 +16,7 @@ def test_claim_taps_vary_position_delay_and_press(monkeypatch):
     })
     monkeypatch.setattr(act, 'instance', lambda: {'allow_taps': True})
     monkeypatch.setattr(act, 'random', random.Random(192))
-    monkeypatch.setattr(act, '_input', lambda *parts: commands.append(parts))
+    monkeypatch.setattr(act, '_input', lambda *parts, deadline=None: commands.append(parts))
     monkeypatch.setattr(act.time, 'sleep', sleeps.append)
     monkeypatch.setattr(act.time, 'monotonic', lambda: 1000)
     monkeypatch.setattr(act, '_last_tap', 0)
@@ -55,7 +55,7 @@ def test_deadline_checked_after_rate_and_jitter_waits(monkeypatch, instant, dead
         now[0] += seconds
     monkeypatch.setattr(act.time, 'sleep', sleep)
     monkeypatch.setattr(act, '_last_tap', 100.0)
-    monkeypatch.setattr(act, '_input', lambda *parts: commands.append((now[0], parts)))
+    monkeypatch.setattr(act, '_input', lambda *parts, deadline=None: commands.append((now[0], parts)))
     if deadline is not None and deadline <= 101:
         with pytest.raises(act.TapRefused, match='deadline expired'):
             act.tap(140, 1340, instant=instant, deadline=deadline)

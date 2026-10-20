@@ -244,7 +244,7 @@ def test_entire_press_stays_five_pixels_inside_offer_at_jitter_extremes(monkeypa
     monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
     monkeypatch.setattr(ad_gems.act, '_last_tap', 0)
     commands = []
-    monkeypatch.setattr(ad_gems.act, '_input', lambda *args: commands.append(args))
+    monkeypatch.setattr(ad_gems.act, '_input', lambda *args, deadline=None: commands.append(args))
     rect = (20, 1200, 248, 148)
     point = ad_gems._claim_point(rect, rng)
     ad_gems.act.tap(*point)
