@@ -3679,6 +3679,13 @@ function rescueHtml(){
     </fieldset>
     <fieldset><legend>If this… then that (top rule wins first)</legend>
       ${(d.rules || []).map((r, i) => {
+        if (Object.hasOwn(r.when || {}, 'death_screen') || Object.hasOwn(r.do || {}, 'stop_after_run')) {
+          return `<div class="rulecard">
+            <p class="warn"><b>Retired rule — ignored.</b> This rule uses a retired trigger or action and does not run.</p>
+            <details><summary>Original rule</summary><pre>${esc(JSON.stringify(r, null, 2))}</pre></details>
+            <button class="small danger" onclick="p2delRule(${i})">Delete retired rule</button>
+          </div>`;
+        }
         const t = trigParse(r.when); const a = actParse(r.do);
         return `<div class="rulecard">
           <div class="rowline"><b>WHEN</b>
