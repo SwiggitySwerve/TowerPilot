@@ -11,7 +11,7 @@ scan pages -> resolve the ladder -> buy the target if affordable (instant
 taps; store widgets are the same style as the guild milestones). All taps by
 FIXED AREAS or matched-template centers; vision only for state.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import cv2
 import numpy as np
@@ -51,6 +51,13 @@ class StoreEvidenceError(RuntimeError):
 class StoreScan:
     items: list[StoreItem]
     partial_controls: list[tuple[str, int, int, float | None]]
+    partial_panels: list[tuple[int, int, int, int]] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class StoreCatalogue:
+    items: list[StoreItem]
+    complete_sections: frozenset[str]
 
 _HEADERS = {
     "currencies": "icons/store_currencies.png",
@@ -64,6 +71,11 @@ _TITLES = {
     "menu": "icons/title_menu.png",
     "banner": "icons/title_banner.png",
     "guardian": "icons/title_guardian.png",
+}
+_CATEGORY_SECTION = {
+    'epic_relic': 'relics', 'blue_relic': 'relics', 'chip': 'tower_guardian',
+    **{category: 'cosmetics' for category in _TITLES},
+    'shards': 'currencies', 'squares': 'currencies', 'gems': 'currencies',
 }
 
 
@@ -135,6 +147,33 @@ def _content_band(frame):
     return top, min(bottom, frame.shape[0])
 
 
+def _panel_mask(frame):
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
+    return ((v > 200) & ((s < 65) | ((h > 80) & (h < 110)))).astype(np.uint8)
+
+
+def _partial_panels(frame, bounds=None):
+    """Keep boundary-crossing panel outlines even before their control appears.
+
+    A wide top edge with clipped sides can be only a few pixels tall. Long
+    isolated sides also matter when both horizontal edges are out of view.
+    Neither kind is subject to the complete-card minimum height/area filter.
+    """
+    top, bottom = _content_band(frame) if bounds is None else bounds
+    mask = _panel_mask(frame)[top:bottom]
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    minimum_width = frame.shape[1] * .15
+    minimum_side = (_content_band(frame)[1] - _content_band(frame)[0]) * .08
+    result = []
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        crossing = y == 0 or y+h == mask.shape[0] or x == 0 or x+w == mask.shape[1]
+        if crossing and (w >= minimum_width or h >= minimum_side and w <= h * .1):
+            result.append((x, y+top, w, h))
+    return result
+
+
 def _card_rects(frame, bounds=None):
     """Whole outlined store panels, never a guessed area above a price.
 
@@ -148,10 +187,7 @@ def _card_rects(frame, bounds=None):
         top, bottom = bounds
     else:
         bottom = native_bottom
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(hsv)
-    bright = ((v > 200) & ((s < 65) | ((h > 80) & (h < 110))))
-    contours, _ = cv2.findContours(bright.astype(np.uint8), cv2.RETR_LIST,
+    contours, _ = cv2.findContours(_panel_mask(frame), cv2.RETR_LIST,
                                   cv2.CHAIN_APPROX_SIMPLE)
     rects = []
     for contour in contours:
@@ -258,7 +294,7 @@ def scan_frame(frame, page=0, *, bounds=None):
         else:
             cat = title_of(rect)
         found.append(StoreItem(cat, status, (cx, cy), price, identity, page))
-    return StoreScan(found, partial)
+    return StoreScan(found, partial, _partial_panels(frame, bounds))
 
 
 def _same_item(a: StoreItem, b: StoreItem) -> bool:
@@ -268,17 +304,55 @@ def _same_item(a: StoreItem, b: StoreItem) -> bool:
     return score >= IDENTITY_MATCH
 
 
-def _target(catalogue):
-    if any(item.category is None and item.status == 'price' for item in catalogue):
+def _target(catalogue: StoreCatalogue):
+    if any(item.category is None and item.status == 'price' for item in catalogue.items):
         raise StoreEvidenceError('unclassified merchandise could outrank the target')
-    for category in LADDER:
-        items = [i for i in catalogue if i.category == category and i.status == 'price']
+    for rank, category in enumerate(LADDER):
+        items = [i for i in catalogue.items if i.category == category and i.status == 'price']
         if not items:
             continue
+        required = {_CATEGORY_SECTION[higher] for higher in LADDER[:rank]}
+        if not required <= catalogue.complete_sections:
+            raise StoreEvidenceError('higher-priority merchandise coverage is not proven; final store extent unknown')
         if len(items) != 1 and category not in INTERCHANGEABLE:
             raise StoreEvidenceError('multiple distinct items in a unique ladder category')
         return min(items, key=lambda i: (i.page, i.point[1], i.point[0]))
+    if catalogue.complete_sections != frozenset(_HEADERS):
+        raise StoreEvidenceError('unseen final merchandise cannot be declared owned or unavailable')
     return None
+
+
+def _catalogue(frame, top):
+    """Only successive observed headers establish a section's full interval.
+
+    No calibrated end/extent exists for Tower Guardian. No-motion, closed rows
+    or clean margins cannot certify its unseen remainder. Lower-priority
+    purchases therefore remain unavailable until genuine end evidence exists;
+    a positively observed chip can still outrank them without proving absence.
+    """
+    headers = _header_ys(frame)
+    expected = list(_HEADERS)
+    if set(headers) != set(expected) or sorted(headers, key=headers.get) != expected:
+        raise StoreEvidenceError('store section coverage/order is not proven')
+    positions = [headers[name] for name in expected]
+    if len(set(positions)) != len(positions):
+        raise StoreEvidenceError('store section intervals overlap')
+    bounds = (top, frame.shape[0])
+    complete = scan_frame(frame, bounds=bounds)
+    final_start = positions[-1]
+    if (any(y < final_start for _, _, y, _ in complete.partial_controls)
+            or any(y < final_start for _, y, _, _ in complete.partial_panels)):
+        raise StoreEvidenceError('clipped merchandise invalidates bounded section coverage')
+    for x, y, w, h in _card_rects(frame, bounds):
+        section = next((name for name in reversed(expected) if headers[name] < y), None)
+        if section is None:
+            raise StoreEvidenceError('card is outside the recognized store sections')
+        index = expected.index(section)
+        if index+1 < len(expected) and y+h >= positions[index+1]:
+            raise StoreEvidenceError('card crosses a recognized section boundary')
+    if any(_same_item(a, b) for n, a in enumerate(complete.items) for b in complete.items[n+1:]):
+        raise StoreEvidenceError('distinct store positions have indistinguishable identities')
+    return StoreCatalogue(complete.items, frozenset(expected[:-1]))
 
 
 def _stable(a, b):
@@ -342,11 +416,9 @@ def _walk(guard, frame):
     This also makes a panel cut across two views observable as a whole. No
     visual-identity deduplication can silently merge two distinct purchases.
     """
-    sections = set()
     top, bottom = _content_band(frame)
     mosaic = frame[:bottom].copy()
     for page in range(MAX_PAGES):
-        sections.update(_header_ys(frame))
         scanned = scan_frame(frame, page)
         observed = scanned.items
         if any(_same_item(a, b) for n, a in enumerate(observed) for b in observed[n+1:]):
@@ -357,15 +429,7 @@ def _walk(guard, frame):
         frame = yield from guard.wait()
         frame = yield from _settled(guard, frame)
         if _stable(previous, frame):
-            if sections != set(_HEADERS):
-                raise StoreEvidenceError('store scan did not cover every ladder section')
-            complete = scan_frame(mosaic, bounds=(top, mosaic.shape[0]))
-            if complete.partial_controls:
-                raise StoreEvidenceError('clipped merchandise was never fully identified')
-            if any(_same_item(a, b) for n, a in enumerate(complete.items)
-                   for b in complete.items[n+1:]):
-                raise StoreEvidenceError('distinct store positions have indistinguishable identities')
-            return frame, complete.items
+            return frame, _catalogue(mosaic, top)
         distance = _scroll_distance(previous, frame)
         # The overlapping body must agree, including card controls: a price or
         # ownership change mid-scan makes the stitched catalogue untrustworthy.

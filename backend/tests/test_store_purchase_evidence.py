@@ -291,7 +291,28 @@ def test_repeatable_without_item_transition_remains_unverified(world):
     world.target = world.cards[0]
     world.target['status'] = 'price'
     world.mode = 'coins_only'
-    run(world)
+    # Verify the one-attempt outcome contract independently of eligibility:
+    # the catalogue correctly refuses lower-priority gems without a calibrated
+    # final-section extent, even when every currently visible chip is owned.
+    guard = missions.FlowGuard()
+    frame = world.render()
+    guard.observe(frame)
+    guard.tap(frame, 100, 100, 'guild_open', screen='battle_menu', destination='guild_entry')
+    frame = world.render()
+    guard.observe(frame)
+    guard.tap(frame, *store.STORE_TAB, 'store_tab', screen='guild', destination='guild_store')
+    frame = world.render()
+    guard.observe(frame)
+    target = next(item for item in store.scan_frame(frame).items if item.category == 'gems')
+    action = store._purchase(guard, frame, target)
+    next(action)
+    for _ in range(100):
+        try:
+            action.send(world.render())
+        except StopIteration:
+            break
+    else:
+        pytest.fail('purchase outcome verifier did not terminate')
     assert len(purchases(world)) == 1
     assert events(world, 'store_purchase_unverified')
     assert not events(world, 'store_buy')
@@ -354,3 +375,113 @@ def test_clipped_control_is_explicit_and_not_a_purchase_target(world):
     observed = store.scan_frame(world.render())
     assert observed.partial_controls  # relic control is above a clipped panel
     assert all(item.category != 'epic_relic' for item in observed.items)
+
+
+def test_stationary_truncated_final_section_cannot_authorize_lower_priority_purchase(world, monkeypatch):
+    world.cards[2]['status'] = 'owned'
+    world.cards[1]['status'] = 'price'
+    world.target = world.cards[1]
+    real_swipe = missions.act.swipe
+
+    def clamped(*args, **kwargs):
+        result = real_swipe(*args, **kwargs)
+        world.offset = min(900, world.offset)
+        return result
+
+    monkeypatch.setattr(missions.act, 'swipe', clamped)
+    run(world)
+    assert purchases(world) == []
+    assert world.cards[3]['status'] == world.cards[4]['status'] == 'price'
+    assert 'coverage' in events(world, 'store_refused')[0]['reason']
+
+
+@pytest.mark.parametrize('visible_height', [10, 40, 190])
+def test_panel_fragment_without_visible_control_is_retained(world, visible_height):
+    world.kind = 'guild_store'
+    # The chip panel's upper edge appears; its price remains below the viewport.
+    world.offset = world.cards[3]['y'] - 800 + visible_height
+    observed = store.scan_frame(world.render())
+    assert observed.partial_panels
+    assert not any(item.category == 'chip' for item in observed.items)
+    assert any(y < 920 <= y+h for _, y, _, h in observed.partial_panels)
+
+
+def test_fully_stitched_catalogue_resolves_ordinary_edge_fragments(world):
+    world.kind = 'guild_store'
+    world.offset = 900
+    assert store.scan_frame(world.render()).partial_panels
+    mosaic = np.zeros((2020, 480, 3), np.uint8)
+    mosaic[120:2020] = world.content()
+    complete = store.scan_frame(mosaic, bounds=(120, 2020))
+    assert complete.partial_panels == []
+    assert len(complete.items) == 5
+
+
+def test_owned_final_card_and_clean_margin_do_not_hide_unseen_priced_chip(world, monkeypatch):
+    world.cards[2]['status'] = 'owned'
+    world.cards[1]['status'] = 'price'
+    world.target = world.cards[1]
+    world.cards[3].update(status='owned', y=1470, h=200)
+    world.cards[4].update(y=1740, h=100)
+    real_swipe = missions.act.swipe
+
+    def clamped(*args, **kwargs):
+        result = real_swipe(*args, **kwargs)
+        world.offset = min(900, world.offset)
+        return result
+
+    monkeypatch.setattr(missions.act, 'swipe', clamped)
+    run(world)
+    assert purchases(world) == []
+    assert world.cards[4]['status'] == 'price'
+    assert 'coverage' in events(world, 'store_refused')[0]['reason']
+
+
+def test_wholly_unseen_final_merchandise_does_not_become_owned_from_header(world, monkeypatch):
+    world.cards[2]['status'] = 'owned'
+    world.cards[1]['status'] = 'price'
+    real_swipe = missions.act.swipe
+
+    def clamped(*args, **kwargs):
+        result = real_swipe(*args, **kwargs)
+        world.offset = min(700, world.offset)
+        return result
+
+    monkeypatch.setattr(missions.act, 'swipe', clamped)
+    run(world)
+    assert purchases(world) == []
+    assert events(world, 'store_refused')
+
+
+def test_positive_observed_chip_outranks_cosmetics_without_claiming_final_extent(world, monkeypatch):
+    world.cards[2]['status'] = 'owned'
+    world.cards[1]['status'] = 'price'
+    world.target = world.cards[3]
+    real_swipe = missions.act.swipe
+
+    def clamped(*args, **kwargs):
+        result = real_swipe(*args, **kwargs)
+        world.offset = min(1000, world.offset)
+        return result
+
+    monkeypatch.setattr(missions.act, 'swipe', clamped)
+    run(world)
+    assert len(purchases(world)) == 1
+    assert world.bought is world.cards[3]
+    assert events(world, 'store_buy')
+
+
+def test_catalogue_exposes_bounded_sections_and_never_certifies_final_extent(world):
+    mosaic = np.zeros((2020, 480, 3), np.uint8)
+    mosaic[120:2020] = world.content()
+    catalogue = store._catalogue(mosaic, 120)
+    assert catalogue.complete_sections == frozenset({'currencies', 'cosmetics', 'relics'})
+    assert 'tower_guardian' not in catalogue.complete_sections
+
+
+def test_card_crossing_a_section_boundary_cannot_certify_higher_priority_absence(world):
+    world.cards[1].update(y=750, h=250)  # crosses the relics heading at y900
+    mosaic = np.zeros((2020, 480, 3), np.uint8)
+    mosaic[120:2020] = world.content()
+    with pytest.raises(store.StoreEvidenceError):
+        store._catalogue(mosaic, 120)
