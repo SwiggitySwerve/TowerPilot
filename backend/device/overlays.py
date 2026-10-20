@@ -67,31 +67,47 @@ CLOSE_X = "overlays/ad_close_x.png"
 CLOSE_THRESHOLD = 0.90
 
 
-def windows(serial: str, *, visible_only: bool = False) -> list[str]:
+def windows(serial: str, *, visible_only: bool = False,
+            deadline: float | None = None, timeout: float | None = None) -> list[str]:
     """Front-to-back windows; input guards require on-screen evidence.
 
     Android keeps hidden keyboards, notification shades and stopped apps in
     this dump. Cleanup retains the full inventory; input ownership filters
     by visibility without treating system app names as permission to tap.
     Unknown visibility fails closed instead of silently dropping a window.
+    An absolute monotonic deadline covers I/O and parsing; expiration raises
+    TimeoutError, never an empty inventory. timeout optionally caps each socket
+    operation without extending that deadline. Transport errors propagate.
     """
-    out = adbclient.shell(serial, "dumpsys window windows").decode(
-        errors="replace")
+    adbclient.check_deadline(deadline)
+    options = {}
+    if deadline is not None:
+        options["deadline"] = deadline
+    if timeout is not None:
+        options["timeout"] = timeout
+    out = adbclient.shell(serial, "dumpsys window windows", **options)
+    adbclient.check_deadline(deadline)
+    out = out.decode(errors="replace")
+    adbclient.check_deadline(deadline)
     entries = list(re.finditer(
         r"Window #\d+ Window\{[0-9a-f]+ u\d+ ([^}]+)\}", out))
+    adbclient.check_deadline(deadline)
     result = []
     for index, entry in enumerate(entries):
+        adbclient.check_deadline(deadline)
         title = entry.group(1)
         if visible_only:
             end = entries[index + 1].start() if index + 1 < len(entries) else len(out)
             block = out[entry.end():end]
             visibility = re.findall(
                 r"\bis(?:OnScreen|Visible)(?:\(\))?=(true|false)\b", block)
+            adbclient.check_deadline(deadline)
             if not visibility:
                 raise ValueError(f"window visibility unavailable: {title}")
             if "true" not in visibility:
                 continue
         result.append(title)
+    adbclient.check_deadline(deadline)
     return result
 
 

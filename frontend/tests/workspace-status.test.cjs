@@ -79,12 +79,13 @@ test('a configured connection does not satisfy live reachability, and there is n
   assert.match(output,/2 of 4 checks satisfied/);
   assert.match(output,/currently not reachable/);
   assert.doesNotMatch(output,/Screen check|setup-screen/);
-  // calibration.ready is not "screens learned"; only a ready run is
+  // A ready run must not be presented as completion of every screen capture.
   assert.match(output,/Learn screens from Overview/);
   const learned=WorkspaceStatus.stagesHTML({tools:{installed:true},accounts:{active:'one'},
     config:{active_instance:'main',instances:{main:{serial:'s'}}},status:{device_state:'device'},readiness:{bp_farm:{ready:true}}});
   assert.match(learned,/4 of 4 checks satisfied/);
-  assert.match(learned,/Setup done/);
+  assert.match(learned,/A run is ready/);
+  assert.doesNotMatch(learned,/Setup done/);
 });
 
 test('context counts only explicitly checked individual runs and excludes the day plan', () => {
@@ -530,7 +531,7 @@ test('get-started stage B is done only when a non-combo run is ready, then the c
   assert.match(output, /Online <small>127\.0\.0\.1:16384<\/small>/);
   const done = WorkspaceStatus.getStarted(cardInput({readiness:{bp_farm:{ready:true}}}));
   assert.equal(done.done, true);
-  assert.equal(WorkspaceStatus.getStartedHTML(done), '<p class="get-started-done">✓ Setup done · <a href="#profiles">Profiles</a></p>');
+  assert.equal(WorkspaceStatus.getStartedHTML(done), '<p class="get-started-done">✓ A run is ready · <a href="#profiles">Profiles</a></p>');
   // calibration.ready alone never completes stage B
   assert.equal(WorkspaceStatus.getStarted(cardInput({status:statusWith('device',{calibration:{ready:true}})})).b.done, false);
 });
@@ -539,7 +540,7 @@ test('a dropped connection does not reopen a completed get-started card', () => 
   for (const status of [statusWith('offline'), statusWith('missing'), statusWith('no_server'), {connected:false}, null]) {
     const model = WorkspaceStatus.getStarted(cardInput({status, readiness:{bp_farm:{ready:true}}}));
     assert.equal(model.done, true);
-    assert.match(WorkspaceStatus.getStartedHTML(model), /Setup done/);
+    assert.match(WorkspaceStatus.getStartedHTML(model), /A run is ready/);
   }
   // before completion the emulator row still shows the live state
   const offline = WorkspaceStatus.getStartedHTML(WorkspaceStatus.getStarted(cardInput({status:statusWith('offline')})));

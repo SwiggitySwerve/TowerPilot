@@ -17,7 +17,7 @@ _last_tap = 0.0
 TAP_DRIFT_PX = 2
 
 
-def _input(*parts) -> None:
+def _input(*parts, deadline: float | None = None) -> None:
     """Send an `input` command straight to the adb server socket.
 
     Same reason as capture.grab: one adb.exe per tap is process churn the
@@ -33,6 +33,8 @@ def _input(*parts) -> None:
     cmd = "input" + (f" -d {disp}" if disp is not None else "")
     cmd += " " + " ".join(str(p) for p in parts)
     with input_scope():
+        if deadline is not None and time.monotonic() >= deadline:
+            raise TapRefused("input deadline expired before socket dispatch")
         adbclient.shell(inst["serial"], cmd, timeout=8)
 
 
@@ -102,7 +104,7 @@ def _tap(x: int, y: int, reason: str = "", instant: bool = False,
             command = ("swipe", jx, jy, ex, ey, dur)
         if deadline is not None and time.monotonic() >= deadline:
             raise TapRefused("tap deadline expired before input dispatch")
-        _input(*command)
+        _input(*command, deadline=deadline)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired,
             OSError, adbclient.AdbError) as e:
         raise TapRefused(f"adb input failed: {e}") from e
@@ -113,12 +115,12 @@ def _tap(x: int, y: int, reason: str = "", instant: bool = False,
 
 
 def swipe(x0: int, y0: int, x1: int, y1: int, ms: int = 400,
-          reason: str = "") -> dict:
+          reason: str = "", deadline: float | None = None) -> dict:
     """Log the invocation outcome without interpreting the game's response."""
     with logger.attempt('device.swipe', x=x0, y=y0, x1=x1, y1=y1,
-                        ms=ms, reason=reason) as attempt:
+                        ms=ms, reason=reason, deadline=deadline) as attempt:
         try:
-            result = _swipe(x0, y0, x1, y1, ms, reason)
+            result = _swipe(x0, y0, x1, y1, ms, reason, deadline)
         except TapRefused as exc:
             attempt.finish('failed' if exc.__cause__ is not None else 'refused', dispatched=False)
             raise
@@ -127,7 +129,7 @@ def swipe(x0: int, y0: int, x1: int, y1: int, ms: int = 400,
 
 
 def _swipe(x0: int, y0: int, x1: int, y1: int, ms: int = 400,
-          reason: str = "") -> dict:
+          reason: str = "", deadline: float | None = None) -> dict:
     """Deliberate drag - used to scroll inventory grids. Same rails as tap()."""
     global _last_tap
     inst = instance()
@@ -139,7 +141,9 @@ def _swipe(x0: int, y0: int, x1: int, y1: int, ms: int = 400,
     if not inst.get("allow_taps"):
         raise TapRefused(f"taps not allowed on instance {CONFIG['active_instance']}")
     try:
-        _input("swipe", x0, y0, x1, y1, ms)
+        if deadline is not None and time.monotonic() >= deadline:
+            raise TapRefused("swipe deadline expired before input dispatch")
+        _input("swipe", x0, y0, x1, y1, ms, deadline=deadline)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError,
             adbclient.AdbError) as e:
         raise TapRefused(f"adb swipe failed: {e}") from e

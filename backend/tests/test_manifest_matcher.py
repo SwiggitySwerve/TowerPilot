@@ -44,3 +44,23 @@ def test_relative_control_requires_live_anchor():
     assert matcher(frame, edge)['rect'] == [960, 650, 40, 40]
     matcher.locate_anchor = lambda *a: None
     assert matcher(frame, edge) is None
+
+
+def test_changed_destination_invalidates_a_saved_route():
+    matcher, frame, edge, _ = make_matcher(destination='wrong_screen')
+    edge['destination'] = 'cards'
+    assert matcher(frame, edge) is None
+
+
+def test_retired_route_image_is_not_accepted_as_current_missions_evidence():
+    from player.manifest_driver import transitions
+    from player.bootstrap_layout import manifest
+    matcher, frame, _, _ = make_matcher(
+        template='mapping/v11/route_17.png', screen='home',
+        manifest_version=manifest()['version'])
+    matcher.version = manifest()['version']
+    matcher.mappings['route_17'] = matcher.mappings.pop('open')
+    edge = next(e for e in transitions() if e['id'] == 'route_17')
+    assert matcher(frame, edge) is None
+    matcher.mappings['route_17']['template'] = 'mapping/v11/route_17_label.png'
+    assert matcher(frame, edge)['verified']

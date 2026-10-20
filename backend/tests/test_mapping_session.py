@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from pathlib import Path
 import numpy as np
 
 from player import bootstrap
@@ -193,3 +194,98 @@ def test_daily_mission_static_label_creates_new_route_image_and_preserves_legacy
     assert calibrate.write_template('mapping/v11/route_17_unlisted.png', frame[:40, :40], bootstrap=True) == 'refused'
     assert calibrate.write_template(retired, frame[:40, :40], bootstrap=True) == 'refused'
     assert old.read_bytes() == b'existing dynamic-counter route image'
+
+
+def test_local_picker_identity_tracks_file_bytes_without_installed_artwork(tmp_path, monkeypatch):
+    import cv2
+    import settings
+    from player.manifest_driver import Driver, transitions
+    edge = next(e for e in transitions() if e['id'] == 'route_15')
+    x, y, w, h = edge['route']['icon']['rect']
+    frame = np.zeros((2560, 1080, 3), np.uint8)
+    frame[y:y+h, x:x+w] = np.random.default_rng(72).integers(0, 255, (h, w, 3), dtype=np.uint8)
+    path = tmp_path / 'picker.png'
+    assert cv2.imwrite(str(path), frame[y:y+h, x:x+w])
+    monkeypatch.setattr(settings, 'template_path', lambda rel: path)
+    session = Session.__new__(Session)
+    session.scanner = SimpleNamespace(asset_folder=None)
+    first = session.locate(frame, edge)
+    assert first and first['source_kind'] == 'local_template'
+    # A slightly changed template still locates the control, but cannot inherit
+    # the prior image's independent identity confirmation.
+    changed = frame[y:y+h, x:x+w].copy()
+    changed[0, 0] = 255 - changed[0, 0]
+    assert cv2.imwrite(str(path), changed)
+    second = session.locate(frame, edge)
+    assert second and not Driver._stable(first, second)
+
+
+@pytest.mark.parametrize('destination_ok', [True, False])
+def test_route_only_capture_retains_evidence_and_preserves_existing_template(tmp_path, monkeypatch, destination_ok):
+    import hashlib
+    import json
+    import cv2
+    import settings
+    from player import calibrate
+    from player.manifest_driver import MappingStopped, transitions
+
+    edge = next(e for e in transitions() if e['id'] == 'route_24')
+    x, y, w, h = edge['route']['verify']['rect']
+    frame = np.zeros((2560, 1080, 3), np.uint8)
+    frame[y:y+h, x:x+w] = np.random.default_rng(31).integers(0, 255, (h, w, 3), dtype=np.uint8)
+    follow = frame.copy()
+    follow[0, 0] = 255  # independent frame, same identified control
+    destination = frame.copy()
+    destination[0, 1] = 128
+    path = tmp_path / 'templates' / 'mapping' / 'v11' / 'route_24.png'
+    path.parent.mkdir(parents=True)
+    assert cv2.imwrite(str(path), np.random.default_rng(32).integers(0, 255, (h, w, 3), dtype=np.uint8))
+    previous = path.read_bytes()
+    monkeypatch.setattr(settings, 'template_path', lambda rel: tmp_path / 'templates' / rel)
+    monkeypatch.setattr(calibrate, 'template_path', lambda rel: tmp_path / 'templates' / rel)
+    cal = calibrate.Calibration({'state': str(tmp_path / 'state.json')}, False, bootstrap=True)
+    observations = iter([frame, follow, destination])
+    taps = []
+    completed = []
+    session = None
+    def observe(name):
+        image = next(observations)
+        if name == 'perks_first' and not destination_ok:
+            raise RuntimeError('unknown destination')
+        return image, [(y+20, x+20, 'First Perk')]
+    def tap(*args, **kwargs):
+        proof = json.loads(session.evidence_path.read_text())
+        assert proof['status'] == 'input_pending'
+        assert not proof.get('destination_verified')
+        for name in ('source_frame', 'confirmation_frame', 'candidate'):
+            evidence = proof[name]
+            raw = Path(evidence['path']).read_bytes()
+            assert hashlib.sha256(raw).hexdigest() == evidence['sha256']
+        assert path.read_bytes() == previous
+        taps.append(args)
+    scanner = SimpleNamespace(current='perks_hub', cal=cal, asset_folder=None,
+        asset_index={}, visual_anchors=VisualAnchors(), state={},
+        observed=observe, read=lambda f: [], check_stop=lambda: None, tap=tap,
+        progress=lambda *a: None, begin_step=lambda i: None, step_index=lambda key: 0,
+        finish_step=lambda *a: completed.append(a), skipped=[],
+        harvest=lambda *a: pytest.fail('route-only retry must not harvest collections'),
+        update_screen_map=lambda *a: pytest.fail('route-only retry must not rewrite screen coverage'))
+    session = Session(scanner, scan_contents=False)
+    if destination_ok:
+        session.run([edge])
+        assert completed == [('needs_attention', 'First perk tab: destination verified; route image needs attention')]
+    else:
+        with pytest.raises(MappingStopped, match='Destination unconfirmed'):
+            session.driver.step(edge)
+    proof = json.loads(session.evidence_path.read_text())
+    assert proof['status'] == ('done' if destination_ok else 'uncertain')
+    assert proof.get('destination_verified', False) is destination_ok
+    assert np.array_equal(cv2.imread(proof['source_frame']['path']), frame)
+    assert np.array_equal(cv2.imread(proof['confirmation_frame']['path']), follow)
+    assert np.array_equal(cv2.imread(proof['candidate']['path']), follow[y:y+h, x:x+w])
+    assert len(taps) == 1 and path.read_bytes() == previous
+    if destination_ok:
+        assert proof['calibration_status'] == 'stale' and not proof['template_verified']
+        assert np.array_equal(cv2.imread(proof['destination_frame']['path']), destination)
+    else:
+        assert not cal.entries and 'route_24' not in session.saved['controls']

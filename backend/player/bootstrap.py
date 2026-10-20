@@ -215,15 +215,41 @@ def preflight():
     return Display(frame.shape[1], frame.shape[0], dpi)
 
 
+def validate_route_selection(routes: list[str] | tuple[str, ...]) -> list[dict]:
+    """Resolve a bounded, declared Home-to-Home route before any device I/O."""
+    from player.manifest_driver import transitions
+    if not isinstance(routes, (list, tuple)) or not routes:
+        raise ValueError('Routes must be a non-empty list of manifest route IDs')
+    available = {edge['id']: edge for edge in transitions() if 'route' in edge}
+    if any(not isinstance(key, str) or key not in available for key in routes):
+        raise ValueError('Routes must contain only declared manifest route IDs')
+    if len(set(routes)) != len(routes):
+        raise ValueError('Routes must not repeat a manifest route ID')
+    edges = [available[key] for key in routes]
+    current = 'home'
+    for edge in edges:
+        if edge['source'] != current:
+            raise ValueError('Routes must be a contiguous sequence starting at Home')
+        current = edge['destination']
+    if current != 'home':
+        raise ValueError('Routes must end at Home')
+    return edges
+
+
 class Scanner:
     def __init__(self, cal, state, grab=None, tap=None, read=None, pause=None,
-                 flows=False, battle_only=False, sweep=None, reset_setup_evidence=True):
+                 flows=False, battle_only=False, sweep=None, reset_setup_evidence=True,
+                 routes=None):
+        self.route_edges = validate_route_selection(routes) if routes is not None else None
+        if self.route_edges is not None and (flows or battle_only):
+            raise ValueError('Route capture cannot include flows or battle-only capture')
         from device import capture, act, overlays
         from vision import textocr
         self.cal, self.state = cal, state
         from player.bootstrap_layout import retired_route_captures
         retired = retired_route_captures()
-        self.cal.entries = [entry for entry in self.cal.entries if entry.get('rel') not in retired]
+        if self.route_edges is None:
+            self.cal.entries = [entry for entry in self.cal.entries if entry.get('rel') not in retired]
         previous = state.get('phases', {}).get('bootstrap')
         if reset_setup_evidence and previous:
             state['scan_history'] = (state.get('scan_history', []) + [dict(previous,
@@ -253,6 +279,11 @@ class Scanner:
                 dict(id="flow_menus", label="Capture menu controls", status="pending"),
                 dict(id="flow_battle", label="Capture a battle and its results", status="pending")]
         self.steps = steps
+        if self.route_edges is not None:
+            by_id = {step['id']: step for step in steps}
+            self.steps = ([by_id[key] for key in ('preflight', 'extract', 'map', 'home')]
+                          + [by_id[edge['id']] for edge in self.route_edges]
+                          + [by_id['finish']])
         if battle_only:
             self.steps = [s for s in steps if s['id'] in ('preflight', 'extract', 'map', 'home', 'flow_battle', 'finish')]
         self.active_step = 0
@@ -307,11 +338,14 @@ class Scanner:
         if not self.history or any(self.history[-1][key] != event[key] for key in ("step_id", "message", "status")):
             self.history.append(event)
         self.state.setdefault("phases", {})["bootstrap"] = {
-            "status":status, "message":message, "completed":self.completed, "kind":"battle" if self.battle_only else "full",
+            "status":status, "message":message, "completed":self.completed,
+            "kind":"routes" if self.route_edges is not None else "battle" if self.battle_only else "full",
             "total":len(self.steps), "steps":self.steps, "history":self.history,
             "active_step":step["id"], "started_at":self.started_at, "updated_at":now,
             "assets":self.asset_summary,
             "skipped":self.skipped, **extra}
+        if self.route_edges is not None:
+            self.state['phases']['bootstrap']['routes'] = [edge['id'] for edge in self.route_edges]
         self.state["entries"] = self.cal.entries
         # A verified UW name label came off the in-run panel, which lists only
         # owned weapons: record the ownership the cut proves, so Apply carries
@@ -672,6 +706,9 @@ class Scanner:
         self.check_stop()
         from player.manifest_driver import validate
         validate()  # Broken screen references must fail before the first input.
+        if self.route_edges is not None:
+            self._run_routes()
+            return
         self.begin_step(self.step_index("home"))
         self.progress("Verifying Home")
         frame, lines = self.observed("home")
@@ -710,6 +747,26 @@ class Scanner:
             tail += " Incomplete screen maps: " + ', '.join(incomplete) + "."
         self.progress(f"Starter scan finished on Home. {len(self.visited)} screens checked.{tail}",
                       "needs_attention" if attention or skipped or incomplete else "done", screens=sorted(self.visited), needs_attention=attention)
+
+    def _run_routes(self):
+        """Capture only requested route controls, preserving content discoveries."""
+        from player.mapping_session import Session
+        from player.calibrate import record_final_screen
+        self.begin_step(self.step_index('home'))
+        self.progress('Verifying Home before selected route capture')
+        self.observed('home')
+        self.finish_step(message='Home verified')
+        Session(self, scan_contents=False).run(self.route_edges)
+        self.begin_step(self.step_index('finish'))
+        self.progress('Verifying return to Home after selected route capture')
+        self.observed('home')
+        record_final_screen(self.cal.p, self.state, 'home', verified=True)
+        self.cal.save_report()
+        attention = sum(self.steps[self.step_index(edge['id'])]['status'] != 'done'
+                        for edge in self.route_edges)
+        self.finish_step(message='Selected route capture returned to Home')
+        self.progress('Selected route capture finished on Home',
+                      'needs_attention' if attention else 'done', needs_attention=attention)
 
     def learned_cuts(self, screen, frame, follow):
         """Cut every target the learned manifest places on `screen` that is
@@ -831,13 +888,17 @@ class Scanner:
             raise
 
 
-def run(p, overwrite=False, flows=False, battle_only=False):
+def run(p, overwrite=False, flows=False, battle_only=False, *, routes=None):
+    if routes is not None:
+        validate_route_selection(routes)
+        if flows or battle_only:
+            raise ValueError('Route capture cannot include flows or battle-only capture')
     from player.calibrate import Calibration, _state_load, _state_save, Stopped, _merge_draft, record_final_screen
     st = _state_load(p)
     cal = Calibration(p, overwrite, bootstrap=True)
     cal.entries = list(st.get("entries") or [])
     cal.player = dict(st.get("player") or {})
-    scanner = Scanner(cal, st, flows=flows, battle_only=battle_only)
+    scanner = Scanner(cal, st, flows=flows, battle_only=battle_only, routes=routes)
     scanner.progress("Checking game, emulator and Home")
     try:
         scanner.display = preflight()

@@ -19,9 +19,12 @@ A socket per command is still opened (the exec consumes the transport, so it
 cannot be pooled), but a socket is vastly cheaper than a process and closes
 cleanly, which is what the buffer-space exhaustion was really about.
 """
-import socket
+import ipaddress
+import math
 import select
+import socket
 import time
+from numbers import Real
 
 _HOST = ("127.0.0.1", 5037)
 _TIMEOUT = 15.0
@@ -29,6 +32,78 @@ _TIMEOUT = 15.0
 
 class AdbError(RuntimeError):
     pass
+
+
+def check_deadline(deadline: float | None) -> float | None:
+    """Return remaining monotonic seconds, or raise before accepting late data.
+
+    None preserves the ordinary per-socket timeout contract. Absolute deadlines
+    must be finite real numbers; equality is expired (never a nonblocking read).
+    """
+    if deadline is None:
+        return None
+    if isinstance(deadline, bool) or not isinstance(deadline, Real):
+        raise ValueError("deadline must be a finite monotonic timestamp")
+    try:
+        finite = math.isfinite(deadline)
+    except OverflowError:
+        finite = False
+    if not finite:
+        raise ValueError("deadline must be a finite monotonic timestamp")
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise TimeoutError("ADB absolute deadline expired")
+    return remaining
+
+
+def _bounded_timeout(timeout: float, deadline: float | None) -> float:
+    try:
+        valid = (not isinstance(timeout, bool) and isinstance(timeout, Real)
+                 and math.isfinite(timeout) and timeout > 0)
+    except OverflowError:
+        valid = False
+    if not valid:
+        raise ValueError("timeout must be finite and positive")
+    remaining = check_deadline(deadline)
+    return timeout if remaining is None else min(timeout, remaining)
+
+
+def _before_io(sock: socket.socket, timeout: float, deadline: float | None) -> None:
+    if deadline is not None:
+        sock.settimeout(_bounded_timeout(timeout, deadline))
+
+
+def _connect(timeout: float, deadline: float | None) -> socket.socket:
+    """Deadline connections use one numeric endpoint, with no DNS or fallback.
+
+    create_connection can resolve a hostname without a time limit and reuse its
+    timeout for multiple addresses. Preserve that legacy behavior only when no
+    deadline was requested; numeric deadline endpoints need just one connect.
+    Scoped IPv6 addresses are excluded to avoid interface-name resolution.
+    """
+    if deadline is None:
+        return socket.create_connection(_HOST, timeout=timeout)
+    host, port = _HOST
+    if not isinstance(host, str) or "%" in host:
+        raise ValueError("deadline requires an unscoped numeric ADB server address")
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError as exc:
+        raise ValueError("deadline requires a numeric ADB server address; DNS is unbounded") from exc
+    family = socket.AF_INET if address.version == 4 else socket.AF_INET6
+    endpoint = (str(address), port) if address.version == 4 else (str(address), port, 0, 0)
+    check_deadline(deadline)
+    sock = socket.socket(family, socket.SOCK_STREAM)
+    try:
+        _before_io(sock, timeout, deadline)
+        check_deadline(deadline)
+        sock.connect(endpoint)
+        check_deadline(deadline)
+        return sock
+    except BaseException:
+        sock.close()
+        check_deadline(deadline)
+        raise
 
 
 def stream_lines(serial: str, command: str, stopped, timeout=15):
@@ -55,67 +130,98 @@ def stream_lines(serial: str, command: str, stopped, timeout=15):
             yield pending.decode("utf-8", errors="replace")
 
 
-def _send(sock: socket.socket, payload: str):
+def _send(sock: socket.socket, payload: str, *, timeout: float = _TIMEOUT,
+          deadline: float | None = None) -> None:
+    check_deadline(deadline)
     msg = payload.encode()
+    _before_io(sock, timeout, deadline)
     sock.sendall(b"%04x" % len(msg) + msg)
+    check_deadline(deadline)
 
 
-def _status(sock: socket.socket, what: str):
-    resp = _recv_exact(sock, 4)
+def _status(sock: socket.socket, what: str, *, timeout: float = _TIMEOUT,
+            deadline: float | None = None) -> None:
+    options = {"timeout": timeout, "deadline": deadline} if deadline is not None else {}
+    resp = _recv_exact(sock, 4, **options)
     if resp == b"OKAY":
         return
     if resp == b"FAIL":
-        n = int(_recv_exact(sock, 4), 16)
-        raise AdbError(f"{what}: {_recv_exact(sock, n).decode(errors='replace')}")
+        n = int(_recv_exact(sock, 4, **options), 16)
+        check_deadline(deadline)
+        reason = _recv_exact(sock, n, **options).decode(errors='replace')
+        check_deadline(deadline)
+        raise AdbError(f"{what}: {reason}")
     raise AdbError(f"{what}: bad status {resp!r}")
 
 
-def _recv_exact(sock: socket.socket, n: int) -> bytes:
+def _recv_exact(sock: socket.socket, n: int, *, timeout: float = _TIMEOUT,
+                deadline: float | None = None) -> bytes:
     out = b""
     while len(out) < n:
+        _before_io(sock, timeout, deadline)
         chunk = sock.recv(n - len(out))
+        check_deadline(deadline)
         if not chunk:
             raise AdbError(f"connection closed after {len(out)}/{n} bytes")
         out += chunk
+    check_deadline(deadline)
     return out
 
 
-def exec_out(serial: str, command: str, timeout: float = _TIMEOUT) -> bytes:
+def exec_out(serial: str, command: str, timeout: float = _TIMEOUT, *,
+             deadline: float | None = None) -> bytes:
     """Run a command on the device, return its raw stdout. Binary-safe.
 
     The stdout==exec-out equivalence matters: `adb shell` allocates a PTY and
     mangles binary with CRLF translation, which would corrupt a screencap.
     `exec:` does not.
+
+    deadline is an optional absolute time.monotonic() cutoff shared across
+    connect, both handshakes, every write/read and assembly. timeout remains a
+    per-operation cap; it cannot extend the deadline. Late output is discarded.
+    Deadline calls require a numeric IPv4 or unscoped IPv6 ADB server address;
+    hostnames raise ValueError before resolution. Ordinary calls still resolve
+    hostnames through create_connection as before.
     """
+    connect_timeout = _bounded_timeout(timeout, deadline)
     if not serial:
         # an empty serial matches EVERY device on the server and adb answers
         # "more than one device" - say what is actually wrong
         raise ConnectionError("no adb serial configured for this instance - "
                               "run the Setup wizard (instances.<name>.serial)")
-    sock = socket.create_connection(_HOST, timeout=timeout)
+    sock = _connect(connect_timeout, deadline)
     try:
+        check_deadline(deadline)
         sock.settimeout(timeout)
-        _send(sock, f"host:transport:{serial}")
-        _status(sock, "transport")
-        _send(sock, f"exec:{command}")
-        _status(sock, "exec")
+        options = {"timeout": timeout, "deadline": deadline} if deadline is not None else {}
+        _send(sock, f"host:transport:{serial}", **options)
+        _status(sock, "transport", **options)
+        _send(sock, f"exec:{command}", **options)
+        _status(sock, "exec", **options)
         # the server opened a transport, so the serial is online: end its
         # offline clock (a runner reads no get_state outside recover())
         _offline_since.pop((_HOST, serial), None)
         chunks = []
         while True:
+            _before_io(sock, timeout, deadline)
             chunk = sock.recv(1 << 20)
+            check_deadline(deadline)
             if not chunk:
                 break
             chunks.append(chunk)
-        return b"".join(chunks)
+        result = b"".join(chunks)
+        check_deadline(deadline)
     finally:
         sock.close()
+    check_deadline(deadline)
+    return result
 
 
-def shell(serial: str, command: str, timeout: float = _TIMEOUT) -> bytes:
+def shell(serial: str, command: str, timeout: float = _TIMEOUT, *,
+          deadline: float | None = None) -> bytes:
     """Fire-and-read a shell command (taps, swipes). Returns its output."""
-    return exec_out(serial, command, timeout)
+    options = {"deadline": deadline} if deadline is not None else {}
+    return exec_out(serial, command, timeout, **options)
 
 
 def alive(serial: str) -> bool:

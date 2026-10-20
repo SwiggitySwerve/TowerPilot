@@ -5,7 +5,9 @@ from functools import partial
 from pathlib import Path
 
 from control import diagnostics as diagnostic_store
-from towerpilot_workflows.operations import Conflict, Operations, digest, file_revision
+from towerpilot_workflows.operations import (
+    Conflict, Operations, SYNCHRONOUS_PERSISTENCE_KINDS, digest, file_revision,
+)
 
 
 def ledger(root):
@@ -31,9 +33,15 @@ def context(root, cfg, command, profile_path):
 
 def public(op):
     result = copy.deepcopy(op)
+    result['cancellable'] = (not synchronous_persistence(op)
+                             and op['status'] in ('accepted', 'running', 'cancelling'))
     result['context'].pop('config', None)
     result.get('request', {}).pop('battle_envelope', None)
     return result
+
+
+def synchronous_persistence(op):
+    return op['kind'] in SYNCHRONOUS_PERSISTENCE_KINDS
 
 
 def worker_alive(worker):
@@ -151,6 +159,8 @@ def require_revision(root, body, allowed):
 
 def cancel(root, body):
     op = require_revision(root, body, ('accepted', 'running', 'cancelling'))
+    if synchronous_persistence(op):
+        raise Conflict('Synchronous profile persistence cannot be cancelled')
     store = ledger(root)
     if op['status'] == 'cancelling':
         return op
@@ -182,8 +192,15 @@ def cancel(root, body):
 def project_processes(root, rows):
     """Attach durable identity only to a verified live worker/launcher family."""
     import psutil
-    output = copy.deepcopy(rows)
-    for prior in ledger(root).active():
+    active = ledger(root).active()
+    inline_pids = {(op.get('worker') or {}).get('pid') for op in active
+                   if synchronous_persistence(op)} - {None}
+    output = [copy.deepcopy(row) for row in rows
+              if row.get('pid') not in inline_pids
+              and not (row.get('operation') and synchronous_persistence(row['operation']))]
+    for prior in active:
+        if synchronous_persistence(prior):
+            continue  # Its owner is the dashboard, never a stoppable runner.
         op = resolve(root, prior['id'])
         if op['status'] not in ('accepted', 'running', 'cancelling') or not worker_alive(op.get('worker')):
             continue

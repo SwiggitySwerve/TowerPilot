@@ -34,6 +34,16 @@ def test_plan_distinguishes_saved_capture_from_verified_recognition(tmp_path):
     assert scan_plan.plan(tmp_path,{})["captured"] == 0
 
 
+def test_plan_does_not_mark_advisory_dialogs_as_required(tmp_path):
+    plan = scan_plan.plan(tmp_path, {}, [
+        {'alternatives': ['home/intro_sprint_dialog.png'], 'blocking': False},
+        {'alternatives': ['home/end_round_yes.png'], 'blocking': True},
+    ])
+    rows = {row['rel']: row for step in plan['steps'] for row in step['targets']}
+    assert rows['home/intro_sprint_dialog.png']['required'] is False
+    assert rows['home/end_round_yes.png']['required'] is True
+
+
 def test_dashboard_plan_loads_without_images_and_automatic_scan_is_blocked(tmp_path, monkeypatch):
     import importlib.util
     from pathlib import Path

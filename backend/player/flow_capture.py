@@ -34,6 +34,10 @@ like every other captured template; nothing ships (CLAUDE.md rules 6, 8).
 """
 import time
 import uuid
+import inspect
+import math
+import hashlib
+from contextlib import contextmanager
 from functools import wraps
 
 import cv2
@@ -108,9 +112,9 @@ def can_start_battle(*, on_home: bool, wave, side_menu: bool,
 
 # ---------------------------------------------------------------- I/O plumbing
 
-def _read(frame, scale: float = 2.0):
+def _read(frame, scale: float = 2.0, **kwargs):
     from vision import textocr
-    return textocr.read_lines(frame, scale)
+    return textocr.read_lines(frame, scale, **kwargs)
 
 
 def _lines_text(frame, scale: float = 2.0):
@@ -129,15 +133,144 @@ class _Flow:
         self.operation_id = operation_id or uuid.uuid4().hex
         # Persisted records are evidence, never authority to adopt an old run.
         self._owned_battle_id = None
+        self._sprint_proof = None
+        self._ocr_budget = None
+        self._frame_observed_at = None
+
+    def ocr_deadline(self, deadline=None):
+        """Effective absolute read deadline; adapters may add their phase limit."""
+        limits = [value for value in (deadline, self._ocr_budget) if value is not None]
+        if any(not math.isfinite(value) for value in limits):
+            raise ValueError('OCR deadline must be finite')
+        return min(limits) if limits else None
+
+    def read_remaining(self, deadline=None):
+        self.s.check_stop()
+        limit = self.ocr_deadline(deadline)
+        if limit is None:
+            return None
+        remaining = limit - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError('Flow read deadline expired; no further I/O')
+        return remaining
+
+    @contextmanager
+    def read_budget(self, deadline):
+        previous = self._ocr_budget
+        self._ocr_budget = self.ocr_deadline(deadline)
+        try:
+            yield
+        finally:
+            self._ocr_budget = previous
+
+    def read_lines(self, frame, scale=2.0, *, deadline=None):
+        limit = self.ocr_deadline(deadline)
+        remaining = self.read_remaining(limit)
+        if remaining is None:
+            return _read(frame, scale)
+        rows = _read(frame, scale, timeout=remaining, raise_on_error=True)
+        self.read_remaining(limit)
+        return rows
+
+    def lines_text(self, frame, scale=2.0, *, deadline=None):
+        return [text for _y, _x, text in self.read_lines(frame, scale, deadline=deadline)]
+
+    def read_texts(self, crops, scales=(2.0, 3.0), *, timeout=None,
+                   deadline=None, raise_on_error=True):
+        from vision import textocr
+        limit = self.ocr_deadline(deadline)
+        remaining = self.read_remaining(limit)
+        kwargs = {'scales': scales, 'raise_on_error': raise_on_error or limit is not None}
+        if remaining is not None:
+            kwargs['timeout'] = min(timeout, remaining) if timeout is not None else remaining
+        elif timeout is not None:
+            kwargs['timeout'] = timeout
+        values = textocr.read_texts(crops, **kwargs)
+        self.read_remaining(limit)
+        return values
+
+    def read_text(self, frame, scales=(2.0, 3.0, 4.0)):
+        from vision import textocr
+        if self.ocr_deadline() is None:
+            return textocr.read_text(frame, scales=scales)
+        return self.read_texts([frame], scales=scales)[0]
+
+    def read_tier(self, frame):
+        if self.ocr_deadline() is None:
+            return read_tier(frame)
+        return read_tier(frame, read_lines=self.read_lines)
 
     # -- device
     def grab(self):
-        self.s.check_stop()
-        return self.s.grab()
+        limit = self.ocr_deadline()
+        self.read_remaining(limit)
+        self._frame_observed_at = time.monotonic()
+        # Legacy injected readers remain valid without a deadline. A bounded
+        # capture must propagate its limit rather than start unbounded I/O.
+        if limit is not None:
+            parameters = inspect.signature(self.s.grab).parameters
+            supports_deadline = ('deadline' in parameters or any(
+                p.kind == inspect.Parameter.VAR_KEYWORD for p in parameters.values()))
+            if not supports_deadline:
+                raise RuntimeError('Bounded capture reader requires deadline support')
+        kwargs = {'deadline': limit} if limit is not None else {}
+        frame = self.s.grab(**kwargs)
+        self.read_remaining(limit)
+        return frame
 
     def tap(self, x, y, reason):
         self.s.check_stop()
+        if reason == "open intro sprint dialog":
+            point, deadline = self.sprint_dispatch(None, (x, y))
+            return self.s.tap(*point, reason=f"flow: {reason}", instant=True,
+                              deadline=deadline)
         return self.s.tap(int(x), int(y), reason=f"flow: {reason}", instant=True)
+
+    def sprint_dispatch(self, frame, requested_point, *, grab=None):
+        """Consume stable Sprint proof and recheck a fresh frame before input.
+
+        Input adapters must call this for the Sprint-open intent and carry the
+        returned monotonic deadline through their own last dispatch guard.
+        An adapter may supply its guarded raw reader to avoid repeating OCR
+        inside grab(); capture and validation still share the same time budget.
+        """
+        self.s.check_stop()
+        proof = self._sprint_proof
+        if proof is None or proof[2] != self._owned_battle_id:
+            raise RuntimeError('No stable Intro Sprint control proof; no input')
+        self._sprint_proof = None  # any dispatch attempt consumes this proof
+        if not _owns_setup_battle(self):
+            raise RuntimeError('Intro Sprint lost active setup battle ownership; no input')
+        if tuple(requested_point) != proof[1]:
+            raise RuntimeError('Intro Sprint requested point changed; no input')
+        scene = proof[3]
+        if (scene['operation_id'] != self.operation_id or scene['battle_id'] != self._owned_battle_id
+                or (frame is not None and not _same_sprint_scene(scene, frame))):
+            raise RuntimeError('Intro Sprint scene changed before dispatch; no input')
+        captured_at = time.monotonic()
+        limits = [captured_at + 2.0, scene['expires_at']]
+        outer = self.ocr_deadline()
+        if outer is not None:
+            limits.append(outer)
+        deadline = min(limits)
+        with self.read_budget(deadline):
+            self.read_remaining(deadline)
+            reader = grab or self.grab
+            parameters = inspect.signature(reader).parameters
+            kwargs = {'deadline': deadline} if 'deadline' in parameters else {}
+            fresh = reader(**kwargs)
+            self.read_remaining(deadline)
+        # Classification already established the owned scene. This final fence
+        # is pixels only: no OCR, wave fallback or template lookup can block it.
+        if not _same_sprint_scene(scene, fresh):
+            raise RuntimeError('Intro Sprint scene changed before dispatch; no input')
+        current = _sprint_glyph(fresh)
+        if not _same_sprint_control(proof[:2], current):
+            raise RuntimeError('Intro Sprint control changed before dispatch; no input')
+        self.s.check_stop()
+        if time.monotonic() >= deadline:
+            raise TimeoutError('Fresh Intro Sprint proof expired; no input')
+        return current[1], deadline
 
     def pause(self, seconds):
         self.s.pause(seconds)
@@ -187,18 +320,18 @@ class _Flow:
         import re
         from settings import CONFIG
         x,y,w,h = CONFIG['rois']['wave_box']
-        text = ' '.join(t for _,_,t in _read(frame[y:y+h,x:x+w], 2))
+        text = ' '.join(t for _,_,t in self.read_lines(frame[y:y+h,x:x+w], 2))
         from player.battle_capture import digit_glyphs
         crop = frame[y:y+h,x:x+w]
         if not digit_glyphs(crop, text):
-            context = ' '.join(t for _,_,t in _read(frame[max(0,y-12):y+h+12,max(0,x-140):x+w], 2))
+            context = ' '.join(t for _,_,t in self.read_lines(frame[max(0,y-12):y+h+12,max(0,x-140):x+w], 2))
             found = re.search(r'\bWave\s*(\d+)\b', context, re.I)
             text = found.group(1) if found else ''
         return int(re.sub(r'\D','',text.replace('O','0'))) if digit_glyphs(crop,text) else None
 
     def on_home(self, frame):
         from player.bootstrap import screen_matches
-        return screen_matches(frame, _read(frame, 1), "home")
+        return screen_matches(frame, self.read_lines(frame, 1), "home")
 
     def side_menu(self, frame):
         from vision import detect
@@ -213,13 +346,13 @@ class _Flow:
         return tourney.in_tournament(frame)
 
     def game_stats(self, frame):
-        return has_text(_lines_text(frame), "GAME STATS")
+        return has_text(self.lines_text(frame), "GAME STATS")
 
     # -- capture
     def locate(self, frame, region, text, *, scale=2, cutoff=0.72):
         from player import battle_capture as bc
         return bc.locate_text(frame, region, text,
-                              lambda c, s: _read(c, s), scale=scale, cutoff=cutoff)
+                              self.read_lines, scale=scale, cutoff=cutoff)
 
     def capture(self, rel, text, region, size, *, name=None, anchor=(0.12, 0.30),
                 frame=None, extra=None, optional=False):
@@ -230,7 +363,7 @@ class _Flow:
         from player import battle_capture as bc
         frame = self.grab() if frame is None else frame
         crop = bc.capture_by_text(frame, text, region, size,
-                                  lambda c, s: _read(c, s), anchor=anchor)
+                                  self.read_lines, anchor=anchor)
         if crop is None:
             self.skip(rel, f"'{text}' not visible where expected"
                       + (" (only shown while something is claimable)" if optional else ""),
@@ -261,26 +394,35 @@ class _Flow:
         self.progress(f"Captured {rel}")
         return entry
 
-    def poll(self, predicate, *, timeout=8.0, interval=0.4):
+    def poll(self, predicate, *, timeout=8.0, interval=0.4, strict=False):
         """Grab until predicate(frame) is truthy; return (frame, value) or the
         last (frame, None). check_stop each pass."""
-        deadline = time.monotonic() + timeout
-        frame = self.grab()
-        while True:
-            self.s.check_stop()
-            value = predicate(frame)
-            if value:
-                return frame, value
-            if time.monotonic() >= deadline:
-                return frame, None
-            self.pause(interval)
+        local = time.monotonic() + timeout
+        outer = self.ocr_deadline()
+        bounded = strict or outer is not None
+        deadline = min(local, outer) if outer is not None else local
+        with self.read_budget(deadline if bounded else None):
             frame = self.grab()
+            while True:
+                self.s.check_stop()
+                value = predicate(frame)
+                if bounded:
+                    self.read_remaining(deadline)
+                if value:
+                    return frame, value
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    return frame, None
+                self.pause(min(interval, remaining))
+                if time.monotonic() >= deadline:
+                    return frame, None
+                frame = self.grab()
 
 
 # ---------------------------------------------------------------- regions
 # Native 1080x2560 bands. Generous on purpose: locate() searches inside them by
 # OCR and returns None (never a blind tap) when the text is absent.
-from player.bootstrap_layout import manifest
+from player.bootstrap_layout import manifest, reference_manifest
 
 R_HOME_BATTLE = tuple(manifest()["flow_regions"]["home_battle"])     # the Home BATTLE button (~621,2057)
 R_SPRINT = tuple(manifest()["flow_regions"]["sprint"])             # intro-sprint icon rail (detect.SPRINT_BAND)
@@ -356,39 +498,145 @@ def _button_crop(frame, box, *, pad_x=8, pad_y=24):
 # ---------------------------------------------------------------- intro sprint
 
 def _sprint_glyph(frame):
-    """The intro-sprint stopwatch-with-X in the left rail, as (crop, (cx,cy)) in
-    full-frame coords, or (None, None). Found structurally (no template yet):
-    the icon is the only WHITE glyph in the rail - the gem is magenta, the
-    buff/shield cyan - and it uniquely carries a small RED X over its top-right.
-    White blob + red-X nearby is what tells it apart from the currency icons
-    above it (which a plain brightness pass grabbed instead). The dialog its tap
-    opens is the final confirmation before anything is written."""
-    x, y, w, h = R_SPRINT
+    """One clock ring with hands and an upper-right red X in its native slot.
+
+    Currency highlights and battle effects can be white with red nearby. They
+    are not control identity. Multiple complete candidates are ambiguity, never
+    absence; the dialog remains the final proof before any template is written.
+    """
+    geometry = manifest()
+    x, y, w, h = geometry['flow_regions']['sprint']
+    sx, sy, sw, sh = geometry['interface']['screens']['battle']['controls']['intro_sprint']['reference_rect']
+    reference = reference_manifest()['interface']['screens']['battle']['controls']['intro_sprint']['reference_rect']
+    scale = sh / reference[3]
+    if frame.shape[:2] != (geometry['layout']['height'], geometry['layout']['width']):
+        raise RuntimeError('Intro Sprint frame geometry changed; no input')
     sub = frame[y:y + h, x:x + w]
     b, g, r = (sub[:, :, 0].astype(int), sub[:, :, 1].astype(int),
                sub[:, :, 2].astype(int))
     white = (sub.min(axis=2) > 185).astype("uint8") * 255
     red = (r > 140) & (r - g > 60) & (r - b > 60)
     cnts, _ = cv2.findContours(white, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    best = None
+    candidates = []
     for c in cnts:
         bx, by, bw_, bh_ = cv2.boundingRect(c)
-        if not (30 <= bw_ <= 100 and 30 <= bh_ <= 100):   # icons/intro_sprint ~61x64
+        if not (30 * scale <= bw_ <= 100 * scale and 30 * scale <= bh_ <= 100 * scale):
             continue
-        ex0, ey0 = max(0, bx - 10), max(0, by - 10)
-        ex1, ey1 = min(w, bx + bw_ + 10), min(h, by + bh_ + 10)
-        if int(red[ey0:ey1, ex0:ex1].sum()) < 20:         # no red X -> not the sprint icon
+        cx, cy = bx + bw_ / 2, by + bh_ - bw_ / 2
+        if not (sx <= x + cx < sx + sw and sy <= y + cy < sy + sh):
             continue
-        if best is None or by < best[1]:
-            best = (bx, by, bw_, bh_)
-    if best is None:
+        if not .75 <= bw_ / bh_ <= 1.3:
+            continue
+        # A clock's circular outline must cover most angular sectors. A gem's
+        # diamond edges and isolated effect fragments do not form that ring.
+        yy, xx = np.indices(white.shape)
+        radius = np.hypot(xx - cx, yy - cy) / bw_
+        ring = (white > 0) & (radius >= .42) & (radius <= .52)
+        angles = ((np.arctan2(yy - cy, xx - cx) + np.pi) * 16 / np.pi).astype(int) % 32
+        if len(np.unique(angles[ring])) < 28:
+            continue
+        # Hands or a centre pin distinguish a clock from an empty effect ring.
+        if np.count_nonzero((white > 0) & (radius < .22)) < 3 * scale * scale:
+            continue
+        # A hollow face with sparse hands is required, not a filled disk.
+        interior = radius < .35
+        if np.mean((white > 0)[interior]) > .65:
+            continue
+        ex0, ey0 = max(0, int(bx + bw_ * .55)), max(0, int(by - bh_ * .25))
+        ex1, ey1 = min(w, int(bx + bw_ * 1.3)), min(h, int(by + bh_ * .55))
+        marks, _ = cv2.findContours(red[ey0:ey1, ex0:ex1].astype('uint8'),
+                                    cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        crosses = []
+        for mark in marks:
+            mx, my, mw, mh = cv2.boundingRect(mark)
+            mask = red[ey0+my:ey0+my+mh, ex0+mx:ex0+mx+mw]
+            if not (.65 <= mw / mh <= 1.5 and mask.sum() >= 20 * scale * scale):
+                continue
+            ry, rx = np.nonzero(mask)
+            u, v = rx / max(1, mw-1), ry / max(1, mh-1)
+            diagonal = (np.abs(u-v) <= .2) | (np.abs(u+v-1) <= .2)
+            arms = [(u < .35) & (v < .35), (u > .65) & (v < .35),
+                    (u < .35) & (v > .65), (u > .65) & (v > .65)]
+            if diagonal.mean() >= .8 and all(arm.sum() >= .04 * len(u) for arm in arms):
+                crosses.append((ex0+mx, ey0+my, mw, mh))
+        if not crosses:
+            continue
+        if len(crosses) != 1:
+            raise RuntimeError('Ambiguous Intro Sprint red X; no input')
+        mx, my, mw, mh = crosses[0]
+        pad = max(1, round(4 * scale))
+        x0, y0 = max(0, min(bx, mx)-pad), max(0, min(by, my)-pad)
+        x1, y1 = min(w, max(bx+bw_, mx+mw)+pad), min(h, max(by+bh_, my+mh)+pad)
+        candidates.append((sub[y0:y1, x0:x1].copy(), (x + round(cx), y + round(cy))))
+    if not candidates:
         return None, None
-    bx, by, bw_, bh_ = best
-    # include the red X (up/right of the stopwatch body) in the template crop
-    x0, y0 = max(0, bx - 4), max(0, by - 10)
-    x1, y1 = min(sub.shape[1], bx + bw_ + 10), min(sub.shape[0], by + bh_ + 4)
-    crop = sub[y0:y1, x0:x1].copy()
-    return crop, (x + bx + bw_ // 2, y + by + bh_ // 2)
+    if len(candidates) != 1:
+        raise RuntimeError('Ambiguous Intro Sprint controls; no input')
+    return candidates[0]
+
+
+def _same_sprint_control(first, second):
+    a, point_a = first
+    b, point_b = second
+    if point_a is None or point_b is None or point_a != point_b or a.shape != b.shape:
+        return False
+    # Compare the glyph, not the animated background behind the rail.
+    def ink(crop):
+        red = crop[:, :, 2].astype(int)
+        return ((crop.min(axis=2) > 185)
+                | ((red > 140) & (red-crop[:, :, 1] > 60) & (red-crop[:, :, 0] > 60)))
+
+    mask = ink(a) | ink(b)
+    if not mask.any():
+        return False
+    return bool(np.mean(np.max(np.abs(a.astype(int)-b.astype(int)), axis=2)[mask] <= 25) >= .97)
+
+
+def _require_sprint_battle(flow, frame, *, allow_results=False):
+    flow.s.check_stop()
+    if not _owns_setup_battle(flow):
+        raise RuntimeError('Intro Sprint requires this operation\'s active setup battle')
+    texts = flow.lines_text(frame)
+    if flow.in_tournament(frame) or has_text(texts, 'TOURNAMENT') or has_text(texts, 'ABORT'):
+        raise RuntimeError('Intro Sprint requires a recognized normal battle; no input')
+    if has_text(texts, 'GAME STATS'):
+        if allow_results:
+            flow.read_remaining()
+            return {'kind': 'results'}
+        raise RuntimeError('Intro Sprint requires a recognized normal battle; no input')
+    if flow.wave(frame) is None or exit_label(texts) or exit_dialog_kind(texts):
+        raise RuntimeError('Intro Sprint requires a recognized normal battle; no input')
+    flow.read_remaining()
+    geometry = manifest()
+    if frame.shape[:2] != (geometry['layout']['height'], geometry['layout']['width']):
+        raise RuntimeError('Intro Sprint scene geometry changed; no input')
+    rectangles = [target['rect'] for target in geometry['hud']['battle']['targets']]
+    rectangles.append(geometry['interface']['screens']['battle']['controls']['attack']['reference_rect'])
+    anchors = []
+    for rect in rectangles:
+        x, y, w, h = rect
+        crop = frame[y:y+h, x:x+w]
+        if crop.shape[:2] != (h, w) or crop.size == 0:
+            raise RuntimeError('Intro Sprint scene anchor is unreadable; no input')
+        anchors.append((tuple(rect), crop.copy()))
+    flow.s.check_stop()
+    return {'kind': 'battle', 'operation_id': flow.operation_id, 'battle_id': flow._owned_battle_id,
+            'frame_sha256': hashlib.sha256(frame.tobytes()).hexdigest(), 'shape': frame.shape,
+            'observed_at': flow._frame_observed_at, 'expires_at': flow.ocr_deadline(),
+            'anchors': anchors}
+
+
+def _same_sprint_scene(scene, frame):
+    if frame.shape != scene['shape'] or scene['kind'] != 'battle' or not scene['anchors']:
+        return False
+    for (x, y, w, h), old in scene['anchors']:
+        fresh = frame[y:y+h, x:x+w]
+        if old.shape != fresh.shape or old.std() < 2 or fresh.std() < 2:
+            return False
+        score = float(cv2.matchTemplate(fresh, old, cv2.TM_CCOEFF_NORMED)[0, 0])
+        if not math.isfinite(score) or score < .97 or not .9 <= fresh.mean() / old.mean() <= 1.1:
+            return False
+    return True
 
 
 def capture_intro_sprint(flow: _Flow) -> None:
@@ -397,17 +645,45 @@ def capture_intro_sprint(flow: _Flow) -> None:
 
     No icon is an optional capture gap. A missing dialog after a proven icon
     tap stops setup before any further input."""
-    frame, glyph = flow.poll(lambda f: _sprint_glyph(f)[1] is not None,
-                             timeout=10.0, interval=0.5)
-    icon_crop, centre = _sprint_glyph(frame)
+    previous = None
+    scene = None
+    flow._sprint_proof = None
+    finished_without_sprint = object()
+
+    def stable_control(frame):
+        nonlocal previous, scene
+        observed = _require_sprint_battle(flow, frame, allow_results=previous is None)
+        if observed['kind'] == 'results':
+            return finished_without_sprint
+        current = _sprint_glyph(frame)
+        if previous is not None:
+            if not _same_sprint_control(previous, current):
+                raise RuntimeError('Intro Sprint identity changed during observation; no input')
+            scene = observed
+            return current
+        if current[1] is not None:
+            previous = current
+        return None
+
+    frame, glyph = flow.poll(stable_control, timeout=10.0, interval=0.5, strict=True)
+    if glyph is finished_without_sprint:
+        _skip_missing(flow, "home/intro_sprint_dialog.png",
+                      "Owned run reached GAME STATS without an observed Intro Sprint", optional=True)
+        return
+    icon_crop, centre = glyph or (None, None)
     icon_frame = frame                       # the glyph is proven on THIS frame
     if centre is None:
-        flow.skip("home/intro_sprint_dialog.png", "no intro sprint this run")
+        if previous is not None:
+            raise RuntimeError('Intro Sprint control did not settle before timeout; no input')
+        _skip_missing(flow, "home/intro_sprint_dialog.png",
+                      "Intro Sprint was not observed within 10 seconds of this run; "
+                      "availability is unverified and no cards were changed", optional=True)
         return
+    flow._sprint_proof = (icon_crop, centre, flow._owned_battle_id, scene)
     flow.progress("Intro sprint: opening its dialog")
     flow.tap(centre[0], centre[1], "open intro sprint dialog")
-    frame, ok = flow.poll(lambda f: has_text(_lines_text(f), "INTRO SPRINT")
-                          or has_text(_lines_text(f), "END INTRO"), timeout=5.0)
+    frame, ok = flow.poll(lambda f: has_text(flow.lines_text(f), "INTRO SPRINT")
+                          or has_text(flow.lines_text(f), "END INTRO"), timeout=5.0, strict=True)
     if not ok:
         flow.skip("home/intro_sprint_dialog.png",
                   "tapped the sprint rail but no dialog appeared")
@@ -417,38 +693,50 @@ def capture_intro_sprint(flow: _Flow) -> None:
     # dialog, but verify against its own frame)
     flow.cut_crop("icons/intro_sprint.png", icon_crop, icon_frame, "Intro Sprint",
                   {"where": "left rail"})
-    flow.capture("home/intro_sprint_dialog.png", "END INTRO SPRINT", R_DIALOG,
-                 (560, 130), name="End Intro Sprint Early", frame=frame,
-                 # Keep the complete two-line title. The old 84px left /
-                 # 52px top padding clipped its right and bottom edges.
-                 anchor=(0.015, 0.04))
+    with flow.read_budget(time.monotonic() + 5.0):
+        flow.capture("home/intro_sprint_dialog.png", "END INTRO SPRINT", R_DIALOG,
+                     (560, 130), name="End Intro Sprint Early", frame=frame,
+                     # Keep the complete two-line title. The old 84px left /
+                     # 52px top padding clipped its right and bottom edges.
+                     anchor=(0.015, 0.04))
     # Yes is the RIGHT button of the dialog's two-button row - captured by
     # position (sibling of No, unique=False), not by OCR. END the sprint (tap
     # Yes): a cancelled sprint fast-forwards waves for minutes and a round CANNOT
     # be ended mid-sprint, so a calibration run that only cancelled could never
     # be surrendered (seen live: it ran to wave 300+ and end_round found no exit
     # button). After Yes, wait for the stopwatch to clear so the run is normal.
+    clear_frames = 0
+
+    def settled_clear(frame):
+        nonlocal clear_frames
+        clear_frames = clear_frames + 1 if _sprint_finished(flow, frame) else 0
+        return clear_frames >= 2
+
     _left, right = _row_buttons(frame, *R_DIALOG_ROW)
     if right:
         flow.cut_crop("home/intro_sprint_yes.png", _button_crop(frame, right), frame,
                       "Intro sprint yes", {"side": "right"}, unique=False)
         flow.tap(right[0] + right[2] // 2, right[1] + right[3] // 2,
                  "end intro sprint early")
-        _, ended = flow.poll(lambda f: _sprint_glyph(f)[1] is None
-                             and (flow.wave(f) is not None or flow.game_stats(f)), timeout=10.0)
+        _, ended = flow.poll(settled_clear, timeout=10.0, strict=True)
         if not ended:
             raise RuntimeError('Could not verify the battle after ending Intro Sprint')
     else:
-        yes = flow.locate(frame, R_DIALOG, "YES")
+        with flow.read_budget(time.monotonic() + 5.0):
+            yes = flow.locate(frame, R_DIALOG, "YES")
         if yes:
             flow.tap(yes[0], yes[1], "end intro sprint early")
-            _, ended = flow.poll(lambda f: _sprint_glyph(f)[1] is None
-                                 and (flow.wave(f) is not None or flow.game_stats(f)), timeout=10.0)
+            _, ended = flow.poll(settled_clear, timeout=10.0, strict=True)
             if not ended:
                 raise RuntimeError('Could not verify the battle after ending Intro Sprint')
         flow.skip("home/intro_sprint_yes.png", "dialog button row not found")
         if not yes:
             raise RuntimeError('Intro Sprint confirmation could not be located; no further input sent')
+
+
+def _sprint_finished(flow, frame):
+    scene = _require_sprint_battle(flow, frame, allow_results=True)
+    return scene['kind'] == 'results' or _sprint_glyph(frame)[1] is None
 
 
 # ---------------------------------------------------------------- ultimate weapons
@@ -486,7 +774,7 @@ def capture_uw_weapons(flow: _Flow) -> None:
         flow.s.check_stop()
         frame = flow.grab()
         x,y,w,h = R_UW_PANEL
-        names = {_norm(t) for _,_,t in _read(frame[y:y+h,x:x+w], 2)}
+        names = {_norm(t) for _,_,t in flow.read_lines(frame[y:y+h,x:x+w], 2)}
         signature = frozenset(text for _,text,_ in UW_WEAPONS if _norm(text) in names)
         if page and signature == previous:
             break
@@ -697,7 +985,7 @@ def end_run_and_capture(flow: _Flow) -> bool:
     frame = flow.grab()
     if (flow.in_tournament(frame) or flow.on_home(frame)
             or not (flow.game_stats(frame) or flow.wave(frame) is not None
-                    or flow.side_menu(frame) or exit_label(_lines_text(frame))
+                    or flow.side_menu(frame) or exit_label(flow.lines_text(frame))
                     or _sprint_glyph(frame)[1] is not None)):
         mark_setup_unknown(flow, 'Refused to end a tournament or unrecognized battle screen')
         return False
@@ -738,7 +1026,7 @@ def _end_owned_run_and_capture(flow: _Flow, frame) -> bool:
     # each round (only tap the toggle when the menu is not already showing its
     # exit control, so an open menu is never tapped shut).
     tog = CONFIG["side_menu"]["toggle"]
-    label = exit_label(_lines_text(frame))
+    label = exit_label(flow.lines_text(frame))
     for _attempt in range(4):
         if label:
             break
@@ -747,7 +1035,7 @@ def _end_owned_run_and_capture(flow: _Flow, frame) -> bool:
                 or (flow.wave(frame) is None and _sprint_glyph(frame)[1] is None)):
             return False
         flow.tap(tog[0], tog[1], "open side menu")
-        frame, label = flow.poll(lambda f: exit_label(_lines_text(f)), timeout=4.0)
+        frame, label = flow.poll(lambda f: exit_label(flow.lines_text(f)), timeout=4.0)
     if not label:
         from runtime import logger
         logger.shot(frame, "flow_no_exit_button")
@@ -760,7 +1048,7 @@ def _end_owned_run_and_capture(flow: _Flow, frame) -> bool:
     if not exit_pt:
         # Reuse the full-frame label evidence rather than losing the same
         # text when Windows OCR segments the smaller region differently.
-        for y, x, text in _read(frame, 2):
+        for y, x, text in flow.read_lines(frame, 2):
             if _norm(text) == label and R_EXIT_BTN[0] <= x/2 < R_EXIT_BTN[0]+R_EXIT_BTN[2] and R_EXIT_BTN[1] <= y/2 < R_EXIT_BTN[1]+R_EXIT_BTN[3]:
                 exit_pt = (int(x/2)+20, int(y/2)+12)
                 break
@@ -781,7 +1069,7 @@ def _end_owned_run_and_capture(flow: _Flow, frame) -> bool:
     # confirms differs by variant: Surrender is the LEFT button of the EXIT
     # BATTLE dialog (Go Home is right and only HIDES the run); Yes is the RIGHT
     # button of the END ROUND dialog.
-    frame, kind = flow.poll(lambda f: exit_dialog_kind(_lines_text(f)), timeout=8.0)
+    frame, kind = flow.poll(lambda f: exit_dialog_kind(flow.lines_text(f)), timeout=8.0)
     if not kind:
         from runtime import logger
         logger.shot(frame, "flow_no_exit_confirm")
@@ -834,7 +1122,7 @@ def _end_owned_run_and_capture(flow: _Flow, frame) -> bool:
     # home/end_round_dialog.png was never cut and the Yes never tapped.
     if kind == "surrender":
         def _next(f):
-            t = _lines_text(f)
+            t = flow.lines_text(f)
             if exit_dialog_kind(t) == "end_round":
                 return "end_round"
             return "done" if (has_text(t, "GAME STATS") or has_text(t, "SKIP")) else None
@@ -867,9 +1155,9 @@ def _end_owned_run_and_capture(flow: _Flow, frame) -> bool:
             _skip_end_round_yes(flow, f"no END ROUND confirm after Surrender: {why}")
 
     # a reward animation can sit in front of the stats screen
-    frame, _ = flow.poll(lambda f: has_text(_lines_text(f), "GAME STATS")
-                        or has_text(_lines_text(f), "SKIP"), timeout=10.0)
-    if has_text(_lines_text(frame), "SKIP") and not flow.game_stats(frame):
+    frame, _ = flow.poll(lambda f: has_text(flow.lines_text(f), "GAME STATS")
+                        or has_text(flow.lines_text(f), "SKIP"), timeout=10.0)
+    if has_text(flow.lines_text(frame), "SKIP") and not flow.game_stats(frame):
         flow.capture("buttons/reward_skip.png", "SKIP", R_FULL, (253, 102),
                      name="Reward skip", frame=frame, anchor=(0.2, 0.35))
         skip_pt = flow.locate(frame, R_FULL, "SKIP")
@@ -957,10 +1245,10 @@ TIER_FOR_END_ROUND = 99        # "the account's TOP tier": set_tier climbs until
                                # the point: surrender at once, capture, done.
 
 
-def read_tier(frame):
+def read_tier(frame, *, read_lines=None):
     """The Home difficulty tier as an int ('Tier 14' -> 14), or None."""
     import re
-    for _y, _x, t in _read(frame, 2):
+    for _y, _x, t in (read_lines or _read)(frame, 2):
         m = re.search(r"[Tt]ier\s*(\d+)", t or "")
         if m:
             return int(m.group(1))
@@ -1289,7 +1577,7 @@ def set_tier(flow, target=TIER_FOR_END_ROUND):
         frame = flow.grab()
         if not _clean_home(flow, frame)[0]:
             raise RuntimeError('Difficulty selection lost clean Home; no further input sent')
-        cur = read_tier(frame)
+        cur = flow.read_tier(frame)
         if cur is None:
             return None
         if cur == target:
@@ -1304,7 +1592,7 @@ def set_tier(flow, target=TIER_FOR_END_ROUND):
         prev = cur
         flow.tap(*tier_point('right' if cur < target else 'left'), f"tier {cur}->{target}")
         flow.pause(0.5)
-    return read_tier(flow.grab())
+    return flow.read_tier(flow.grab())
 
 
 def _uw_remaining():
@@ -1537,11 +1825,11 @@ def capture_hud_digits(flow: _Flow) -> list[str]:
         return []
     x, y, w, h = settings.CONFIG["rois"]["wave_box"]
     def ocr(crop):
-        text = textocr.read_text(crop, scales=(2.0,))
+        text = flow.read_text(crop, scales=(2.0,))
         if not bc.digit_glyphs(crop, text):
             # The clipped tail of "Wave" makes Windows miss 10/20/30 at
             # 2x. Read only the number at 3x/4x, preserving native crops.
-            text = textocr.read_text(crop[:,10:], scales=(3.0,4.0))
+            text = flow.read_text(crop[:,10:], scales=(3.0,4.0))
         return text
     got: dict = {d: None for d in '0123456789' if settings.template_path(f'digits/{d}.png').exists()}
     written = []
@@ -1558,7 +1846,7 @@ def capture_hud_digits(flow: _Flow) -> list[str]:
             # An isolated digit is often omitted by Windows OCR. Give it the
             # neighbouring Wave label, but still cut only the native glyphs.
             import re
-            context = textocr.read_text(f[max(0,y-12):y+h+12,max(0,x-140):x+w], scales=(2.0,3.0))
+            context = flow.read_text(f[max(0,y-12):y+h+12,max(0,x-140):x+w], scales=(2.0,3.0))
             found = re.search(r'\bWave\s*(\d+)\b', context, re.I)
             if found:
                 number = found.group(1)
@@ -1604,20 +1892,41 @@ def verify_saved_upgrade_labels(flow, wanted=None):
                 data = path.read_bytes()
                 hashes[name] = hashlib.sha256(data).hexdigest()
                 existing[name] = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR) if data else None
-        verification = bc.verify_stat_labels(existing, lambda crops: textocr.read_texts(
+        verification = bc.verify_stat_labels(existing, lambda crops: flow.read_texts(
             crops, scales=(2.0,3.0), raise_on_error=True))
         invalid = {}
         for name, evidence in verification.items():
             rel = f'stats/{name}.png'
             logger.event('setup_upgrade_template_verification', rel=rel,
                          image_sha256=hashes[name], **evidence)
-            if evidence['status'] == 'verified':
+            previous = next((entry for entry in flow.cal.entries if entry.get('rel') == rel), {})
+            if evidence['status'] == 'verified' and previous.get('status') != 'stale':
                 flow.withdraw_skips(rel)
             else:
-                invalid[rel] = evidence
-                flow.skip(rel, f"Saved upgrade label {evidence['status']}: expected {name}, read {evidence['text']!r}; existing file kept")
+                reason = (f"Saved upgrade label {evidence['status']}: expected {name}, "
+                          f"read {evidence['text']!r}; existing file kept")
+                if evidence['status'] == 'verified':
+                    # Correct OCR is not fresh recognition proof for an image
+                    # already rejected. Only a verified cut can restore that.
+                    reason = (f"Saved upgrade label reads {evidence['text']!r}, but recognition "
+                              "is still stale; verify its appearance on a fresh frame")
+                invalid[rel] = dict(evidence, status=(evidence['status'] if evidence['status'] != 'verified'
+                                                     else 'recognition_unverified'))
+                entry = dict(previous, rel=rel, phase=previous.get('phase', 'bootstrap'),
+                             status='stale', verified=False, reason=reason, t=time.time(),
+                             image_sha256=hashes[name],
+                             semantic_verification=dict(evidence, image_sha256=hashes[name]))
+                flow.cal.entries = [e for e in flow.cal.entries if e.get('rel') != rel] + [entry]
+                flow.skip(rel, reason)
+        if invalid:
+            # Persist the rejection where readiness and the repair UI read it;
+            # an event/skip alone leaves the previous verified report in force.
+            if flow.cal.p.get('report'):
+                flow.cal.save_report()
+            flow.progress('Saved upgrade labels need attention: ' + ', '.join(sorted(invalid)))
         known = {name: image for name,image in existing.items()
-                 if verification[name]['status'] == 'verified'}
+                 if verification[name]['status'] == 'verified'
+                 and f'stats/{name}.png' not in invalid}
         attempt.finish('incomplete' if invalid else 'verified_existing' if existing else 'none_present',
                        checked=len(verification), invalid=invalid,
                        missing=sorted(f'stats/{name}.png' for name in wanted - existing.keys()))
@@ -1663,7 +1972,7 @@ def capture_upgrade_labels(flow):
                     x,y,w,h=settings.CONFIG['rois']['upgrade_panel']
                     panel=frame[y:y+h,x:x+w]
                     def read_many(crops):
-                        texts = textocr.read_texts(crops, scales=(2.0,3.0), raise_on_error=True)
+                        texts = flow.read_texts(crops, scales=(2.0,3.0), raise_on_error=True)
                         for text in texts:
                             logger.event('setup_upgrade_label', tab=tab, page=page+1, text=text)
                         return texts
@@ -1804,7 +2113,7 @@ def capture_battle_flow(flow: _Flow, observe_minutes: float | None = None,
         flow.progress(f"Battle capture skipped: {why}")
         flow.skip("home/intro_sprint_dialog.png", why)
         return
-    original_tier = read_tier(frame)
+    original_tier = flow.read_tier(frame)
     if original_tier is None:
         raise RuntimeError('Could not read the original difficulty; no setup battle started')
     known_player = getattr(getattr(flow, 'cal', None), 'player', {})
@@ -1821,8 +2130,12 @@ def capture_battle_flow(flow: _Flow, observe_minutes: float | None = None,
     # Restoration is a success path only. Stop/Abort must never trigger cleanup taps.
     _safe_home(flow)
     restored_frame = flow.grab()
-    if read_tier(restored_frame) != original_tier:
-        set_tier(flow, original_tier)
+    if flow.read_tier(restored_frame) != original_tier:
+        if set_tier(flow, original_tier) != original_tier:
+            raise RuntimeError('Could not restore the original difficulty; no further input sent')
+        restored_frame = flow.grab()
+        if not _clean_home(flow, restored_frame)[0] or flow.read_tier(restored_frame) != original_tier:
+            raise RuntimeError('Could not verify restored difficulty on fresh Home; no further input sent')
         logger.event("flow_tier_restored", tier=original_tier)
     _safe_home(flow)
 
@@ -1919,8 +2232,8 @@ def capture_menu_extras(flow: _Flow) -> None:
         hit = tourney.find(frame, "home/tile_event.png")
         if hit:
             flow.tap(hit[0][0], hit[0][1], "open events")
-            f, ok = flow.poll(lambda f: has_text(_lines_text(f), "EVENT")
-                              or has_text(_lines_text(f), "MISSIONS"), timeout=6.0)
+            f, ok = flow.poll(lambda f: has_text(flow.lines_text(f), "EVENT")
+                              or has_text(flow.lines_text(f), "MISSIONS"), timeout=6.0)
             if ok:
                 _menu_capture(flow, [
                     ("buttons/quest_claim.png", "CLAIM", (160, 50), (0.2, 0.35)),
@@ -1938,7 +2251,7 @@ def capture_menu_extras(flow: _Flow) -> None:
         frame = flow.grab()
         if flow.on_home(frame):
             flow.tap(tourney.NAV["shop"][0], tourney.NAV["shop"][1], "open store")
-            f, ok = flow.poll(lambda f: has_text(_lines_text(f), "STORE"), timeout=6.0)
+            f, ok = flow.poll(lambda f: has_text(flow.lines_text(f), "STORE"), timeout=6.0)
             if ok:
                 _menu_capture(flow, [
                     ("icons/free_gems.png", "FREE", (130, 48), (0.2, 0.35)),
@@ -1961,7 +2274,7 @@ def capture_menu_extras(flow: _Flow) -> None:
             hit = tourney.find(frame, "home/tile_guild.png")
             if hit:
                 flow.tap(hit[0][0], hit[0][1], "open guild")
-                f, ok = flow.poll(lambda f: has_text(_lines_text(f), "GUILD"), timeout=6.0)
+                f, ok = flow.poll(lambda f: has_text(flow.lines_text(f), "GUILD"), timeout=6.0)
                 if ok:
                     _menu_capture(flow, [
                         ("icons/guild_coin.png", "COIN", (66, 66), (0.3, 0.5)),

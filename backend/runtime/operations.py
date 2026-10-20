@@ -1,5 +1,6 @@
 """Runtime adapters for the pure workflow ledger."""
 import json
+import hashlib
 import os
 from pathlib import Path
 from contextlib import contextmanager
@@ -71,6 +72,28 @@ def publish_progress(state):
     state['operation_revision'] = op['revision']
 
 
+def _retain_artifact(directory, operation_id, filename):
+    """Freeze completed evidence before publishing its reference.
+
+    The working file belongs to the next scan as soon as it starts. A result
+    reference must instead keep the exact bytes this operation inspected.
+    Exclusive creation also prevents a repeated finalizer replacing evidence.
+    """
+    source = directory / filename
+    try:
+        raw = source.read_bytes()
+    except FileNotFoundError:
+        return None, None
+    destination = directory / 'operations' / operation_id / filename
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with destination.open('xb') as stream:
+        stream.write(raw)
+    revision = hashlib.sha256(raw).hexdigest()
+    if file_revision(destination) != revision:
+        raise OSError(f'Operation artifact readback failed: {filename}')
+    return {'path': str(destination), 'revision': revision}, raw
+
+
 @contextmanager
 def worker_operation(kind=None):
     """Retain one durable worker outcome, including failures without exceptions."""
@@ -138,14 +161,18 @@ def _worker_operation(kind=None):
         filenames = (f'{name}_state.json', f'{name}_report.json') if op['kind'] in ('calibrate', 'observe', 'scan') else ('screen_analysis.json', 'screen_analysis.png') if op['kind'] == 'screen_analysis' else ()
         restore = restore and op['kind'] in ('calibrate', 'observe', 'scan')
         for filename in filenames:
-            path = directory / filename
-            if path.exists():
-                refs[filename] = {'path': str(path), 'revision': file_revision(path)}
+            try:
+                reference, raw = _retain_artifact(directory, operation_id, filename)
+                if reference is None:
+                    continue
+                refs[filename] = reference
                 if filename.endswith('_state.json') or filename == 'screen_analysis.json':
-                    try:
-                        state = json.loads(path.read_text(encoding='utf-8'))
-                    except (OSError, ValueError) as exc:
-                        failure = {'code': 'invalid_artifact', 'message': str(exc)}
+                    state = json.loads(raw.decode('utf-8'))
+                    if not isinstance(state, dict):
+                        state = {}
+                        raise ValueError('Operation state must be a JSON object')
+            except (OSError, ValueError) as exc:
+                failure = failure or {'code': 'invalid_artifact', 'message': str(exc)}
         phase_names = {'c': 'cards', 'g': 'global', 'm': 'modules', 'u': 'guardians', 'b': 'bots', 'w': 'workshop', 'e': 'equipped_modules'}
         if op['kind'] == 'scan':
             phase_names = {'c': 'cards', 'g': 'guardians', 'm': 'modules', 'b': 'battle'}
@@ -175,6 +202,17 @@ def _worker_operation(kind=None):
                                       'message': 'Setup did not verify and persist its final Home screen'}
         if op['kind'] == 'screen_analysis' and state.get('status') != 'done':
             failure = failure or {'code': 'analysis_incomplete', 'message': state.get('message', 'Screen analysis did not complete')}
+        if op['kind'] == 'screen_analysis':
+            screenshot = state.get('screenshot')
+            retained = refs.get('screen_analysis.png')
+            if (not isinstance(screenshot, dict) or retained is None
+                    or screenshot.get('operation_id') != operation_id
+                    or screenshot.get('path') != str(directory / 'screen_analysis.png')
+                    or screenshot.get('revision') != retained['revision']):
+                failure = failure or {
+                    'code': 'analysis_image_unverified',
+                    'message': 'Screen analysis requires the PNG saved and verified by this operation',
+                }
         for attempt in range(3):
             # Cancellation can arrive while artifacts are read, or between this
             # read and the CAS. Recompute precedence from the current operation.

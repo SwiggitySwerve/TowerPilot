@@ -17,13 +17,23 @@ test('screen learning starts full setup and records a context-bound intent',asyn
     start:async body=>{requests.push(body);return {operation:{id:'op-1',revision:1,status:'accepted',context:{instance:'main',profile:'default',account:'alice',serial:'one'}}};},changed:()=>{},completed:async()=>{}
   });
   assert.equal(await flow.learn(),true);
-  assert.deepEqual(requests,[{bootstrap:true,flows:true,phases:'c,m',fresh:true,overwrite:true,allow_navigation:true,expected_context:{instance:'main',account:'alice',serial:'one',rendering:null,profile:'default'},idempotency_key:'request-1',selected_run:'bp_farm'}]);
+  assert.deepEqual(requests,[{bootstrap:true,flows:true,phases:'c,m',fresh:true,overwrite:false,allow_navigation:true,expected_context:{instance:'main',account:'alice',serial:'one',rendering:null,profile:'default'},idempotency_key:'request-1',selected_run:'bp_farm'}]);
   const scope=LearningStore.context(config);
   const saved=JSON.parse(storage.get(LearningStore.learningKey(scope)));
   assert.equal(saved.context,scope.id);
   assert.equal(saved.operationId,'op-1');
   assert.equal(saved.revision,1);
   assert.equal(flow.snapshot().phase,'waiting_for_worker');
+});
+
+test('applied discoveries from a partial capture do not remain a pending preparation',()=>{
+  const config={active_instance:'main',active_profile:'demo',instances:{main:{account:'demo'}}};
+  const records=new Map(),storage={getItem:key=>records.get(key)??null,setItem:(key,value)=>records.set(key,value)};
+  const scope=LearningStore.context(config);
+  LearningStore.create(storage).save(scope,'preparation',{outcome:'failed',applied:true});
+  const ctx=vm.createContext({LearningStore,S:{config},localStorage:storage});
+  vm.runInContext(section('function pendingPreparation(){','async function renderCalibrate(){'),ctx);
+  assert.equal(ctx.pendingPreparation(),null);
 });
 function setup(ready){
   const calls=[]; const storage=new Map(); const config={active_instance:'main',instances:{main:{account:'alice',serial:'one'}}};

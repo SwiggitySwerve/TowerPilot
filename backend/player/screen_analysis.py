@@ -2,6 +2,7 @@
 
 Results are observations, never templates, ownership, or navigation authority.
 """
+import hashlib
 import json
 import time
 from pathlib import Path
@@ -16,6 +17,21 @@ def _write_state(path, state):
     from runtime.operations import publish_progress
     publish_progress(state)
     atomic_json(path, state)
+
+
+def _save_screenshot(path, frame):
+    """Bind the producer's encoded bytes, never a pre-existing working PNG."""
+    from runtime.operations import environment_operation
+    _, operation_id = environment_operation()
+    encoded, image = cv2.imencode('.png', frame)
+    if not encoded:
+        raise OSError('Screen analysis screenshot could not be encoded')
+    raw = image.tobytes()
+    revision = hashlib.sha256(raw).hexdigest()
+    path.write_bytes(raw)
+    if path.read_bytes() != raw:
+        raise OSError('Screen analysis screenshot readback failed')
+    return {'operation_id': operation_id, 'path': str(path), 'revision': revision}
 
 
 def classify(frame, lines):
@@ -90,10 +106,15 @@ def main():
     settings.CONFIG['preset'] = 'normal_run'
     directory = accounts.calibration_dir(settings.ROOT, settings.CONFIG)
     state = directory/'screen_analysis.json'
+    screenshot = None
+    def write(value):
+        if screenshot is not None:
+            value['screenshot'] = screenshot
+        _write_state(state, value)
     def progress(n, total):
-        _write_state(state, {'status':'running','completed':n,'total':total,'message':'Matching installed artwork against the captured screen'})
+        write({'status':'running','completed':n,'total':total,'message':'Matching installed artwork against the captured screen'})
     try:
-        _write_state(state, {'status':'running','message':'Checking the installed artwork library'})
+        write({'status':'running','message':'Checking the installed artwork library'})
         identity = installed(settings.instance()['serial'])
         folder = directory/'asset_library'/identity['key']
         index = json.loads((folder/'index.json').read_text(encoding='utf-8'))
@@ -101,14 +122,13 @@ def main():
             raise RuntimeError('Extract artwork first; the local library is missing or damaged')
         frame = capture.grab()
         captured_at = time.time()
-        if not cv2.imwrite(str(directory/'screen_analysis.png'), frame):
-            raise OSError('Screen analysis screenshot could not be saved')
-        _write_state(state, {'status':'running','message':'Reading screen labels'})
+        screenshot = _save_screenshot(directory/'screen_analysis.png', frame)
+        write({'status':'running','message':'Reading screen labels'})
         result = analyze(frame, textocr.read_lines(frame, 1), folder, index, progress)
         result.update(status='done', captured_at=captured_at)
-        _write_state(state, result)
+        write(result)
     except Exception as exc:
-        _write_state(state, {'status':'error','message':str(exc)})
+        write({'status':'error','message':str(exc)})
 
 
 if __name__ == '__main__':

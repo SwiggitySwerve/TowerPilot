@@ -13,6 +13,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 ACTIVE = ('accepted', 'running', 'cancelling', 'applying')
+SYNCHRONOUS_PERSISTENCE_KINDS = frozenset({'profile_write', 'profile_promote'})
 STATUSES = {*ACTIVE, 'awaiting_apply', 'restoration_required', 'succeeded',
             'failed', 'interrupted', 'cancelled'}
 EDGES = {
@@ -76,6 +77,12 @@ class Operations:
         with self._db() as db:
             return self._read(db, operation_id)
 
+    def find_by_key(self, idempotency_key):
+        with self._db() as db:
+            row = db.execute('SELECT body FROM operations WHERE idempotency_key=?',
+                             (idempotency_key,)).fetchone()
+            return json.loads(row[0]) if row else None
+
     def active(self, device=None):
         placeholders = ','.join('?' for _ in ACTIVE)
         with self._db() as db:
@@ -127,8 +134,15 @@ class Operations:
             op = self._read(db, operation_id)
             if op['revision'] != expected_revision:
                 raise Conflict('Operation revision changed; refresh before trying again')
+            if op['kind'] in SYNCHRONOUS_PERSISTENCE_KINDS and status in ('cancelling', 'cancelled'):
+                raise Conflict('Synchronous profile persistence cannot be cancelled')
             if status not in EDGES[op['status']]:
                 raise Conflict('Invalid operation lifecycle transition')
+            if status in ACTIVE:
+                placeholders = ','.join('?' for _ in ACTIVE)
+                if db.execute(f'SELECT id FROM operations WHERE device=? AND id<>? AND status IN ({placeholders})',
+                              (op['context']['device_key'], operation_id, *ACTIVE)).fetchone():
+                    raise Conflict('An operation already owns this device')
             op.update(changes, status=status, revision=expected_revision + 1, updated_at=time.time())
             db.execute('UPDATE operations SET revision=?,status=?,body=? WHERE id=?',
                        (op['revision'], status, json.dumps(op, sort_keys=True), operation_id))

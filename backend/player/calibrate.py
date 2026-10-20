@@ -905,6 +905,7 @@ def main() -> None:
     ap.add_argument("--phases", default="c,g,m,u,b,w",
                     help=f"comma list of {PHASE_KEYS}")
     ap.add_argument("--bootstrap", action="store_true", help="Capture Home and safe menus without existing templates")
+    ap.add_argument("--routes", help="With --bootstrap: comma-separated manifest routes forming a Home-to-Home sequence")
     ap.add_argument("--observe", action="store_true", help="No taps: search the screen as it is for every artwork-bound target still missing")
     ap.add_argument("--observe-watch", type=float, default=0.0, metavar="SECONDS",
                     help="with --observe: keep looking for this long (no taps), for controls that are only up for moments")
@@ -920,6 +921,16 @@ def main() -> None:
     ap.add_argument("--fresh", action="store_true",
                     help="ignore previous state, redo all phases")
     a = ap.parse_args()
+    routes = None
+    if a.routes is not None:
+        if not a.bootstrap or a.flows or a.battle_only or a.observe:
+            ap.error('--routes requires --bootstrap and cannot be combined with --flows, --battle-only or --observe')
+        from player.bootstrap import validate_route_selection
+        routes = [key.strip() for key in a.routes.split(',')]
+        try:
+            validate_route_selection(routes)
+        except ValueError as exc:
+            ap.error(str(exc))
     from runtime.operations import restore_worker_context
     restore_worker_context(settings)
     settings.bind_device(a.instance)
@@ -951,7 +962,7 @@ def main() -> None:
         if os.path.exists(p["stop"]):
             os.remove(p["stop"])
         from player import bootstrap
-        bootstrap.run(p, a.overwrite, flows=a.flows, battle_only=a.battle_only)
+        bootstrap.run(p, a.overwrite, flows=a.flows, battle_only=a.battle_only, routes=routes)
         return
     from player.scan_plan import missing_navigation
     missing = missing_navigation(settings.ROOT, settings.CONFIG, a.phases.split(","), include_wave=False)

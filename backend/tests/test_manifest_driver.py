@@ -43,6 +43,39 @@ def test_unexpected_destination_stops_without_retry_or_capture():
     assert events[-1]['status'] == 'uncertain'
 
 
+def test_source_evidence_is_saved_before_input_and_failure_sends_no_tap():
+    d, e, taps, events, cuts = fixture_driver()
+    received = []
+    def save(edge, first, hit, second, other):
+        assert not taps and not events and not cuts
+        assert edge is e and first is not second
+        received.append((hit, other))
+    d.before_input = save
+    assert d.step(e)
+    assert len(received) == 1
+
+    d, e, taps, events, cuts = fixture_driver()
+    def fail(*args):
+        raise OSError('evidence disk full')
+    d.before_input = fail
+    with pytest.raises(OSError, match='evidence disk full'):
+        d.step(e)
+    assert not taps and not events and not cuts
+
+
+def test_stop_requested_during_evidence_save_sends_no_tap():
+    d, e, taps, events, cuts = fixture_driver()
+    stopped = []
+    d.before_input = lambda *a: stopped.append(True)
+    def check():
+        if stopped:
+            raise MappingStopped('cancelled while saving evidence')
+    d.check_stop = check
+    with pytest.raises(MappingStopped, match='cancelled'):
+        d.step(e)
+    assert not taps and not events and not cuts
+
+
 def test_live_battle_is_never_navigated_by_home_scan():
     d, e, taps, events, cuts = fixture_driver(('battle',))
     with pytest.raises(MappingStopped):

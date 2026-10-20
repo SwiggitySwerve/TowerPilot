@@ -123,7 +123,7 @@ def input_boundary(monkeypatch):
     monkeypatch.setattr(act, '_last_tap', 0)
     monkeypatch.setattr(act.time, 'sleep', lambda seconds: None)
     commands = []
-    monkeypatch.setattr(act, '_input', lambda *parts: commands.append(parts))
+    monkeypatch.setattr(act, '_input', lambda *parts, deadline=None: commands.append(parts))
     return commands
 
 
@@ -153,7 +153,7 @@ def test_disk_failure_after_dispatch_cannot_retry_input(input_boundary, monkeypa
 
 
 def test_transport_input_failure_is_not_reported_as_dispatch(input_boundary, monkeypatch):
-    def fail(*parts):
+    def fail(*parts, deadline=None):
         input_boundary.append(parts)
         raise adbclient.AdbError('transport closed')
     monkeypatch.setattr(act, '_input', fail)
