@@ -142,13 +142,24 @@ class _Flow:
         """Record a capture that did not happen. `optional` marks a target the
         game only shows sometimes (a CLAIM button with no finished quest): it
         is listed for the person but never turns the scan into needs_attention,
-        and a runner captures it later when the screen shows it."""
+        and a runner captures it later when the screen shows it. Never for a
+        target some run kind is BLOCKED on (readiness): that gap is the scan's
+        to report. A scan that tries a target again (a setup surrenders up to
+        four times) lists it once: an entry for the target stands unless it is
+        optional and this one is not. flow_skip is logged either way."""
         entry = {"target": target, "reason": reason}
         if optional:
             entry["optional"] = True
-        self.s.skipped.append(entry)
+        if not any(s.get("target") == target and (optional or not s.get("optional")) for s in self.s.skipped):
+            self.s.skipped.append(entry)
         from runtime import logger
         logger.event("flow_skip", target=target, reason=reason, optional=optional)
+
+    def withdraw_skips(self, rel):
+        """Drop every skip this scan filed for `rel`: a later pass has cut it, so
+        the image is no longer missing and the rows would only hold the scan in
+        needs_attention (and tell the person a cut image is still absent)."""
+        self.s.skipped[:] = [s for s in self.s.skipped if s.get("target") != rel]
 
     # -- guards
     def frame(self):
@@ -223,6 +234,7 @@ class _Flow:
         if not entry.get("verified"):
             self.skip(rel, entry.get("reason") or "capture not verified")
             return None
+        self.withdraw_skips(rel)
         self.progress(f"Captured {rel}")
         return entry
 
@@ -238,6 +250,7 @@ class _Flow:
         if not entry.get("verified"):
             self.skip(rel, entry.get("reason") or "capture not verified")
             return None
+        self.withdraw_skips(rel)
         self.progress(f"Captured {rel}")
         return entry
 
@@ -520,6 +533,23 @@ def capture_missing_off_state(flow):
         if not any(state=='on' and n==name for state,_,n in find_uw_switches(flow.grab(),labels)):
             raise RuntimeError('Could not confirm weapon restored ON; inspect equipment before farming')
 
+def _skip_missing(flow: _Flow, rel: str, reason: str, *, optional: bool = False) -> None:
+    """flow.skip(rel, ...) unless the image is already on disk (nothing is
+    missing). flow.skip lists the image once however many passes file it, and
+    a later pass that cuts it withdraws the row (flow.withdraw_skips)."""
+    if _have_templates([rel]):
+        return
+    flow.skip(rel, reason, optional=optional)
+
+
+def _skip_end_round_yes(flow: _Flow, why: str) -> None:
+    """Record that home/end_round_yes.png was not cut, as a NON-optional skip
+    (readiness blocks every surrendering run on it), through _skip_missing."""
+    _skip_missing(flow, "home/end_round_yes.png",
+                  f"{why}. Shard, quest and max-wave runs stay blocked until it exists; a later setup "
+                  "cuts it only from an END ROUND confirm its own run shows")
+
+
 def end_run_and_capture(flow: _Flow) -> bool:
     """Surrender the calibration run, capturing the exit dialog, GAME STATS
     screen and reward skip on the way to Home. Returns True on Home.
@@ -579,6 +609,7 @@ def end_run_and_capture(flow: _Flow) -> bool:
         x, y = max(0, exit_pt[0]-26), max(0, exit_pt[1]-18)
         flow.cut_crop('buttons/exit_battle.png', frame[y:y+50,x:x+190].copy(), frame,
                       'Exit battle', {'rect':[x,y,190,50], 'screen':'battle_menu'})
+        _skip_missing(flow, "buttons/end_round.png", "the side menu showed EXIT BATTLE, not END ROUND", optional=True)
     flow.tap(exit_pt[0], exit_pt[1], f"tap {label}")
 
     # the confirm dialog: capture it, then confirm. The two buttons are captured
@@ -612,9 +643,25 @@ def end_run_and_capture(flow: _Flow) -> bool:
         confirm = ((right[0] + right[2] // 2, right[1] + right[3] // 2) if right
                    else flow.locate(frame, R_DIALOG, "YES"))
     if not confirm:
-        flow.skip("home/exit_battle_dialog.png", f"{kind} confirm button not locatable")
+        # the control that could not be found is the missing image - unless that
+        # image is on disk, when only this dialog went unanswered (the event below
+        # and, where the caller raises on a False return, its "did not return
+        # Home" error are then the whole record; the UW lottery pass ignores it)
+        from runtime import logger
+        logger.event("flow_confirm_not_locatable", kind=kind)
+        if kind == "surrender":
+            _skip_missing(flow, "home/surrender.png", "surrender confirm button not locatable")
+        else:
+            _skip_end_round_yes(flow, "end_round confirm button not locatable")
         return False
     flow.tap(confirm[0], confirm[1], f"confirm exit ({kind})")
+    if kind == "surrender" and not left:
+        _skip_missing(flow, "home/surrender.png", "the Surrender button was found by text only, "
+                                                  "so no image was cut")
+    if kind == "end_round" and not right:
+        # tapped by its text, so no template was cut from it
+        _skip_end_round_yes(flow, "the END ROUND confirm's Yes button was found by text only, "
+                                  "so no image was cut")
 
     # Surrender is followed by a SECOND confirm - "END ROUND / Are you sure you
     # want to end the round?" (No / Yes) - the same dialog END ROUND opens
@@ -640,6 +687,21 @@ def end_run_and_capture(flow: _Flow) -> bool:
                    else flow.locate(frame, R_DIALOG, "YES"))
             if yes:
                 flow.tap(yes[0], yes[1], "confirm END ROUND (yes)")
+            if not right:
+                _skip_end_round_yes(flow, "the END ROUND confirm after Surrender came up but its Yes button "
+                                          + ("was found by text only, so no image was cut" if yes
+                                             else "was not locatable"))
+        else:
+            # No END ROUND confirm was recognised: record why the two were not
+            # cut. On a timeout, save the frame - an END ROUND confirm OCR
+            # missed and a slow end screen both look like this to the poll.
+            if nxt:
+                why = "the run's end screen came up (GAME STATS / SKIP)"
+            else:
+                from runtime import logger
+                why = f"nothing recognised within 6 s, frame {logger.shot(frame, 'flow_no_end_round_confirm')}"
+            _skip_missing(flow, "home/end_round_dialog.png", f"no END ROUND confirm after Surrender: {why}", optional=True)
+            _skip_end_round_yes(flow, f"no END ROUND confirm after Surrender: {why}")
 
     # a reward animation can sit in front of the stats screen
     frame, _ = flow.poll(lambda f: has_text(_lines_text(f), "GAME STATS")
@@ -875,7 +937,11 @@ def capture_side_menu(flow) -> dict:
     try:
         result.update(scanner.verify_asset_rels([r for r in rels if r not in _have_templates(rels)], frame, follow))
     except Exception as e:                      # noqa: BLE001 - isolate
-        logger.event("flow_side_menu_error", error=str(e)[:200])
+        # type and verify_asset_rels' note naming the target it raised on come
+        # BEFORE the message: the log cuts at 200 characters and OpenCV
+        # messages alone run past 160
+        logger.event("flow_side_menu_error",
+                     error=(" ".join([type(e).__name__, *getattr(e, "__notes__", [])]) + f": {e}")[:200])
     result.update(capture_hud_targets(flow, "battle_menu"))
     if was_shut:
         flow.tap(*point, "close the side menu")
@@ -1562,6 +1628,11 @@ def capture_battle_flow(flow: _Flow, observe_minutes: float | None = None,
             _battle_pass(flow, 1, "exit and results capture")
         if do_lottery and _uw_remaining():
             _uw_lottery_pass(flow, max_minutes=observe_minutes)
+        # A run that ended on its own goes to capture_game_stats with no confirm
+        # to cut the Yes from; whatever the runs showed, a Yes still missing
+        # here is reported (a pass that raised instead is reported by the
+        # bootstrap's handler; _skip_end_round_yes never lists the image twice).
+        _skip_end_round_yes(flow, "no END ROUND confirm came up in this setup's runs")
     finally:
         restored_frame = flow.grab()
         if flow.on_home(restored_frame) and read_tier(restored_frame) != original_tier:

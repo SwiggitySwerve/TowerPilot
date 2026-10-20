@@ -104,6 +104,21 @@ def bind_device(name: str) -> None:
 
 def select_instance(name: str, preset: str | None = None) -> None:
     """Bind a run to its device, validating and compiling its profile."""
+    global _DEFAULTS, _ACCOUNT_DEFAULTS
+    from runtime.battle_source import accepted_source
+    accepted = accepted_source(name, preset)
+    if accepted is not None:
+        frozen, profile = accepted
+        CONFIG.clear()
+        CONFIG.update(frozen)
+        _DEFAULTS = {key: copy.deepcopy(frozen[key]) for key in _OVERRIDABLE if key in frozen}
+        _ACCOUNT_DEFAULTS = {key: copy.deepcopy(frozen.get(key)) for key in
+                             ('loadouts', 'active_profile', 'tourney_card_tweaks')}
+        bind_device(name)
+        if profile is not None:
+            from player import playerprofile
+            playerprofile.PROFILE = profile
+        return
     bind_device(name)
     inst = CONFIG["instances"][name]
     # ---- PROFILE LAYER (P3). A profile compiles its blueprints into extra

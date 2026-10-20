@@ -30,6 +30,7 @@ import threading
 from pathlib import Path
 from functools import wraps
 import time
+import urllib.parse
 
 import yaml
 from flask import Flask, Response, jsonify, redirect, request, send_file, g
@@ -47,6 +48,11 @@ sys.path.insert(0, ROOT)
 CONFIG_PATH = os.path.join(ROOT, "config.yaml")
 PORT = int(os.environ.get("TOWER_PILOT_PORT", "8620"))   # override with the
 # TOWER_PILOT_PORT env var (a second dashboard on one machine, tests)
+HOST = "127.0.0.1"          # the one interface app.run binds (bottom of file)
+# Host names a request to THIS dashboard may carry (any port): loopback and
+# the bind host. Anything else is DNS rebinding - a site whose name now
+# resolves to 127.0.0.1 - and is refused by local_requests_only.
+_LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1", HOST}
 
 # The dashboard runs under pythonw (no console), so every adb.exe child pops
 # its own console window - the frame endpoint alone spawned ~720 windows/hour
@@ -61,9 +67,202 @@ def _run(args, **kw):
 
 app = Flask(__name__, static_folder="webui", static_url_path="/ui")
 
+from control import operations as operation_api
+
+
+@app.errorhandler(operation_api.Conflict)
+def operation_conflict(error):
+    return jsonify(ok=False, error=str(error)), 409
+
+
+def _launch_operation(cfg, kind, body, cmd, **kwargs):
+    if kind in ('run', 'gems'):
+        import copy
+        from player.run_controls import resolve
+        body = copy.deepcopy(body)
+        selected = body.get('preset')
+        preset = cfg.get('presets', {}).get(selected)
+        if preset is None:
+            raise ValueError('Run was not compiled before acceptance')
+        frozen = copy.deepcopy(cfg)
+        frozen['preset'] = selected
+        profile = frozen.pop('_profile_snapshot', None)
+        revision = frozen.pop('_profile_revision', None)
+        body['battle_envelope'] = dict(preset_key=selected, preset=copy.deepcopy(preset),
+                                      config=frozen, profile=profile,
+                                      controls=resolve(preset, frozen),
+                                      source=copy.deepcopy(preset.get('_source')),
+                                      source_revision=revision)
+    return operation_api.launch(ROOT, cfg, kind, body, cmd, subprocess.Popen,
+                                profile_path=_profile_path(cfg.get('active_profile')),
+                                cwd=ROOT, creationflags=getattr(subprocess, 'DETACHED_PROCESS', 0) | NO_WINDOW,
+                                **kwargs)
+
+
+@app.get('/api/operations/<operation_id>')
+def api_operation_status(operation_id):
+    try:
+        return jsonify(operation=operation_api.public(operation_api.resolve(ROOT, operation_id)))
+    except KeyError:
+        return jsonify(ok=False, error='Unknown operation'), 404
+
+
+@app.post('/api/operations/<operation_id>/cancel')
+def api_operation_cancel(operation_id):
+    body = request.get_json(silent=True) or {}
+    body['operation_id'] = operation_id
+    return jsonify(ok=True, operation=operation_api.public(operation_api.cancel(ROOT, body)))
+
+
+def _battle_device(cfg):
+    return operation_api.context(ROOT, cfg, {}, None)['device_key']
+
+
+@app.get('/api/battles/active')
+def api_battle_active():
+    from control import battles
+    return jsonify(battles.active(ROOT, _battle_device(load_config())))
+
+
+@app.get('/api/battles')
+def api_battle_history():
+    from control import battles
+    cfg = load_config()
+    instance = request.args.get('instance')
+    if instance:
+        if instance not in cfg.get('instances', {}):
+            return jsonify(ok=False, error='Unknown emulator'), 400
+        cfg['active_instance'] = instance
+    store = battles.ledger(ROOT)
+    device = _battle_device(cfg)
+    battles.reconcile(ROOT, store, device)
+    try:
+        limit, offset = int(request.args.get('limit', 50)), int(request.args.get('offset', 0))
+        rows = store.list(limit=limit, offset=offset, device=device)
+    except ValueError as exc:
+        return jsonify(ok=False, error=str(exc)), 400
+    return jsonify(battles=[battles.public(store, row) for row in rows])
+
+
+@app.get('/api/battles/<battle_id>')
+def api_battle_detail(battle_id):
+    from control import battles
+    store = battles.ledger(ROOT)
+    try:
+        row = store.get(battle_id)
+        events = [dict(event, t=event['timestamp']) for event in store.events(battle_id)]
+        return jsonify(battle=battles.public(store, row), events=events)
+    except KeyError:
+        return jsonify(ok=False, error='Unknown battle'), 404
+
+
+@app.post('/api/operations/<operation_id>/live-controls')
+@app.post('/api/operations/<operation_id>/actions')
+def api_battle_command(operation_id):
+    from control import battles
+    try:
+        return jsonify(battles.command(ROOT, operation_id, request.get_json(silent=True),
+                                       action=request.path.endswith('/actions')))
+    except KeyError:
+        return jsonify(ok=False, error='Unknown battle or operation'), 404
+    except operation_api.Conflict:
+        raise
+    except ValueError as exc:
+        return jsonify(ok=False, error=str(exc)), 400
+
+
+@app.route('/api/run-controls', methods=['GET', 'POST'])
+def api_run_controls():
+    from control import run_workspace
+    from player import playerprofile as pp
+    cfg = load_config()
+    name = cfg.get('active_profile')
+    from player import accounts
+    context = dict(instance=cfg.get('active_instance', 'main'), account=accounts.identity(cfg), profile=name)
+    path = _profile_path(name)
+    if not path or not os.path.isfile(path):
+        return jsonify(ok=False, error='Choose a saved profile first'), 400
+    body = request.get_json(silent=True) if request.method == 'POST' else request.args
+    if body is None or not hasattr(body, 'get'):
+        return jsonify(ok=False, error='Settings must be an object'), 400
+    run = body.get('blueprint', body.get('run'))
+    if isinstance(run, str) and run.startswith('bp_'):
+        run = run[3:]
+    if request.method == 'POST' and (_is_starter(name) or _is_draft(name) or _foreign_profile(name, cfg)):
+        return jsonify(ok=False, error='Make or select your own editable profile first'), 409
+    if request.method == 'POST' and body.get('context') != context:
+        raise operation_api.Conflict('Account, emulator or profile changed; reopen the run before editing')
+    with _profile_lock(path), _COMPILER_LOCK:
+        revision = operation_api.file_revision(path)
+        if request.method == 'POST' and body.get('expected_revision') != revision:
+            raise operation_api.Conflict('Saved run changed; refresh before editing again')
+        profile = yaml.safe_load(Path(path).read_bytes())
+        profile['_name'] = name
+        previous = pp.CONFIG
+        pp.CONFIG = cfg
+        try:
+            if request.method == 'POST':
+                result = run_workspace.update(profile, cfg, run, body.get('changes', body.get('patch')))
+                updated = result.pop('profile')
+                problems = pp.validate(updated)
+                if problems:
+                    raise ValueError('; '.join(problems))
+                updated.pop('_name', None)
+                _save_yaml_backup(path, updated)
+                revision = operation_api.file_revision(path)
+            else:
+                result = run_workspace.read(profile, cfg, run)
+            return jsonify(ok=True, context=context, profile_revision=revision, **result)
+        except (ValueError, pp.ProfileError) as exc:
+            return jsonify(ok=False, error=str(exc)), 400
+        finally:
+            pp.CONFIG = previous
+
+
+def _requested_operation(cfg, kind):
+    operation_id = request.args.get('operation_id')
+    if operation_id:
+        try:
+            op = operation_api.resolve(ROOT, operation_id)
+        except KeyError:
+            raise operation_api.Conflict('Unknown operation') from None
+        if op['kind'] not in kind:
+            raise operation_api.Conflict('Operation belongs to another workflow')
+        return op
+    ctx = operation_api.context(ROOT, cfg, {}, _profile_path(cfg.get('active_profile')))
+    op = operation_api.ledger(ROOT).latest(ctx, kind)
+    if op and op['kind'] in kind:
+        return operation_api.resolve(ROOT, op['id'])
+    return None
+
 # Serialize dashboard mutations, including the short clicker worker. A config
 # or account switch must not race a screenshot-verified click on the old device.
 _ACTION_LOCK = threading.Lock()
+
+
+@app.before_request
+def local_requests_only():
+    """Refuse, before any other hook or route runs: a request whose Host
+    header names anything but a loopback / bind host (421), and a POST/PUT/
+    PATCH/DELETE whose Origin header is present and is not this dashboard's
+    own `http://<Host>` (403) - a web page the user visits sends its own
+    Origin. A request with no Origin header (curl, scripts, a typed URL)
+    is not refused by the Origin check."""
+    if urllib.parse.urlsplit("//" + request.host).hostname not in _LOCAL_HOSTS:
+        return jsonify({"ok": False, "error": "This dashboard only answers on 127.0.0.1 / localhost"}), 421
+    origin = request.headers.get("Origin")
+    if (request.method not in ("GET", "HEAD", "OPTIONS") and origin is not None
+            and origin.casefold() != ("http://" + request.host).casefold()):
+        return jsonify({"ok": False, "error": "Cross-site request refused"}), 403
+
+
+@app.after_request
+def deny_framing(response):
+    """`X-Frame-Options: DENY` on every response, refusals included: no page
+    may frame the dashboard and click Start / allow taps through an invisible
+    overlay. No first-party page uses an <iframe>."""
+    response.headers["X-Frame-Options"] = "DENY"
+    return response
 
 
 @app.before_request
@@ -198,8 +397,8 @@ def _compiled_runs(cfg):
     path = _profile_path(name)
     if not path or not os.path.isfile(path):
         raise ValueError("Choose a valid profile in Setup")
-    with open(path, encoding="utf-8") as fh:
-        profile = yaml.safe_load(fh)
+    profile_bytes = Path(path).read_bytes()
+    profile = yaml.safe_load(profile_bytes)
     profile["_name"] = name
     with _COMPILER_LOCK:
         previous = pp.CONFIG
@@ -213,6 +412,13 @@ def _compiled_runs(cfg):
                 compiled = pp.compile_preset(profile, key)
                 compiled["runner"] = flows.script(compiled["kind"])
                 out["bp_" + key] = compiled
+            import copy
+            import hashlib
+            cfg['_profile_snapshot'] = copy.deepcopy(profile)
+            cfg['_profile_revision'] = hashlib.sha256(profile_bytes).hexdigest()
+            plan = pp.compile_plan(profile)
+            if plan is not None:
+                cfg['plan'] = plan
             if profile.get("plan") and "combo" in (cfg.get("presets") or {}):
                 out["combo"] = cfg["presets"]["combo"]
             else:
@@ -273,26 +479,42 @@ def _display_runs(cfg):
         return out
 
 
+def _combo_readiness(cfg, runs):
+    """readiness.check_plan over the active profile's compiled day plan
+    (playerprofile.compile_plan, the schedule combo.py walks): Combo is ready
+    only when every run its plan names on any weekday is. With no active
+    profile combo.py runs its own phase constants, so there is no plan run
+    to check (empty week: ready)."""
+    from player import playerprofile as pp, readiness
+    week = {}
+    if cfg.get("active_profile"):
+        with open(_profile_path(cfg["active_profile"]), encoding="utf-8") as fh:
+            week = pp.compile_plan(yaml.safe_load(fh))["week"]
+    return readiness.check_plan(ROOT, cfg, runs, week)
+
+
 def _runs_readiness(cfg, runs):
     """Per-run calibration state for the run picker: each run type needs its
     own set of images to click (its flow templates, gather features, presets,
     plus the shared recognition guards), so a run whose images exist starts
     and one whose images are missing is greyed out with the list to scan -
-    independent of what any OTHER run type still lacks. `combo` schedules the
-    others and is not checked here."""
+    independent of what any OTHER run type still lacks. `combo` is the union
+    of the runs its day plan names (_combo_readiness); each of its missing
+    images is prefixed with the runs and blocks that need it."""
     from player import readiness
     out = {}
     for name, body in runs.items():
-        if name == "combo" or not isinstance(body, dict):
+        if not isinstance(body, dict):
             continue
         if body.get("_setup_errors"):
             out[name] = {"ready": False, "setup_required": True, "missing": ["Confirm this run's equipment and abilities after scanning."],
                          "details": [], "advisory": [], **_setup_next_action(cfg, body)}
             continue
         try:
-            r = readiness.check(ROOT, cfg, body)
+            r = _combo_readiness(cfg, runs) if name == "combo" else readiness.check(ROOT, cfg, body)
             out[name] = {"ready": r["ready"],
-                         "missing": [" or ".join(row["alternatives"]) or "; ".join(row["reasons"])
+                         "missing": [("; ".join(row["runs"]) + ": " if row.get("runs") else "")
+                                     + (" or ".join(row["alternatives"]) or "; ".join(row["reasons"]))
                                      for row in r["missing"]],
                          # one row per missing image for the Control card: the
                          # plain-language card (what / where / how), why this
@@ -338,7 +560,10 @@ def api_readiness():
             return jsonify(ready=False, preset=name, missing=[],
                            **_setup_next_action(cfg, runs[name]),
                            diagnostics=runs[name]["_setup_errors"])
-        return jsonify(dict(readiness.check(ROOT, cfg, runs[name]), preset=name))
+        projection = readiness.check(ROOT, cfg, runs[name])
+        context = operation_api.context(ROOT, cfg, {'selected_run': name}, _profile_path(cfg.get('active_profile')))
+        context.pop('config', None)
+        return jsonify(dict(projection, preset=name, context=context))
     except Exception as e:
         return jsonify({"ready": False, "error": str(e), "missing": []}), 400
 
@@ -375,6 +600,119 @@ def save_config(data: dict) -> str:
         original = yaml.safe_load(fh)
     data = accounts.persist(data, original)
     return _save_yaml_backup(CONFIG_PATH, data)
+
+
+def _settings_snapshot(cfg):
+    import hashlib
+    from player import accounts
+    from control.settings_catalog import catalog
+    name = cfg.get('active_profile')
+    path = _profile_path(name)
+    profile = {}
+    profile_bytes = b''
+    if path and os.path.isfile(path):
+        profile_bytes = Path(path).read_bytes()
+        profile = yaml.safe_load(profile_bytes) or {}
+        if not isinstance(profile, dict):
+            raise ValueError('Active profile must be an object')
+    context = dict(instance=cfg.get('active_instance', 'main'),
+                   account=accounts.identity(cfg), profile=name)
+    revision = hashlib.sha256(Path(CONFIG_PATH).read_bytes() + b'\0' + profile_bytes).hexdigest()
+    editable = bool(path and profile_bytes and not _is_starter(name)
+                    and not _is_draft(name) and not _foreign_profile(name, cfg))
+    modules = catalog(cfg, profile, editable)
+    policies = [dict(id=key, title=body.get('label') or key.replace('_', ' '),
+                     editor=editor, section=section, editable=editable)
+                for section, editor in [('shopping_lists', 'shop'), ('uw_policies', 'uw'),
+                                        ('rescue_policies', 'rescue')]
+                for key, body in sorted((profile.get('policies', {}).get(section) or {}).items())]
+    return dict(ok=True, context=context, revision=revision, modules=modules,
+                policies=policies), profile, path
+
+
+def _settings_public(snapshot):
+    for module in snapshot['modules']:
+        module.pop('storage_path', None)
+    return snapshot
+
+
+@app.get('/api/settings')
+def api_settings_get():
+    with _CONFIG_WRITE_LOCK:
+        try:
+            cfg = load_config()
+            path = _profile_path(cfg.get('active_profile'))
+            # Same lock order as POST: config, then profile.
+            if path:
+                with _profile_lock(path):
+                    snapshot, _, _ = _settings_snapshot(cfg)
+            else:
+                snapshot, _, _ = _settings_snapshot(cfg)
+            return jsonify(_settings_public(snapshot))
+        except (ValueError, OSError, yaml.YAMLError) as exc:
+            return jsonify(ok=False, error=str(exc)), 400
+
+
+@app.post('/api/settings')
+@_serialize_config
+def api_settings_post():
+    from contextlib import nullcontext
+    from control.settings_catalog import validate, write, read
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return jsonify(ok=False, error='Expected a settings object'), 400
+    try:
+        cfg = load_config()
+        path = _profile_path(cfg.get('active_profile'))
+        with _profile_lock(path) if path else nullcontext():
+            snapshot, profile, path = _settings_snapshot(cfg)
+            if body.get('context') != snapshot['context'] or body.get('revision') != snapshot['revision']:
+                return jsonify(ok=False, error='Settings or active account changed. Reload before saving.'), 409
+            module = next((m for m in snapshot['modules'] if m['id'] == body.get('module')), None)
+            if module is None:
+                raise ValueError('Unknown settings module')
+            if not module['editable']:
+                return jsonify(ok=False, error='Create and activate a personal profile before editing these settings.'), 409
+            values = body.get('values')
+            if not isinstance(values, dict) or not values:
+                raise ValueError('Provide one or more field values')
+            allowed = {spec['key']: spec for spec in module['fields']}
+            target = profile if module['scope'] == 'profile' else cfg
+            before_problems = set(_profile_check(profile, cfg)) if module['scope'] == 'profile' else set()
+            prefix = '.'.join(module['storage_path'])
+            # Validate every input before applying any part of the patch.
+            for key, value in values.items():
+                if key not in allowed:
+                    raise ValueError(f'Field is not editable in this module: {key}')
+                validate(allowed[key], value)
+                if key == 'gem_orbit.center' and (value[0] >= 1080 or value[1] >= 2560):
+                    raise ValueError('Orbit center must be inside the native 1080 × 2560 screen')
+            # Policy names are literal mapping keys, including periods.
+            node = target
+            for part in module['storage_path']:
+                if part not in node:
+                    node[part] = {}
+                if not isinstance(node[part], dict):
+                    raise ValueError(f'{prefix}: existing value is not an object')
+                node = node[part]
+            for key, value in values.items():
+                write(node, key, value)
+            if module['scope'] == 'profile':
+                # Preserve unrelated legacy/unknown fields; validate this policy's
+                # known fields rather than rejecting an entire existing profile.
+                for spec in module['fields']:
+                    validate(spec, read(node, spec['key'], spec['default']))
+                introduced = set(_profile_check(profile, cfg)) - before_problems
+                if introduced:
+                    raise ValueError('; '.join(sorted(introduced)))
+                backup = _save_yaml_backup(path, profile)
+            else:
+                backup = save_config(cfg)
+            fresh, _, _ = _settings_snapshot(load_config())
+            fresh['backup'] = backup
+            return jsonify(_settings_public(fresh))
+    except (ValueError, OSError, yaml.YAMLError) as exc:
+        return jsonify(ok=False, error=str(exc)), 400
 
 
 def _calibration_dir(cfg=None):
@@ -540,24 +878,19 @@ def api_config_post():
 
 # ------------------------------------------------------------------ status
 def _procs():
-    """Live runner processes. THE ORDER OF THE TWO LOOKUPS IS THE WHOLE
-    FUNCTION (2026-08-18, live): asking psutil for `cmdline` on every
-    process on the machine cost ~4 s per call on Windows (a per-process
-    handle query), and /api/status calls it every 2.5 s - refreshes queued
-    behind each other for good and the page never redrew after kill/start/
-    scan. Name is nearly free; cmdline is fetched only for the few python
-    processes."""
+    """Live runner processes, scanned now (_scan_procs, uncached). /api/status
+    reads _procs_cached instead: the background refresher's snapshot, which
+    it rescans inline on the request only when that snapshot is over 6 s old
+    (refresher not started, stalled or failing)."""
     return _scan_procs()
 
 
 def _proc_in_tree(pid: int) -> bool:
-    """Two trees can farm side by side (the main farm and the P3 clone,
-    each driving its own VM). A runner belongs to THIS dashboard only if
-    its process cwd is this tree - every runner is spawned with its tree
-    as working directory, and the cmdline alone cannot tell the trees
-    apart (`pythonw orchestrator.py --instance main` is relative). Same rule as
-    scan.py's preflight. Unreadable cwd counts as ours: every consumer of
-    these rows (wizard guards, kill buttons, activate) must fail closed."""
+    """Scope process controls to this checkout; device leases cross checkouts.
+
+    Cwd determines which dashboard may control a process, not which device
+    it owns. Unreadable cwd stays conservative in the control inventory.
+    """
     try:
         import psutil
         cwd = os.path.normcase(psutil.Process(pid).cwd())
@@ -566,53 +899,42 @@ def _proc_in_tree(pid: int) -> bool:
     return cwd == os.path.normcase(ROOT)
 
 
-def _scan_procs():
-    """One WMI query for all python processes with their command lines
-    (~1.5 s on this machine - process enumeration is just slow on Windows;
-    psutil's per-process handles were 2-4 s). The number does not matter
-    any more: this runs on the background refresher thread, never on a
-    request. Falls back to psutil if pwsh/WMI is unavailable. Rows are
-    scoped to THIS tree (_proc_in_tree) - the other tree's runners are a
-    different farm on a different VM and must not trip this dashboard's
-    guards or appear in its kill list."""
+def _process_target():
+    from device import adbclient
+    cfg = load_config()
+    inst = (cfg.get('instances') or {}).get(cfg.get('active_instance', 'main')) or {}
+    return (*adbclient._HOST, inst.get('serial'))
+
+
+def _scan_procs(target=None):
+    """One row {pid, runner (script stem), cmdline} per runner of THIS tree.
+
+    The process walk and the runner-script set are runtime.runners.
+    other_runners, the same source the bootstrap and scan preflights use.
+    A venv launcher stub (.venv/Scripts/python(w).exe) starts the real
+    interpreter as a CHILD with the same arguments after argv[0], so every
+    runner it starts appears as two processes; a process whose parent is
+    another runner with the same arguments is that launcher's child and is
+    left out, so the row carries the launcher's pid (the pid Popen returned).
+    Terminating either process of the pair ends both (2026-10-12, uv venv).
+    Rows are scoped to this checkout and omit workers proven to own another
+    transport. Foreign checkouts remain protected by the machine-wide lease;
+    they do not belong in this dashboard's PID kill list."""
+    import psutil
+    from runtime import runners
+    target = target if target is not None else _process_target()
+    found = {pid: (script, args) for pid, script, args in runners.other_runners(target=target)
+             if _proc_in_tree(pid)}
     out = []
-    try:
-        res = _run(["powershell", "-NoProfile", "-NonInteractive", "-Command",
-                    "Get-CimInstance Win32_Process -Filter \"Name like "
-                    "'python%'\" | Select-Object ProcessId,CommandLine | "
-                    "ConvertTo-Json -Compress"],
-                   capture_output=True, text=True, timeout=10)
-        data = json.loads(res.stdout or "[]")
-        if isinstance(data, dict):
-            data = [data]
-        for row in data:
-            cl = row.get("CommandLine") or ""
-            m = re.search(r"(gem_collector|orchestrator|shard|combo|tourney|quest_\w+|hp_probe|"
-                          r"scan|calibrate|clicker|boot|dashboard)\.py", cl)
-            if m and m.group(1) != "dashboard":
-                pid = int(row["ProcessId"])
-                if not _proc_in_tree(pid):
-                    continue
-                out.append({"pid": pid,
-                            "runner": m.group(1), "cmdline": cl})
-        return out
-    except Exception:                           # noqa: BLE001 - no WMI/pwsh
-        import psutil
-        for p in psutil.process_iter(["pid", "name"]):
-            if "python" not in (p.info["name"] or "").lower():
-                continue
-            try:
-                cl = " ".join(p.cmdline() or [])
-            except Exception:                   # noqa: BLE001
-                continue
-            m = re.search(r"(gem_collector|orchestrator|shard|combo|tourney|quest_\w+|hp_probe|"
-                          r"scan|calibrate|clicker|boot|dashboard)\.py", cl)
-            if m and m.group(1) != "dashboard":
-                if not _proc_in_tree(p.info["pid"]):
-                    continue
-                out.append({"pid": p.info["pid"], "runner": m.group(1),
-                            "cmdline": cl})
-        return out
+    for pid, (script, args) in found.items():
+        try:
+            parent = psutil.Process(pid).ppid()
+        except Exception:                       # noqa: BLE001 - exited since the walk
+            parent = None
+        if parent in found and found[parent][1][1:] == args[1:]:
+            continue
+        out.append({"pid": pid, "runner": Path(script).stem, "cmdline": " ".join(args)})
+    return out
 
 
 # /api/status is polled every 2.5 s by every open tab; the process scan
@@ -629,14 +951,17 @@ def _procs_refresh():
     if _PROCS_LOCK is None:
         _PROCS_LOCK = threading.Lock()
     with _PROCS_LOCK:
-        _PROCS_CACHE["procs"] = _scan_procs()
+        target = _process_target()
+        _PROCS_CACHE["procs"] = _scan_procs(target)
+        _PROCS_CACHE["target"] = target
         _PROCS_CACHE["at"] = __import__("time").time()
     return _PROCS_CACHE["procs"]
 
 
 def _procs_cached():
     import time as _t
-    if _t.time() - _PROCS_CACHE["at"] > 6:     # stale beyond the refresher:
+    if (_t.time() - _PROCS_CACHE["at"] > 6
+            or _PROCS_CACHE.get('target') != _process_target()):
         return _procs_refresh()                # refresh inline once
     return _PROCS_CACHE["procs"]
 
@@ -655,31 +980,190 @@ def _start_procs_refresher():
     threading.Thread(target=loop, daemon=True, name="procs-refresher").start()
 
 
-_CONN_CACHE = {"t": 0.0, "ok": False}
+_CONN_CACHE = {"t": 0.0, "serial": None, "device_state": "unknown", "port_open": False}
 
 
-def _connected() -> bool:
-    """Is the active instance's adb port answering right now? A pure TCP
-    dial - never an adb.exe spawn (CLAUDE.md rule 1) - cached 10 s because
-    /api/status is polled every 2.5 s by every open tab."""
-    now = time.time()
-    if now - _CONN_CACHE["t"] < 10:
-        return _CONN_CACHE["ok"]
-    ok = False
+def _port_open(serial: str) -> bool:
+    """Does a `host:port` serial's port accept a TCP dial (0.3 s)? False for
+    any other serial shape. Open port != adb device online: MuMu keeps the
+    port open while the adb server lists the device `offline`."""
+    if ":" not in serial:
+        return False
+    import socket
+    host, _, port = serial.rpartition(":")
     try:
-        cfg = load_config()
-        inst = (cfg.get("instances") or {}).get(
-            cfg.get("active_instance", "main")) or {}
-        serial = inst.get("serial") or ""
-        if ":" in serial:
-            import socket
-            host, _, port = serial.rpartition(":")
-            with socket.create_connection((host, int(port)), timeout=0.3):
-                ok = True
-    except Exception:                   # noqa: BLE001 - unreachable = not connected
-        ok = False
-    _CONN_CACHE.update(t=now, ok=ok)
-    return ok
+        with socket.create_connection((host, int(port)), timeout=0.3):
+            return True
+    except (OSError, ValueError):       # unreachable / non-numeric port
+        return False
+
+
+def _device_state(cfg: dict) -> dict:
+    """The active instance's adb device state in `cfg`, from ONE adb-server
+    host query (`adbclient.get_state`, socket only - CLAUDE.md rule 1), plus
+    the TCP `port_open` dial. /api/status is polled every 2.5 s by every open
+    tab, so both answers are reused for 10 s - only for the serial they were
+    asked for. A state the server answered that is not 'device' (offline,
+    missing, unauthorized...) is re-queried (get_state alone, the port dial
+    keeps its 10 s) on every call, so a stale online answer never clears the
+    Start blocker. 'no_server' and 'unknown' (no server, or one that never
+    answers) are held for the 10 s like 'device': asking again waits out
+    get_state's whole 1 s timeout on every poll; `_CONN_CACHE["t"] = 0` also
+    forces a full re-query."""
+    from device import adbclient
+    now = time.time()
+    inst = (cfg.get("instances") or {}).get(
+        cfg.get("active_instance", "main")) or {}
+    serial = inst.get("serial") or ""
+    if now - _CONN_CACHE["t"] >= 10 or serial != _CONN_CACHE["serial"]:
+        _CONN_CACHE.update(t=now, serial=serial,
+                           device_state=adbclient.get_state(serial),
+                           port_open=_port_open(serial))
+    elif _CONN_CACHE["device_state"] not in ("device", "no_server", "unknown"):
+        _CONN_CACHE["device_state"] = adbclient.get_state(serial)
+    _reconnect_tick(cfg, serial, _CONN_CACHE["device_state"], _CONN_CACHE["port_open"])
+    return {"device_state": _CONN_CACHE["device_state"],
+            "port_open": _CONN_CACHE["port_open"], "serial": serial}
+
+
+# AUTO-RECONNECT (user, 2026-10-12: "add some resiliency and re-connectivity
+# built in"). Live that day the adb server restarted and the TCP device stayed
+# detached - Live read "missing" until a manual host:connect. Every
+# _device_state call (each /api/status poll, a failed frame, which first drops
+# the cached answer) runs _reconnect_tick: when the server does not list the
+# device as `device`, one adbclient.recover runs on a background thread -
+# never on the request - if it has something to do: connect the device when its adb port answers (the
+# VM is up) and no runner of this tree is live, or start a server when none
+# listens (any serial, runners or not: no server means no transport to
+# bounce). While a runner is live the device is the runner's (capture.grab
+# recovers it; the manual reconnect refuses with 409 for the same reason),
+# so then only a down server is started (recover attempts=0: no connect, no
+# disconnect). One in flight; the next no sooner than 5 s after the last
+# started, nor before the failure backoff (5, 10, 20, 40, then 60 s);
+# 'gave_up' after _RECONNECT_GIVE_UP consecutive failed attempts, and it
+# holds until the device reads `device`, the serial changes, the server's
+# situation flips (a give-up reached with no server listening holds only while
+# none listens, one reached with a server listening only while one does: a
+# server that dies later gets its start, with a fresh set of attempts that
+# waits out the backoff the last one set), or a manual reconnect / adopt calls
+# _reconnect_reset (the Reconnect button stays on the page). Only ONE flip is
+# honoured per outage ("flipped": a give-up reached after a flip is final until
+# the device reads `device` or a reset), so a server that keeps dying cannot
+# keep the attempts, and its start-server spawns, going (a server-only attempt
+# counts like any other: only the device reading `device` clears the count,
+# also with a runner live or the port closed). Nothing else
+# counts as "something changed": the state an attempt leaves behind is its own
+# doing (`offline` right after its connect, `missing` once the server drops
+# that transport, a server it started), and a closed port or a live runner is
+# a tick with nothing to do, which leaves the failure count alone. So is
+# `unauthorized`: only the person at the emulator can allow the host, recover
+# returns that state untouched, so no attempt starts or counts for it. recover
+# sends no game input. "down" is whether the server was down when the last
+# attempt ended (when it started, until it ends).
+_RECONNECT = {"state": "idle", "attempts": 0, "next_at": 0.0, "last_error": "",
+              "serial": None, "down": False, "flipped": False, "thread": None}
+_RECONNECT_LOCK = threading.Lock()
+_RECONNECT_GIVE_UP = 10
+
+
+def _reconnect_reset():
+    """Manual reconnect / adopt: idle, no failures counted, next attempt
+    allowed at once."""
+    with _RECONNECT_LOCK:
+        _RECONNECT.update(state="idle", attempts=0, next_at=0.0, last_error="", serial=None,
+                          flipped=False)
+
+
+def _reconnect_tick(cfg, serial, device_state, port_open):
+    """Start one background recovery for `serial` if one is due (see
+    AUTO-RECONNECT above); otherwise only update the bookkeeping: 'device'
+    clears the failure count to idle; a new serial starts the count over
+    with no wait; 'gave_up' returns at once while the server is still in the
+    state (down / listening) the last attempt left it in, or when this outage
+    already had its one flip; otherwise it starts the count over (the backoff
+    the last attempt set still applies); nothing to do (port closed or a
+    runner live, and a server listening; or `unauthorized`) reads idle and
+    keeps the failure count; an attempt waiting out its backoff reads
+    'trying'. Returns at once either way."""
+    now = time.time()
+    connect = port_open and not (device_state != "device" and _procs_cached())
+    with _RECONNECT_LOCK:
+        r = _RECONNECT
+        if r["thread"] is not None and r["thread"].is_alive():
+            return
+        if device_state == "device":
+            r.update(state="idle", attempts=0, last_error="", serial=serial, flipped=False)
+            return
+        if r["serial"] != serial:
+            r.update(state="idle", attempts=0, next_at=0.0, last_error="", serial=serial,
+                     flipped=False)
+        down = device_state == "no_server"
+        if r["state"] == "gave_up":
+            if down == r["down"] or r["flipped"]:
+                return
+            r.update(state="idle", attempts=0, last_error="", flipped=True)
+        if device_state == "unauthorized" or (not connect and not down):
+            r["state"] = "idle"             # a person allows the host / VM down / runner's device
+            return
+        if now < r["next_at"]:
+            r["state"] = "trying"
+            return
+        adb = (cfg.get("adb") or {}).get("exe") or ""
+        r.update(state="trying", next_at=now + 5.0, down=down)
+        r["thread"] = threading.Thread(target=_reconnect_attempt, args=(serial, adb, connect),
+                                       daemon=True, name="adb-reconnect")
+        r["thread"].start()
+
+
+def _reconnect_attempt(serial, adb, connect):
+    """One adbclient.recover for `serial` (its start_server: `<adb>
+    start-server` through _run, the sanctioned lifecycle spawn; with
+    `connect` False, attempts=0: start a down server, touch no transport),
+    then the outcome into _RECONNECT: 'device' -> idle; any other state
+    (a server-only attempt that started a server and left the device
+    unattached included), or an exception, counts one failed attempt, sets
+    the backoff and records whether the server was down when the attempt
+    ended. Dropped when a reset or another serial took over meanwhile."""
+    from device import adbclient
+
+    def start_server():
+        _run([adb, "start-server"], capture_output=True, timeout=15)
+    try:
+        state = (adbclient.recover(serial, start_server) if connect
+                 else adbclient.recover(serial, start_server, attempts=0))
+        error = "" if state == "device" else f"device {state} after recovery"
+    except Exception as e:                      # noqa: BLE001 - reported in /api/status
+        state, error = None, str(e)[:120]
+    with _RECONNECT_LOCK:
+        r = _RECONNECT
+        if r["serial"] != serial:
+            return
+        if state == "device":
+            r.update(state="idle", attempts=0, last_error="")
+        else:
+            n = r["attempts"] + 1
+            r.update(attempts=n, last_error=error,
+                     down=r["down"] if state is None else state == "no_server",
+                     state="gave_up" if n >= _RECONNECT_GIVE_UP else "trying",
+                     next_at=max(r["next_at"], time.time() + min(5.0 * 2 ** (n - 1), 60.0)))
+    _CONN_CACHE["t"] = 0.0          # the next poll re-asks the adb server
+
+
+def _reconnect_status(serial) -> dict:
+    """The /api/status `reconnect` value for `serial`, the device that status
+    reports. next_try_in: seconds until the next attempt may start, None while
+    idle, given up, or an attempt is running. A record that belongs to another
+    serial (the instance switched while the old serial's attempt still runs;
+    the tick starts over only once it ends) reads as a fresh idle one."""
+    with _RECONNECT_LOCK:
+        r = _RECONNECT
+        if r["serial"] != serial:
+            return {"state": "idle", "attempts": 0, "next_try_in": None, "last_error": ""}
+        busy = r["thread"] is not None and r["thread"].is_alive()
+        wait = (round(max(0.0, r["next_at"] - time.time()), 1)
+                if r["state"] == "trying" and not busy else None)
+        return {"state": r["state"], "attempts": r["attempts"],
+                "next_try_in": wait, "last_error": r["last_error"]}
 
 
 _CALIB_CACHE = {"t": 0.0, "missing": []}
@@ -728,8 +1212,9 @@ def api_status():
         pass
     inst = cfg.get("active_instance", "main")
     flag = os.path.join(ROOT, "logs", inst, "stop_after_run")
+    conn = _device_state(cfg)
     return jsonify({
-        "processes": _procs_cached(),
+        "processes": operation_api.project_processes(ROOT, _procs_cached()),
         "daily_state": daily,
         "stop_flag": os.path.exists(flag),
         "events": _newest_events(inst),
@@ -739,8 +1224,15 @@ def api_status():
         "setup_complete": _setup_complete(),
         "calibration": control_gate(ROOT, cfg),
         # nav gates: Control is locked until calibration has nothing missing,
-        # and shows a connect overlay while the emulator port is not answering
-        "connected": _connected(),
+        # and shows a connect overlay while the adb server does not list the
+        # device as online (`device`) - an open port alone is not connected
+        "connected": conn["device_state"] == "device",
+        "device_state": conn["device_state"],
+        "port_open": conn["port_open"],
+        # the background device recovery (_reconnect_tick): state idle /
+        # trying / gave_up, consecutive failed attempts, seconds to the next
+        # one (None when none is scheduled), the last failure's message
+        "reconnect": _reconnect_status(conn["serial"]),
         "calibrate_missing": _calibrate_missing(),
     })
 
@@ -783,11 +1275,36 @@ def _screencap_cmd(serial, display, png=True):
     return ("screencap -p" if png else "screencap") + (f" -d {display}" if display else "")
 
 
+def _bad_display_query():
+    """The refusal (JSON, 400) for a capture route's `display` query value,
+    or None when it may be used: it goes into the device's screencap shell
+    command, so it must be ASCII digits only."""
+    display = request.args.get("display")
+    if display and not re.fullmatch(r"[0-9]+", display):
+        return jsonify({"ok": False, "error": "display: a whole number expected"}), 400
+    return None
+
+
+def _bad_device_query(configured_serial):
+    """_bad_display_query, plus the refusal for a `serial` query value (the
+    screen check's): it goes to the adb server, so it must be the configured
+    one or have a form _SERIAL_RE accepts (host:port, emulator-NNNN)."""
+    serial = request.args.get("serial")
+    if serial and serial != configured_serial and not _SERIAL_RE.fullmatch(serial):
+        return jsonify({"ok": False, "error": "serial: host:port or emulator-NNNN expected"}), 400
+    return _bad_display_query()
+
+
 @app.get("/api/frame.png")
 def api_frame():
     cfg = load_config()
     inst = cfg["instances"][cfg.get("active_instance", "main")]
-    serial = request.args.get("serial") or inst["serial"]
+    refused = _bad_display_query()
+    if refused:
+        return refused
+    # the configured device only: no page names another (a `serial` query
+    # parameter is ignored)
+    serial = inst["serial"]
     # -d: MuMu runs the game on a secondary display; without the id the
     # screencap answers with a warning instead of pixels (same as capture.py)
     display = request.args.get("display") or _game_display(serial, inst.get("display"))
@@ -796,20 +1313,20 @@ def api_frame():
     # also have a Stream why running new ADB?"): this endpoint fires every
     # 5 s per open tab, and spawning adb.exe for each was both the console-
     # window storm and pointless - the runners already talk straight to the
-    # adb server socket. The one process fallback (hidden) exists only for
-    # a fresh machine where no adb server is running yet; running adb.exe
-    # once STARTS the daemon, and every later frame rides the socket.
+    # adb server socket. A failed capture spawns nothing here: it hands the
+    # device to the bounded background recovery (_device_state ->
+    # _reconnect_tick), which starts a down server with the configured adb
+    # at most once per backoff window - it used to run start-server on EVERY
+    # failed frame and never re-attached a dropped TCP device. Only the
+    # configured adb binary is ever started (an `adb` query parameter is
+    # ignored: it let any web page name an executable for this server to run).
     try:
         from device import adbclient
         raw = adbclient.exec_out(serial, cmd, timeout=15)
-    except Exception:                           # noqa: BLE001 - server down?
-        adb = request.args.get("adb") or cfg["adb"]["exe"]
-        try:
-            _run([adb, "start-server"], capture_output=True, timeout=15)
-            adbclient.reconnect(serial)
-            raw = adbclient.exec_out(serial, cmd, timeout=15)
-        except Exception as e:                  # noqa: BLE001
-            return Response(f"capture failed: {e}", status=502)
+    except Exception as e:                      # noqa: BLE001 - device or server down
+        _CONN_CACHE["t"] = 0.0                  # a held 'device' is stale now
+        _device_state(cfg)
+        return Response(f"capture failed: {e}", status=502)
     from device import displays
     raw = displays.strip_warning(raw)
     if not raw.startswith(displays.PNG_MAGIC):
@@ -840,7 +1357,10 @@ def api_stream():
     import time as _time
     cfg = load_config()
     inst = cfg["instances"][cfg.get("active_instance", "main")]
-    serial = request.args.get("serial") or inst["serial"]
+    refused = _bad_display_query()
+    if refused:
+        return refused
+    serial = inst["serial"]             # the configured device only, as api_frame
     asked_display = request.args.get("display") or inst.get("display")
     fps = max(0.5, min(float(request.args.get("fps", 2)), 4.0))
     quality = max(30, min(int(request.args.get("q", 70)), 90))
@@ -939,12 +1459,23 @@ def api_control():
     action = body.get("action")
     cfg = load_config()
     inst = cfg.get("active_instance", "main")
+    if action in ('start', 'start_gems'):
+        retry = operation_api.retry(ROOT, cfg, 'run' if action == 'start' else 'gems', body, _profile_path(cfg.get('active_profile')))
+        if retry:
+            return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
     if action == "stop_after_run":
+        if body.get('operation_id'):
+            operation = operation_api.require_revision(ROOT, body, ('accepted', 'running'))
+            inst = operation['context']['instance']
         path = os.path.join(ROOT, "logs", inst, "stop_after_run")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as fh:
             fh.write("dashboard")
         return jsonify({"ok": True})
     if action == "clear_flag":
+        if body.get('operation_id'):
+            operation = operation_api.require_revision(ROOT, body, ('accepted', 'running'))
+            inst = operation['context']['instance']
         try:
             os.remove(os.path.join(ROOT, "logs", inst, "stop_after_run"))
         except FileNotFoundError:
@@ -953,8 +1484,10 @@ def api_control():
     if action == "kill":
         import psutil
         pid = int(body["pid"])
-        for p in _procs():
+        for p in operation_api.project_processes(ROOT, _procs()):
             if p["pid"] == pid:
+                if p.get('operation'):
+                    raise operation_api.Conflict('Cancel the tracked operation by its ID and revision')
                 proc = psutil.Process(pid)
                 # terminate, WAIT for it, escalate to kill: on Windows
                 # terminate() is TerminateProcess and usually enough, but
@@ -981,22 +1514,24 @@ def api_control():
             return jsonify(ok=False,error="Enable automation taps first."),409
         name=body.get("preset")
         runs=_compiled_runs(cfg)
+        cfg['presets'] = runs
         if name not in runs:
             return jsonify(ok=False,error="Choose a run's diamond settings."),400
         gather=runs[name].get("gather") or {}
         if not (gather.get("ad_gems",True) or (gather.get("gem_orbit") or {}).get("enabled")):
             return jsonify(ok=False,error="Enable Ad Gems or timed orbit clicks in this run's gathering settings."),409
+        # The HUD collector can verify CLAIM + 6 without a saved offer image.
+        # Its battle proof still requires the account's complete digit font.
         from player import accounts
-        if gather.get("ad_gems",True) and not accounts.template_path(ROOT,cfg,"buttons/ad_gems_claim.png").exists():
-            return jsonify(ok=False,error="Capture the HUD Ad Gems claim button first."),409
+        import cv2
+        for digit in range(10):
+            path = accounts.template_path(ROOT, cfg, f"digits/{digit}.png")
+            if not path.exists() or cv2.imread(str(path), cv2.IMREAD_GRAYSCALE) is None:
+                return jsonify(ok=False,error="Learn the wave digits before collecting gems."),409
         cmd=[sys.executable.replace("python.exe","pythonw.exe"),os.path.join(ROOT,"gem_collector.py"),"--instance",inst,"--preset",name]
-        child=subprocess.Popen(cmd,cwd=ROOT,creationflags=subprocess.DETACHED_PROCESS | NO_WINDOW)
-        import time as _t
-        _t.sleep(1.5)
-        if child.poll() is not None:
-            return jsonify(ok=False,error="Diamond collector exited; check its log."),500
+        operation = _launch_operation(cfg, "gems", body, cmd)
         _procs_refresh()
-        return jsonify(ok=True,pid=child.pid)
+        return jsonify(ok=True, operation_id=operation['id'], operation=operation_api.public(operation))
     if action == "start":
         preset = body.get("preset")
         if _procs():
@@ -1004,10 +1539,16 @@ def api_control():
         try:
             from player import readiness
             cfg["presets"] = _compiled_runs(cfg)
-            if preset in cfg["presets"] and preset != "combo":
-                result = readiness.check(ROOT, cfg, cfg["presets"][preset])
+            if preset in cfg["presets"]:
+                # combo: every run its day plan names, so an unready block is
+                # refused here, before any tap, not at its handoff
+                result = (_combo_readiness(cfg, cfg["presets"]) if preset == "combo"
+                          else readiness.check(ROOT, cfg, cfg["presets"][preset]))
                 if not result["ready"]:
-                    return jsonify(dict(result, ok=False, error="Calibration is needed for this run. Open Calibrate to see the missing steps.")), 409
+                    runs = sorted({run for row in result["missing"] for run in row.get("runs", [])})
+                    return jsonify(dict(result, ok=False, error="Calibration is needed for this run"
+                                        + (" (not ready: " + ", ".join(runs) + ")" if runs else "")
+                                        + ". Open Calibrate to see the missing steps.")), 409
         except Exception as e:
             return jsonify({"ok": False, "error": str(e)}), 400
         if preset not in runnable_presets(cfg):
@@ -1036,20 +1577,9 @@ def api_control():
                                 "error": f"flow registry unreadable: {e}"}), 500
         cmd = ([pyw, os.path.join(ROOT, runner), "--instance", inst]
                + preset_argv + [str(a) for a in args])
-        child = subprocess.Popen(cmd, cwd=ROOT,
-                                 creationflags=subprocess.DETACHED_PROCESS
-                                 | NO_WINDOW)
-        # give the child a moment to show up (or die on import) so the reply
-        # reflects reality; a runner that exits inside 1.5 s is a failed
-        # start and the UI should say so, not list a ghost
-        import time as _t
-        _t.sleep(1.5)
-        if child.poll() is not None:
-            return jsonify({"ok": False,
-                            "error": f"runner exited immediately (code "
-                                     f"{child.returncode}) - check logs"}), 500
+        operation = _launch_operation(cfg, "run", body, cmd)
         _procs_refresh()
-        return jsonify({"ok": True, "cmd": cmd, "pid": child.pid})
+        return jsonify(ok=True, operation_id=operation['id'], operation=operation_api.public(operation))
     return jsonify({"ok": False, "error": "unknown action"}), 400
 
 
@@ -1057,6 +1587,9 @@ def api_control():
 @app.post("/api/scan/start")
 def api_scan_start():
     body = request.get_json(force=True) or {}
+    retry = operation_api.retry(ROOT, load_config(), "scan", body, _profile_path(load_config().get('active_profile')))
+    if retry:
+        return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
     others = [pr for pr in _procs() if pr["runner"] != "scan"]
     if others:
         return jsonify({"ok": False,
@@ -1078,9 +1611,8 @@ def api_scan_start():
     if body.get("fresh"):
         args.append("--fresh")
     pyw = sys.executable.replace("python.exe", "pythonw.exe")
-    subprocess.Popen([pyw] + args, cwd=ROOT,
-                     creationflags=subprocess.DETACHED_PROCESS | NO_WINDOW)
-    return jsonify({"ok": True, "phases": phases})
+    operation = _launch_operation(cfg, "scan", body, [pyw] + args)
+    return jsonify(ok=True, phases=phases, operation_id=operation['id'], operation=operation_api.public(operation))
 
 
 # ------------------------------------------------------------ calibrator
@@ -1089,46 +1621,53 @@ def _taps_allowed(cfg: dict) -> bool:
     return bool(((cfg.get("instances") or {}).get(inst) or {}).get("allow_taps"))
 
 
-_analysis_jobs = {}
-_analysis_lock = threading.Lock()
-
-
 @app.post("/api/screen-analysis/start")
 def api_screen_analysis_start():
     cfg = load_config()
-    directory = _calibration_dir(cfg)
-    with _analysis_lock:
-        previous = _analysis_jobs.get(directory)
-        if previous and previous.poll() is None:
-            return jsonify({"error": "Screen analysis is already running"}), 409
-        os.makedirs(directory, exist_ok=True)
-        from player.asset_library import atomic_json
-        from pathlib import Path
-        atomic_json(Path(directory)/"screen_analysis.json", {"status":"running", "message":"Starting screen analysis"})
-        pyw = sys.executable.replace("python.exe", "pythonw.exe")
-        process = subprocess.Popen([pyw, "-m", "player.screen_analysis", "--instance", cfg.get("active_instance", "main")],
-                                   cwd=ROOT, creationflags=NO_WINDOW)
-        _analysis_jobs[directory] = process
-    return jsonify({"ok":True})
+    body = request.get_json(silent=True) or {}
+    retry = operation_api.retry(ROOT, cfg, 'screen_analysis', body, _profile_path(cfg.get('active_profile')))
+    if retry:
+        return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
+    pyw = sys.executable.replace("python.exe", "pythonw.exe")
+    op = _launch_operation(cfg, 'screen_analysis', body, [pyw, '-m', 'player.screen_analysis', '--instance', cfg.get('active_instance', 'main')])
+    return jsonify(ok=True, operation_id=op['id'], operation=operation_api.public(op))
 
 
 @app.get("/api/screen-analysis/status")
 def api_screen_analysis_status():
-    directory = _calibration_dir(load_config())
+    cfg = load_config()
+    operation = _requested_operation(cfg, ('screen_analysis',))
+    if operation:
+        cfg = operation['context']['config']
+    directory = _calibration_dir(cfg)
     try:
         with open(os.path.join(directory, "screen_analysis.json"), encoding="utf-8") as fh:
             result = json.load(fh)
     except (OSError, ValueError):
-        result = {"status":"idle"}
-    process = _analysis_jobs.get(directory)
-    if result.get("status") == "running" and (process is None or process.poll() is not None):
-        result.update(status="error", message="Analysis was interrupted. Start a new screen analysis.")
+        result = {"status": "idle"}
+    if operation:
+        if result.get('operation_id') != operation['id']:
+            result = {'status': 'unavailable', 'message': 'The shared analysis artifact belongs to another operation'}
+        result['operation'] = operation_api.public(operation)
+        if operation['status'] in ('accepted', 'running', 'cancelling'):
+            result.update(status='running')
+        elif operation['status'] != 'succeeded':
+            result.update(status='error', message=(operation.get('error') or {}).get('message', 'Analysis did not complete'))
     return jsonify(result)
 
 
 @app.get("/api/screen-analysis/frame.png")
 def api_screen_analysis_frame():
-    return send_file(os.path.join(_calibration_dir(load_config()), "screen_analysis.png"), mimetype="image/png", max_age=0)
+    cfg = load_config()
+    operation = _requested_operation(cfg, ('screen_analysis',))
+    if operation:
+        if operation['status'] != 'succeeded':
+            raise operation_api.Conflict('Wait for this screen analysis to complete')
+        cfg = operation['context']['config']
+        ref = operation['result_refs'].get('screen_analysis.png')
+        if not ref or operation_api.file_revision(ref['path']) != ref['revision']:
+            raise operation_api.Conflict('This screen analysis image has been replaced')
+    return send_file(os.path.join(_calibration_dir(cfg), "screen_analysis.png"), mimetype="image/png", max_age=0)
 
 
 @app.post("/api/calibrate/start")
@@ -1138,6 +1677,9 @@ def api_calibrate_start():
     pictures the repo never ships. Same guards as the scan, plus taps: the
     calibrator navigates, so a read-only instance cannot run it."""
     body = request.get_json(force=True) or {}
+    retry = operation_api.retry(ROOT, load_config(), "calibrate", body, _profile_path(load_config().get('active_profile')))
+    if retry:
+        return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
     others = [pr for pr in _procs() if pr["runner"] != "calibrate"]
     if others:
         return jsonify({"ok": False,
@@ -1191,9 +1733,8 @@ def api_calibrate_start():
     log_dir = Path(ROOT) / 'logs' / inst
     log_dir.mkdir(parents=True, exist_ok=True)
     with (log_dir / 'calibration-worker.log').open('ab') as output:
-        subprocess.Popen([pyw] + args, cwd=ROOT, stdout=output, stderr=subprocess.STDOUT,
-                         creationflags=subprocess.DETACHED_PROCESS | NO_WINDOW)
-    return jsonify({"ok": True, "phases": phases})
+        operation = _launch_operation(cfg, "calibrate", body, [pyw] + args, stdout=output, stderr=subprocess.STDOUT)
+    return jsonify(ok=True, phases=phases, operation_id=operation['id'], operation=operation_api.public(operation))
 
 
 @app.post("/api/calibrate/observe")
@@ -1203,6 +1744,10 @@ def api_calibrate_observe():
     buttons during a battle, the UW switches with the panel open). READ-ONLY:
     no taps, no navigation, so it needs no tap permission and may run over a
     battle the person is playing - the screen is what they chose to show."""
+    body = request.get_json(silent=True) or {}
+    retry = operation_api.retry(ROOT, load_config(), "observe", body, _profile_path(load_config().get('active_profile')))
+    if retry:
+        return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
     others = [pr for pr in _procs() if pr["runner"] != "calibrate"]
     if others:
         return jsonify({"ok": False, "error": "runners alive: " + ", ".join(pr["runner"] for pr in others) + " - stop them first"}), 409
@@ -1219,23 +1764,23 @@ def api_calibrate_observe():
     if watch:
         args += ["--observe-watch", str(watch)]
     pyw = sys.executable.replace("python.exe", "pythonw.exe")
-    subprocess.Popen([pyw] + args, cwd=ROOT, creationflags=subprocess.DETACHED_PROCESS | NO_WINDOW)
-    return jsonify({"ok": True})
+    operation = _launch_operation(cfg, "observe", body, [pyw] + args)
+    return jsonify(ok=True, operation_id=operation['id'], operation=operation_api.public(operation))
 
 
 @app.post("/api/calibrate/stop")
 def api_calibrate_stop():
-    cfg = load_config()
-    inst = cfg.get("active_instance", "main")
-    os.makedirs(_calibration_dir(cfg), exist_ok=True)
-    with open(os.path.join(_calibration_dir(cfg), "calibrate_stop"), "w") as fh:
-        fh.write("dashboard")
-    return jsonify({"ok": True})
+    body = request.get_json(silent=True) or {}
+    op = operation_api.cancel(ROOT, body)
+    return jsonify(ok=True, operation=operation_api.public(op))
 
 
 @app.get("/api/calibrate/status")
 def api_calibrate_status():
     cfg = load_config()
+    operation = _requested_operation(cfg, ('calibrate', 'observe'))
+    if operation:
+        cfg = operation['context']['config']
     inst = cfg.get("active_instance", "main")
     out = {"state": {}, "report": {}, "manifest": {}}
     for fname, key in (("calibrate_state.json", "state"),
@@ -1248,9 +1793,11 @@ def api_calibrate_status():
             pass
     from player.calibration_report import describe_report
     out["report"] = describe_report(out["report"])
+    if operation and out['state'].get('operation_id') != operation['id']:
+        out.update(state={}, report={}, manifest={}, card_manifest={})
     # Start and status must use the same live process source. A cached negative
     # immediately after Popen used to make the UI declare completion.
-    processes = [pr for pr in _procs() if pr["runner"] == "calibrate"]
+    processes = [] if operation else [pr for pr in _procs() if pr["runner"] == "calibrate"]
     selection = None
     activity = None
     if processes:
@@ -1265,6 +1812,13 @@ def api_calibrate_status():
                   if row.get("kind", "").startswith("calibrate")]
         if events:
             activity = events[-1]
+    if operation:
+        processes = operation['status'] in ('accepted', 'running', 'cancelling')
+        selection = dict(operation['request'], mode='observe' if operation['kind'] == 'observe' else 'bootstrap' if operation['request'].get('bootstrap') else 'basic')
+        if isinstance(selection.get('phases'), str):
+            selection['phases'] = selection['phases'].split(',')
+        selection['taps'] = bool(selection.get('allow_navigation'))
+        out['operation'] = operation_api.public(operation)
     return jsonify({"restore_pending": os.path.exists(os.path.join(_calibration_dir(cfg), "module_restore.json")), "running": bool(processes), "selection": selection,
                     "activity": activity,
                     "taps_allowed": _taps_allowed(cfg), **out})
@@ -1277,6 +1831,31 @@ def api_calibrate_apply():
     if _procs():
         return jsonify({"ok": False, "error": "Wait for calibration to stop before applying results."}), 409
     cfg = load_config()
+    body = request.get_json(silent=True) or {}
+    operation = None
+    if body.get('operation_id'):
+        try:
+            prior = operation_api.resolve(ROOT, body['operation_id'])
+        except KeyError:
+            raise operation_api.Conflict('Unknown operation') from None
+        if prior['status'] == 'succeeded' and body.get('expected_revision') in (prior['revision'], prior['result_refs'].get('apply_request_revision')):
+            return jsonify(ok=True, profile=prior['context']['profile'], operation=operation_api.public(prior), readiness=prior.get('readiness'))
+        operation = operation_api.require_revision(ROOT, body, ('awaiting_apply', 'failed', 'interrupted'))
+        if operation['kind'] not in ('calibrate', 'observe'):
+            raise operation_api.Conflict('Operation is not a calibration')
+        original = operation['context']
+        current = operation_api.context(ROOT, cfg, {}, _profile_path(cfg.get('active_profile')))
+        allowed_config_revisions = (original['config_revision'], operation['result_refs'].get('apply_config_revision'))
+        if (any(current.get(k) != original.get(k) for k in ('account', 'instance', 'serial', 'rendering', 'profile'))
+                or current['config_revision'] not in allowed_config_revisions):
+            raise operation_api.Conflict('Return to the original unchanged account, device and profile before applying')
+        cfg = original['config']
+    elif not body.get('saved_observations'):
+        raise operation_api.Conflict('Name the operation, or explicitly review saved_observations')
+    else:
+        tracked = _requested_operation(cfg, ('calibrate', 'observe'))
+        if tracked:
+            raise operation_api.Conflict('These observations belong to an operation; apply its ID and revision')
     name = cfg.get("active_profile")
     if _is_starter(name):
         return jsonify({"ok": False, "error": "Create your account or copy the starter before applying calibration."}), 409
@@ -1291,6 +1870,21 @@ def api_calibrate_apply():
         if os.path.exists(os.path.join(_calibration_dir(cfg), "module_restore.json")):
             raise ValueError("Restore the saved module equipment before applying discoveries.")
         with _profile_lock(path):
+            if operation:
+                if operation_api.file_revision(path) != operation['context']['profile_revision']:
+                    with open(path, encoding='utf-8') as current_profile:
+                        persisted = yaml.safe_load(current_profile)
+                    if operation_api.digest(persisted) != operation['result_refs'].get('apply_profile_digest'):
+                        raise operation_api.Conflict('Profile changed after preparation; discoveries remain saved for review')
+                ref = operation['result_refs'].get('calibrate_state.json')
+                if ref is None and operation['status'] == 'interrupted' and state.get('operation_id') == operation['id']:
+                    artifact = os.path.join(operation['context']['artifact_dir'], 'calibrate_state.json')
+                    ref = {'path': artifact, 'revision': operation_api.file_revision(artifact)}
+                    operation['result_refs']['calibrate_state.json'] = ref
+                if not ref or operation_api.file_revision(ref['path']) != ref['revision']:
+                    raise operation_api.Conflict('Observations changed after this operation; review the newer operation')
+                import psutil
+                operation = operation_api.ledger(ROOT).transition(operation['id'], operation['revision'], 'applying', step='apply', worker={'pid': os.getpid(), 'creation_time': psutil.Process().create_time()}, result_refs=dict(operation['result_refs'], apply_request_revision=operation['revision']))
             with open(path, encoding="utf-8") as fh:
                 profile = yaml.safe_load(fh)
             player = profile.setdefault("player", {})
@@ -1322,31 +1916,56 @@ def api_calibrate_apply():
                     pp.CONFIG = previous
             # Saving observed ownership must not depend on battle-only run
             # requirements. No run rules change; launch still validates them.
+            if operation:
+                operation = operation_api.ledger(ROOT).transition(operation['id'], operation['revision'], 'applying', step='profile_write_intent', result_refs=dict(operation['result_refs'], apply_profile_digest=operation_api.digest(profile)))
             _save_yaml_backup(path, profile)
         from player.readiness import wall_bar_roi
         if wall_bar and not wall_bar_roi(cfg):
             inst = cfg.setdefault("instances", {}).setdefault(cfg.get("active_instance", "main"), {})
             inst.setdefault("rois", {})["wall_bar"] = list(wall_bar)
+            if operation:
+                operation = operation_api.ledger(ROOT).transition(operation['id'], operation['revision'], 'applying', step='config_write_intent', result_refs=dict(operation['result_refs'], apply_config_revision=operation_api.digest(cfg)))
             save_config(cfg)
+        extra = {}
+        if operation:
+            readiness_result = None
+            selected = operation['context'].get('selected_run')
+            if selected:
+                try:
+                    from player import readiness
+                    runs = _compiled_runs(cfg)
+                    if selected in runs:
+                        readiness_result = readiness.check(ROOT, cfg, runs[selected])
+                except Exception as exc:  # applied data remains confirmed; readiness must fail closed
+                    readiness_result = {'ready': False, 'error': str(exc), 'missing': []}
+            operation = operation_api.ledger(ROOT).transition(operation['id'], operation['revision'], 'succeeded', step='applied', readiness=readiness_result, error=None, recovery_action=None)
+            extra['operation'] = operation_api.public(operation)
+            extra['readiness'] = readiness_result
         return jsonify({"ok": True, "profile": name, "wall_bar": wall_bar,
-                        "remaining_run_checks": problems})
-    except (OSError, ValueError) as e:
-        return jsonify({"ok": False, "error": str(e)}), 400
+                        "remaining_run_checks": problems, **extra})
+    except operation_api.Conflict:
+        raise
+    except Exception as e:  # request boundary: preserve an explicit recoverable apply outcome
+        if not isinstance(e, (OSError, ValueError)):
+            app.logger.exception('Calibration apply failed')
+        if operation and operation['status'] == 'applying':
+            operation_api.ledger(ROOT).transition(operation['id'], operation['revision'], 'awaiting_apply', error={'code': 'apply_failed', 'message': str(e)}, recovery_action='Review the profile and retry applying saved discoveries')
+        return jsonify({"ok": False, "error": str(e)}), 400 if isinstance(e, (OSError, ValueError)) else 500
 
 
 @app.post("/api/scan/stop")
 def api_scan_stop():
-    cfg = load_config()
-    inst = cfg.get("active_instance", "main")
-    os.makedirs(_calibration_dir(cfg), exist_ok=True)
-    with open(os.path.join(_calibration_dir(cfg), "scan_stop"), "w") as fh:
-        fh.write("dashboard")
-    return jsonify({"ok": True})
+    body = request.get_json(silent=True) or {}
+    op = operation_api.cancel(ROOT, body)
+    return jsonify(ok=True, operation=operation_api.public(op))
 
 
 @app.get("/api/scan/status")
 def api_scan_status():
     cfg = load_config()
+    operation = _requested_operation(cfg, ('scan',))
+    if operation:
+        cfg = operation['context']['config']
     inst = cfg.get("active_instance", "main")
     state = {}
     try:
@@ -1355,8 +1974,10 @@ def api_scan_status():
             state = json.load(fh)
     except (OSError, ValueError):
         pass
-    return jsonify({"running": any(pr["runner"] == "scan" for pr in _procs_cached()),
-                    "state": state})
+    if operation and state.get('operation_id') != operation['id']:
+        state = {}
+    return jsonify({"running": operation['status'] in ('accepted', 'running', 'cancelling') if operation else any(pr["runner"] == "scan" for pr in _procs_cached()),
+                    "state": state, "operation": operation_api.public(operation) if operation else None})
 
 
 @app.get("/api/profiles")
@@ -1404,9 +2025,12 @@ def api_run_template_add():
 
 @app.get("/api/profile/<name>")
 def api_profile(name):
-    if "/" in name or "\\" in name or ".." in name:
+    # `<stem>.yaml` (the file name /api/profiles lists), resolved by
+    # _profile_path: a drive-relative name such as `C:x.yaml` used to pass a
+    # separator-only check and os.path.join then left profiles/ for C:'s cwd
+    path = _profile_path(name[:-len(".yaml")]) if name.casefold().endswith(".yaml") else None
+    if not path:
         return Response("no", status=403)
-    path = os.path.join(ROOT, "profiles", name)
     try:
         with open(path, encoding="utf-8") as fh:
             return jsonify(yaml.safe_load(fh))
@@ -1532,8 +2156,11 @@ def _save_yaml_backup(path: str, data: dict) -> str:
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
             fh.write(old)
         break
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write(text)
+    # replaced, never rewritten in place: settings.py parses config.yaml at
+    # runner import and GET ticks read it unlocked, so a reader must see the
+    # whole old file or the whole new one
+    from runtime.files import atomic_text
+    atomic_text(path, text)
     for b in sorted(glob.glob(path + ".bak-*"))[:-20]:
         os.remove(b)
     return os.path.basename(backup)
@@ -2217,9 +2844,8 @@ def _boot_pipeline_for(serial: str) -> str:
         return (f" - no configured instance uses {serial}; adopt it once it is "
                 "up, the game auto-launch is skipped this time")
     pyw = sys.executable.replace("python.exe", "pythonw.exe")
-    subprocess.Popen([pyw, os.path.join(ROOT, "device", "boot.py"),
-                      "--instance", inst], cwd=ROOT,
-                     creationflags=subprocess.DETACHED_PROCESS | NO_WINDOW)
+    cfg['active_instance'] = inst
+    _launch_operation(cfg, "boot", {}, [pyw, os.path.join(ROOT, "device", "boot.py"), "--instance", inst])
     return (f" - boot pipeline started for '{inst}': waits for Android, clears "
             "ad overlays, launches the game")
 
@@ -2453,7 +3079,9 @@ def api_wizard_emulators():
     # daemon; other installs are listed as installed, ports come from the
     # manager inventory below.
     runners_live = True
-    cfg_adb = os.path.normcase(load_config()["adb"]["exe"])
+    cfg = load_config()
+    cfg_adb = os.path.normcase(cfg["adb"]["exe"])
+    active_inst = (cfg.get("instances") or {}).get(cfg.get("active_instance", "main")) or {}
     found = []
     pfs = [os.environ.get("ProgramFiles", r"C:\Program Files"),
            os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")]
@@ -2469,13 +3097,27 @@ def api_wizard_emulators():
                                       "restarts the shared daemon); set adb.exe "
                                       "in Configuration to use it"})
                 break
+            # the server's own `device` rows over its socket (host:devices,
+            # CLAUDE.md rule 1 - architecture review R16); no server
+            # listening (the connect REFUSED - not a timeout, a slow server
+            # is listening and start-server from another adb version kills
+            # it) -> ONE start-server with this configured adb, the
+            # sanctioned lifecycle spawn, and ask again. NOT when the active
+            # instance has a serial: a cold server never re-attaches its TCP
+            # device (seen live 2026-10-12 16:39:33), and the status poll's
+            # _reconnect_tick starts the server AND connects the device
+            # (adbclient.recover), so this adb is skipped like any failure
+            from device import adbclient
             try:
-                out = _run([path, "devices"], capture_output=True,
-                           timeout=10, text=True).stdout
+                try:
+                    devices = adbclient.devices()
+                except ConnectionRefusedError:
+                    if active_inst.get("serial"):
+                        continue
+                    _run([path, "start-server"], capture_output=True, timeout=15)
+                    devices = adbclient.devices()
             except Exception:                   # noqa: BLE001
                 continue
-            devices = [l.split("\t")[0] for l in out.splitlines()[1:]
-                       if "\tdevice" in l]
             found.append({"emulator": label, "adb": path,
                           "devices": devices})
             break
@@ -2503,9 +3145,15 @@ def api_wizard_emulators():
     except Exception:                       # noqa: BLE001
         pass
     cfg = load_config()
+    from device import adbclient
     configured = []
+    # each configured serial's adb-server state (one socket host query each,
+    # CLAUDE.md rule 1): the step-3 "configured device is down" test. A port
+    # probe could not judge an `emulator-NNNN` serial, so it always read down.
+    configured_states = []
     for name, inst in (cfg.get("instances") or {}).items():
         serial = (inst or {}).get("serial") or ""
+        configured_states.append(adbclient.get_state(serial))
         port_ok = None
         if ":" in serial:
             host, _, port = serial.rpartition(":")
@@ -2535,7 +3183,26 @@ def api_wizard_emulators():
         candidates.append({"serial": ser, "emulator": i.get("emulator"),
                            "name": i.get("name"),
                            "adb": _adb_for_family(i.get("emulator") or "")})
+    # ONE VM, TWO DAEMON SERIALS (seen live 2026-10-12): a MuMu VM is listed
+    # as its manager port `127.0.0.1:16384` AND the console token
+    # `emulator-5554`. The `emulator-NNNN` tokens go to `also_seen` instead of
+    # becoming candidates when the daemon ALSO lists at least as many
+    # manager-backed host:port serials (the inventory candidates above) as
+    # tokens - each such VM can explain one token, and its host:port serial
+    # is the one kept. The daemon is shared, so the label of the adb binary
+    # that ran `devices` says nothing about which emulator owns a device and
+    # is not compared. A token with no listed host:port serial beside it
+    # cannot be attributed to a VM, so every token stays a candidate (no
+    # auto-pick). A configured serial is never folded: it is the device the
+    # instance already drives. `scanned` still lists every daemon serial.
+    configured_serials = {c["serial"] for c in configured}
+    also_seen: list[str] = []
     for f in found:
+        devices = f.get("devices") or []
+        tokens = [dv for dv in devices
+                  if dv.startswith("emulator-") and dv not in configured_serials]
+        listed_vms = [c for c in candidates if c["serial"] in devices]
+        fold = len(tokens) <= len(listed_vms)
         for dv in f.get("devices") or []:
             # `emulator-NNNN` counts too (audit, 2026-08-19): adopt accepts
             # the token, so excluding it here left a machine whose only
@@ -2543,14 +3210,19 @@ def api_wizard_emulators():
             if not _SERIAL_RE.match(dv) or dv in seen_serials:
                 continue
             seen_serials.add(dv)
+            if fold and dv in tokens:
+                also_seen.append(dv)
+                continue
             candidates.append({"serial": dv, "emulator": f.get("emulator"),
                                "name": "daemon device", "adb": f.get("adb")})
-    configured_down = all(c["port_open"] is not True for c in configured)
+    configured_down = all(s != "device" for s in configured_states)
     suggestion = None
     if configured_down and len(candidates) == 1:
         # adb path is omitted when that family's binary is not on disk
         suggestion = {k: v for k, v in candidates[0].items() if v}
         suggestion["serial"] = candidates[0]["serial"]
+        if also_seen:
+            suggestion["also_seen"] = also_seen
     active = cfg.get("active_instance", "main")
     placeholder = not ((cfg.get("instances") or {}).get(active) or {}).get("serial")
     return jsonify(_wiz_save("emulators", {
@@ -2563,26 +3235,47 @@ def api_wizard_emulators():
 def api_wizard_reconnect():
     """`adb connect <serial>` for a configured instance - the daemon-
     lifecycle spawn is sanctioned (CLAUDE.md), window-suppressed. Refused
-    while a runner is live (a reconnect can bounce the transport)."""
+    while a runner is live (a reconnect can bounce the transport). `ok` is
+    whether the adb server then lists the device as `device`; `device_state`
+    is what it listed."""
     if _procs():
         return jsonify({"ok": False, "error": "runners alive - stop them first"}), 409
     body = request.get_json(force=True) or {}
     cfg = load_config()
-    serial = body.get("serial") or cfg["instances"][
-        cfg.get("active_instance", "main")]["serial"]
+    configured = cfg["instances"][cfg.get("active_instance", "main")]["serial"]
+    serial = body.get("serial") or configured
+    # it goes to adb.exe's argv: the configured one, or a form adopt accepts
+    if serial != configured and not (isinstance(serial, str) and _SERIAL_RE.fullmatch(serial)):
+        return jsonify({"ok": False, "error": "serial: host:port or emulator-NNNN expected"}), 400
     adb = cfg["adb"]["exe"]
+    from device import adbclient
+    # one read before the connect: a 'missing' answer ends the offline clock of
+    # a transport the server dropped while no poll was looking, so the fresh
+    # transport the connect makes is not judged by the dead one's age
+    adbclient.get_state(serial)
     try:
         out = _run([adb, "connect", serial], capture_output=True, timeout=10,
                    text=True)
         msg = (out.stdout or out.stderr or "").strip()
     except Exception as e:                  # noqa: BLE001
         return jsonify({"ok": False, "error": str(e)}), 500
-    ok = "connected" in msg.lower() and "cannot" not in msg.lower()
-    if ok:
-        # the status poll's connection probe is cached 10 s - a successful
-        # connect must be visible on the very next poll, not a cache TTL later
-        _CONN_CACHE.update(t=time.time(), ok=True)
-    return jsonify({"ok": ok, "message": msg})
+    # ok = the adb server lists the device online, not what `adb connect`
+    # said: 'already connected' also answers for a transport the server holds
+    # offline, and a fresh one reads offline until its handshake completes, so
+    # an offline read is re-asked up to 10 more times, 0.2 s apart
+    state = adbclient.get_state(serial)
+    for _ in range(10):
+        if state != "offline":
+            break
+        time.sleep(0.2)
+        state = adbclient.get_state(serial)
+    if state != "device":
+        msg += f" - the adb server lists the device as {state}"
+    # the status poll's device state is cached 10 s - drop it so the next poll
+    # re-queries the adb server instead of trusting the connect message
+    _CONN_CACHE["t"] = 0.0
+    _reconnect_reset()              # a person asked: auto-reconnect starts over
+    return jsonify({"ok": state == "device", "message": msg, "device_state": state})
 
 
 @app.post("/api/wizard/adopt")
@@ -2651,6 +3344,8 @@ def api_wizard_adopt():
             backup = save_config(cfg)
         except Exception as e:                  # noqa: BLE001 - shown to user
             return jsonify({"ok": False, "error": str(e)}), 500
+    _CONN_CACHE["t"] = 0.0      # serial changed: next /api/status re-queries adb
+    _reconnect_reset()          # ...and auto-reconnect starts over
     # sanctioned daemon-lifecycle spawn (CLAUDE.md), window-suppressed by _run.
     # SKIPPED for `emulator-NNNN` serials: those are already-attached USB/
     # emulator transports, and `adb connect` only speaks host:port - calling
@@ -2716,6 +3411,9 @@ def api_wizard_resolution():
         from device import adbclient
         cfg = load_config()
         inst = cfg.get("instances", {}).get(cfg.get("active_instance", "main")) or {}
+        refused = _bad_device_query(inst.get("serial"))
+        if refused:
+            return refused
         configured = inst.get("display") if inst.get("serial") == serial else None
         display = request.args.get("display") or _game_display(serial, configured)
         raw = adbclient.exec_out(serial, _screencap_cmd(serial, display, png=False), timeout=20)
@@ -2869,7 +3567,10 @@ def api_artwork(rel):
     text = template_docs.text_for(rel)
     png = _text_badge_png(text) if text else None
     if not png:
-        return Response("no artwork for this target", status=404)
+        # 204, not 404: the page asks for artwork for every target row and
+        # removes the <img> on its error event, which an empty 204 body
+        # fires too - without a console error per artless target
+        return Response(status=204)
     return Response(png, mimetype="image/png", headers={"Cache-Control": "max-age=3600"})
 
 
@@ -2878,6 +3579,8 @@ def api_template(rel):
     path = _template_path(rel)
     if not path:
         return Response("no", status=403)
+    if not os.path.isfile(path):        # normal on a fresh account
+        return Response("template not captured yet", status=404)
     return send_file(path, mimetype="image/png")
 
 
@@ -3167,9 +3870,9 @@ def api_profile_promote():
     text = yaml.safe_dump(doc, sort_keys=False, allow_unicode=True,
                           default_flow_style=None)
     yaml.safe_load(text)
+    from runtime.files import atomic_text
     with _profile_lock(dest):
-        with open(dest, "w", encoding="utf-8") as fh:
-            fh.write(header + text)
+        atomic_text(dest, header + text)
     return jsonify({"ok": True, "name": name, "path": dest, "problems": problems,
                     "abilities_verified": player["abilities_verified"]})
 
@@ -3178,4 +3881,4 @@ if __name__ == "__main__":
     # threaded: the MJPEG stream holds a connection open for as long as the
     # tab is; single-threaded Flask would block every other request behind it
     _start_procs_refresher()
-    app.run(host="127.0.0.1", port=PORT, debug=False, threaded=True)
+    app.run(host=HOST, port=PORT, debug=False, threaded=True)

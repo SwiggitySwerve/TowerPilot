@@ -83,10 +83,13 @@ def test_boot_finishes_without_waiting_for_missing_game_images(tmp_path, monkeyp
     events = []
     monkeypatch.setattr(sys,"argv",["boot.py","--instance","main"])
     monkeypatch.setattr(settings,"bind_device",lambda *a:None)
-    monkeypatch.setattr(settings,"instance",lambda:{"serial":"test"})
+    monkeypatch.setattr(settings,"instance",lambda name=None:{"serial":"test"})
     monkeypatch.setattr(settings,"ROOT",tmp_path)
     monkeypatch.setattr(settings,"CONFIG",{"active_instance":"main"})
-    monkeypatch.setattr(boot.adbclient,"reconnect",lambda *a:True)
+    monkeypatch.setattr("device.tool_install.ensure_server",lambda *a,**k:None)
+    import socket
+    s=socket.socket(); s.bind(("127.0.0.1",0)); monkeypatch.setattr(boot.adbclient,"_HOST",s.getsockname()); s.close()  # a missed stub meets a dead port, never 5037
+    monkeypatch.setattr(boot.adbclient,"recover",lambda *a,**k:"device")
     monkeypatch.setattr(boot.adbclient,"alive",lambda *a:True)
     monkeypatch.setattr(boot.adbclient,"shell",lambda *a,**k:b"1")
     monkeypatch.setattr(boot.overlays,"clean",lambda:True)

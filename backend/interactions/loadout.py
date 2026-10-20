@@ -233,9 +233,11 @@ def apply_modules(plan) -> dict:
     header = capture.grab()
     # v29 (2026-08-27): the redesigned modules screen carries preset tabs
     # (as the player named them) - its equip choreography is a
-    # different flow, live-verified the same day.
-    if (tourney.find(header, "presets/modules_farm.png", 0.85)
-            or tourney.find(header, "presets/modules_tourney.png", 0.85)):
+    # different flow, live-verified the same day. own=False: this only asks
+    # whether the v29 tab row is on screen, so a tab renamed or cut tight since
+    # the template was made still counts as that row.
+    if (tourney.find(header, "presets/modules_farm.png", 0.85, own=False)
+            or tourney.find(header, "presets/modules_tourney.png", 0.85, own=False)):
         return _apply_modules_v29(plan)
     missing = []
     confirmed = {}

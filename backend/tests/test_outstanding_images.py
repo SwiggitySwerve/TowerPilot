@@ -91,4 +91,4 @@ def test_artwork_comes_from_the_mapping_then_from_the_documented_names(dash, tmp
         assert c.get("/api/artwork/buttons/nuke.png").status_code == 200
         badge = c.get("/api/artwork/screens/hdr_cards.png")                                     # ...so a text badge stands in
         assert badge.status_code == 200 and badge.data[1:4] == b"PNG"
-        assert c.get("/api/artwork/modules/some_module.png").status_code == 404               # neither sprite nor text
+        assert c.get("/api/artwork/modules/some_module.png").status_code == 204               # neither sprite nor text: empty, still fires onerror

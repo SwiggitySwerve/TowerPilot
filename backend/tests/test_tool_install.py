@@ -64,6 +64,28 @@ def test_live_server_is_never_replaced(tmp_path, monkeypatch):
     tool_install.ensure_server(tmp_path, None, lambda *a, **kw: pytest.fail("restarted server"))
 
 
+def test_server_check_dials_the_adbclient_address(tmp_path, monkeypatch):
+    # ensure_server must probe the address every other adb call uses, so a test
+    # (or a relocated server) that redirects adbclient._HOST is not sent to 5037.
+    import socket
+    from device import adbclient
+    srv = socket.socket()
+    srv.bind(("127.0.0.1", 0))
+    srv.listen(1)
+    monkeypatch.setattr(adbclient, "_HOST", srv.getsockname())
+    real = socket.create_connection
+
+    def dial(addr, *args, **kwargs):
+        if addr != srv.getsockname():       # never forwarded: nothing reaches the real server
+            raise AssertionError(f"dialed {addr}, not the adbclient address")
+        return real(addr, *args, **kwargs)
+    monkeypatch.setattr(socket, "create_connection", dial)
+    try:
+        tool_install.ensure_server(tmp_path, None, lambda *a, **kw: pytest.fail("restarted server"))
+    finally:
+        srv.close()
+
+
 def test_missing_tools_explains_setup(tmp_path, monkeypatch):
     import socket
     def offline(*args, **kwargs):

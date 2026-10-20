@@ -81,9 +81,12 @@ def grab(serial: str | None = None, display: str | None = None, *, discover=Fals
     # process ~3x a second is what exhausted Windows socket buffers and then
     # dropped the device mid-run, twice. Same 247ms/frame either way (the 11MB
     # loopback transfer dominates, not the spawn), so this buys stability, not
-    # speed. One retry with a reconnect, because a dropped device is the
-    # failure that actually happens and every caller wants it handled here
-    # rather than reimplementing recovery.
+    # speed. One retry after adbclient.recover (host:connect for a missing
+    # device; for an offline one host:disconnect first, but only once this
+    # process has had it offline for adbclient._OFFLINE_STALE_S, otherwise
+    # just the connect; it never starts a server - no spawn from here),
+    # because a dropped device is the failure that actually happens and every
+    # caller wants it handled here rather than reimplementing recovery.
     from device import adbclient
     from settings import instance as _inst
     serial = serial or _inst()["serial"]
@@ -97,7 +100,7 @@ def grab(serial: str | None = None, display: str | None = None, *, discover=Fals
         except (OSError, adbclient.AdbError) as e:
             if attempt == 2:
                 raise CaptureError(f"screencap failed: {e}") from e
-            adbclient.reconnect(serial)
+            adbclient.recover(serial)
     if len(buf) < 1000:
         # THE MuMu DISPLAY-CHURN SIGNATURE: the emulator recreates its
         # displays on every restart and the ids change, so a configured

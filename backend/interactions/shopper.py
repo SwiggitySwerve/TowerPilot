@@ -6,6 +6,8 @@ UW toggle pills: templates/uw/toggle_on.png, templates/uw/toggle_off.png,
 UW name labels: templates/uw/<weapon>.png (e.g. chain_lightning.png).
 """
 import random
+import re
+import math
 import subprocess
 import time
 
@@ -154,6 +156,66 @@ def read_cash(frame) -> float | None:
     return ocr.read_amount(capture.roi(frame, "cash_box"))
 
 
+def _quantity_token(text: str) -> int | None:
+    """Parse a complete quantity token without repairing ambiguous OCR glyphs."""
+    match = re.fullmatch(r"(?:[xX×]([1-9][0-9]*)|([1-9][0-9]*)[xX×])", text.strip())
+    return int(match.group(1) or match.group(2)) if match else None
+
+
+def _read_purchase_quantity(frame) -> int | None:
+    """Read the header's observed quantity control; disagreement is unknown.
+
+    The rightmost quarter of the panel header is evidenced by the read-only
+    native capture (Utility header x10). The existing panel ROI includes this
+    strip. No label, numeric policy or blurry x10 prefix establishes 1x.
+    """
+    from vision import textocr
+    if detect.panel_tab(frame) not in ("attack", "defense", "utility"):
+        return None
+    panel = capture.roi(frame, "upgrade_panel")
+    if panel.size == 0:
+        return None
+    header = panel[:max(20, panel.shape[0] // 12), panel.shape[1] * 3 // 4:]
+    values = []
+    for scale in (2.0, 3.0):
+        # read_lines intentionally bypasses read_text's l/I -> 1 repair.
+        lines = textocr.read_lines(header, scale=scale, timeout=0.75)
+        token = " ".join(text for _, _, text in lines)
+        value = _quantity_token(token)
+        if value is None:
+            return None
+        values.append(value)
+    return values[0] if len(set(values)) == 1 else None
+
+
+def _purchase_quote(frame, stat: str) -> dict:
+    """Observe same-frame quote and cash; bulk price totals remain unverified."""
+    center, state, price = _find_stat(frame, stat)
+    return dict(center=center, state=state, price=price, cash=read_cash(frame),
+                quantity=_read_purchase_quantity(frame) if state == "buy" else None,
+                total_price_verified=False,
+                observed_at=time.monotonic())
+
+
+def _confirmed_purchase(before: dict, after: dict) -> bool:
+    """Conservative two-indicator evidence under a freshly observed 1x mode.
+
+    Price must increase and cash must fall by at most the quoted purchase cost.
+    Income can mask that cash fall; unreadable/bulk/maxed evidence stays unknown.
+    This records observable evidence, not exact accounting of simultaneous income.
+    """
+    values = (before.get('price'), after.get('price'), before.get('cash'), after.get('cash'))
+    if any(isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) for value in values):
+        return False
+    if type(before.get('quantity')) is not int or before['quantity'] != 1 or type(after.get('quantity')) is not int or after['quantity'] != 1:
+        return False
+    age = after.get('observed_at', 0) - before.get('observed_at', 0)
+    if not 0 < age <= 15:
+        return False
+    delta = before['cash'] - after['cash']
+    return before['price'] > 0 and after['price'] > before['price'] and 0 < delta <= before['price']
+
+
 def _affordable_clicks(cash: float | None, price: float | None,
                        cap: int = 10) -> int:
     """How many taps a human would fire given the cash/price gap.
@@ -200,12 +262,26 @@ class Shopper:
     (death, left the battle screen, etc.)."""
 
     def __init__(self, preset: dict):
-        self.directives = preset["shopping"]
+        from player.shopping_plan import normalize_plan
+        self.directives = preset.get("shopping", [])
+        self.plan = normalize_plan(preset["shopping_plan"]) if preset.get("shopping_plan") else None
+        self.attempts: dict[str, int] = {}
+        self._manual = None
+        self._manual_outcome = None
+        self._last_decision = {"action": "wait", "reason": "not_started"}
+        self._wave = None
+        self._pending_confirmation = None
+        self._last_confirmation = None
         self.done_once: set[str] = set()
         self.maxed: set[str] = set()     # gold "Max" boxes: done for this run
         self._gen = None
 
     def reset(self):
+        self.attempts.clear()
+        self._manual = None
+        self._manual_outcome = None
+        self._pending_confirmation = None
+        self._last_confirmation = None
         self.done_once.clear()
         self.maxed.clear()
 
@@ -217,6 +293,8 @@ class Shopper:
     def finished(self) -> bool:
         """True when EVERY wanted stat is maxed/auto-upgraded (or once-bought)
         -> no more shopping this run at all (stop scrolling, stop clicking)."""
+        if self.plan is not None:
+            return False  # Future wave phases/live edits may create more work.
         for d in self.directives:
             for stat in d["stats"]:
                 if stat in IGNORE_STATS:
@@ -230,22 +308,206 @@ class Shopper:
 
     def start(self):
         if self._gen is None:
-            self._gen = self._sweep_gen()
+            self._gen = self._queue_sweep_gen() if self.plan is not None else self._sweep_gen()
             next(self._gen)              # prime to the first yield
 
-    def step(self, frame):
+    def step(self, frame, *, wave=None, after_intro_sprint: bool = False):
         """Advance the sweep one action. No-op when inactive."""
         if self._gen is None:
             return
+        if self.plan is not None:
+            self._wave = wave if wave is not None else wave_reader.read_wave(frame)
+            if self._wave is None or not after_intro_sprint:
+                self._last_decision = {"action": "wait", "reason": "unknown_wave" if self._wave is None else "intro_sprint"}
+                self.abort()
+                return
         try:
             self._gen.send(frame)
         except StopIteration:
             self._gen = None
 
     def abort(self):
+        manual_pending = self._manual is not None
         if self._gen is not None:
+            self._gen.close()
             self._gen = None
             logger.event("sweep_abort")
+        if manual_pending:
+            self._manual_outcome = {"state": "aborted", "attempts": (self._manual_outcome or {}).get("attempts", 0),
+                                    "outcome": self._last_decision}
+            self._manual = None
+
+    def update_plan(self, plan: dict) -> None:
+        """Replace rules at a checkpoint without resetting battle attempts."""
+        from player.shopping_plan import normalize_plan
+        normalized = normalize_plan(plan)
+        self.abort()
+        self.plan = normalized
+
+    def request_once(self, section: str | None = None, upgrade: str | None = None) -> bool:
+        from player.shopping_plan import catalog
+        if self.plan is None or self.active or self._manual is not None:
+            return False
+        if section is not None and section not in ("attack", "defense", "utility"):
+            return False
+        if upgrade is not None and not any(c["id"] == upgrade and (section is None or c["section"] == section) for c in catalog()):
+            return False
+        self._manual = {"section": section, "upgrade": upgrade}
+        self._manual_outcome = {"state": "requested", "attempts": 0}
+        self.start()
+        return True
+
+    def status(self) -> dict:
+        from copy import deepcopy
+        return deepcopy({"version": 2 if self.plan is not None else 1,
+                         "active": self.active, "attempts": self.attempts,
+                         "decision": self._last_decision, "manual": self._manual_outcome,
+                         "count_semantics": "tap_attempts", "confirmed_purchases": None,
+                         "quantity_observation_supported": self.plan is not None,
+                         "reserve_supported": self.plan is not None,
+                         "reserve_enforcement": "requires_fresh_1x_quote" if self.plan is not None else "legacy_unprotected",
+                         "pending_confirmation": self._pending_confirmation,
+                         "last_confirmation": self._last_confirmation,
+                         "cash_reserve": self.plan.get("cash_reserve") if self.plan else None})
+
+    def _queue_sweep_gen(self):
+        """Global queue order drives navigation; each pass has a fixed scan cap."""
+        from player.shopping_plan import queue_candidates, decide
+        manual = self._manual
+        frame = yield
+        options = manual or {}
+        observations = {}
+        if manual:
+            self._manual_outcome = {"state": "started", "attempts": 0}
+        try:
+            if not self.plan["enabled"] and not manual:
+                self._last_decision = {"action": "wait", "reason": "disabled"}
+                return
+            if self._pending_confirmation is not None:
+                for _ in range(2):
+                    if self._reconcile_confirmation(frame):
+                        return
+                    frame = yield
+                self._last_decision = {"action": "wait", "reason": "purchase_confirmation_unknown"}
+                return
+            rows = queue_candidates(self.plan, self._wave, self.attempts, **options)
+            for row in rows:
+                if row["id"] in self.maxed:
+                    observations[row["id"]] = dict(state="maxed", observed_at=time.monotonic())
+            # Bound a pass independently of catalog/queue size. Subsequent passes
+            # may retry a blocker; they never silently reorder the global queue.
+            scans = 0
+            while True:
+                decision = decide(self.plan, self._wave, observations, self.attempts,
+                                  time.monotonic(), manual=manual is not None, **options)
+                self._last_decision = decision
+                if decision["action"] != "scan":
+                    return
+                if scans >= 48:
+                    self._last_decision = {"action": "wait", "reason": "scan_budget_exhausted"}
+                    return
+                scans += 1
+                tab, stat = decision["section"], decision["upgrade"]
+                point = CONFIG["tabs"].get(tab)
+                if not point:
+                    self._last_decision = {"action": "wait", "reason": "tab_not_calibrated"}
+                    return
+                for _ in range(3):
+                    if detect.panel_tab(frame) == tab:
+                        break
+                    act.tap(*point, reason=f"tab_{tab}")
+                    frame = yield
+                if detect.panel_tab(frame) != tab:
+                    self._last_decision = {"action": "wait", "reason": "tab_not_open"}
+                    return
+                for _ in range(_TOP_RESETS):
+                    if detect.panel_tab(frame) != tab:
+                        self._last_decision = {"action": "wait", "reason": "panel_changed"}
+                        return
+                    _swipe(down=False)
+                    frame = yield
+                for page in range(_SCROLL_STEPS + 1):
+                    if detect.panel_tab(frame) != tab:
+                        self._last_decision = {"action": "wait", "reason": "panel_changed"}
+                        return
+                    quote = _purchase_quote(frame, stat)
+                    if quote["center"] is not None:
+                        observations[stat] = quote
+                        if quote["state"] == "maxed":
+                            self.maxed.add(stat)
+                        break
+                    if page < _SCROLL_STEPS:
+                        _swipe(down=True)
+                        frame = yield
+                else:
+                    self._last_decision = {"action": "wait", "reason": "target_not_found", "upgrade": stat}
+                    return
+                # Recompute all eligibility against current wave and observations.
+                # There is no yield between this quote, decision and single tap.
+                decision = decide(self.plan, self._wave, observations, self.attempts,
+                                  time.monotonic(), manual=manual is not None, **options)
+                self._last_decision = decision
+                if decision["action"] == "tap":
+                    if decision["upgrade"] != stat:
+                        self._last_decision = {"action": "wait", "reason": "target_requires_fresh_quote"}
+                        return
+                    event = act.tap(*quote["center"], reason=f"buy_{stat}")
+                    if not event.get("dry_run", False):
+                        key = "queue/" + stat
+                        self.attempts[key] = self.attempts.get(key, 0) + 1
+                        if self.plan["queue_mode"] == "round_robin":
+                            self.attempts["__queue_cursor"] = (decision["index"] + 1) % max(1, len(self.plan["queue"]))
+                        if self.plan["queue_mode"] == "weighted_split":
+                            self._pending_confirmation = {"upgrade": stat, "section": tab, "before": quote}
+                    logger.event("shop_plan_attempt", decision=decision, quote=quote,
+                                 outcome="unconfirmed", **event)
+                    if manual:
+                        self._manual_outcome["attempts"] = 0 if event.get("dry_run", False) else 1
+                    if self._pending_confirmation is not None:
+                        for _ in range(2):
+                            frame = yield
+                            if self._reconcile_confirmation(frame):
+                                return
+                        self._last_decision = {"action": "wait", "reason": "purchase_confirmation_unknown"}
+                    return
+                if decision["action"] != "scan":
+                    return
+        except act.TapRefused as exc:
+            self._last_decision = {"action": "wait", "reason": "tap_refused"}
+            logger.event("tap_refused", button="shopping_queue", error=str(exc))
+        finally:
+            if manual:
+                self._manual_outcome.update(state="completed", outcome=self._last_decision)
+                self._manual = None
+
+    def _reconcile_confirmation(self, frame) -> bool:
+        from player.shopping_plan import record_confirmed_purchase
+        pending = self._pending_confirmation
+        if pending is None:
+            return False
+        if time.monotonic() - pending["before"]["observed_at"] > 15:
+            self._last_confirmation = {"upgrade": pending["upgrade"],
+                                       "outcome": "terminal_unconfirmed", "reason": "evidence_expired"}
+            logger.event("shop_plan_confirmation", **self._last_confirmation)
+            self._pending_confirmation = None
+            self._last_decision = {"action": "wait", "reason": "purchase_confirmation_expired",
+                                   "upgrade": pending["upgrade"]}
+            return True  # End this pass; only a subsequent scheduled pass may buy.
+        if detect.panel_tab(frame) != pending["section"]:
+            return False
+        after = _purchase_quote(frame, pending["upgrade"])
+        if after["center"] is None or not _confirmed_purchase(pending["before"], after):
+            return False
+        record_confirmed_purchase(self.plan, self.attempts, pending["upgrade"])
+        logger.event("shop_plan_confirmation", upgrade=pending["upgrade"],
+                     before=pending["before"], after=after,
+                     evidence="1x_price_increased_and_cash_decreased")
+        self._pending_confirmation = None
+        self._last_confirmation = {"upgrade": pending["upgrade"], "outcome": "confirmed",
+                                   "reason": "price_and_cash_evidence"}
+        self._last_decision = {"action": "confirmed", "upgrade": pending["upgrade"],
+                               "reason": "price_and_cash_evidence"}
+        return True
 
     def _sweep_gen(self):
         """One SCAN PASS per tab, yielding between actions. Every `yield`

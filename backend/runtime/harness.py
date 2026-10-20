@@ -93,7 +93,8 @@ class Run:
             if w is not None:
                 wave = w
                 off = 0
-                gems.poll(frame)
+                if gems.poll(frame) is not frame:
+                    continue                # collection invalidated callback/stop decisions
                 if self.in_run:
                     self.in_run(frame, w)
                 if self.stop(frame, w):
@@ -187,6 +188,8 @@ def _cli():
 def main() -> None:
     import settings
     a = _cli()
+    from runtime.device_lease import prepare_instance
+    prepare_instance(a.instance)
     settings.select_instance(a.instance)
     print(f"harness: {a.run} on {a.instance} "
           f"(repeat={a.repeat or 'forever'})")

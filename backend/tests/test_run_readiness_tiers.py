@@ -113,6 +113,9 @@ def test_api_runs_carries_per_run_readiness(monkeypatch):
             "bp_tourney": {"ready": False, "missing": [{"alternatives": ["tourney/in_tournament.png"], "reasons": ["Tournament screens"]}], "advisory": []}}
     monkeypatch.setattr(readiness, "check", lambda root, cfg, body: fake[
         "bp_coin" if body["kind"] == "coin" else "bp_tourney"])
+    # combo is the union of its day plan's runs (architecture review R10)
+    monkeypatch.setattr(dash, "_combo_readiness", lambda cfg, runs: readiness.check_plan(
+        dash.ROOT, cfg, runs, {"saturday": [{"preset": "bp_tourney", "block": "cup"}]}))
     with dash.app.test_client() as client:
         r = client.get("/api/runs").json
     coin = r["readiness"]["bp_coin"]
@@ -120,4 +123,5 @@ def test_api_runs_carries_per_run_readiness(monkeypatch):
     assert coin["details"] == []                       # one detail row per MISSING image only
     assert r["readiness"]["bp_tourney"]["ready"] is False
     assert r["readiness"]["bp_tourney"]["missing"] == ["tourney/in_tournament.png"]
-    assert "combo" not in r["readiness"]
+    combo = r["readiness"]["combo"]
+    assert (combo["ready"], combo["missing"]) == (False, ["bp_tourney (cup): tourney/in_tournament.png"])

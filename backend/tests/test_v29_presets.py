@@ -337,6 +337,8 @@ def test_modules_restore_without_preset_gets_advisory(profile, monkeypatch):
 
 
 def test_ilm_quest_restores_after_last_cycle(monkeypatch):
+    from runtime import device_lease
+    monkeypatch.setattr(device_lease, "prepare_instance", lambda name: None)
     # This test exercises dispatch after readiness; missing-image refusal is tested separately.
     from player import readiness
     monkeypatch.setattr(readiness, "require", lambda *a, **kw: None)

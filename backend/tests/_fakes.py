@@ -5,8 +5,9 @@ hunk-application pipeline and did not ship with tower_pilot): every
 screen-touching module the orchestrator/combo/shard runtime imports is
 replaced here, so nothing in the suite captures, taps or talks to adb.
 
-`settings` is deliberately REAL: the tests are about how the code reads the
-actual config.yaml presets.
+`settings` is the real module, but conftest.py loads its CONFIG from
+config.example.yaml, so the tests read the shipped presets, not this machine's
+config.yaml.
 """
 import ast
 import types
@@ -261,6 +262,8 @@ def _patch_flows_shard(monkeypatch, mod):
             def poll(self, _frame):
                 pass
         mod.GemOrbitTapper = _InertOrbit
+    if "GemWatch" not in mod.__dict__:
+        mod.GemWatch = lambda gather=None: types.SimpleNamespace(poll=lambda frame: frame)
     monkeypatch.setitem(sys.modules, "shard", mod)
     monkeypatch.setitem(sys.modules, "flows.shard", mod)
     monkeypatch.setattr(flows, "shard", mod, raising=False)

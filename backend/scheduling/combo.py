@@ -25,6 +25,7 @@ Phases are marked done in the same daily_state.json the chores use, keyed by
 date, so a restart mid-day resumes the plan instead of replaying it.
 """
 import datetime
+import copy
 import json
 import os
 import subprocess
@@ -94,10 +95,51 @@ def due(now: datetime.datetime | None = None) -> str:
 
 # ------------------------------------------------------------------ runners
 def _spawn(args: list) -> subprocess.Popen:
+    from runtime.device_lease import child_environment
+    environment = child_environment()  # proves no delegated child still owns input
+    environment.pop('TOWER_BATTLE_ID', None)
+    environment.pop('TOWER_BATTLE_GENERATION', None)
+    pending = None
+    from runtime.operations import environment_operation
+    operations, operation_id = environment_operation()
+    if operations is not None:
+        from player.run_controls import resolve
+        from towerpilot_workflows.battles import Battles
+        import uuid
+        store = Battles(operations.path)
+        operation = operations.get(operation_id)
+        previous = None
+        for old in store.active(operation['context']['device_key']):
+            if old['operation_id'] != operation_id:
+                raise ValueError('Another operation still owns this device battle')
+            store.finish(old['id'], old['generation'], reason='delegated_driver_exited', status='interrupted')
+            previous = old['id']
+        # Only the generic driver implements per-battle observation and control
+        # acknowledgement. A shard/quest batch is not one observed battle.
+        if _Path(args[0]).as_posix() == flows.ENGINE:
+            selected = args[args.index('--preset')+1] if '--preset' in args else CONFIG['preset']
+            frozen_config = copy.deepcopy(CONFIG)
+            frozen_config['preset'] = selected
+            body = copy.deepcopy(frozen_config['presets'][selected])
+            from player import playerprofile
+            envelope = dict(config=frozen_config, preset=body, preset_key=selected,
+                            controls=resolve(body, frozen_config), profile=copy.deepcopy(getattr(playerprofile, 'PROFILE', None)),
+                            source=copy.deepcopy(body.get('_source')), source_revision=(body.get('_source') or {}).get('profile_revision'))
+            pending = store.create(operation_id, operation['context'], envelope, generation=str(uuid.uuid4()),
+                                   origin='partial_adoption', previous_battle_id=previous)
+            environment['TOWER_BATTLE_ID'] = pending['id']
+            environment['TOWER_BATTLE_GENERATION'] = pending['generation']
+        else:
+            logger.event('combo_driver_capability', operation_id=operation_id, driver=args[0],
+                         battle_history='unsupported', live_controls='unsupported')
     logger.event("combo_spawn", cmd=" ".join(args))
-    return subprocess.Popen([sys.executable] + args,
-                            stdout=subprocess.DEVNULL,
-                            stderr=subprocess.STDOUT)
+    try:
+        return subprocess.Popen([sys.executable] + args, env=environment,
+                                stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    except BaseException:
+        if pending is not None:
+            store.finish(pending['id'], pending['generation'], reason='delegated_launch_failed', status='interrupted')
+        raise
 
 
 # The constant-era phases, resolved through the flow registry so there is
@@ -938,6 +980,8 @@ def _block_handoff(b, instance: str) -> None:
         logger.event("combo_handoff_skipped", block=b["id"], kind=b["kind"],
                      why="the flow's runner owns its own setup")
         return
+    from runtime.device_lease import ensure_current
+    ensure_current()
     from interactions import loadout
     from flows import shard
     from interactions import tourney
@@ -985,6 +1029,8 @@ def _handoff(phase: str, instance: str) -> None:
     The tournament is the exception: its own setup() does the equipping and the
     entry, so this only clears the way to Home.
     """
+    from runtime.device_lease import ensure_current
+    ensure_current()
     from interactions import loadout
     from flows import shard
     from interactions import tourney

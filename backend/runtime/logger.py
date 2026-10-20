@@ -17,6 +17,16 @@ _LOG_DIR = ROOT / CONFIG["logging"]["dir"]
 _LOG_DIR.mkdir(exist_ok=True)
 _run_file: Path | None = None
 _started = time.strftime("%Y%m%d_%H%M%S")
+_battle_context: dict = {}
+
+
+def set_battle_context(context: dict | None):
+    """Attach immutable battle identity to subsequent driver events."""
+    global _battle_context
+    allowed = {'battle_id', 'driver_segment', 'envelope_hash'}
+    if context is not None and set(context) - allowed:
+        raise ValueError('Unsupported battle log context')
+    _battle_context = dict(context or {})
 
 
 def run_file() -> Path:
@@ -31,7 +41,7 @@ def run_file() -> Path:
 
 
 def event(kind: str, **fields):
-    rec = {"t": round(time.time(), 3), "kind": kind, **fields}
+    rec = {"t": round(time.time(), 3), "kind": kind, **_battle_context, **fields}
     with run_file().open("a", encoding="utf-8") as f:
         f.write(json.dumps(rec) + "\n")
     return rec

@@ -33,6 +33,7 @@ from device import act
 from device import capture
 from vision import detect
 from runtime import logger
+from vision import pills
 from vision import screen
 from vision import wave_reader
 from settings import CONFIG
@@ -126,24 +127,91 @@ def find_any(frame, rels, thresh: float = FIND_THRESH):
     return None, None
 
 
-def find(frame, rel: str, thresh: float = FIND_THRESH):
-    """Best match for a template, or None. Returns (centre, score)."""
+# The player's pill rows: one template per pill label, <prefix><slug>.png,
+# cut as pills.text_crop by player/calibrate.harvest_row. Labels in a row are
+# look-alikes: the default names "Preset 1".."Preset 5" differ by one digit
+# (a label's whole-template score on a sibling: 0.891-0.969, the calibrator's
+# next-best on a live account, 2026-10-12; FIND_THRESH is 0.90) and one name
+# can start another ("Farm" inside "Farm 2" scores ~1.0). So a tab whose own
+# pill is gone (renamed, stale cut) would read as a sibling, with or without a
+# template of its own - _own_label decides from the pixels alone.
+PILL_ROWS = ("cards/preset_", "presets/gp_", "presets/modules_",
+             "presets/guardians_", "presets/workshop_", "presets/bots_")
+# How far a pill's label pixels may reach past the hit box and still be that
+# label whole: a hand cut from the dashboard cropper's "tight box" can clip the
+# anti-aliased edge, and the same label's white box shifts 1 px between
+# screens. One more glyph reaches much further: on the live labels
+# (2026-10-12) the narrowest glyph is 10 px and glyphs sit >= 2 px apart.
+LABEL_FRINGE = 3
+
+
+def _own_label(frame, rel: str, tpl, loc, thresh: float) -> bool:
+    """For a pill-row template matched with its top-left at `loc`: True only
+    when the hit is that label whole and everywhere. Whole: the hit centre lies
+    in a pill (pills.pills, the calibrator's detector) and every label pixel of
+    that pill (pills.text_crop without margin) lies inside the hit box grown by
+    LABEL_FRINGE px a side, so "Farm" inside "Farm 2" fails. Everywhere: each
+    of round(2 * width / height) equal column strips of the template (half its height wide, about one
+    glyph) scores `thresh` at the hit alignment, so the one glyph a sibling
+    differs by fails its strip where the whole-template score averages it
+    away (live cuts 2026-10-12: a label on its own text from another screen
+    0.973 or more, on a one-digit sibling 0.846 or less). Any other
+    template: True."""
+    if not rel.startswith(PILL_ROWS):
+        return True
+    h, w = tpl.shape[:2]
+    x, y = loc
+    cx, cy = x + w // 2, y + h // 2
+    pill = next((p["rect"] for p in pills.pills(frame, max(0, cy - 160), cy + 160)
+                 if p["rect"][0] <= cx < p["rect"][0] + p["rect"][2]
+                 and p["rect"][1] <= cy < p["rect"][1] + p["rect"][3]), None)
+    if pill is None:
+        return False
+    _, text = pills.text_crop(frame, pill, margin=0)
+    f = LABEL_FRINGE
+    if text is None or not (x - f <= text[0] and y - f <= text[1]
+                            and text[0] + text[2] <= x + w + f and text[1] + text[3] <= y + h + f):
+        return False
+    n = max(1, round(2 * w / h))
+    for i in range(n):
+        xa, xb = i * w // n, (i + 1) * w // n
+        strip = cv2.matchTemplate(frame[y:y + h, x + xa:x + xb], tpl[:, xa:xb], cv2.TM_CCOEFF_NORMED)
+        if float(strip[0, 0]) < thresh:
+            return False
+    return True
+
+
+def find(frame, rel: str, thresh: float = FIND_THRESH, own: bool = True):
+    """Best match for a template, or None. Returns (centre, score). A pill-row
+    template takes its best spot that _own_label accepts: a look-alike's spot
+    is blanked and the next-best tried, so an absent own pill reads as absent
+    and a present one is found even where a sibling outscores it. own=False
+    skips _own_label and takes the best spot whatever label it is: for a
+    guard that asks whether a tab row is on screen, not which tab."""
     try:
         tpl = detect._tpl(rel)
     except detect.TemplateMissing:
         return None
     res = cv2.matchTemplate(frame, tpl, cv2.TM_CCOEFF_NORMED)
-    _, score, _, loc = cv2.minMaxLoc(res)
-    if score < thresh:
-        return None
     h, w = tpl.shape[:2]
-    return (loc[0] + w // 2, loc[1] + h // 2), float(score)
+    while True:
+        _, score, _, loc = cv2.minMaxLoc(res)
+        if score < thresh:
+            return None
+        if not own or _own_label(frame, rel, tpl, loc, thresh):
+            return (loc[0] + w // 2, loc[1] + h // 2), float(score)
+        cv2.rectangle(res, (loc[0] - w // 2, loc[1] - h // 2),
+                      (loc[0] + w // 2, loc[1] + h // 2), -1.0, -1)
 
 
 def find_robust(frame, rel: str, thresh: float = FIND_THRESH):
     """find() that survives a transient overlay across part of the tile
     (see detect._match_robust). For inventory tiles - chips, cards, module
-    icons - read under floating bonus text / sparkles. Same return shape."""
+    icons - read under floating bonus text / sparkles. Same return shape.
+    A pill-row label is plain find(): the partial-cell credit drops the
+    worst cell, which is the one glyph a look-alike differs by."""
+    if rel.startswith(PILL_ROWS):
+        return find(frame, rel, thresh)
     hit, score, loc = detect._match_robust(frame, rel, thresh)
     if not hit:
         return None
@@ -506,10 +574,11 @@ def guardian_swap(chips=CHIPS_IN):
     # the legacy geometry below tapped the edge of a live slot and unequipped
     # a farm chip before the stuck-guard fired. Presets auto-save, so a
     # single stray tap here is a permanent build edit: refuse BEFORE the
-    # first tap whenever the tab row is visible.
+    # first tap whenever the tab row is visible - own=False, so a tab renamed
+    # since the cut ("Farm 2") or cut tight still counts as that row.
     frame = capture.grab()
-    if (find(frame, "presets/guardians_farm.png", 0.85)
-            or find(frame, "presets/guardians_tourney.png", 0.85)):
+    if (find(frame, "presets/guardians_farm.png", 0.85, own=False)
+            or find(frame, "presets/guardians_tourney.png", 0.85, own=False)):
         logger.shot(frame, "guardian_v29_tabs")
         raise Abort("v29 guardian screen (Farm/Tourney preset tabs) - the "
                     "legacy chip swap would mutate the active preset; "

@@ -278,7 +278,8 @@ def ride_to(target: int) -> None:
     while True:
         frame = capture.grab()
         w = wave_reader.read_wave(frame)
-        gems.poll(frame)
+        if gems.poll(frame) is not frame:
+            continue                    # target must be read from a current battle frame
         if w is not None and w >= target:
             logger.event("sm_ride", wave=w, stage="target reached")
             return
@@ -308,6 +309,8 @@ def _cli(argv=None):
 
 def main() -> None:
     a = _cli()
+    from runtime.device_lease import prepare_instance
+    prepare_instance(a.instance)
     _bind_preset(a.instance, a.preset)
     from player import readiness
     readiness.require(settings.ROOT, settings.CONFIG, _preset())

@@ -32,7 +32,7 @@ def _decode(raw: bytes) -> str:
         return raw.decode("cp1252", "replace")
 
 
-def read_lines(bgr, scale: float = 3.0) -> list[tuple[int, int, str]]:
+def read_lines(bgr, scale: float = 3.0, *, timeout: float = 120) -> list[tuple[int, int, str]]:
     """OCR one crop, upscaled by `scale`. Rows (y, x, text) in reading order;
     empty when the engine finds nothing or is unavailable."""
     img = bgr
@@ -45,7 +45,7 @@ def read_lines(bgr, scale: float = 3.0) -> list[tuple[int, int, str]]:
         p = settings.run_hidden(
             ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
              "-File", str(WINOCR), path],
-            capture_output=True, timeout=120)
+            capture_output=True, timeout=timeout)
         rows = []
         for line in _decode(p.stdout).splitlines():
             parts = line.split("\t", 2)

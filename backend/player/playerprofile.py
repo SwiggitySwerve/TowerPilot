@@ -33,8 +33,8 @@ consequences follow, and they are the whole point:
     orchestrator/shopper/act read it without knowing profiles exist. Profiles are a
     front end, not a rewrite.
 
-Layering rule: this module imports `settings` and NOTHING else from the
-autopilot. It must stay loadable by the dashboard, the tray and the scanner,
+Layering rule: this module imports `settings` and pure configuration helpers.
+It must stay loadable by the dashboard, the tray and the scanner,
 none of which can afford to drag in capture/act/orchestrator (and their opencv/adb
 weight) just to list what a profile contains. It performs no IO other than
 reading the profile YAML - it never writes, never taps, never touches the net.
@@ -68,6 +68,7 @@ from pathlib import Path
 import yaml
 
 from settings import CONFIG, ROOT
+from player.gather_settings import AD_GEM_FIELDS, validate_ad_gem_options
 
 # Profiles live next to the schema that describes them. Kept as a module global
 # rather than inlined so tests can point it at a tmp_path without writing into
@@ -391,11 +392,12 @@ POLICY_SECTIONS = ("uw_policies", "rescue_policies", "gather", "shopping_lists",
 # all four policy families, consumed by the dashboard UI only - the compiler
 # ignores it deliberately (it is display data, not behavior).
 GATHER_KEYS = ("flying_gem", "gem_delay_sec", "ad_gems", "free_store_gems", "guild_store", "quests_8h",
-               "quest_rewards", "guild", "gem_orbit", "label")
+               "quest_rewards", "guild", "gem_orbit", "ad_gem_options", "label")
 # gem_orbit: the detection-free orbiting-gem blind harvest (flows/shard.py). The
 # compiler passes `gather` through verbatim, so these reach GemOrbitTapper as-is.
 GEM_ORBIT_KEYS = ("enabled", "center", "radius", "angle_deg", "interval_sec",
-                  "taps", "jitter_frac", "spread_deg")
+                  "taps", "jitter_frac", "spread_deg", "retry_interval_sec",
+                  "attempt_timeout_sec", "retry_backoff_sec")
 DIRECTIVE_KEYS = ("enabled", "tab", "stats", "mode", "clicks")
 CL_KEYS = ("mode", "always_on_above", "on_above", "pre_mark_waves",
            "off_after_waves")
@@ -412,7 +414,8 @@ RULE_KEYS = ("when", "do", "repeat", "refire_sec")
 # runner is what decides which fields mean anything - `cycle_sec` on a coin
 # blueprint is not a harmless extra, it is a setting the player believes is in
 # effect. So unknown/out-of-kind fields are reported, not ignored.
-_COMMON_FIELDS = ("kind", "label", "loadout", "tier", "policies")
+_COMMON_FIELDS = ("kind", "label", "loadout", "tier", "policies", "automation",
+                  "global_behaviors")
 _KIND_FIELDS = {
     "coin":           ("cancel_sprint", "max_wave", "dissonant_tab", "perk_bans",
                        "count", "restart_via_home", "shop_interval_sec", "shopping"),
@@ -1238,10 +1241,13 @@ def _validate_gather(path: str, body) -> list[str]:
                  required=True)
     if body.get("gem_orbit") is not None:
         out += _validate_gem_orbit(f"{path}.gem_orbit", body["gem_orbit"])
+    if "ad_gem_options" in body:
+        out += validate_ad_gem_options(body["ad_gem_options"], f"{path}.ad_gem_options")
     return out
 
 
 def _validate_gem_orbit(path: str, body) -> list[str]:
+    from player.gather_settings import validate_orbit_timing
     if not isinstance(body, dict):
         return [f"{path}: must be a mapping"]
     out: list[str] = []
@@ -1256,7 +1262,7 @@ def _validate_gem_orbit(path: str, body) -> list[str]:
         v = body.get(k)
         if v is not None and not isinstance(v, (int, float)):
             out.append(f"{path}.{k}: must be a number")
-    return out
+    return out + validate_orbit_timing(body, path)
 
 
 def _chore_names() -> tuple[str, ...]:
@@ -1351,6 +1357,13 @@ def _validate_shopping_list(path: str, body) -> list[str]:
     template for: the sweep would scroll the whole panel looking for a label
     that cannot match, find nothing, and report the run as "shopping complete".
     """
+    if isinstance(body, dict) and body.get('version') == 2:
+        from player.shopping_plan import normalize_plan
+        try:
+            normalize_plan(body)
+        except ValueError as exc:
+            return [f'{path}: {exc}']
+        return []
     if not isinstance(body, (list, dict)):
         return [f"{path}: must be a list of directives, or a mapping "
                 f"{{enabled, directives}}"]
@@ -1724,6 +1737,25 @@ def _validate_blueprint(path: str, bp: dict, player: dict, uw_policies: dict,
             out.append(f"{path}.{key}: not a legal field for kind '{kind}' "
                        f"(legal: {', '.join(sorted(legal))})")
 
+    automation = bp.get('automation', {})
+    from player.run_controls import FIELDS as control_fields
+    if not isinstance(automation, dict):
+        out.append(f'{path}.automation: expected an object')
+    else:
+        _check_keys(automation, control_fields, f'{path}.automation', out)
+        for key, value in automation.items():
+            if type(value) is not bool:
+                out.append(f'{path}.automation.{key}: expected true or false')
+    rewards = bp.get('global_behaviors', {})
+    from scheduling.global_rewards import KEYS as reward_keys
+    if not isinstance(rewards, dict):
+        out.append(f'{path}.global_behaviors: expected an object')
+    else:
+        _check_keys(rewards, reward_keys, f'{path}.global_behaviors', out)
+        for key, value in rewards.items():
+            if type(value) is not bool:
+                out.append(f'{path}.global_behaviors.{key}: expected true or false')
+
     # ---- loadout: must exist in the MACHINE file and be runnable there
     loadout = bp.get("loadout")
     loadouts = _d(CONFIG.get("loadouts"))
@@ -1763,7 +1795,7 @@ def _validate_blueprint(path: str, bp: dict, player: dict, uw_policies: dict,
     # goes into `now - last > interval`, count/rides/cycles are str()'d into an
     # argv that argparse int()s, gem caps are compared against an OCR'd price.
     _check_pos_int(bp.get("count"), f"{path}.count", out, allow_zero=True)
-    _check_pos_int(bp.get("shop_interval_sec"), f"{path}.shop_interval_sec",
+    _check_pos_num(bp.get("shop_interval_sec"), f"{path}.shop_interval_sec",
                    out)
     _check_pos_int(bp.get("max_wave"), f"{path}.max_wave", out)
     dt = bp.get("dissonant_tab")
@@ -2613,6 +2645,22 @@ def compile_preset(profile: dict, blueprint_name: str) -> dict:
     if policies.get('global_behaviors'):
         # Added only for opted-in profiles, preserving older compiled presets.
         out['global_behaviors'] = copy.deepcopy(policies['global_behaviors'])
+    if bp.get('global_behaviors'):
+        out.setdefault('global_behaviors', {}).update(copy.deepcopy(bp['global_behaviors']))
+    if 'automation' in bp:
+        from player.run_controls import FIELDS as control_fields
+        automation = bp['automation']
+        if not isinstance(automation, dict) or any(key not in control_fields or type(value) is not bool for key, value in automation.items()):
+            raise ProfileError(f'blueprints.{blueprint_name}.automation: expected known boolean routine gates')
+        out['automation'] = copy.deepcopy(automation)
+    if isinstance(shopping, dict) and shopping.get('version') == 2:
+        from player.shopping_plan import normalize_plan
+        try:
+            out['shopping_plan'] = normalize_plan(shopping)
+        except ValueError as exc:
+            raise ProfileError(f'blueprints.{blueprint_name}.shopping: {exc}') from exc
+        out['shopping'] = []
+        out['shop_interval_sec'] = out['shopping_plan']['interval_sec']
 
     # Kind-specific passthroughs. Only emitted where they MEAN something: orchestrator
     # does `preset().get("tournament_setup")`, so a coin preset carrying a false
@@ -2728,6 +2776,15 @@ def _apply_dissonance(out: dict, tab: str) -> None:
     out. Done here, once, rather than taught to the shopper and the UW
     normalizer as runtime conditionals (2026-09-14)."""
     out["shopping"] = [d for d in out.get("shopping", []) if d.get("tab") != tab]
+    if 'shopping_plan' in out:
+        from player.shopping_plan import catalog
+        tabs = {item['id']: item['section'] for item in catalog()}
+        plan = out['shopping_plan']
+        if 'queue' in plan:
+            plan['queue'] = [item for item in plan['queue'] if tabs[item['id']] != tab]
+        else:
+            for phase in plan.get('phases', []):
+                phase['sections'] = [section for section in phase['sections'] if section['id'] != tab]
     if tab == "ultimate_weapons":
         out["uw_wanted"] = {}
         out["chain_lightning"] = {"enabled": False, "always_on": False,
@@ -2747,6 +2804,8 @@ def _compile_shopping(entry) -> list[dict]:
     Shopper.finished true on the first check - no panel visits at all, rather
     than a sweep that opens the workshop and buys nothing.
     """
+    if isinstance(entry, dict) and entry.get('version') == 2:
+        return []
     master, directives = _shopping_parts(entry)
     if not master:
         return []
@@ -3336,6 +3395,8 @@ def _blueprint_field_specs() -> dict:
     not decided here (see `_blueprint_fields`): that comes off `_COMMON_FIELDS`
     / `_KIND_FIELDS`, the same tables `_validate_blueprint` refuses against.
     """
+    from player.run_controls import FIELDS as control_fields
+    from scheduling.global_rewards import KEYS as reward_keys
     return {
         "kind": _enum(KINDS, "which runner drives this blueprint - it is also "
                              "the key this section is grouped under"),
@@ -3358,6 +3419,10 @@ def _blueprint_field_specs() -> dict:
                 "rescue": _spec("str", "a `policies.rescue_policies` key"),
                 "gather": _spec("str", "a `policies.gather` key")}),
         "shopping": _spec("str", "a `policies.shopping_lists` key"),
+        "automation": _spec("object", "Per-run boolean routine gates; omitted gates retain existing defaults",
+                            fields={name: _spec('bool', f'Enable the {name} routine') for name in control_fields}),
+        "global_behaviors": _spec("object", "Per-run reward settings overriding shared global behaviors",
+                                  fields={name: _spec('bool', f'Enable {name}') for name in reward_keys}),
         "restart_via_home": _spec(
             "bool", "go back to the home screen between runs (where the "
                     "between-run chores live) instead of straight to RETRY"),
@@ -3643,6 +3708,11 @@ def vocab() -> dict:
                             "splatted into random.uniform(), so both bounds "
                             "are integers and low <= high", span=(0, None)),
                 "ad_gems": _spec("bool", "claim the HUD Ad Gems button"),
+                "ad_gem_options": _spec(
+                    "object", "Ad-gem offer checks, retries and button inset",
+                    fields={key: _spec({"range": "list", "int": "int", "number": "float"}[field["type"]],
+                                       field["description"], span=(field["min"], field["max"]))
+                            for key, field in AD_GEM_FIELDS.items()}),
                 "free_store_gems": _spec("bool", "collect free Store gems separately"),
                 "guild_store": _spec("bool", "spend guild currency after collecting guild rewards (off by default)"),
                 "quests_8h": _spec("bool", "claim the 8h quest chest"),

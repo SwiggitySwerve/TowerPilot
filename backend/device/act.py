@@ -13,6 +13,7 @@ class TapRefused(RuntimeError):
 
 
 _last_tap = 0.0
+TAP_DRIFT_PX = 2
 
 
 def _input(*parts) -> None:
@@ -26,17 +27,21 @@ def _input(*parts) -> None:
     from device import adbclient
     from settings import instance
     inst = instance()
+    from runtime.device_lease import input_scope
     disp = inst.get("input_display")
     cmd = "input" + (f" -d {disp}" if disp is not None else "")
     cmd += " " + " ".join(str(p) for p in parts)
-    adbclient.shell(inst["serial"], cmd, timeout=8)
+    with input_scope():
+        adbclient.shell(inst["serial"], cmd, timeout=8)
 
 
-def tap(x: int, y: int, reason: str = "", instant: bool = False) -> dict:
+def tap(x: int, y: int, reason: str = "", instant: bool = False,
+        deadline: float | None = None) -> dict:
     """Send one tap (native coords) honoring safety rails.
 
     Returns an event dict for the logger. Never raises on dry-run;
-    raises TapRefused when a rail blocks a live tap.
+    raises TapRefused when a rail blocks a live tap. An optional monotonic
+    deadline is checked after pacing waits, immediately before dispatch.
     """
     global _last_tap
     inst = instance()
@@ -69,7 +74,7 @@ def tap(x: int, y: int, reason: str = "", instant: bool = False) -> dict:
         if instant:
             # some menu widgets (guild milestone boxes) treat the held
             # near-zero-distance swipe as a drag and IGNORE it - plain tap there
-            _input("tap", jx, jy)
+            command = ("tap", jx, jy)
             dur = 0
         else:
             # press DURATION matters: real recorded human taps hold 60-140ms
@@ -77,8 +82,12 @@ def tap(x: int, y: int, reason: str = "", instant: bool = False) -> dict:
             # `input tap` is instantaneous; a near-zero-distance swipe gives the
             # tap a natural hold time.
             dur = max(45, min(160, int(random.gauss(85, 15))))
-            ex, ey = jx + random.randint(-2, 2), jy + random.randint(-2, 2)
-            _input("swipe", jx, jy, ex, ey, dur)
+            ex = jx + random.randint(-TAP_DRIFT_PX, TAP_DRIFT_PX)
+            ey = jy + random.randint(-TAP_DRIFT_PX, TAP_DRIFT_PX)
+            command = ("swipe", jx, jy, ex, ey, dur)
+        if deadline is not None and time.monotonic() >= deadline:
+            raise TapRefused("tap deadline expired before input dispatch")
+        _input(*command)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired,
             OSError, adbclient.AdbError) as e:
         raise TapRefused(f"adb input failed: {e}") from e

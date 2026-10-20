@@ -26,11 +26,14 @@ bst.instance.Other.fb_width="1920"
 
 
 @pytest.fixture()
-def dash():
+def dash(tmp_path):
     path = BACKEND.parent / "frontend" / "dashboard.py"
     spec = importlib.util.spec_from_file_location("tp_dashboard_bs", str(path))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
+    config = tmp_path / "dashboard_config.yaml"
+    config.write_text((BACKEND / "config.example.yaml").read_text(encoding="utf-8"), encoding="utf-8")
+    mod.CONFIG_PATH = str(config)
     return mod
 
 

@@ -1970,6 +1970,9 @@
       "names": [
         "Attack"
       ],
+      "locked_art": [
+        "lock"
+      ],
       "screen": "guardians",
       "search": [
         25,
@@ -1989,6 +1992,9 @@
       "names": [
         "Ally"
       ],
+      "locked_art": [
+        "lock"
+      ],
       "screen": "guardians",
       "search": [
         25,
@@ -2004,9 +2010,34 @@
         115
       ]
     },
+    "guardian/chip_bounty.png": {
+      "names": [
+        "Steal"
+      ],
+      "locked_art": [
+        "lock"
+      ],
+      "screen": "guardians",
+      "search": [
+        25,
+        1160,
+        1020,
+        1140
+      ],
+      "locate_navigation": false,
+      "reference_rect": [
+        801,
+        1352,
+        129,
+        96
+      ]
+    },
     "guardian/chip_fetch.png": {
       "names": [
         "Fetch"
+      ],
+      "locked_art": [
+        "lock"
       ],
       "screen": "guardians",
       "search": [
@@ -2027,6 +2058,9 @@
       "names": [
         "Scout"
       ],
+      "locked_art": [
+        "lock"
+      ],
       "screen": "guardians",
       "search": [
         25,
@@ -2045,6 +2079,9 @@
     "guardian/chip_summon.png": {
       "names": [
         "Summon"
+      ],
+      "locked_art": [
+        "lock"
       ],
       "screen": "guardians",
       "search": [
@@ -6817,6 +6854,8 @@
     "/asset_bindings/guardian~1chip_attack.png/reference_rect": "xyxy",
     "/asset_bindings/guardian~1chip_ally.png/search": "xyxy",
     "/asset_bindings/guardian~1chip_ally.png/reference_rect": "xyxy",
+    "/asset_bindings/guardian~1chip_bounty.png/search": "xyxy",
+    "/asset_bindings/guardian~1chip_bounty.png/reference_rect": "xyxy",
     "/asset_bindings/guardian~1chip_fetch.png/search": "xyxy",
     "/asset_bindings/guardian~1chip_fetch.png/reference_rect": "xyxy",
     "/asset_bindings/guardian~1chip_scout.png/search": "xyxy",

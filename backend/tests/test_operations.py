@@ -1,0 +1,454 @@
+"""Offline operation contract tests: temporary SQLite/artifacts, no devices."""
+import copy
+from concurrent.futures import ThreadPoolExecutor
+import importlib.util
+import json
+from pathlib import Path
+import sys
+import types
+
+import pytest
+
+from runtime.operations import Conflict, Operations, file_revision, worker_operation
+from control import operations as service
+
+
+@pytest.mark.parametrize('module_name', ['calibrate', 'scan'])
+def test_tracked_worker_ignores_late_stop_marker_from_old_operation(tmp_path, monkeypatch, module_name):
+    from player import calibrate, scan
+    module = {'calibrate': calibrate, 'scan': scan}[module_name]
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    old, _ = store.accept('calibrate', ctx, {})
+    old = store.transition(old['id'], old['revision'], 'cancelling')
+    store.transition(old['id'], old['revision'], 'cancelled')
+    newer, _ = store.accept('calibrate', ctx, {})
+    monkeypatch.setenv('TOWER_OPERATION_ID', newer['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    marker = tmp_path / 'stop'
+    paths = {'stop': str(marker)}
+    assert module._stop_requested(paths) is False
+    marker.write_text(old['id'], encoding='utf-8')
+    assert module._stop_requested(paths) is False
+    marker.write_text(newer['id'], encoding='utf-8')
+    assert module._stop_requested(paths) is True
+    marker.unlink()
+    store.transition(newer['id'], newer['revision'], 'cancelling')
+    assert module._stop_requested(paths) is True
+
+
+@pytest.mark.parametrize('module_name', ['calibrate', 'scan'])
+def test_stop_marker_read_errors_fail_loud_and_legacy_keeps_existence(tmp_path, monkeypatch, module_name):
+    from player import calibrate, scan
+    module = {'calibrate': calibrate, 'scan': scan}[module_name]
+    marker = tmp_path / 'stop'
+    marker.write_text('legacy-dashboard', encoding='utf-8')
+    monkeypatch.delenv('TOWER_OPERATION_ID', raising=False)
+    monkeypatch.delenv('TOWER_OPERATION_DB', raising=False)
+    assert module._stop_requested({'stop': str(marker)}) is True
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('calibrate', ctx, {})
+    monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    def denied(*args, **kwargs):
+        raise PermissionError('marker is unreadable')
+    monkeypatch.setattr(module, 'open', denied, raising=False)
+    with pytest.raises(PermissionError, match='unreadable'):
+        module._stop_requested({'stop': str(marker)})
+
+
+def target(tmp_path, serial='fake:1'):
+    profile = tmp_path / 'profiles' / 'mine.yaml'
+    profile.parent.mkdir(exist_ok=True)
+    profile.write_text('player: {}\n')
+    cfg = dict(active_instance='main', active_profile='mine', instances={'main': {'serial': serial, 'rendering': {'width': 1080, 'height': 2560, 'dpi': 360}}})
+    return cfg, service.context(tmp_path, cfg, {}, str(profile))
+
+
+def test_concurrent_admission_and_retry_are_transactional(tmp_path):
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    def accept(key):
+        try:
+            return store.accept('calibrate', ctx, {}, key)
+        except Conflict:
+            return None
+    with ThreadPoolExecutor(2) as pool:
+        results = list(pool.map(accept, ['one', 'two']))
+    accepted = [row for row in results if row]
+    assert len(accepted) == 1
+    op = accepted[0][0]
+    again, created = store.accept('calibrate', ctx, {}, op['idempotency_key'])
+    assert not created and again == op
+    independent = dict(ctx, device_key='second-device', serial='fake:2')
+    assert store.accept('calibrate', independent, {}, 'other')[1]
+
+
+def test_retry_does_not_reassign_context_or_request(tmp_path):
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('calibrate', ctx, {'flows': False}, 'key')
+    ctx['profile'] = 'someone_else'
+    with pytest.raises(Conflict):
+        store.accept('calibrate', ctx, {'flows': False}, 'key')
+    assert store.get(op['id'])['context']['profile'] == 'mine'
+    with pytest.raises(Conflict):
+        store.accept('calibrate', op['context'], {'flows': True}, 'key')
+
+
+def test_revision_and_lifecycle_edges_fence_stale_commands(tmp_path):
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('calibrate', ctx, {})
+    with pytest.raises(Conflict):
+        store.transition(op['id'], 1, 'succeeded')
+    running = store.transition(op['id'], 1, 'running')
+    with pytest.raises(Conflict):
+        store.transition(op['id'], 1, 'cancelling')
+    with pytest.raises(ValueError):
+        store.transition(op['id'], running['revision'], 'running', context={})
+    finished = store.transition(op['id'], running['revision'], 'awaiting_apply')
+    restarted = Operations(tmp_path / 'ops.db')
+    assert restarted.get(op['id']) == finished
+
+
+def test_reconciliation_never_infers_success_and_checks_creation_time(tmp_path, monkeypatch):
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('calibrate', ctx, {})
+    op = store.transition(op['id'], op['revision'], 'running', worker={'pid': 999, 'creation_time': 10})
+    assert store.reconcile(op['id'], lambda worker: True)['status'] == 'running'
+    assert store.reconcile(op['id'], lambda worker: False)['status'] == 'interrupted'
+    fake = types.SimpleNamespace(Process=lambda pid: types.SimpleNamespace(create_time=lambda: 11, is_running=lambda: True), NoSuchProcess=ProcessLookupError, AccessDenied=PermissionError)
+    monkeypatch.setitem(sys.modules, 'psutil', fake)
+    assert not service.worker_alive(op['worker'])
+
+
+def test_cancel_old_operation_cannot_cancel_new_worker(tmp_path, monkeypatch):
+    monkeypatch.setattr(service, 'worker_alive', lambda worker: True)
+    _, ctx = target(tmp_path)
+    store = service.ledger(tmp_path)
+    a, _ = store.accept('calibrate', ctx, {})
+    a = store.transition(a['id'], a['revision'], 'running')
+    a = service.cancel(tmp_path, {'operation_id': a['id'], 'expected_revision': a['revision']})
+    store.transition(a['id'], a['revision'], 'cancelled')
+    b, _ = store.accept('calibrate', ctx, {})
+    flag = Path(ctx['artifact_dir']) / 'calibrate_stop'
+    flag.unlink()
+    with pytest.raises(Conflict):
+        service.cancel(tmp_path, {'operation_id': a['id'], 'expected_revision': a['revision']})
+    assert not flag.exists()
+    assert store.get(b['id'])['status'] == 'accepted'
+
+
+@pytest.mark.parametrize('restore,failed,expected', [(False, False, 'awaiting_apply'), (True, False, 'restoration_required'), (False, True, 'failed')])
+def test_capture_outcome_preserves_artifact_reference(tmp_path, monkeypatch, restore, failed, expected):
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('calibrate', ctx, {'phases': 'c'})
+    monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    path = directory / 'calibrate_state.json'
+    with worker_operation():
+        path.write_text(json.dumps({'operation_id': op['id'], 'player': {'card_presets': ['test']}, 'phases': {'cards': {'status': 'error' if failed else 'done'}}}))
+        if restore:
+            (directory / 'module_restore.json').write_text('{}')
+    saved = store.get(op['id'])
+    assert saved['status'] == expected
+    assert saved['result_refs']['calibrate_state.json']['revision'] == file_revision(path)
+    assert 'player' not in saved
+
+
+def test_clean_driver_exit_ignores_old_setup_errors(tmp_path, monkeypatch):
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('run', ctx, {})
+    monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    (directory / 'module_restore.json').write_text('{}')
+    (directory / 'calibrate_state.json').write_text('{"phases":{"cards":{"status":"error"}}}')
+    with pytest.raises(SystemExit):
+        with worker_operation():
+            raise SystemExit(0)
+    assert store.get(op['id'])['status'] == 'succeeded'
+
+
+@pytest.fixture
+def dashboard(tmp_path, monkeypatch):
+    path = Path(__file__).resolve().parents[2] / 'frontend' / 'dashboard.py'
+    spec = importlib.util.spec_from_file_location('tp_operation_contract', path)
+    dash = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dash)
+    cfg, ctx = target(tmp_path)
+    monkeypatch.setattr(dash, 'ROOT', str(tmp_path))
+    monkeypatch.setattr(dash, 'load_config', lambda: copy.deepcopy(cfg))
+    monkeypatch.setattr(dash, '_procs', lambda: [])
+    monkeypatch.setattr(dash, '_procs_cached', lambda: [])
+    return dash, cfg, ctx
+
+
+def test_status_uses_original_context_after_switch(dashboard):
+    dash, cfg, ctx = dashboard
+    store = service.ledger(dash.ROOT)
+    op, _ = store.accept('calibrate', ctx, {})
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    (directory / 'calibrate_state.json').write_text(json.dumps({'operation_id': op['id'], 'player': {'marker': 'original'}}))
+    cfg['active_profile'] = 'another'
+    cfg['instances']['main']['serial'] = 'fake:other'
+    with dash.app.test_client() as client:
+        response = client.get('/api/calibrate/status?operation_id=' + op['id'])
+    assert response.status_code == 200
+    result = response.get_json()
+    assert result['state']['player']['marker'] == 'original'
+    assert result['operation']['context']['profile'] == 'mine'
+    assert 'config' not in result['operation']['context']
+
+
+@pytest.mark.parametrize('kind,route,filename', [('scan', '/api/scan/status', 'scan_state.json'), ('screen_analysis', '/api/screen-analysis/status', 'screen_analysis.json')])
+def test_status_does_not_combine_old_operation_with_new_shared_artifact(dashboard, kind, route, filename):
+    dash, _, ctx = dashboard
+    store = service.ledger(dash.ROOT)
+    old, _ = store.accept(kind, ctx, {})
+    old = store.transition(old['id'], old['revision'], 'running')
+    old = store.transition(old['id'], old['revision'], 'succeeded')
+    newer, _ = store.accept(kind, ctx, {})
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    (directory / filename).write_text(json.dumps({'operation_id': newer['id'], 'player': {'marker': 'newer'}, 'status': 'done', 'matches': [{'marker': 'newer'}]}))
+    with dash.app.test_client() as client:
+        response = client.get(route + '?operation_id=' + old['id'])
+    assert response.status_code == 200
+    result = response.get_json()
+    assert result['operation']['id'] == old['id']
+    if kind == 'scan':
+        assert result['state'] == {}
+    else:
+        assert result['status'] == 'unavailable'
+        assert 'matches' not in result and 'player' not in result
+
+
+@pytest.mark.parametrize('domain_status,expected', [('done', 'succeeded'), ('error', 'failed'), ('running', 'failed')])
+def test_screen_analysis_clean_exit_uses_tagged_domain_outcome(tmp_path, monkeypatch, domain_status, expected):
+    from player import screen_analysis
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('screen_analysis', ctx, {})
+    monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    path = directory / 'screen_analysis.json'
+    with worker_operation():
+        screen_analysis._write_state(path, {'status': 'running', 'message': 'progress'})
+        assert json.loads(path.read_text())['operation_id'] == op['id']
+        screen_analysis._write_state(path, {'status': domain_status, 'message': 'domain outcome'})
+    final = store.get(op['id'])
+    assert final['status'] == expected
+    assert final['result_refs']['screen_analysis.json']['revision'] == file_revision(path)
+    if expected == 'failed':
+        assert final['error']['code'] == 'analysis_incomplete'
+
+
+def test_apply_profile_conflict_preserves_discoveries(dashboard):
+    dash, _, ctx = dashboard
+    store = service.ledger(dash.ROOT)
+    op, _ = store.accept('calibrate', ctx, {})
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    state = directory / 'calibrate_state.json'
+    state.write_text(json.dumps({'operation_id': op['id'], 'player': {'card_presets': ['found']}}))
+    op = store.transition(op['id'], op['revision'], 'running')
+    op = store.transition(op['id'], op['revision'], 'awaiting_apply', result_refs={'calibrate_state.json': {'path': str(state), 'revision': file_revision(state)}})
+    Path(ctx['profile_path']).write_text('player: {wall: true}\n')
+    with dash.app.test_client() as client:
+        response = client.post('/api/calibrate/apply', json={'operation_id': op['id'], 'expected_revision': op['revision']})
+    assert response.status_code == 409
+    assert 'Profile changed' in response.get_json()['error']
+    assert json.loads(state.read_text())['player']['card_presets'] == ['found']
+    assert store.get(op['id'])['status'] == 'awaiting_apply'
+
+
+def test_apply_is_revision_fenced_and_retry_returns_same_outcome(dashboard, monkeypatch):
+    dash, _, ctx = dashboard
+    from player import playerprofile
+    monkeypatch.setattr(playerprofile, 'validate', lambda profile: [])
+    store = service.ledger(dash.ROOT)
+    op, _ = store.accept('calibrate', ctx, {})
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    state = directory / 'calibrate_state.json'
+    state.write_text(json.dumps({'operation_id': op['id'], 'player': {'card_presets': ['found']}}))
+    op = store.transition(op['id'], op['revision'], 'running')
+    op = store.transition(op['id'], op['revision'], 'awaiting_apply', result_refs={'calibrate_state.json': {'path': str(state), 'revision': file_revision(state)}})
+    body = {'operation_id': op['id'], 'expected_revision': op['revision']}
+    with dash.app.test_client() as client:
+        applied = client.post('/api/calibrate/apply', json=body)
+        retried = client.post('/api/calibrate/apply', json=body)
+    assert applied.status_code == retried.status_code == 200
+    assert applied.get_json()['operation'] == retried.get_json()['operation']
+    assert retried.get_json()['operation']['status'] == 'succeeded'
+    assert store.get(op['id'])['revision'] == op['revision'] + 3
+
+
+def test_apply_retries_saved_profile_after_config_failure_without_capture(dashboard, monkeypatch):
+    dash, _, ctx = dashboard
+    from player import playerprofile, readiness
+    monkeypatch.setattr(playerprofile, 'validate', lambda profile: [])
+    monkeypatch.setattr(readiness, 'wall_bar_roi', lambda cfg: None)
+    store = service.ledger(dash.ROOT)
+    op, _ = store.accept('calibrate', ctx, {})
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    state = directory / 'calibrate_state.json'
+    state.write_text(json.dumps({'operation_id': op['id'], 'player': {'wall': True, 'wall_bar': [1, 2, 3, 4]}}))
+    op = store.transition(op['id'], op['revision'], 'running')
+    op = store.transition(op['id'], op['revision'], 'awaiting_apply', result_refs={'calibrate_state.json': {'path': str(state), 'revision': file_revision(state)}})
+    attempts = []
+    def save_config(cfg):
+        attempts.append(copy.deepcopy(cfg))
+        if len(attempts) == 1:
+            raise OSError('simulated config write failure')
+    monkeypatch.setattr(dash, 'save_config', save_config)
+    with dash.app.test_client() as client:
+        failed = client.post('/api/calibrate/apply', json={'operation_id': op['id'], 'expected_revision': op['revision']})
+        assert failed.status_code == 400
+        retry = store.get(op['id'])
+        assert retry['status'] == 'awaiting_apply'
+        assert retry['result_refs']['apply_profile_digest']
+        succeeded = client.post('/api/calibrate/apply', json={'operation_id': op['id'], 'expected_revision': retry['revision']})
+    assert succeeded.status_code == 200, succeeded.get_json()
+    assert succeeded.get_json()['operation']['status'] == 'succeeded'
+    assert len(attempts) == 2
+    assert file_revision(state) == op['result_refs']['calibrate_state.json']['revision']
+
+
+def test_expected_context_prevents_launch_retargeting(tmp_path):
+    cfg, ctx = target(tmp_path)
+    command = {'expected_context': {key: ctx[key] for key in ('instance', 'account', 'serial', 'rendering', 'profile')}}
+    cfg['instances']['main']['serial'] = 'fake:changed'
+    launches = []
+    with pytest.raises(Conflict, match='before acceptance'):
+        service.launch(tmp_path, cfg, 'calibrate', command, ['python', 'fake.py'], lambda *args, **kwargs: launches.append(args), ctx['profile_path'])
+    assert not launches
+
+
+@pytest.mark.parametrize('busy', [False, True])
+def test_bootstrap_acquires_lease_before_running_or_target_import(tmp_path, monkeypatch, busy):
+    from runtime import device_lease, operation_worker
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('run', ctx, {})
+    monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    order = []
+    def acquire(serial, host, port):
+        assert store.get(op['id'])['status'] == 'accepted'
+        order.append('lease')
+        if busy:
+            raise device_lease.DeviceBusy('fake occupied transport')
+    def execute(path, run_name):
+        assert store.get(op['id'])['status'] == 'running'
+        order.append('target')
+    monkeypatch.setattr(device_lease, 'acquire', acquire)
+    monkeypatch.setattr(operation_worker, 'restore_worker_context', lambda settings: order.append('context'))
+    monkeypatch.setattr(operation_worker.runpy, 'run_path', execute)
+    monkeypatch.setattr(sys, 'argv', ['operation_worker', 'fake_target.py'])
+    if busy:
+        with pytest.raises(device_lease.DeviceBusy):
+            operation_worker.main()
+        assert order == ['lease']
+        assert store.get(op['id'])['status'] == 'failed'
+    else:
+        operation_worker.main()
+        assert order == ['lease', 'context', 'target']
+        assert store.get(op['id'])['status'] == 'succeeded'
+
+
+def test_retry_resolves_original_operation_after_mutable_revisions_change(tmp_path):
+    cfg, ctx = target(tmp_path)
+    store = service.ledger(tmp_path)
+    op, _ = store.accept('calibrate', ctx, {'phases': 'c'}, 'accepted-key')
+    cfg['unrelated_setting'] = 'changed'
+    Path(ctx['profile_path']).write_text('player: {card_presets: [discovered]}\n')
+    retried = service.retry(tmp_path, cfg, 'calibrate', {'phases': 'c', 'idempotency_key': 'accepted-key'}, ctx['profile_path'])
+    assert retried == op
+    cfg['active_profile'] = 'different-profile'
+    with pytest.raises(Conflict):
+        service.retry(tmp_path, cfg, 'calibrate', {'phases': 'c', 'idempotency_key': 'accepted-key'}, ctx['profile_path'])
+
+
+def test_new_start_reconciles_dead_worker_without_prior_poll(tmp_path, monkeypatch):
+    cfg, ctx = target(tmp_path)
+    store = service.ledger(tmp_path)
+    old, _ = store.accept('run', ctx, {})
+    old = store.transition(old['id'], old['revision'], 'running', worker={'pid': 99999999, 'creation_time': 1})
+    launches = []
+    def spawn(command, **kwargs):
+        launches.append(command)
+        return types.SimpleNamespace(pid=99999999)
+    newer = service.launch(tmp_path, cfg, 'run', {'idempotency_key': 'new-key'}, ['python', 'fake.py'], spawn, ctx['profile_path'])
+    assert store.get(old['id'])['status'] == 'interrupted'
+    assert newer['id'] != old['id'] and newer['status'] == 'accepted'
+    assert len(launches) == 1
+    assert launches[0][1:3] == ['-m', 'runtime.operation_worker']
+
+
+def test_process_projection_requires_creation_identity(tmp_path, monkeypatch):
+    _, ctx = target(tmp_path)
+    store = service.ledger(tmp_path)
+    op, _ = store.accept('run', ctx, {})
+    op = store.transition(op['id'], op['revision'], 'running', worker={'pid': 123, 'creation_time': 10})
+    fake = types.SimpleNamespace(Process=lambda pid: types.SimpleNamespace(pid=123, create_time=lambda: 10, is_running=lambda: True, parents=lambda: [types.SimpleNamespace(pid=99)]), NoSuchProcess=ProcessLookupError, AccessDenied=PermissionError)
+    monkeypatch.setitem(sys.modules, 'psutil', fake)
+    rows = service.project_processes(tmp_path, [{'pid': 99, 'runner': 'orchestrator', 'cmdline': 'fake'}])
+    assert rows[0]['operation']['id'] == op['id']
+    assert rows[0]['operation']['revision'] == op['revision']
+    fake.Process = lambda pid: types.SimpleNamespace(create_time=lambda: 11, is_running=lambda: True)
+    rows = service.project_processes(tmp_path, [{'pid': 99, 'runner': 'orchestrator'}])
+    assert 'operation' not in rows[0]
+    assert store.get(op['id'])['status'] == 'interrupted'
+
+
+def test_finish_flag_uses_operation_original_instance(dashboard, monkeypatch):
+    dash, cfg, ctx = dashboard
+    store = service.ledger(dash.ROOT)
+    op, _ = store.accept('run', ctx, {})
+    cfg['active_instance'] = 'different'
+    cfg['instances']['different'] = {'serial': 'fake:other'}
+    with dash.app.test_client() as client:
+        response = client.post('/api/control', json={'action': 'stop_after_run', 'operation_id': op['id'], 'expected_revision': op['revision']})
+    assert response.status_code == 200
+    assert (Path(dash.ROOT) / 'logs' / 'main' / 'stop_after_run').exists()
+    assert not (Path(dash.ROOT) / 'logs' / 'different' / 'stop_after_run').exists()
+
+
+@pytest.mark.parametrize('width', [1080, 720])
+def test_tracked_calibration_does_not_persist_rendering_or_retarget(tmp_path, monkeypatch, width):
+    from device import layout
+    from player import calibrate
+    from player.geometry import Display
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('calibrate', ctx, {})
+    monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    activated = []
+    monkeypatch.setattr(layout, 'discover', lambda: Display(width, 2560, 360))
+    monkeypatch.setattr(layout, 'activate', activated.append)
+    def forbidden():
+        pytest.fail('Tracked calibration must not rewrite config/rendering')
+    monkeypatch.setattr(layout, 'prepare_scan', forbidden)
+    if width == 1080:
+        calibrate._prepare_display()
+        assert len(activated) == 1
+    else:
+        with pytest.raises(ValueError, match='Rendering changed'):
+            calibrate._prepare_display()
+        assert not activated
+    assert store.get(op['id'])['context'] == ctx
