@@ -2235,13 +2235,17 @@ def _prepare_coin_start():
         return
     from interactions import loadout, tourney
     from flows import shard
+    setup = None
     try:
         if body.get("loadout"):
             result = loadout.apply(body["loadout"])
+            setup = result['setup']
             if _battle_session is not None:
-                _battle_session.set_setup(result['setup'])
+                _battle_session.set_setup(setup)
         shard.set_tier(body["tier"])
         shard.enter_run(body)
+        if setup is not None and setup.get('state') == 'degraded' and _battle_session is not None:
+            _battle_session.set_setup(dict(setup, continued_with_partial=True))
     except (tourney.Abort, act.TapRefused) as e:
         if _battle_session is not None:
             _battle_session.set_setup(loadout.setup_failure(body.get('loadout'), e))

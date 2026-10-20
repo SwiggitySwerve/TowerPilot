@@ -1041,7 +1041,6 @@ def _block_handoff(b, instance: str):
             setup = loadout.apply(name)['setup']
     except tourney.Abort as e:
         setup = loadout.setup_failure(name, e)
-        setup['continued_with_partial'] = True
         logger.event("combo_loadout_partial", phase=b["block"],
                      block=b["id"], error=str(e))
     tourney.ensure_home()
@@ -1049,6 +1048,8 @@ def _block_handoff(b, instance: str):
     # enter_run, not start_battle: a dissonance blueprint enters through its
     # own dialog and a blueprint with perk bans sets them first (2026-09-14).
     shard.enter_run(body)
+    if setup.get('state') == 'degraded':
+        setup = dict(setup, continued_with_partial=True)
     logger.event("combo_handoff", phase=b["block"], block=b["id"], tier=tier,
                  dissonant=body.get("dissonant_tab"))
     return setup
@@ -1110,13 +1111,14 @@ def _handoff(phase: str, instance: str):
         setup = loadout.apply(name)['setup']
     except tourney.Abort as e:
         setup = loadout.setup_failure(name, e)
-        setup['continued_with_partial'] = True
         logger.event("combo_loadout_partial", phase=phase, error=str(e))
     tourney.ensure_home()
     tier = CONFIG["loadouts"][name].get("tier") or (
         legacy_body["tier"] if phase == "coin" else 18)
     shard.set_tier(tier)
     shard.start_battle()
+    if setup.get('state') == 'degraded':
+        setup = dict(setup, continued_with_partial=True)
     logger.event("combo_handoff", phase=phase, tier=tier)
     return setup
 

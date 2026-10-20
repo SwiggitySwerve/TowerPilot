@@ -209,3 +209,96 @@ def test_direct_tournament_main_passes_durable_setup_callback(setup_driver, refu
     battle = d.store.active()[0]
     assert public(d.store, battle)['runtime']['setup'] == expected
     assert expected['continued_with_partial'] is False
+
+
+def optional_bot_failure(d, name):
+    """Exercise the real allowed loadout failure; intercept preset UI only."""
+    from interactions import presets
+    d.cfg['loadouts'][name] = {'tier': 1, 'bot_preset': 'optional'}
+    d.monkeypatch.setattr(loadout, 'CONFIG', d.cfg)
+    d.monkeypatch.setattr(presets, 'available', lambda: False)
+    def select(category, preset):
+        assert (category, preset) == ('bots', 'optional')
+        raise tourney.Abort('Optional bot preset unavailable')
+    d.monkeypatch.setattr(presets, 'select_category', select)
+
+
+@pytest.mark.parametrize('entry_refused', [False, True])
+def test_direct_optional_setup_continuation_is_recorded_only_after_entry(setup_driver, entry_refused):
+    from vision import screen
+    d = setup_driver
+    optional_bot_failure(d, 'manual')
+    session = BattleSession(d.store, d.op['id'], effective_preset(d.cfg), d.cfg)
+    frozen = copy.deepcopy(session.battle['envelope'])
+    d.monkeypatch.setattr(orchestrator, '_battle_session', session)
+    d.monkeypatch.setattr(orchestrator.capture, 'grab', lambda: 'synthetic-home')
+    d.monkeypatch.setattr(screen, 'identify', lambda frame: SimpleNamespace(name='home'))
+    entry_reports = []
+    def enter(body):
+        report = d.store.get(session.battle['id'])['runtime']['setup']
+        entry_reports.append(report)
+        assert report['state'] == 'degraded'
+        assert report['reason'] == 'optional_bot_preset_failed'
+        assert report['continued_with_partial'] is False
+        if entry_refused:
+            raise tourney.Abort('Entry refused after optional setup failure')
+        d.inputs.append(('entered',))
+    d.monkeypatch.setattr(shard, 'enter_run', enter)
+    orchestrator._prepare_coin_start()
+    stored = d.store.get(session.battle['id'])
+    report = public(d.store, stored)['runtime']['setup']
+    assert len(entry_reports) == 1
+    assert stored['envelope'] == frozen
+    assert report['state'] == 'degraded'
+    assert report['continued_with_partial'] is not entry_refused
+    if entry_refused:
+        assert report['detail'] == 'setup_refused'
+        assert report['reason'] == 'Entry refused after optional setup failure'
+        assert d.inputs == [('tier', 1)]
+    else:
+        assert report['reason'] == 'optional_bot_preset_failed'
+        assert d.inputs == [('tier', 1), ('entered',)]
+    setup_events = [event['status']['setup'] for event in d.store.history(stored['id'])
+                    if event['kind'] == 'status' and 'setup' in event['status']]
+    assert setup_events[-1] == report
+    assert all(not item['continued_with_partial'] for item in setup_events[:-1])
+
+
+@pytest.mark.parametrize('legacy', [False, True])
+@pytest.mark.parametrize('entry_refused', [False, True])
+def test_combo_returned_optional_degradation_records_partial_continuation_in_history(setup_driver, legacy, entry_refused):
+    d = setup_driver
+    name = 'coin_farm' if legacy else 'manual'
+    optional_bot_failure(d, name)
+    d.cfg['presets']['base']['loadout'] = name
+    d.cfg['presets']['normal_run'] = effective_preset(d.cfg)
+    if entry_refused:
+        applied = loadout.apply
+        source_reports = []
+        def observe(name):
+            result = applied(name)
+            source_reports.append(result['setup'])
+            return result
+        def refuse(*args):
+            raise tourney.Abort('Combo entry refused')
+        d.monkeypatch.setattr(loadout, 'apply', observe)
+        d.monkeypatch.setattr(shard, 'start_battle' if legacy else 'enter_run', refuse)
+        with pytest.raises(tourney.Abort, match='Combo entry refused'):
+            combo._handoff('coin', 'main') if legacy else combo._block_handoff(d.block, 'main')
+        assert len(source_reports) == 1
+        assert source_reports[0]['continued_with_partial'] is False
+        assert d.store.list() == []
+        return
+    report = (combo._handoff('coin', 'main') if legacy
+              else combo._block_handoff(d.block, 'main'))
+    assert report['state'] == 'degraded'
+    assert report['reason'] == 'optional_bot_preset_failed'
+    assert report['continued_with_partial'] is True
+    assert d.inputs[0] == ('tier', 1)
+    assert d.inputs[1][0] == ('start' if legacy else 'enter')
+    session = delegated_session(d, report)
+    stored = d.store.get(session.battle['id'])
+    assert public(d.store, stored)['runtime']['setup'] == report
+    assert 'setup' not in stored['envelope']
+    events = [event for event in d.store.history(stored['id']) if event['kind'] == 'status']
+    assert events[-1]['status']['setup'] == report

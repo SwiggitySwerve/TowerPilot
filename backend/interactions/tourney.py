@@ -1310,9 +1310,13 @@ def setup(read_only: bool = False, loadout_name: str | None = None, *, on_setup=
                         f"{name!r} - {'; '.join(problems)}")
         if on_setup is not None:
             report = applied.get('setup') if isinstance(applied, dict) else None
-            on_setup(report if report is not None else loadout.unknown_setup(
-                name, detail='manual_equipment', reason='setup_report_missing'))
+            if report is None:
+                report = loadout.unknown_setup(
+                    name, detail='manual_equipment', reason='setup_report_missing')
+            on_setup(report)
         start_battle()
+        if on_setup is not None and report.get('state') == 'degraded':
+            on_setup(dict(report, continued_with_partial=True))
     except (Abort, act.TapRefused) as e:
         if on_setup is not None:
             from interactions import loadout

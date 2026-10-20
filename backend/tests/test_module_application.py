@@ -1,4 +1,5 @@
 """Equipment actions require final whole-plan proof; no real I/O is permitted."""
+import copy
 from types import SimpleNamespace
 
 import numpy as np
@@ -270,3 +271,56 @@ def test_tournament_setup_publishes_final_gate_before_ticket(world, monkeypatch,
         with pytest.raises(tourney.Abort):
             tourney.setup(on_setup=callback)
         assert order == ['degraded']
+
+
+@pytest.mark.parametrize('entry_refused', [False, True])
+def test_optional_tournament_setup_continuation_is_persisted_only_after_entry(world, monkeypatch, tmp_path, entry_refused):
+    from control.battles import public
+    from runtime.battle_session import BattleSession
+    from towerpilot_workflows.battles import Battles
+    from towerpilot_workflows.operations import Operations
+    path = tmp_path / 'operations.db'
+    operations = Operations(path)
+    context = dict(device_key='synthetic-tournament', instance='main', account=None, serial='fake')
+    operation, _ = operations.accept('run', context, {})
+    session = BattleSession(Battles(path), operation['id'], {'kind': 'tournament', 'tier': 1}, {})
+    frozen = copy.deepcopy(session.battle['envelope'])
+    monkeypatch.setattr(tourney, 'in_tournament', lambda frame: False)
+    monkeypatch.setattr(tourney, 'open_tournament', world.frame)
+    monkeypatch.setattr(tourney, 'read_conditions', lambda frame: None)
+    monkeypatch.setattr(tourney, 'card_tweaks', lambda: None)
+    monkeypatch.setattr(tourney, 'verify_loadout', lambda name: [])
+    monkeypatch.setattr(loadout, 'spec', lambda name: {'bot_preset': 'optional'})
+    def select(category, preset):
+        assert (category, preset) == ('bots', 'optional')
+        raise tourney.Abort('Optional bot preset unavailable')
+    monkeypatch.setattr(presets, 'select_category', select)
+    reports, entries = [], []
+    def callback(report):
+        session.set_setup(report)
+        reports.append(copy.deepcopy(report))
+    def enter():
+        report = session.store.get(session.battle['id'])['runtime']['setup']
+        assert report['state'] == 'degraded'
+        assert report['reason'] == 'optional_bot_preset_failed'
+        assert report['continued_with_partial'] is False
+        entries.append('ticket')
+        if entry_refused:
+            raise tourney.Abort('Tournament entry refused')
+    monkeypatch.setattr(tourney, 'start_battle', enter)
+    if entry_refused:
+        with pytest.raises(tourney.Abort, match='Tournament entry refused'):
+            tourney.setup(on_setup=callback)
+    else:
+        assert tourney.setup(on_setup=callback) is True
+    stored = session.store.get(session.battle['id'])
+    report = public(session.store, stored)['runtime']['setup']
+    assert entries == ['ticket']
+    assert len(reports) == 2 and reports[-1] == report
+    assert report['continued_with_partial'] is not entry_refused
+    assert all(item['continued_with_partial'] is False for item in reports[:-1])
+    assert report['reason'] == ('Tournament entry refused' if entry_refused else 'optional_bot_preset_failed')
+    assert stored['envelope'] == frozen
+    setup_events = [event['status']['setup'] for event in session.store.history(stored['id'])
+                    if event['kind'] == 'status' and 'setup' in event['status']]
+    assert setup_events[-1] == report
