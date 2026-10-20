@@ -1319,7 +1319,7 @@ def api_status():
     except (OSError, ValueError):
         pass
     inst = cfg.get("active_instance", "main")
-    flag = os.path.join(ROOT, "logs", inst, "stop_after_run")
+    flag = _stop_flag_path(inst)
     conn = _device_state(cfg)
     return jsonify({
         "processes": operation_api.project_processes(ROOT, _procs_cached()),
@@ -1685,6 +1685,11 @@ def api_stream():
     return response
 
 
+def _stop_flag_path(inst: str) -> str:
+    """The runflag file (scheduling/runflag.py) for this instance."""
+    return os.path.join(ROOT, "logs", inst, "stop_after_run")
+
+
 # ------------------------------------------------------------------ control
 @app.post("/api/control")
 def api_control():
@@ -1696,21 +1701,14 @@ def api_control():
         retry = operation_api.retry(ROOT, cfg, 'run' if action == 'start' else 'gems', body, _profile_path(cfg.get('active_profile')))
         if retry:
             return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
-    if action == "stop_after_run":
-        if body.get('operation_id'):
-            operation = operation_api.require_revision(ROOT, body, ('accepted', 'running'))
-            inst = operation['context']['instance']
-        path = os.path.join(ROOT, "logs", inst, "stop_after_run")
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as fh:
-            fh.write("dashboard")
-        return jsonify({"ok": True})
+    # Legacy stop requests are retired. Live repeat controls belong to the
+    # current battle; the day plan retains its boundary flag and cancellation.
     if action == "clear_flag":
         if body.get('operation_id'):
             operation = operation_api.require_revision(ROOT, body, ('accepted', 'running'))
             inst = operation['context']['instance']
         try:
-            os.remove(os.path.join(ROOT, "logs", inst, "stop_after_run"))
+            os.remove(_stop_flag_path(inst))
         except FileNotFoundError:
             pass
         return jsonify({"ok": True})

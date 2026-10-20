@@ -72,11 +72,9 @@ def test_seed_sections_cover_all_families():
 def test_trigger_seed_validates(profile, trig):
     """Every WHEN the trigger dropdown can write is valid immediately.
 
-    death_screen rules only accept stop_after_run; everything else is
-    paired with a neutral toggle_uw - the dropdown's own default action.
+    Each trigger is paired with the dropdown's default toggle_uw action.
     """
-    do = ({"stop_after_run": True} if trig == "death_screen"
-          else copy.deepcopy(SEEDS["actions"]["toggle_uw"]))
+    do = copy.deepcopy(SEEDS["actions"]["toggle_uw"])
     profile["policies"]["rescue_policies"]["zz_seed"] = {
         "arm": "always", "end_sprint_after_sw": False,
         "rules": [{"when": copy.deepcopy(SEEDS["triggers"][trig]), "do": do}]}
@@ -91,7 +89,6 @@ _ACTION_CASES = [
     ("toggle_uw", "always"),
     ("cancel_sprint", "always"),
     ("surrender_retry", "always"),
-    ("stop_after_run", "always"),
 ]
 
 

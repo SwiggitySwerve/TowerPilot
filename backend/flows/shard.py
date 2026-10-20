@@ -36,7 +36,6 @@ Shares tourney.py's navigation helpers rather than duplicating them: the
 find/wait_for/require/tap_at/ensure_home/end_round machinery was built and
 debugged for the tournament routine and the screens are the same.
 """
-import cv2
 import random
 import sys
 import time
@@ -46,6 +45,8 @@ from pathlib import Path
 # Flow files are runnable as scripts (`python flows/shard.py`) with the
 # backend root as cwd - put that root on sys.path so sibling modules resolve.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+import cv2
 
 from device import act
 from device import capture
@@ -158,6 +159,9 @@ GEM_ORBIT_TAPS = 3              # points per set, spread over the arc
 GEM_ORBIT_JITTER = 0.03         # +-3% radius/position randomisation
 GEM_ORBIT_SPREAD = 6.0          # degrees between adjacent points in a set
 
+# A readable wave can remain above a menu, and a screencap can retain a game
+# frame behind another app. Require battle classification, visible foreground
+# window evidence and motion around the tap arc before permitting a set.
 # Guard ported from origin/develop (26d9ca6, 5f5e2b3).
 ORBIT_PROBE_PAD = 60
 ORBIT_MOTION_MIN = 8.0

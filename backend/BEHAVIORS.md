@@ -1,9 +1,8 @@
 # In-Run Behaviors
-
 > **Status:** Active
 > **Type:** Knowledge
 > **Created:** 2026-08-24
-> **Updated:** 2026-09-05
+> **Updated:** 2026-10-20
 > **Tags:** orchestrator, behaviors, rules, policies, configuration
 
 Every click the autopilot makes during a live run, what triggers it, why it
@@ -19,7 +18,7 @@ The architecture is **declare-then-execute, in four latency rings**:
 | Tier A rescue watch | sub-second (greedy loop) | the one thing that outruns the main loop: the wall/hp collapse rescue |
 | watch_frame | every captured frame (~1.5/s) | death, Second Wind, fleet nuke, rescue trigger, gem claim |
 | main loop | once per pass (~1s) | Tier B rules (IFTTT), UW choreography, reward flows, shopping |
-| run boundary / day | between runs | death rules, chores (quest scan, shatter), day plan |
+| run boundary / day | between runs | run history, acknowledged stop requests, chores (quest scan, shatter), day plan |
 
 Behaviors are **not** hardcoded per user - they compile from a per-player
 profile ([profiles/SCHEMA.md](profiles/SCHEMA.md)): `policies` (uw, rescue,
@@ -40,14 +39,20 @@ silence another.
 **Triggers (`when`):** `bar` (hp|wall, below, falling_samples, deadband) ·
 `wall_collapse` (from_above) · `fleet_mark` (after_waves, window_waves) ·
 `wave_at_least` · `wave_between` · `second_wind` (state:
-open|closed|after_immunity|any, min_procs) · `death_screen`.
+open|closed|after_immunity|any, min_procs).
 
 **Actions (`do`):** `burst` (cancel sprint → confirm → Demon Mode) ·
 `fire` (button, require_ready, throttle) · `toggle_uw` (weapon, want_on) ·
-`cancel_sprint` · `surrender_retry` · `stop_after_run` · `switch_cards`
+`cancel_sprint` · `surrender_retry` · `switch_cards`
 (**refused everywhere** - no verified route from a battle to the cards
 screen exists yet; the enablement artifacts are listed in
 `orchestrator.run_in_run_actions`).
+
+The legacy `death_screen` trigger and `stop_after_run` policy action are
+retired. Saved rules using either are excluded from active compilation;
+precompiled death-phase rules are refused by the runtime. Explicit live
+run controls and scheduler boundary handoffs retain their own lifecycle.
+See the [profile schema](profiles/SCHEMA.md) for the compilation contract.
 
 Three locks make `surrender_retry` unreachable from a tournament (blueprint
 kind, `tournament_setup`, the on-screen trophy badge) - a tournament run is
@@ -67,12 +72,11 @@ watching the same bar is an *observation* (stop, log, toggle). The compiled
 ### Death detection and restart
 Death needs the dialog match AND an unreadable wave counter AND a 2-frame
 debounce (the dialog covers the wave box - a readable wave means alive).
-Then: collect run stats (`runlog`), run death-phase rules (only
-`stop_after_run` is legal - the stats dialog is not a battlefield), honor a
-pending stop request (the ONE free moment to stop), then restart -
+Then: collect run stats (`runlog`), refuse retired death-phase rules, honor
+a pending stop request at the run boundary, then restart -
 `restart_via_home: true` + `tier` re-enters via Home so the tier can be
 SET; otherwise a plain RETRY. *Knobs:* blueprint `restart_via_home`,
-`tier`; `death_screen` rules.
+`tier`; explicit live controls and scheduler handoffs.
 
 ### Rescue (the "am I dying" watch)
 `rescue_bar` picks the bar: `wall` (hands the watch to Tier A),
@@ -122,6 +126,19 @@ often never displayed. `after_waves: 3` lets the 1/5-speed movers walk into
 the blast (one survived an on-time nuke and killed the run at wave 3516).
 `throttle_sec` paces retries; `require_ready` is per-site. Deliberately not
 Second-Wind-gated. *Knobs:* `fleet_mark` rule / `nuke_on_fleet`.
+
+Inside that window the tap waits for a SIGHTING (`orchestrator.fleet_gate`,
+`vision/fleet_scan.py`): the fleet is one big outlined pentagon - saboteur
+red, commander orange, overcharge blue - found by shape + colour, no
+template. Once seen the Nuke fires at once whatever the colour: the fleet's
+Scatter swarm killed the tower 3-8 waves after spawn (3753, 4498 x2 on
+2026-10-18) while a 10-wave "is it dying?" hold kept the Nuke idle, and the
+Nuke refreshes long before the next fleet anyway. Events: `fleet_sighting`
+(type, count, shot), `fleet_nuke.why` (`blue_fleet` / `fleet_<type>` /
+`schedule`), `fleet_fire_skipped` (button absent or not ready - the intro
+sprint locks the row at 1495). `fleet.sighting.enabled: false` restores the
+blind schedule; `fleet.sighting.min_area` tunes the pentagon size (live
+T15: fleet 1848-1882 px, ordinary pentagons <= 582).
 
 ### Demon Mode on cooldown (global behaviour, quest kills)
 `policies.global_behaviors.demon_mode_always: true` fires Demon Mode whenever

@@ -78,6 +78,10 @@ def test_no_wave_is_not_a_battle(world):
     assert shard.battlefield_live(POINTS) == (False, "no_wave")
 
 
+def test_no_tap_points_refuses(world):
+    assert shard.battlefield_live([]) == (False, "no_points")
+
+
 def test_a_menu_with_digits_in_the_wave_box_is_still_a_menu(world):
     """The wave reader alone cannot tell a run from a screen that happens to
     carry digits; the classifier is asked as well."""
@@ -119,6 +123,30 @@ def test_the_game_not_on_screen_at_all_refuses(world):
     assert shard.battlefield_live(POINTS) == (False, "game_not_on_screen")
 
 
+def test_an_empty_window_list_refuses(world):
+    world.windows = []
+    assert shard.battlefield_live(POINTS) == (False, "no_windows")
+
+
+@pytest.mark.parametrize("window", ["app.lawnchair/Launcher", "InputMethod", "NotificationShade"])
+def test_interactive_chrome_above_game_refuses(world, window):
+    world.windows.insert(0, window)
+    assert shard.battlefield_live(POINTS) == (False, "in_front:" + window.split("/")[0])
+
+
+def test_guard_requires_visible_window_evidence(world, monkeypatch):
+    import device
+    calls = []
+
+    def windows(serial, *, visible_only=False):
+        calls.append((serial, visible_only))
+        return world.windows
+
+    monkeypatch.setattr(device.overlays, "windows", windows)
+    assert shard.battlefield_live(POINTS) == (True, "live")
+    assert calls == [("x", True)]
+
+
 def test_a_window_list_that_cannot_be_read_is_not_permission(world, monkeypatch):
     import device
     fake = device.overlays
@@ -151,6 +179,27 @@ def test_panel_change_during_motion_probe_refuses(world, monkeypatch):
         shard.capture.layout_offset = shard.capture.PANEL_SHIFT
     monkeypatch.setattr(shard.time, "sleep", change_layout)
     assert shard.battlefield_live(POINTS) == (False, "layout_changed")
+
+
+@pytest.mark.parametrize("change,reason", [("screen", "screen:lab"), ("wave", "no_wave")])
+def test_battle_evidence_lost_during_motion_probe_refuses(world, monkeypatch, change, reason):
+    def change_battle(delay):
+        if change == "screen":
+            world.screen = "lab"
+        else:
+            world.wave = None
+
+    monkeypatch.setattr(shard.time, "sleep", change_battle)
+    assert shard.battlefield_live(POINTS) == (False, reason)
+
+
+def test_frame_geometry_change_during_probe_refuses(world):
+    world.frames[1] = np.zeros((1280, 540, 3), np.uint8)
+    assert shard.battlefield_live(POINTS) == (False, "invalid_probe")
+
+
+def test_probe_outside_frame_refuses(world):
+    assert shard.battlefield_live([(2000, 2000)]) == (False, "invalid_probe")
 
 
 def test_panel_change_before_first_tap_refuses(world, monkeypatch):
