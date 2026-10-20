@@ -28,8 +28,8 @@ portrait at 360 dpi.
    dashboard popup, gated on a clean Home (`can_start_battle`), and refused
    over any run it did not start or any tournament.
 4. **Tower on screen or hands off.** No taps while a human owns the screen;
-   recovery taps only in menus the bot itself opened (`rs.bot_left_battle`
-   in the orchestrator, `_hold_while_unknown` in the scheduler).
+   recovery taps only in menus the bot itself opened (the mission flow's
+   revocable ownership guard, `_hold_while_unknown` in the scheduler).
 5. **Phase switches at run boundaries only** - the runflag contract
    (`backend/scheduling/runflag.py`): write the flag, the runner leaves at
    its death handler. Never kill a live run to switch activities.
@@ -60,8 +60,8 @@ portrait at 360 dpi.
    guild flow cuts it from a locked box it already has open and accepts the
    cut only when the same glyph matches another locked box on that frame.
    Without it the claim pass is skipped, never crashed: a reward flow that
-   raises is dropped by `Mission.step` (`mission_crash`) and takes the
-   flows' own exit, because stuck recovery never touches Guild or Quests.
+   raises is dropped by `Mission.step` (`mission_crash`); recovery requires
+   retained flow ownership and a freshly recognized dismiss or exit target.
 7. **An Abort means the screen was not what the code expected.** Stop and
    log; never blind-tap into an unknown screen.
 8. **Machine and account state stay out of git**: `backend/config.yaml`,

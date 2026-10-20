@@ -24,6 +24,7 @@ from device import act
 from runtime import logger
 from vision import ocr
 from interactions.missions import GUILD_TILE, RETURN_STRIP, find_skip, bail, find_tile
+from interactions.missions import reward_flow, reward_screen
 
 STORE_TAB = (791, 314)
 COIN_ROI = (108, 160, 1000, 1080)    # guild-coin balance digits (icon excluded)
@@ -169,39 +170,35 @@ def scan_frame(frame):
     return found
 
 
-def _swipe(y0, y1):
-    act.swipe(540, y0, 540, y1, 400, reason="store scroll")
-
-
-def store_flow():
+@reward_flow
+def store_flow(guard):
     """Scan the guild store and buy the ladder target if affordable."""
-    frame = yield
+    frame = yield from guard.wait()
     point = find_tile(frame, "icons/tile_guild.png")
     if point is None:
         logger.event('store_error', stage='guild_icon_unavailable')
         return
-    act.tap(*point,
-            reason="guild_open", instant=True)
-    frame = yield
+    guard.tap(frame, *point, 'guild_open', screen='battle_menu', destination='guild_entry')
+    frame = yield from guard.wait()
     ok = False
     for _ in range(4):
         if detect._match(frame, "icons/guild_header.png", 0.75)[0]:
             ok = True
             break
-        frame = yield
+        frame = yield from guard.wait()
     if not ok:
         logger.event("mission_error", stage="store_open",
                      shot=logger.shot(frame, "store_open_fail"))
-        bail(frame, "store_open")
+        bail(frame, "store_open", guard)
         return
-    act.tap(*STORE_TAB, reason="store_tab", instant=True)
-    frame = yield
-    frame = yield
+    guard.tap(frame, *STORE_TAB, 'store_tab', screen=reward_screen(frame), destination='guild_store')
+    frame = yield from guard.wait()
+    frame = yield from guard.wait()
 
     # scroll to top first
     for _ in range(4):
-        _swipe(700, 1900)
-        frame = yield
+        guard.swipe(frame, 540,700,540,1900,400,screen='guild_store',reason='store scroll')
+        frame = yield from guard.wait()
 
     balance = read_balance(frame)
     state: dict = {}
@@ -211,8 +208,8 @@ def store_flow():
             if cat not in state or state[cat][0] == "owned":
                 state[cat] = info
         if i < 3:
-            _swipe(1900, 700)
-            frame = yield
+            guard.swipe(frame, 540,1900,540,700,400,screen='guild_store',reason='store scroll')
+            frame = yield from guard.wait()
 
     # chips: any priced chip means one is missing; owned slots alone = all owned
     if "chip" not in state and "chip_owned_slot" in state:
@@ -234,9 +231,9 @@ def store_flow():
     else:
         _, cx, cy, price = info
         if balance is not None and price is not None and balance >= price:
-            act.tap(cx, cy, reason=f"store_buy_{target}", instant=True)
-            frame = yield
-            frame = yield
+            guard.tap(frame, cx, cy, f'store_buy_{target}', screen='guild_store', rewards=True)
+            frame = yield from guard.wait()
+            frame = yield from guard.wait()
             # confirmation / reward listing handling: skip what we know,
             # screenshot what we don't
             for _ in range(6):
@@ -244,10 +241,10 @@ def store_flow():
                     break
                 pt = find_skip(frame)
                 if pt:
-                    act.tap(*pt, reason="reward_skip", instant=True)
+                    guard.dismiss(frame, 'guild_store')
                 else:
                     logger.shot(frame, f"store_confirm_{target}")
-                frame = yield
+                frame = yield from guard.wait()
             logger.event("store_buy", item=target, price=price,
                          balance_before=balance,
                          shot=logger.shot(frame, f"store_bought_{target}"))
@@ -256,8 +253,8 @@ def store_flow():
                          balance=balance)
 
     for _ in range(4):
-        act.tap(*RETURN_STRIP, reason="return_to_game", instant=True)
-        frame = yield
+        guard.exit(frame)
+        frame = yield from guard.wait()
         if not detect._match(frame, "icons/guild_header.png", 0.75)[0]:
             return
     logger.event("mission_error", stage="store_return",

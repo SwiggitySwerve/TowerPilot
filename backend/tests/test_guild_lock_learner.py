@@ -126,12 +126,12 @@ def test_guild_claimables_uses_the_learned_padlock(learner, monkeypatch):
 
 
 # ------------------------------------------------------- crash safety
-def test_mission_step_drops_a_raising_flow_and_takes_the_exit(monkeypatch):
+def test_mission_step_drops_a_raising_flow_without_unowned_recovery(monkeypatch):
     from runtime import logger
-    events, bails = [], []
+    events, taps = [], []
     monkeypatch.setattr(logger, "event", lambda kind, **kw: events.append((kind, kw)))
     monkeypatch.setattr(logger, "shot", lambda frame, tag: tag + ".png")
-    monkeypatch.setattr(missions, "bail", lambda frame, reason: bails.append(reason))
+    monkeypatch.setattr(missions.act, 'tap', lambda *a, **kw: taps.append(kw))
 
     def broken_flow():
         yield
@@ -141,7 +141,8 @@ def test_mission_step_drops_a_raising_flow_and_takes_the_exit(monkeypatch):
     frame = np.zeros((2560, 1080, 3), np.uint8)
     m.step(frame)                                # must not raise
     assert m.active is False
-    assert bails == ["mission_crash"]
+    assert taps == []
+    assert not m.recovery_owned
     assert events[0][0] == "mission_crash"
     assert events[0][1]["flow"] == "broken_flow"
     assert "template gone" in events[0][1]["trace"]
@@ -158,7 +159,13 @@ def test_guild_flow_returns_to_the_game_when_the_padlock_is_unknown(learner, mon
     taps = []
     monkeypatch.setattr(logger, "shot", lambda frame, tag: tag + ".png")
     monkeypatch.setattr(missions, "find_tile", lambda frame, rel, fallback=None: (911, 589))
-    monkeypatch.setattr(missions, "_tap", lambda x, y, reason, instant=True: taps.append(reason))
+    def tap(x, y, reason, instant=True):
+        taps.append(reason)
+        return {'dry_run':False}
+    monkeypatch.setattr(missions, '_tap', tap)
+    monkeypatch.setattr(missions, 'reward_screen', lambda frame:
+                        'battle_menu' if not taps else 'battle' if 'return_to_game' in taps else 'guild')
+    monkeypatch.setattr(missions, 'return_target', lambda frame:(540,2455))
     monkeypatch.setattr(detect, "_match",
                         lambda frame, rel, thr: ("return_to_game" not in taps, 1.0, (0, 0)))
 

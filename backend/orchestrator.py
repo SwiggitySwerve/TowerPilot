@@ -2264,6 +2264,19 @@ def _prepare_coin_start():
                  dissonant=body.get("dissonant_tab"))
 
 
+def recover_reward_menu(rs, frame, now):
+    """Observe every menu frame; recover only our current, enabled reward flow."""
+    rs.mission.observe(frame)
+    if (not rs.mission.recovery_owned or not rs.rewards_enabled
+            or now - rs.off_battle_since <= 45 or now - rs.recover_try <= 10):
+        return False
+    rs.recover_try = now
+    if not rs.mission.recover(frame):
+        return False
+    logger.event('stuck_recover', action='owned_reward_exit')
+    return True
+
+
 def main():
     global _battle_session
     _battle_session = None
@@ -2460,9 +2473,8 @@ def main():
                 continue
             if status == "menu":
                 if rs.mission.active:
-                    rs.bot_left_battle = True
-                    # deliberate reward-collection navigation owns the screen;
-                    # pace flow actions 0.5-1s apart (human-like)
+                    # The flow validates its own expected screen/transition;
+                    # generator activity alone grants no menu ownership.
                     rs.mission.step(frame)
                     time.sleep(random.uniform(0.15, 0.55))
                     continue
@@ -2523,50 +2535,17 @@ def main():
                                  shot=logger.shot(frame, f"off_battle_{sc.name}"))
                     rs.menu_logged = True
                     rs.off_battle_since = now
-                # ---- STUCK RECOVERY, and the rule it has to obey: when the
-                # tower is not on screen, the autopilot clicks NOTHING. The
-                # single exception is a mess THIS PROCESS made - a reward flow
-                # that ended with a listing still up parks the game on that
-                # popup forever while the run ticks away untended.
-                #
-                # So recovery is gated on rs.bot_left_battle: it only fires
-                # when a flow of ours navigated off the battle screen. If the
-                # HUMAN opened a menu, the flag is false and nothing is
-                # touched. Without that gate this fired while the user was on
-                # the CARDS screen and switched their active card preset.
-                # ...and only on the two screens a stranded flow can leave
-                # us on. On anything else - CARDS, MODULES, GUILD, a screen we
-                # cannot even name - it does nothing at all.
-                if (rs.bot_left_battle
-                        and sc.name in screen.RECOVERABLE
-                        and now - rs.off_battle_since > 45
-                        and now - rs.recover_try > 10):
-                    rs.recover_try = now
-                    pt = missions.find_skip(frame)
-                    # act.tap RAISES TapRefused when adb fails, and these two
-                    # calls were the only unguarded ones in the loop: a single
-                    # `adb input` returning exit 1 (it does, transiently) took
-                    # the whole autopilot down mid-run. A failed recovery tap
-                    # is the least important event in the system - log it and
-                    # carry on.
-                    try:
-                        if pt:
-                            act.tap(*pt, reason="recover_skip", instant=True)
-                            logger.event("stuck_recover", action="skip",
-                                         screen=sc.name, x=pt[0], y=pt[1])
-                        else:
-                            act.tap(*missions.RETURN_STRIP,
-                                    reason="recover_return", instant=True)
-                            logger.event("stuck_recover", action="return_strip",
-                                         screen=sc.name,
-                                         shot=logger.shot(frame, "stuck_recover"))
-                    except act.TapRefused as e:
-                        logger.event("stuck_recover", action="refused",
-                                     screen=sc.name, error=str(e))
+                # Only a reward flow's unrevoked expected transition can
+                # authorize recovery. The old sticky bot_left_battle flag
+                # neither identifies this screen nor proves its ownership.
+                # Recovery validates a fresh dismiss/return target and is
+                # disabled once Rewards OFF has been acknowledged.
+                recover_reward_menu(rs, frame, now)
                 time.sleep(period)
                 continue
             rs.menu_logged = False
             rs.bot_left_battle = False   # tower on screen: slate clean
+            rs.mission.observe(frame)
             wave = rs.tracker.last
             if wave is None:
                 time.sleep(period)
