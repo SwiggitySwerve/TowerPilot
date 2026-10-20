@@ -34,7 +34,7 @@
   #screen-mapping { max-height:10rem; overflow-y:auto; }
 
   header.topbar {
-    display:flex; align-items:center; gap:1.2rem; padding:.6rem 1.3rem;
+    padding:.55rem 1.3rem 0;
     position:sticky; top:0; z-index:20;
     background:rgba(16,20,38,.55);
     -webkit-backdrop-filter: blur(24px) saturate(1.6);
@@ -42,17 +42,6 @@
     border-bottom:1px solid var(--glass-border);
   }
   .brand { font-weight:700; font-size:1.05rem; white-space:nowrap; letter-spacing:.01em; }
-  .brand small { opacity:.55; font-weight:400; }
-  nav.steps { display:flex; gap:.45rem; }
-  nav.steps.right { margin-left:auto; }
-  .connect-overlay {
-    position:fixed; inset:0; z-index:40;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(8, 11, 22, .55);
-    -webkit-backdrop-filter: blur(16px) saturate(1.3);
-    backdrop-filter: blur(16px) saturate(1.3);
-  }
-  .connect-overlay article { text-align:center; max-width:26rem; padding:1.6rem 2rem; }
   #savebar {
     position:fixed; bottom:1.1rem; left:50%; transform:translateX(-50%);
     z-index:45; display:flex; gap:.6rem; align-items:center;
@@ -64,25 +53,6 @@
     box-shadow:0 10px 34px rgba(0,0,0,.45);
   }
   #savebar span { font-size:.88rem; opacity:.85; }
-  nav.steps a {
-    padding:.34rem .95rem; border-radius:999px; text-decoration:none;
-    color:#eef1f7; opacity:.72; font-size:.9rem; white-space:nowrap;
-    border:1px solid transparent; transition:all .18s ease;
-  }
-  nav.steps a:hover { background:var(--glass); opacity:1; }
-  nav.steps a.active {
-    background:linear-gradient(180deg, rgba(10,132,255,.85), rgba(10,110,240,.75));
-    box-shadow:0 4px 18px rgba(10,132,255,.35), inset 0 1px 0 rgba(255,255,255,.25);
-    opacity:1; color:#fff;
-  }
-  nav.steps a.locked { opacity:.28; pointer-events:none; }
-  nav.steps a .n {
-    display:inline-block; width:1.35rem; height:1.35rem; line-height:1.32rem;
-    text-align:center; border-radius:50%; background:rgba(255,255,255,.14);
-    font-size:.74rem; margin-right:.4rem;
-  }
-  nav.steps a.active .n { background:rgba(255,255,255,.25); color:#fff; }
-
   main { padding:1.1rem 1.3rem 4rem; max-width:1500px; margin:0 auto; }
   .grid2 { display:grid; grid-template-columns:1fr 360px; gap:1.1rem; align-items:start; }
   @media (max-width:1100px){ .grid2 { grid-template-columns:1fr; } }
@@ -100,12 +70,6 @@
     background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
     border-bottom:1px solid rgba(255,255,255,.08);
     border-radius:20px 20px 0 0; letter-spacing:.01em;
-  }
-  .step-num {
-    display:inline-block; width:1.65rem; height:1.65rem; line-height:1.65rem;
-    text-align:center; border-radius:50%; margin-right:.55rem; font-size:.85rem;
-    background:linear-gradient(180deg, #3ea0ff, #0a6ef0); color:#fff;
-    box-shadow:0 3px 10px rgba(10,132,255,.4), inset 0 1px 0 rgba(255,255,255,.35);
   }
 
   .ok  { color:#30d158; } .bad { color:#ff453a; } .warn { color:#ffd60a; }
@@ -182,6 +146,23 @@
           margin-left:.4rem; vertical-align:middle; }
   .chip.kind { background:rgba(10,132,255,.25); border-color:rgba(10,132,255,.4); }
   .chip.ok { background:rgba(48,209,88,.2); border-color:rgba(48,209,88,.45); }
+
+  /* Saved names (Screens > What we know): auto-fill grid, name left with ellipsis, marks right; .on = active, tinted like .chip.ok.
+     width:0 + min-width:100% keeps the grid out of the table cell's min-content width (a nowrap name would otherwise widen the table past a phone screen), then fills the cell. */
+  .know-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(13rem,100%),1fr)); gap:.3rem; margin:.4rem 0 0; padding:0; list-style:none; width:0; min-width:100%; }
+  .know-grid li { display:flex; align-items:center; justify-content:space-between; gap:.4rem; min-width:0; margin:0; padding:.2rem .55rem;
+                  font-size:.83rem; border:1px solid var(--glass-border); border-radius:10px; background:var(--glass-inner); }
+  .know-grid li.on { background:rgba(48,209,88,.2); border-color:rgba(48,209,88,.45); }
+  .know-name { flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  /* two fixed slots per cell: the check always in the first, the star in the second, so marks line up down the grid */
+  .know-marks { flex:none; display:grid; grid-template-columns:repeat(2,1.1em); gap:.25rem; text-align:center; }
+  .know-marks [aria-label=active] { grid-column:1; color:#30d158; } .know-marks [aria-label=mastered] { grid-column:2; color:#ffd60a; }
+  /* phones: three table columns leave the grid ~100px, so each feature stacks (label, discoveries, images) and the grid gets the full width */
+  @media (max-width:700px){
+    #calib-knowledge thead { display:none; }
+    #calib-knowledge tr, #calib-knowledge th, #calib-knowledge td { display:block; border:0; }
+    #calib-knowledge td:last-child::before { content:"Recognition images: "; color:var(--pico-muted-color); }
+  }
 
   .flowcard {
     display:flex; align-items:center; justify-content:space-between; gap:.6rem;
@@ -278,21 +259,60 @@
     .scan-dot { position:absolute; left:0; top:.4rem; }
     .scan-stops li:not(:last-child)::after { left:.9rem; top:2.35rem; width:2px; height:calc(100% - 1.9rem); }
 </style>
+<link rel="stylesheet" href="workspace-status.css">
+<link rel="stylesheet" href="settings.css">
+<link rel="stylesheet" href="app-shell.css">
+<link rel="stylesheet" href="run-workspace.css">
 </head>
 <body>
 
+<a class="skip-link" href="#view" onclick="event.preventDefault();document.getElementById('view').focus()">Skip to content</a>
 <header class="topbar">
-  <span class="brand">🗼 Tower Pilot <small id="brand-inst"></small></span>
-  <nav class="steps">
-    <a href="#home" id="nav-home">Control</a>
-  </nav>
-  <nav class="steps right" id="nav">
-    <a href="#setup"     id="nav-setup"><span class="n">1</span>Setup</a>
-    <a href="#calibrate" id="nav-calibrate"><span class="n">2</span>Calibrate</a>
-  </nav>
+  <div class="topbar-row">
+    <button id="navigation-toggle" class="small ghost" aria-controls="app-sidebar" aria-expanded="false" onclick="toggleNavigation()">Menu</button>
+    <span class="brand">🗼 Tower Pilot</span>
+    <div id="header-status" class="header-status"><span class="muted">Checking connection…</span></div>
+  </div>
 </header>
 
-<main id="view"><article aria-busy="true">Loading…</article></main>
+<p id="workspace-announcement" class="visually-hidden" role="status" aria-live="polite"></p>
+<div class="app-shell">
+<aside id="app-sidebar" class="app-sidebar">
+  <label class="sidebar-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg><input id="navigation-search" type="search" placeholder="Find a page" aria-label="Find a page" oninput="filterNavigation(this.value)"></label>
+  <nav id="app-navigation" aria-label="Main navigation">
+    <span class="nav-label">Operate</span>
+    <a id="tab-overview" href="#overview" data-page="overview" data-title="Dashboard" data-description="Your current automation, live emulator and recent activity." aria-controls="panel-overview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z"/></svg><span>Dashboard</span></a>
+    <a id="tab-runs" href="#runs" data-page="runs" data-title="Runs" data-description="Define runs, choose tiers and assign shared policies." aria-controls="panel-runs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg><span>Runs</span></a>
+    <a id="tab-history" href="#history" data-page="history" data-title="Run history" data-description="Recorded battles, configuration snapshots and activity." aria-controls="panel-history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v16H4z M8 9h8 M8 13h8 M8 17h5"/></svg><span>Run history</span></a>
+    <a id="tab-schedule" href="#schedule" data-page="schedule" data-title="Schedule" data-description="Choose which runs start throughout the day." aria-controls="panel-schedule"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v16H4z M8 3v4 M16 3v4 M4 10h16"/></svg><span>Schedule</span></a>
+    <span class="nav-label">Configure</span>
+    <a id="tab-equipment" href="#equipment" data-page="equipment" data-title="Equipment" data-description="Build the equipment presets applied before a run." aria-controls="panel-equipment"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5z M3 12l9 5 9-5 M3 16l9 5 9-5"/></svg><span>Equipment</span></a>
+    <a id="tab-collection" href="#collection" data-page="collection" data-title="Collection" data-description="Configure gem collection, reward claims and between-run tasks." aria-controls="panel-collection"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 9-9 9-9-9z M3 12h18 M12 3l4 9-4 9-4-9z"/></svg><span>Collection</span></a>
+    <a id="tab-abilities" href="#abilities" data-page="abilities" data-title="Abilities" data-description="Manage Ultimate Weapon plans, rescue rules and global abilities." aria-controls="panel-abilities"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13 2-9 12h7l-1 8 10-13h-7z"/></svg><span>Abilities</span></a>
+    <span class="nav-label">Workspace</span>
+    <a id="tab-profiles" href="#profiles" data-page="profiles" data-title="Profiles" data-description="Manage the local account profile and saved game knowledge." aria-controls="panel-profiles"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7a4 4 0 1 0 8 0 4 4 0 1 0-8 0 M4 21v-3a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v3"/></svg><span>Profiles</span></a>
+    <a id="tab-emulators" href="#emulators" data-page="emulators" data-title="Emulators" data-description="Connect an emulator and manage its connection tools." aria-controls="panel-emulators"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v13H3z M8 21h8 M12 17v4"/></svg><span>Emulators</span></a>
+    <a id="tab-screens" href="#screens" data-page="screens" data-title="Recognition" data-description="Learn and inspect the screens automation needs to recognize." aria-controls="panel-screens"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5 M16 3h5v5 M21 16v5h-5 M8 21H3v-5 M8 12a4 4 0 1 0 8 0 4 4 0 1 0-8 0"/></svg><span>Recognition</span></a>
+    <a id="tab-runtime" href="#runtime" data-page="runtime" data-title="Runtime" data-description="Tune observation, tap timing, mission visits and diagnostic logging." aria-controls="panel-runtime"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16 M4 17h16 M8 4v6 M16 14v6"/></svg><span>Runtime</span></a>
+    <p id="navigation-empty" class="muted" hidden>No matching pages.</p>
+  </nav>
+  <div class="sidebar-footer"><span class="local-dot" aria-hidden="true"></span>Local workspace</div>
+</aside>
+<main id="view" tabindex="-1">
+  <header class="page-heading"><h1 id="page-title">Dashboard</h1><p id="page-description">Your emulator, current automation and recent activity.</p></header>
+  <section data-page-panel id="panel-overview" aria-labelledby="tab-overview"><article aria-busy="true">Loading...</article></section>
+  <section data-page-panel id="panel-runs" aria-labelledby="tab-runs" hidden></section>
+  <section data-page-panel id="panel-history" aria-labelledby="tab-history" hidden></section>
+  <section data-page-panel id="panel-schedule" aria-labelledby="tab-schedule" hidden></section>
+  <section data-page-panel id="panel-equipment" aria-labelledby="tab-equipment" hidden></section>
+  <section data-page-panel id="panel-collection" aria-labelledby="tab-collection" hidden></section>
+  <section data-page-panel id="panel-abilities" aria-labelledby="tab-abilities" hidden></section>
+  <section data-page-panel id="panel-profiles" aria-labelledby="tab-profiles" hidden></section>
+  <section data-page-panel id="panel-emulators" aria-labelledby="tab-emulators" hidden></section>
+  <section data-page-panel id="panel-screens" aria-labelledby="tab-screens" hidden></section>
+  <section data-page-panel id="panel-runtime" aria-labelledby="tab-runtime" hidden></section>
+</main>
+</div>
 <div id="toasts"></div>
 <div id="savebar" hidden>
   <span id="savebar-n"></span>
@@ -350,17 +370,24 @@
 }
 </script>
 
+<script src="settings.js"></script>
+<script src="workspace-status.js"></script>
+<script src="learning-state.js"></script>
+<script src="learning-store.js"></script>
+<script src="learning-controller.js"></script>
+<script src="learning-view.js"></script>
+<script src="run-workspace.js"></script>
 <script>
 "use strict";
-/* Tower Pilot UI - three stages: Setup -> Calibrate -> Control.
-   Talks only to the dashboard's existing JSON API; every profile edit goes
-   through /api/profile-patch, where the COMPILER's validator has the last
-   word - its message is shown verbatim, never rephrased. */
+/* Tower Pilot UI: one flat sidebar, with routes declared in TABS below.
+   Talks only to the dashboard's JSON API. Structured policy editors use
+   /api/profile-patch; configuration modules use /api/settings. Server
+   validation messages are shown verbatim. */
 
 const $ = s => document.querySelector(s);
 const S = { status:null, vocab:null, flows:null, config:null,
             profiles:null, profile:null, wizard:null, calib:null,
-            emus:null, view:null, day:null, scanPoll:null,
+            emus:null, view:null, day:null,
             pending:new Map(), serverProfile:null, editorBp:null };
 const SEEDS = JSON.parse(document.getElementById("ui-seeds").textContent);
 
@@ -383,13 +410,24 @@ async function api(path, opts){
   const r = await fetch(path, opts);
   let j = null; try { j = await r.json(); } catch(e){}
   if (!r.ok || (j && j.ok === false)) {
-    const m = j && (j.error || (j.problems || []).join("\n")) || `HTTP ${r.status}`;
-    throw new Error(m);
+    // a refusal names its reason in `error`, `message` (e.g. adb's reply to a
+    // failed reconnect, sent with HTTP 200) or `problems`; the status code is last
+    const m = j && (j.error || j.message || (j.problems || []).join("\n")) || `HTTP ${r.status}`;
+    throw Object.assign(new Error(m), {status: r.status});   // the status tells a busy refusal (409) apart
   }
   return j;
 }
-const post = (p, b) => api(p, { method:"POST",
-  headers:{ "Content-Type":"application/json" }, body: JSON.stringify(b || {}) });
+const post = async (p, b) => {
+  S.readinessFresh=false;
+  S.workspaceEpoch = (S.workspaceEpoch || 0) + 1;
+  S.workspaceMutations = (S.workspaceMutations || 0) + 1;
+  try { return await api(p, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b || {})}); }
+  finally {
+    S.workspaceMutations--;
+    S.workspaceEpoch++;
+    refreshWorkspaceStatus();   // slow-changing workspace data is re-read after every mutation
+  }
+};
 
 /* ---- profile patching: one field, one request, validator verdict verbatim */
 async function patch(path, value, op){
@@ -486,19 +524,135 @@ function rerenderEdits(){
 }
 
 /* ------------------------------------------------------------- data loads */
+/* The one 2.5 s status tick (also called after actions): /api/status and
+   /api/calibrate/status in parallel. The calibration result is dropped when a
+   mutation started or finished while it was in flight (workspace epoch). */
 async function loadStatus(){
-  try { S.status = await api("/api/status"); } catch(e){ S.status = null; }
+  if (S.statusLoading) return;
+  S.statusLoading=true;
+  const request=(S.statusRequest || 0)+1; S.statusRequest=request;
+  const calibrationRequest=(S.calibrationRequest || 0)+1; S.calibrationRequest=calibrationRequest;
+  const context=LearningStore.context(S.config || {}).id;
+  const epoch = S.workspaceEpoch || 0;
+  const [status, calibration] = await Promise.allSettled([api("/api/status"), learningStatus()]);
+  S.statusLoading=false;
+  if (request !== S.statusRequest || context !== LearningStore.context(S.config || {}).id) return;
+  if (status.status === "fulfilled") { S.status = status.value; S.statusError = ""; }
+  else S.statusError = status.reason.message;
+  if (calibrationRequest === S.calibrationRequest && epoch === (S.workspaceEpoch || 0) && !S.workspaceMutations) {
+    if (calibration.status === "fulfilled") {
+      const finished = S.workspace?.calibration?.running === true && !calibration.value.running;
+      receiveCalibration(calibration.value);
+      if (finished) refreshWorkspaceStatus();   // a finished worker changes run readiness
+    } else calibrationUnavailable(calibration.reason);
+  }
   applyGate();
   renderBootStatus();
-  const el = $("#brand-inst");
-  if (el && S.status) el.textContent = "· " + S.status.instance;
   if (S.view === "home") renderHomeLive();
+  renderWorkspaceStatus();
 }
 
+/* Shared status reads never dispatch preparation, apply, or emulator actions. */
+function workspaceOperation(){
+  const st = S.workspace?.calibration;
+  const {mode,record} = WorkspaceStatus.selectOperation(st,st ? basicScanProgress(st) : null);
+  return WorkspaceStatus.operation({record, mode, running:st?.running === true,
+    restorePending:st?.restore_pending === true, checkedAt:S.workspace?.checkedAt,
+    unavailable:S.workspaceError || '', starting:!!S.scanLaunchPending});
+}
+/* Sets the region's innerHTML only when `html` differs from what this helper last
+   put there (cached on the element as _workspaceHTML), so a status tick that
+   changes nothing recreates no children: no <img> refetch, no collapsed <details>.
+   Every write to a region that goes through here must go through here. */
+function updateWorkspaceRegion(selector, html){
+  const el = $(selector); if (!el || el._workspaceHTML === html) return;
+  el.innerHTML = html; el._workspaceHTML = html;
+}
+function renderWorkspaceStatus(){
+  if (!S.workspace?.config && !S.workspaceError) return;   // wait for the first workspace read
+  const data = S.workspace || {};
+  updateWorkspaceRegion('#header-status', WorkspaceStatus.headerHTML({
+    ...data, status:S.status, error:S.workspaceError || S.statusError || '', reconnecting:S.reconnecting}));
+  updateWorkspaceRegion('#workspace-context', WorkspaceStatus.contextHTML({
+    ...data, status:S.status, emulators:S.emus?.instances || [], error:S.workspaceError || S.statusError || ''}));
+  const operation = workspaceOperation();
+  const operationRegion = $('#workspace-operation');
+  if (operationRegion) operationRegion.hidden = S.view === 'setup' && !operation.saved && !operation.running;
+  updateWorkspaceRegion('#workspace-operation', WorkspaceStatus.operationHTML(operation));
+  updateWorkspaceRegion('#setup-journey', WorkspaceStatus.stagesHTML({
+    ...data, tools:S.tools || data.tools, accounts:S.accounts || data.accounts,
+    wizard:S.wizard || data.wizard, status:S.status, unavailable:S.workspaceError || S.statusError || ''}));
+  const announcement = $('#workspace-announcement');
+  const text = operation.unavailable ? 'Progress status unavailable; showing the last snapshot and retrying.'
+    : operation.headline + '. ' + operation.message;
+  if (announcement && announcement.textContent !== text) announcement.textContent = text;
+}
+/* Slow-changing workspace data (config, profiles, runs, tools, saved screen
+   check). Read at boot, on route entry, after every mutation and when a
+   calibration worker finishes - never on the status tick. A call made while one
+   is loading or a mutation is pending is queued and runs once afterwards. */
+async function refreshWorkspaceStatus(){
+  if (S.workspaceLoading || S.workspaceMutations) { S.workspaceRefreshQueued = true; return; }
+  S.workspaceRefreshQueued = false;
+  const epoch = S.workspaceEpoch || 0;
+  S.workspaceLoading = true;
+  try {
+    const [config, accounts, runResponse, tools, wizard] = await Promise.all([
+      api('/api/config'), api('/api/accounts'),
+      api('/api/runs'), api('/api/wizard/tools'), api('/api/wizard/state')]);
+    if (epoch !== (S.workspaceEpoch || 0) || S.workspaceMutations) { S.workspaceRefreshQueued = true; return; }
+    S.workspace = {...S.workspace, config, accounts, runs:runResponse.runs || {},
+      readiness:runResponse.readiness || {}, tools, wizard};
+    S.workspaceError = '';
+    S.runReadiness = S.workspace.readiness;
+    S.readinessContext=LearningStore.context(config).id; S.readinessFresh=true;
+    if (S.view === 'home') {
+      renderRunner();
+      renderFlows();
+      renderControlBlockers();
+      renderGetStarted();
+    }
+  } catch(e){ if (epoch === (S.workspaceEpoch || 0)) { S.workspaceError=e.message; S.readinessFresh=false; if(S.view === 'home') renderRunReady(); } }
+  finally {
+    S.workspaceLoading = false; renderWorkspaceStatus();
+    if (S.workspaceRefreshQueued && !S.workspaceMutations) refreshWorkspaceStatus();
+  }
+}
+/* The tab holding each home-view section, so a section link (including one that
+   still names an old route) opens the right tab. Other sections open on the tab
+   their link names. */
+const SECTION_TABS = {"get-started":"overview", "control-status":"overview", "card-runner":"overview",
+  "card-flows":"runs", "card-behaviors":"runs", "card-day":"schedule", "card-loadouts":"equipment", "card-global":"collection",
+  "setup-profile":"profiles", "setup-connection":"emulators", "setup-tools":"emulators", "setup-journey":"profiles"};
+function openWorkspaceSection(tab, section){
+  tab = SECTION_TABS[section] || TAB_ALIASES[tab] || tab;
+  if (S.tab !== tab) {
+    S.workspaceSection = section;
+    location.hash = '#' + tab;
+    return;
+  }
+  if (["collection", "abilities", "runtime"].includes(tab)) settingsWorkspace.select(section);
+  const target = document.getElementById(section);
+  for (let parent = target?.parentElement; parent; parent = parent.parentElement) {
+    if (parent.tagName === 'DETAILS') parent.open = true;
+  }
+  target?.scrollIntoView({block:'start'});
+}
+document.addEventListener('click', event => {
+  const link = event.target.closest('[data-workspace-section]');
+  if (!link) return;
+  event.preventDefault();
+  openWorkspaceSection(link.getAttribute('href').slice(1), link.dataset.workspaceSection);
+});
+
 async function loadHomeData(){
+  const request=(S.homeDataRequest || 0)+1; S.homeDataRequest=request;
+  const epoch=S.workspaceEpoch || 0;
   const [vocab, flows, config, plist, templates] = await Promise.all([
     api("/api/vocab"), api("/api/flows"), api("/api/config"),
     api("/api/profiles"), api("/api/run-templates")]);
+  if (request !== S.homeDataRequest || epoch !== (S.workspaceEpoch || 0)) return;
+  if (LearningStore.context(config).id !== LearningStore.context(S.config || {}).id) S.readinessFresh=false;
   S.runTemplates = templates.templates;
   S.vocab = vocab.vocab; S.flows = flows.flows; S.config = config;
   const rows = Array.isArray(plist) ? plist : (plist.profiles || []);
@@ -509,9 +663,12 @@ async function loadHomeData(){
   };
   S.profile = null;
   if (S.profiles.active) {
-    try { S.profile = await api("/api/profile/" +
-            encodeURIComponent(S.profiles.active) + ".yaml"); }
-    catch(e){ toast("active profile unreadable: " + e.message, true); }
+    try {
+      const profile=await api('/api/profile/'+encodeURIComponent(S.profiles.active)+'.yaml');
+      if (request !== S.homeDataRequest || epoch !== (S.workspaceEpoch || 0)) return;
+      S.profile=profile;
+    }
+    catch(e){ if (request !== S.homeDataRequest || epoch !== (S.workspaceEpoch || 0)) return; toast("active profile unreadable: " + e.message, true); }
   }
   if (S.profile) {
     S.serverProfile = deep(S.profile);
@@ -523,84 +680,199 @@ async function loadHomeData(){
 }
 
 /* ------------------------------------------------------------------ gate */
+/* True when at least one run's /api/runs readiness reports ready - the same
+   test that completes the get-started card's "Learn your game" stage. */
 function calibOk(){
-  return S.status?.calibration?.ready === true;
+  return WorkspaceStatus.getStarted({readiness:S.workspace?.readiness}).b.done;
 }
 function applyGate(){
-  if (!S.status) return;   // never RE-lock on a transient status failure
-  const done = !!S.status.setup_complete;
-  $("#nav-calibrate").classList.toggle("locked", !done);
-  $("#nav-home").classList.toggle("locked", !done || !calibOk());
-  $("#nav-home").setAttribute("aria-disabled", String(!done || !calibOk()));
-  $("#nav-home").title = calibOk() ? "Control" : "Complete the scan and capture navigation images first";
-  if (S.view === "home" && (!done || !calibOk())) route();
+  if (!S.status) return;
   syncConnectOverlay();
+  renderControlBlockers();
+  renderGetStarted();
+  syncLiveScreen();
+  renderStream();
+  renderWorkspaceStatus();
 }
-/* Setup, then recognition scan, then Control. Direct hashes use the same gate. */
+/* Landing tab without a hash: always Overview. Its get-started card leads
+   until setup is done; every tab is reachable at any time. */
 function defaultView(){
-  if (!(S.status && S.status.setup_complete)) return "setup";
-
-  return calibOk() ? "home" : "calibrate";
+  return "overview";
 }
 
-/* ---------------------------------------------------------------- router */
+/* One flat navigation list. Operational/configuration pages share the home
+   renderer; Profiles and Emulators share setup; Recognition owns calibration.
+   Configuration forms mount only on the visible page and keep drafts in Store. */
+const TABS = ["overview", "runs", "history", "schedule", "equipment", "collection", "abilities", "profiles", "emulators", "screens", "runtime"];
+const runWorkspace = RunWorkspace.create({request:api,onError:error=>toast(error.message,true)});
+async function selectRunControls(name){await runWorkspace.choose(name);const picker=$('#run-controls-blueprint');if(picker)picker.value=runWorkspace.selected();}
+async function openRunEntry(){
+  const name=runWorkspace.selected();if(!name)return;
+  try{await runWorkspace.prepareEntry();await loadHomeData();if(runWorkspace.selected()===name)openEditor(name);}
+  catch(error){toast(error.message,true);}
+}
+const TAB_ALIASES = {home:"overview", calibrate:"screens", setup:"emulators", settings:"runtime", rewards:"collection"};
+const TAB_VIEWS = {screens:"calibrate", profiles:"setup", emulators:"setup"};   // any other tab: "home"
 window.addEventListener("hashchange", route);
 async function route(){
+  const request = (S.routeRequest || 0) + 1;
+  S.routeRequest = request;
   for (const id of ["editor", "editor2", "editor3"]) {
     const dlg = $("#" + id);
     if (dlg && dlg.open) dlg.close();   // staged edits persist in the save bar
   }
-  const done = !!(S.status && S.status.setup_complete);
-  let v = (location.hash || "").replace("#","") || defaultView();
-  if (!done && v !== "setup") v = "setup";
-  else if (v === "home" && !calibOk()) v = "calibrate";
+  let tab = (location.hash || "").replace("#","");
+  tab = TAB_ALIASES[tab] || tab;
+  if (!TABS.includes(tab)) tab = defaultView();
+  refreshWorkspaceStatus();
 
-  // keep the hash honest after a bounce, or the next click on the same nav
-  // item fires no hashchange and the page looks dead
-  if (location.hash !== "#" + v) history.replaceState(null, "", "#" + v);
-  S.view = v;
-  for (const n of ["setup","calibrate","home"])
-    $("#nav-" + n).classList.toggle("active", n === v);
-  $("#view").innerHTML = `<article aria-busy="true">Loading…</article>`;
-  try {
-    if (v === "setup")      await renderSetup();
-    if (v === "calibrate")  await renderCalibrate();
-    if (v === "home")       await renderHome();
-  } catch(e){
-    $("#view").innerHTML = `<article><b class="bad">This page failed to load.</b>
-      <p class="muted">${esc(e.message)}</p>
-      <button onclick="route()">Try again</button></article>`;
+  // keep the hash honest after an alias or a bounce, or the next click on the
+  // same tab fires no hashchange and the page looks dead
+  if (location.hash !== "#" + tab) history.replaceState(null, "", "#" + tab);
+  const view = TAB_VIEWS[tab] || "home";
+  const rendered = view === "home" && S.view === "home";
+  if (S.tab !== tab) {
+    settingsWorkspace.unmount(); S.configurationHost = null;
+    $("#view").scrollTop = 0;
+  }
+  S.tab = tab;
+  renderStream();   // release the previous page's stream before removing its panel
+  syncTabs();
+  toggleNavigation(false);
+  if (!rendered) {
+    S.view = view;
+    for (const panel of document.querySelectorAll('[data-page-panel]')) panel.innerHTML = "";
+    $("#panel-" + tab).innerHTML = `<article aria-busy="true">Loading…</article>`;
+    try {
+      if (view === "setup")      await renderSetup();
+      if (view === "calibrate")  await renderCalibrate();
+      if (view === "home")       await renderHome();
+    } catch(e){
+      if (request !== S.routeRequest) return;   // another page was opened meanwhile
+      S.view = null;                 // the next route renders this view again
+      $("#panel-" + tab).innerHTML = `<article><b class="bad">This page failed to load.</b>
+        <p class="muted">${esc(e.message)}</p>
+        <button onclick="route()">Try again</button></article>`;
+    }
+  }
+  if (request !== S.routeRequest) return;
+  mountConfigurationPage();
+  if(tab==='history')runWorkspace.history(S.config?.active_instance || '');
+  if(tab==='overview')runWorkspace.poll();
+  renderStream();
+  if (S.workspaceSection) {
+    openWorkspaceSection(S.tab, S.workspaceSection);
+    S.workspaceSection = null;
   }
   syncConnectOverlay();
 }
+/* Sidebar links retain native keyboard navigation and browser history. */
+function syncTabs(){
+  for (const tab of document.querySelectorAll('[data-page]')) {
+    const on = tab.id === "tab-" + S.tab;
+    if (on) tab.setAttribute("aria-current", "page");
+    else tab.removeAttribute("aria-current");
+    $("#" + tab.getAttribute("aria-controls")).hidden = !on;
+    if (on) {
+      $("#page-title").textContent = tab.dataset.title;
+      $("#page-description").textContent = tab.dataset.description;
+      document.title = tab.dataset.title + " · Tower Pilot";
+    }
+  }
 
-/* ------------------------------------------------- connect overlay (home) */
+}
+function toggleNavigation(open){
+  const button = $("#navigation-toggle");
+  const expanded = open ?? button.getAttribute("aria-expanded") !== "true";
+  button.setAttribute("aria-expanded", String(expanded));
+  $("#app-sidebar").classList.toggle("is-open", expanded);
+}
+function filterNavigation(query){
+  const value = query.trim().toLowerCase();
+  let matches = 0;
+  for (const link of document.querySelectorAll('[data-page]')) {
+    link.hidden = !(`${link.dataset.title} ${link.dataset.description}`.toLowerCase().includes(value));
+    if (!link.hidden) matches++;
+  }
+  document.querySelectorAll('.nav-label').forEach(label => { label.hidden = !!value; });
+  $("#navigation-empty").hidden = matches > 0;
+}
+function mountConfigurationPage(){
+  const pages = {
+    collection: {moduleIds:['rewards'], policyModules:['ad','orbit','gather']},
+    abilities: {moduleIds:['global_abilities']},
+    runtime: {moduleIds:['loop','tap','missions','fleet','logging']}
+  };
+  const host = $("#" + S.tab + "-settings");
+  if (!pages[S.tab] || !host || S.configurationHost === host) return;
+  settingsWorkspace.mountPage(host, pages[S.tab]);
+  S.configurationHost = host;
+}
+$("#app-sidebar").addEventListener("keydown", event => {
+  if (event.key === "Escape" && $("#navigation-toggle").getAttribute("aria-expanded") === "true") {
+    toggleNavigation(false); $("#navigation-toggle").focus();
+  }
+});
+$("#app-sidebar").addEventListener("click", event => {
+  if (event.target.closest('[data-page]') && $("#navigation-toggle").getAttribute("aria-expanded") === "true") {
+    toggleNavigation(false); $("#view").focus();
+  }
+});
+
+/* ------------------------------------------------- connect overlay (home)
+   Rendered inline in Control's blockers panel, never as a modal, so Stop now and
+   Finish current run stay clickable while the emulator is not online. */
 function syncConnectOverlay(){
-  const want = S.view === "home" && S.status && !S.status.connected;
-  let ov = $("#connect-overlay");
-  if (!want) { if (ov) ov.remove(); return; }
+  const box = $("#control-connect");
+  if (!box) return;
+  if (!S.status || WorkspaceStatus.connectionState(S.status).online) {
+    box.hidden = true; box.innerHTML = ""; delete box.dataset.serial; return;
+  }
   const cfg = S.config || {};
   const inst = (cfg.instances || {})[cfg.active_instance] || {};
-  if (cfg.instances && !inst.serial) { location.hash = "#setup"; return; }
-  const label = esc(inst.label || cfg.active_instance || "the emulator");
+  const label = esc(cfg.active_instance || "the emulator");
   const serial = esc(inst.serial || "");
-  if (!ov) {
-    ov = document.createElement("div");
-    ov.id = "connect-overlay"; ov.className = "connect-overlay";
-    document.body.appendChild(ov);
-  }
-  if (ov.dataset.serial !== serial) {
-    ov.dataset.serial = serial;
-    ov.innerHTML = `<article>
-      <h3 style="margin-top:0">Not connected</h3>
-      <p class="muted">${label}${serial ? ` (${serial})` : ""} is not
-        answering. Start it right here, or connect if it is already up.</p>
-      <button onclick="reconnect(this)">🔌 Connect</button>
-      <div id="ov-emus" class="muted" style="margin-top:.9rem; font-size:.88rem">
-        scanning emulators…</div>
-    </article>`;
+  box.hidden = false;
+  if (box.dataset.serial !== serial) {
+    box.dataset.serial = serial;
+    box.innerHTML = `<p class="muted">${label}${serial ? ` (${serial})` : ""} is not
+        online. Start it here, or use Reconnect at the top of the page if it is already running.</p>
+      <div id="ov-emus" class="muted" style="margin-top:.6rem; font-size:.88rem">
+        scanning emulators…</div>`;
     ovLoadEmulators();
   }
+}
+/* Overview's get-started card, re-derived on every status tick and workspace
+   read. The profile form, emulator suggestion and Learn screens button are the
+   existing ones (accountSetupHtml, suggestionHtml, remapClient). A rewrite is
+   skipped while focus is in one of its form fields. */
+function renderGetStarted(){
+  const el = $("#get-started");
+  if (!el || !S.workspace?.config) return;
+  const ae = document.activeElement;
+  if (ae && el.contains(ae) && ae.matches("input, select, textarea")) return;
+  const model = WorkspaceStatus.getStarted({...S.workspace, status:S.status});
+  const cal = S.workspace.calibration;
+  const reason = cal?.running ? "" : !model.conn.online ? WorkspaceStatus.connectionReason(model.conn)
+    : cal?.restore_pending ? "Restore the saved module setup first (Screens)." : "";
+  const learnHTML = `${cal?.running || S.scanLaunchPending ? WorkspaceStatus.operationHTML(workspaceOperation()) : ""}
+    ${WorkspaceStatus.requirementHTML('mapping')}
+    <p><button id="client-remap" onclick="remapClient()" ${cal?.running || reason ? "disabled" : ""}>Learn screens</button>
+      <a href="#screens">Screens</a></p>
+    ${reason ? `<p class="muted">${esc(reason)}</p>` : ""}`;
+  el.classList.toggle("get-started-collapsed", model.done);
+  el.hidden = model.done;
+  updateWorkspaceRegion("#get-started", WorkspaceStatus.getStartedHTML(model, {
+    profileHTML:accountSetupHtml(S.workspace.accounts),
+    emulatorHTML:suggestionHtml(S.emus) || '<p><a href="#emulators" data-workspace-section="setup-connection">Choose your emulator</a></p>',
+    learnHTML}));
+}
+/* Overview's blockers panel: what refuses Start, refreshed on every status tick.
+   Its region exists only once renderHome has loaded S.config, which this reads. */
+function renderControlBlockers(){
+  if (!$("#control-blockers")) return;
+  updateWorkspaceRegion("#control-blockers", WorkspaceStatus.controlBlockersHTML({
+    status:S.status, config:S.config, runs:S.runs, readiness:S.runReadiness}));
 }
 /* The overlay's emulator list: every instance the managers know about,
    with a Start button for stopped MuMu VMs - starting from the web was
@@ -640,62 +912,120 @@ async function ovStartVM(btn, emulator, index){
     const r = await post("/api/wizard/launch", { emulator, index });
     toast(r.message || "launch requested");
     // MuMu boots for ~a minute; the boot pipeline then clears ads and
-    // starts the game, and the overlay clears itself once the adb port
-    // answers the status probe. The button stays "starting…" meanwhile.
+    // starts the game, and the panel hides itself once the status tick
+    // reports the emulator online. The button stays "starting…" meanwhile.
   } catch(e){
     toast(e.message, true);
     btn.disabled = false; btn.textContent = "▶ Start";
   }
 }
 async function reconnect(btn){
+  const label = btn?.textContent;
   if (btn) { btn.disabled = true; btn.textContent = "connecting…"; }
+  S.reconnecting = true;   // a status tick that rewrites the header meanwhile draws the button disabled
   try {
     const r = await post("/api/wizard/reconnect", {});
     toast(r.message || "connected");
   } catch(e){ toast(e.message, true); }
-  await loadStatus();   // fresh `connected` -> the overlay clears itself
-  if (btn && $("#connect-overlay")) { btn.disabled = false; btn.textContent = "🔌 Connect"; }
+  S.reconnecting = false;
+  await loadStatus();   // fresh device_state -> banner and Control panel re-render
+  // the banner keeps an unchanged button node, so restore it if still on the page
+  if (btn?.isConnected) { btn.disabled = false; btn.textContent = label; }
 }
 
 /* ========================================================== VIEW 1: SETUP */
-function accountSetupHtml(){
-  const a = S.accounts || {};
-  return `<article><header>Your account</header>
-    <p class="muted">Choose the account open in this emulator. Equipment settings and calibration are kept separately for each account.</p>
-    <select id="account-select"><option value="">Choose an account</option>${(a.accounts || []).map(x => `<option value="${esc(x.id)}" ${a.active === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select>
-    <button class="small" onclick="selectAccount()">Use this account</button>
-    ${a.active ? `<label>Highest tier you have unlocked in the game<input type="number" id="account-tier" min="1" max="20" value="${a.max_tier || 1}"></label><button class="small ghost" onclick="saveAccountTier()">Save unlocked tier</button>` : ""}
-    <details ${a.active ? "" : "open"}><summary>${a.active ? "Add another account" : "Set up my account"}</summary>
-      <label>Account name<input id="account-name" placeholder="My Tower" maxlength="60"></label>
-      <label class="inline"><input id="account-import" type="checkbox" ${a.has_personal_settings ? "checked" : ""}> Keep this installation’s current settings and calibration</label>
-      <button onclick="selectAccount(true)">Create account</button>
-    </details></article>`;
+const settingsWorkspace = TowerSettings.create({
+  get:()=>api("/api/settings"),
+  post:async body=>{
+    if (S.pending.size) throw new Error("Save or discard your pending run, policy or task edits before saving this configuration.");
+    const saved=await post("/api/settings",body);
+    await loadHomeData();
+    await refreshWorkspaceStatus();
+    return saved;
+  },
+  openPolicy:async policy=>{
+    try {
+      await loadHomeData();
+      const editors={rescue:openRescueEditor,shop:openShopEditor,uw:openUwEditor,gather:openGatherEditor};
+      const editor=editors[policy.editor];
+      if (editor) editor(policy.id, "");
+    } catch(e){toast(e.message,true);}
+  }
+});
+function accountSetupHtml(a = S.accounts || {}){
+  if (a.error) return `<article id="setup-profile"><header>Your local profile</header>
+    <p role="alert">Could not load saved profiles: ${esc(a.error)}</p>
+    <button onclick="renderSetup()">Retry loading profiles</button></article>`;
+  const accounts = a.accounts || [];
+  const active = accounts.find(x => x.id === a.active);
+  return `<article id="setup-profile"><header>Profile <span class="muted">· settings saved on this PC</span></header>
+    ${WorkspaceStatus.requirementHTML('profile')}
+    <p class="muted">A profile stores this game's equipment and learned screens on this computer. No game login is needed here; profiles are not detected automatically.</p>
+    ${active ? `<p><strong>${esc(active.label)}</strong> <span class="chip ok">Selected</span></p>
+      <p>${calibOk() ? "Screens learned for this emulator." : "Profile saved. Learn your game's screens next from Overview."}</p>` :
+      `<p>${accounts.length ? "Choose the saved profile for the game open in your emulator." : "Create your first profile. You can keep the suggested name."}</p>`}
+    ${accounts.length && (!active || accounts.length > 1) ? `<details ${active ? "" : "open"}><summary>Switch saved profile</summary>
+      <label>Saved profile<select id="account-select"><option value="">Choose a profile</option>${accounts.map(x => `<option value="${esc(x.id)}" ${a.active === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></label>
+      <button id="account-use" data-account-action onclick="selectAccount()">Use this profile</button>
+    </details>` : ""}
+    ${accounts.length ? '<details><summary>Add another local profile</summary>' : ""}
+      <form onsubmit="selectAccount(true); return false">
+        <label>Profile name<input id="account-name" value="${accounts.length ? "" : "My Tower"}" placeholder="${accounts.length ? "Another Tower" : "My Tower"}" maxlength="60" required></label>
+        ${a.has_personal_settings ? `<details><summary>Reuse current settings (optional)</summary>
+          <label class="inline"><input id="account-import" type="checkbox">Copy this installation's equipment settings and calibration</label>
+          <p class="muted">Only use this when those settings belong to the same game account.</p>
+        </details>` : ""}
+        <button id="account-create" data-account-action type="submit">Create local profile</button>
+      </form>
+    ${accounts.length ? "</details>" : ""}
+    ${active ? `<details><summary>Manual tier setting (optional)</summary>
+      <p class="muted">Mapping can read your unlocked tier. The stored value starts at 1 until you scan or update it here.</p>
+      <label>Highest tier you have unlocked in the game<input type="number" id="account-tier" min="1" max="20" value="${a.max_tier || 1}"></label>
+      <button class="ghost" onclick="saveAccountTier()">Save unlocked tier</button>
+    </details>` : ""}
+    <p id="account-feedback" role="status" aria-live="polite"></p>
+  </article>`;
 }
 async function saveAccountTier(){
   try { await post("/api/account-tier", {max_tier:Number($("#account-tier").value)}); await loadHomeData(); toast("Unlocked tier saved. Choose your farming tier in the run editor."); }
   catch(e) { toast(e.message,true); }
 }
 async function selectAccount(create=false){
+  if (S.accountBusy) return;
+  const feedback = $("#account-feedback");
   const label = create ? $("#account-name").value.trim() : "";
   const id = create ? label.toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"") : $("#account-select").value;
-  if (!id) { toast("Enter a name using letters or numbers.", true); return; }
+  if (!id) {
+    feedback.textContent = create ? "Enter a profile name with letters or numbers." : "Choose a saved profile first.";
+    return;
+  }
+  S.accountBusy = true;
+  const buttons = document.querySelectorAll("[data-account-action]");
+  buttons.forEach(button => { button.disabled = true; });
+  feedback.textContent = create ? "Creating local profile..." : "Selecting profile...";
   try {
-    await post("/api/accounts", {id, label, create, import_current:create && $("#account-import").checked});
+    await post("/api/accounts", {id, label, create, import_current:create && !!$("#account-import")?.checked});
     S.pending.clear();
     await loadHomeData();
-    toast("Account selected. Check the emulator display, then calibrate.");
-    await renderSetup();
-  } catch(e) { toast(e.message, true); }
+    await loadStatus();
+    await (S.view === "home" ? renderHome() : renderSetup());
+  } catch(e) { feedback.textContent = e.message; }
+  finally {
+    S.accountBusy = false;
+    buttons.forEach(button => { button.disabled = false; });
+  }
 }
 async function renderSetup(){
+  const request = (S.setupRenderRequest || 0) + 1;
+  S.setupRenderRequest = request;
   S.tools = await api("/api/wizard/tools").catch(e => ({stage:"error",message:e.message}));
-  S.accounts = await api("/api/accounts").catch(() => ({accounts:[]}));
+  S.accounts = await api("/api/accounts").catch(e => ({error:e.message}));
   [S.wizard, S.emus] = await Promise.all([
     api("/api/wizard/state").catch(() => ({})),
     api("/api/wizard/emulators").catch(e => ({ error:e.message }))]);
+  if (S.view !== "setup" || request !== S.setupRenderRequest) return;
   const e = S.emus || {};
-  const res = (S.wizard || {}).resolution;
-  const done = !!(S.status && S.status.setup_complete);
+  const done = !!((e.configured || []).find(c => c.instance === e.active_instance) || {}).serial;
 
   const configured = (e.configured || []).map(c => `
     <tr><td><span class="dot ${c.port_open === true ? "ok" : c.port_open === false ? "bad" : "unknown"}"></span>
@@ -742,30 +1072,28 @@ async function renderSetup(){
         <td>${esc(dv)}</td>
         <td>${useOrStatus(dv, f.adb || "")}</td></tr>`);
 
-  const sug = e.suggestion ? `
-    <p><b class="warn">Suggestion:</b> exactly one emulator is up
-      (${esc(e.suggestion.emulator || "")} ${esc(e.suggestion.name || "")} at ${esc(e.suggestion.serial)}) —
-      <button class="small" onclick="adopt('${esc(e.suggestion.serial)}', '${esc(e.suggestion.adb || "")}')">
-        connect to it</button></p>` : "";
-
-  $("#view").innerHTML = `
-  <article>
-    <header>Get connected in three steps</header>
-    <p>Prepare connection tools → Start or connect your emulator → Map your game.</p>
-    <p>No terminal, separate ADB installation or PATH changes needed. Your emulator can be closed. Keep The Tower installed and signed in.</p>
+  const content = document.createElement("div");
+  content.innerHTML = `
+  <article id="setup-journey"></article>
+  <article id="workspace-operation"></article>
+  <article id="setup-tools">
+    <header>Connection tools</header>
+    ${WorkspaceStatus.requirementHTML('tools')}
+    <p>Use the installed connection tools or install them here. Keep The Tower installed and signed in on your emulator.</p>
     <p id="tools-status" role="status" aria-live="polite">${esc(S.tools.installed ? '✓ Connection tools installed' : S.tools.message || 'Prepare connection tools first')}</p>
     <progress id="tools-progress" max="100" value="${S.tools.percent || 0}" ${S.tools.installed ? 'hidden' : ''}></progress>
     ${!S.tools.installed ? `<label class="inline"><input id="tools-license" type="checkbox">I accept the <a href="https://developer.android.com/tools/releases/platform-tools" target="_blank" rel="noopener">Android SDK terms</a> for this download.</label><button id="install-tools" onclick="installConnectionTools()">Install connection tools</button>` : ''}
   </article>
   ${accountSetupHtml()}
-  <article>
-    <header><span class="step-num">1</span>Connect your emulator
-      ${done ? '<span class="chip ok">setup complete ✓</span>' : ""}</header>
+  <article id="setup-connection">
+    <header>Emulator connection
+      ${done ? '<span class="chip ok">Connection configured</span>' : ""}</header>
+    ${WorkspaceStatus.requirementHTML('connection')}
     <p class="muted">Tower Pilot drives The Tower inside an Android emulator
       (MuMu Player recommended). Start your emulator with the game installed,
       then pick it below. Everything is saved for you — no files to edit.</p>
     ${e.error ? `<p class="bad">${esc(e.error)}</p>` : ""}
-    ${sug}
+    ${suggestionHtml(e)}
     <h6 style="margin-bottom:.3rem">Detected on this computer</h6>
     <table><thead><tr><th>Emulator</th><th>Instance</th><th>State</th><th>Address</th><th></th></tr></thead>
       <tbody>${rows.join("") || '<tr><td colspan="5" class="muted">Nothing detected — is your emulator installed and running?</td></tr>'}</tbody></table>
@@ -773,34 +1101,22 @@ async function renderSetup(){
     <table><tbody>${configured}</tbody></table>
     <button class="ghost" onclick="renderSetup()">↻ Re-scan</button>
     <p id="boot-state" role="status" aria-live="polite"></p>
-  </article>
-
-  <article>
-    <header><span class="step-num">2</span>Check the screen</header>
-    <p class="muted">Keep your preferred portrait resolution. Scanning detects
-      its size and DPI, applies the layout profile, and verifies controls on your screen.</p>
-    ${res ? (res.ok
-        ? `<p>${res.expected ? '<span class="ok">✓ ' : '<span class="warn">⚠ '}
-             ${res.width} × ${res.height}</span> ${esc(res.note || "")}</p>`
-        : `<p class="bad">${esc(res.error || "check failed")}</p>`)
-      : `<p class="muted">Not checked yet — connect an emulator first.</p>`}
-    <button class="ghost" onclick="checkResolution()">Check now</button>
-  </article>
-
-  <article>
-    <header><span class="step-num">3</span>Scan your account</header>
-    <p class="muted">With the game open on its Home screen, this reads what
-      your account owns — guardians, card presets, equipped modules — so runs
-      can be tailored to it and never tap an ability you don't have.
-      Setup also runs a short test battle and saves the results automatically. The confirmation explains the test before it starts.</p>
-    <div id="scan-box"><a href="#calibrate" role="button">Continue to map my game</a>
-      <span id="scan-state" class="muted"></span></div>
-  </article>
-
-  ${done ? `<article><p><b class="ok">Emulator connection is configured.</b>
-     ${calibOk() ? 'Recognition setup is complete. Continue to <a href="#home">Control</a>.' : 'Next: <a href="#calibrate">scan the game and capture recognition images</a>. Control unlocks after the scan is complete.'}</p></article>` : ""}`;
+  </article>`;
+  const profileContent = [...content.children].filter(el => ['setup-profile','setup-journey','workspace-operation'].includes(el.id));
+  $("#panel-profiles").replaceChildren(...profileContent);
+  $("#panel-emulators").replaceChildren(...content.children);
+  renderWorkspaceStatus();
 }
 
+/* The emulator suggestion from /api/wizard/emulators (one emulator up) with its
+   "connect to it" action through adopt(). Shared by Settings and Overview's card. */
+function suggestionHtml(e){
+  return e?.suggestion ? `
+    <p><b class="warn">Suggestion:</b> exactly one emulator is up
+      (${esc(e.suggestion.emulator || "")} ${esc(e.suggestion.name || "")} at ${esc(e.suggestion.serial)}) —
+      <button class="small" onclick="adopt('${esc(e.suggestion.serial)}', '${esc(e.suggestion.adb || "")}')">
+        connect to it</button></p>` : "";
+}
 async function installConnectionTools(){
   if (!$("#tools-license")?.checked) { toast("Accept the Android SDK terms to install connection tools", true); return; }
   const button = $("#install-tools");
@@ -827,7 +1143,7 @@ async function adopt(serial, adb){
     toast("Connected to " + serial);
     await checkResolution(serial);
     await loadStatus();
-    renderSetup();
+    await (S.view === "home" ? renderHome() : renderSetup());
   } catch(e){ toast(e.message, true); }
 }
 async function prepareBS(index){
@@ -847,7 +1163,7 @@ function renderBootStatus(){
     renderSetup().catch(e => toast(e.message, true));
   }
   el.textContent = running ? `Starting emulator${event?.stage ? ": " + event.stage : ""}…`
-    : event?.kind === "boot_done" && event.ok ? (event.calibration_required ? "Game started — scan required. Continue to Calibrate; no recognition images have been assumed." : "Game started and screen recognized.")
+    : event?.kind === "boot_done" && event.ok ? (event.calibration_required ? "Game started — screens to learn. Continue on Overview; no screens have been assumed." : "Game started and screen recognized.")
     : event && (event.ok === false || event.kind === "runner_crashed") ? `Boot stopped: ${event.error || event.stage || "check the emulator"}.`
     : "No emulator launch in progress.";
 }
@@ -866,28 +1182,6 @@ async function checkResolution(serial){
     await loadStatus();
     if (S.view === "setup") renderSetup();
   } catch(e){ toast(e.message, true); }
-}
-async function startScan(){
-  try {
-    await post("/api/scan/start", {});
-    $("#scan-state").textContent = "scanning…";
-    pollScan();
-  } catch(e){ toast(e.message, true); }
-}
-function pollScan(){
-  clearInterval(S.scanPoll);
-  S.scanPoll = setInterval(async () => {
-    try {
-      const st = await api("/api/scan/status");
-      const el = $("#scan-state");
-      if (!el) { clearInterval(S.scanPoll); return; }
-      if (st.running) el.textContent = "scanning… " + (st.stage || "");
-      else {
-        clearInterval(S.scanPoll);
-        el.innerHTML = '<span class="ok">scan finished</span> — its result is a draft profile you can activate on the Control page.';
-      }
-    } catch(e){ clearInterval(S.scanPoll); }
-  }, 2000);
 }
 
 /* ====================================================== VIEW 2: CALIBRATE */
@@ -930,44 +1224,61 @@ function calibrationKnowledge(st){
     const unverified = evidence.filter(e => e.verified !== true && !["stale","rejected","unverified_copy"].includes(e.status)).length;
     const observedNames = key === "cards" ? evidence.filter(e=>e.rel?.startsWith("cards/preset_")).map(e=>e.name)
       : key === "global" ? player.global_presets : player.category_presets?.[key];
-    let found = (results[field] || observedNames || []).join(", ");
+    let found = "", items = (results[field] || observedNames || []).map(name => ({name}));
     if (key === "cards") {
       const inventory = st.card_manifest || results.inventory;
       const cards = inventory?.cards || player.cards_observed || [];
       const presets = results.names || observedNames || [];
       const active = inventory?.active ?? cards.filter(c=>c.active).length;
       const mastered = inventory?.mastered ?? cards.filter(c=>c.mastery).length;
-      found = `${cards.length} cards identified; ${inventory?.complete ? 'full inventory verified' : 'full inventory not yet confirmed'}; ${presets.length} presets`;
-      if(active) found += `; ${active} active`;
-      if(mastered) found += `; ${mastered} mastered`;
-      if(cards.length) found += ': ' + cards.map(c=>c.name + (c.active ? ' ✓' : '') + (c.mastery ? ' ★' : '')).join(', ');
+      found = `${cards.length} cards identified · ${inventory?.complete ? 'full inventory verified' : 'full inventory not yet confirmed'} · ${presets.length} presets`;
+      if(active) found += ` · ${active} active`;
+      if(mastered) found += ` · ${mastered} mastered`;
+      items = cards;
     }
     if (key === "modules" && (phase || manifest?.slots?.length || evidence.length)) {
       const total = manifest?.inventory_complete ? `${manifest.inventory.length} modules recorded in the full scan` : player.module_inventory_complete ? "Equipped slots and full inventory scanned" : "Full inventory not yet confirmed";
       found = `${total}; ${(player.modules_equipped || []).length} equipped; ${(player.modules_copies || []).length} inventory copies recorded`;
       if (manifest?.slots) found += `; ${manifest.slots.filter(r => r.state === "locked").length} locked slots`;
+      items = [];
     }
-    return `<tr><th scope="row">${label}</th><td>${esc(phase?.status === "done" ? "Scanned" : phase?.status || (evidence.length ? "Saved evidence" : "Not scanned"))}${found ? `<div class="muted">${esc(found)}</div>` : ""}${phase?.error ? `<div class="bad">${esc(phase.error)}</div>` : ""}</td><td>${evidence.length ? `${verified} verified${attention ? `<div class="bad">${attention} need attention</div>` : ""}${unverified ? `<div class="muted">${unverified} not yet verified</div>` : ""}` : "No image verification recorded"}</td></tr>`;
+    return `<tr><th scope="row">${label}</th><td>${esc(phase?.status === "done" ? "Scanned" : phase?.status || (evidence.length ? "Saved evidence" : "Not scanned"))}${found ? `<div class="muted">${esc(found)}</div>` : ""}${knowledgeGrid(items)}${phase?.error ? `<div class="bad">${esc(phase.error)}</div>` : ""}</td><td>${evidence.length ? `${verified} verified${attention ? `<div class="bad">${attention} need attention</div>` : ""}${unverified ? `<div class="muted">${unverified} not yet verified</div>` : ""}` : "No image verification recorded"}</td></tr>`;
   }).join("");
 }
+/* One <li> per item, in the given order, in an auto-fill grid. An item with `active` is tinted and shows a check, one with `mastery` shows a star (both as aria-labelled glyphs); a one-line legend is added only when some item has a mark; no items gives no markup. */
+function knowledgeGrid(items){
+  if (!items.length) return "";
+  const marked = items.some(c => c.active || c.mastery);
+  const cell = c => `<li${c.active ? ' class="on"' : ""} title="${esc(c.name)}"><span class="know-name">${esc(c.name)}</span>${c.active || c.mastery ? `<span class="know-marks">${c.active ? '<span role="img" aria-label="active">✓</span>' : ""}${c.mastery ? '<span role="img" aria-label="mastered">★</span>' : ""}</span>` : ""}</li>`;
+  return `${marked ? '<div class="muted">✓ active · ★ mastered</div>' : ""}<ul class="know-grid">${items.map(cell).join("")}</ul>`;
+}
 function preparationStorageKey(){
-  const cfg=S.config || {}, inst=(cfg.instances || {})[cfg.active_instance] || {};
-  return 'runPreparation:' + JSON.stringify([cfg.active_instance,inst.account,inst.serial,inst.rendering]);
+  return LearningStore.context(S.config || {}).preparationKey;
 }
 function pendingPreparation(){
-  try { return JSON.parse(localStorage.getItem(preparationStorageKey())); } catch { return null; }
+  const ref=LearningStore.create(localStorage).pending(LearningStore.context(S.config || {}));
+  return ref?.outcome === 'succeeded' ? null : ref;
 }
 async function renderCalibrate(){
+  const request=(S.calibrateRequest || 0)+1; S.calibrateRequest=request;
+  const epoch=S.workspaceEpoch || 0;
   // Direct links must bind account-scoped preferences before rendering them.
-  S.config = await api("/api/config");
+  const config=await api('/api/config');
+  if (request !== S.calibrateRequest || epoch !== (S.workspaceEpoch || 0)) return;
+  if (LearningStore.context(config).id !== LearningStore.context(S.config || {}).id) S.readinessFresh=false;
+  S.config=config;
+  const context=LearningStore.context(config).id;
   const pending = pendingPreparation();
   if (pending) S.calibrationPreset = pending.preset;
   const prefs = calibrationPreferences();
-  S.calibrationRuns = (await api("/api/runs").catch(() => ({runs:{}}))).runs || {};
-  S.readiness = await api("/api/readiness" + (S.calibrationPreset ? "?preset=" + encodeURIComponent(S.calibrationPreset) : "")).catch(e => ({error:e.message}));
-  S.calib = await api("/api/wizard/templates").catch(e => ({ error:e.message }));
-  S.required = await api("/api/wizard/required").catch(e => ({ required:[], missing:[] }));
-  S.catalogue = await api("/api/catalogue/modules").catch(() => ({ modules:[] }));
+  const [runs,readiness,calib,required,catalogue]=await Promise.all([
+    api('/api/runs').catch(()=>({runs:{}})),
+    api('/api/readiness'+(S.calibrationPreset ? '?preset='+encodeURIComponent(S.calibrationPreset) : '')).catch(e=>({error:e.message})),
+    api('/api/wizard/templates').catch(e=>({error:e.message})),
+    api('/api/wizard/required').catch(e=>({required:[],missing:[],error:e.message})),
+    api('/api/catalogue/modules').catch(()=>({modules:[]}))]);
+  if (request !== S.calibrateRequest || epoch !== (S.workspaceEpoch || 0) || context !== LearningStore.context(S.config || {}).id || S.view !== 'calibrate') return;
+  S.calibrationRuns=runs.runs || {}; S.readiness=readiness; S.calib=calib; S.required=required; S.catalogue=catalogue;
   S.calibTs = Date.now();
 
   const missing = (S.calib.missing_seen || []);
@@ -981,35 +1292,41 @@ async function renderCalibrate(){
   }
   const accountSpecific = rel => /^(cards|modules)\//.test(rel);
 
-  $("#view").innerHTML = `
+  $("#panel-screens").innerHTML = `
   <div class="grid2">
   <div>
     <article>
-      <header>What to scan next <span id="calib-state" class="muted" style="font-weight:normal; font-size:.85em"></span></header>
-      <section><h3>Map your game</h3><p>Connect your emulator, open Home in the game, then press Remap. We find the installed artwork, check the available screens and read your cards, modules and presets. You do not need to choose features or draw image crops. Keep the emulator free while mapping runs.</p><p><a href="#setup">Connect or change emulator</a></p><button id="client-remap" onclick="remapClient()">Remap this game</button><ol id="screen-mapping" aria-label="Screen mapping progress"></ol></section>
+      <header>Learn screens <span id="calib-state" class="muted" style="font-weight:normal; font-size:.85em"></span></header>
+      <div id="workspace-operation"></div>
+      ${WorkspaceStatus.requirementHTML('mapping')}
+      <section><h3>Learn your game's screens</h3><p>Connect your emulator, open Home in the game, then press Learn screens. We find the installed artwork, check the available screens and read your cards, modules and presets. You do not need to choose features or draw image crops. Keep the emulator free while learning runs.</p><p><a href="#emulators">Connect or change emulator</a></p><button id="client-remap" onclick="remapClient()">Learn screens</button><ol id="screen-mapping" aria-label="Screen mapping progress"></ol></section>
       <p id="bootstrap-progress" role="status" aria-live="polite"></p>
-      <button class="small ghost" onclick="stopCalibrate()">Stop</button>
-      <div id="bootstrap-timeline"></div>
+      <button class="small ghost" onclick="stopCalibrate()" hidden>Stop</button>
+      <details><summary>Full step detail and activity history</summary><div id="bootstrap-timeline"></div></details>
     </article>
-    <article>
-      <header>What we know about this account</header>
-      <p class="muted">Saved discoveries for this account and emulator. “Scanned” means names and equipment were recorded; recognition images have a separate verification status. These results do not depend on the scan switches above.</p>
+    <article id="game-knowledge">
+      <header>What we know about this profile</header>
+      <p class="muted">Saved discoveries for this profile and emulator. “Scanned” means names and equipment were recorded; recognition images have a separate verification status. These results do not depend on the scan switches above.</p>
       <div id="calib-knowledge">Loading saved discoveries…</div>
       <div id="calib-manifest"></div>
       <details><summary>Recognition images and diagnostic scores</summary><div id="calib-report"></div></details>
+      <h3 id="run-preparation">Prepare an individual run</h3>
+      ${WorkspaceStatus.requirementHTML('apply')}
       <button class="ghost" onclick="applyCalibration()">Use discovered presets in my profile</button>
       <p class="muted">Applying discoveries is separate from scanning. Your run settings are preserved.</p>
       <label>Run to prepare<select onchange="S.calibrationPreset=this.value; renderCalibrate()">${Object.entries(S.calibrationRuns).filter(([k]) => k !== "combo").map(([k,v]) => `<option value="${esc(k)}" ${S.readiness.preset === k ? "selected" : ""}>${esc(v.label || k)}</option>`).join("")}</select></label>
       <button data-prepare-run onclick="prepareRun(S.readiness.preset)">Prepare this run</button>
-      <p class="prepare-run-status" role="status" aria-live="polite">${esc(S.prepareMessage || S.readiness.message || "Use the completed scan and automatically capture what this run still needs.")}</p>
+      ${WorkspaceStatus.requirementHTML('prepare')}
+      <p class="prepare-run-status" role="status" aria-live="polite">${esc(LearningView.text(S.learningFlow) || S.prepareMessage || S.readiness.message || "Use the completed scan and automatically capture what this run still needs.")}</p>
       <div id="calibration-readiness">${S.readiness.message ? `<p>${esc(S.readiness.message)}</p>` : S.readiness.error ? `<p class="bad">${esc(S.readiness.error)}</p>` : `<p class="${S.readiness.ready ? "ok" : "bad"}">${S.readiness.ready ? "Required images are present. Verify recognition on your emulator before relying on it." : `Outstanding — ${(S.readiness.missing || []).length} image${(S.readiness.missing || []).length === 1 ? "" : "s"} this run still needs. Each card says what to look for, where, and how to capture it.`}</p>`}
-        ${(S.readiness.missing || []).length ? `<p class="muted">Open the screen that shows the missing control, then use Capture or Watch at the top of this page. Both inspect screenshots without tapping the game.</p>` : ""}
+        ${(S.readiness.missing || []).length ? `<p class="muted">Open the screen that shows the missing control, then use Capture or Watch under Advanced acquisition. Both inspect screenshots without tapping the game.</p>` : ""}
         ${(S.readiness.missing || []).length ? `<details><summary>Advanced: required image details (${S.readiness.missing.length})</summary>${S.readiness.missing.map(row => outstandingCard(row, "calibrate")).join("")}</details>` : ""}
         ${(S.readiness.advisory || []).length ? `<details><summary class="muted">${(S.readiness.advisory || []).length} optional recognition images - capture when the screen appears (a live tournament, the welcome-back resume, a reward skip); this run starts without them</summary>
           ${(S.readiness.advisory || []).map(row => `<div class="flowcard"><div>${row.alternatives.map(rel => `${artPair(rel, "")}<button class="small ghost" data-template="${esc(rel)}" onclick="cropPick(this.dataset.template)">${esc(rel)}</button>`).join(" or ")}</div></div>`).join("")}</details>` : ""}
       </div>
     </article>
-    <details><summary>Advanced: targeted scans and repair</summary>
+    <details id="repair-tools"><summary>Advanced acquisition: targeted scans and repair</summary>
+      ${WorkspaceStatus.requirementHTML('observe')}
       <p id="observe-progress" role="status" aria-live="polite"></p>
       <p><button class="small" onclick="observeNow()">Capture from the screen now (no taps)</button> <button class="small ghost" onclick="observeNow(120)">Watch the screen for 2 min (no taps)</button></p>
 
@@ -1065,7 +1382,7 @@ async function renderCalibrate(){
         and everything else clearly below.</p>
     </article>
     <article>
-      <header>Required for your account
+      <header>Required for your profile
         <span class="chip">${reqMissing.length} missing / ${req.length}</span></header>
       <p class="muted">No game images ship with this application. Buttons, screen headers, fonts and equipment art must all be captured from your game using the Scan plan.</p>
       <details ${req.length ? "" : "open"}>
@@ -1105,7 +1422,7 @@ async function renderCalibrate(){
             </div></div>`).join("")}
     </article>
     <article>
-      <header>Template library (${have.length})</header>
+      <header>Screens learned (${have.length})</header>
       ${Object.keys(groups).sort().map(g => `
         <details><summary>${esc(g)} <span class="chip">${groups[g].length}</span></summary>
           <div class="tpl-grid">${groups[g].map(rel => `
@@ -1118,17 +1435,13 @@ async function renderCalibrate(){
   <div>
     <article class="stream-box">
       <header>Live screen</header>
-      <div id="crop-wrap" style="position:relative; display:inline-block; max-width:100%; line-height:0; overflow:hidden">
-        <img id="calib-frame" src="/api/frame.png?ts=${S.calibTs}" style="display:block; max-width:100%; height:auto"
-             onload="cropInit()" onerror="this.alt='no frame — emulator offline?'">
-        <canvas id="crop-canvas" style="position:absolute; left:0; top:0; width:100%; height:100%; cursor:crosshair"></canvas>
-      </div>
-      <div style="display:flex; gap:.5rem; margin-top:.5rem; flex-wrap:wrap">
+      <div id="live-screen"></div>
+      <div class="action-row">
         <button class="small ghost" onclick="cropRefresh()">↻ Refresh</button>
         <a role="button" class="small ghost" href="/api/frame.png" target="_blank">Open full size ↗</a>
       </div>
       <details id="manual-crop"><summary>Advanced: repair an image manually</summary>
-      <div style="display:flex; gap:.5rem; margin-top:.5rem; flex-wrap:wrap; align-items:center">
+      <div class="action-row">
         <input id="crop-name" placeholder="folder/name.png (e.g. modules/my_module.png)"
                style="margin:0; flex:1; min-width:16rem">
         <label style="margin:0; white-space:nowrap"><input type="checkbox" id="crop-over"> overwrite</label>
@@ -1140,8 +1453,8 @@ async function renderCalibrate(){
     </article>
   </div>
   </div>`;
-  calibReport(await api("/api/calibrate/status"));
-  pollCalibrate();
+  syncLiveScreen();
+  await pollCalibrate();
   pollScreenAnalysis();
   renderScanPlan();
   if (S.calibrationFocus) {
@@ -1149,6 +1462,26 @@ async function renderCalibrate(){
     S.calibrationFocus = null;
     if (card) { card.classList.add("focus"); card.scrollIntoView({behavior:"smooth", block:"center"}); }
   }
+}
+
+/* Live screen on Calibrate: the frame and cropper only while the emulator is
+   online; otherwise a placeholder and no /api/frame.png request. Online it is
+   rebuilt only when it comes online, so a drawn crop box survives status ticks;
+   offline it is rebuilt whenever the placeholder text (connection and reconnect
+   wording) changes. */
+function syncLiveScreen(){
+  const slot = $("#live-screen"); if (!slot) return;
+  const conn = WorkspaceStatus.connectionState(S.status);
+  const key = conn.online ? "online" : WorkspaceStatus.screenPlaceholderHTML(S.status);
+  if (slot.dataset.online === key) return;
+  slot.dataset.online = key;
+  slot.innerHTML = conn.online
+    ? `<div id="crop-wrap" style="position:relative; display:inline-block; max-width:100%; line-height:0; overflow:hidden">
+        <img id="calib-frame" src="/api/frame.png?ts=${S.calibTs}" style="display:block; max-width:100%; height:auto"
+             onload="cropInit()" onerror="this.alt='no frame — emulator offline?'">
+        <canvas id="crop-canvas" style="position:absolute; left:0; top:0; width:100%; height:100%; cursor:crosshair"></canvas>
+      </div>`
+    : WorkspaceStatus.screenPlaceholderHTML(S.status);
 }
 
 /* ---- outstanding images: the SAME card on Control (next to Start) and on
@@ -1161,13 +1494,16 @@ function slugRel(rel){ return String(rel).replace(/[^a-z0-9]+/gi, "-"); }
 /* Art / Screenshot: the installed artwork (what to find) beside the image
    cut from this emulator (what was found), so the two can be compared at a
    glance; green when the target is identified, red when it is failing or
-   missing (user, 2026-09-08). Either picture simply stays away when absent. */
+   missing (user, 2026-09-08). Either picture simply stays away when absent.
+   The screen cut is requested only for a rel in the loaded /api/wizard/templates
+   `have` list (S.calib, loaded by Calibrate); otherwise only the artwork shows. */
 function artPair(rel, state){
   if (!rel || String(rel).startsWith("config:")) return "";
   const r = encodeURI(rel), t = S.artTs || 0;
+  const captured = (S.calib?.have || []).includes(rel);
   return `<span class="artpair ${state || ""}" title="left: the game's artwork · right: cut from your screen">` +
     `<img class="artwork" src="/api/artwork/${r}" alt="" onerror="this.remove()">` +
-    `<img class="artwork shot" src="/api/template/${r}?t=${t}" alt="" onerror="this.remove()"></span>`;
+    (captured ? `<img class="artwork shot" src="/api/template/${r}?t=${t}" alt="" onerror="this.remove()">` : "") + `</span>`;
 }
 function rowState(status){
   const s = String(status || "").toLowerCase();
@@ -1223,7 +1559,7 @@ async function clientClicker(mode){
   S.clientClickerBusy = true;
   const controls = document.querySelectorAll('#client-clicker select, #client-clicker [onclick^="clientClicker"]');
   controls.forEach(el=>el.disabled=true);
-  const active = () => generation === clientClickerGeneration && location.hash === '#calibrate' && !document.hidden;
+  const active = () => generation === clientClickerGeneration && location.hash === '#screens' && !document.hidden;
   const report = message => {
     if (!$("#clicker-status")) return;
     $("#clicker-status").textContent = message;
@@ -1266,13 +1602,12 @@ async function observeNow(watch){
     if (S.observePending) return;
     S.observePending = true;
     document.querySelectorAll('[onclick^="observeNow"]').forEach(el => el.disabled = true);
-    await post("/api/calibrate/observe", watch ? {watch} : {});
-    S.scanLaunchPending = Date.now();
+    await startCalibrationOperation("/api/calibrate/observe", watch ? {watch} : {});
     toast(watch ? `Watching the screen for ${watch}s for the missing controls…` : "Looking at the screen for the missing controls…");
     S.artTs = Date.now();
     // Keep the form intact, and follow the actual worker instead of guessing
     // completion from a fixed timeout. The Calibrate view already polls status.
-    if (location.hash !== "#calibrate") location.hash = "#calibrate";
+    if (location.hash !== "#screens") location.hash = "#screens";
     else pollCalibrate();
   } catch(e){
     toast(e.message, true);
@@ -1282,7 +1617,7 @@ async function observeNow(watch){
 function goOutstanding(preset, rel){
   if (preset) S.calibrationPreset = preset;
   S.calibrationFocus = rel;
-  location.hash = "#calibrate";
+  location.hash = "#screens";
 }
 
 /* ---- the cropper: drag a box on the live frame, save it as a template.
@@ -1370,21 +1705,13 @@ async function startBootstrap(){
     $("#bootstrap-progress").textContent = flows
       ? "Starting full setup: artwork, menus, then the guided battle capture…"
       : "Starting artwork extraction and screen verification…";
-    await post("/api/calibrate/start", {bootstrap:true, flows, phases:"c,m", fresh:true,
+    await startCalibrationOperation("/api/calibrate/start", {bootstrap:true, flows, phases:"c,m", fresh:true,
       overwrite:$("#calib-over").checked, allow_navigation:$("#calib-taps").checked});
   } catch(e){ S.scanLaunchPending = null; toast(e.message, true); }
   pollCalibrate();
 }
 async function remapClient(){
-  if (!await confirmPreparation("Set up farming?\n\nAllow approximately 15–22 minutes, including battle verification. Larger inventories or slower emulators may take longer.\n\nLeave the game on Home and keep the emulator untouched. Setup scans menus once, then tests a battle at your highest unlocked tier. It may use a bounded Tier 1 pass for missing controls. It ends only its own test battles and restores your original tier. Discoveries are saved to your profile automatically. Optional effects never block completion.\n\nStart setup?")) return;
-  try {
-    S.scanLaunchPending = Date.now();
-    calibrationBusy(true);
-    $("#bootstrap-progress").textContent = "Remapping: extract artwork, verify Home, then follow the screen manifest…";
-    await post('/api/calibrate/start', {bootstrap:true, flows:true, phases:'c,m', fresh:true,
-      overwrite:true, allow_navigation:true});
-    localStorage.setItem('finishFullSetup', '1');
-  } catch(e){ S.scanLaunchPending=null; toast(e.message,true); }
+  await learningTracker().learn();
   pollCalibrate();
 }
 async function startCalibrate(resume=false){
@@ -1392,35 +1719,35 @@ async function startCalibrate(resume=false){
     const phases = [...document.querySelectorAll('[name="calibration-phase"]:checked')].map(el => el.value).join(",");
     if (!phases) { toast("Select at least one unlocked feature.", true); return; }
     rememberCalibration();
-    clearTimeout(S.calPoll);
-    S.calPollGeneration = (S.calPollGeneration || 0) + 1;
     S.scanLaunchPending = Date.now();
     calibrationBusy(true);
     $("#calib-progress").textContent = "Starting calibration…";
-    const r = await post("/api/calibrate/start", {phases, overwrite: $("#calib-over").checked, fresh: !resume, allow_navigation:$("#calib-taps").checked});
+    const r = await startCalibrationOperation("/api/calibrate/start", {phases, overwrite: $("#calib-over").checked, fresh: !resume, allow_navigation:$("#calib-taps").checked});
     toast("calibrating: " + r.phases);
     pollCalibrate();
   } catch(e){ S.scanLaunchPending = null; toast(e.message, true); pollCalibrate(); }
 }
 async function startEquippedCalibration(){
   try {
-    clearTimeout(S.calPoll);
-    S.calPollGeneration = (S.calPollGeneration || 0) + 1;
     S.scanLaunchPending = Date.now();
     calibrationBusy(true);
-    await post("/api/calibrate/start", {phases:"e", fresh:true, overwrite:$("#calib-over").checked, allow_navigation:$("#calib-taps").checked});
+    await startCalibrationOperation("/api/calibrate/start", {phases:"e", fresh:true, overwrite:$("#calib-over").checked, allow_navigation:$("#calib-taps").checked});
   } catch(e){ S.scanLaunchPending = null; toast(e.message, true); }
   pollCalibrate();
 }
 async function applyCalibration(){
-  try { await post("/api/calibrate/apply", {}); await loadHomeData(); toast("Discovered presets are ready to use in Equipment."); }
+  try {
+    if (await learningTracker().review()) {
+      await loadHomeData(); toast("Discovered presets are ready to use in Equipment.");
+    }
+  }
   catch(e) { toast(e.message, true); }
 }
 function confirmPreparation(message){
   return new Promise(resolve => {
     const dialog = document.createElement('dialog');
     dialog.setAttribute('aria-label', 'Prepare this run');
-    dialog.innerHTML = `<article><header>Prepare this run</header><div role="alert" style="border:2px solid #f5b942;border-radius:12px;padding:18px;margin:16px 0;background:#402f18;color:#fff"><strong style="font-size:1.3em">Before scanning: end all battles and open Home</strong><p>Returning to Home can leave a battle running. Finish or surrender that battle first, then return to the game's Home screen. Do not start a scan during a tournament.</p></div><p style="white-space:pre-line">${esc(message)}</p><footer><button class="ghost" data-cancel>Cancel</button><button data-continue>Continue preparation</button></footer></article>`;
+    dialog.innerHTML = `<article><header>Prepare this run</header><div role="alert" style="border:2px solid #f5b942;border-radius:12px;padding:18px;margin:16px 0;background:#402f18;color:#fff"><strong style="font-size:1.3em">Before learning screens: open Home with no battle running</strong><p>Returning to Home can leave a battle running. Let that battle end on its own, then return to the game's Home screen. Do not start during a tournament.</p></div><p style="white-space:pre-line">${esc(message)}</p><footer><button class="ghost" data-cancel>Cancel</button><button data-continue>Continue preparation</button></footer></article>`;
     document.body.appendChild(dialog);
     let accepted = false;
     dialog.querySelector('[data-cancel]').onclick = () => dialog.close();
@@ -1431,80 +1758,132 @@ function confirmPreparation(message){
 }
 function preparationMessage(message){
   S.prepareMessage = message;
-  document.querySelectorAll('.prepare-run-status').forEach(el => el.textContent = message);
+  document.querySelectorAll('.prepare-run-status').forEach(el => { el.textContent = LearningView.text(S.learningFlow) || message; });
+}
+function learningTracker(){
+  if (!S.learningController) S.learningController = LearningController.create({
+    config:()=>S.config || {}, storage:localStorage, now:()=>Date.now(),
+    activeOperation:()=>calibrationReference()?.operationId,
+    selectedRun:()=>S.calibrationPreset || S.readiness?.preset || 'bp_coin_default',
+    status:id=>api('/api/calibrate/status' + (id ? '?operation_id='+encodeURIComponent(id) : '')),
+    readiness:preset=>api('/api/readiness?preset=' + encodeURIComponent(preset)),
+    start:body=>startCalibrationOperation('/api/calibrate/start',body),
+    applySaved:body=>post('/api/calibrate/apply',body),
+    apply:body=>api('/api/calibrate/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),
+    applied:()=>{ S.workspaceEpoch=(S.workspaceEpoch || 0)+1; refreshWorkspaceStatus(); },
+    confirm:flow=>confirmPreparation(flow === 'learning' ? "Learn your game's screens?\n\nAllow approximately 15–22 minutes, including battle verification. Larger inventories or slower emulators may take longer.\n\nLeave the game on Home and keep the emulator untouched. Setup scans menus once, then tests a battle at your highest unlocked tier. It may use a bounded Tier 1 pass for missing controls. It ends only its own test battles and restores your original tier. Discoveries are saved to your profile automatically. Optional effects never block completion.\n\nStart setup?" : 'Prepare the missing run controls?\n\nYour completed discoveries have been saved. The automatic setup will reuse your menu and inventory scan and start a temporary normal battle to verify battle controls, weapons and the wave counter, then end only that battle. It will not enter a tournament or purchase anything.\n\nAllow approximately 3–6 minutes. Second Wind is optional and will not hold up preparation. Keep the game on Home, leave the emulator untouched, and you may refresh this dashboard; it will reconnect to the scan and apply the results when finished.\n\nContinue?'),
+    wait:ms=>new Promise(resolve=>setTimeout(resolve,ms)),
+    launching:()=>{
+      S.scanLaunchPending=Date.now(); calibrationBusy(true);
+      const progress=$('#bootstrap-progress');
+      if (progress) progress.textContent='Learning screens: extract artwork, verify Home, then follow the screen manifest…';
+    },
+    preparing:preset=>{ S.calibrationPreset=preset; location.hash='#screens'; },
+    changed:snapshot=>{
+      S.learningFlow=snapshot;
+      preparationMessage(snapshot.message);
+      document.querySelectorAll('[data-prepare-run]').forEach(el=>{ el.disabled=snapshot.busy; });
+    },
+    completed:async flow=>{
+      await loadStatus();
+      if (flow === 'preparation') {
+        if (S.view === 'home') await renderHome(); else await renderCalibrate();
+      }
+    },
+    editRun:async preset=>{ await loadHomeData(); openEditor(preset.replace(/^bp_/,'')); },
+    error:error=>{ S.scanLaunchPending=null; toast(error.message,true); },
+  });
+  return S.learningController;
+}
+function calibrationReference(){
+  const context=LearningStore.context(S.config || {});
+  try { return JSON.parse(localStorage.getItem('calibrationOperation:'+context.id) || 'null') || learningTracker().reference(); }
+  catch { return learningTracker().reference(); }
+}
+async function startCalibrationOperation(path,body){
+  if (S.calibrationStarting) throw new Error('A calibration request is already being accepted.');
+  S.calibrationStarting=true;
+  const context=LearningStore.context(S.config || {}),storageKey='calibrationOperation:'+context.id;
+  const previous=localStorage.getItem(storageKey);
+  const idempotency_key=body.idempotency_key || crypto.randomUUID();
+  const intent=JSON.stringify({idempotencyKey:idempotency_key});
+  localStorage.setItem(storageKey,intent);
+  try {
+    const expected_context=Object.fromEntries(['instance','account','serial','rendering','profile'].map(key=>[key,context[key] ?? null]));
+    const response=await post(path,{...body,expected_context,idempotency_key,selected_run:body.selected_run || S.calibrationPreset || $('#start-preset')?.value});
+    if (!response.operation?.id) throw new Error('The server did not confirm the operation identity.');
+    if (localStorage.getItem(storageKey) !== intent) throw new Error('A newer operation request replaced this one.');
+    localStorage.setItem(storageKey,JSON.stringify({operationId:response.operation.id,revision:response.operation.revision,idempotencyKey:idempotency_key}));
+    if (context.id === LearningStore.context(S.config || {}).id) S.scanLaunchPending=response.operation.id;
+    return response;
+  } catch(error) {
+    if (error.status >= 400 && error.status < 500 && localStorage.getItem(storageKey) === intent) {
+      if (previous) localStorage.setItem(storageKey,previous); else localStorage.removeItem(storageKey);
+    }
+    throw error;
+  } finally { S.calibrationStarting=false; }
+}
+async function learningStatus(){
+  const ref=calibrationReference(),context=LearningStore.context(S.config || {});
+  const result=await api('/api/calibrate/status' + (ref?.operationId ? '?operation_id='+encodeURIComponent(ref.operationId) : ''));
+  if (ref?.operationId && result.operation?.id !== ref.operationId) throw new Error('The server returned a different operation.');
+  if (!ref?.operationId && ref?.idempotencyKey && result.operation?.idempotency_key === ref.idempotencyKey && context.id === LearningStore.context(S.config || {}).id)
+    localStorage.setItem('calibrationOperation:'+context.id,JSON.stringify({...ref,operationId:result.operation.id,revision:result.operation.revision}));
+  return result;
 }
 async function prepareRun(selected){
-  if (S.prepareBusy) return;
-  const run = selected || $('#start-preset')?.value || S.readiness?.preset;
-  if (!run) { toast('Choose a run first.', true); return; }
-  S.prepareBusy = true;
-  document.querySelectorAll('[data-prepare-run]').forEach(el => el.disabled = true);
-  try {
-    const before = await api('/api/calibrate/status');
-    if (before.running) throw new Error('A scan is already running. Let it finish first.');
-    if (before.restore_pending) throw new Error('Restore the saved module setup before preparing a run.');
-    preparationMessage('Using your completed scan…');
-    if (Object.keys(before.state?.player || {}).length) await post('/api/calibrate/apply', {});
-    let result = await api('/api/readiness?preset=' + encodeURIComponent(run));
-    if (result.ready) {
-      preparationMessage('Ready. You can start this run from Control.');
-      await loadStatus();
-      if (S.view === 'home') await renderHome(); else await renderCalibrate();
-      return;
-    }
-    if (result.next_action === 'edit_run') {
-      preparationMessage(result.message);
-      await loadHomeData();
-      openEditor(run.replace(/^bp_/, ''));
-      return;
-    }
-    const accepted = await confirmPreparation('Prepare the missing run controls?\n\nYour completed discoveries have been saved. The automatic setup will reuse your menu and inventory scan and start a temporary normal battle to verify battle controls, weapons and the wave counter, then end only that battle. It will not enter a tournament or purchase anything.\n\nAllow approximately 3–6 minutes. Second Wind is optional and will not hold up preparation. Keep the game on Home, leave the emulator untouched, and you may refresh this dashboard; it will reconnect to the scan and apply the results when finished.\n\nContinue?');
-    if (!accepted) { preparationMessage('Discoveries saved. Battle preparation has not started.'); return; }
-    const previous = JSON.stringify(before.state);
-    preparationMessage('Preparing recognition automatically…');
-    localStorage.setItem(preparationStorageKey(), JSON.stringify({preset:run,started:Date.now()/1000}));
-    await post('/api/calibrate/start', {bootstrap:true, flows:true, battle_only:true, phases:'c,m', overwrite:false, allow_navigation:true});
-    S.calibrationPreset = run;
-    location.hash = '#calibrate';
-    const started = Date.now();
-    let seenWorker = false;
-    while (true) {
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      const status = await api('/api/calibrate/status');
-      seenWorker = seenWorker || status.running || JSON.stringify(status.state) !== previous;
-      if (!seenWorker && Date.now() - started > 30000) throw new Error('The scan did not start. Please try Prepare this run again.');
-      if (status.running || !seenWorker) continue;
-      const phase = status.state?.phases?.bootstrap;
-      if (status.restore_pending || !['done', 'needs_attention'].includes(phase?.status))
-        throw new Error('Preparation stopped. See the latest scan step for the reason.');
-      await post('/api/calibrate/apply', {});
-      result = await api('/api/readiness?preset=' + encodeURIComponent(run));
-      localStorage.removeItem(preparationStorageKey());
-      preparationMessage(result.ready ? 'Ready. You can start this run from Control.' : 'Discoveries saved. ' + (result.message || 'Some controls were not visible during preparation. The remaining checks are listed below.'));
-      await loadStatus();
-      if (S.view === 'home') await renderHome(); else await renderCalibrate();
-      break;
-    }
-  } catch(e) { preparationMessage(e.message); toast(e.message, true); }
-  finally {
-    S.prepareBusy = false;
-    document.querySelectorAll('[data-prepare-run]').forEach(el => el.disabled = false);
-  }
+  return learningTracker().prepare(selected || $('#start-preset')?.value || S.readiness?.preset);
 }
 async function stopCalibrate(){
-  try { await post("/api/calibrate/stop", {}); toast("stop requested - it finishes the current step"); }
+  try {
+    const context=LearningStore.context(S.config || {});
+    const operation=S.workspace?.calibration?.operation;
+    if (operation?.context && ['instance','account','serial','profile'].some(key=>(operation.context[key] ?? null) !== (context[key] ?? null))) throw new Error('This operation belongs to another selection.');
+    if (!operation?.id) throw new Error('Refresh operation status before stopping this scan.');
+    await post("/api/calibrate/stop", {operation_id:operation.id,expected_revision:operation.revision}); toast("stop requested - it finishes the current step"); }
   catch(e){ toast(e.message, true); }
 }
+function screenAnalysisReference(context=LearningStore.context(S.config || {})){
+  try { return JSON.parse(localStorage.getItem('screenAnalysis:'+context.id) || 'null'); } catch { return null; }
+}
 async function analyzeScreen(){
-  try { await post('/api/screen-analysis/start',{}); pollScreenAnalysis(); }
-  catch(e){toast(e.message,true);}
+  if (S.analysisStarting) return;
+  S.analysisStarting=true;
+  const context=LearningStore.context(S.config || {}),key='screenAnalysis:'+context.id,prior=screenAnalysisReference(context);
+  const idempotency_key=!prior?.operationId && prior?.idempotencyKey || crypto.randomUUID();
+  const intent=JSON.stringify({idempotencyKey:idempotency_key});
+  localStorage.setItem(key,intent);
+  const expected_context=JSON.parse(JSON.stringify(Object.fromEntries(['instance','account','serial','rendering','profile'].map(name=>[name,context[name] ?? null]))));
+  try {
+    const response=await post('/api/screen-analysis/start',{expected_context,idempotency_key});
+    if (!response.operation?.id) throw new Error('The server did not confirm the analysis operation.');
+    if (localStorage.getItem(key) !== intent) throw new Error('A newer screen analysis replaced this request.');
+    localStorage.setItem(key,JSON.stringify({operationId:response.operation.id,revision:response.operation.revision,idempotencyKey:idempotency_key}));
+    if (context.id === LearningStore.context(S.config || {}).id) pollScreenAnalysis();
+  } catch(e){
+    if (e.status >= 400 && e.status < 500 && localStorage.getItem(key) === intent) {
+      if (prior) localStorage.setItem(key,JSON.stringify(prior)); else localStorage.removeItem(key);
+    }
+    toast(e.message,true);
+  } finally { S.analysisStarting=false; }
 }
 async function pollScreenAnalysis(){
   clearTimeout(S.analysisPoll);
   const status=$('#analysis-progress'), result=$('#analysis-result');
   if(!status || !result) return;
+  const context=LearningStore.context(S.config || {}),ref=screenAnalysisReference(context);
+  if (!ref) return;
+  const request=(S.analysisRequest || 0)+1; S.analysisRequest=request;
+  const current=()=>request === S.analysisRequest && context.id === LearningStore.context(S.config || {}).id;
   try {
-    const r=await api('/api/screen-analysis/status');
+    const r=await api('/api/screen-analysis/status'+(ref.operationId ? '?operation_id='+encodeURIComponent(ref.operationId) : ''));
+    if (!current()) return;
+    const operation=r.operation;
+    if (!operation?.id || ref.operationId && operation.id !== ref.operationId || !ref.operationId && operation.idempotency_key !== ref.idempotencyKey)
+      throw new Error('Analysis status did not confirm the requested operation.');
+    const latest=screenAnalysisReference(context);
+    if (!latest || latest.idempotencyKey !== ref.idempotencyKey || latest.operationId !== ref.operationId || operation.revision < (latest.revision || 0)) return;
+    localStorage.setItem('screenAnalysis:'+context.id,JSON.stringify({...ref,operationId:operation.id,revision:operation.revision,outcome:operation.status}));
     $('#analyze-screen').disabled=r.status==='running';
     status.textContent=r.message || (r.status==='done' ? `Screen: ${r.screen.name}. Compared ${r.tested} artwork images.` : '');
     if(r.status==='running'){
@@ -1513,19 +1892,20 @@ async function pollScreenAnalysis(){
     } else if(r.status==='done'){
       const matches=r.matches || [];
       result.innerHTML=`<p class="muted">Snapshot from ${esc(new Date(r.captured_at*1000).toLocaleTimeString())}. Artwork names are source labels; only confirmed manifest roles explain their purpose. Unmatched objects and repeated copies may be missed.</p>
-      <div style="position:relative;max-width:420px"><img style="display:block;width:100%" src="/api/screen-analysis/frame.png?t=${r.captured_at}" alt="Analyzed snapshot">
+      <div style="position:relative;max-width:420px"><img style="display:block;width:100%" src="/api/screen-analysis/frame.png?operation_id=${encodeURIComponent(r.operation.id)}&amp;revision=${r.operation.revision}" alt="Analyzed snapshot">
       <svg viewBox="0 0 ${r.width} ${r.height}" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">${matches.map((m,i)=>`<rect x="${m.rect[0]}" y="${m.rect[1]}" width="${m.rect[2]}" height="${m.rect[3]}" fill="none" stroke="${m.ambiguous?'#ffcc66':'#30d158'}" stroke-width="5"/><text x="${m.rect[0]}" y="${Math.max(30,m.rect[1])}" fill="white" stroke="black" stroke-width="1" font-size="32">${i+1}</text>`).join('')}</svg></div>
       <ol>${matches.map(m=>`<li><b>${esc(m.names.join(' / '))}</b> — ${m.ambiguous?'Competing artwork matches; identity uncertain':m.roles.length?esc(m.roles.map(role=>role.replace(/\.png$/,'').split('/').pop().replaceAll('_',' ')).join(', ')):'Artwork matched; manifest role unknown'} <small>(${m.inliers} matching details)</small></li>`).join('')}</ol>${matches.length?'':'<p>No artwork passed the geometric checks.</p>'}`;
     }
-  }catch(e){status.textContent=e.message;$('#analyze-screen').disabled=false;}
+  }catch(e){if(current()){status.textContent=e.message;$('#analyze-screen').disabled=false;}}
 }
 function scanTimelineHTML(record, running=false, title="Scan progress"){
-  const labels = {pending:"Waiting",running:"In progress",done:"Done",skipped:"Skipped",needs_attention:"Needs attention",error:"Failed",stopped:"Stopped"};
-  const symbols = {pending:"○",running:"●",done:"✓",skipped:"–",needs_attention:"!",error:"!",stopped:"■"};
-  const steps = record?.steps || [];
+  const labels = Object.fromEntries(Object.entries(WorkspaceStatus.stepStates).map(([key,value])=>[key,value.label]));
+  const symbols = Object.fromEntries(Object.entries(WorkspaceStatus.stepStates).map(([key,value])=>[key,value.symbol]));
+  const summary = WorkspaceStatus.describeSteps(record,running);
+  const steps = summary.steps;
   if (!steps.length) return record ? `<p class="muted">Step history will appear on the next scan. The previous scan's result is shown above.</p>` : '<p class="muted">Progress and step history will appear here when a scan starts.</p>';
-  const complete = steps.filter(s=>["done","skipped","needs_attention"].includes(s.status)).length;
-  const skipped = steps.filter(s=>s.status === "skipped").length;
+  const complete = summary.processed;
+  const skipped = summary.skipped;
   const interrupted = !running && record.status === "running";
   const state = interrupted ? "Stopped before completion" : labels[record.status] || "Ready";
   const history = record.history || [];
@@ -1533,7 +1913,7 @@ function scanTimelineHTML(record, running=false, title="Scan progress"){
   const clock = t=>new Date(t*1000).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
   const elapsed = step=>step.started_at && step.finished_at ? ` · ${Math.max(0,Math.round(step.finished_at-step.started_at))}s` : "";
   return `<section class="scan-progress" aria-label="${esc(title)}">
-    <div class="scan-progress-heading"><b>${esc(title)}</b><span>${complete}/${steps.length} steps finished${skipped ? ` · ${skipped} skipped` : ""}</span></div>
+    <div class="scan-progress-heading"><b>${esc(title)}</b><span>${complete}/${steps.length} steps processed · ${summary.done} successful${skipped ? ` · ${skipped} skipped` : ""}${summary.attention ? ` · ${summary.attention} need attention` : ""}</span></div>
     <progress value="${complete}" max="${steps.length}" aria-label="${esc(title)}: finished steps"></progress>
     <p class="scan-action" role="status" aria-live="polite">${esc(state)}${record.message ? ` — ${esc(record.message)}` : ""}</p>
     <p class="muted" style="font-size:.8rem">Progress tracks finished steps; their durations vary. ${record.updated_at ? `Last update ${esc(clock(record.updated_at))}.` : ""}</p>
@@ -1554,7 +1934,11 @@ function renderScanTimeline(selector, record, running, title){
   const left=previous?.scrollLeft || 0, top=previous?.scrollTop || 0;
   const oldActive=el.dataset.active;
   const active=running ? record?.active_step || '' : '';
+  const disclosures=[...el.querySelectorAll('details')].map(item=>item.open);
+  const historyTop=el.querySelector('.scan-history')?.scrollTop || 0;
   el.innerHTML=html; el._timelineHTML=html; el.dataset.active=active;
+  el.querySelectorAll('details').forEach((item,i)=>{if(disclosures[i] !== undefined)item.open=disclosures[i];});
+  const history=el.querySelector('.scan-history'); if(history)history.scrollTop=historyTop;
   const track=el.querySelector('.scan-stops');
   if (track) { track.scrollLeft=left; track.scrollTop=top; }
   if (track && active && active !== oldActive) {
@@ -1567,7 +1951,7 @@ function renderScanTimeline(selector, record, running, title){
 }
 function assetLibraryHTML(assets){
   if (!assets?.images) return '<p class="muted">The next setup reads artwork directly from the game installed on this emulator.</p>';
-  const labels={pending:"Awaiting screen verification",verified:"Verified on screen",not_seen:"Source match not confirmed",unstable:"Screen changed; retry",needs_attention:"Recognition needs attention"};
+  const labels={pending:"Awaiting screen verification",verified:"Verified on screen",not_seen:"Source match not confirmed",unstable:"Screen changed; retry",needs_attention:"Recognition needs attention",locked:"Locked on this account"};
   return `<section class="scan-progress" aria-label="Installed artwork"><b>Installed artwork — game ${esc(assets.version)}</b>
     <p>${assets.images.toLocaleString()} image objects extracted · ${assets.unique_images.toLocaleString()} distinct images<br>${assets.mapped} manifest targets mapped · ${assets.verified} verified on screen</p>
     <p class="muted">Extracted artwork does not establish what your account owns or has unlocked. Rendered labels and composed controls are verified from the game screen.</p>
@@ -1592,14 +1976,15 @@ function basicScanProgress(st){
   ]).sort((a,b)=>a.at-b.at);
   const activity=calibrationMode(st) === "bootstrap" ? null : st.activity;
   const message=activity?.kind === "calibrate_cut" ? `Checking ${activity.name}` : activity?.message;
-  return {steps,history,status:st.running && calibrationMode(st) !== "bootstrap" ? "running" : steps.every(s=>s.status === "done") ? "done" : "stopped",active_step:steps.find(s=>s.status === "running")?.id,message:message || "",updated_at:activity?.t};
+  const started=steps.map(step=>step.started_at).filter(Number.isFinite);
+  const finished=steps.map(step=>step.finished_at).filter(Number.isFinite);
+  return {steps,history,status:st.running && calibrationMode(st) !== "bootstrap" ? "running" : steps.some(s=>s.status === 'error') ? 'error' : steps.every(s=>s.status === "done") ? "done" : "stopped",active_step:steps.find(s=>s.status === "running")?.id,message:message || "",updated_at:activity?.t,started_at:started.length ? Math.min(...started) : undefined,finished_at:finished.length ? Math.max(...finished) : undefined};
 }
 function calibReport(st){
   const el = $("#calib-report"); if (!el) return;
-  const stateKey=JSON.stringify(st.state);
-  if (S.scanLaunchPending && !st.running && stateKey === S.lastCalibrationState && Date.now()-S.scanLaunchPending < 15000) return;
-  S.scanLaunchPending=null;
-  S.lastCalibrationState=stateKey;
+  S.workspace = {...S.workspace,calibration:st,checkedAt:Date.now()/1000};
+  S.workspaceError = '';
+  renderWorkspaceStatus();
   calibrationBusy(st.running);
   const preview = $("#calib-frame");
   if (preview && (st.running || S.previewWasRunning) && Date.now()-(S.previewUpdatedAt || 0)>4000
@@ -1627,48 +2012,22 @@ function calibReport(st){
   const savedCount=(st.state?.entries || []).filter(e=>e.verified).length;
   const savedSummary=`Saved discoveries: ${savedCards} cards · ${savedModules} modules · ${savedCount} verified images. Refreshing keeps these results.`;
   const starterEl = $("#bootstrap-progress");
-  if (starterEl && starter) starterEl.textContent = `${savedSummary} ${starter.kind === "battle" ? "Battle preparation: " : "Current scan: "}${starter.completed || 0}/${starter.total || 1} steps - ${starter.status}: ${starter.message || ""}${starter.skipped?.filter(s=>!s.optional).length ? ` ${starter.skipped.filter(s=>!s.optional).length} captures or menus need another pass.` : ""}`;
+  if (starterEl) starterEl.textContent = savedSummary;
   const starterRunning=st.running && calibrationMode(st) === "bootstrap";
   renderScanTimeline("#bootstrap-timeline", starter || (S.starterPlan ? {steps:S.starterPlan.map(s=>({...s,status:"pending"}))} : null), starterRunning, starter?.kind === "battle" ? "Battle preparation — saved inventory retained" : "Extract, map and verify");
-  const libraryEl=$("#asset-library-summary");
-  if (libraryEl) libraryEl.innerHTML=assetLibraryHTML(starter?.assets);
+  updateWorkspaceRegion("#asset-library-summary", assetLibraryHTML(starter?.assets));
   const basic=basicScanProgress(st);
   if (basic) renderScanTimeline("#calib-timeline",basic,st.running && !starterRunning,"Account scan");
-  else if (calibrationMode(st) === "observe" && $("#calib-timeline")) $("#calib-timeline").innerHTML = "";
-  if (S.bootstrapWasRunning && !st.running) renderScanPlan();
+  else if (calibrationMode(st) === "observe") {
+    const timeline = $("#calib-timeline");
+    // reset the cache renderScanTimeline compares with, so the same timeline is drawn again later
+    if (timeline) { timeline.innerHTML = ""; timeline._timelineHTML = null; }
+  }
+  // a finished worker may have written templates: refresh the `have` list artPair reads
+  if (S.bootstrapWasRunning && !st.running)
+    api("/api/wizard/templates").catch(() => S.calib).then(c => { S.calib = c; renderScanPlan(); });
   S.bootstrapWasRunning = st.running;
-  if (st.running && starter?.kind === 'battle' && !pendingPreparation()) {
-    localStorage.setItem(preparationStorageKey(), JSON.stringify({preset:S.calibrationPreset || S.readiness?.preset || 'bp_coin_default',started:starter.started_at}));
-  }
-  const pending = pendingPreparation();
-  const resumedPreparation = pending && !S.prepareBusy && starter?.started_at >= pending.started - 5;
-  if (resumedPreparation && st.running) preparationMessage('Battle preparation is running. Your earlier scan is saved.');
-  if (resumedPreparation && !st.running && ['error','stopped'].includes(starter?.status)) {
-    preparationMessage('Discoveries saved. Preparation stopped: ' + (starter.message || 'See the latest step.'));
-    localStorage.removeItem(preparationStorageKey());
-  }
-  if (!st.running && (localStorage.getItem('finishFullSetup') || resumedPreparation) &&
-      ['done', 'needs_attention'].includes(starter?.status) && !S.finishingSetup) {
-    S.finishingSetup = true;
-    (async () => {
-    try {
-      if (st.restore_pending) throw new Error('Restore the saved module setup before completing setup.');
-      await post('/api/calibrate/apply', {});
-      const ready = await api('/api/readiness?preset=' + encodeURIComponent(pending?.preset || 'bp_coin_default'));
-      preparationMessage(ready.ready ? 'Setup complete. Open Control and Start farming.' :
-        'Scan saved. ' + (ready.message || 'A required control still needs verification.'));
-      localStorage.removeItem('finishFullSetup');
-      localStorage.removeItem(preparationStorageKey());
-      await loadStatus();
-    } catch(e) {
-      localStorage.removeItem('finishFullSetup');
-      localStorage.removeItem(preparationStorageKey());
-      preparationMessage('Setup could not finish: ' + e.message);
-    } finally { S.finishingSetup = false; }
-    })();
-  }
-  const known = $("#calib-knowledge");
-  if (known) known.innerHTML = `<table><thead><tr><th>Feature</th><th>Saved discoveries</th><th>Recognition images</th></tr></thead><tbody>${calibrationKnowledge(st)}</tbody></table>`;
+  updateWorkspaceRegion("#calib-knowledge", `<table><thead><tr><th>Feature</th><th>Saved discoveries</th><th>Recognition images</th></tr></thead><tbody>${calibrationKnowledge(st)}</tbody></table>`);
   const manifest = $("#calib-manifest");
   if (manifest && st.manifest?.slots?.length && manifest.dataset.snapshot !== JSON.stringify(st.manifest)) {
     manifest.dataset.snapshot = JSON.stringify(st.manifest);
@@ -1691,15 +2050,15 @@ function calibReport(st){
   const entries = ((st.report || {}).entries) || [];
   const phases = ((st.state || {}).phases) || {};
   const preflight = (st.state || {}).preflight;
-  if (preflight?.status === "error") { el.innerHTML = `<p class="bad">${esc(preflight.error)}</p>`; return; }
+  if (preflight?.status === "error") { updateWorkspaceRegion("#calib-report", `<p class="bad">${esc(preflight.error)}</p>`); return; }
   const stEl = $("#calib-state");
   if (stEl) stEl.textContent = st.running ? "Scan running" : st.restore_pending ? "Restoration pending" : "Choose captures or scans below";
   if (!entries.length) {
-    el.innerHTML = st.taps_allowed === false
-      ? '<p class="muted">No recognition images recorded yet. Choose features in “What to scan next” to begin.</p>' : "";
+    updateWorkspaceRegion("#calib-report", st.taps_allowed === false
+      ? '<p class="muted">No recognition images recorded yet. Choose features in “What to scan next” to begin.</p>' : "");
     return;
   }
-  el.innerHTML = `<table style="width:100%; font-size:.85em"><tr><th></th><th>template</th><th>read as</th><th>status</th><th>self</th><th>next</th></tr>
+  updateWorkspaceRegion("#calib-report", `<table style="width:100%; font-size:.85em"><tr><th></th><th>template</th><th>read as</th><th>status</th><th>self</th><th>next</th></tr>
     ${entries.map(e => `<tr class="row-${(e.verified ? "ok" : rowState(e.status)) || "none"}">
       <td>${artPair(e.rel, e.verified ? "ok" : rowState(e.status))}</td>
       <td><code>${esc(e.rel)}</code></td>
@@ -1710,34 +2069,61 @@ function calibReport(st){
       <td class="${Number(e.next || 0) > 0.85 && !(e.copies_on_page > 1) ? "bad" : ""}"
           title="${e.copies_on_page > 1 ? e.copies_on_page + " identical tiles on screen - the next-best is another copy" : ""}">${Number(e.next || 0).toFixed(2)}${e.copies_on_page > 1 ? ` <span class="muted">×${e.copies_on_page}</span>` : ""}</td></tr>`).join("")}
   </table>
-  <p class="muted">A good cut matches itself at 1.00 and nothing else above 0.85. "exists" = a file was already there and was kept (tick overwrite to replace it); the names are in the draft profile for Promote.</p>`;
+  <p class="muted">A good cut matches itself at 1.00 and nothing else above 0.85. "exists" = a file was already there and was kept (tick overwrite to replace it); the names are in the draft profile for Promote.</p>`);
 }
-function calibrationBusy(running){
+function calibrationBusy(running, confirmed=true){
   document.querySelectorAll('#client-remap, #bootstrap-start, [onclick^="startCalibrate"], [onclick^="observeNow"], #calib-phase2, [name="calibration-phase"], #calib-taps, #calib-over, [onclick="applyCalibration()"]')
-    .forEach(el => el.disabled = running);
+    .forEach(el => { el.disabled = running || !confirmed; });
+  // Stop exists only while a calibration worker runs (last known state when unconfirmed)
   const stop = document.querySelector('[onclick="stopCalibrate()"]');
-  if (stop) stop.disabled = !running;
+  if (stop) { stop.hidden = !running; stop.disabled = false; }
 }
-function pollCalibrate(){
-  clearTimeout(S.calPoll);
-  const generation = S.calPollGeneration = (S.calPollGeneration || 0) + 1;
-  const tick = async () => {
-    if (generation !== S.calPollGeneration || !$("#calib-report")) return;
-    try {
-      const st = await api("/api/calibrate/status");
-      if (generation !== S.calPollGeneration || !$("#calib-report")) return;
-      calibReport(st);
-    } catch(e){
-      const progress = $("#calib-progress");
-      if (progress) progress.textContent = "Connection interrupted. Retrying calibration status…";
-      const action = $("#bootstrap-timeline .scan-action");
-      if (action) action.textContent = "Connection interrupted. Retrying; showing the last known steps...";
-      const timeline = $("#bootstrap-timeline");
-      if (timeline) timeline._timelineHTML = null;
-    }
-    if (generation === S.calPollGeneration && $("#calib-report")) S.calPoll = setTimeout(tick, 2500);
-  };
-  tick();
+/* Operation revisions order observations independently of HTTP response order. */
+function launchSettled(st){
+  const operation=st.operation, previous=S.workspace?.calibration?.operation;
+  if (previous?.id && !operation) return false;
+  if (operation && previous?.id === operation.id && operation.revision < previous.revision) return false;
+  if (typeof S.scanLaunchPending === 'string' && operation?.id !== S.scanLaunchPending) return false;
+  S.scanLaunchPending=null;
+  return true;
+}
+/* The controller owns completion; views only consume its immutable snapshot. */
+function finishLearning(st){
+  return learningTracker().observe(st);
+}
+/* One /api/calibrate/status result: the Calibrate view renders it (calibReport
+   also stores it in S.workspace); other views only store it for the banner. */
+function receiveCalibration(st){
+  if (!launchSettled(st)) return;
+  if ($("#calib-report")) calibReport(st);
+  else { S.workspace = {...S.workspace, calibration:st, checkedAt:Date.now()/1000}; S.workspaceError = ''; }
+  finishLearning(st);
+}
+/* A failed calibration read keeps the last snapshot, marks it unconfirmed and,
+   on Calibrate, disables actions until the next tick succeeds. */
+function calibrationUnavailable(e){
+  learningTracker().unavailable(e);
+  S.workspaceError = e.message;
+  renderWorkspaceStatus();
+  if (!$("#calib-report")) return;
+  calibrationBusy(S.workspace?.calibration?.running === true, false);
+  const progress = $("#calib-progress");
+  if (progress) progress.textContent = "Connection interrupted. Retrying calibration status…";
+  const action = $("#bootstrap-timeline .scan-action");
+  if (action) action.textContent = "Connection interrupted. Retrying; showing the last known steps...";
+  const timeline = $("#bootstrap-timeline");
+  if (timeline) timeline._timelineHTML = null;
+}
+/* One immediate calibration read (on entering Calibrate and right after a
+   launch). Repeated reads come from the 2.5 s status tick in loadStatus. */
+async function pollCalibrate(){
+  const request=(S.calibrationRequest || 0)+1; S.calibrationRequest=request;
+  const context=LearningStore.context(S.config || {}).id;
+  const epoch = S.workspaceEpoch || 0;
+  try {
+    const st = await learningStatus();
+    if (request === S.calibrationRequest && context === LearningStore.context(S.config || {}).id && epoch === (S.workspaceEpoch || 0)) receiveCalibration(st);
+  } catch(e){ if (request === S.calibrationRequest && context === LearningStore.context(S.config || {}).id && epoch === (S.workspaceEpoch || 0)) calibrationUnavailable(e); }
 }
 function renderMappingPlan(model){
   if (!model) return '';
@@ -1794,41 +2180,70 @@ async function cropSave(){
 
 /* ========================================================== VIEW 3: HOME */
 async function renderHome(){
+  const request=(S.homeRenderRequest || 0)+1; S.homeRenderRequest=request;
   await loadHomeData();
+  const context=LearningStore.context(S.config || {}).id;
   const runResponse = await api("/api/runs").catch(e => ({error:e.message}));
+  if (request !== S.homeRenderRequest || context !== LearningStore.context(S.config || {}).id) return;
   S.runs = runResponse.runs || {};
+  S.readinessContext=LearningStore.context(S.config || {}).id; S.readinessFresh=!runResponse.error;
   S.runReadiness = runResponse.readiness || {};   // per run: {ready, missing[], advisory[]}
   if (runResponse.error) toast(runResponse.error, true);
   const active = S.profiles.active;
-  $("#view").innerHTML = `
-  <div class="grid2">
-    <div>
-      <article id="card-runner"><header>Runner</header><div id="runner-body"></div></article>
-      ${starterBanner()}
-      <details><summary>Schedule runs automatically</summary><article id="card-day"><header>The day plan
-        <span class="muted" style="font-weight:400">— what runs when; first open window wins</span>
-      </header><div id="day-body"></div></article></details>
-      <article id="card-flows"><header>Run types
-        <span class="muted" style="font-weight:400">— choose equipment and a tier</span>
-      </header><div id="flows-body"></div></article>
-      <details open><summary>Advanced behaviour library</summary><article id="card-behaviors"><header>Behavior library
-        <span class="muted" style="font-weight:400">— shared plans the run types pick from</span>
-      </header><div id="behaviors-body"></div></article></details>
-      <article id="card-loadouts"><header>Equipment presets
-        <span class="muted" style="font-weight:400">— what gets equipped before a run</span>
-      </header><div id="loadouts-body"></div></article>
-      <article id="card-global"><header>Global behaviors</header><div id="global-body"></div></article>
+  // the emulator inventory names the configured emulator in the status summary
+  // (read once; Settings re-reads it) and, re-read on every entry while no
+  // serial is configured, suggests one to connect
+  const inst = (S.config.instances || {})[S.config.active_instance] || {};
+  if (!S.emus || !inst.serial) S.emus = await api("/api/wizard/emulators").catch(e => ({error:e.message}));
+  if (S.view !== "home") return;   // another view was opened while loading
+  stopStream();
+  $("#panel-overview").innerHTML = `
+  <article id="control-status" aria-label="Status and what blocks automation"><section id="workspace-context" aria-label="Current game and connection"></section><div id="control-blockers"></div><div id="control-connect" hidden></div></article>
+  <div class="dashboard-grid">
+    <div class="dashboard-controls">
+      <article id="card-runner"><header>Automation</header>${WorkspaceStatus.requirementHTML('control')}<div id="runner-body"></div></article>
+      <article class="activity-card"><header>Recent activity</header><div class="events" id="events" aria-label="Recent automation events"></div></article>
+      <article id="get-started" aria-label="Get started"></article>
     </div>
     <div>
-      <article class="stream-box"><header>Live
+      <article class="stream-box dashboard-screen"><header>Emulator screen
         <label class="inline" style="float:right; font-weight:400">
           <input type="checkbox" id="stream-toggle" checked onchange="renderStream()"> stream
         </label></header>
         <div id="stream-slot"></div>
-        <div class="events" id="events" style="margin-top:.6rem"></div>
       </article>
     </div>
-  </div>`;
+  </div>
+  <article id="current-battle-controls" aria-label="Current battle controls"><div id="live-run-controls"></div></article>`;
+  // Configuration pages share the game requirement and starter-profile notice.
+  const configIntro = WorkspaceStatus.requirementHTML('configuration') + starterBanner();
+  $("#panel-runs").innerHTML = `${configIntro}
+  <article><div class="rw-saved-heading"><label for="run-controls-blueprint">Run</label><select id="run-controls-blueprint" onchange="selectRunControls(this.value)">${Object.keys(S.profile?.blueprints || {}).map(name=>`<option value="${esc(name)}">${esc(bpLabel(name))}</option>`).join('')}</select><button class="small ghost" onclick="openRunEntry()">Entry and equipment</button></div><div id="saved-run-controls"></div></article>
+  <details><summary>Run templates and entry settings</summary>
+  <article id="card-flows"><header>Run types
+    <span class="muted" style="font-weight:400">— choose equipment and a tier</span>
+  </header><div id="flows-body"></div></article>
+  <article id="card-behaviors"><header>Shopping policies</header><p class="muted">Shared upgrade plans assigned to runs. Collection and ability policies have their own pages.</p><div id="shopping-policies"></div></article></details>`;
+  $("#panel-history").innerHTML='<div id="run-history"></div>';
+  runWorkspace.attach({live:$('#live-run-controls'),saved:$('#saved-run-controls'),history:$('#run-history'),context:LearningStore.context(S.config || {}).id});
+  const chosen=runWorkspace.selected();
+  const chooser=$('#run-controls-blueprint');
+  if(chooser && chooser.options.length){if([...chooser.options].some(option=>option.value===chosen))chooser.value=chosen;runWorkspace.choose(chooser.value);}
+  $("#panel-schedule").innerHTML = `${configIntro}
+  <article id="card-day"><header>The day plan
+    <span class="muted" style="font-weight:400">— what runs when; first open window wins</span>
+  </header><div id="day-body"></div></article>`;
+  $("#panel-equipment").innerHTML = `${configIntro}
+  <article id="card-loadouts"><header>Equipment presets
+    <span class="muted" style="font-weight:400">— what gets equipped before a run</span>
+  </header><div id="loadouts-body"></div></article>`;
+  $("#panel-collection").innerHTML = `${configIntro}
+  <div id="collection-settings"></div>
+  <details><summary>Manage collection policies</summary><article><div id="collection-policies"></div></article></details>
+  <article id="card-global"><header>Between-run tasks</header><div id="global-body"></div></article>`;
+  $("#panel-abilities").innerHTML = `${configIntro}<div id="abilities-settings"></div>
+  <article><header>Weapon and rescue policies</header><div id="ability-policies"></div></article>`;
+  $("#panel-runtime").innerHTML = `<div id="runtime-settings"></div>`;
   renderStream();
   renderRunner();
   renderDay();
@@ -1837,6 +2252,10 @@ async function renderHome(){
   renderLoadouts();
   renderGlobal();
   renderHomeLive();
+  renderControlBlockers();
+  renderGetStarted();
+  renderWorkspaceStatus();   // the status summary region is new
+  mountConfigurationPage();
 }
 
 /* ------------------------------------------------------------- loadouts
@@ -2006,10 +2425,16 @@ function behUsedBy(sec, name){
   return out;
 }
 function renderBehaviors(){
-  const body = $("#behaviors-body");
-  if (!body || !S.profile) return;
+  if (!S.profile) return;
   const pol = S.profile.policies || {};
-  body.innerHTML = BEH_FAMILIES.map(f => {
+  for (const [selector, families] of Object.entries({
+    '#shopping-policies':['shopping_lists'],
+    '#collection-policies':['gather'],
+    '#ability-policies':['uw_policies','rescue_policies']
+  })) {
+  const body = $(selector);
+  if (!body) continue;
+  body.innerHTML = BEH_FAMILIES.filter(f => families.includes(f.sec)).map(f => {
     const names = Object.keys(pol[f.sec] || {}).sort();
     return `<fieldset><legend>${f.title}</legend>
       ${names.map(n => { const used = behUsedBy(f.sec, n);
@@ -2036,6 +2461,7 @@ function renderBehaviors(){
       Create, copy and delete apply immediately (each keeps a timestamped
       profile backup); edits inside an editor are staged until you press
       Save.</p>`;
+  }
 }
 async function behNew(sec){
   const inp = $("#new-" + sec);
@@ -2068,17 +2494,34 @@ async function behDel(sec, name){
   if (await patch(["policies", sec, name], null, "delete")) renderBehaviors();
 }
 
+/* Overview's live stream: requested only while Overview is the visible tab and the
+   emulator is online; offline it shows the Screens live-screen placeholder. Rebuilt
+   only when the toggle, the online state, the visible tab or (offline) the
+   placeholder text changes, so the status tick never restarts the stream. */
+function stopStream(){
+  // Removing an MJPEG image alone can leave its HTTP connection open in Chromium.
+  // Switch to a local image before detaching it so navigation releases the request.
+  const image = $("#stream-slot img");
+  if (image) image.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+}
 function renderStream(){
   const on = $("#stream-toggle") ? $("#stream-toggle").checked : true;
   const slot = $("#stream-slot");
   if (!slot) return;
-  slot.innerHTML = on
-    ? `<img src="/api/stream.mjpg?fps=4&scale=0.4&ts=${Date.now()}" alt="live stream">`
-    : `<p class="muted">stream off</p>`;
+  const online = WorkspaceStatus.connectionState(S.status).online, visible = S.tab === "overview";
+  const placeholder = online ? "" : WorkspaceStatus.screenPlaceholderHTML(S.status);
+  const state = [on, online, visible, placeholder].join();
+  if (slot.dataset.state === state) return;
+  slot.dataset.state = state;
+  stopStream();
+  slot.innerHTML = !on ? `<p class="muted">stream off</p>`
+    : !online ? placeholder
+    : visible ? `<img src="/api/stream.mjpg?fps=4&scale=0.4&ts=${Date.now()}" alt="live stream">` : "";
 }
 
 function renderHomeLive(){
   if (S.view !== "home" || !S.status) return;
+  if(S.tab==='overview')runWorkspace.poll();
   const ev = $("#events");
   if (ev) ev.innerHTML = (S.status.events || []).slice(-14).map(r =>
     `<div>${esc(new Date(r.t * 1000).toLocaleTimeString())}  ${esc(r.kind)}` +
@@ -2099,12 +2542,19 @@ function renderRunner(){
   if (ae && body.contains(ae) && ae.matches("select, input, textarea")) return;
   const procs = S.status.processes || [];
   const ready = S.runReadiness || {};
-  const key = JSON.stringify([procs.map(p => [p.pid, p.runner]),
+  const key = JSON.stringify([S.readinessFresh,S.readinessContext,procs.map(p => [p.pid,p.runner,p.operation?.id,p.operation?.revision,p.stop_flag]),
                               !!S.status.stop_flag,
+                              WorkspaceStatus.startBlockers({status:S.status, config:S.config}).map(b => b.text),
                               Object.entries(ready).map(([n, r]) => [n, r.ready, (r.missing || []).length])]);
   if (body.dataset.key === key) return;
   body.dataset.key = key;
   const chosen = ($("#start-preset") || {}).value;
+  const nextRunOpen = $(".next-run")?.open ?? !procs.length;
+  const driver=procs.find(p=>p.operation?.context?.instance === S.config.active_instance && p.operation.kind === 'run') || procs.find(p=>p.operation?.kind === 'run');
+  const finishRef=driver?.operation;
+  const finishFlag=driver?.stop_flag ?? S.status.stop_flag;
+  const finishAttrs=finishRef ? ` data-operation-id="${esc(finishRef.id)}" data-operation-revision="${finishRef.revision}"` : '';
+  const finishArgs=finishRef ? ',this.dataset.operationId,Number(this.dataset.operationRevision)' : '';
   // Each run type needs its own images to click (its flow's templates, the
   // gather features, its presets, the shared recognition guards). A run whose
   // images exist can start; one that lacks some is greyed out with the list
@@ -2112,12 +2562,12 @@ function renderRunner(){
   const presets = Object.entries(S.runs || {})
     .filter(([n, b]) => (b || {}).defined !== false)
     .map(([n, b]) => {
-      const r = ready[n];                       // undefined for combo: not gated here
-      const ok = !r || r.ready;
+      const r = ready[n];                       // combo carries the readiness of its whole day plan
+      const ok = r?.ready === true && S.readinessFresh === true && S.readinessContext === LearningStore.context(S.config || {}).id;
       const miss = (r && r.missing) || [];
       const title = ok ? "" : `Needs ${miss.length} image${miss.length === 1 ? "" : "s"} before it can start:\n` +
         miss.slice(0, 8).map(m => " - " + m).join("\n") + (miss.length > 8 ? `\n   … and ${miss.length - 8} more` : "") +
-        "\nOpen Calibrate (Check setup) to scan or crop them.";
+        "\nOpen Screens to learn or crop them.";
       return { name:n, label:(b || {}).label || n, ok, miss, title:r?.setup_required ? "Review equipment and abilities" : title, setupRequired:r?.setup_required };
     });
   const firstReady = (presets.find(p => p.name === "bp_coin_default" && p.ok) || presets.find(p => p.ok) || presets[0] || {}).name;
@@ -2126,28 +2576,30 @@ function renderRunner(){
     <label class="inline"><input type="checkbox" ${tapsAllowed ? "checked" : ""} ${procs.length ? "disabled" : ""} onchange="setAutomationAccess(this.checked)"> Allow automation to tap this emulator</label>
     ${!tapsAllowed ? '<p class="muted">Read-only: the game will not be controlled until you enable taps.</p>' : ""}
     ${procs.length ? procs.map(p => `
-      <div class="flowcard"><div><b>${p.runner === "gem_collector" ? "Diamond collector" : esc(p.runner)}</b>
-        <span class="chip">pid ${p.pid}</span>
-        <div class="muted">${esc((p.cmdline || "").slice(0, 90))}</div></div>
-        <button class="small danger" onclick="killPid(${p.pid})">Stop now</button>
+      <div class="flowcard"><div><b>${p.runner === "gem_collector" ? "Diamond collector" : p.operation?.context?.selected_run ? esc(S.runs?.[p.operation.context.selected_run]?.label || p.operation.context.selected_run) : esc(p.runner)}</b>
+        ${p.operation?.context?.instance ? `<span class="chip">${esc(p.operation.context.instance)}</span>` : ""}
+        <details class="process-details"><summary>Process details</summary><p>PID ${esc(p.pid)}</p><code>${esc(p.cmdline || "")}</code></details></div>
+        <button class="small danger" ${p.operation ? `data-operation-id="${esc(p.operation.id)}" data-operation-revision="${p.operation.revision}" onclick="killPid(${p.pid},this.dataset.operationId,Number(this.dataset.operationRevision))"` : `onclick="killPid(${p.pid})"`}>Stop now</button>
       </div>`).join("")
       : '<p class="muted">Nothing is running.</p>'}
-    <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin-top:.6rem">
-      <select id="start-preset" style="margin:0; width:auto; padding:.3rem .6rem" onchange="renderRunReady()">
+    ${procs.length ? `<div class="action-row current-run-actions">${finishFlag
+        ? `<button class="ghost" onclick="ctl('clear_flag'${finishArgs})"${finishAttrs}>Stopping after this run · Cancel</button>`
+        : `<button class="ghost" onclick="ctl('stop_after_run'${finishArgs})"${finishAttrs}>Finish current run, then stop</button>`}</div>
+        <p class="muted">Stop now stops automation. The game battle keeps playing.</p>` : ""}
+    <details class="next-run" ${nextRunOpen ? "open" : ""}><summary>${procs.length ? "Next run configuration" : "Start automation"}</summary>
+    <div class="action-row">
+      <select id="start-preset" onchange="renderRunReady()">
         ${presets.map(p => `<option value="${esc(p.name)}" title="${esc(p.title)}"
             ${p.name === firstReady ? "selected" : ""}>${esc(p.label)}</option>`).join("")}
       </select>
       <button data-prepare-run onclick="prepareRun()">Prepare this run</button><button id="start-run" onclick="startPreset()">▶ Start</button>
-      <button onclick="startGemsOnly()" ${procs.length ? "disabled" : ""}>Collect diamonds only</button>
-      ${S.status.stop_flag
-        ? `<button class="small ghost" onclick="ctl('clear_flag')">✋ will stop after this run — cancel?</button>`
-        : `<button class="small ghost" onclick="ctl('stop_after_run')">Finish current run, then stop</button>`}
+      <button id="start-gems" onclick="startGemsOnly()" ${procs.length ? "disabled" : ""}>Collect diamonds only</button>
     </div>
     <div id="run-ready" class="muted" style="margin-top:.4rem"></div>
-    <p class="prepare-run-status" role="status">${esc(S.prepareMessage || '')}</p>
+    <p id="run-collection-summary" class="muted"></p>
+    <p class="prepare-run-status" role="status" aria-live="polite">${esc(LearningView.text(S.learningFlow) || S.prepareMessage || '')}</p>
     <p class="muted" style="margin-top:.4rem">“Combo (day plan)” runs the whole
-      day plan below. “Stop now” never touches the game — a live run keeps
-      playing; prefer “finish current run, then stop”.</p>`;
+      day plan in <a href="#schedule">Schedule</a>. <a href="#runs">Edit run policies</a> or <a href="#collection">adjust collection settings</a>.</p></details>`;
   if (chosen) {
     const sel = $("#start-preset");
     if (sel && [...sel.options].some(o => o.value === chosen && !o.disabled)) sel.value = chosen;
@@ -2156,37 +2608,70 @@ function renderRunner(){
 }
 function renderRunReady(){
   // The chosen run's own calibration state, next to the Start button: what it
-  // still needs to click is listed here and in the option's tooltip; Start is
-  // disabled until those images exist. Runs whose images are complete start.
+  // still needs to click is listed here and in the option's tooltip. Start is
+  // disabled while automation runs, while any start blocker holds (mapping
+  // incomplete, emulator not online, game input disabled) and until the run's
+  // images exist; Collect diamonds only follows the same blockers. Every Prepare
+  // button (this one and each run type's on Runs) follows prepareBlocked. Stop
+  // controls are never touched here.
   const sel = $("#start-preset"), out = $("#run-ready"), btn = $("#start-run");
   if (!sel || !out) return;
   const running = !!S.status?.processes?.length;
-  const prepare = document.querySelector('[data-prepare-run]');
-  if (prepare) prepare.disabled = running;
+  const gather = (S.runs?.[sel.value] || {}).gather || {};
+  const adsEnabled = gather.ad_gems !== false;
+  const orbitEnabled = !!gather.gem_orbit?.enabled;
+  const summary = $("#run-collection-summary");
+  if (summary) summary.textContent = `Selected run configuration — Ad gems: ${adsEnabled ? "on" : "off"}. Floating gems: ${orbitEnabled ? "on (timed clicks)" : "off"}. These settings apply when you start this run. Collect diamonds only watches an existing battle without starting another run.`;
+  const gems = $("#start-gems");
+  document.querySelectorAll('[data-prepare-run]').forEach(el => { el.disabled = prepareBlocked(); });
   if (running) {
     if (btn) btn.disabled = true;
+    if (gems) gems.disabled = true;
     out.textContent = 'Automation is running. Use Stop now to stop the driver, or finish current run to stop after the battle.';
     return;
   }
+  const blockers = WorkspaceStatus.startBlockers({status:S.status, config:S.config});
+  if (gems) gems.disabled = blockers.length > 0 || !(adsEnabled || orbitEnabled);
+  const blocked = blockers.length ? `<p><b>Start is disabled:</b></p><ul class="control-blockers">${blockers.map(b =>
+    `<li>${esc(b.text)} <a href="${b.href}" data-workspace-section="${b.section}">${esc(b.link)}</a></li>`).join("")}</ul>` : "";
   const r = (S.runReadiness || {})[sel.value];
-  if (!r) { out.innerHTML = ""; if (btn) btn.disabled = false; return; }
+  const confirmed=!S.workspaceError && !S.statusError && S.readinessFresh === true && S.readinessContext === LearningStore.context(S.config || {}).id;
+  if (!r || !confirmed || typeof r.ready !== 'boolean') {
+    out.innerHTML=blocked+'<p>Run readiness is unconfirmed. Refresh requirements before starting.</p>';
+    if (btn) btn.disabled=true;
+    return;
+  }
   const miss = r.missing || [], adv = r.advisory || [];
-  if (btn) btn.disabled = !r.ready;
+  if (btn) btn.disabled = blockers.length > 0 || r.ready !== true;
   if (r.setup_required) {
-    out.innerHTML = `<p>${esc(r.message || 'This run needs preparation. Click Prepare this run above.')}</p>`;
+    out.innerHTML = blocked + `<p>${esc(r.message || 'This run needs preparation. Click Prepare this run above.')}</p>`;
     return;
   }
   if (r.ready) {
-    out.innerHTML = `<span class="ok">Ready to start.</span>`;
+    out.innerHTML = blocked || `<span class="ok">Ready to start.</span>`;
   } else {
     const details = r.details || miss.map(m => ({alternatives:[m], reasons:[], docs:[]}));
-    out.innerHTML = `<p>Click <b>Prepare this run</b> above to finish ${miss.length} remaining recognition checks. Your completed scan will be reused.</p>` +
+    out.innerHTML = blocked + `<p>Click <b>Prepare this run</b> above to finish ${miss.length} remaining recognition checks. Your completed scan will be reused.</p>` +
       `<details><summary>Recognition details</summary>${details.map(d => outstandingCard(d, "control", sel.value)).join("")}</details>`;
   }
 }
-async function killPid(pid){
+/* Prepare is refused while automation runs or the emulator is not online. */
+function prepareBlocked(){
+  return !!S.status?.processes?.length
+    || WorkspaceStatus.startBlockers({status:S.status, config:S.config}).some(b => b.id === "connection");
+}
+async function killPid(pid,operationId,expectedRevision){
   if (!confirm("Stop this runner process? The game itself is never touched.")) return;
-  try { await post("/api/control", { action:"kill", pid }); toast("stopped"); loadStatus(); }
+  try {
+    if (operationId) {
+      if (!Number.isInteger(expectedRevision)) throw new Error('Refresh this operation before stopping it.');
+      await post('/api/operations/'+encodeURIComponent(operationId)+'/cancel',{expected_revision:expectedRevision});
+    } else {
+      if ((S.status?.processes || []).some(p=>p.pid === pid && p.operation?.id)) throw new Error('Refresh this tracked operation before stopping it.');
+      await post('/api/control',{action:'kill',pid});
+    }
+    toast('Stop requested; the game battle continues.'); loadStatus();
+  }
   catch(e){ toast(e.message, true); }
 }
 async function setAutomationAccess(enabled){
@@ -2195,23 +2680,52 @@ async function setAutomationAccess(enabled){
 }
 async function checkRun(){
   S.calibrationPreset = $("#start-preset").value;
-  location.hash = "#calibrate";
+  location.hash = "#screens";
 }
 async function startGemsOnly(){
+  if (S.runStarting) return;
+  S.runStarting=true;
+  const scope=LearningStore.context(S.config || {}),preset=$('#start-preset').value;
+  const requestScope=JSON.stringify([scope.id,preset]);
+  let intent=S.gemsStartIntent;
+  if (intent?.scope !== requestScope) {
+    const expected_context=JSON.parse(JSON.stringify(Object.fromEntries(['instance','account','serial','rendering','profile'].map(key=>[key,scope[key] ?? null]))));
+    intent={scope:requestScope,body:{action:'start_gems',preset,expected_context,idempotency_key:crypto.randomUUID()}};
+    S.gemsStartIntent=intent;
+  }
   try {
-    const r=await post('/api/control',{action:'start_gems',preset:$('#start-preset').value});
-    toast('Diamond collector running; the current battle and equipment are unchanged.');
+    await post('/api/control',intent.body);
+    if (S.gemsStartIntent === intent) S.gemsStartIntent=null;
+    if (scope.id === LearningStore.context(S.config || {}).id) toast('Diamond collector running; the current battle and equipment are unchanged.');
     await loadStatus();
-  } catch(e){toast(e.message,true);}
+  } catch(e){
+    if (e.status >= 400 && e.status < 500 && S.gemsStartIntent === intent) S.gemsStartIntent=null;
+    toast(e.message,true);
+  } finally { S.runStarting=false; }
 }
 async function startPreset(){
+  if (S.runStarting) return;
+  S.runStarting=true;
   try {
-    const r = await post("/api/control", { action:"start", preset:$("#start-preset").value });
+    const preset=$('#start-preset').value;
+    const scope=LearningStore.context(S.config || {}),context=scope.id;
+    S.readinessFresh=false; renderRunReady();
+    const checked=preset === 'combo' ? (await api('/api/runs')).readiness?.combo : await api('/api/readiness?preset='+encodeURIComponent(preset));
+    const sameTarget=!checked?.context || ['instance','account','serial','rendering','profile'].every(key=>JSON.stringify(checked.context[key] ?? null) === JSON.stringify(scope[key] ?? null));
+    if (context !== LearningStore.context(S.config || {}).id || !sameTarget || checked?.ready !== true)
+      throw new Error(checked?.message || 'Run readiness was not confirmed. Prepare this run before starting.');
+    const expected_context=Object.fromEntries(['instance','account','serial','rendering','profile'].map(key=>[key,scope[key] ?? null]));
+    const r = await post("/api/control", { action:"start", preset, expected_context, idempotency_key:crypto.randomUUID() });
     toast("started (pid " + r.pid + ")"); loadStatus();
-  } catch(e){ toast(e.message, true); }
+  } catch(e){ toast(e.message, true); } finally { S.runStarting=false; }
 }
-async function ctl(action){
-  try { await post("/api/control", { action }); loadStatus(); setTimeout(renderRunner, 300); }
+async function ctl(action,operationId,expectedRevision){
+  const body={action};
+  if (operationId) {
+    if (!Number.isInteger(expectedRevision)) { toast('Refresh the operation before changing its stop flag.',true); return; }
+    body.operation_id=operationId; body.expected_revision=expectedRevision;
+  }
+  try { await post("/api/control", body); loadStatus(); setTimeout(renderRunner, 300); }
   catch(e){ toast(e.message, true); }
 }
 
@@ -2249,7 +2763,7 @@ function activeProfileBox(){
   return `
     <p class="muted">Run-by-run behavior is defined per <b>player profile</b>.
       ${ready.length ? "Activate one to unlock the plan and run editors:" :
-      "No complete profile exists yet — run the account scan on the Setup page first."}</p>
+      "No complete profile exists yet — learn your game's screens from Overview first."}</p>
     ${ready.length ? `<div style="display:flex; gap:.5rem">
       <select id="prof-pick" style="margin:0; width:auto">${ready.map(p =>
         `<option>${esc(p.name)}</option>`).join("")}</select>
@@ -2390,22 +2904,31 @@ function setWeek(day, val){
 }
 
 /* ----------------------------------------------------------- flow cards */
+/* Run types (Runs tab), each with its /api/runs readiness and, while not ready,
+   the existing Prepare action. Rewritten only when the markup changes, so the
+   workspace refresh does not take focus from these buttons. */
 function renderFlows(){
-  const body = $("#flows-body");
-  if (!S.profile) { body.innerHTML = '<p class="muted">Activate a profile to edit run types.</p>'; return; }
+  if (!$("#flows-body")) return;
+  if (!S.profile) { updateWorkspaceRegion("#flows-body", '<p class="muted">Activate a profile to edit run types.</p>'); return; }
   const bps = Object.entries(S.profile.blueprints || {});
-  body.innerHTML = `<p>Start with a shipped run template, then choose equipment and a tier for this account.</p>
+  updateWorkspaceRegion("#flows-body", `<p>Start with a shipped run template, then choose equipment and a tier for this account.</p>
     <div>${(S.runTemplates || []).map(t=>`<button class="small" onclick="openRunTemplate('${esc(t.id)}')">＋ ${esc(t.label)}</button>`).join(' ')}</div>` + bps.map(([name, b]) => {
     const label = bpLabel(name);
+    const r = (S.runReadiness || {})["bp_" + name];   // /api/runs names a run type bp_<name>
+    const missing = (r?.missing || []).length;
     return `<div class="flowcard">
       <div><b>${esc(label)}</b>${label !== name
           ? `<span class="chip" title="identifier">${esc(name)}</span>` : ""}<span class="chip kind">${esc(bpKindLabel(b))}</span>
         <div class="muted">equipment: ${b.loadout === "as_is" ? "use current equipment" : esc(b.loadout ?? "—")}
           ${b.tier != null ? " · tier " + esc(b.tier) : ""}
-          ${b.restart_via_home ? " · restarts via Home" : ""}</div></div>
-      <button class="small" onclick="openEditor('${esc(name)}')">Edit</button>
+          ${b.restart_via_home ? " · restarts via Home" : ""}</div>
+        ${r ? `<div class="${r.ready ? "ok" : "warn"}">${r.ready ? "Ready to start" : r.setup_required ? "Needs preparation"
+          : `${missing} screen${missing === 1 ? "" : "s"} to learn`}</div>` : ""}</div>
+      <span style="display:flex; gap:.3rem; flex:none">
+        ${r?.ready !== true ? `<button class="small ghost" data-prepare-run onclick="prepareRun('bp_${esc(name)}')" ${prepareBlocked() ? "disabled" : ""}>Prepare</button>` : ""}
+        <button class="small" onclick="openEditor('${esc(name)}')">Edit</button></span>
     </div>`;
-  }).join("") || '<p class="muted">No run types defined in this profile.</p>';
+  }).join("") || '<p class="muted">No run types defined in this profile.</p>');
 }
 
 function openRunTemplate(id){
@@ -2457,6 +2980,7 @@ async function saveRunTemplate(){
 /* ------------------------------------------------------- global behaviors */
 function renderGlobal(){
   const body = $("#global-body");
+  if (!body) return;
   if (!S.profile) { body.innerHTML = '<p class="muted">Activate a profile first.</p>'; return; }
   const choreNames = ((S.vocab || {}).chore_names || {}).values || [];
   const chores = ((S.profile.policies || {}).chores) || [];
@@ -2465,10 +2989,6 @@ function renderGlobal(){
     shatter:"Shatter surplus blue modules once a day",
     housekeeping:"Housekeeping: prune old logs/screenshots" };
   body.innerHTML = `
-    <h3>Reward collection</h3>
-    <p class="muted">Shared by all run types. Checks wait while another action is using the screen. If the app is off at the scheduled time, free Store gems are checked when automation next runs.</p>
-    ${Object.entries({free_store_gems:'Free Gems Collection — once daily at 01:00 UTC ±10 minutes', daily_missions:'Daily Missions — check every 5 minutes during runs', guild_progress:'Guild progress — check its purple badge every 5 minutes', event_missions:'Event Missions — check every 5 minutes; claim quests, then free and unlocked paid-track rewards', demon_mode_always:'Demon Mode on cooldown — fire it whenever it is ready, on every run, whatever the rescue plan says (for the Demon Mode kill quests; a wall rescue may then find it cooling down; never during the intro sprint)'}).map(([key,label])=>`<label class="inline"><input type="checkbox" ${S.profile.policies?.global_behaviors?.[key] === true ? 'checked' : ''} onchange="setGlobalReward('${key}',this.checked)">${label}</label>`).join('')}
-    <h3>Between-run tasks</h3>
     <p class="muted">These run <b>between</b> runs, from the Home screen, at
       most one per gap — never during a battle. Uncheck what this account
       should never do; each run type can additionally override its own
@@ -2477,10 +2997,6 @@ function renderGlobal(){
       <label class="inline"><input type="checkbox" ${cmap[n] !== false ? "checked" : ""}
         onchange="setChore('${esc(n)}', this.checked)">
         ${esc(CHORE_LABEL[n] || n)}</label>`).join("")}`;
-}
-function setGlobalReward(name, enabled){
-  const value = {...(S.profile.policies?.global_behaviors || {}), [name]:enabled};
-  queuePatch(['policies','global_behaviors'], value); renderGlobal();
 }
 function setChore(name, enabled){
   const choreNames = ((S.vocab || {}).chore_names || {}).values || [];
@@ -2702,7 +3218,7 @@ function uwPlanBlocked(name){
   if ((((S.profile || {}).player || {}).uws || {}).chain_lightning) return "";
   return `Schedules Chain Lightning (mode ${mode}), which this account does not own yet ` +
     `(player.uws.chain_lightning). If the account has it: run Full setup, then ` +
-    `"Use discovered presets in my profile" on Calibrate.`;
+    `"Use discovered presets in my profile" on Screens.`;
 }
 function setBpPolicy(bpName, pkey, value){
   if (value === "") queuePatch(["blueprints", bpName, "policies", pkey], null, "delete");
@@ -3174,7 +3690,7 @@ function p2clPair(key, idx, val){
   for (const d of document.querySelectorAll("dialog"))
     d.addEventListener("close", syncSaveBar);
   await loadStatus();
-  setInterval(loadStatus, 2500);
+  setInterval(loadStatus, 2500);   // the only status timer; route() loads workspace data
   route();
 })();
 </script>

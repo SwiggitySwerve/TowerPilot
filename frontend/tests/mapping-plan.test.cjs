@@ -1,9 +1,8 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const fs=require('node:fs');
 const vm=require('node:vm');
-const html=fs.readFileSync(require('node:path').join(__dirname,'../webui/index.html'),'utf8');
-const source=html.slice(html.indexOf('function renderMappingPlan('),html.indexOf('function renderInterfaceCoverage('));
+const {section}=require('./helpers.cjs');
+const source=section('function renderMappingPlan(','function renderInterfaceCoverage(');
 test('mapping route stays vertical and distinguishes unavailable steps',()=>{
   const context=vm.createContext({esc:s=>String(s).replaceAll('<','&lt;').replaceAll('>','&gt;')});
   vm.runInContext(source,context);
