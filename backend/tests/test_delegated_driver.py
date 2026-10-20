@@ -252,25 +252,243 @@ def test_popen_failure_retires_prepared_battle_without_finalizing_parent(delegat
     assert d.operations.get(d.op['id']) == d.op
 
 
-def test_kill_waits_for_confirmed_exit_before_reconciliation(delegation):
+def test_overdue_boundary_preserves_driver_flag_and_lease_until_natural_exit(delegation, tmp_path):
     d = delegation
     child = spawn_driver(d)
-    calls = []
-    d.monkeypatch.setattr(combo.runflag, 'request', lambda reason: calls.append('runflag'))
-    d.monkeypatch.setattr(combo.runflag, 'clear', lambda: calls.append('clear'))
-    child.terminate = lambda: calls.append('terminate')
-    child.kill = lambda: calls.append('kill')
+    held = device_lease.ensure_current()
+    flag = tmp_path / 'stop_after_run'
+    d.monkeypatch.setattr(combo.runflag, '_path', lambda: str(flag))
+    child.terminate = lambda: pytest.fail('Boundary timeout terminated a live driver')
+    child.kill = lambda: pytest.fail('Boundary timeout killed a live driver')
+    waits = []
     def wait(timeout):
-        calls.append('wait')
-        if calls.count('wait') == 1:
-            raise combo.subprocess.TimeoutExpired('synthetic', timeout)
+        waits.append(timeout)
+        assert timeout == combo.POLL  # overdue waits remain blocking, never spin
+        assert child.poll() is None
+        assert flag.read_text() == 'synthetic boundary'
         assert d.store.active()
-        child.returncode = -9
+        assert device_lease.ensure_current() is held
+        assert held.check() is held
+        operation = d.operations.get(d.op['id'])
+        assert operation['status'] == 'running'
+        assert operation['step'] == 'boundary_overdue'
+        assert 'synthetic boundary' in operation['recovery_action']
+        if len(waits) == 1:
+            raise combo.subprocess.TimeoutExpired('synthetic', timeout)
+        child.returncode = 0
     child.wait = wait
     combo._stop_and_wait(child, 'synthetic boundary', timeout=0)
-    assert calls == ['runflag', 'terminate', 'wait', 'kill', 'wait', 'clear']
+    assert waits == [combo.POLL, combo.POLL]
+    assert not flag.exists()
     assert d.store.active() == []
-    assert d.operations.get(d.op['id']) == d.op
+    operation = d.operations.get(d.op['id'])
+    assert operation['status'] == 'running' and operation['worker'] == d.op['worker']
+    assert operation['step'] == 'scheduler_running' and operation['recovery_action'] is None
+    events = [json.loads(line) for line in combo.logger.run_file().read_text().splitlines()]
+    overdue = [event for event in events if event['kind'] == 'combo_boundary_overdue']
+    assert len(overdue) == 1
+    assert overdue[0]['child_pid'] == child.pid
+    assert overdue[0]['reason'] == 'synthetic boundary'
+    assert any(event['kind'] == 'combo_boundary_exited' and event['overdue'] for event in events)
+
+
+@pytest.mark.parametrize('error', [KeyboardInterrupt, OSError])
+def test_interrupted_wait_keeps_pending_flag_and_live_battle(delegation, tmp_path, error):
+    d = delegation
+    child = spawn_driver(d)
+    flag = tmp_path / 'stop_after_run'
+    d.monkeypatch.setattr(combo.runflag, '_path', lambda: str(flag))
+    held = device_lease.ensure_current()
+    def wait(timeout):
+        raise error('synthetic interruption')
+    child.wait = wait
+    with pytest.raises(error):
+        combo._stop_and_wait(child, 'pending transition', timeout=0)
+    assert child.poll() is None
+    assert flag.read_text() == 'pending transition'
+    assert d.store.active()
+    assert device_lease.ensure_current() is held
+    assert d.operations.get(d.op['id'])['step'] == 'boundary_overdue'
+
+
+def test_boundary_progress_does_not_overwrite_explicit_stop(delegation):
+    d = delegation
+    operation = d.operations.transition(d.op['id'], d.op['revision'], 'cancelling', step='stop_requested')
+    combo._boundary_progress('boundary_overdue', 'late transition', 30000)
+    assert d.operations.get(d.op['id']) == operation
+
+
+def test_boundary_reports_overdue_at_threshold_then_keeps_blocking(delegation, tmp_path):
+    d = delegation
+    child = spawn_driver(d)
+    d.monkeypatch.setattr(combo.runflag, '_path', lambda: str(tmp_path / 'stop_after_run'))
+    clock = [100.0]
+    d.monkeypatch.setattr(combo.time, 'monotonic', lambda: clock[0])
+    waits = []
+    def wait(timeout):
+        waits.append(timeout)
+        operation = d.operations.get(d.op['id'])
+        if len(waits) == 1:
+            assert operation['step'] == 'boundary_wait'
+            clock[0] += timeout
+            raise combo.subprocess.TimeoutExpired('synthetic', timeout)
+        assert operation['step'] == 'boundary_overdue'
+        child.returncode = 0
+    child.wait = wait
+    combo._stop_and_wait(child, 'synthetic threshold', timeout=4)
+    assert waits == [4, combo.POLL]
+
+
+def test_progress_storage_failure_cannot_end_boundary_supervision(delegation, tmp_path):
+    d = delegation
+    child = spawn_driver(d)
+    flag = tmp_path / 'stop_after_run'
+    d.monkeypatch.setattr(combo.runflag, '_path', lambda: str(flag))
+    def unavailable(*args, **kwargs):
+        raise combo.sqlite3.OperationalError('Synthetic ledger unavailable')
+    d.monkeypatch.setattr(Operations, 'transition', unavailable)
+    def wait(timeout):
+        assert flag.exists() and d.store.active()
+        child.returncode = 0
+    child.wait = wait
+    combo._stop_and_wait(child, 'synthetic storage failure', timeout=0)
+    assert not flag.exists() and d.store.active() == []
+    events = [json.loads(line) for line in combo.logger.run_file().read_text().splitlines()]
+    assert any(event['kind'] == 'combo_boundary_progress_failed' for event in events)
+
+
+def test_explicit_stop_now_can_cancel_an_overdue_boundary(delegation, tmp_path):
+    from control import operations
+    import psutil
+    d = delegation
+    child = spawn_driver(d)
+    flag = tmp_path / 'stop_after_run'
+    d.monkeypatch.setattr(combo.runflag, '_path', lambda: str(flag))
+    d.monkeypatch.setattr(operations, 'ledger', lambda root: d.operations)
+    d.monkeypatch.setattr(operations, 'worker_alive', lambda worker: True)
+    stopped = []
+    def terminate_child():
+        stopped.append('child')
+        child.returncode = -15
+    child.terminate = terminate_child
+    parent = SimpleNamespace(children=lambda recursive: [child], terminate=lambda: stopped.append('parent'))
+    d.monkeypatch.setattr(psutil, 'Process', lambda pid: parent)
+    d.monkeypatch.setattr(psutil, 'wait_procs', lambda family, timeout: (family, []))
+    def wait(timeout):
+        assert flag.exists() and child.poll() is None
+        op = d.operations.get(d.op['id'])
+        assert op['step'] == 'boundary_overdue'
+        cancelled = operations.cancel(tmp_path, {'operation_id': op['id'], 'expected_revision': op['revision']})
+        assert cancelled['status'] == 'cancelled'
+    child.wait = wait
+    combo._stop_and_wait(child, 'pending transition', timeout=0)
+    assert stopped == ['child', 'parent']
+    assert d.operations.get(d.op['id'])['step'] == 'driver_stopped'
+    assert d.operations.get(d.op['id'])['status'] == 'cancelled'
+    assert not flag.exists() and d.store.active() == []
+
+
+def test_adopted_driver_uses_same_overdue_hold_and_wait_contract(monkeypatch, tmp_path):
+    import psutil
+    for key in ('TOWER_OPERATION_ID', 'TOWER_OPERATION_DB'):
+        monkeypatch.delenv(key, raising=False)
+    flag = tmp_path / 'stop_after_run'
+    monkeypatch.setattr(combo.runflag, '_path', lambda: str(flag))
+    process = SimpleNamespace(pid=919, alive=True)
+    process.is_running = lambda: process.alive
+    waits = []
+    def wait(timeout):
+        waits.append(timeout)
+        assert flag.read_text() == 'adopted transition'
+        if len(waits) == 1:
+            raise psutil.TimeoutExpired(timeout, pid=process.pid)
+        process.alive = False
+        return None  # psutil cannot recover an unrelated process's exit code
+    process.wait = wait
+    child = combo._Adopted(process)
+    combo._stop_and_wait(child, 'adopted transition', timeout=0)
+    assert waits == [combo.POLL, combo.POLL]
+    assert child.returncode == -1 and child.poll() == -1
+    assert not flag.exists()
+
+
+def test_child_exit_wakes_wait_without_schedule_sleep(monkeypatch, tmp_path):
+    import sys
+    def no_sleep(*args):
+        pytest.fail('Child exit waited for the schedule polling sleep')
+    monkeypatch.setattr(combo.time, 'sleep', no_sleep)
+    # Synthetic process only; no runner, device, account or configuration I/O.
+    with combo.subprocess.Popen([sys.executable, '-c', 'pass'], cwd=tmp_path) as child:
+        combo._wait_for_child(child)
+        assert child.returncode == 0
+
+
+def test_scheduler_rechecks_schedule_after_boundary_instead_of_starting_expired_block(delegation, tmp_path):
+    d = delegation
+    child = spawn_driver(d)
+    old = dict(id='current', block='farm', count=None, kind='coin', preset='inherited')
+    expired = dict(id='expired', block='shards', count=1, kind='shard', preset='flat')
+    d.monkeypatch.setattr(combo.runflag, '_path', lambda: str(tmp_path / 'stop_after_run'))
+    d.monkeypatch.setattr(combo, 'next_block', lambda *args: expired if child.poll() is None else None)
+    d.monkeypatch.setattr(combo, 'today_blocks', lambda *args: [old, expired])
+    d.monkeypatch.setattr(combo, '_plan_mode', lambda: False)
+    d.monkeypatch.setattr(combo, '_block_ok', lambda value: True)
+    d.monkeypatch.setattr(combo, '_find_running_block', lambda block, *args: child if block is old else None)
+    d.monkeypatch.setattr(combo, '_block_progress', lambda block: 0)
+    closed = []
+    d.monkeypatch.setattr(combo, '_close_block', lambda block, base: closed.append(block['id']))
+    d.monkeypatch.setattr(combo, '_block_handoff', lambda *args: pytest.fail('Started an expired schedule window'))
+    def wait(timeout):
+        assert combo.runflag.requested() == 'combo -> expired'
+        child.returncode = 0
+    child.wait = wait
+    def finish(*args):
+        raise KeyboardInterrupt
+    d.monkeypatch.setattr(combo.time, 'sleep', finish)
+    combo.run('main')
+    assert closed == ['current']
+    assert len(d.launched) == 1
+
+
+@pytest.mark.parametrize('wave', [0, 123])
+def test_orphan_battle_adopts_before_handoff_even_with_unreadable_wave(delegation, tmp_path, wave):
+    d = delegation
+    child = spawn_driver(d)
+    coin = dict(id='farm', block='farm', count=None, kind='coin', preset='inherited')
+    wanted = dict(id='shards', block='shards', count=1, kind='shard', preset='flat')
+    d.monkeypatch.setattr(combo.runflag, '_path', lambda: str(tmp_path / 'stop_after_run'))
+    d.monkeypatch.setattr(combo, 'next_block', lambda *args: wanted if child.poll() is None else None)
+    d.monkeypatch.setattr(combo, 'today_blocks', lambda *args: [wanted, coin])
+    d.monkeypatch.setattr(combo, '_plan_mode', lambda: False)
+    d.monkeypatch.setattr(combo, '_block_ok', lambda value: True)
+    d.monkeypatch.setattr(combo, '_find_running_block', lambda *args: None)
+    d.monkeypatch.setattr(combo, '_block_progress', lambda block: 0)
+    d.monkeypatch.setattr(combo, '_hold_while_unknown', lambda: None)
+    d.monkeypatch.setattr(combo, '_orphan_battle', lambda: wave)
+    d.monkeypatch.setattr(combo, '_block_handoff', lambda *args: pytest.fail('Handoff ran over an orphan battle'))
+    adopted = []
+    def runner(block, instance):
+        adopted.append(block['id'])
+        return child
+    d.monkeypatch.setattr(combo, '_block_runner', runner)
+    d.monkeypatch.setattr(combo, '_close_block', lambda *args: None)
+    waits = []
+    def wait(timeout):
+        waits.append(timeout)
+        if len(waits) == 1:
+            # Adopt first, then let the ordinary switch request stop it at
+            # its natural boundary on the next scheduler pass.
+            assert combo.runflag.requested() is None
+            raise combo.subprocess.TimeoutExpired('synthetic', timeout)
+        assert combo.runflag.requested() == 'combo -> shards'
+        child.returncode = 0
+    child.wait = wait
+    def finish(*args):
+        raise KeyboardInterrupt
+    d.monkeypatch.setattr(combo.time, 'sleep', finish)
+    combo.run('main')
+    assert adopted == ['farm'] and len(waits) == 2
+    assert not (tmp_path / 'stop_after_run').exists()
 
 
 def test_scheduler_exit_branch_reconciles_while_no_successor_is_scheduled(delegation):

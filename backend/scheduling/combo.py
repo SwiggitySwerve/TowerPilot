@@ -28,6 +28,7 @@ import datetime
 import copy
 import json
 import os
+import sqlite3
 import subprocess
 import sys
 import time
@@ -281,12 +282,14 @@ class _Adopted:
 
     def __init__(self, proc):
         self._p = proc
+        self.pid = proc.pid
         self.returncode = None
 
     def poll(self):
         if self._p.is_running():
             return None
-        self.returncode = -1
+        if self.returncode is None:
+            self.returncode = -1
         return self.returncode
 
     def terminate(self):
@@ -296,7 +299,16 @@ class _Adopted:
         self._p.kill()
 
     def wait(self, timeout=None):
-        return self._p.wait(timeout)
+        import psutil
+        try:
+            code = self._p.wait(timeout)
+        except psutil.TimeoutExpired as exc:
+            # Supervision uses the Popen timeout contract for spawned and
+            # discovered children alike. An adopted process may not be our
+            # OS child, so psutil cannot always recover its exit status.
+            raise subprocess.TimeoutExpired(str(self.pid), timeout) from exc
+        self.returncode = code if code is not None else -1
+        return self.returncode
 
 
 def _find_running(phase: str, instance: str):
@@ -388,6 +400,7 @@ WEEKDAY_NAMES = ("monday", "tuesday", "wednesday", "thursday", "friday",
 _ABSENT = object()              # "the key was never there", as distinct from
                                 # "the key is there and holds nothing"
 _plan_absent_logged = False     # `plan_absent` is an edge log, not a heartbeat
+_plan_unavailable_reason = None  # the last today_blocks read, never inferred by UI
 _block_refusals: set = set()    # block ids already refused, so the log says it
                                 # once rather than every POLL for a whole day
 
@@ -769,10 +782,12 @@ def today_blocks(now: datetime.datetime | None = None) -> list:
     logged once, loudly, and the tower is left alone meanwhile.
     """
     now = now or datetime.datetime.now()
-    global _plan_absent_logged
+    global _plan_absent_logged, _plan_unavailable_reason
+    _plan_unavailable_reason = None
     try:
         blocks = _plan_today(now)
     except ProfileMissing as e:
+        _plan_unavailable_reason = str(e)
         if not _plan_absent_logged:
             _plan_absent_logged = True
             logger.event("combo_plan_unavailable",
@@ -795,8 +810,63 @@ def next_block(now: datetime.datetime | None = None) -> dict | None:
     blocks = today_blocks(now)
     for b in blocks:
         if _block_eligible(b, now, blocks):
+            _publish_schedule_decision(now, blocks, b)
             return b
+    _publish_schedule_decision(now, blocks, None)
     return None
+
+
+def _publish_schedule_decision(now: datetime.datetime, blocks: list, winner) -> None:
+    """Persist the actual decision; a window edge only proposes another check."""
+    from runtime.operations import environment_operation, Conflict
+    try:
+        ledger, operation_id = environment_operation()
+        if ledger is None:
+            return
+        operation = ledger.get(operation_id)
+        if operation['status'] != 'running':
+            return
+        local = now.astimezone() if now.tzinfo is None else now
+        midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        edges = []
+        for block in blocks:
+            if not _block_ok(block):
+                continue
+            for key in ('after_min', 'until_min'):
+                edge = midnight + datetime.timedelta(minutes=block[key])
+                # Convert each naive local edge separately: a DST transition
+                # can change its offset later today. A supplied aware clock
+                # already carries the scheduling timezone explicitly.
+                edge = edge.astimezone() if edge.tzinfo is None else edge
+                if edge > local:
+                    edges.append(edge)
+        edge = min(edges) if edges else None
+        identity = operation['context']
+        selected = None
+        if winner is not None:
+            preset = CONFIG.get('presets', {}).get(winner.get('preset')) or {}
+            selected = dict(id=winner['id'], label=preset.get('label') or winner['block'],
+                            kind=winner['kind'], preset=winner.get('preset'),
+                            legacy=bool(winner.get('legacy')))
+        snapshot = dict(
+            observed_at=local.timestamp(), local_time=local.isoformat(),
+            timezone=local.tzname(), utc_offset=local.strftime('%z'),
+            context={key: identity.get(key) for key in
+                     ('instance', 'account', 'serial', 'profile', 'profile_revision', 'device_key')},
+            winner=selected,
+            reason=('plan_unavailable' if _plan_unavailable_reason else
+                    'first_eligible_block' if winner is not None else
+                    'no_blocks_today' if not blocks else 'no_eligible_block'),
+            error=_plan_unavailable_reason,
+            next_clock_boundary=(dict(at=edge.timestamp(), local_time=edge.isoformat(),
+                                      kind='clock_proposal', guarantees_handoff=False)
+                                 if edge is not None else None),
+            handoff='natural_run_boundary',
+            availability='unavailable' if _plan_unavailable_reason else 'available')
+        progress = {**operation.get('progress', {}), 'schedule': snapshot}
+        ledger.transition(operation_id, operation['revision'], 'running', progress=progress)
+    except (Conflict, OSError, KeyError, sqlite3.Error) as exc:
+        logger.event('combo_schedule_progress_failed', error=str(exc))
 
 
 def _plan_mode() -> bool:
@@ -1123,35 +1193,72 @@ def _handoff(phase: str, instance: str):
     return setup
 
 
+def _boundary_progress(step: str, reason: str, elapsed: float) -> None:
+    """Publish a hold without turning diagnostic failure into a driver exit."""
+    from runtime.operations import environment_operation, Conflict
+    try:
+        ledger, operation_id = environment_operation()
+        if ledger is None:
+            return
+        operation = ledger.get(operation_id)
+        if operation['status'] != 'running':
+            return  # explicit cancellation owns its own progress and outcome
+        if step == 'scheduler_running':
+            if operation['step'] not in ('boundary_wait', 'boundary_overdue'):
+                return
+            recovery = None
+        else:
+            overdue = (f'Boundary wait overdue after {elapsed:.0f} seconds. '
+                       if step == 'boundary_overdue' else '')
+            recovery = (f'{overdue}Pending transition: {reason}. Automation continues '
+                        'until the current run ends naturally; Stop now stops automation immediately.')
+        ledger.transition(operation_id, operation['revision'], 'running',
+                          step=step, recovery_action=recovery)
+    except (Conflict, OSError, KeyError, sqlite3.Error) as exc:
+        # A cancellation can race this observation. Keep the live driver and
+        # boundary flag intact even if publishing progress is unavailable.
+        logger.event('combo_boundary_progress_failed', step=step, error=str(exc))
+
+
+def _wait_for_child(proc: subprocess.Popen, timeout: float = POLL) -> None:
+    """Wake on child exit while bounding the next schedule check."""
+    try:
+        proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        pass  # still alive; the caller re-evaluates the schedule or hold
+
+
 def _stop_and_wait(proc: subprocess.Popen, reason: str,
                    timeout: float = 28800.0) -> None:
     """Ask the runner to leave at its next run boundary, then wait it out.
 
-    The timeout must exceed the LONGEST possible run, not the average: a
-    switch request can land seconds after a run starts, and the runner is
-    only allowed to notice the flag at the run's death. Measured 2026-08-15:
-    overnight coin runs lived 2h31m-5h19m, so the old 2h value would have
-    terminated 4 of those 5 mid-run had a switch been pending - and killing
-    a live run is the exact thing this mode exists to avoid (user rule:
-    "tournament AFTER 19:00, you don't cancel a farm run"). 8h = longest
-    observed lifetime with headroom. If it still expires the process is
-    killed, because a runner that ignored the flag that long is stuck - the
-    wave_stalled alarm fires hours earlier for a genuinely wedged game.
+    `timeout` is an overdue reporting threshold, never permission to terminate
+    automation. Elapsed time proves neither a run boundary nor a stuck game.
+    Keep the child, its delegated lease and the boundary flag until confirmed
+    exit. Explicit Stop now remains the operation cancellation path.
     """
     runflag.request(reason)
-    deadline = time.monotonic() + timeout
-    while proc.poll() is None and time.monotonic() < deadline:
-        time.sleep(POLL)
-    if proc.poll() is None:
-        logger.event("combo_stop_timeout", reason=reason)
-        proc.terminate()
-        try:
-            proc.wait(timeout=30)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            proc.wait(timeout=30)
+    started = time.monotonic()
+    overdue = False
+    fields = dict(reason=reason, overdue_after_sec=timeout,
+                  child_pid=proc.pid, adopted=isinstance(proc, _Adopted))
+    logger.event('combo_boundary_wait', **fields)
+    _boundary_progress('boundary_wait', reason, 0)
+    while proc.poll() is None:
+        elapsed = time.monotonic() - started
+        if not overdue and elapsed >= timeout:
+            overdue = True
+            logger.event('combo_boundary_overdue', elapsed_sec=elapsed, **fields)
+            _boundary_progress('boundary_overdue', reason, elapsed)
+        # Before the threshold, wake in time to report it. Thereafter wait
+        # normally: an overdue hold must not become a zero-timeout busy loop.
+        wait = POLL if overdue else min(POLL, max(0.001, timeout - elapsed))
+        _wait_for_child(proc, wait)
     _reconcile_child(proc)
     runflag.clear()
+    logger.event('combo_boundary_exited', elapsed_sec=time.monotonic() - started,
+                 overdue=overdue, code=proc.returncode, **fields)
+    _boundary_progress('scheduler_running', reason, time.monotonic() - started)
 
 
 def _close_shards(base: int) -> None:
@@ -1231,7 +1338,7 @@ def run(instance: str = "main") -> None:
     One loop for both eras: with no plan the blocks are _legacy_blocks(), which
     is due() restated, so every decision, key and log line below is the one the
     constant era produced. With a plan they are the compiled ones. Nothing else
-    about the loop moved - the runflag contract, the 8h boundary wait, the
+    about the loop moved - the runflag contract, the observable boundary hold, the
     unknown-screen hold and the adopt-before-handoff order are all as they were.
     """
     cur: dict | None = None                 # the block we are running
@@ -1297,6 +1404,15 @@ def run(instance: str = "main") -> None:
                     _stop_and_wait(proc, f"combo -> {want_id}")
                     _close_block(cur, base)
                     proc, cur = None, None
+                    # A long run can cross several schedule windows. Choose
+                    # from the current clock after its boundary, rather than
+                    # launching the block that was due hours earlier.
+                    now = datetime.datetime.now()
+                    blocks = today_blocks(now)
+                    candidates = blocks + (foreign_legacy_blocks()
+                                           if _plan_mode() else [])
+                    want = next_block(now)
+                    want_id = want['id'] if want else None
                 runflag.clear()
                 if want is None:
                     # NOTHING IS SCHEDULED. Every block is done, outside its
@@ -1325,7 +1441,7 @@ def run(instance: str = "main") -> None:
                     base = _block_progress(want)
                     logger.event("combo_adopted", phase=want["block"],
                                  block=want["id"])
-                    time.sleep(POLL)
+                    _wait_for_child(proc)
                     continue
                 # AN ORPHAN LIVE RUN - a battle with NO runner process (the
                 # game resumed its round after an emulator restart, or a
@@ -1337,7 +1453,7 @@ def run(instance: str = "main") -> None:
                 # block starts at that boundary via the ordinary
                 # _stop_and_wait path on the next poll.
                 orphan = _orphan_battle()
-                if orphan:
+                if orphan is not None:
                     adopt_b = (want if want["kind"] == "coin" else
                                next((b for b in blocks
                                      if isinstance(b, dict)
@@ -1355,7 +1471,7 @@ def run(instance: str = "main") -> None:
                     cur, base = adopt_b, _block_progress(adopt_b)
                     logger.event("combo_adopted_orphan_run", wave=orphan,
                                  block=adopt_b["id"], wanted=want["id"])
-                    time.sleep(POLL)
+                    _wait_for_child(proc)
                     continue
                 if want["kind"] == "tournament":
                     # LAST LOOK BEFORE THE GEMS. The eligibility check ran a
@@ -1394,7 +1510,10 @@ def run(instance: str = "main") -> None:
                 logger.event("combo_phase", phase=want["block"],
                              block=want["id"])
 
-            time.sleep(POLL)
+            if proc is None:
+                time.sleep(POLL)
+            else:
+                _wait_for_child(proc)
     except KeyboardInterrupt:
         logger.event("combo_stop", phase=cur["block"] if cur else None)
         if proc is not None:
