@@ -51,6 +51,42 @@ def test_small_ordinary_enemies_are_below_the_fleet_size():
     assert fleet_scan.scan(f, FIELD)["saboteur"] == 0
 
 
+@pytest.mark.parametrize("kind", sorted(HUE))
+@pytest.mark.parametrize("radius", [18, 22])
+def test_thin_ordinary_pentagons_do_not_count_the_dark_centre(kind, radius):
+    frame = _frame()
+    _poly(frame, (400, 900), radius, HUE[kind], 5, thick=2)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    outline = ((hsv[..., 1] > fleet_scan.MIN_SAT)
+               & (hsv[..., 2] > fleet_scan.MIN_VAL)).astype(np.uint8)
+    contours, _ = cv2.findContours(outline, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    assert np.count_nonzero(outline) < fleet_scan.MIN_AREA
+    assert cv2.contourArea(contours[0]) > fleet_scan.MIN_AREA
+    assert fleet_scan.scan(frame, FIELD) == {k: 0 for k in HUE}
+
+
+def test_ordinary_pentagons_do_not_pool_their_outline_pixels():
+    frame = _frame()
+    for centre in ((300, 700), (600, 900), (400, 1200)):
+        _poly(frame, centre, 22, HUE["saboteur"], 5, thick=2)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    assert np.count_nonzero((hsv[..., 1] > fleet_scan.MIN_SAT)
+                           & (hsv[..., 2] > fleet_scan.MIN_VAL)) > fleet_scan.MIN_AREA
+    assert fleet_scan.scan(frame, FIELD)["saboteur"] == 0
+
+
+@pytest.mark.parametrize("kind", sorted(HUE))
+def test_fleet_size_threshold_is_the_colored_outline_pixel_count(kind):
+    frame = _frame()
+    _poly(frame, (400, 900), 45, HUE[kind], 5, thick=5)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    colored_pixels = np.count_nonzero((hsv[..., 1] > fleet_scan.MIN_SAT)
+                                     & (hsv[..., 2] > fleet_scan.MIN_VAL))
+    assert colored_pixels >= fleet_scan.MIN_AREA
+    assert fleet_scan.scan(frame, FIELD, min_area=colored_pixels)[kind] == 1
+    assert fleet_scan.scan(frame, FIELD, min_area=colored_pixels + 1)[kind] == 0
+
+
 def test_side_menu_column_is_excluded():
     f = _frame()
     _poly(f, (950, 600), 45, HUE["commander"], 5)
