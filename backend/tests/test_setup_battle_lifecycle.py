@@ -268,6 +268,57 @@ def test_tier_restoration_never_runs_after_abort(setup_flow, monkeypatch):
     assert stored(flow)['final_screen']['verified'] is False
 
 
+def test_unobserved_intro_sprint_is_an_advisory_gap_with_no_input(setup_flow, monkeypatch):
+    flow = setup_flow
+    fc._start_setup_run(flow, 'start sprint absence test')
+    flow.s.inputs.clear()
+    monkeypatch.setattr(fc, '_have_templates', lambda rels: set())
+
+    fc.capture_intro_sprint(flow)
+
+    assert flow.s.inputs == []
+    assert 10 <= flow.s.clock <= 10.5
+    assert len(flow.s.skipped) == 1
+    assert flow.s.skipped[0]['target'] == 'home/intro_sprint_dialog.png'
+    assert flow.s.skipped[0]['optional'] is True
+    assert 'not observed' in flow.s.skipped[0]['reason']
+
+
+@pytest.mark.parametrize('reached, observed', [(None, 14), (1, 14), (14, 1), (14, None)])
+def test_tier_restoration_requires_selection_and_fresh_readback(setup_flow, monkeypatch, reached, observed):
+    flow = setup_flow
+    flow.cal.player['max_tier_verified_by'] = 'setup'
+    monkeypatch.setattr(fc, '_hud_digit_pass', lambda f: None)
+    tiers = iter([14, 1, observed])
+    monkeypatch.setattr(fc, 'read_tier', lambda f: next(tiers))
+    selections = []
+    monkeypatch.setattr(fc, 'set_tier', lambda f, target: selections.append(target) or reached)
+
+    with pytest.raises(RuntimeError, match='restore.*difficulty'):
+        fc.capture_battle_flow(flow)
+
+    assert selections == [14]
+    assert flow.s.inputs == []
+    assert stored(flow)['final_screen']['verified'] is False
+    rows = [json.loads(line) for line in logger.run_file().read_text().splitlines()]
+    assert not any(row['kind'] == 'flow_tier_restored' for row in rows)
+
+
+def test_tier_restoration_records_success_only_after_fresh_home_readback(setup_flow, monkeypatch):
+    flow = setup_flow
+    flow.cal.player['max_tier_verified_by'] = 'setup'
+    monkeypatch.setattr(fc, '_hud_digit_pass', lambda f: None)
+    tiers = iter([14, 1, 14])
+    monkeypatch.setattr(fc, 'read_tier', lambda f: next(tiers))
+    monkeypatch.setattr(fc, 'set_tier', lambda f, target: target)
+
+    fc.capture_battle_flow(flow)
+
+    assert stored(flow)['final_screen']['verified'] is True
+    rows = [json.loads(line) for line in logger.run_file().read_text().splitlines()]
+    assert [row['tier'] for row in rows if row['kind'] == 'flow_tier_restored'] == [14]
+
+
 def test_lottery_exit_failure_never_logs_done(setup_flow, monkeypatch):
     flow = setup_flow
     remaining = [('uw/example.png', 'Example', (10, 10))]

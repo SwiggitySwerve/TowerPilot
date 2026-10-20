@@ -402,7 +402,9 @@ def capture_intro_sprint(flow: _Flow) -> None:
     icon_crop, centre = _sprint_glyph(frame)
     icon_frame = frame                       # the glyph is proven on THIS frame
     if centre is None:
-        flow.skip("home/intro_sprint_dialog.png", "no intro sprint this run")
+        _skip_missing(flow, "home/intro_sprint_dialog.png",
+                      "Intro Sprint was not observed within 10 seconds of this run; "
+                      "availability is unverified and no cards were changed", optional=True)
         return
     flow.progress("Intro sprint: opening its dialog")
     flow.tap(centre[0], centre[1], "open intro sprint dialog")
@@ -1611,13 +1613,34 @@ def verify_saved_upgrade_labels(flow, wanted=None):
             rel = f'stats/{name}.png'
             logger.event('setup_upgrade_template_verification', rel=rel,
                          image_sha256=hashes[name], **evidence)
-            if evidence['status'] == 'verified':
+            previous = next((entry for entry in flow.cal.entries if entry.get('rel') == rel), {})
+            if evidence['status'] == 'verified' and previous.get('status') != 'stale':
                 flow.withdraw_skips(rel)
             else:
-                invalid[rel] = evidence
-                flow.skip(rel, f"Saved upgrade label {evidence['status']}: expected {name}, read {evidence['text']!r}; existing file kept")
+                reason = (f"Saved upgrade label {evidence['status']}: expected {name}, "
+                          f"read {evidence['text']!r}; existing file kept")
+                if evidence['status'] == 'verified':
+                    # Correct OCR is not fresh recognition proof for an image
+                    # already rejected. Only a verified cut can restore that.
+                    reason = (f"Saved upgrade label reads {evidence['text']!r}, but recognition "
+                              "is still stale; verify its appearance on a fresh frame")
+                invalid[rel] = dict(evidence, status=(evidence['status'] if evidence['status'] != 'verified'
+                                                     else 'recognition_unverified'))
+                entry = dict(previous, rel=rel, phase=previous.get('phase', 'bootstrap'),
+                             status='stale', verified=False, reason=reason, t=time.time(),
+                             image_sha256=hashes[name],
+                             semantic_verification=dict(evidence, image_sha256=hashes[name]))
+                flow.cal.entries = [e for e in flow.cal.entries if e.get('rel') != rel] + [entry]
+                flow.skip(rel, reason)
+        if invalid:
+            # Persist the rejection where readiness and the repair UI read it;
+            # an event/skip alone leaves the previous verified report in force.
+            if flow.cal.p.get('report'):
+                flow.cal.save_report()
+            flow.progress('Saved upgrade labels need attention: ' + ', '.join(sorted(invalid)))
         known = {name: image for name,image in existing.items()
-                 if verification[name]['status'] == 'verified'}
+                 if verification[name]['status'] == 'verified'
+                 and f'stats/{name}.png' not in invalid}
         attempt.finish('incomplete' if invalid else 'verified_existing' if existing else 'none_present',
                        checked=len(verification), invalid=invalid,
                        missing=sorted(f'stats/{name}.png' for name in wanted - existing.keys()))
@@ -1822,7 +1845,11 @@ def capture_battle_flow(flow: _Flow, observe_minutes: float | None = None,
     _safe_home(flow)
     restored_frame = flow.grab()
     if read_tier(restored_frame) != original_tier:
-        set_tier(flow, original_tier)
+        if set_tier(flow, original_tier) != original_tier:
+            raise RuntimeError('Could not restore the original difficulty; no further input sent')
+        restored_frame = flow.grab()
+        if not _clean_home(flow, restored_frame)[0] or read_tier(restored_frame) != original_tier:
+            raise RuntimeError('Could not verify restored difficulty on fresh Home; no further input sent')
         logger.event("flow_tier_restored", tier=original_tier)
     _safe_home(flow)
 

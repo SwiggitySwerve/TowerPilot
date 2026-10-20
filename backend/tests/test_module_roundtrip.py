@@ -209,3 +209,67 @@ def test_slot_choice_uses_button_crops_when_full_screen_ocr_omits_labels(monkeyp
     monkeypatch.setattr(act,'tap',lambda *args,**kwargs:taps.append(args))
     ManifestDriver(SimpleNamespace(p={}))._choose_role('primary')
     assert taps[0][:2] == (400,1430)
+
+
+@pytest.mark.parametrize('settles', [True, False])
+def test_roundtrip_inventory_waits_for_bound_artwork_before_saving(tmp_path, monkeypatch, settles):
+    import cv2
+    import numpy as np
+    from types import SimpleNamespace
+    from device import capture, act
+    from interactions import inventory
+    from player import asset_verify
+    from vision import pills, textocr
+
+    frames = [np.full((2560, 1080, 3), n, np.uint8) for n in (1, 2, 3, 4)]
+    icon = np.random.default_rng(32).integers(0, 256, (150, 150, 3), dtype=np.uint8)
+    driver = rt.ManifestDriver(SimpleNamespace(p={'state': str(tmp_path / 'state.json')}))
+    closed, published = [], []
+    monkeypatch.setattr(driver, '_close', lambda: closed.append(True))
+    monkeypatch.setattr(driver, 'inventory_tab', lambda: None)
+    monkeypatch.setattr(driver, '_panel', lambda point: frames[0])
+    monkeypatch.setattr(driver, '_publish_inventory', lambda value: published.append(value))
+    monkeypatch.setattr(inventory, 'park_top', lambda: None)
+    monkeypatch.setattr(inventory, 'settle', lambda: frames[0])
+    monkeypatch.setattr(inventory, 'COL_X', [126])
+    monkeypatch.setattr(inventory, '_tile_icon', lambda *args: icon)
+    monkeypatch.setattr(inventory, 'next_page', lambda: 0)
+    monkeypatch.setattr(inventory, '_find_close', lambda frame: (927, 878))
+    monkeypatch.setattr(pills, 'grid_rows', lambda frame: [1200])
+    monkeypatch.setattr('time.sleep', lambda delay: None)
+    remaining = iter(frames[1:])
+    monkeypatch.setattr(capture, 'grab', lambda: next(remaining) if settles else frames[0])
+    monkeypatch.setattr(act, 'tap', lambda *args, **kwargs: pytest.fail('unexpected input'))
+
+    def locate(image, frame, search):
+        marker = int(frame[0, 0, 0])
+        if marker == 1:
+            return None
+        return {'rect': [150, 900 if marker == 2 else 920, 200, 200], 'scale': 4/3}
+
+    monkeypatch.setattr(asset_verify, 'locate', locate)
+
+    def read_lines(image, scale):
+        if image.shape[1] == 880:  # full identity and effect list
+            return [(0, 300, 'Epic'), (50, 300, 'Diamond Nanowall'),
+                    (200, 300, 'Effects'), (250, 250, '+1% Defense'), (253, 87, 'Rare')]
+        return [(0, 0, 'Epic'), (35, 0, 'Diamond Nanowall')]
+
+    monkeypatch.setattr(textocr, 'read_lines', read_lines)
+    manifest = {'version': 2, 'folder': str(tmp_path), 'slots': []}
+    if not settles:
+        with pytest.raises(RuntimeError, match='did not settle'):
+            driver.scan_inventory(manifest)
+        assert not manifest['inventory_complete'] and manifest['inventory'] == []
+        assert published == []
+        assert not (tmp_path / 'inventory' / '0').exists()
+    else:
+        driver.scan_inventory(manifest)
+        assert manifest['inventory_complete'] and len(published) == 1
+        [record] = manifest['inventory']
+        assert record['identity'] == {'slug': 'diamond_nanowall', 'rarity': 'epic',
+                                      'level': None, 'effects': [['rare', 'defense']]}
+        assert np.array_equal(cv2.imread(record['icon']), icon)
+        assert np.array_equal(cv2.imread(record['panel']), frames[-1])
+        assert rt.pending(driver.paths)['inventory'] == manifest['inventory']
+    assert len(closed) == 2  # close the detail panel even when binding fails

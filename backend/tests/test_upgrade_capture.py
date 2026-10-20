@@ -80,7 +80,7 @@ def test_cold_capture_persists_verified_templates_and_repeat_semantically_verifi
     assert [event['attempt_id'] for event in starts] == [event['attempt_id'] for event in ends]
 
 
-def test_saved_wrong_label_is_incomplete_and_kept_until_independent_semantic_proof(tmp_path, monkeypatch):
+def test_saved_wrong_label_stays_stale_until_fresh_visual_verification(tmp_path, monkeypatch):
     flow, panel, grabs, taps, _ = _setup(tmp_path, monkeypatch, labels=('Bounce Shot Range',))
     path = settings.template_path('stats/bounce_shot_range.png')
     path.parent.mkdir(parents=True)
@@ -96,7 +96,76 @@ def test_saved_wrong_label_is_incomplete_and_kept_until_independent_semantic_pro
     assert end['invalid']['stats/bounce_shot_range.png']['observed_slug'] == 'bounce_shot_chance'
     monkeypatch.setattr(textocr, 'read_texts', lambda crops, **kwargs: ['Bounce Shot Range'])
     fc.capture_upgrade_labels(flow)
-    assert not flow.s.skipped
+    # A changed OCR answer alone is no proof that the same rejected pixels
+    # now recognize the right control. Keep the rejection until recaptured.
+    assert flow.s.skipped[0]['target'] == 'stats/bounce_shot_range.png'
+    entry = json.loads(open(flow.cal.p['report'], encoding='utf-8').read())['entries'][0]
+    assert entry['status'] == 'stale' and not entry['verified']
+    assert entry['semantic_verification']['status'] == 'verified'
+    assert path.read_bytes() == before and not grabs and not taps
+
+
+def test_rejected_saved_label_cannot_bypass_fresh_row_ocr(tmp_path, monkeypatch):
+    flow, _, grabs, taps, _ = _setup(tmp_path, monkeypatch, labels=('Bounce Shot Range',))
+    chance_panel = _panel(('Bounce Shot Chance',))
+    chance_crop = bc.capture_stats(chance_panel, lambda _: 'Bounce Shot Chance',
+                                   {'bounce_shot_chance'})['bounce_shot_chance']
+    path = settings.template_path('stats/bounce_shot_range.png')
+    path.parent.mkdir(parents=True)
+    assert cv2.imwrite(str(path), chance_crop)
+    before = path.read_bytes()
+    monkeypatch.setattr(textocr, 'read_texts', lambda crops, **kw: ['Bounce Shot Chance'])
+    fc.verify_saved_upgrade_labels(flow)
+    monkeypatch.setattr(textocr, 'read_texts', lambda crops, **kw: ['Bounce Shot Range'])
+
+    known, invalid = fc.verify_saved_upgrade_labels(flow)
+    calls = []
+    def read_fresh(crops):
+        calls.append(len(crops))
+        return ['Bounce Shot Chance']
+    cuts = bc.capture_stats(chance_panel, None, {'bounce_shot_range', 'bounce_shot_chance'},
+                            read_many=read_fresh, known=known)
+
+    assert 'stats/bounce_shot_range.png' in invalid
+    assert 'bounce_shot_range' not in known
+    assert calls == [1] and set(cuts) == {'bounce_shot_chance'}
+    assert path.read_bytes() == before and not grabs and not taps
+
+
+def test_semantic_rejection_invalidates_saved_recognition_without_replacing_pixels(tmp_path, monkeypatch):
+    import hashlib
+    from player import readiness, scan_plan
+
+    rel = 'stats/bounce_shot_range.png'
+    flow, panel, grabs, taps, _ = _setup(tmp_path, monkeypatch, labels=('Bounce Shot Range',))
+    path = settings.template_path(rel)
+    path.parent.mkdir(parents=True)
+    assert cv2.imwrite(str(path), panel)
+    before = path.read_bytes()
+    digest = hashlib.sha256(before).hexdigest()
+    flow.cal.entries = [{'rel': rel, 'phase': 'bootstrap', 'status': 'exists',
+                         'verified': True, 'image_sha256': digest, 'rect': [1, 2, 3, 4]}]
+    monkeypatch.setattr(textocr, 'read_texts', lambda crops, **kw: ['Bounce Shot Chance'])
+    # Use the ordinary account report location consumed by the dashboard/readiness.
+    report_path = accounts.calibration_dir(tmp_path, settings.CONFIG) / 'calibrate_report.json'
+    flow.cal.p['report'] = str(report_path)
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+
+    fc.verify_saved_upgrade_labels(flow)
+
+    entry = json.loads(report_path.read_text())['entries'][0]
+    assert entry['status'] == 'stale' and entry['verified'] is False
+    assert entry['rect'] == [1, 2, 3, 4]
+    assert entry['image_sha256'] == digest
+    assert entry['semantic_verification']['observed_slug'] == 'bounce_shot_chance'
+    assert 'Bounce Shot Chance' in entry['reason']
+    plan = scan_plan.plan(tmp_path, settings.CONFIG)
+    row = next(r for step in plan['steps'] for r in step['targets'] if r['rel'] == rel)
+    assert 'Needs attention' in row['status'] and 'Bounce Shot Chance' in row['status']
+    missing = readiness.check(tmp_path, settings.CONFIG,
+                              {'shopping': [{'stats': ['bounce_shot_range']}]})['missing']
+    assert any(r['alternatives'] == [rel] for r in missing)
+    assert path.read_bytes() == before and not grabs and not taps
 
 
 def test_cold_capture_requires_independent_follow_frame(tmp_path, monkeypatch):
