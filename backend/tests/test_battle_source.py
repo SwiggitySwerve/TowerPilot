@@ -147,12 +147,14 @@ def test_worker_checks_profile_revision_only_without_accepted_envelope(tmp_path,
     from device import adbclient
     profile = tmp_path / 'local.yaml'
     profile.write_text('new editable profile', encoding='utf-8')
-    op = {'id': 'operation-1', 'revision': 1, 'status': 'accepted',
+    op = {'id': 'operation-1', 'kind': 'run', 'revision': 1, 'status': 'accepted',
           'request': {'battle_envelope': {'accepted': True}} if frozen else {},
           'context': {'instance': 'main', 'serial': 'fake:1', 'profile_path': str(profile),
                       'profile_revision': 'old', 'adb_host': '127.0.0.2', 'adb_port': 5040}}
     transitions, bindings, calls = [], [], []
-    ledger = SimpleNamespace(get=lambda _: copy.deepcopy(op), transition=lambda *args, **kwargs: transitions.append((args, kwargs)))
+    ledger = SimpleNamespace(path=str(tmp_path / 'logs' / 'operations.sqlite3'),
+                             get=lambda _: copy.deepcopy(op),
+                             transition=lambda *args, **kwargs: transitions.append((args, kwargs)))
     monkeypatch.setattr(operation_worker, 'environment_operation', lambda: (ledger, op['id']))
     # Production launches always pass this alongside the accepted context;
     # bootstrap diagnostics use its parent as their existing local log root.
