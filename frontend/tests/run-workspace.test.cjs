@@ -172,6 +172,62 @@ test('history presents observed duration, last wave and capture failures without
   const empty=UI.historySummaryHTML({});assert.match(empty,/Observed duration <strong>Unknown/);assert.doesNotMatch(empty,/0m 0s/);
 });
 
+test('setup evidence distinguishes manual verification, degraded partial continuation and unknown reports',()=>{
+  const verified=UI.setupEvidenceHTML({state:'verified',loadout:'Farm',detail:'manual_equipment',continued_with_partial:false,modules:[]});
+  assert.match(verified,/Setup <strong class="rw-setup-verified">Verified<\/strong>/);
+  assert.match(verified,/Loadout: Farm/);assert.match(verified,/Manual equipment/);
+  assert.doesNotMatch(verified,/Continued with partial setup/);
+  const degraded=UI.setupEvidenceHTML({state:'degraded',detail:'manual_equipment',reason:'assist_not_observed',continued_with_partial:true,modules:[{module:'core',role:'assist',state:'unknown',detail:'slot_not_observed',reason:'empty_slot'}]});
+  assert.match(degraded,/rw-setup-degraded">Degraded/);assert.match(degraded,/assist_not_observed/);
+  assert.match(degraded,/Continued with partial setup/);assert.match(degraded,/Module evidence \(1\)/);
+  assert.match(degraded,/<strong>core<\/strong> \(Assist\) · Unknown · Slot not observed · empty_slot/);
+  const slots=UI.setupEvidenceHTML({state:'degraded',detail:'unexpected_setup_result',modules:[
+    {module:'cannon',role:'category',state:'verified',detail:'equipped_header'},
+    {module:'core',role:'primary',state:'degraded',detail:'not_in_expected_slot'},
+    {module:'generator',role:'assist',state:'unknown',detail:'not_verified'}]});
+  assert.match(slots,/Unexpected setup result/);
+  assert.match(slots,/\(Category slot\) · Verified · Equipped slot confirmed/);
+  assert.match(slots,/\(Primary\) · Degraded · Not in expected slot/);
+  assert.match(slots,/\(Assist\) · Unknown · Not verified/);
+  assert.doesNotMatch(slots,/unexpected_setup_result|equipped_header|not_in_expected_slot|not_verified/);
+  for(const missing of [undefined,null,{}, {state:'unsupported'}]){
+    const html=UI.setupEvidenceHTML(missing);
+    assert.match(html,/rw-setup-unknown">Unknown/);assert.match(html,/No setup evidence recorded/);
+    assert.doesNotMatch(html,/rw-setup-verified/);
+  }
+});
+
+test('global presets describe selection-only evidence and adopted or as-is setup remains explicit',()=>{
+  const html=UI.setupEvidenceHTML({state:'verified',detail:'global_preset_selection',loadout:'Selected preset'});
+  assert.match(html,/Verified/);assert.match(html,/Global preset selection only; contents not inspected/);
+  assert.doesNotMatch(html,/equipment verified|Manual equipment/i);
+  for(const [detail,wording] of [['as_is','Equipment left as is; not verified'],['adopted','Adopted battle; setup not verified'],['setup_refused','Setup refused']]){
+    const report=UI.setupEvidenceHTML({state:'unknown',detail,reason:'no_setup_observation'});
+    assert.match(report,/rw-setup-unknown">Unknown/);assert.ok(report.includes(wording));assert.match(report,/no_setup_observation/);
+  }
+});
+
+test('setup evidence escapes backend loadout, reason and module text',()=>{
+  const hostile='<img src=x onerror="alert(1)"> & \'name\'';
+  const html=UI.setupEvidenceHTML({state:hostile,loadout:hostile,detail:hostile,reason:hostile,modules:[{module:hostile,role:hostile,state:hostile,detail:hostile,reason:hostile}]});
+  assert.doesNotMatch(html,/<img|onerror="alert/);
+  assert.match(html,/&lt;img src=x onerror=&quot;alert\(1\)&quot;&gt; &amp; &#39;name&#39;/);
+  assert.match(html,/rw-setup-unknown">Unknown/);
+});
+
+test('current battles and history share setup evidence while saved controls have no outcome',()=>{
+  const setup={state:'degraded',detail:'manual_equipment',reason:'assist_unverified',continued_with_partial:true};
+  const current=UI.renderHTML(UI.makeModel('live',battle({runtime:{setup}})));
+  const history=UI.historySummaryHTML({runtime:{setup}});
+  for(const html of [current,history]){
+    assert.ok(html.includes(UI.setupEvidenceHTML(setup)));
+    assert.match(html,/Continued with partial setup/);
+  }
+  assert.match(current,/data-setup aria-label="Setup evidence"/);
+  assert.match(UI.historySummaryHTML({}),/rw-setup-unknown">Unknown/);
+  assert.doesNotMatch(UI.renderHTML(UI.makeModel('saved',{blueprint:'farm',settings:base,runtime:{setup}})),/rw-setup|Setup evidence/);
+});
+
 test('snapshot notices appear escaped immediately after the toolbar',()=>{
   const model=UI.makeModel('saved',{blueprint:'farm',settings:base,notice:'Driver <legacy> & unsupported'});
   assert.match(UI.renderHTML(model),/<span role="status" class="rw-status"><\/span><\/div><p class="muted rw-plan-note">Driver &lt;legacy&gt; &amp; unsupported<\/p>/);
@@ -188,6 +244,42 @@ function host(){
 }
 const wait=()=>new Promise(resolve=>setTimeout(resolve,480));
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
+
+test('polling refreshes setup evidence without replacing focused or invalid controls',async()=>{
+  const h=host(),setupRegion={dataset:{},renderCount:0,set innerHTML(value){this.markup=value;this.renderCount++;},get innerHTML(){return this.markup;}};
+  const query=h.querySelector.bind(h);
+  h.querySelector=selector=>selector==='[data-setup]'?setupRegion:query(selector);
+  let snapshot=battle({runtime:{setup:{state:'unknown',detail:'adopted'}}});
+  const workspace=UI.create({request:async()=>({battle:snapshot})});
+  try {
+    workspace.attach({live:h});await settle();
+    assert.match(setupRegion.innerHTML,/Adopted battle; setup not verified/);
+    const renders=h.renderCount;
+    h.ownerDocument.activeElement=h.input;h.input.value='';h.input.valueAsNumber=NaN;h.oninput({target:h.input});
+    snapshot=battle({runtime:{setup:{state:'degraded',detail:'manual_equipment',reason:'assist_not_observed',continued_with_partial:true}}});
+    await workspace.poll();
+    assert.match(setupRegion.innerHTML,/Degraded/);assert.match(setupRegion.innerHTML,/assist_not_observed/);
+    assert.match(setupRegion.innerHTML,/Continued with partial setup/);
+    assert.equal(h.renderCount,renders);assert.equal(h.input.value,'');assert.equal(h.ownerDocument.activeElement,h.input);
+    assert.equal(h.status.textContent,'Enter a valid value');
+    const setupRenders=setupRegion.renderCount;await workspace.poll();
+    assert.equal(setupRegion.renderCount,setupRenders,'unchanged evidence preserves module disclosure state');
+  } finally {workspace.destroy();}
+});
+
+test('history detail displays legacy unknown and recorded setup outcomes',async()=>{
+  const target={innerHTML:'',textContent:''};
+  const historyHost={querySelector:selector=>selector==='.rw-history-detail'?target:null};
+  let snapshot=battle({status:'completed'});
+  const workspace=UI.create({request:async()=>({battle:snapshot,events:[]})});
+  try {
+    workspace.attach({history:historyHost});await workspace.detail('battle-1');
+    assert.match(target.innerHTML,/rw-setup-unknown">Unknown/);
+    snapshot=battle({status:'completed',runtime:{setup:{state:'verified',detail:'global_preset_selection'}}});
+    await workspace.detail('battle-1');
+    assert.match(target.innerHTML,/Global preset selection only; contents not inspected/);
+  } finally {workspace.destroy();}
+});
 test('duration hints update immediately while typing, hide for invalid or short values, and follow refreshed seconds',async()=>{
   const h=host(),duration={textContent:'',hidden:true},pending={textContent:''};
   const originalQuery=h.querySelector.bind(h);

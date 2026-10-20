@@ -124,7 +124,7 @@ def test_shard_runner_is_spawned_in_adopt_mode_after_a_loadout_handoff(monkeypat
          "id": "test#0", "block": "shards"}
     monkeypatch.setattr(combo, "_block_progress", lambda b: 0)
     spawned = []
-    monkeypatch.setattr(combo, "_spawn", lambda argv: spawned.append(argv) or "proc")
+    monkeypatch.setattr(combo, "_spawn", lambda argv, **kwargs: spawned.append(argv) or "proc")
     combo._block_runner(b, "acct2")
     assert spawned[0][-1] == "--no-setup"
     assert spawned[0][:-1] == combo._block_argv(b, "acct2")

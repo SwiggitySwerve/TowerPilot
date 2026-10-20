@@ -2237,10 +2237,14 @@ def _prepare_coin_start():
     from flows import shard
     try:
         if body.get("loadout"):
-            loadout.apply(body["loadout"])
+            result = loadout.apply(body["loadout"])
+            if _battle_session is not None:
+                _battle_session.set_setup(result['setup'])
         shard.set_tier(body["tier"])
         shard.enter_run(body)
     except (tourney.Abort, act.TapRefused) as e:
+        if _battle_session is not None:
+            _battle_session.set_setup(loadout.setup_failure(body.get('loadout'), e))
         # Entry refused (a dissonant dialog image still missing, a control
         # not found): HOLD on Home and say so - the observe loop adopts
         # whatever run a person starts. Never a blind second attempt.
@@ -2334,7 +2338,10 @@ def main():
                          wave=wave_reader.read_wave(f0))
         else:
             try:
-                tourney.setup()
+                if _battle_session is None:
+                    tourney.setup()
+                else:
+                    tourney.setup(on_setup=_battle_session.set_setup)
             except (tourney.Abort, act.TapRefused) as e:
                 logger.event("tourney_setup_failed", error=str(e))
                 print(f"tournament setup aborted: {e}")

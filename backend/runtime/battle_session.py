@@ -97,7 +97,19 @@ class BattleSession:
         self._gap_started_at = None
         self._observation_gaps = []
         self._tag()
+        from interactions.loadout import unknown_setup
+        self.set_setup(unknown_setup(
+            self.base_preset.get('loadout'),
+            detail='adopted' if origin in ('adopted', 'partial_adoption') else 'as_is',
+            reason='Setup has not been verified for this battle'))
         return self.battle
+
+    def set_setup(self, report):
+        """Keep observed setup evidence in durable runtime history, outside source."""
+        self.store.validate_driver(self.battle['id'], self.generation, self.operation_id)
+        self.battle = self.store.update_status(self.battle['id'], self.generation,
+                                               {'setup': copy.deepcopy(report)})
+        return copy.deepcopy(self.battle['runtime']['setup'])
 
     def _tag(self):
         from runtime import logger

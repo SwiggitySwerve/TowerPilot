@@ -707,7 +707,9 @@ def test_a_plan_handoff_uses_the_blueprints_own_loadout_and_tier(combo, plan,
                       ("shard", "start_battle"), ("tourney", "ensure_home")):
         pass
     lo = types.ModuleType("loadout")
-    lo.apply = lambda n: calls.append(("loadout", n))
+    from interactions.loadout import unknown_setup
+    lo.unknown_setup = unknown_setup
+    lo.apply = lambda n: calls.append(("loadout", n)) or {'setup': unknown_setup(n)}
     sh = types.ModuleType("shard")
     sh.set_tier = lambda t: calls.append(("tier", t))
     # enter_run, not start_battle: the handoff hands the whole compiled body

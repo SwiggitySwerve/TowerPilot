@@ -958,64 +958,82 @@ def verify_slot(name: str, slot: str, frame=None):
     ruling: verify the slot after EVERY equip, because modules displace each
     other - so inference is never the last word, the header is.
     """
+    from interactions import module_evidence
+    frame = frame if frame is not None else capture.grab()
+    try:
+        module_evidence.require_screen(frame)
+    except Abort:
+        return None
+    if module_evidence.ui_version(frame) == 'v29':
+        return module_evidence.verify_v29(name, frame)
     cat = MODULE_CATEGORY.get(name)
     if cat is None:
         return None
     try:
-        tpl = detect._tpl(f"modules/{name}.png")
+        equipped = detect._tpl(f'modules/equipped/{name}.png')
     except detect.TemplateMissing:
-        return None
-    frame = frame if frame is not None else capture.grab()
-    cx, cy, half = HEADER_SLOTS[(cat, slot)]
-    crop = frame[max(0, cy - half):cy + half, max(0, cx - half):cx + half]
-    if crop.size == 0:
+        equipped = None
+    if equipped is not None:
+        if float(cv2.cvtColor(equipped, cv2.COLOR_BGR2GRAY).std()) < 10:
+            return None
+        hits = []
+        for key, (x, y, half) in HEADER_SLOTS.items():
+            crop = frame[max(0, y-half):y+half, max(0, x-half):x+half]
+            if equipped.shape[0] > crop.shape[0] or equipped.shape[1] > crop.shape[1]:
+                continue
+            if float(cv2.matchTemplate(crop, equipped, cv2.TM_CCOEFF_NORMED).max()) >= .88:
+                hits.append(key)
+        if len(hits) > 1:
+            return None
+        return hits == [(cat, slot)]
+    try:
+        tpl = detect._tpl(f'modules/{name}.png')
+    except detect.TemplateMissing:
         return None
     h, w = tpl.shape[:2]
     t = tpl[int(h * 0.25):int(h * 0.65), int(w * 0.25):int(w * 0.75)]
-    best = 0.0
-    for s in np.arange(0.45, 1.15, 0.05):
-        tt = cv2.resize(t, None, fx=float(s), fy=float(s))
-        if tt.shape[0] >= crop.shape[0] or tt.shape[1] >= crop.shape[1]:
-            continue
-        best = max(best, float(cv2.matchTemplate(crop, tt,
-                                                 cv2.TM_CCOEFF_NORMED).max()))
-    return best >= SLOT_VERIFY_THRESH
+    if t.size == 0 or float(cv2.cvtColor(t, cv2.COLOR_BGR2GRAY).std()) < 10:
+        return None
+    hits = []
+    for key, (cx, cy, half) in HEADER_SLOTS.items():
+        crop = frame[max(0, cy-half):cy+half, max(0, cx-half):cx+half]
+        best = 0.0
+        for scale in np.arange(.45, 1.15, .05):
+            scaled = cv2.resize(t, None, fx=float(scale), fy=float(scale))
+            if scaled.shape[0] > crop.shape[0] or scaled.shape[1] > crop.shape[1]:
+                continue
+            best = max(best, float(cv2.matchTemplate(crop, scaled, cv2.TM_CCOEFF_NORMED).max()))
+        if best >= SLOT_VERIFY_THRESH:
+            hits.append(key)
+    if len(hits) > 1:
+        return None
+    return hits == [(cat, slot)]
 
 
 def _equip_module(name: str, slot: str, present: set | None = None) -> str:
     """One module: tile -> Equip -> Primary/Assist -> Transfer Level: Yes.
 
-    Returns 'equipped', or 'already' when the module is not in the inventory -
-    which is what an already-equipped module looks like, since equipping moves
-    it out of the grid. That makes the whole routine safe to re-run.
-
-    `present` is an optional result of _scan_grid: when given, a module absent
-    from it is known to be equipped already and the grid walk is skipped
-    entirely. But ABSENT-FROM-GRID IS ONLY EVER A HINT: every 'already' and
-    every 'equipped' is confirmed against the header slot (verify_slot), and
-    a failed confirmation falls through to a fresh grid walk rather than
-    being believed - a displaced module lands back in the grid, and a scan
-    from before the displacement knows nothing about it.
+    Returns 'equipped' or 'already', both requiring positive slot evidence.
+    The legacy `present` hint is accepted for call compatibility but never
+    substitutes for equipment proof. Legacy mutation additionally requires a
+    positively recognized legacy detail control; missing v29 tabs prove nothing.
     """
-    rel = f"modules/{name}.png"
-    if present is not None and rel not in present:
-        if verify_slot(name, slot) is not False:
-            logger.event("tourney_modules", module=name, result="already",
-                         via="scan")
-            return "already"
-        logger.event("tourney_modules", module=name, via="scan",
-                     result="stale - not in its slot, walking the grid")
-    frame, pt = _find_in_grid(rel, 1100, 2200)
+    from interactions import module_evidence
+    if name not in MODULE_CATEGORY:
+        raise Abort(f'module {name} category is unknown; no equipment change authorized')
+    frame = capture.grab()
+    module_evidence.require_screen(frame)
+    if verify_slot(name, slot, frame) is True:
+        logger.event('tourney_modules', module=name, result='already', via='header')
+        return 'already'
+    frame, pt = module_evidence.find_inventory(name)
     if pt is None:
-        if verify_slot(name, slot) is False:
-            logger.shot(capture.grab(), f"tourney_slot_{name}_missing")
-            raise Abort(f"{name} is neither in the grid nor in the "
-                        f"{MODULE_CATEGORY.get(name)} {slot} slot")
-        logger.event("tourney_modules", module=name, result="already")
-        return "already"
+        raise Abort(f'{name} is neither positively equipped nor found in inventory')
+    module_evidence.require_screen(frame)
     tap_at(pt, f"open module {name}")
 
     frame, equip = require("modules/equip_btn.png", f"{name} Equip button")
+    module_evidence.require_legacy_dialog(frame)
     tap_at(equip, f"equip {name}")
 
     rel = f"modules/{slot}_btn.png"
@@ -1031,16 +1049,13 @@ def _equip_module(name: str, slot: str, present: set | None = None) -> str:
 
     time.sleep(0.8)
     frame = capture.grab()
-    if find(frame, f"modules/{name}.png", STRICT):
-        logger.shot(frame, f"tourney_module_{name}_still_listed")
-        raise Abort(f"{name} is still in the inventory - equip did not take")
     ok = verify_slot(name, slot, frame)
-    if ok is False:
+    if ok is not True:
         logger.shot(frame, f"tourney_slot_{name}_wrong")
         raise Abort(f"{name} was equipped but is not showing in the "
                     f"{MODULE_CATEGORY.get(name)} {slot} slot")
     logger.event("tourney_modules", module=name, slot=slot, result="equipped",
-                 slot_verified=(True if ok else "no-template"))
+                  slot_verified=True)
     return "equipped"
 
 
@@ -1208,7 +1223,7 @@ def in_tournament(frame) -> bool:
     return find(frame, "tourney/in_tournament.png") is not None
 
 
-def setup(read_only: bool = False, loadout_name: str | None = None) -> bool:
+def setup(read_only: bool = False, loadout_name: str | None = None, *, on_setup=None) -> bool:
     """Run the whole pre-battle routine. Returns True when the battle started.
 
     THE EQUIPPING IS loadout.py's (P6). This used to carry its own guardian /
@@ -1269,7 +1284,7 @@ def setup(read_only: bool = False, loadout_name: str | None = None) -> bool:
         # open_nav, so nothing carries between them; the order that IS
         # load-bearing (modules displacing each other) is inside the plan and
         # apply_modules preserves it exactly.
-        loadout.apply(name)
+        applied = loadout.apply(name)
         # ...and then the deck tweaks the loadout does not own. NOT under a
         # global preset: the game re-applies the saved deck at battle entry,
         # which would silently wipe any tweak made here - fold the tweak into
@@ -1293,8 +1308,15 @@ def setup(read_only: bool = False, loadout_name: str | None = None) -> bool:
             raise Abort("refusing to enter the tournament: the equipped "
                         "loadout does not match "
                         f"{name!r} - {'; '.join(problems)}")
+        if on_setup is not None:
+            report = applied.get('setup') if isinstance(applied, dict) else None
+            on_setup(report if report is not None else loadout.unknown_setup(
+                name, detail='manual_equipment', reason='setup_report_missing'))
         start_battle()
     except (Abort, act.TapRefused) as e:
+        if on_setup is not None:
+            from interactions import loadout
+            on_setup(loadout.setup_failure(name, e))
         logger.event("tourney_setup", stage="abort", error=str(e))
         raise
     logger.event("tourney_setup", stage="done", loadout=name)
