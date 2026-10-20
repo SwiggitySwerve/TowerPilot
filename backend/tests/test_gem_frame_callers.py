@@ -45,9 +45,11 @@ def test_sm_ride_rechecks_target_after_collection_changes_screen(monkeypatch):
     events = []
     monkeypatch.setattr(capture, "grab", lambda: next(frames))
     monkeypatch.setattr(wave_reader, "read_wave", lambda frame: 100 if frame is stale else 105)
-    monkeypatch.setattr(shard, "cancel_sprint", lambda: None)
-    monkeypatch.setattr(shard, "GemWatch", lambda: SimpleNamespace(
+    monkeypatch.setattr(shard, "cancel_sprint", lambda **kw: None)
+    monkeypatch.setattr(shard, "GemWatch", lambda **kw: SimpleNamespace(
         poll=lambda frame: modal if frame is stale else frame))
     monkeypatch.setattr(logger, "event", lambda kind, **kw: events.append((kind, kw)))
-    quest_sm.ride_to(100)
+    run = SimpleNamespace(guard=lambda f, *a: f, check=lambda f: f,
+                          observe=lambda f: f, pause=lambda seconds: None)
+    quest_sm.ride_to(100, run)
     assert events == [("sm_ride", {"wave": 105, "stage": "target reached"})]

@@ -9,6 +9,7 @@ import cv2
 from device import act, capture, overlays
 from vision import wave_reader, screen
 from runtime import logger
+from interactions.tourney import Abort
 from player.gather_settings import AD_GEM_FIELDS, resolve_ad_gem_options
 import settings
 
@@ -93,7 +94,8 @@ def _claim_point(rect, rng, edge_inset_px=EDGE_INSET_PX):
             rng.randint(top+margin, bottom-margin))
 
 class AdGemCollector:
-    def __init__(self, enabled=True, delay=(3.0, 10.0), rng=None, options=None):
+    def __init__(self, enabled=True, delay=(3.0, 10.0), rng=None, options=None, *, guard=None):
+        self.guard = guard
         self.enabled=enabled
         self.next_at=0.0
         self.next_window_at = 0.0
@@ -323,6 +325,8 @@ class AdGemCollector:
         Passive checks never capture or input. Only the original collection
         window and response deadline authorize fresh verification and a tap.
         """
+        if self.guard is not None:
+            frame = self.guard(frame, "battle")
         now = time.monotonic()
         if self.window_deadline is not None and now >= self.window_deadline:
             self._close_window()
@@ -414,6 +418,12 @@ class AdGemCollector:
         """Keep all pre-input failures visible, with their complete diagnostics."""
         try:
             return self._verify_and_claim(frame, point, offer_wait)
+        except Abort as exc:
+            self.mark_unknown('ownership_lost')
+            self._finish_attempt('interrupted', 'ownership_lost', error=str(exc),
+                                 stage=self._attempt_stage, error_type=type(exc).__name__,
+                                 traceback=traceback.format_exc())
+            raise
         except Exception as exc:
             # No recovery input: capture/recognizer/foreground errors fail closed.
             self.mark_unknown('claim_verification_error')
@@ -427,6 +437,8 @@ class AdGemCollector:
         # Recheck before touching a shifting HUD, not a remembered position.
         self._attempt_stage = 'fresh_capture'
         fresh=capture.grab()
+        if self.guard is not None:
+            fresh = self.guard(fresh, "battle")
         self._attempt_latest_frame = fresh
         self._attempt_stage = 'fresh_recognition'
         current = self._observe(fresh)
@@ -485,6 +497,8 @@ class AdGemCollector:
         time.sleep(.35)
         self._attempt_stage = 'confirmation_capture'
         after=capture.grab()
+        if self.guard is not None:
+            after = self.guard(after, "battle")
         self._attempt_latest_frame = after
         # A menu/ad/death replacing the HUD is not evidence of a reward.
         self._attempt_stage = 'confirmation_recognition'

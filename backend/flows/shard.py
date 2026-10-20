@@ -188,18 +188,24 @@ def _in_ability_row(pt, margin: int = 25) -> bool:
 class GemWatch:
     """Collect Ad Gems and orbiting diamonds using their separate policies."""
 
-    def __init__(self, gather=None):
-        self.orbit = GemOrbitTapper(**gem_orbit_opts(gather))
+    def __init__(self, gather=None, *, guard=None):
+        self.guard = guard
+        opts = {"guard": guard} if guard is not None else {}
+        self.orbit = GemOrbitTapper(**gem_orbit_opts(gather), **opts)
         from interactions.ad_gems import AdGemCollector
         if gather is None:
             gather = (CONFIG.get("presets", {}).get(CONFIG.get("preset")) or {}).get("gather") or {}
         self.ad_gems = AdGemCollector(gather.get("ad_gems", True),
                                       delay=gather.get("gem_delay_sec", (3, 10)),
-                                      options=gather.get("ad_gem_options"))
+                                      options=gather.get("ad_gem_options"), **opts)
 
     def poll(self, frame):
         """Return the latest frame; callers must discard an older decision frame."""
+        if self.guard is not None:
+            frame = self.guard(frame, "battle")
         frame = self.ad_gems.poll(frame)
+        if self.guard is not None:
+            frame = self.guard(frame, "battle")
         # The orbit collector refreshes only when due, then before each tap.
         return self.orbit.poll(frame)
 
@@ -230,7 +236,7 @@ def _probe_box(points, pad: int = ORBIT_PROBE_PAD) -> tuple[int, int, int, int]:
             max(0, min(xs) - pad), max(xs) + pad)
 
 
-def battlefield_live(points, frame=None) -> tuple[bool, str]:
+def battlefield_live(points, frame=None, *, guard=None) -> tuple[bool, str]:
     """Is the tower on screen with nothing over `points`, RIGHT NOW?
 
     Returns (ok, why) - `why` is logged on a refusal so a run that collects
@@ -238,6 +244,8 @@ def battlefield_live(points, frame=None) -> tuple[bool, str]:
     above GEM_ORBIT_* for why each of the three checks is here.
     """
     frame = capture.grab() if frame is None else frame
+    if guard is not None:
+        frame = guard(frame, "battle")
     if not points:
         return False, "no_points"
     if wave_reader.read_wave(frame) is None:
@@ -264,6 +272,8 @@ def battlefield_live(points, frame=None) -> tuple[bool, str]:
     y0, y1, x0, x1 = _probe_box(points)
     time.sleep(ORBIT_MOTION_GAP)
     after = capture.grab()
+    if guard is not None:
+        after = guard(after, "battle")
     if wave_reader.read_wave(after) is None:
         return False, "no_wave"
     if capture.layout_offset != layout_offset:
@@ -293,7 +303,8 @@ class GemOrbitTapper:
                  interval=GEM_ORBIT_INTERVAL, taps=GEM_ORBIT_TAPS,
                  jitter=GEM_ORBIT_JITTER, spread=GEM_ORBIT_SPREAD,
                  retry_interval_sec=None, attempt_timeout_sec=None,
-                 retry_backoff_sec=None):
+                 retry_backoff_sec=None, guard=None):
+        self.guard = guard
         timing = dict(interval_sec=interval, retry_interval_sec=retry_interval_sec,
                       attempt_timeout_sec=attempt_timeout_sec, retry_backoff_sec=retry_backoff_sec)
         timing = {key: ORBIT_TIMING_FIELDS[key]['default'] if value is None else value
@@ -396,6 +407,8 @@ class GemOrbitTapper:
             return self._poll(frame)
 
     def _poll(self, frame):
+        if self.guard is not None:
+            frame = self.guard(frame, "battle")
         if self._expire_attempt(None):
             return frame
         manual = self.manual_requested
@@ -425,6 +438,8 @@ class GemOrbitTapper:
             return frame
         prior_balance = read_gem_balance(frame)
         frame = capture.grab()
+        if self.guard is not None:
+            frame = self.guard(frame, "battle")
         if wave_reader.read_wave(frame) is None or screen.identify(frame).name != "battle":
             self._backoff("not_in_battle")
             return frame
@@ -455,7 +470,8 @@ class GemOrbitTapper:
             return frame
         layout_offset = capture.layout_offset
         points = self.points()
-        ok, why = battlefield_live(points, frame)
+        ok, why = battlefield_live(points, frame,
+                                    **({"guard": self.guard} if self.guard is not None else {}))
         if not ok:
             self._backoff(why)
             return frame
@@ -464,6 +480,8 @@ class GemOrbitTapper:
             self.balance_before = balance
         for x, y in points:
             frame = capture.grab()
+            if self.guard is not None:
+                frame = self.guard(frame, "battle")
             if wave_reader.read_wave(frame) is None or screen.identify(frame).name != "battle":
                 self._backoff("not_in_battle")
                 return frame
@@ -491,7 +509,8 @@ class GemOrbitTapper:
                 self._backoff("tap_refused")
                 return frame
         self.next_at = time.monotonic() + self.retry_interval
-        return capture.grab()  # no caller acts on a frame from before the last tap
+        frame = capture.grab()  # no caller acts on a frame from before the last tap
+        return self.guard(frame, "battle") if self.guard is not None else frame
 
 
 def _kick_adb():
@@ -740,7 +759,7 @@ def enter_run(body: dict):
     return start_battle()
 
 
-def start_battle(tries: int = 2, settle: float = 15.0):
+def start_battle(tries: int = 2, settle: float = 15.0, *, guard=None):
     """Tap BATTLE and WAIT for the run to actually exist.
 
     Returning the moment the tap lands is what killed the first forever-loop:
@@ -751,10 +770,17 @@ def start_battle(tries: int = 2, settle: float = 15.0):
     is swallowed, and a swallowed tap leaves us on Home forever.
     """
     for i in range(tries):
-        tap_at(HOME_BATTLE, "start battle")
+        if guard is not None:
+            frame = guard(capture.grab(), "start_home")
+            ev = act.tap(*HOME_BATTLE, reason="start battle")
+            guard(frame, "start_dispatched", ev)
+        else:
+            tap_at(HOME_BATTLE, "start battle")
         deadline = time.monotonic() + settle
         while time.monotonic() < deadline:
             frame = capture.grab()
+            if guard is not None:
+                frame = guard(frame, "start_wait")
             if _in_run(frame):
                 logger.event("shard_battle", started=True, attempt=i + 1)
                 return frame
@@ -768,7 +794,8 @@ def start_battle(tries: int = 2, settle: float = 15.0):
 # ----------------------------------------------------------------- the loop
 
 def wait_for_wave(target: int, timeout: float = WAVE_TIMEOUT,
-                  gems: "GemWatch | None" = None):
+                  gems: "GemWatch | None" = None, *, guard=None,
+                  recover_home: bool = True):
     """Block until the wave counter reaches `target`. Returns the frame.
 
     Waves SKIP during the Intro Sprint (observed 30 -> 40 -> 50), so this
@@ -778,7 +805,11 @@ def wait_for_wave(target: int, timeout: float = WAVE_TIMEOUT,
     off = 0
     while time.monotonic() < deadline:
         frame = capture.grab()
+        if guard is not None:
+            frame = guard(frame, "wave")
         w = wave_reader.read_wave(frame)
+        if guard is not None and screen.identify(frame).name != "battle":
+            w = None
         if w is not None and w >= target:
             return frame, w
         if w is None and not _in_run(frame):
@@ -788,7 +819,7 @@ def wait_for_wave(target: int, timeout: float = WAVE_TIMEOUT,
             # the old code raced that gap and lost on loop 10 of 100.
             off += 1
             if off >= OFF_BATTLE_FRAMES:
-                if on_home(frame):
+                if recover_home and on_home(frame):
                     # RETRY did not take and we are parked on Home. This is a
                     # screen the routine navigated to itself, so starting the
                     # battle again is recovery, not a stray tap.
@@ -812,19 +843,31 @@ def _in_run(frame) -> bool:
             or screen.identify(frame).name == "battle")
 
 
-def cancel_sprint():
+def cancel_sprint(*, guard=None):
     """Tap the Intro Sprint indicator and confirm. Verified at every step."""
     frame = capture.grab()
+    if guard is not None:
+        frame = guard(frame, "battle")
     sc = screen.identify(frame)
     if sc.name != "intro_sprint_end":
         pt = detect.find_intro_sprint(frame)
         if pt is None:
             logger.event("shard_sprint", result="indicator not found")
             return False
-        tap_at(pt, "intro sprint indicator")
+        if guard is not None:
+            frame = guard(frame, "sprint_begin")
+        if guard is None:
+            tap_at(pt, "intro sprint indicator")
+        else:
+            ev = act.tap(*pt, reason="intro sprint indicator")
+            guard(frame, "sprint_dispatched", ev)
         frame = capture.grab()
+        if guard is not None:
+            frame = guard(frame, "sprint_open_wait")
         sc = screen.identify(frame)
     if sc.name != "intro_sprint_end":
+        if guard is not None:
+            guard(frame, "battle")
         logger.event("shard_sprint", result="no confirm dialog", screen=sc.name,
                      shot=logger.shot(frame, "shard_sprint_nodialog"))
         return False
@@ -833,10 +876,20 @@ def cancel_sprint():
     score, yes = screen._match(frame, "home/intro_sprint_yes.png",
                                ((1320, 1580), (540, 940)))
     if score < 0.90:
+        if guard is not None:
+            guard(frame, "sprint_confirm")
         logger.event("shard_sprint", result="Yes not found", score=round(score, 3))
         return False
-    tap_at(yes, "intro sprint: yes")
+    if guard is not None:
+        guard(frame, "sprint_confirm")
+    if guard is None:
+        tap_at(yes, "intro sprint: yes")
+    else:
+        ev = act.tap(*yes, reason="intro sprint: yes")
+        guard(frame, "sprint_confirm_dispatched", ev)
     after = capture.grab()
+    if guard is not None:
+        after = guard(after, "sprint_after")
     confirmed = (screen.identify(after).name != "intro_sprint_end"
                  and detect.find_intro_sprint(after) is None
                  and _in_run(after))
@@ -895,7 +948,7 @@ def fire_nuke(frame) -> bool:
     return fired
 
 
-def _confirm_exit(frame=None) -> bool:
+def _confirm_exit(frame=None, *, guard=None) -> bool:
     """Tap whichever exit confirm dialog is up, if any.
 
     The exit button's LABEL does not predict the DIALOG: tapping END ROUND on
@@ -910,6 +963,8 @@ def _confirm_exit(frame=None) -> bool:
                         ("home/end_round_yes.png", "end round yes")):
         hit = find(frame, rel, 0.90)
         if hit:
+            if guard is not None:
+                guard(frame, "exit_confirm")
             # NOT instant, and SETTLE afterwards (acct2, 2026-08-19, proven
             # by an instrumented repro): at poll speed the dialog is re-
             # matched mid-fade right after being answered and the re-tap
@@ -918,13 +973,15 @@ def _confirm_exit(frame=None) -> bool:
             # At a 1s cadence the same flow succeeds every time. So: full-
             # duration press, then give the transition its second before any
             # caller can re-poll.
-            act.tap(*hit[0], reason=reason)
+            ev = act.tap(*hit[0], reason=reason)
+            if guard is not None:
+                guard(frame, "confirm_dispatched", ev)
             time.sleep(1.2)
             return True
     return False
 
 
-def abandon_run(to_home: bool = False, before_restart=None):
+def abandon_run(to_home: bool = False, before_restart=None, *, guard=None):
     """Side menu -> EXIT BATTLE / END ROUND -> confirm -> RETRY, at speed.
 
     to_home=True taps HOME instead of RETRY at the stats dialog - the
@@ -945,27 +1002,37 @@ def abandon_run(to_home: bool = False, before_restart=None):
         see _confirm_exit.
     """
     frame = capture.grab()
+    if guard is not None:
+        frame = guard(frame, "exit_begin")
     # ABSOLUTE RULE (user, 2026-08-15): "you NEVER cancel a tournament run
     # EVER". tourney.end_round has carried this guard at its chokepoint ever
     # since a freshly bought 10-gem entry was surrendered at wave 1; THIS is
     # the other chokepoint. Every surrender in shard/quest land funnels
-    # through here, including the quest runners' "adopt the running battle
-    # via retry" path, which calls it on whatever happens to be on screen.
+    # through here. Quest callers additionally carry process-local cycle
+    # authority through every observation and exit/retry input below.
     if screen.in_tournament(frame):
         logger.shot(frame, "shard_abandon_refused")
         raise Abort("a TOURNAMENT run is on screen - automation never "
                     "cancels a tournament run")
-    if not _confirm_exit(frame):        # leftover dialog from a failed exit
+    if not _confirm_exit(frame, guard=guard):  # leftover dialog from a failed exit
         if not detect.side_menu_open(frame):
-            act.tap(*CONFIG["side_menu"]["toggle"], reason="open side menu",
-                    instant=True)
+            ev = act.tap(*CONFIG["side_menu"]["toggle"], reason="open side menu",
+                         instant=True)
+            if guard is not None:
+                guard(frame, "menu_dispatched", ev)
         deadline = time.monotonic() + 6.0
         while time.monotonic() < deadline:
             frame = capture.grab()
+            if guard is not None:
+                frame = guard(frame, "exit_menu")
             hit = (find(frame, "buttons/end_round.png", 0.85)
                    or find(frame, "buttons/exit_battle.png", 0.85))
             if hit:
-                act.tap(*hit[0], reason="exit battle", instant=True)
+                if guard is not None:
+                    guard(frame, "exit_button")
+                ev = act.tap(*hit[0], reason="exit battle", instant=True)
+                if guard is not None:
+                    guard(frame, "button_dispatched", ev)
                 break
             time.sleep(EXIT_POLL)
         else:
@@ -974,7 +1041,10 @@ def abandon_run(to_home: bool = False, before_restart=None):
                         "on the side menu")
         deadline = time.monotonic() + 6.0
         while time.monotonic() < deadline:
-            if _confirm_exit():
+            frame = capture.grab()
+            if guard is not None:
+                frame = guard(frame, "exit_poll")
+            if _confirm_exit(frame, guard=guard):
                 break
             time.sleep(EXIT_POLL)
         else:
@@ -984,12 +1054,14 @@ def abandon_run(to_home: bool = False, before_restart=None):
     deadline = time.monotonic() + 20.0
     while time.monotonic() < deadline:
         frame = capture.grab()
+        if guard is not None:
+            frame = guard(frame, "exit_poll")
         # A confirm tap can land during the dialog's fade-in and never
         # register (observed live on acct2, 2026-08-19: end_round_yes
         # matched at 0.99 on the timeout shot - found, tapped, swallowed).
         # The dialog still being up is proof the tap did not take; re-answer
         # it. _confirm_exit is template-gated, so this can never blind-tap.
-        if _confirm_exit(frame):
+        if _confirm_exit(frame, guard=guard):
             time.sleep(EXIT_POLL)
             continue
         dead, retry = detect.death_screen(frame)
@@ -1004,20 +1076,32 @@ def abandon_run(to_home: bool = False, before_restart=None):
             # the runlog.collect that tourney.end_round would do.
             hit = find(frame, "home/game_stats_home.png")
             if hit:
-                act.tap(*hit[0], reason="game stats: HOME", instant=True)
+                if guard is not None:
+                    guard(frame, "exit_home")
+                ev = act.tap(*hit[0], reason="game stats: HOME", instant=True)
+                if guard is not None:
+                    guard(frame, "home_dispatched", ev)
                 # HOME fades in after the tap. Returning immediately let
                 # cards_restore tap the navigation row during that fade.
                 home_deadline = time.monotonic() + 8.0
                 while time.monotonic() < home_deadline:
                     time.sleep(EXIT_POLL)
-                    if on_home(capture.grab()):
+                    home_frame = capture.grab()
+                    if guard is not None:
+                        home_frame = guard(home_frame, "home_wait")
+                    if (screen.identify(home_frame).name == "home" if guard is not None
+                            else on_home(home_frame)):
                         time.sleep(0.5)
                         logger.event("shard_exit_home", ok=True)
                         return True
                 raise Abort("HOME was tapped but the Home screen did not appear")
         elif dead and retry:
             logger.event("shard_result", shot=logger.shot(frame, "shard_result"))
-            act.tap(*retry, reason="RETRY", instant=True)
+            if guard is not None:
+                guard(frame, "exit_retry")
+            ev = act.tap(*retry, reason="RETRY", instant=True)
+            if guard is not None:
+                guard(frame, "retry_dispatched", ev)
             logger.event("shard_retry", ok=True)
             return True
         time.sleep(EXIT_POLL)
@@ -1049,7 +1133,7 @@ def _speed_maxed(frame) -> bool:
     return float(cv2.matchTemplate(live, tpl, cv2.TM_CCORR_NORMED).max()) > 0.85
 
 
-def ensure_max_speed():
+def ensure_max_speed(*, guard=None):
     """Press the speed '+' until the label reads x5.0.
 
     Added 2026-08-14: a run came back from RETRY at x1.0 - no tap of ours
@@ -1060,6 +1144,8 @@ def ensure_max_speed():
     """
     for i in range(SPEED_TAPS + 1):
         frame = capture.grab()
+        if guard is not None:
+            frame = guard(frame, "battle")
         if _speed_maxed(frame):
             if i:
                 logger.event("shard_speed", presses=i, fixed=True)
