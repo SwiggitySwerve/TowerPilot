@@ -36,10 +36,11 @@
     function matches(record, pending) {
       return !!record?.id && !!pending && (record.id === pending.operationId || !pending.operationId && record.idempotency_key === pending.idempotencyKey);
     }
+    const applicationSucceeded = record => (record?.result_refs?.apply_status ?? (record?.status === 'succeeded' ? 'succeeded' : null)) === 'succeeded';
     function bind(context, flow, intent, record) {
       if (!store.isCurrent(context,flow,intent)) return null;
       if (record.revision < (intent.revision || 0)) return null;
-      return store.replace(context,flow,intent,{...intent,operationId:record.id,revision:record.revision,outcome:record.status});
+      return store.replace(context,flow,intent,{...intent,operationId:record.id,revision:record.revision,outcome:record.status,applied:applicationSucceeded(record)});
     }
     const recordOf = observed => observed.operation;
     function validContext(record, context) {
@@ -82,7 +83,7 @@
       try {
         const response=await effect(token,()=>io.apply(record?.id ? {operation_id:record.id,expected_revision:record.revision} : {saved_observations:true}));
         if (record?.id) {
-          if (response?.operation?.id !== record.id || response.operation.status !== 'succeeded')
+          if (response?.operation?.id !== record.id || !applicationSucceeded(response.operation))
             throw new Error('Application was not confirmed by the operation.');
           token.revision=response.operation.revision;
           const saved=token.flow === 'learning' ? store.learning(token.scope) : store.pending(token.scope);
@@ -102,7 +103,7 @@
       token.forgetReviewedLegacy?.(); waiting=null;
       const ready=result.ready === true;
       move(ready ? 'ready' : 'needs_attention',{reason:ready ? null : result.next_action || 'readiness_unconfirmed',
-        message:ready ? wording === 'preparation' ? 'Ready. You can start this run from Overview.' : 'Screens learned. Start farming from Overview.'
+        message:ready ? wording === 'preparation' ? 'Ready. You can start this run from Overview.' : 'Discoveries saved. The selected run is ready; start it from Overview.'
           : (wording === 'preparation' ? 'Discoveries saved. ' : 'Screens saved. ') + (result.message || 'A required control still needs verification.')});
       await effect(token,()=>io.completed?.(wording));
       return true;
@@ -132,7 +133,7 @@
         }
         move('starting',{message:'Learning screens: extract artwork, verify Home, then follow the screen manifest…'});
         io.launching?.();
-        await launch(token,before,{bootstrap:true,flows:true,phases:'c,m',fresh:true,overwrite:true,allow_navigation:true});
+        await launch(token,before,{bootstrap:true,flows:true,phases:'c,m',fresh:true,overwrite:false,allow_navigation:true});
         move('waiting_for_worker',{message:'Learning requested. Waiting for the worker to report its start.'});
         return true;
       });
@@ -222,13 +223,16 @@
     function review() {
       return startCommand('learning',io.selectedRun?.() || 'bp_coin_default',async token=>{
         move('checking',{message:'Checking the saved discoveries before applying them…'});
-        const observed=await effect(token,()=>io.status(token.operationId)); state.observation();
+        const reviewedId=io.activeOperation?.();
+        const observed=await effect(token,()=>io.status(reviewedId)); state.observation();
         if (observed.running) throw new Error('A scan is already running. Let it finish first.');
         if (observed.restore_pending) {
           move('restoration_required',{message:'Restore the saved module setup before applying discoveries.',reason:'restore_pending'});
           return false;
         }
         const record=recordOf(observed);
+        if ((reviewedId && (record?.id !== reviewedId || io.activeOperation?.() !== reviewedId)) || (record && !validContext(record,token.scope)))
+          throw new Superseded('The operation being reviewed changed.');
         if (record && validContext(record,token.scope)) store.save(token.scope,'learning',{preset:token.preset,operationId:record.id,revision:record.revision,outcome:record.status});
         token.forgetReviewedLegacy=store.forgetLater(['finishFullSetup']);
         return apply(token,recordOf(observed));
@@ -263,7 +267,7 @@
       token.operationId=record.id; token.revision=record.revision;
       state.observation();
       const fields={operationId:record.id,revision:record.revision,outcome:record.status};
-      if (record.status === 'succeeded') {
+      if (applicationSucceeded(record)) {
         if (state.snapshot().phase === 'ready' && state.snapshot().operationId === record.id) return Promise.resolve();
         completion=(async()=>{
           try {

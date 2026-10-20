@@ -28,7 +28,7 @@ test('learning consent, launch, observation and completion have legal transition
   const p=fixture();
   assert.equal(await p.flow.learn(),true);
   assert.equal(p.flow.snapshot().phase,'waiting_for_worker');
-  assert.deepEqual(p.calls[0][1],{bootstrap:true,flows:true,phases:'c,m',fresh:true,overwrite:true,allow_navigation:true,expected_context:{instance:'main',account:'alice',serial:'device',rendering:null,profile:'alice'},idempotency_key:'request-1',selected_run:'bp_farm'});
+  assert.deepEqual(p.calls[0][1],{bootstrap:true,flows:true,phases:'c,m',fresh:true,overwrite:false,allow_navigation:true,expected_context:{instance:'main',account:'alice',serial:'device',rendering:null,profile:'alice'},idempotency_key:'request-1',selected_run:'bp_farm'});
   await p.flow.observe(worker(100,'running'));
   await p.flow.observe(worker());
   assert.equal(p.flow.snapshot().phase,'ready');
@@ -226,6 +226,60 @@ test('explicit review resolves a legacy marker once without starting a worker',a
   assert.equal(p.flow.snapshot().phase,'ready');
   await p.flow.observe(worker());
   assert.deepEqual(p.calls,[['apply'],['readiness','bp_farm']]);
+});
+
+test('manual review applies the displayed operation and scopes success to the selected run',async()=>{
+  const reads=[];
+  const p=fixture({activeOperation:()=> 'op-200',status:async id=>{reads.push(id);return worker(200,'failed');},
+    apply:async()=>({applied:true,operation:{...worker(200,'failed').operation,revision:9,result_refs:{apply_status:'succeeded',apply_error:null}}})});
+  assert.equal(await p.flow.review(),true);
+  assert.deepEqual(reads,['op-200']);
+  assert.equal(p.store.learning(p.context()).operationId,'op-200');
+  assert.equal(p.store.learning(p.context()).outcome,'failed');
+  assert.equal(p.store.learning(p.context()).applied,true);
+  assert.deepEqual(p.calls,[['readiness','bp_farm']]);
+  assert.match(p.flow.snapshot().message,/Discoveries saved.*selected run is ready/);
+  assert.doesNotMatch(p.flow.snapshot().message,/Screens learned|Setup done/);
+  assert.equal(p.calls.filter(([name])=>name==='start').length,0);
+});
+
+for(const status of ['failed','interrupted']){
+  test('reconnecting to an applied '+status+' capture checks readiness without applying again',async()=>{
+    const p=fixture();p.intent('preparation');
+    const observed=worker(100,status);
+    observed.operation.result_refs={apply_status:'succeeded',apply_error:null};
+    await p.flow.observe(observed);
+    assert.equal(p.flow.snapshot().phase,'ready');
+    assert.equal(p.store.pending(p.context()).outcome,status);
+    assert.equal(p.store.pending(p.context()).applied,true);
+    await p.flow.observe(observed);
+    assert.deepEqual(p.calls,[['readiness','bp_farm']]);
+  });
+}
+
+test('an explicit failed apply cannot be accepted from the top-level success status',async()=>{
+  const p=fixture({status:async()=>worker(),apply:async()=>({operation:{...worker(100,'succeeded').operation,result_refs:{apply_status:'failed'}}})});
+  assert.equal(await p.flow.review(),false);
+  assert.equal(p.flow.snapshot().phase,'failed');
+  assert.deepEqual(p.calls,[]);
+});
+
+test('manual review never applies a different operation or target returned by status',async()=>{
+  for(const result of [worker(100), {...worker(200),operation:{...worker(200).operation,context:{...target,account:'other'}}}]){
+    const p=fixture({activeOperation:()=> 'op-200',status:async()=>result});
+    assert.equal(await p.flow.review(),false);
+    assert.equal(p.flow.snapshot().phase,'superseded');
+    assert.deepEqual(p.calls,[]);
+  }
+});
+
+test('changing the displayed operation while review is loading prevents apply',async()=>{
+  let active='op-200';const gate=deferred();
+  const p=fixture({activeOperation:()=>active,status:()=>gate.promise});
+  const job=p.flow.review();active='op-300';gate.resolve(worker(200));
+  assert.equal(await job,false);
+  assert.equal(p.flow.snapshot().phase,'superseded');
+  assert.deepEqual(p.calls,[]);
 });
 
 test('superseding manual review keeps its legacy marker until a successful review',async()=>{

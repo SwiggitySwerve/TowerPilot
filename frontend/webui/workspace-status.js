@@ -31,7 +31,8 @@
   function selectOperation(st, basic) {
     const observation = st?.state?.observation;
     let bootstrap = st?.state?.phases?.bootstrap;
-    const incompleteMaps = Object.entries(st?.state?.screen_map || {}).filter(([name,row]) => row.status !== 'verified'
+    // Route captures verify their selected controls, not every target on the saved screens.
+    const incompleteMaps = Object.entries(st?.state?.screen_map || {}).filter(([name,row]) => bootstrap?.kind !== 'routes' && row.status !== 'verified'
       && (bootstrap?.kind !== 'battle' || bootstrap.screens?.includes(name))).map(([name]) => name);
     if (bootstrap?.status === 'done' && incompleteMaps.length) bootstrap = {...bootstrap,status:'needs_attention',
       message:[bootstrap.message,'Incomplete screen maps: '+incompleteMaps.join(', ')+'.'].filter(Boolean).join(' ')};
@@ -91,8 +92,10 @@
     const detail = describeSteps(starting ? null : record, running);
     restorePending = restorePending || attempt?.status === 'restoration_required';
     const terminal = {failed:'error',cancelled:'stopped',interrupted:'stopped',awaiting_apply:'needs_attention',applying:'running'}[attempt?.status];
-    const recordedState = record?.status === 'error' ? 'error' : running ? 'running'
+    const recordedState = record?.status === 'error' || detail.failed ? 'error' : running ? 'running'
       : record?.status === 'running' ? 'stopped'
+      : detail.attention ? 'needs_attention'
+      : detail.steps.some(step => step.status === 'stopped') ? 'stopped'
       : stepStates[record?.status] ? record.status : 'pending';
     const state = starting ? 'running' : restorePending ? 'needs_attention' : terminal ||
       (attempt?.status === 'succeeded' && !['error','stopped','needs_attention'].includes(recordedState) ? 'done' : recordedState);
@@ -104,33 +107,42 @@
       ? duration((running ? unavailable ? checkedAt ?? finalAt : now : finalAt || attempt.updated_at) - startedAt) : 'Not recorded';
     const current = detail.active || detail.steps.find(step => step.status === 'error' || step.status === 'stopped');
     const label = mode === 'observe' ? 'Screen observation' : mode === 'basic' ? 'Targeted profile scan'
-      : record?.kind === 'battle' ? 'Battle preparation' : 'Screen learning';
+      : record?.kind === 'battle' ? 'Battle preparation' : record?.kind === 'routes' ? 'Selected route capture' : 'Screen learning';
     const headline = starting ? 'Starting screen learning'
       : restorePending ? 'Equipment restoration pending'
       : running ? state === 'error' ? 'Worker active · issue reported' : label + ' in progress'
       : record || attempt ? 'Last ' + label.toLowerCase() + ' result' : 'Screen learning has not started';
+    const incompleteCapture = attempt?.error?.code === 'capture_incomplete';
     const message = starting ? 'Waiting for the first worker update. Do not start another scan.'
       : restorePending ? 'The saved equipment must be restored before other automation can run.'
+      : incompleteCapture ? [...new Set([attempt.error.message,record?.message,current?.message].filter(Boolean))].join(' ')
       : attempt?.error?.message || (attempt?.status === 'awaiting_apply' ? 'Capture saved. Applying discoveries to the profile is not yet confirmed.' : '')
       || record?.message || current?.message || (running ? 'Waiting for the worker to report its next action.'
         : 'Create a profile and connect the emulator, then learn screens from Overview.');
     const guidance = running ? 'Keep the emulator and The Tower running throughout this operation. Leave the game untouched. Longer phases may report less frequently.'
       : restorePending ? 'Keep the game at Home and review the equipment restoration details below.'
-      : attempt?.recovery_action || (state === 'error' || state === 'stopped' ? 'The last attempt is saved. Review its message and connection before choosing a retry.'
+      : attempt?.recovery_action || (incompleteCapture ? 'Review the incomplete captures and saved discoveries below. Applying discoveries does not complete missing image verification. Learn screens keeps existing images when you retry.'
+      : state === 'error' || state === 'stopped' ? 'The last attempt is saved. Review its message before choosing a retry.'
       : state === 'done' || state === 'needs_attention' ? 'Review saved discoveries and check readiness for the run you want to use.'
       : 'Learning screens needs Home with no active or resumable battle. It starts only after your confirmation.');
     const target = attempt?.context || context;
     const targetText = target ? [['Emulator',target.instance],['Account',target.account],['Profile',target.profile],['Connection',target.serial]]
       .filter(([,value]) => value).map(([label,value]) => label+': '+value).join(' · ') : '';
     const matchingFinal = !!attempt?.id && finalScreen?.operation_id === attempt.id;
-    const returnEvidence = mode === 'bootstrap' && !running && (record || attempt)
+    const returnEvidence = mode !== 'observe' && !running && (record || attempt)
       ? matchingFinal && finalScreen.verified === true && finalScreen.name === 'home'
         ? 'Home verified' + (finite(finalScreen.observed_at) ? ' · '+duration(now-finalScreen.observed_at)+' ago' : '')
         : 'Final screen unverified' : '';
     const resetLabels = {starting:'Starting setup test battle',active:'Setup test battle active',ending:'Returning from the setup test battle',finished:'Setup test battle returned to Home',resetting:'Returning from the setup test battle',home_verified:'Setup test battle returned to Home',failed:'Setup test battle return failed',unknown:'Setup test battle state unconfirmed'};
     const resetEvidence = !!attempt?.id && setupBattle?.operation_id === attempt.id && resetLabels[setupBattle.status]
       ? resetLabels[setupBattle.status]+(setupBattle.error || setupBattle.reason ? ': '+(setupBattle.error?.message || setupBattle.error || setupBattle.reason) : '') : '';
+    const applicationStatus = attempt?.result_refs?.apply_status ?? attempt?.status;
+    const applicationText = {awaiting_apply:'Awaiting apply',applying:'Applying discoveries',succeeded:'Discoveries applied',
+      ...(attempt?.result_refs?.apply_status ? {failed:'Application failed'} : {})}[applicationStatus]
+      || (attempt ? 'Not confirmed applied' : 'Not recorded');
     return {...detail,state,label,headline:unavailable ? 'Last known: ' + headline : headline,message,guidance,current,phases:phaseGroups(detail.steps),elapsed,
+      operationId:attempt?.id,revision:attempt?.revision,applicationText,applicationError:attempt?.result_refs?.apply_error?.message,
+      reviewDiscoveries:!running && (incompleteCapture || attempt?.status === 'awaiting_apply'),
       workerAge:finite(lastAt) ? duration(now - lastAt) + ' ago' : 'Not recorded',
       checkedAge:finite(checkedAt) ? duration(now - checkedAt) + ' ago' : 'Not checked',
       unavailable, running, saved:!!record || !!attempt, starting,targetText,returnEvidence,resetEvidence};
@@ -142,6 +154,8 @@
       ${m.unavailable ? `<p class="status-warning" role="status">Status unavailable — showing last known progress; retrying. ${escape(m.unavailable)} <button class="small ghost" onclick="pollCalibrate()">Retry status</button></p>` : ''}
       <p class="operation-message">${escape(m.message)}</p>
       ${m.targetText ? `<p class="muted operation-target">${escape(m.targetText)}</p>` : ''}
+      ${m.operationId ? `<details class="operation-identity"><summary>Operation details</summary><code>${escape(m.operationId)}</code>${Number.isInteger(m.revision) ? ` · revision ${m.revision}` : ''}</details>` : ''}
+      <p><b>Profile:</b> ${escape(m.applicationText)}${m.applicationError ? ` — ${escape(m.applicationError)}` : ''}</p>
       <dl class="operation-metrics"><div><dt>Elapsed${m.running ? '' : ' (saved)'}</dt><dd>${escape(m.elapsed)}</dd></div><div><dt>Last checked</dt><dd>${escape(m.checkedAge)}</dd></div><div><dt>Last worker update</dt><dd>${escape(m.workerAge)}</dd></div></dl>
       ${m.total ? `<p><b>${m.processed} of ${m.total} steps processed</b> · ${m.done} successful${m.skipped ? ` · ${m.skipped} skipped` : ''}${m.attention ? ` · ${m.attention} need attention` : ''}${m.failed ? ` · ${m.failed} failed` : ''}</p>
         <progress value="${m.processed}" max="${m.total}" aria-label="Processed learning steps"></progress>
@@ -153,7 +167,7 @@
       ${m.returnEvidence ? `<p><b>Final screen:</b> ${escape(m.returnEvidence)}</p>` : ''}
       ${m.resetEvidence ? `<p class="operation-reset">${escape(m.resetEvidence)}</p>` : ''}
       <p class="operation-guidance">${escape(m.guidance)}</p>
-      ${!m.running && ['error','stopped'].includes(m.state) ? '<p><a href="#emulators" data-workspace-section="setup-connection">Review emulator connection</a></p>' : ''}
+      ${m.reviewDiscoveries ? '<p><a href="#screens" data-workspace-section="game-knowledge">Review saved discoveries and incomplete images</a></p>' : ''}
     </section>`;
   }
   // adb server's view of the configured serial (`device_state` from /api/status).
@@ -280,7 +294,7 @@
       {label:'Learn screens', requirement:'Keep game and emulator on', ok:learned, note:calibration?.running ? 'Worker active — follow live progress' : learned ? 'At least one run is ready' : calibration?.state?.phases?.bootstrap?.status === 'error' ? 'Last attempt reported an error' : 'Learn screens from Overview', href:'#overview'},
     ];
     const active = stages.findIndex(stage => !stage.ok);
-    return `<section class="setup-journey" aria-label="Setup steps"><div class="workspace-heading"><h3>${calibration?.running ? 'Learning screens' : active < 0 ? 'Setup done' : 'Setup overview'}</h3><span class="muted">${stages.filter(stage => stage.ok).length} of ${stages.length} checks satisfied</span></div>
+    return `<section class="setup-journey" aria-label="Setup steps"><div class="workspace-heading"><h3>${calibration?.running ? 'Learning screens' : active < 0 ? 'A run is ready' : 'Setup overview'}</h3><span class="muted">${stages.filter(stage => stage.ok).length} of ${stages.length} checks satisfied</span></div>
       ${unavailable ? `<p class="status-warning">Status unavailable — these are the last known checks.</p>` : ''}
       <ol class="setup-stages">${stages.map((stage,i) => `<li ${i === active ? 'aria-current="step"' : ''}><a href="${stage.href === '#overview' ? '#overview' : stage.href === '#setup-profile' ? '#profiles' : '#emulators'}" ${stage.href === '#overview' ? '' : `data-workspace-section="${stage.href.slice(1)}"`}><span class="stage-number" aria-hidden="true">${stage.ok ? '✓' : '○'}</span><b>${stage.label}</b><small>${escape(stage.note)}</small><span class="requirement-tag">${stage.requirement}</span></a></li>`).join('')}</ol>
       <p>${calibration?.running ? 'Follow the active operation below. Keep the emulator and game running until learning finishes.' : active === 3 && calibration?.state?.phases?.bootstrap?.status === 'error' ? '<b>Next:</b> review the last learning result and check the emulator connection before retrying.' : active >= 0 ? `<b>Next:</b> ${escape(stages[active].note)}.` : 'Choose a run on <a href="#overview">Overview</a>.'}</p></section>`;
@@ -302,7 +316,7 @@
   /* Card markup. The caller supplies the existing profile form, emulator
      suggestion and learning action as HTML; this only arranges them. */
   function getStartedHTML(model, {profileHTML='', emulatorHTML='', learnHTML=''}={}) {
-    if (model.done) return '<p class="get-started-done">✓ Setup done · <a href="#profiles">Profiles</a></p>';
+    if (model.done) return '<p class="get-started-done">✓ A run is ready · <a href="#profiles">Profiles</a></p>';
     const {a, b, conn} = model;
     const row = (ok, label, detail) => `<li class="${ok ? 'status-done' : ''}"><span aria-hidden="true">${ok ? '✓' : '○'}</span> <b>${label}</b> <span>${detail}</span></li>`;
     return `<div class="workspace-heading"><h2>Get started</h2><span class="muted">${a.done ? 'Configured' : 'Configure, then learn your game'}</span></div>

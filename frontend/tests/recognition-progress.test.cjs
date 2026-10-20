@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const vm=require('node:vm');
 const WorkspaceStatus=require('../webui/workspace-status.js');
 const {section}=require('./helpers.cjs');
+const {buildFixture}=require('./fixtures/setup-completion-harness.cjs');
 
 const finished=()=>({status:'done',started_at:100,updated_at:160,message:'Capture finished',steps:[
   {id:'home',label:'Home',status:'done'},
@@ -23,6 +24,51 @@ test('completed capture does not claim that profile application is confirmed',()
   const model=WorkspaceStatus.operation({record:finished(),attempt:{status:'awaiting_apply'}});
   assert.match(model.message,/Applying discoveries.*not yet confirmed/);
   assert.equal(model.state,'needs_attention');
+  assert.equal(model.applicationText,'Awaiting apply');
+});
+
+test('a targeted scan shows its own final Home proof and pending application',()=>{
+  const input={record:finished(),mode:'basic',attempt:{id:'cards-op',revision:9,status:'awaiting_apply'},now:200,
+    finalScreen:{operation_id:'cards-op',name:'home',verified:true,observed_at:195}};
+  const rendered=WorkspaceStatus.operationHTML(WorkspaceStatus.operation(input));
+  assert.match(rendered,/Home verified · 5s ago/);
+  assert.match(rendered,/Profile:<\/b> Awaiting apply/);
+  assert.match(rendered,/<code>cards-op<\/code> · revision 9/);
+  assert.match(rendered,/data-workspace-section="game-knowledge"/);
+  input.finalScreen.operation_id='older-op';
+  assert.equal(WorkspaceStatus.operation(input).returnEvidence,'Final screen unverified');
+});
+
+test('incomplete capture retains its specific cause and recovery independent of application',()=>{
+  const record={...finished(),status:'needs_attention',message:'Two required controls still need capture.'};
+  const attempt={id:'partial-op',status:'failed',error:{code:'capture_incomplete',message:'Not every requested phase completed'}};
+  const failed=WorkspaceStatus.operation({record,attempt});
+  assert.equal(failed.state,'error');
+  assert.match(failed.message,/Not every requested phase completed.*Two required controls/);
+  assert.match(failed.guidance,/Applying discoveries does not complete missing image verification/);
+  assert.doesNotMatch(WorkspaceStatus.operationHTML(failed),/Review emulator connection/);
+  const applied=WorkspaceStatus.operation({record,attempt:{...attempt,result_refs:{apply_status:'succeeded',apply_error:null}}});
+  assert.equal(applied.state,'error');
+  assert.equal(applied.applicationText,'Discoveries applied');
+  assert.match(applied.message,/Two required controls/);
+});
+
+test('application failure remains distinct from capture failure and escapes its reason',()=>{
+  const model=WorkspaceStatus.operation({record:finished(),attempt:{id:'partial',status:'failed',
+    error:{code:'capture_incomplete',message:'Capture remains incomplete'},
+    result_refs:{apply_status:'failed',apply_error:{message:'Profile <write> failed'}}}});
+  const rendered=WorkspaceStatus.operationHTML(model);
+  assert.match(rendered,/Capture remains incomplete/);
+  assert.match(rendered,/Profile:<\/b> Application failed — Profile &lt;write&gt; failed/);
+});
+
+test('applying a partial capture cannot hide incomplete step evidence',()=>{
+  for(const [status,expected] of [['needs_attention','needs_attention'],['error','error'],['stopped','stopped']]){
+    const record=finished();record.steps[0].status=status;
+    const model=WorkspaceStatus.operation({record,attempt:{id:'partial',status:'succeeded'}});
+    assert.equal(model.state,expected);
+    assert.equal(model.applicationText,'Discoveries applied');
+  }
 });
 
 test('an attempt retains its own mode and selected phases after the worker exits',()=>{
@@ -68,6 +114,22 @@ test('battle preparation keeps unrelated saved menu failures out of its outcome'
   assert.equal(result.status,'needs_attention');
   assert.match(result.message,/Incomplete screen maps: home\./);
   assert.doesNotMatch(result.message,/guild_store/);
+});
+
+test('selected route capture retains its own result without claiming full screen learning',()=>{
+  const original={...finished(),kind:'routes',routes:['route_17','route_18']};
+  const state={phases:{bootstrap:original},screen_map:{daily_missions:{status:'verified'},guild_store:{status:'needs_mapping'}}};
+  const selected=WorkspaceStatus.selectOperation({state},null);
+  assert.equal(selected.record.status,'done');
+  assert.equal(state.screen_map.guild_store.status,'needs_mapping');
+  const model=WorkspaceStatus.operation({...selected,attempt:{status:'succeeded'}});
+  assert.equal(model.state,'done');
+  assert.equal(model.headline,'Last selected route capture result');
+  original.status='needs_attention';
+  original.steps[0].status='needs_attention';
+  const incomplete=WorkspaceStatus.operation({...WorkspaceStatus.selectOperation({state},null),attempt:{status:'succeeded'}});
+  assert.equal(incomplete.state,'needs_attention');
+  assert.equal(incomplete.attention,1);
 });
 
 test('the exact attempt target wins over the currently selected account and is escaped',()=>{
@@ -130,4 +192,18 @@ test('a worker failure drives both Recognition status text and its detailed time
   assert.match(slots.get('#calib-progress').textContent,/Failed\. Final verification failed/);
   assert.doesNotMatch(slots.get('#calib-progress').textContent,/Calibration finished/);
   assert.equal(timelines.find(row=>row.selector==='#bootstrap-timeline').record.status,'error');
+});
+
+test('the offline Recognition fixture renders production controls without live request paths',async()=>{
+  const rendered=await buildFixture('awaiting_apply');
+  assert.match(rendered,/Profile:<\/b> Awaiting apply/);
+  assert.match(rendered,/Final screen:<\/b> Home verified/);
+  assert.match(rendered,/<header class="workspace-heading">[\s\S]*?id="client-remap"[\s\S]*?<\/header>/);
+  assert.equal((rendered.match(/id="client-remap"/g)||[]).length,1);
+  assert.doesNotMatch(rendered,/\son\w+=|<script|(?:src|href)="\/api\//);
+  assert.match(rendered,/default-src 'none'/);
+  const partial=await buildFixture('applied_partial');
+  assert.match(partial,/Profile:<\/b> Discoveries applied/);
+  assert.match(partial,/status-tag status-error/);
+  assert.match(partial,/Two required controls still need capture/);
 });

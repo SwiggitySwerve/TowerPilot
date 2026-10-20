@@ -1442,7 +1442,7 @@ function preparationStorageKey(){
 }
 function pendingPreparation(){
   const ref=LearningStore.create(localStorage).pending(LearningStore.context(S.config || {}));
-  return ref?.outcome === 'succeeded' ? null : ref;
+  return ref?.applied || ref?.outcome === 'succeeded' ? null : ref;
 }
 async function renderCalibrate(){
   const request=(S.calibrateRequest || 0)+1; S.calibrateRequest=request;
@@ -1481,24 +1481,24 @@ async function renderCalibrate(){
   <div class="grid2">
   <div>
     <article>
-      <header>Learn screens <span id="calib-state" class="muted" style="font-weight:normal; font-size:.85em"></span></header>
+      <header class="workspace-heading"><span>Learn screens <span id="calib-state" class="muted" style="font-weight:normal; font-size:.85em"></span></span><button id="client-remap" class="small" onclick="remapClient()">Learn screens</button></header>
       <div id="workspace-operation"></div>
       ${WorkspaceStatus.requirementHTML('mapping')}
-      <section><h3>Learn your game's screens</h3><p>Connect your emulator, open Home in the game, then press Learn screens. We find the installed artwork, check the available screens and read your cards, modules and presets. You do not need to choose features or draw image crops. Keep the emulator free while learning runs.</p><p><a href="#emulators">Connect or change emulator</a></p><button id="client-remap" onclick="remapClient()">Learn screens</button><ol id="screen-mapping" aria-label="Screen mapping progress"></ol></section>
+      <section><h3>Learn your game's screens</h3><p>Connect your emulator, open Home in the game, then press Learn screens. We find the installed artwork, check the available screens and read your cards, modules and presets. Existing recognition images are kept. Keep the emulator free while learning runs.</p><p><a href="#emulators">Connect or change emulator</a></p><ol id="screen-mapping" aria-label="Screen mapping progress"></ol></section>
       <p id="bootstrap-progress" role="status" aria-live="polite"></p>
       <button class="small ghost" onclick="stopCalibrate()" hidden>Stop</button>
       <details><summary>Full step detail and activity history</summary><div id="bootstrap-timeline"></div></details>
     </article>
     <article id="game-knowledge">
       <header>What we know about this profile</header>
-      <p class="muted">Saved discoveries for this profile and emulator. “Scanned” means names and equipment were recorded; recognition images have a separate verification status. These results do not depend on the scan switches above.</p>
+      <p class="muted">Saved discoveries for this profile and emulator. “Scanned” means names and equipment were recorded; recognition images have a separate verification status. Saving a discovery does not apply it to the profile.</p>
       <div id="calib-knowledge">Loading saved discoveries…</div>
       <div id="calib-manifest"></div>
       <details><summary>Recognition images and diagnostic scores</summary><div id="calib-report"></div></details>
       <h3 id="run-preparation">Prepare an individual run</h3>
       ${WorkspaceStatus.requirementHTML('apply')}
       <button class="ghost" onclick="applyCalibration()">Use discovered presets in my profile</button>
-      <p class="muted">Applying discoveries is separate from scanning. Your run settings are preserved.</p>
+      <p class="muted">Applying discoveries is separate from scanning and image verification. Completed discoveries can be applied after a partial capture; this does not finish missing captures. Your run settings are preserved.</p>
       <label>Run to prepare<select onchange="S.calibrationPreset=this.value; renderCalibrate()">${Object.entries(S.calibrationRuns).filter(([k]) => k !== "combo").map(([k,v]) => `<option value="${esc(k)}" ${S.readiness.preset === k ? "selected" : ""}>${esc(v.label || k)}</option>`).join("")}</select></label>
       <button data-prepare-run onclick="prepareRun(S.readiness.preset)">Prepare this run</button>
       ${WorkspaceStatus.requirementHTML('prepare')}
@@ -1956,7 +1956,7 @@ function learningTracker(){
     applySaved:body=>post('/api/calibrate/apply',body),
     apply:body=>api('/api/calibrate/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),
     applied:()=>{ S.workspaceEpoch=(S.workspaceEpoch || 0)+1; refreshWorkspaceStatus(); },
-    confirm:flow=>confirmPreparation(flow === 'learning' ? "Learn your game's screens?\n\nAllow approximately 15–22 minutes, including battle verification. Larger inventories or slower emulators may take longer.\n\nLeave the game on Home and keep the emulator untouched. Setup scans menus once, then tests a battle at your highest unlocked tier. It may use a bounded Tier 1 pass for missing controls. It ends only its own test battles and restores your original tier. Discoveries are saved to your profile automatically. Optional effects never block completion.\n\nStart setup?" : 'Prepare the missing run controls?\n\nYour completed discoveries have been saved. The automatic setup will reuse your menu and inventory scan and start a temporary normal battle to verify battle controls, weapons and the wave counter, then end only that battle. It will not enter a tournament or purchase anything.\n\nAllow approximately 3–6 minutes. Second Wind is optional and will not hold up preparation. Keep the game on Home, leave the emulator untouched, and you may refresh this dashboard; it will reconnect to the scan and apply the results when finished.\n\nContinue?'),
+    confirm:flow=>confirmPreparation(flow === 'learning' ? "Learn your game's screens?\n\nAllow approximately 15–22 minutes, including battle verification. Larger inventories or slower emulators may take longer.\n\nLeave the game on Home and keep the emulator untouched. Setup scans menus once, then tests a battle at your highest unlocked tier. It may use a bounded Tier 1 pass for missing controls. It ends only its own test battles and restores your original tier. Existing recognition images are kept. On successful capture, discoveries are applied to your profile automatically. If capture is partial, review and apply its completed discoveries from Screens. Optional effects never block completion.\n\nStart setup?" : 'Prepare the missing run controls?\n\nYour completed discoveries have been saved. The automatic setup will reuse your menu and inventory scan and start a temporary normal battle to verify battle controls, weapons and the wave counter, then end only that battle. It will not enter a tournament or purchase anything.\n\nAllow approximately 3–6 minutes. Second Wind is optional and will not hold up preparation. Keep the game on Home, leave the emulator untouched, and you may refresh this dashboard; it will reconnect to the scan and apply the results when finished.\n\nContinue?'),
     wait:ms=>new Promise(resolve=>setTimeout(resolve,ms)),
     launching:()=>{
       S.scanLaunchPending=Date.now(); calibrationBusy(true);
@@ -2270,11 +2270,11 @@ function calibReport(st){
       <td>${esc(e.name || "")}${e.rarity ? ' <span class="muted">' + esc(e.rarity) + '</span>' : ""}</td>
       <td title="${esc(e.reason || "")}" class="${e.status === "written" ? "ok" : ["exists","unverified_copy"].includes(e.status) ? "muted" : "bad"}">${e.status === "unverified_copy" ? "Different copy — unverified" : esc(e.status)}${e.reason ? `<div class="muted">${esc(e.reason)}</div>` : ""}</td>
       <td class="${e.status !== "unverified_copy" && Number(e.self || 0) < 0.9 ? "bad" : ""}"
-          title="${e.status !== "unverified_copy" && e.fresh != null && e.fresh > Number(e.self || 0) + 0.05 ? "the existing file scores " + Number(e.self || 0).toFixed(2) + " on this screen; a fresh cut would score " + Number(e.fresh).toFixed(2) + " - tick Overwrite and calibrate again" : ""}">${Number(e.self || 0).toFixed(2)}${e.status !== "unverified_copy" && e.fresh != null && e.fresh > Number(e.self || 0) + 0.05 ? ` <span class="muted">→ ${Number(e.fresh).toFixed(2)}</span>` : ""}</td>
+          title="${e.status !== "unverified_copy" && e.fresh != null && e.fresh > Number(e.self || 0) + 0.05 ? "the existing file scores " + Number(e.self || 0).toFixed(2) + " on this screen; a fresh cut would score " + Number(e.fresh).toFixed(2) + " - verify the identity and appearance before choosing a replacement" : ""}">${Number(e.self || 0).toFixed(2)}${e.status !== "unverified_copy" && e.fresh != null && e.fresh > Number(e.self || 0) + 0.05 ? ` <span class="muted">→ ${Number(e.fresh).toFixed(2)}</span>` : ""}</td>
       <td class="${Number(e.next || 0) > 0.85 && !(e.copies_on_page > 1) ? "bad" : ""}"
           title="${e.copies_on_page > 1 ? e.copies_on_page + " identical tiles on screen - the next-best is another copy" : ""}">${Number(e.next || 0).toFixed(2)}${e.copies_on_page > 1 ? ` <span class="muted">×${e.copies_on_page}</span>` : ""}</td></tr>`).join("")}
   </table>
-  <p class="muted">A good cut matches itself at 1.00 and nothing else above 0.85. "exists" = a file was already there and was kept (tick overwrite to replace it); the names are in the draft profile for Promote.</p>`);
+  <p class="muted">A self-match alone does not verify an image. Check its identity, appearance and match on a fresh screen before replacing it. "exists" means the existing file was kept. Applying discoveries and completing image verification are separate steps.</p>`);
 }
 function calibrationBusy(running, confirmed=true){
   document.querySelectorAll('#client-remap, #bootstrap-start, [onclick^="startCalibrate"], [onclick^="observeNow"], #calib-phase2, [name="calibration-phase"], #calib-taps, #calib-over, [onclick="applyCalibration()"]')
