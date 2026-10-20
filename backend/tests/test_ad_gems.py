@@ -17,11 +17,11 @@ def test_missing_offer_image_requires_both_claim_and_six(monkeypatch,tmp_path):
     monkeypatch.setattr(ad_gems.settings,'template_path',lambda _:tmp_path/'missing.png')
     frame=np.zeros((2560,1080,3),np.uint8)
     cv2.rectangle(frame,(15,400),(195,500),(255,255,0),4)
-    monkeypatch.setattr(textocr,'read_lines',lambda *a:[(20,20,'BUY 6')])
+    monkeypatch.setattr(textocr,'read_lines',lambda *a, **kwargs:[(20,20,'BUY 6')])
     assert ad_gems.find_claim(frame) is None
-    monkeypatch.setattr(textocr,'read_lines',lambda *a:[(20,20,'CLAIM 20')])
+    monkeypatch.setattr(textocr,'read_lines',lambda *a, **kwargs:[(20,20,'CLAIM 20')])
     assert ad_gems.find_claim(frame) is None
-    monkeypatch.setattr(textocr,'read_lines',lambda *a:[(20,20,'6 CLAIM')])
+    monkeypatch.setattr(textocr,'read_lines',lambda *a, **kwargs:[(20,20,'6 CLAIM')])
     assert ad_gems.find_claim(frame) is not None
 
 def test_disabled_and_nonbattle_never_tap(monkeypatch):
@@ -34,7 +34,7 @@ def test_claim_rechecks_position_and_confirms_disappearance(monkeypatch):
     events=[];taps=[]
     monkeypatch.setattr(ad_gems.wave_reader,'read_wave',lambda f:100)
     points=iter([(0,1250,200,100),(0,1250,200,100),None])
-    monkeypatch.setattr(ad_gems,'find_claim_rect',lambda f:next(points))
+    monkeypatch.setattr(ad_gems,'find_claim_rect',lambda f, **kwargs:next(points))
     monkeypatch.setattr(ad_gems.capture,'grab',lambda:None)
     monkeypatch.setattr(ad_gems.time,'sleep',lambda t:None)
     monkeypatch.setattr(ad_gems.act,'tap',lambda *a,**k:taps.append(a) or {})
@@ -49,7 +49,7 @@ def test_claim_rechecks_position_and_confirms_disappearance(monkeypatch):
 def test_moving_claim_is_not_clicked(monkeypatch):
     monkeypatch.setattr(ad_gems.wave_reader,'read_wave',lambda f:100)
     points=iter([(0,1250,200,100),(0,1450,200,100)])
-    monkeypatch.setattr(ad_gems,'find_claim_rect',lambda f:next(points))
+    monkeypatch.setattr(ad_gems,'find_claim_rect',lambda f, **kwargs:next(points))
     monkeypatch.setattr(ad_gems.capture,'grab',lambda:None)
     monkeypatch.setattr(ad_gems.act,'tap',lambda *a,**k: (_ for _ in ()).throw(AssertionError('tap')))
     ad_gems.AdGemCollector(delay=(0, 0)).poll(None)
@@ -63,7 +63,7 @@ def test_contour_edge_noise_does_not_restart_verified_claim(monkeypatch):
     frames = iter([fresh, after])
     taps, events = [], []
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda frame: 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', rectangles.get)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame, **kwargs: rectangles.get(frame))
     monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
     monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *args, **kwargs: taps.append(args) or {})
@@ -84,7 +84,7 @@ def test_offer_wait_is_nonblocking_and_revalidates_after_delay(monkeypatch):
     monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
     monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: None if f is after else (0, 1250, 200, 100))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f, **kwargs: None if f is after else (0, 1250, 200, 100))
     monkeypatch.setattr(ad_gems.capture, 'grab', lambda: pytest.fail('captured during response wait'))
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: taps.append(a) or {})
     monkeypatch.setattr(ad_gems.logger, 'event', lambda kind, **kw: events.append((kind, kw)))
@@ -109,7 +109,7 @@ def test_offer_disappearing_during_wait_cancels_pending_claim(monkeypatch):
     visible = [True]
     monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: (0, 1250, 200, 100) if visible[0] else None)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f, **kwargs: (0, 1250, 200, 100) if visible[0] else None)
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: pytest.fail('stale offer tapped'))
     collector = ad_gems.AdGemCollector(delay=(5, 5))
     collector.poll(None)
@@ -127,7 +127,7 @@ def test_default_poll_and_response_deadlines_vary_with_seed(monkeypatch):
     import random
     monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: 100)
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: (0, 1250, 200, 100))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f, **kwargs: (0, 1250, 200, 100))
     collectors = [ad_gems.AdGemCollector(rng=random.Random(seed)) for seed in range(8)]
     for collector in collectors:
         collector.poll(None)
@@ -149,7 +149,7 @@ def test_claim_never_confirms_a_departed_battle_or_dry_run(monkeypatch, after_wa
     monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: after_wave if f is after else 100)
     monkeypatch.setattr(ad_gems.screen, 'identify', lambda f: SimpleNamespace(name=after_screen if f is after else 'battle'))
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: None if f is after else (0, 1250, 200, 100))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f, **kwargs: None if f is after else (0, 1250, 200, 100))
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: {'dry_run': dry})
     monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
     monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **kw: events.append((name, kw)))
@@ -160,7 +160,7 @@ def test_claim_never_confirms_a_departed_battle_or_dry_run(monkeypatch, after_wa
 
 def test_modal_over_readable_wave_prevents_claim(monkeypatch):
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: (0, 1250, 200, 100))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f, **kwargs: (0, 1250, 200, 100))
     monkeypatch.setattr(ad_gems.capture, 'grab', lambda: None)
     monkeypatch.setattr(ad_gems.screen, 'identify', lambda f: SimpleNamespace(name='exit_battle'))
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: pytest.fail('tap on modal'))
@@ -171,7 +171,7 @@ def test_modal_over_readable_wave_prevents_claim(monkeypatch):
                                    'com.bluestacks.appmart/Activity', 'NotificationShade'])
 def test_an_app_covering_the_game_prevents_claim(monkeypatch, cover):
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: (0, 1250, 200, 100))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f, **kwargs: (0, 1250, 200, 100))
     monkeypatch.setattr(ad_gems.capture, 'grab', lambda: None)
     monkeypatch.setattr(ad_gems.overlays, 'windows', lambda serial, **kw: [cover, ad_gems.overlays.GAME_PKG+'/Activity'])
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: pytest.fail('tap on another app'))
@@ -210,7 +210,7 @@ def test_native_wide_offer_uses_amount_glyph_when_ocr_omits_six(monkeypatch,tmp_
     monkeypatch.setattr(ad_gems.settings,'template_path',lambda _:tmp_path/'missing.png')
     frame=np.zeros((2560,1080,3),np.uint8)
     cv2.rectangle(frame,(20,1270),(268,1418),(255,255,0),4)
-    monkeypatch.setattr(textocr,'read_lines',lambda *a:[(30,80,'CLAIM')])
+    monkeypatch.setattr(textocr,'read_lines',lambda *a, **kwargs:[(30,80,'CLAIM')])
     observed=[]
     monkeypatch.setattr(ad_gems,'_six_amount',lambda p:observed.append(p.shape) or True)
     assert ad_gems.find_claim(frame)==(144,1344)
@@ -224,7 +224,7 @@ def test_offer_moves_with_effect_rows_and_closed_upgrade_panel(monkeypatch,tmp_p
     import numpy as np
     from vision import textocr
     monkeypatch.setattr(ad_gems.settings,'template_path',lambda _:tmp_path/'missing.png')
-    monkeypatch.setattr(textocr,'read_lines',lambda *a:[(20,30,'CLAIM 6')])
+    monkeypatch.setattr(textocr,'read_lines',lambda *a, **kwargs:[(20,30,'CLAIM 6')])
     for top in (1120,1270,1390,2069):
         frame=np.zeros((2560,1080,3),np.uint8)
         cv2.rectangle(frame,(20,top),(268,top+148),(255,255,0),4)
@@ -270,7 +270,7 @@ def test_requested_long_offer_delay_does_not_tap_early(monkeypatch):
     now = [100.0]
     monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda _: (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda _, **kwargs: (20, 1200, 248, 148))
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: pytest.fail('early tap'))
     collector = ad_gems.AdGemCollector(delay=(15, 45), rng=random.Random(17))
     collector.poll(None)
@@ -290,7 +290,7 @@ def test_custom_settings_control_poll_inset_and_claim_cooldown(monkeypatch, conf
     monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
     monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: None if f is after and confirmed else rect)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f, **kwargs: None if f is after and confirmed else rect)
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: taps.append(a) or {})
     monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **kw: events.append((name, kw)))
     monkeypatch.setattr(ad_gems.settings, 'CONFIG', {
@@ -317,7 +317,7 @@ def test_attempt_window_expires_without_extending_and_waits_for_next_cycle(monke
     monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
     monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: None if mode == 'nonbattle' else 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda _: None if mode == 'absent' else rect)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda _, **kwargs: None if mode == 'absent' else rect)
     monkeypatch.setattr(ad_gems.capture, 'grab', lambda: None)
     monkeypatch.setattr(ad_gems.overlays, 'foreground_blocker', lambda _: 'human' if mode == 'blocked' else None)
     def tap(*args, **kwargs):
@@ -350,7 +350,7 @@ def test_window_expiring_during_fresh_io_never_taps(monkeypatch, io_stage):
     now = [100.0]
     monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda _: (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda _, **kwargs: (20, 1200, 248, 148))
     def capture():
         if io_stage == 'capture':
             now[0] = 160
@@ -372,7 +372,7 @@ def test_short_interval_limits_window_and_delayed_offer_cannot_escape(monkeypatc
     now = [100.0]
     monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda _: (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda _, **kwargs: (20, 1200, 248, 148))
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: pytest.fail('delayed offer escaped window'))
     collector = ad_gems.AdGemCollector(delay=(15, 15), options={'confirmed_cooldown_sec': [10, 10]})
     collector.poll(None)
@@ -393,7 +393,7 @@ def test_confirmed_claim_closes_window_and_observes_without_input_until_next_sta
     monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
     monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: None if f is after else (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f, **kwargs: None if f is after else (20, 1200, 248, 148))
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: taps.append(now[0]) or {})
     collector = ad_gems.AdGemCollector(delay=(15, 15))
     collector.poll(initial)
@@ -422,7 +422,7 @@ def test_window_events_report_schedule_and_end_reason(monkeypatch, confirmed, en
     monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
     monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
     monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: 100)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: (20, 1200, 248, 148) if confirmed and f is not after else None)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f, **kwargs: (20, 1200, 248, 148) if confirmed and f is not after else None)
     monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: {})
     monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **data: events.append((name, data)))
@@ -460,7 +460,7 @@ def test_passive_offer_observation_is_throttled_and_bounds_appearance(monkeypatc
     events, checked = [], []
     visible = [False]
     rect = (20, 1200, 248, 148)
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame: checked.append(now[0]) or (rect if visible[0] else None))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame, **kwargs: checked.append(now[0]) or (rect if visible[0] else None))
     monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **data: events.append((name, data)))
     collector = ad_gems.AdGemCollector(options={'poll_sec': [2, 2]})
     collector.next_at = collector.next_window_at = 820
@@ -497,7 +497,7 @@ def test_passive_offer_observation_is_throttled_and_bounds_appearance(monkeypatc
 def test_visibility_unknown_after_lapse_or_departure_never_means_absent(monkeypatch, observation_clock):
     now = observation_clock
     events = []
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame: (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame, **kwargs: (20, 1200, 248, 148))
     monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **data: events.append((name, data)))
     collector = ad_gems.AdGemCollector(options={'poll_sec': [2, 2]})
     collector.next_at = collector.next_window_at = 820
@@ -520,7 +520,7 @@ def test_visibility_unknown_after_lapse_or_departure_never_means_absent(monkeypa
 
 def test_disabled_collector_does_not_observe_but_manual_window_can(monkeypatch, observation_clock):
     checked = []
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame: checked.append(frame) or None)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame, **kwargs: checked.append(frame) or None)
     collector = ad_gems.AdGemCollector(enabled=False)
     collector.poll(None)
     assert checked == []
@@ -536,7 +536,7 @@ def test_attempt_trace_separates_scheduling_response_and_verification(monkeypatc
     initial, fresh, after = object(), object(), object()
     frames = iter([fresh, after])
     events, taps = [], []
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame: None if frame is after else (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame, **kwargs: None if frame is after else (20, 1200, 248, 148))
     def capture():
         now[0] += 2
         return next(frames)
@@ -593,7 +593,7 @@ def test_each_failed_attempt_has_precise_correlated_outcome(monkeypatch, observa
         if mode == 'capture_error':
             raise RuntimeError('capture diagnostic')
         return next(frames)
-    def recognize(frame):
+    def recognize(frame, **kwargs):
         if frame is fresh:
             if mode == 'missing':
                 return None
@@ -643,7 +643,7 @@ def test_each_failed_attempt_has_precise_correlated_outcome(monkeypatch, observa
 
 def test_passive_recognition_error_has_traceback_without_input(monkeypatch, observation_clock):
     events = []
-    def recognize(frame):
+    def recognize(frame, **kwargs):
         raise RuntimeError('offer OCR unavailable')
     monkeypatch.setattr(ad_gems, 'find_claim_rect', recognize)
     monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **data: events.append((name, data)))
@@ -663,7 +663,7 @@ def test_claim_context_reaches_nested_io_attempts_without_leaking(monkeypatch, o
     initial, fresh, after = object(), object(), object()
     frames = iter([fresh, after])
     observed = []
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame: None if frame is after else (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame, **kwargs: None if frame is after else (20, 1200, 248, 148))
     def capture():
         with ad_gems.logger.attempt('test_capture') as nested:
             observed.append(('capture', nested.attempt_id, ad_gems.logger.current_context()))
@@ -705,7 +705,7 @@ def test_finished_claim_id_does_not_leak_into_passive_or_next_response_events(mo
     now = observation_clock
     initial, fresh, after = object(), object(), object()
     frames = iter([fresh, after])
-    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame: None if confirmed and frame is after else (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame, **kwargs: None if confirmed and frame is after else (20, 1200, 248, 148))
     monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *args, **kwargs: {})
     collector = ad_gems.AdGemCollector(delay=(0, 0), options={'poll_sec': [2, 2], 'retry_cooldown_sec': [4, 4]})
@@ -739,3 +739,194 @@ def test_finished_claim_id_does_not_leak_into_passive_or_next_response_events(mo
         assert ended['claim_attempt_id'] == claim_id
         assert ended['window_id'] == finished['window_id']
     assert not any(row['kind'] in ('ad_gems_offer_unknown', 'ad_gems_offer_seen', 'ad_gems_response_scheduled') for row in joined)
+
+
+@pytest.fixture
+def fallback_frame(monkeypatch, tmp_path):
+    import cv2
+    import numpy as np
+    monkeypatch.setattr(ad_gems.settings, 'template_path', lambda _: tmp_path/'missing.png')
+    frame = np.zeros((2560, 1080, 3), np.uint8)
+    for top in (400, 700, 1000):
+        cv2.rectangle(frame, (20, top), (200, top+100), (255, 255, 0), 4)
+    return frame
+
+
+def test_fallback_shares_remaining_time_and_limits_candidates(monkeypatch, observation_clock, fallback_frame):
+    from vision import textocr
+    now = observation_clock
+    timeouts = []
+    def read_lines(patch, scale, *, timeout, raise_on_error):
+        assert raise_on_error is True
+        timeouts.append(timeout)
+        now[0] += .5
+        return []
+    monkeypatch.setattr(textocr, 'read_lines', read_lines)
+    with pytest.raises(ad_gems.RecognitionIncomplete, match='ocr_candidate_limit'):
+        ad_gems.find_claim_rect(fallback_frame)
+    assert timeouts == [2, 1.5]
+
+
+@pytest.mark.parametrize('expired', [False, True])
+def test_fallback_rejects_results_at_deadline_and_starts_no_work_after_it(monkeypatch, observation_clock, fallback_frame, expired):
+    from vision import textocr
+    now = observation_clock
+    calls = []
+    def read_lines(patch, scale, *, timeout, **kwargs):
+        calls.append(timeout)
+        now[0] += timeout
+        return [(20, 20, 'CLAIM 6')]
+    monkeypatch.setattr(textocr, 'read_lines', read_lines)
+    with pytest.raises(ad_gems.RecognitionIncomplete, match='recognition_deadline'):
+        ad_gems.find_claim_rect(fallback_frame, deadline=100 if expired else 100.25)
+    assert calls == ([] if expired else [.25])
+
+
+@pytest.mark.parametrize('stage', ['initial', 'fresh', 'confirmation'])
+@pytest.mark.parametrize('failure', ['timeout', 'candidates', 'engine_error'])
+def test_incomplete_recognition_never_authorizes_input_or_confirms_reward(monkeypatch, observation_clock, fallback_frame, stage, failure):
+    import subprocess
+    from vision import textocr
+    observations = {'initial': 1, 'fresh': 2, 'confirmation': 3}
+    target = observations[stage]
+    reads, captures, taps = [], [], []
+    def read_lines(patch, scale, **kwargs):
+        reads.append(kwargs)
+        if len(reads) >= target:
+            if failure == 'engine_error':
+                raise OSError('Windows OCR unavailable')
+            if failure == 'timeout':
+                raise subprocess.TimeoutExpired('test OCR', kwargs['timeout'])
+            return []
+        return [(20, 20, 'CLAIM 6')]
+    monkeypatch.setattr(textocr, 'read_lines', read_lines)
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: captures.append(True) or fallback_frame)
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *args, **kwargs: taps.append(kwargs) or {})
+    collector = ad_gems.AdGemCollector(delay=(0, 0))
+    collector.poll(fallback_frame)
+    status = collector.status()
+    assert status['visibility'] == 'unknown'
+    assert status['visibility_reason'] == {'timeout': 'ocr_timeout', 'candidates': 'ocr_candidate_limit', 'engine_error': 'ocr_error'}[failure]
+    assert status['last_absent_at'] is None
+    assert status['counters']['confirmed'] == 0
+    assert len(taps) == (1 if stage == 'confirmation' else 0)
+    assert len(captures) == target-1
+    if stage != 'initial':
+        assert status['last_outcome']['reason'] == ('post_claim_recognition_incomplete'
+                                                  if stage == 'confirmation' else 'fresh_recognition_incomplete')
+
+
+def test_initial_recognition_uses_remaining_window_and_closes_without_capture(monkeypatch, observation_clock, fallback_frame):
+    from vision import textocr
+    now = observation_clock
+    timeouts = []
+    def read_lines(patch, scale, *, timeout, **kwargs):
+        timeouts.append(timeout)
+        if now[0] > 100:
+            now[0] += timeout
+        return [(20, 20, 'CLAIM 6')]
+    monkeypatch.setattr(textocr, 'read_lines', read_lines)
+    collector = ad_gems.AdGemCollector(delay=(1, 1))
+    collector.poll(fallback_frame)
+    now[0] = 159.5
+    collector.poll(fallback_frame)
+    status = collector.status()
+    assert timeouts == [2, .5]
+    assert status['visibility'] == 'unknown'
+    assert status['counters']['attempts'] == 0
+    assert status['counters']['windows_missed'] == 1
+    assert collector.window_deadline is None
+    assert collector.next_window_at == 820
+
+
+@pytest.mark.parametrize('raise_on_error', [False, True])
+def test_textocr_timeout_is_opt_in_and_cleans_temporary_crop(monkeypatch, tmp_path, raise_on_error):
+    import subprocess
+    import numpy as np
+    from vision import textocr
+    mkstemp = textocr.tempfile.mkstemp
+    monkeypatch.setattr(textocr.tempfile, 'mkstemp', lambda **kwargs: mkstemp(dir=tmp_path, **kwargs))
+    def run_hidden(*args, **kwargs):
+        raise subprocess.TimeoutExpired('test OCR', kwargs['timeout'])
+    monkeypatch.setattr(textocr.settings, 'run_hidden', run_hidden)
+    crop = np.zeros((10, 10, 3), np.uint8)
+    if raise_on_error:
+        with pytest.raises(subprocess.TimeoutExpired):
+            textocr.read_lines(crop, 1, timeout=.5, raise_on_error=True)
+    else:
+        assert textocr.read_lines(crop, 1, timeout=.5) == []
+    assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize('preparation_sec', [.25, 1])
+def test_strict_textocr_budget_includes_crop_preparation(monkeypatch, tmp_path, observation_clock, preparation_sec):
+    import subprocess
+    import numpy as np
+    from vision import textocr
+    now = observation_clock
+    mkstemp = textocr.tempfile.mkstemp
+    monkeypatch.setattr(textocr.tempfile, 'mkstemp', lambda **kwargs: mkstemp(dir=tmp_path, **kwargs))
+    def write(*args):
+        now[0] += preparation_sec
+        return True
+    calls = []
+    monkeypatch.setattr(textocr.cv2, 'imwrite', write)
+    monkeypatch.setattr(textocr.settings, 'run_hidden', lambda *args, **kwargs: calls.append(kwargs['timeout']) or SimpleNamespace(stdout=b'', returncode=0, stderr=b''))
+    crop = np.zeros((10, 10, 3), np.uint8)
+    if preparation_sec == 1:
+        with pytest.raises(subprocess.TimeoutExpired):
+            textocr.read_lines(crop, 1, timeout=1, raise_on_error=True)
+        assert calls == []
+    else:
+        assert textocr.read_lines(crop, 1, timeout=1, raise_on_error=True) == []
+        assert calls == [.75]
+    assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize('failure', ['unavailable', 'process_error', 'nonzero', 'stderr', 'crop_write'])
+@pytest.mark.parametrize('strict', [False, True])
+def test_textocr_engine_failures_are_distinct_from_empty_reading_in_strict_mode(monkeypatch, tmp_path, failure, strict):
+    import subprocess
+    import numpy as np
+    from vision import textocr
+    mkstemp = textocr.tempfile.mkstemp
+    monkeypatch.setattr(textocr.tempfile, 'mkstemp', lambda **kwargs: mkstemp(dir=tmp_path, **kwargs))
+    if failure == 'crop_write':
+        monkeypatch.setattr(textocr.cv2, 'imwrite', lambda *args: False)
+    def run_hidden(*args, **kwargs):
+        if failure == 'unavailable':
+            raise OSError('OCR engine unavailable')
+        if failure == 'process_error':
+            raise subprocess.SubprocessError('OCR engine failed')
+        return SimpleNamespace(returncode=1 if failure == 'nonzero' else 0,
+                               stdout=b'', stderr=b'engine error' if failure == 'stderr' else b'',
+                               args=['test OCR'])
+    monkeypatch.setattr(textocr.settings, 'run_hidden', run_hidden)
+    crop = np.zeros((10, 10, 3), np.uint8)
+    if strict:
+        with pytest.raises((OSError, subprocess.SubprocessError)):
+            textocr.read_lines(crop, 1, timeout=1, raise_on_error=True)
+    else:
+        assert textocr.read_lines(crop, 1, timeout=1) == []
+    assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize('stage', ['wave', 'screen'])
+def test_observation_prework_consumes_shared_budget_before_offer_ocr(monkeypatch, observation_clock, stage):
+    now = observation_clock
+    def slow_wave(frame):
+        now[0] += ad_gems.OBSERVATION_TIMEOUT_SEC
+        return 100
+    def slow_screen(frame):
+        now[0] += ad_gems.OBSERVATION_TIMEOUT_SEC
+        return SimpleNamespace(name='battle')
+    if stage == 'wave':
+        monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', slow_wave)
+        monkeypatch.setattr(ad_gems.screen, 'identify', lambda frame: pytest.fail('work after deadline'))
+    else:
+        monkeypatch.setattr(ad_gems.screen, 'identify', slow_screen)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda *args, **kwargs: pytest.fail('OCR after deadline'))
+    collector = ad_gems.AdGemCollector(delay=(0, 0))
+    collector.poll(None)
+    assert collector.status()['visibility_reason'] == 'recognition_deadline'
+    assert collector.status()['counters']['attempts'] == 0

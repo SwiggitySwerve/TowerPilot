@@ -44,6 +44,24 @@ def test_missing_gem_waits_until_next_scheduled_window(cycle):
     assert len(state.taps) == 9
 
 
+def test_latest_refusal_keeps_actual_time_and_correlation_without_claiming_reward(cycle, monkeypatch):
+    state, tapper = cycle
+    monkeypatch.setattr(shard.time, 'time', lambda: 1000+state.now)
+    monkeypatch.setattr(shard.wave_reader, 'read_wave', lambda _: None)
+    tapper.poll(200)
+    refused = tapper.status()['last_refusal']
+    assert refused == dict(reason='no_wave', observed_at=1100,
+                           window_id=tapper.window_id, attempt_id=tapper.attempt_id)
+    assert refused['window_id'] and refused['attempt_id']
+    assert state.taps == [] and tapper.status()['last_outcome'] is None
+    state.now = 102
+    assert tapper.status()['last_refusal'] == refused
+    state.now = 160
+    tapper.poll(200)
+    assert tapper.status()['last_outcome']['confirmed'] is False
+    assert tapper.status()['last_refusal'] == refused
+
+
 @pytest.mark.parametrize('reason', ['no_wave', 'balance_unreadable', 'static'])
 def test_refusals_do_not_restart_or_extend_collection_window(cycle, monkeypatch, reason):
     state, tapper = cycle

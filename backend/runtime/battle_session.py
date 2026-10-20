@@ -291,7 +291,10 @@ class BattleSession:
         else:
             status = rs.shop.status()
             if not status['active']:
-                self._acknowledge(manual['command'], state='completed', evidence=status.get('manual'), diagnostic=status)
+                evidence = copy.deepcopy(status.get('manual'))
+                if isinstance(evidence, dict) and (status.get('last_sweep') or {}).get('manual'):
+                    evidence['last_sweep'] = copy.deepcopy(status['last_sweep'])
+                self._acknowledge(manual['command'], state='completed', evidence=evidence, diagnostic=status)
                 self.manual = None
 
     def publish(self, rs, *, battle_visible):
@@ -317,10 +320,11 @@ class BattleSession:
         epoch = time.time()
         interval = (self.effective.get('shopping_plan') or {}).get('interval_sec', self.effective.get('shop_interval_sec', 90))
         if rs.shop is not None:
+            shopping_status = rs.shop.status()
             routines['shopping'] = dict(enabled=rs.shopping_enabled,
                                      state='active' if rs.shop.active else 'scheduled' if rs.shopping_enabled else 'off',
-                                     next_due_at=epoch + rs.last_shop+interval-now,
-                                     window_ends_at=None, last_outcome=rs.shop.status())
+                                     next_due_at=epoch if shopping_status.get('continuation_ready') else epoch + rs.last_shop+interval-now,
+                                     window_ends_at=None, last_outcome=shopping_status)
             routines['rewards'] = dict(enabled=rs.rewards_enabled, state='active' if rs.mission.active else 'watching' if rs.rewards_enabled else 'off',
                                     next_due_at=None, window_ends_at=None)
             for routine in ('abilities', 'rescue'):
@@ -331,11 +335,50 @@ class BattleSession:
                                        next_due_at=None, window_ends_at=None)
         for state in routines.values():
             state.update(blocker=state.get('blocker') if battle_visible else 'waiting_for_game_state', server_time=epoch)
+        collection = self._collection_evidence(routines, epoch)
         self.store.update_status(self.battle['id'], self.generation, dict(routines=routines, server_time=epoch,
+            collection_evidence=collection,
             observed_wave=rs.tracker.last, last_wave_provenance='observed',
             observed_duration_sec=self._observed_duration, observation_gaps=copy.deepcopy(self._observation_gaps),
             observation_gap_started_at=self._gap_started_at,
             driver_generation=self.generation, observation_status='observing' if battle_visible else 'waiting_for_game_state'))
+
+    def _collection_evidence(self, routines, epoch):
+        """Count sampled, distinct confirmations inside this battle/segment.
+
+        Collector counters may span battles. Neither command completion nor
+        offer disappearance proves a gem balance total. These are durable lower
+        bounds on observed confirmations, not reconstructed historical totals.
+        """
+        segment_start = self.battle['segments'][-1]['started_at']
+        start = max(self.battle['created_at'], segment_start)
+        previous = self.battle.get('runtime', {}).get('collection_evidence', {})
+        if previous.get('generation') == self.generation and previous.get('started_at') == start:
+            summary = copy.deepcopy(previous)
+        else:
+            summary = dict(generation=self.generation, started_at=start,
+                           coverage='sampled_driver_observations', ad_claim_confirmations=0,
+                           orbit_balance_confirmations=0, orbit_recorded_increase=0,
+                           latest_confirmations={})
+        for name, expected_reason, counter in (
+                ('ad_gems', 'offer_disappeared', 'ad_claim_confirmations'),
+                ('floating_gems', 'balance_increased', 'orbit_balance_confirmations')):
+            outcome = routines.get(name, {}).get('last_outcome') or {}
+            observed = outcome.get('observed_at')
+            if (outcome.get('confirmed') is not True or outcome.get('reason') != expected_reason
+                    or type(observed) not in (int, float) or not start <= observed <= epoch):
+                continue
+            identity = outcome.get('claim_attempt_id') or outcome.get('window_id') or outcome.get('attempt_id')
+            if not identity:
+                continue
+            last = summary['latest_confirmations'].get(name, {})
+            if last and (last.get('id') == identity or observed <= last['observed_at']):
+                continue
+            summary[counter] += 1
+            summary['latest_confirmations'][name] = dict(id=identity, observed_at=observed)
+        summary['orbit_recorded_increase'] = 2*summary['orbit_balance_confirmations']
+        summary['observed_through_at'] = epoch
+        return summary
 
     @property
     def manual_shopping(self):

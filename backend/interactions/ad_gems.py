@@ -5,6 +5,7 @@ import random
 import math
 import traceback
 import uuid
+import subprocess
 import cv2
 from device import act, capture, overlays
 from vision import wave_reader, screen
@@ -15,6 +16,19 @@ import settings
 
 TEMPLATE = 'buttons/ad_gems_claim.png'
 EDGE_INSET_PX = AD_GEM_FIELDS['edge_inset_px']['default']
+OBSERVATION_TIMEOUT_SEC = 2.0
+MAX_OCR_CANDIDATES = 2
+
+
+class RecognitionIncomplete(Exception):
+    """The bounded search cannot establish either presence or absence."""
+
+
+def _remaining(deadline):
+    remaining = deadline-time.monotonic()
+    if remaining <= 0:
+        raise RecognitionIncomplete('recognition_deadline')
+    return remaining
 
 def _six_amount(patch):
     """Read the amount beside the gem, excluding the icon and button border."""
@@ -39,8 +53,15 @@ def _six_amount(patch):
     return scores[6]>=.8 and scores[6]-max(v for k,v in scores.items() if k!=6)>=.1
 
 
-def find_claim_rect(frame):
-    """Return the verified offer rectangle in native screen coordinates."""
+def find_claim_rect(frame, *, deadline=None):
+    """Return a verified rectangle, None for absence, or raise if incomplete.
+
+    Each search has a local time cap; a caller's earlier deadline wins.
+    No partially searched or timed-out frame can prove offer disappearance.
+    """
+    local_deadline = time.monotonic()+OBSERVATION_TIMEOUT_SEC
+    deadline = local_deadline if deadline is None else min(deadline, local_deadline)
+    _remaining(deadline)
     from player.bootstrap_layout import manifest
     rx,ry,rw,rh = manifest()['runtime_regions']['ad_gems']['search']
     rail=frame[ry:ry+rh,rx:rx+rw]
@@ -53,18 +74,37 @@ def find_claim_rect(frame):
         hsv=cv2.cvtColor(rail,cv2.COLOR_BGR2HSV)
         mask=cv2.inRange(hsv,(75,60,150),(110,255,255))
         contours,_=cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        for contour in contours:
-            x,y,w,h=cv2.boundingRect(contour)
+        candidates = sorted((cv2.boundingRect(contour) for contour in contours),
+                            key=lambda rect: (rect[1], rect[0]))
+        checked = 0
+        for x,y,w,h in candidates:
+            _remaining(deadline)
             if not (100<=w<=300 and 55<=h<=180): continue
-            text=' '.join(t for _,_,t in textocr.read_lines(rail[y:y+h,x:x+w],2)).upper()
-            if re.search(r'\bCLAIM\b',text) and (re.search(r'\b6\b',text) or _six_amount(rail[y:y+h,x:x+w])):
+            if checked >= MAX_OCR_CANDIDATES:
+                raise RecognitionIncomplete('ocr_candidate_limit')
+            checked += 1
+            try:
+                rows = textocr.read_lines(rail[y:y+h,x:x+w], 2,
+                                          timeout=_remaining(deadline), raise_on_error=True)
+            except subprocess.TimeoutExpired as exc:
+                raise RecognitionIncomplete('ocr_timeout') from exc
+            except (OSError, subprocess.SubprocessError) as exc:
+                raise RecognitionIncomplete('ocr_error') from exc
+            _remaining(deadline)
+            text=' '.join(t for _,_,t in rows).upper()
+            matched = (re.search(r'\bCLAIM\b',text)
+                       and (re.search(r'\b6\b',text) or _six_amount(rail[y:y+h,x:x+w])))
+            _remaining(deadline)
+            if matched:
                 return (rx+x,ry+y,w,h)
+        _remaining(deadline)
         return None
     # Left HUD column; search vertically because wall/cards change its height.
     hay=rail
     h,w=template.shape[:2]
     if h>=hay.shape[0] or w>=hay.shape[1]:return None
     _,score,_,loc=cv2.minMaxLoc(cv2.matchTemplate(hay,template,cv2.TM_CCOEFF_NORMED))
+    _remaining(deadline)
     return (rx+loc[0],ry+loc[1],w,h) if score>=.92 else None
 
 
@@ -161,17 +201,28 @@ class AdGemCollector:
                 and self.visibility != 'unknown'):
             self.mark_unknown('observations_lapsed')
 
-    def _observe(self, frame):
+    def _observe(self, frame, *, deadline=None):
         """Recognize only the supplied frame; callers own all capture decisions."""
         now = time.monotonic()
+        deadline = min(now+OBSERVATION_TIMEOUT_SEC, deadline) if deadline is not None else now+OBSERVATION_TIMEOUT_SEC
         self.counters['checks'] += 1
-        wave = wave_reader.read_wave(frame)
-        name = None if wave is None else screen.identify(frame).name
-        self._last_frame_evidence = dict(wave=wave, screen=name)
-        if wave is None or name != 'battle':
-            self.mark_unknown('not_battle')
+        try:
+            _remaining(deadline)
+            wave = wave_reader.read_wave(frame)
+            _remaining(deadline)
+            name = None if wave is None else screen.identify(frame).name
+            self._last_frame_evidence = dict(wave=wave, screen=name)
+            _remaining(deadline)
+            if wave is None or name != 'battle':
+                self.mark_unknown('not_battle')
+                return None
+            point = find_claim_rect(frame, deadline=deadline)
+            _remaining(deadline)
+        except RecognitionIncomplete as exc:
+            self.mark_unknown(str(exc))
+            logger.event('ad_gems_recognition_incomplete', reason=str(exc),
+                         duration_sec=round(time.monotonic()-now, 3), **self._context())
             return None
-        point = find_claim_rect(frame)
         previous = self.visibility
         self.last_observed_at = now
         self.visibility_reason = 'battle_frame'
@@ -372,13 +423,16 @@ class AdGemCollector:
         if action_due:
             self.next_at = min(self.window_deadline, next_check)
         try:
-            point = self._observe(frame)
+            point = self._observe(frame, deadline=self.window_deadline)
         except Exception as exc:
             self.mark_unknown('recognition_error')
             logger.event('ad_gems_observation_error', error=str(exc),
                          error_type=type(exc).__name__, traceback=traceback.format_exc(),
                          **self._context())
             return frame
+        if self.window_deadline is not None and self._window_expired():
+            return frame
+        now = time.monotonic()
         if not action_due or point is None:
             return frame
         if self.claim_at is None:
@@ -441,9 +495,13 @@ class AdGemCollector:
             fresh = self.guard(fresh, "battle")
         self._attempt_latest_frame = fresh
         self._attempt_stage = 'fresh_recognition'
-        current = self._observe(fresh)
+        current = self._observe(fresh, deadline=self.window_deadline)
         if self.visibility == 'unknown':
-            self._skip('fresh_frame_not_battle', **self._last_frame_evidence)
+            self._skip('fresh_frame_not_battle' if self.visibility_reason == 'not_battle'
+                       else 'fresh_recognition_incomplete',
+                       recognition_reason=self.visibility_reason, **self._last_frame_evidence)
+            if time.monotonic() >= self.window_deadline:
+                self._close_window()
             return fresh
         if current is None:
             self._skip('fresh_offer_missing')
@@ -504,7 +562,9 @@ class AdGemCollector:
         self._attempt_stage = 'confirmation_recognition'
         self._observe(after)
         vanished = self.visibility == 'absent'
-        reason = ('offer_disappeared' if vanished else 'post_claim_not_battle'
+        reason = ('offer_disappeared' if vanished else
+                  ('post_claim_not_battle' if self.visibility_reason == 'not_battle'
+                   else 'post_claim_recognition_incomplete')
                   if self.visibility == 'unknown' else 'offer_still_visible')
         logger.event('ad_gems_claim',confirmed=vanished, reason=reason, **self._context())
         self._finish_attempt('confirmed' if vanished else 'not_confirmed', reason)

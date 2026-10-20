@@ -2341,6 +2341,26 @@ def recover_reward_menu(rs, frame, now):
     return True
 
 
+def advance_shopping(rs, frame, wave, sprint: bool, now: float, interval: float) -> None:
+    """One shopping action per monitoring pass; all terminal paths back off.
+
+    A confirmed bounded window may request another window on the next pass.
+    Its inactive interval lets mission and ability checks run before shopping.
+    """
+    if rs.mission.active:
+        return
+    if not rs.shop.active:
+        if rs.shop.finished or not rs.shop.due(now, rs.last_shop, interval):
+            return
+        rs.shop.start()
+    rs.shop.step(frame, wave=wave, after_intro_sprint=not sprint)
+    if not rs.shop.active:
+        rs.last_shop = time.monotonic()
+        if rs.shop.finished and not rs.shop_done_logged:
+            logger.event('shopping_complete', wave=wave, maxed=sorted(rs.shop.maxed))
+            rs.shop_done_logged = True
+
+
 def main():
     global _battle_session
     _battle_session = None
@@ -2727,11 +2747,13 @@ def main():
                         logger.event("tap_refused", button="side_menu",
                                      error=str(e))
                     rs.menu_open_try = now
+                    continue  # the menu moved; observe it before any other action
             elif rs.rewards_enabled:
                 rs.menu_closed_frames = 0
                 rs.menu_open_frames += 1
                 if rs.menu_open_frames >= 2 and not rs.shop.active:
                     from interactions import event_rewards
+                    reward_stepped = False
                     for key, detector, flow in (
                             ('daily_missions', missions.quests_badge, missions.quest_flow),
                             ('guild_progress', missions.guild_badge, missions.guild_flow),
@@ -2744,8 +2766,9 @@ def main():
                         if present:
                             rs.mission.start(flow)
                             rs.mission.step(frame)
+                            reward_stepped = True
                             break
-                    if rs.mission.active:
+                    if reward_stepped:
                         continue
                 if rs.menu_open_frames < 2:
                     # menu may still be sliding in (EXIT BATTLE renders
@@ -2786,6 +2809,7 @@ def main():
                     rs.quest_due = None
                     if badge == "guild":
                         rs.await_guild_result = True
+                    continue  # flow completion also invalidates this frame
                 # ---- guild store: ONLY after a guild claim landed (the
                 # balance can't change otherwise - no point checking)
                 if not rs.mission.active and not rs.shop.active \
@@ -2793,6 +2817,7 @@ def main():
                     rs.pending_store = False
                     rs.mission.start(store.store_flow)
                     rs.mission.step(frame)
+                    continue
                 # ---- once per UTC day, 01:00 +/-10 minutes; catch up when online
                 if not rs.mission.active and not rs.shop.active \
                         and rs.menu_open_frames >= 2 \
@@ -2805,6 +2830,7 @@ def main():
                     rs.mission.start(lambda: missions.free_gems_flow(
                         on_success=store_gems_mark_claimed))
                     rs.mission.step(frame)
+                    continue
 
             # ---- CL normalization: first thing each run, force the preset's
             # baseline state (OFF for high-tier farm, ON for low_tier_farm) -
@@ -2914,17 +2940,7 @@ def main():
             if not rs.shopping_enabled and not (_battle_session is not None and _battle_session.manual_shopping):
                 rs.shop.abort()
                 continue
-            if rs.shop.active:
-                rs.shop.step(frame, wave=wave, after_intro_sprint=not sprint)  # ONE small action per frame
-                if not rs.shop.active:
-                    rs.last_shop = time.monotonic()   # sweep just finished
-                    if rs.shop.finished and not rs.shop_done_logged:
-                        logger.event("shopping_complete", wave=wave,
-                                     maxed=sorted(rs.shop.maxed))
-                        rs.shop_done_logged = True
-            elif now - rs.last_shop > interval and not rs.shop.finished:
-                rs.shop.start()
-                rs.shop.step(frame, wave=wave, after_intro_sprint=not sprint)
+            advance_shopping(rs, frame, wave, sprint, now, interval)
 
             # ---- science: burst shots in fleet danger windows
             f = CONFIG["fleet"]

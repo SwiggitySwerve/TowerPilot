@@ -33,6 +33,8 @@ _SCROLL_STEPS = 4          # max downward scroll steps while hunting (big stride
 IGNORE_STATS = {"defense_absolute"}
 _TOP_RESETS = 3            # upward swipes to guarantee panel is at the top
 _SETTLE_SEC = 0.25         # UI settle time after tab tap / scroll
+_CONTINUATION_PURCHASES = 4  # then return to idle so other routines can navigate
+_CONTINUATION_SEC = 20.0     # checked between actions, never discards confirmation
 
 
 def _quest_frame(guard=None):
@@ -275,7 +277,13 @@ class Shopper:
     chunk. Between every step the main loop captures a fresh frame and runs
     ALL monitoring (death/rescue/gems/...), so shopping - the least important
     job - can never blind the important ones. abort() drops a sweep instantly
-    (death, left the battle screen, etc.)."""
+    (death, left the battle screen, etc.). Version-2 while_affordable plans
+    confirm each single 1x purchase, yielding a new monitor frame before the
+    next quote. Windows stop after four confirmed purchases or 20 seconds
+    between actions, then expose an idle checkpoint to other routines. Only
+    confirmed progress allows an immediate next window; all blockers retain
+    the configured interval as their idle backoff.
+    """
 
     def __init__(self, preset: dict):
         from player.shopping_plan import normalize_plan
@@ -288,6 +296,8 @@ class Shopper:
         self._wave = None
         self._pending_confirmation = None
         self._last_confirmation = None
+        self._continuation_ready = False
+        self._confirmed_in_sweep = 0
         self.done_once: set[str] = set()
         self.maxed: set[str] = set()     # gold "Max" boxes: done for this run
         self._gen = None
@@ -305,6 +315,7 @@ class Shopper:
         self._manual_outcome = None
         self._pending_confirmation = None
         self._last_confirmation = None
+        self._continuation_ready = False
         self.done_once.clear()
         self.maxed.clear()
 
@@ -331,6 +342,8 @@ class Shopper:
 
     def start(self):
         if self._gen is None:
+            self._continuation_ready = False
+            self._confirmed_in_sweep = 0
             self._sweep_id = uuid.uuid4().hex
             self._sweep_context = {**logger.current_context(), 'sweep_id': self._sweep_id}
             self._sweep_started = time.monotonic()
@@ -370,7 +383,10 @@ class Shopper:
         error = error if error is not None else self._sweep_error
         decision = dict(self._last_decision)
         if outcome is None:
-            outcome = ('confirmed' if decision.get('action') == 'confirmed' else
+            confirmed_all = (self._confirmed_in_sweep > 0
+                             and self._confirmed_in_sweep == self._sweep_counts['dispatched']
+                             and not any(self._sweep_counts.get(key) for key in ('dry_run', 'failed', 'refused')))
+            outcome = ('confirmed' if confirmed_all or decision.get('action') == 'confirmed' else
                        'unconfirmed' if self._sweep_counts['dispatched'] else
                        'failed' if self._sweep_counts.get('failed') else
                        'refused' if self._sweep_counts.get('refused') else
@@ -382,6 +398,7 @@ class Shopper:
                   'count_semantics': 'tap_invocations_not_confirmed_purchases',
                   'duration_ms': round((time.monotonic() - self._sweep_started) * 1000, 3),
                   'wave': self._wave, 'manual': self._sweep_manual is not None,
+                  'confirmed_purchases': self._confirmed_in_sweep,
                   'selection': self._sweep_manual, 'section': decision.get('section', self._sweep_section),
                   'upgrade': decision.get('upgrade', self._sweep_upgrade)}
         if error is not None:
@@ -402,6 +419,15 @@ class Shopper:
                         self._last_decision = {"action": "wait", "reason": "unknown_wave" if self._wave is None else "intro_sprint"}
                         self.abort()
                         return
+                    if (self.plan['cadence'] == 'while_affordable' and self._sweep_manual is None
+                            and self._pending_confirmation is None
+                            and time.monotonic() - self._sweep_started >= _CONTINUATION_SEC):
+                        self._continuation_ready = self._confirmed_in_sweep > 0
+                        self._last_decision = {'action': 'wait', 'reason': 'continuation_time_budget'}
+                        self._gen.close()
+                        self._gen = None
+                        self._end_sweep()
+                        return
                 self._gen.send(frame)
             except StopIteration:
                 self._gen = None
@@ -411,6 +437,7 @@ class Shopper:
                 raise
 
     def abort(self):
+        self._continuation_ready = False
         manual_pending = self._manual is not None
         if self._gen is not None:
             with logger.context(**self._sweep_context):
@@ -459,9 +486,29 @@ class Shopper:
                          "reserve_enforcement": "requires_fresh_1x_quote" if self.plan is not None else "legacy_unprotected",
                          "pending_confirmation": self._pending_confirmation,
                          "last_confirmation": self._last_confirmation,
+                         "cadence": self.plan['cadence'] if self.plan else 'single_attempt',
+                         "continuation_ready": self._continuation_ready,
+                         "continuation_budget": {'purchases': _CONTINUATION_PURCHASES,
+                                                 'seconds': _CONTINUATION_SEC},
                          "cash_reserve": self.plan.get("cash_reserve") if self.plan else None})
 
+    def due(self, now: float, last_shop: float, interval: float) -> bool:
+        """Only confirmed progress can bypass the configured idle backoff."""
+        return self._continuation_ready or now - last_shop > interval
+
     def _queue_sweep_gen(self):
+        """Bound sustained buying; every attempt and confirmation yields frames."""
+        continuous = self.plan['cadence'] == 'while_affordable' and self._manual is None
+        for _ in range(_CONTINUATION_PURCHASES if continuous else 1):
+            confirmed_before = self._confirmed_in_sweep
+            yield from self._queue_attempt_gen(require_confirmation=continuous)
+            if not continuous or self._confirmed_in_sweep == confirmed_before:
+                return
+            if time.monotonic() - self._sweep_started >= _CONTINUATION_SEC:
+                break
+        self._continuation_ready = continuous and self._confirmed_in_sweep > 0
+
+    def _queue_attempt_gen(self, *, require_confirmation=False):
         """Global queue order drives navigation; each pass has a fixed scan cap."""
         from player.shopping_plan import queue_candidates, decide
         manual = self._manual
@@ -551,7 +598,7 @@ class Shopper:
                         self.attempts[key] = self.attempts.get(key, 0) + 1
                         if self.plan["queue_mode"] == "round_robin":
                             self.attempts["__queue_cursor"] = (decision["index"] + 1) % max(1, len(self.plan["queue"]))
-                        if self.plan["queue_mode"] == "weighted_split":
+                        if require_confirmation or self.plan["queue_mode"] == "weighted_split":
                             self._pending_confirmation = {"upgrade": stat, "section": tab, "before": quote}
                     logger.event("shop_plan_attempt", decision=decision, quote=quote,
                                  outcome="unconfirmed", **event)
@@ -593,6 +640,7 @@ class Shopper:
         if after["center"] is None or not _confirmed_purchase(pending["before"], after):
             return False
         record_confirmed_purchase(self.plan, self.attempts, pending["upgrade"])
+        self._confirmed_in_sweep += 1
         logger.event("shop_plan_confirmation", upgrade=pending["upgrade"],
                      before=pending["before"], after=after,
                      evidence="1x_price_increased_and_cash_decreased")
