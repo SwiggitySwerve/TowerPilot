@@ -399,6 +399,58 @@ def test_new_start_reconciles_dead_worker_without_prior_poll(tmp_path, monkeypat
     assert launches[0][1:3] == ['-m', 'runtime.operation_worker']
 
 
+def test_launch_propagates_correlation_without_changing_idempotent_payload(tmp_path, monkeypatch):
+    from runtime import diagnostics
+    cfg, ctx = target(tmp_path)
+    launches = []
+    def spawn(command, **kwargs):
+        launches.append(kwargs['env'])
+        return types.SimpleNamespace(pid=99999999)
+    command = {'idempotency_key': 'same-business-command', 'preset': 'test'}
+    with diagnostics.context(trace_id='original-trace', request_id='original-request', span_id='request-span'):
+        first = service.launch(tmp_path, cfg, 'run', command, ['python', 'fake.py'], spawn, ctx['profile_path'])
+    with diagnostics.context(trace_id='retried-trace', request_id='retried-request'):
+        second = service.launch(tmp_path, cfg, 'run', command, ['python', 'fake.py'], spawn, ctx['profile_path'])
+    assert first == second
+    assert first['request'] == {'preset': 'test'}
+    assert 'diagnostic' not in first['context']
+    assert len(launches) == 1
+    assert launches[0]['TOWER_TRACE_ID'] == 'original-trace'
+    assert launches[0]['TOWER_REQUEST_ID'] == 'original-request'
+    assert launches[0]['TOWER_OPERATION_ID'] == first['id']
+    rows = [json.loads(line) for path in (tmp_path / 'logs' / '_dashboard').glob('events_*.jsonl')
+            for line in path.read_text().splitlines()]
+    start = next(row for row in rows if row['kind'] == 'attempt_start')
+    assert launches[0]['TOWER_PARENT_SPAN_ID'] == start['span_id']
+    assert start['parent_span_id'] == 'request-span'
+
+
+def test_worker_exception_persists_failure_and_correlated_raw_outcome(tmp_path, monkeypatch):
+    from runtime import logger
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('run', ctx, {})
+    monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    monkeypatch.setenv('TOWER_TRACE_ID', 'worker-trace')
+    with pytest.raises(RuntimeError, match='worker crashed'):
+        with worker_operation():
+            raise RuntimeError('worker crashed')
+    final = store.get(op['id'])
+    assert final['status'] == 'failed'
+    assert final['error']['code'] == 'RuntimeError'
+    rows = [json.loads(line) for path in logger._LOG_DIR.rglob('events_*.jsonl')
+            for line in path.read_text().splitlines()]
+    assert {row['operation_id'] for row in rows} == {op['id']}
+    assert {row['trace_id'] for row in rows} == {'worker-trace'}
+    assert next(row for row in rows if row['kind'] == 'operation_worker_started')['revision'] == 2
+    assert next(row for row in rows if row['kind'] == 'operation_worker_finished')['outcome'] == 'failed'
+    end = next(row for row in rows if row['kind'] == 'attempt_end')
+    assert end['outcome'] == 'failed'
+    assert end['exception_type'] == 'RuntimeError'
+    assert 'worker crashed' in end['traceback']
+
+
 def test_process_projection_requires_creation_identity(tmp_path, monkeypatch):
     _, ctx = target(tmp_path)
     store = service.ledger(tmp_path)

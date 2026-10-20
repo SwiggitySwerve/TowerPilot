@@ -4,6 +4,7 @@ const vm = require('node:vm');
 const WorkspaceStatus = require('../webui/workspace-status.js');
 const LearningController = require('../webui/learning-controller.js');
 const LearningStore = require('../webui/learning-store.js');
+const DiagnosticsView = require('../webui/diagnostics-view.js');
 const {html, section} = require('./helpers.cjs');
 
 test('refresh resumes preparation completion once, for the saved account and run', async () => {
@@ -132,10 +133,11 @@ function routerContext(){
   const panels = TAB_NAMES.map(name => ({id:'panel-' + name, hidden:true, innerHTML:''}));
   const tabs = TAB_NAMES.map(name => ({id:'tab-' + name, textContent:name+' icon', dataset:{title:name,description:name + ' description'}, attrs:{'aria-controls':'panel-' + name},
     setAttribute(key, value){ this.attrs[key] = value; }, getAttribute(key){ return this.attrs[key]; }, removeAttribute(key){ delete this.attrs[key]; }}));
-  const location = {hash:''}, renders = [], mounts = [], unmounts = [];
-  const shell = Object.fromEntries(['page-title','page-description','navigation-toggle','app-sidebar','view', 'collection-settings','abilities-settings','runtime-settings'].map(id => ['#' + id, {id,attrs:{},classList:{toggle(){}},addEventListener(){},getAttribute(k){return this.attrs[k]},setAttribute(k,v){this.attrs[k]=v}}]));
+  const location = {hash:''}, renders = [], mounts = [], unmounts = [], diagnostics = [];
+  const shell = Object.fromEntries(['page-title','page-description','navigation-toggle','app-sidebar','view', 'collection-settings','abilities-settings','runtime-settings','runtime-diagnostics'].map(id => ['#' + id, {id,attrs:{},classList:{toggle(){}},addEventListener(){},getAttribute(k){return this.attrs[k]},setAttribute(k,v){this.attrs[k]=v}}]));
   const ctx = vm.createContext({S:{status:{setup_complete:true,calibration:{ready:false}}},
     RunWorkspace:{create:()=>({poll(){},history(){}})},api(){},
+    DiagnosticsView:{...DiagnosticsView,create:()=>({mount(host,options){diagnostics.push({host:host.id,options})},unmount(){diagnostics.push({unmounted:true})}})},
     $:selector => shell[selector] || panels.find(panel => '#' + panel.id === selector),
     document:{querySelectorAll:selector => selector === '[data-page]' ? tabs : panels},
     location, history:{replaceState:(_a,_b,v)=>location.hash=v}, esc:String,
@@ -145,7 +147,7 @@ function routerContext(){
     renderControlBlockers:()=>{},renderGetStarted:()=>{},syncLiveScreen:()=>{},refreshWorkspaceStatus:()=>{}});
   vm.runInContext(section('function calibOk(){','/* ------------------------------------------------- connect overlay'),ctx);
   const go = async hash => { location.hash = hash; await vm.runInContext('route()',ctx); };
-  return {ctx, panels, tabs, location, renders, mounts, unmounts, go};
+  return {ctx, panels, tabs, location, renders, mounts, unmounts, diagnostics, go};
 }
 
 test('Dashboard is the landing page, old routes are aliases, and no page is gated on setup_complete', async () => {
@@ -196,6 +198,17 @@ test('switching between automation pages shows another panel without rendering a
   assert.equal(panels[1].innerHTML,'');
   await go('#schedule');
   assert.deepEqual(renders,['home','calibrate','home']);
+});
+
+test('Runtime diagnostic deep links retain exact filters and release the viewer on navigation',async()=>{
+  const {location,diagnostics,go}=routerContext();
+  const hash='#runtime?battle_id=b%26x&operation_id=op%2F1&offer_id=offer%3A2&since=100';
+  await go(hash);
+  assert.equal(location.hash,hash);
+  assert.equal(diagnostics.at(-1).host,'runtime-diagnostics');
+  assert.deepEqual(diagnostics.at(-1).options.filters,{battle_id:'b&x',operation_id:'op/1',offer_id:'offer:2',since:'100'});
+  await go('#overview');
+  assert.equal(diagnostics.at(-1).unmounted,true);
 });
 
 test('sidebar uses native links with one labelled page per destination', () => {

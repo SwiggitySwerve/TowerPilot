@@ -1,5 +1,6 @@
 """Battle boundaries and accepted workers read temporary files, never devices."""
 import copy
+import json
 from contextlib import nullcontext
 from types import SimpleNamespace
 
@@ -142,13 +143,16 @@ def test_worker_checks_profile_revision_only_without_accepted_envelope(tmp_path,
     from device import adbclient
     profile = tmp_path / 'local.yaml'
     profile.write_text('new editable profile', encoding='utf-8')
-    op = {'id': 'operation-1', 'revision': 1,
+    op = {'id': 'operation-1', 'revision': 1, 'status': 'accepted',
           'request': {'battle_envelope': {'accepted': True}} if frozen else {},
-          'context': {'serial': 'fake:1', 'profile_path': str(profile),
+          'context': {'instance': 'main', 'serial': 'fake:1', 'profile_path': str(profile),
                       'profile_revision': 'old', 'adb_host': '127.0.0.2', 'adb_port': 5040}}
     transitions, bindings, calls = [], [], []
     ledger = SimpleNamespace(get=lambda _: copy.deepcopy(op), transition=lambda *args, **kwargs: transitions.append((args, kwargs)))
     monkeypatch.setattr(operation_worker, 'environment_operation', lambda: (ledger, op['id']))
+    # Production launches always pass this alongside the accepted context;
+    # bootstrap diagnostics use its parent as their existing local log root.
+    monkeypatch.setenv('TOWER_OPERATION_DB', str(tmp_path / 'logs' / 'operations.sqlite3'))
     monkeypatch.setattr(device_lease, 'acquire', lambda *args: bindings.append(args))
     monkeypatch.setattr(operation_worker, 'restore_worker_context', lambda _: calls.append('restore'))
     monkeypatch.setattr(operation_worker, 'worker_operation', nullcontext)
@@ -171,3 +175,7 @@ def test_worker_checks_profile_revision_only_without_accepted_envelope(tmp_path,
         assert transitions[0][0] == ('operation-1', 1, 'failed')
         assert calls == []
     assert bindings == [('fake:1', '127.0.0.2', 5040)]
+    rows = [json.loads(line) for path in (tmp_path / 'logs' / 'main').glob('events_*.jsonl')
+            for line in path.read_text().splitlines()]
+    assert [row['kind'] for row in rows] == ['attempt_start', 'attempt_end']
+    assert all(row['operation_id'] == op['id'] and row['instance'] == 'main' for row in rows)

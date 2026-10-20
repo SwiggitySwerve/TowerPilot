@@ -10,6 +10,8 @@ import re
 import math
 import subprocess
 import time
+import traceback
+import uuid
 
 import cv2
 import numpy as np  # noqa: F401 - used by phase correlation
@@ -232,16 +234,22 @@ def _affordable_clicks(cash: float | None, price: float | None,
     return max(1, n)
 
 
-def _click_burst(center: tuple[int, int], stat: str, clicks: int) -> int:
+def _click_burst(center: tuple[int, int], stat: str, clicks: int, *, observer=None) -> int:
     """Burst-tap an already-located price box - NO per-click capture.
     Tapping a box that went grey mid-burst is a harmless no-op in-game."""
     done = 0
     for i in range(clicks):
         try:
+            if observer is not None:
+                observer('attempts')
             ev = act.tap(*center, reason=f"buy_{stat}")
+            if observer is not None:
+                observer('dry_run' if ev.get('dry_run', False) else 'dispatched')
             logger.event("shop", stat=stat, **ev)
             done += 1
         except act.TapRefused as e:
+            if observer is not None:
+                observer('failed' if e.__cause__ is not None else 'refused', error=e)
             logger.event("tap_refused", button=stat, error=str(e))
             break
         if i + 1 < clicks:
@@ -275,6 +283,13 @@ class Shopper:
         self.done_once: set[str] = set()
         self.maxed: set[str] = set()     # gold "Max" boxes: done for this run
         self._gen = None
+        self._sweep_id = None
+        self._sweep_context = {}
+        self._sweep_started = None
+        self._sweep_ended = True
+        self._sweep_counts = {}
+        self._sweep_manual = None
+        self._last_sweep = None
 
     def reset(self):
         self.attempts.clear()
@@ -308,30 +323,97 @@ class Shopper:
 
     def start(self):
         if self._gen is None:
+            self._sweep_id = uuid.uuid4().hex
+            self._sweep_context = {**logger.current_context(), 'sweep_id': self._sweep_id}
+            self._sweep_started = time.monotonic()
+            self._sweep_ended = False
+            self._sweep_counts = {'attempts': 0, 'dispatched': 0, 'dry_run': 0}
+            self._sweep_manual = dict(self._manual) if self._manual is not None else None
+            self._sweep_section = (self._sweep_manual or {}).get('section')
+            self._sweep_upgrade = (self._sweep_manual or {}).get('upgrade')
+            self._sweep_error = None
+            self._last_decision = {'action': 'scan', 'reason': 'sweep_started'}
             self._gen = self._queue_sweep_gen() if self.plan is not None else self._sweep_gen()
-            next(self._gen)              # prime to the first yield
+            with logger.context(**self._sweep_context):
+                logger.event('shop_sweep_start', manual=self._sweep_manual is not None,
+                             selection=self._sweep_manual, wave=self._wave,
+                             plan_version=2 if self.plan is not None else 1)
+                try:
+                    next(self._gen)              # prime to the first yield
+                except StopIteration:
+                    self._end_sweep()
+                    raise
+                except BaseException as exc:
+                    self._end_sweep('error', exc)
+                    raise
+
+    def _record_attempt(self, outcome, *, error=None):
+        self._sweep_counts[outcome] = self._sweep_counts.get(outcome, 0) + 1
+        if error is not None:
+            self._sweep_error = error
+            self._last_decision = {'action': 'wait',
+                                   'reason': 'tap_failed' if outcome == 'failed' else 'tap_refused',
+                                   'section': self._sweep_section, 'upgrade': self._sweep_upgrade}
+
+    def _end_sweep(self, outcome=None, error=None):
+        if self._sweep_ended:
+            return
+        self._sweep_ended = True
+        error = error if error is not None else self._sweep_error
+        decision = dict(self._last_decision)
+        if outcome is None:
+            outcome = ('confirmed' if decision.get('action') == 'confirmed' else
+                       'unconfirmed' if self._sweep_counts['dispatched'] else
+                       'failed' if self._sweep_counts.get('failed') else
+                       'refused' if self._sweep_counts.get('refused') else
+                       'refused' if decision.get('reason') == 'tap_refused' else
+                       'dry_run' if self._sweep_counts['dry_run'] else
+                       'skipped' if self.plan is not None else 'completed')
+        fields = {'outcome': outcome, 'reason': decision.get('reason', 'sweep_complete'),
+                  'decision': decision, 'purchase_taps': dict(self._sweep_counts),
+                  'count_semantics': 'tap_invocations_not_confirmed_purchases',
+                  'duration_ms': round((time.monotonic() - self._sweep_started) * 1000, 3),
+                  'wave': self._wave, 'manual': self._sweep_manual is not None,
+                  'selection': self._sweep_manual, 'section': decision.get('section', self._sweep_section),
+                  'upgrade': decision.get('upgrade', self._sweep_upgrade)}
+        if error is not None:
+            fields.update(exception_type=type(error).__name__, exception_message=str(error),
+                          traceback=''.join(traceback.format_exception(type(error), error, error.__traceback__)))
+        self._last_sweep = {'sweep_id': self._sweep_id, **fields}
+        logger.event('shop_sweep_end', **fields)
 
     def step(self, frame, *, wave=None, after_intro_sprint: bool = False):
         """Advance the sweep one action. No-op when inactive."""
         if self._gen is None:
             return
-        if self.plan is not None:
-            self._wave = wave if wave is not None else wave_reader.read_wave(frame)
-            if self._wave is None or not after_intro_sprint:
-                self._last_decision = {"action": "wait", "reason": "unknown_wave" if self._wave is None else "intro_sprint"}
-                self.abort()
-                return
-        try:
-            self._gen.send(frame)
-        except StopIteration:
-            self._gen = None
+        with logger.context(**self._sweep_context):
+            try:
+                if self.plan is not None:
+                    self._wave = wave if wave is not None else wave_reader.read_wave(frame)
+                    if self._wave is None or not after_intro_sprint:
+                        self._last_decision = {"action": "wait", "reason": "unknown_wave" if self._wave is None else "intro_sprint"}
+                        self.abort()
+                        return
+                self._gen.send(frame)
+            except StopIteration:
+                self._gen = None
+                self._end_sweep()
+            except BaseException as exc:
+                self._end_sweep('error', exc)
+                raise
 
     def abort(self):
         manual_pending = self._manual is not None
         if self._gen is not None:
-            self._gen.close()
-            self._gen = None
-            logger.event("sweep_abort")
+            with logger.context(**self._sweep_context):
+                try:
+                    self._gen.close()
+                except BaseException as exc:
+                    self._end_sweep('error', exc)
+                    raise
+                self._gen = None
+                logger.event("sweep_abort")
+                self._end_sweep('aborted')
         if manual_pending:
             self._manual_outcome = {"state": "aborted", "attempts": (self._manual_outcome or {}).get("attempts", 0),
                                     "outcome": self._last_decision}
@@ -362,6 +444,7 @@ class Shopper:
         return deepcopy({"version": 2 if self.plan is not None else 1,
                          "active": self.active, "attempts": self.attempts,
                          "decision": self._last_decision, "manual": self._manual_outcome,
+                         "sweep_id": self._sweep_id, "last_sweep": self._last_sweep,
                          "count_semantics": "tap_attempts", "confirmed_purchases": None,
                          "quantity_observation_supported": self.plan is not None,
                          "reserve_supported": self.plan is not None,
@@ -408,6 +491,7 @@ class Shopper:
                     return
                 scans += 1
                 tab, stat = decision["section"], decision["upgrade"]
+                self._sweep_section, self._sweep_upgrade = tab, stat
                 point = CONFIG["tabs"].get(tab)
                 if not point:
                     self._last_decision = {"action": "wait", "reason": "tab_not_calibrated"}
@@ -451,7 +535,9 @@ class Shopper:
                     if decision["upgrade"] != stat:
                         self._last_decision = {"action": "wait", "reason": "target_requires_fresh_quote"}
                         return
+                    self._record_attempt('attempts')
                     event = act.tap(*quote["center"], reason=f"buy_{stat}")
+                    self._record_attempt('dry_run' if event.get('dry_run', False) else 'dispatched')
                     if not event.get("dry_run", False):
                         key = "queue/" + stat
                         self.attempts[key] = self.attempts.get(key, 0) + 1
@@ -473,7 +559,7 @@ class Shopper:
                 if decision["action"] != "scan":
                     return
         except act.TapRefused as exc:
-            self._last_decision = {"action": "wait", "reason": "tap_refused"}
+            self._record_attempt('failed' if exc.__cause__ is not None else 'refused', error=exc)
             logger.event("tap_refused", button="shopping_queue", error=str(exc))
         finally:
             if manual:
@@ -517,6 +603,7 @@ class Shopper:
             if d["tab"] not in tabs_in_order:
                 tabs_in_order.append(d["tab"])
         for tab in tabs_in_order:
+            self._sweep_section = tab
             remaining: dict[str, tuple[str, int]] = {}
             for d in self.directives:
                 if d["tab"] != tab:
@@ -588,6 +675,7 @@ class Shopper:
                     if abs(dy) < 15 and diff < 6.0:
                         break        # last swipe moved nothing -> bottom
                 for stat in list(remaining):
+                    self._sweep_upgrade = stat
                     center, state, price = _find_stat(frame, stat)
                     if center is None:
                         continue                     # not on this screen
@@ -613,7 +701,7 @@ class Shopper:
                     # monitoring keeps its ~0.5s cadence inside long bursts
                     done = 0
                     while done < target:
-                        n = _click_burst(center, stat, min(2, target - done))
+                        n = _click_burst(center, stat, min(2, target - done), observer=self._record_attempt)
                         done += n
                         if n == 0:
                             break                    # tap refused - stop here

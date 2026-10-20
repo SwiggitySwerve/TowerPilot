@@ -1,11 +1,35 @@
 """Isolated worker bootstrap for every dashboard long-running launch."""
 import runpy
 import sys
+import os
+from functools import partial
+from pathlib import Path
 
 from runtime.operations import Conflict, environment_operation, file_revision, restore_worker_context, worker_operation
 
 
 def main():
+    from runtime import diagnostics
+    ledger, operation_id = environment_operation()
+    op = ledger.get(operation_id) if ledger else None
+    identity = op['context'] if op else {}
+    # Bootstrap errors happen before worker_operation (notably lease refusal).
+    fields = {'operation_id': operation_id, 'instance': identity['instance']} if op else {}
+    log_root = Path(os.environ['TOWER_OPERATION_DB']).parent if op else Path(__file__).resolve().parents[1] / 'logs'
+    emit = partial(diagnostics.event_to, log_root / identity.get('instance', '_worker'))
+    with diagnostics.context(**fields):
+        with diagnostics.attempt('operation.bootstrap', emit=emit) as attempt:
+            try:
+                _main()
+            except SystemExit as exc:
+                if exc.code in (None, 0):
+                    attempt.finish('exited', exit_code=exc.code)
+                raise
+            if ledger:
+                attempt.finish(ledger.get(operation_id)['status'])
+
+
+def _main():
     ledger, operation_id = environment_operation()
     if ledger:
         op = ledger.get(operation_id)

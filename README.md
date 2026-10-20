@@ -145,6 +145,9 @@ settings and behavior library. Global behaviors separately control Free Store
 gems, Daily Missions, Guild progress and Event Missions. Store gems are distinct
 from Ad Gems and rotating diamonds; see [Global rewards](docs/GLOBAL_REWARDS.md).
 
+For collection timing evidence, raw event filters/export and measured stream FPS,
+see [Observability](docs/OBSERVABILITY.md).
+
 > [!warning] Hands off while it drives
 > The autopilot owns the screen while a run is live. If you need the
 > emulator, stop the runner first - it never fights a human for the mouse,

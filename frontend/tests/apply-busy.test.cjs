@@ -20,7 +20,7 @@ function page(overrides={},records=new Map()){
   return {flow:Controller.create(io),calls,store,scope,records};
 }
 test('an api refusal keeps its HTTP status',async()=>{
-  const ctx=vm.createContext({S:{},fetch:async()=>({ok:false,status:409,json:async()=>({error:'busy'})})});
+  const ctx=vm.createContext({S:{},reportDiagnostic(){},fetch:async()=>({ok:false,status:409,json:async()=>({error:'busy'})})});
   vm.runInContext(section('async function api(','/* ---- profile patching'),ctx);
   await assert.rejects(ctx.api('/x'),{message:'busy',status:409});
 });

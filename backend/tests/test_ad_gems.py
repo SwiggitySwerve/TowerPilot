@@ -42,7 +42,7 @@ def test_claim_rechecks_position_and_confirms_disappearance(monkeypatch):
     c=ad_gems.AdGemCollector(delay=(0, 0));c.poll(None);c.poll(None)
     assert len(taps) == 1
     assert 11 <= taps[0][0] <= 188 and 1261 <= taps[0][1] <= 1338
-    assert ('ad_gems_claim', {'confirmed': True}) in events
+    assert next(data for name, data in events if name == 'ad_gems_claim')['confirmed'] is True
     assert events[-1][0] == 'ad_gems_window_ended'
     assert events[-1][1]['reason'] == 'confirmed'
 
@@ -155,7 +155,7 @@ def test_claim_never_confirms_a_departed_battle_or_dry_run(monkeypatch, after_wa
     monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **kw: events.append((name, kw)))
     result = ad_gems.AdGemCollector(delay=(0, 0)).poll(initial)
     assert result is (fresh if dry else after)
-    assert ('ad_gems_claim', {'confirmed': True}) not in events
+    assert not any(data['confirmed'] for name, data in events if name == 'ad_gems_claim')
 
 
 def test_modal_over_readable_wave_prevents_claim(monkeypatch):
@@ -384,7 +384,7 @@ def test_short_interval_limits_window_and_delayed_offer_cannot_escape(monkeypatc
     assert collector.claim_at == 125
 
 
-def test_confirmed_claim_closes_window_and_skips_all_checks_until_next_start(monkeypatch):
+def test_confirmed_claim_closes_window_and_observes_without_input_until_next_start(monkeypatch):
     now = [100.0]
     initial, fresh, after = object(), object(), object()
     frames = iter([fresh, after])
@@ -402,11 +402,15 @@ def test_confirmed_claim_closes_window_and_skips_all_checks_until_next_start(mon
     assert taps == [115]
     assert collector.window_deadline is None
     assert collector.next_at == 820
-    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: pytest.fail('checked during long pause'))
+    checks = []
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: checks.append(f) or 100)
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: pytest.fail('captured during long pause'))
     for second in (116, 159, 160, 500, 819):
         now[0] = second
         assert collector.poll(initial) is initial
     assert taps == [115]
+    assert checks
+    assert collector.status()['visibility'] == 'visible'
 
 
 @pytest.mark.parametrize('confirmed, end_at, pause', [(True, 115, 705), (False, 160, 660)])
@@ -424,11 +428,314 @@ def test_window_events_report_schedule_and_end_reason(monkeypatch, confirmed, en
     monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **data: events.append((name, data)))
     collector = ad_gems.AdGemCollector(delay=(15, 15))
     collector.poll(initial)
-    assert events[0] == ('ad_gems_window', {'duration_sec': 60, 'interval_sec': 720})
+    opened = next(data for name, data in events if name == 'ad_gems_window')
+    assert opened['duration_sec'] == 60
+    assert opened['interval_sec'] == 720
     now[0] = end_at
     collector.poll(initial)
-    assert events[-1] == ('ad_gems_window_ended', {
-        'reason': 'confirmed' if confirmed else 'timeout', 'pause_sec': pause})
+    ended = next(data for name, data in events if name == 'ad_gems_window_ended')
+    assert ended['reason'] == ('confirmed' if confirmed else 'timeout')
+    assert ended['pause_sec'] == pause
+    assert ended['window_id'] == opened['window_id']
     now[0] += 1
     collector.poll(initial)
     assert sum(name == 'ad_gems_window_ended' for name, _ in events) == 1
+
+
+@pytest.fixture
+def observation_clock(monkeypatch):
+    now = [100.0]
+    monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
+    monkeypatch.setattr(ad_gems.time, 'time', lambda: 1000+now[0])
+    monkeypatch.setattr(ad_gems.time, 'sleep', lambda seconds: None)
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda frame: 100)
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: pytest.fail('unexpected capture'))
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *args, **kwargs: pytest.fail('unexpected tap'))
+    return now
+
+
+def test_passive_offer_observation_is_throttled_and_bounds_appearance(monkeypatch, observation_clock):
+    import json
+    now = observation_clock
+    events, checked = [], []
+    visible = [False]
+    rect = (20, 1200, 248, 148)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame: checked.append(now[0]) or (rect if visible[0] else None))
+    monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **data: events.append((name, data)))
+    collector = ad_gems.AdGemCollector(options={'poll_sec': [2, 2]})
+    collector.next_at = collector.next_window_at = 820
+    collector.poll(None)
+    for tenth in range(1001, 1020):
+        now[0] = tenth/10
+        collector.poll(None)
+    assert checked == [100]
+    visible[0] = True
+    now[0] = 102
+    collector.poll(None)
+    status = collector.status()
+    assert status['visibility'] == 'visible'
+    assert status['first_seen_at'] == 1102
+    assert status['last_absent_at'] == status['appearance_after_at'] == 1100
+    assert status['last_observed_at'] == 1102
+    assert status['claim_rect'] == rect
+    assert status['response_due_at'] is None
+    assert status['blocker'] == 'scheduled_pause'
+    assert status['counters'] == dict(checks=2, seen=1, skips=0, attempts=0, confirmed=0, windows_missed=0)
+    json.dumps(status)
+    seen = next(data for name, data in events if name == 'ad_gems_offer_seen')
+    assert seen['appearance_bound_sec'] == 2
+    assert seen['collection_active'] is False
+    now[0] = 104
+    visible[0] = False
+    collector.poll(None)
+    lost = next(data for name, data in events if name == 'ad_gems_offer_lost')
+    assert lost['offer_id'] == seen['offer_id']
+    assert lost['last_seen_at'] == 1102
+    assert collector.status()['visibility'] == 'absent'
+
+
+def test_visibility_unknown_after_lapse_or_departure_never_means_absent(monkeypatch, observation_clock):
+    now = observation_clock
+    events = []
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame: (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **data: events.append((name, data)))
+    collector = ad_gems.AdGemCollector(options={'poll_sec': [2, 2]})
+    collector.next_at = collector.next_window_at = 820
+    collector.poll(None)
+    now[0] = 105
+    assert collector.status()['visibility'] == 'unknown'
+    assert collector.status()['visibility_reason'] == 'observations_lapsed'
+    assert collector.status()['last_absent_at'] is None
+    assert sum(name == 'ad_gems_offer_unknown' for name, _ in events) == 1
+    collector.poll(None)
+    assert collector.status()['first_seen_at'] == 1105
+    assert collector.status()['appearance_after_at'] is None
+    now[0] = 107
+    monkeypatch.setattr(ad_gems.screen, 'identify', lambda frame: SimpleNamespace(name='exit_battle'))
+    collector.poll(None)
+    assert collector.status()['visibility'] == 'unknown'
+    assert collector.status()['visibility_reason'] == 'not_battle'
+    assert collector.status()['last_absent_at'] is None
+
+
+def test_disabled_collector_does_not_observe_but_manual_window_can(monkeypatch, observation_clock):
+    checked = []
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame: checked.append(frame) or None)
+    collector = ad_gems.AdGemCollector(enabled=False)
+    collector.poll(None)
+    assert checked == []
+    assert collector.status()['visibility_reason'] == 'disabled'
+    assert collector.request_now()
+    collector.poll(None)
+    assert checked == [None]
+    assert collector.status()['manual_active'] is True
+
+
+def test_attempt_trace_separates_scheduling_response_and_verification(monkeypatch, observation_clock):
+    now = observation_clock
+    initial, fresh, after = object(), object(), object()
+    frames = iter([fresh, after])
+    events, taps = [], []
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame: None if frame is after else (20, 1200, 248, 148))
+    def capture():
+        now[0] += 2
+        return next(frames)
+    def windows(*args, **kwargs):
+        now[0] += 1
+        return [ad_gems.overlays.GAME_PKG+'/Activity']
+    monkeypatch.setattr(ad_gems.capture, 'grab', capture)
+    monkeypatch.setattr(ad_gems.overlays, 'windows', windows)
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *args, **kwargs: taps.append(now[0]) or {})
+    monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **data: events.append((name, data)))
+    collector = ad_gems.AdGemCollector(delay=(15, 15), options={'poll_sec': [2, 2]})
+    collector.next_at = collector.next_window_at = 110
+    for second in range(100, 126):
+        now[0] = second
+        collector.poll(initial)
+    assert taps == [128]
+    status = collector.status()
+    timing = status['durations']
+    assert timing['scheduling_wait_sec'] == 10
+    assert timing['response_delay_sec'] == timing['response_wait_sec'] == 15
+    assert timing['response_overdue_sec'] == 0
+    assert timing['verification_sec'] == 5
+    assert timing['verification_before_tap_sec'] == 3
+    assert timing['observed_wait_sec'] == 30
+    assert status['counters']['attempts'] == status['counters']['confirmed'] == 1
+    traced = [data for name, data in events if name in {
+        'ad_gems_attempt', 'ad_gems_tap', 'ad_gems_claim',
+        'ad_gems_attempt_finished', 'ad_gems_window_ended'}]
+    assert len(traced) == 5
+    for key in ('window_id', 'offer_id', 'claim_attempt_id'):
+        assert len({data[key] for data in traced}) == 1
+        assert traced[0][key]
+
+
+@pytest.mark.parametrize('mode, outcome, reason', [
+    ('missing', 'skipped', 'fresh_offer_missing'),
+    ('moved', 'skipped', 'offer_moved'),
+    ('blocked', 'skipped', 'human_owner'),
+    ('windows_error', 'skipped', 'windows_unreadable'),
+    ('capture_error', 'error', 'claim_verification_error'),
+    ('recognition_error', 'error', 'claim_verification_error'),
+    ('refused', 'tap_refused', 'tap_refused'),
+    ('dry', 'dry_run', 'dry_run'),
+    ('unconfirmed', 'not_confirmed', 'offer_still_visible'),
+    ('departed', 'not_confirmed', 'post_claim_not_battle'),
+])
+def test_each_failed_attempt_has_precise_correlated_outcome(monkeypatch, observation_clock, mode, outcome, reason):
+    import json
+    initial, fresh, after = object(), object(), object()
+    frames = iter([fresh, after])
+    taps, events = [], []
+    rect = (20, 1200, 248, 148)
+    def capture():
+        if mode == 'capture_error':
+            raise RuntimeError('capture diagnostic')
+        return next(frames)
+    def recognize(frame):
+        if frame is fresh:
+            if mode == 'missing':
+                return None
+            if mode == 'recognition_error':
+                raise RuntimeError('recognition diagnostic')
+            if mode == 'moved':
+                return (20, 1400, 248, 148)
+        return rect
+    def windows(*args, **kwargs):
+        if mode == 'windows_error':
+            raise RuntimeError('foreground diagnostic')
+        return []
+    def tap(*args, **kwargs):
+        taps.append(args)
+        if mode == 'refused':
+            raise ad_gems.act.TapRefused('tap diagnostic')
+        return {'dry_run': mode == 'dry'}
+    monkeypatch.setattr(ad_gems.capture, 'grab', capture)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', recognize)
+    monkeypatch.setattr(ad_gems.overlays, 'windows', windows)
+    monkeypatch.setattr(ad_gems.overlays, 'foreground_blocker', lambda owners: 'human_owner' if mode == 'blocked' else None)
+    monkeypatch.setattr(ad_gems.act, 'tap', tap)
+    monkeypatch.setattr(ad_gems.screen, 'identify', lambda frame: SimpleNamespace(name='exit_battle' if frame is after and mode == 'departed' else 'battle'))
+    monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **data: events.append((name, data)))
+    collector = ad_gems.AdGemCollector(delay=(0, 0))
+    collector.poll(initial)
+    status = collector.status()
+    failed = status['last_failed_attempt']
+    assert failed['outcome'] == outcome
+    assert failed['reason'] == reason
+    assert failed['confirmed'] is False
+    assert status['claim_attempt_id'] is None
+    assert failed['claim_attempt_id'] == status['last_outcome']['claim_attempt_id']
+    starts = [data for name, data in events if name == 'ad_gems_attempt']
+    ends = [data for name, data in events if name == 'ad_gems_attempt_finished']
+    assert len(starts) == len(ends) == 1
+    assert starts[0]['claim_attempt_id'] == ends[0]['claim_attempt_id']
+    assert status['counters']['attempts'] == 1
+    assert status['counters']['confirmed'] == 0
+    if mode in ('capture_error', 'recognition_error', 'windows_error', 'refused'):
+        assert 'diagnostic' in failed['error']
+        assert 'Traceback' in failed['traceback']
+    if outcome in ('error', 'skipped'):
+        assert taps == []
+    json.dumps(status)
+
+
+def test_passive_recognition_error_has_traceback_without_input(monkeypatch, observation_clock):
+    events = []
+    def recognize(frame):
+        raise RuntimeError('offer OCR unavailable')
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', recognize)
+    monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **data: events.append((name, data)))
+    collector = ad_gems.AdGemCollector()
+    collector.next_at = collector.next_window_at = 820
+    collector.poll(None)
+    error = next(data for name, data in events if name == 'ad_gems_observation_error')
+    assert error['error'] == 'offer OCR unavailable'
+    assert error['error_type'] == 'RuntimeError'
+    assert 'Traceback' in error['traceback']
+    assert collector.status()['visibility'] == 'unknown'
+    assert collector.status()['counters']['attempts'] == 0
+
+
+@pytest.mark.parametrize('failure', [None, 'capture', 'tap'])
+def test_claim_context_reaches_nested_io_attempts_without_leaking(monkeypatch, observation_clock, failure):
+    initial, fresh, after = object(), object(), object()
+    frames = iter([fresh, after])
+    observed = []
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame: None if frame is after else (20, 1200, 248, 148))
+    def capture():
+        with ad_gems.logger.attempt('test_capture') as nested:
+            observed.append(('capture', nested.attempt_id, ad_gems.logger.current_context()))
+            if failure == 'capture':
+                raise RuntimeError('capture unavailable')
+            nested.finish('completed')
+            return next(frames)
+    def tap(*args, **kwargs):
+        with ad_gems.logger.attempt('test_tap') as nested:
+            observed.append(('tap', nested.attempt_id, ad_gems.logger.current_context()))
+            if failure == 'tap':
+                raise RuntimeError('tap unavailable')
+            nested.finish('dispatched')
+            return {}
+    monkeypatch.setattr(ad_gems.capture, 'grab', capture)
+    monkeypatch.setattr(ad_gems.act, 'tap', tap)
+    with ad_gems.logger.context(trace_id='outer-trace', attempt_id='outer-attempt'):
+        baseline = ad_gems.logger.current_context()
+        collector = ad_gems.AdGemCollector(delay=(0, 0))
+        collector.poll(initial)
+        status = collector.status()
+        assert observed
+        assert len(observed) == (1 if failure == 'capture' else 2 if failure == 'tap' else 3)
+        for _, nested_id, context in observed:
+            assert context['trace_id'] == 'outer-trace'
+            for key in ('window_id', 'offer_id', 'claim_attempt_id'):
+                assert context[key] == status['last_outcome'][key]
+                assert context[key]
+            assert context['attempt_id'] == nested_id
+            assert nested_id not in ('outer-attempt', status['last_outcome']['claim_attempt_id'])
+        assert ad_gems.logger.current_context() == baseline
+        assert status['claim_attempt_id'] is None
+
+
+@pytest.mark.parametrize('confirmed', [True, False])
+def test_finished_claim_id_does_not_leak_into_passive_or_next_response_events(monkeypatch, observation_clock, confirmed):
+    import json
+    from control.diagnostics import query
+    now = observation_clock
+    initial, fresh, after = object(), object(), object()
+    frames = iter([fresh, after])
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda frame: None if confirmed and frame is after else (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *args, **kwargs: {})
+    collector = ad_gems.AdGemCollector(delay=(0, 0), options={'poll_sec': [2, 2], 'retry_cooldown_sec': [4, 4]})
+    collector.poll(initial)
+    completed = dict(collector.status()['last_outcome'])
+    claim_id = completed['claim_attempt_id']
+    assert claim_id
+    assert completed['confirmed'] is confirmed
+    assert collector.claim_attempt_id is None
+    log_path = ad_gems.logger.run_file()
+    original_rows = [json.loads(line) for line in log_path.read_text(encoding='utf-8').splitlines()]
+    collector.delay = (5, 5)
+    now[0] = 102
+    collector.mark_unknown('waiting_for_game_state')
+    collector.poll(initial)
+    now[0] = 104
+    collector.poll(initial)
+    later_rows = [json.loads(line) for line in log_path.read_text(encoding='utf-8').splitlines()][len(original_rows):]
+    assert any(row['kind'] == 'ad_gems_offer_unknown' for row in later_rows)
+    assert any(row['kind'] == 'ad_gems_offer_seen' for row in later_rows)
+    if not confirmed:
+        assert any(row['kind'] == 'ad_gems_response_scheduled' for row in later_rows)
+    assert all(row.get('claim_attempt_id') is None for row in later_rows)
+    assert collector.status()['last_outcome'] == completed
+    joined = query(log_path.parents[2], {'attempt_id': claim_id})['events']
+    finished = next(row for row in joined if row['kind'] == 'ad_gems_attempt_finished')
+    assert finished['claim_attempt_id'] == claim_id
+    assert finished['offer_id'] == completed['offer_id']
+    if confirmed:
+        ended = next(row for row in joined if row['kind'] == 'ad_gems_window_ended')
+        assert ended['claim_attempt_id'] == claim_id
+        assert ended['window_id'] == finished['window_id']
+    assert not any(row['kind'] in ('ad_gems_offer_unknown', 'ad_gems_offer_seen', 'ad_gems_response_scheduled') for row in joined)

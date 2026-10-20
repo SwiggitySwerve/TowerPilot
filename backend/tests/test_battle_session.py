@@ -189,3 +189,86 @@ def test_timer_numeric_changes_keep_anchor_and_completed_window_closed(kind, mon
     collector.configure({'window_sec': 60, 'enabled': True})
     assert collector.status()['window_ends_at'] is None
     assert collector.next_window_at == 890
+
+
+def test_raw_control_acknowledgements_emit_only_actual_progress(driver, monkeypatch):
+    from runtime import logger
+    session, rs, operation = driver
+    emitted = []
+    monkeypatch.setattr(logger, 'event', lambda kind, **fields: emitted.append((kind, fields)))
+    rs.mission.active = True
+    command = session.store.request_controls(session.battle['id'], operation['id'], session.generation, 0,
+        {'routines': {'ad_gems': {'enabled': False}, 'rewards': {'enabled': False}}}, 'raw-control')
+    session.checkpoint(rs, battle_visible=True)
+    session.checkpoint(rs, battle_visible=True)
+    rs.mission.active = False
+    session.checkpoint(rs, battle_visible=True)
+    session.checkpoint(rs, battle_visible=True)
+    acks = [fields for kind, fields in emitted if kind == 'battle_command_acknowledged']
+    assert [ack['state'] for ack in acks] == ['pending', 'applied']
+    assert acks[0]['reason'] == 'finishing_owned_flow'
+    assert acks[0]['applied_paths'] == ['routines.ad_gems.enabled']
+    assert acks[1]['applied_paths'] == ['routines.ad_gems.enabled', 'routines.rewards.enabled']
+    for ack in acks:
+        assert ack['command_id'] == command['id']
+        assert ack['revision'] == command['revision']
+        assert ack['operation_id'] == operation['id']
+        assert ack['battle_id'] == session.battle['id']
+
+
+def test_raw_manual_acknowledgements_join_collector_window_and_terminal_outcome(driver, monkeypatch):
+    from runtime import logger
+    session, rs, operation = driver
+    emitted = []
+    monkeypatch.setattr(logger, 'event', lambda kind, **fields: emitted.append((kind, fields)))
+    state = dict(enabled=False, manual_pending=True, manual_active=False,
+                 last_outcome=None, window_id=None)
+    rs.gems.ad_gems = SimpleNamespace(request_now=lambda: True, status=lambda: dict(state))
+    command = session.store.request_action(session.battle['id'], operation['id'], session.generation,
+                                           'ad_gems', 'raw-action')
+    session.checkpoint(rs, battle_visible=True)
+    state.update(manual_pending=False, manual_active=True, window_id='window', offer_id='offer', claim_attempt_id='claim')
+    session.checkpoint(rs, battle_visible=True)
+    session.checkpoint(rs, battle_visible=True)
+    state.update(manual_active=False, last_outcome=dict(confirmed=False, reason='timeout', window_id='window',
+                                                       offer_id='offer', claim_attempt_id='claim'))
+    session.checkpoint(rs, battle_visible=True)
+    session.checkpoint(rs, battle_visible=True)
+    acks = [fields for kind, fields in emitted if kind == 'battle_command_acknowledged']
+    assert [ack['state'] for ack in acks] == ['started', 'completed']
+    assert acks[1]['outcome'] == 'unconfirmed'
+    assert acks[1]['reason'] == 'timeout'
+    for ack in acks:
+        assert ack['command_id'] == command['id']
+        assert ack['battle_id'] == session.battle['id'] and ack['operation_id'] == operation['id']
+        assert ack['window_id'] == 'window' and ack['offer_id'] == 'offer'
+        assert ack['claim_attempt_id'] == 'claim'
+    persisted = session.store.commands(session.battle['id'])
+    assert persisted[-1]['state'] == 'completed'
+    assert persisted[-1]['evidence'] == state['last_outcome']
+
+
+def test_raw_shopping_acknowledgements_join_the_sweep_without_device_input(driver, monkeypatch):
+    from player.shopping_plan import normalize_plan
+    from runtime import logger
+    session, rs, operation = driver
+    session.finish('configure_test_shopping')
+    body = session.effective_preset()
+    body['shopping_plan'] = normalize_plan(dict(version=2, enabled=False, queue=[{'id': 'health'}]))
+    session.prepare_next(body)
+    rs.shop = Shopper(body)
+    session.observe(rs, 123)
+    emitted = []
+    monkeypatch.setattr(logger, 'event', lambda kind, **fields: emitted.append((kind, fields)))
+    command = session.store.request_action(session.battle['id'], operation['id'], session.generation,
+                                           'shopping:defense:health', 'raw-shopping')
+    session.checkpoint(rs, battle_visible=True)
+    sweep_id = rs.shop.status()['sweep_id']
+    rs.shop.abort()
+    session.checkpoint(rs, battle_visible=True)
+    session.checkpoint(rs, battle_visible=True)
+    acks = [fields for kind, fields in emitted if kind == 'battle_command_acknowledged']
+    assert [ack['state'] for ack in acks] == ['started', 'completed']
+    assert acks[1]['outcome'] == 'aborted'
+    assert all(ack['sweep_id'] == sweep_id and ack['command_id'] == command['id'] for ack in acks)
+    assert session.store.commands(session.battle['id'])[-1]['state'] == 'completed'

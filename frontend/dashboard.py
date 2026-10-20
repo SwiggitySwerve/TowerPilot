@@ -31,6 +31,9 @@ from pathlib import Path
 from functools import wraps
 import time
 import urllib.parse
+import uuid
+import traceback
+from contextlib import ExitStack
 
 import yaml
 from flask import Flask, Response, jsonify, redirect, request, send_file, g
@@ -161,8 +164,14 @@ def api_battle_detail(battle_id):
 def api_battle_command(operation_id):
     from control import battles
     try:
-        return jsonify(battles.command(ROOT, operation_id, request.get_json(silent=True),
-                                       action=request.path.endswith('/actions')))
+        result = battles.command(ROOT, operation_id, request.get_json(silent=True),
+                                 action=request.path.endswith('/actions'))
+        command = result['command']
+        _diagnostic_event('battle_command_accepted', operation_id=operation_id,
+                          battle_id=result['battle']['id'], command_id=command['id'],
+                          command_kind=command['kind'], action=command['payload'].get('action'),
+                          control_revision=result['control_revision'], outcome='accepted')
+        return jsonify(result)
     except KeyError:
         return jsonify(ok=False, error='Unknown battle or operation'), 404
     except operation_api.Conflict:
@@ -240,6 +249,69 @@ def _requested_operation(cfg, kind):
 _ACTION_LOCK = threading.Lock()
 
 
+def _diagnostic_event(kind, **fields):
+    from control.diagnostics import log_root
+    from runtime import diagnostics
+    return diagnostics.event_to(log_root(ROOT) / '_dashboard', kind, source='dashboard', **fields)
+
+
+def _correlation_id(value):
+    return value if isinstance(value, str) and re.fullmatch(r'[A-Za-z0-9_-]{8,100}', value) else uuid.uuid4().hex
+
+
+@app.before_request
+def begin_request_diagnostics():
+    if not request.path.startswith('/api/'):
+        return
+    from runtime import diagnostics
+    request_id = _correlation_id(request.headers.get('X-Request-ID'))
+    trace_id = _correlation_id(request.headers.get('X-Trace-ID', request_id))
+    g.diagnostic_started = time.monotonic()
+    g.diagnostic_ids = {'request_id': request_id, 'trace_id': trace_id}
+    g.diagnostic_scope = ExitStack()
+    g.diagnostic_scope.enter_context(diagnostics.context(**g.diagnostic_ids,
+        method=request.method, route=request.path,
+        **{key: value for key, value in (request.view_args or {}).items()
+           if key in ('operation_id', 'battle_id')}))
+    # Polls and frames are measured at their own boundaries. Log their failures,
+    # but don't let a healthy preview bury the actual attempts in request noise.
+    g.diagnostic_record_request = request.path not in {
+        '/api/status', '/api/calibrate/status', '/api/battles/active',
+        '/api/stream.mjpg', '/api/stream/status', '/api/frame.png',
+        '/api/diagnostics/events', '/api/diagnostics/client'}
+    if g.diagnostic_record_request:
+        _diagnostic_event('request_started')
+
+
+@app.after_request
+def finish_request_diagnostics(response):
+    if not hasattr(g, 'diagnostic_ids'):
+        return response
+    response.headers['X-Request-ID'] = g.diagnostic_ids['request_id']
+    response.headers['X-Trace-ID'] = g.diagnostic_ids['trace_id']
+    payload = response.get_json(silent=True) if response.is_json else None
+    failure = response.status_code >= 400 or (isinstance(payload, dict) and payload.get('ok') is False)
+    if g.diagnostic_record_request or failure:
+        fields = dict(status_code=response.status_code, outcome='failed' if failure else 'completed',
+                      duration_ms=round((time.monotonic()-g.diagnostic_started)*1000, 3))
+        if failure and isinstance(payload, dict):
+            fields['error'] = str(payload.get('error') or payload.get('message') or payload.get('problems') or 'Request refused')[:2000]
+        _diagnostic_event('request_finished', **fields)
+    return response
+
+
+@app.teardown_request
+def close_request_diagnostics(error):
+    if error is not None and hasattr(g, 'diagnostic_ids'):
+        _diagnostic_event('request_exception', outcome='error', exception_type=type(error).__name__,
+                          exception_message=str(error),
+                          traceback=''.join(traceback.format_exception(type(error), error, error.__traceback__)))
+    scope = getattr(g, 'diagnostic_scope', None)
+    if scope is not None:
+        g.diagnostic_scope = None
+        scope.close()
+
+
 @app.before_request
 def local_requests_only():
     """Refuse, before any other hook or route runs: a request whose Host
@@ -267,6 +339,8 @@ def deny_framing(response):
 
 @app.before_request
 def serialize_actions():
+    if request.path == '/api/diagnostics/client':
+        return
     if request.method in ("POST", "PUT", "PATCH", "DELETE"):
         if not _ACTION_LOCK.acquire(blocking=False):
             return jsonify({"ok": False, "error": "Another action is in progress; wait for its result"}), 409
@@ -278,6 +352,36 @@ def release_action_lock(_error):
     if getattr(g, "action_lock", False):
         g.action_lock = False
         _ACTION_LOCK.release()
+
+
+@app.get('/api/diagnostics/events')
+def api_diagnostic_events():
+    from control import diagnostics
+    from runtime.diagnostics import health
+    try:
+        return jsonify(**diagnostics.query(ROOT, request.args), writer_health=health())
+    except ValueError as exc:
+        return jsonify(ok=False, error=str(exc)), 400
+
+
+@app.post('/api/diagnostics/client')
+def api_diagnostic_client():
+    raw = request.stream.read(16 * 1024 + 1)
+    if len(raw) > 16 * 1024:
+        return jsonify(ok=False, error='Diagnostic event is too large'), 413
+    try:
+        body = json.loads(raw)
+    except (ValueError, UnicodeError):
+        return jsonify(ok=False, error='Diagnostic event must be JSON'), 400
+    if not isinstance(body, dict) or body.get('kind') not in ('api_error', 'javascript_error', 'unhandled_rejection'):
+        return jsonify(ok=False, error='Unsupported browser diagnostic event'), 400
+    fields = {key: str(body[key])[:limit] for key, limit in
+              (('message', 2000), ('stack', 8000), ('path', 500), ('page', 100), ('method', 20)) if key in body}
+    original = body.get('request_id')
+    if isinstance(original, str) and re.fullmatch(r'[A-Za-z0-9_-]{8,100}', original):
+        fields.update(request_id=original, trace_id=original, reported_by_request_id=g.diagnostic_ids['request_id'])
+    _diagnostic_event('browser_' + body['kind'], outcome='error', **fields)
+    return jsonify(ok=True), 202
 
 
 @app.get("/api/clicker/actions")
@@ -1340,34 +1444,118 @@ def api_frame():
     return Response(raw, mimetype="image/png")
 
 
+_STREAMS = {}                     # bounded recent sessions; never store pixels
+_STREAM_LOCK = threading.Lock()
+_STREAM_LIMIT = 32
+
+
+def _stream_decode(raw):
+    """Decode Android's 12/16-byte raw RGBA header, including MuMu warnings."""
+    import cv2
+    import numpy as np
+    for _ in range(4):
+        if len(raw) >= 12:
+            width, height, pixel_format = struct.unpack_from("<III", raw)
+            header = len(raw) - width * height * 4
+            if 0 < width <= 10000 and 0 < height <= 10000 and header in (12, 16):
+                if pixel_format not in (1, 2):  # RGBA_8888 / RGBX_8888
+                    raise ValueError(f"unsupported screencap pixel format: {pixel_format}")
+                rgba = np.frombuffer(raw, np.uint8, offset=header).reshape(height, width, 4)
+                return cv2.cvtColor(rgba, cv2.COLOR_RGBA2BGR)
+        if not raw.startswith(b"[Warning]"):
+            break
+        newline = raw.find(b"\n", 0, 512)
+        if newline < 0:
+            break
+        raw = raw[newline + 1:]
+    raise ValueError("invalid raw screencap (device offline or display changed?)")
+
+
+@app.get("/api/stream/status")
+def api_stream_status():
+    with _STREAM_LOCK:
+        entry = _STREAMS.get(request.args.get("stream_id", ""))
+        if entry is None:
+            return jsonify(ok=False, error="Stream session not found"), 404
+        result = {key: value for key, value in entry.items() if not key.startswith("_")}
+        ticks = entry["_frames"]
+        age = time.monotonic() - ticks[-1] if ticks else None
+        result["last_frame_age_s"] = round(age, 3) if age is not None else None
+        result["actual_fps"] = (round((len(ticks) - 1) / (ticks[-1] - ticks[0]), 2)
+                                if len(ticks) > 1 and ticks[-1] > ticks[0] else None)
+        if age is not None and age > max(3, 2 / entry["target_fps"]):
+            result["actual_fps"] = 0.0
+    return jsonify(result)
+
+
 @app.get("/api/stream.mjpg")
 def api_stream():
-    """Live feed: one persistent connection, frames pushed as captured
-    (multipart/x-mixed-replace - every browser renders it in a plain <img>).
+    """Socket-only raw captures, paced to a target cap; no queued catch-up frames.
 
-    User, 2026-08-18: "if we have an open socket feed why do we serve
-    screens every 5 seconds and not a live feed?" - no reason; the poll was
-    a first-cut default. Frames ride the same adb-server socket the runners
-    use. RATE IS THE ONE DELIBERATE LIMIT: a device-side screencap costs
-    ~350 ms of emulator CPU and the orchestrator already pulls ~3 fps of its own,
-    so this streams at `fps` (default 2, cap 4) and never faster - the
-    dashboard must not starve the rescue watch. Encodes to JPEG (~150 KB vs
-    ~2.4 MB PNG) so a browser tab on the LAN is not 5 MB/s. Stops the
-    moment the client disconnects (generator finalizer)."""
-    import time as _time
+    The cap stays at 4 FPS to bound additional emulator work. Actual throughput
+    depends on capture and encoding time and is exposed per session. Raw capture
+    avoids encoding PNG on the device just to decode it back into a JPEG here.
+    """
+    import math
+    import secrets
     cfg = load_config()
-    inst = cfg["instances"][cfg.get("active_instance", "main")]
+    instance = cfg.get("active_instance", "main")
+    inst = cfg["instances"][instance]
     refused = _bad_display_query()
     if refused:
         return refused
+    if request.args.get("instance", instance) != instance:
+        return jsonify(ok=False, error="Active emulator changed; refresh the stream"), 409
     serial = inst["serial"]             # the configured device only, as api_frame
     asked_display = request.args.get("display") or inst.get("display")
-    fps = max(0.5, min(float(request.args.get("fps", 2)), 4.0))
-    quality = max(30, min(int(request.args.get("q", 70)), 90))
-    scale = max(0.2, min(float(request.args.get("scale", 0.5)), 1.0))
+    try:
+        fps = float(request.args.get("fps", 2))
+        quality = int(request.args.get("q", 70))
+        scale = float(request.args.get("scale", 0.5))
+        if not math.isfinite(fps) or not 0.5 <= fps <= 4:
+            raise ValueError("fps must be between 0.5 and 4")
+        if not 30 <= quality <= 90:
+            raise ValueError("q must be between 30 and 90")
+        if not math.isfinite(scale) or not 0.2 <= scale <= 1:
+            raise ValueError("scale must be between 0.2 and 1")
+    except (ValueError, OverflowError) as exc:
+        return jsonify(ok=False, error=str(exc)), 400
+    stream_id = request.args.get("stream_id", secrets.token_hex(12))
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", stream_id):
+        return jsonify(ok=False, error="Invalid stream_id"), 400
+    if request.method == "HEAD":
+        # Flask handles HEAD through this GET route, but never iterates its
+        # body. A probe must not reserve a capture session it cannot finish.
+        return Response(mimetype="multipart/x-mixed-replace; boundary=frame",
+                        headers={"Cache-Control": "no-cache"})
+    stats = dict(stream_id=stream_id, instance=instance, target_fps=fps,
+                 frames=0, errors=0, capture_ms=None, encode_ms=None,
+                 active=True, last_error=None, _frames=[], _started=False)
+    correlation = dict(getattr(g, "diagnostic_ids", {}))
+    with _STREAM_LOCK:
+        if stream_id in _STREAMS and _STREAMS[stream_id]["active"]:
+            return jsonify(ok=False, error="Stream session already active"), 409
+        while len(_STREAMS) >= _STREAM_LIMIT:
+            retired = next((key for key, value in _STREAMS.items() if not value["active"]), None)
+            if retired is None:
+                return jsonify(ok=False, error="Too many active streams"), 429
+            del _STREAMS[retired]
+        _STREAMS[stream_id] = stats
+
+    def event(kind, **fields):
+        _diagnostic_event(kind, stream_id=stream_id, instance=instance, **correlation, **fields)
+
+    def finish_stream():
+        with _STREAM_LOCK:
+            if not stats["active"]:
+                return
+            stats["active"] = False
+            started, frames, errors = stats["_started"], stats["frames"], stats["errors"]
+        if started:
+            event("stream_stopped", frames=frames, errors=errors)
 
     def gen():
-        from device import adbclient, displays
+        from device import adbclient
         import cv2
         import numpy as np
         period = 1.0 / fps
@@ -1378,8 +1566,11 @@ def api_stream():
         # wearing three faces. Short capture timeout, and after a failure
         # back off to one probe every 3 s so an offline device costs one
         # thread a trivial amount of time.
-        fails = 0
         import socket
+
+        def multipart(jpg):
+            return (b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: " +
+                    str(len(jpg)).encode() + b"\r\n\r\n" + jpg.tobytes() + b"\r\n")
 
         def _port_up() -> bool:
             # a ~1 ms TCP probe of the emulator's adb port; when the VM is
@@ -1394,62 +1585,70 @@ def api_stream():
             except OSError:
                 return False
 
-        while True:
-            t0 = _time.monotonic()
-            try:
-                if not _port_up():
-                    raise OSError("emulator port closed")
-                # the game display is derived per frame (cached): MuMu's ids
-                # change across restarts and a stale one shows the launcher
-                cmd = _screencap_cmd(serial, _game_display(serial, asked_display))
-                raw = displays.strip_warning(adbclient.exec_out(serial, cmd, timeout=2.0))
-                fails = 0
-                if not raw.startswith(displays.PNG_MAGIC):
-                    _forget_display(serial)
-                    raise OSError("no PNG from the device (display changed?)")
-                if raw.startswith(displays.PNG_MAGIC):
-                    img = cv2.imdecode(np.frombuffer(raw, np.uint8),
-                                       cv2.IMREAD_COLOR)
-                    if img is not None:
-                        if scale != 1.0:
-                            img = cv2.resize(img, None, fx=scale, fy=scale,
-                                             interpolation=cv2.INTER_AREA)
-                        ok, jpg = cv2.imencode(".jpg", img,
-                                               [cv2.IMWRITE_JPEG_QUALITY,
-                                                quality])
-                        if ok:
-                            yield (b"--frame\r\nContent-Type: image/jpeg\r\n"
-                                   b"Content-Length: " +
-                                   str(len(jpg)).encode() + b"\r\n\r\n" +
-                                   jpg.tobytes() + b"\r\n")
-            except GeneratorExit:
-                return                      # client went away: stop capturing
-            except Exception:               # noqa: BLE001 - device hiccup:
-                fails += 1                  # skip the frame, keep the stream
-                # emit a tiny "offline" marker frame so the <img> does not
-                # sit on a stale picture forever and the user can see the
-                # device is gone rather than the dashboard being broken
+        with _STREAM_LOCK:
+            stats["_started"] = True
+        event("stream_started", target_fps=fps, scale=scale)
+        try:
+            while True:
+                t0 = time.monotonic()
+                failed = False
                 try:
-                    canvas = np.zeros((96, 270, 3), np.uint8)
-                    cv2.putText(canvas, "device offline", (18, 58),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (80, 80, 240), 2)
-                    ok, jpg = cv2.imencode(".jpg", canvas)
-                    if ok:
-                        yield (b"--frame\r\nContent-Type: image/jpeg\r\n"
-                               b"Content-Length: " + str(len(jpg)).encode()
-                               + b"\r\n\r\n" + jpg.tobytes() + b"\r\n")
+                    if not _port_up():
+                        raise OSError("emulator port closed")
+                    cmd = _screencap_cmd(serial, _game_display(serial, asked_display), png=False)
+                    raw = adbclient.exec_out(serial, cmd, timeout=2.0)
+                    captured = time.monotonic()
+                    try:
+                        img = _stream_decode(raw)
+                    except ValueError:
+                        _forget_display(serial)
+                        raise
+                    if scale != 1.0:
+                        img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+                    ok, jpg = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, quality])
+                    if not ok:
+                        raise ValueError("JPEG encoding failed")
+                    completed = time.monotonic()
+                    with _STREAM_LOCK:
+                        recovered = stats["last_error"] is not None
+                        stats.update(frames=stats["frames"] + 1, last_error=None,
+                                     capture_ms=round((captured - t0) * 1000, 2),
+                                     encode_ms=round((completed - captured) * 1000, 2))
+                        stats["_frames"] = (stats["_frames"] + [completed])[-16:]
+                    if recovered:
+                        event("stream_recovered")
+                    yield multipart(jpg)
                 except GeneratorExit:
                     return
-                except Exception:           # noqa: BLE001
-                    pass
-            dt = _time.monotonic() - t0
-            wait = (3.0 if fails else period)
-            if dt < wait:
-                _time.sleep(wait - dt)
+                except Exception as exc:      # noqa: BLE001 - device/codec boundary
+                    failed = True
+                    with _STREAM_LOCK:
+                        first_failure = stats["last_error"] is None
+                        stats.update(errors=stats["errors"] + 1, last_error=str(exc))
+                    if first_failure:
+                        event("stream_error", error=str(exc), error_type=type(exc).__name__)
+                    canvas = np.zeros((96, 270, 3), np.uint8)
+                    cv2.putText(canvas, "stream unavailable", (8, 58),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.65, (80, 80, 240), 2)
+                    ok, jpg = cv2.imencode(".jpg", canvas)
+                    if not ok:
+                        raise RuntimeError("Could not encode stream error marker") from exc
+                    yield multipart(jpg)
+                # Capture/encoding/browser backpressure consume the period. A
+                # slow capture never queues catch-up work or adds another period.
+                wait = (3.0 if failed else period) - (time.monotonic() - t0)
+                if wait > 0:
+                    time.sleep(wait)
+        finally:
+            finish_stream()
 
-    return Response(gen(),
-                    mimetype="multipart/x-mixed-replace; boundary=frame",
-                    headers={"Cache-Control": "no-cache"})
+    response = Response(gen(),
+                        mimetype="multipart/x-mixed-replace; boundary=frame",
+                        headers={"Cache-Control": "no-cache"})
+    # An unstarted Python generator never enters its finally block on close.
+    # WSGI response cleanup must release that reservation too.
+    response.call_on_close(finish_stream)
+    return response
 
 
 # ------------------------------------------------------------------ control

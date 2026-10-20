@@ -191,8 +191,8 @@ class BattleSession:
             for path in flatten(command['payload']):
                 if path not in applied and self._apply_control(rs, path, target.get(path)):
                     applied.append(path)
-            self.store.acknowledge(self.battle['id'], self.generation, command['id'], applied_paths=applied,
-                                   reason='finishing_owned_flow' if len(applied) < len(flatten(command['payload'])) else None)
+            self._acknowledge(command, applied_paths=applied,
+                              reason='finishing_owned_flow' if len(applied) < len(flatten(command['payload'])) else None)
         # Manual requests run through the same foreground, battle and collector
         # evidence checks as scheduled actions. No menu recovery is introduced.
         for command in commands:
@@ -208,16 +208,53 @@ class BattleSession:
                     collector = rs.gems.ad_gems if action == 'ad_gems' else rs.gems.orbit
                     if not collector.request_now():
                         continue
-                    self.manual = dict(id=command['id'], action=action, collector=collector, began=False)
+                    self.manual = dict(id=command['id'], action=action, collector=collector, began=False, command=command)
                 else:
                     pieces = action.split(':')
                     if not rs.shop.request_once(section=pieces[1] if len(pieces) > 1 else None,
                                                 upgrade=pieces[2] if len(pieces) > 2 else None):
                         continue
-                    self.manual = dict(id=command['id'], action=action, began=True)
-                    self.store.acknowledge(self.battle['id'], self.generation, command['id'], state='started', evidence={'outcome': 'unknown'})
+                    self.manual = dict(id=command['id'], action=action, began=True, command=command)
+                    self.manual['command'] = self._acknowledge(command, state='started', evidence={'outcome': 'unknown'},
+                                                               diagnostic=rs.shop.status())
             self._manual_progress(rs)
         self.publish(rs, battle_visible=battle_visible)
+
+    def _acknowledge(self, before, *, diagnostic=None, **changes):
+        """Mirror durable command progress once, after the ledger accepts it."""
+        command = self.store.acknowledge(self.battle['id'], self.generation, before['id'], **changes)
+        progress = ('state', 'applied_paths', 'reason', 'evidence')
+        if all(before.get(key) == command.get(key) for key in progress):
+            return command
+        from runtime import logger
+        evidence = command.get('evidence')
+        identifiers = ('window_id', 'offer_id', 'claim_attempt_id', 'attempt_id', 'sweep_id')
+        correlation = {key: value for key, value in (diagnostic or {}).items()
+                       if key in identifiers and value is not None}
+        if isinstance(evidence, dict):
+            correlation.update({key: value for key, value in evidence.items()
+                                if key in identifiers and value is not None})
+        outcome = command['state']
+        reason = command.get('reason')
+        if isinstance(evidence, dict):
+            if isinstance(evidence.get('outcome'), str):
+                outcome = evidence['outcome']
+            elif evidence.get('confirmed') is not None:
+                outcome = 'confirmed' if evidence['confirmed'] else 'unconfirmed'
+            elif isinstance((diagnostic or {}).get('last_sweep'), dict):
+                outcome = diagnostic['last_sweep']['outcome']
+            if reason is None:
+                reason = evidence.get('reason')
+                if reason is None and isinstance((diagnostic or {}).get('last_sweep'), dict):
+                    reason = diagnostic['last_sweep'].get('reason')
+        logger.event('battle_command_acknowledged', command_id=command['id'],
+                     command_kind=command['kind'], action=command['payload'].get('action'),
+                     battle_id=self.battle['id'], operation_id=self.operation_id,
+                     driver_segment=self.generation, revision=command['revision'],
+                     state=command['state'], outcome=outcome, reason=reason,
+                     applied_paths=command.get('applied_paths', []), evidence=evidence,
+                     **correlation)
+        return command
 
     def _manual_progress(self, rs):
         if self.manual is None:
@@ -226,18 +263,18 @@ class BattleSession:
         if manual['action'] in ('ad_gems', 'floating_gems'):
             state = manual['collector'].status()
             if not manual['began'] and state['manual_active']:
-                self.store.acknowledge(self.battle['id'], self.generation, manual['id'], state='started')
+                manual['command'] = self._acknowledge(manual['command'], state='started', diagnostic=state)
                 manual['began'] = True
             if not state['manual_pending'] and not state['manual_active']:
                 if not manual['began']:
-                    self.store.acknowledge(self.battle['id'], self.generation, manual['id'], state='started')
+                    manual['command'] = self._acknowledge(manual['command'], state='started', diagnostic=state)
                 outcome = state['last_outcome']
-                self.store.acknowledge(self.battle['id'], self.generation, manual['id'], state='completed', evidence=outcome)
+                self._acknowledge(manual['command'], state='completed', evidence=outcome, diagnostic=state)
                 self.manual = None
         else:
             status = rs.shop.status()
             if not status['active']:
-                self.store.acknowledge(self.battle['id'], self.generation, manual['id'], state='completed', evidence=status.get('manual'))
+                self._acknowledge(manual['command'], state='completed', evidence=status.get('manual'), diagnostic=status)
                 self.manual = None
 
     def publish(self, rs, *, battle_visible):
@@ -257,6 +294,9 @@ class BattleSession:
         self._published_at = now
         self.battle = self.store.get(self.battle['id'])
         routines = {'ad_gems': rs.gems.ad_gems.status(), 'floating_gems': rs.gems.orbit.status()}
+        if not battle_visible and hasattr(rs.gems.ad_gems, 'mark_unknown'):
+            rs.gems.ad_gems.mark_unknown('waiting_for_game_state')
+            routines['ad_gems'] = rs.gems.ad_gems.status()
         epoch = time.time()
         interval = (self.effective.get('shopping_plan') or {}).get('interval_sec', self.effective.get('shop_interval_sec', 90))
         if rs.shop is not None:
@@ -273,7 +313,7 @@ class BattleSession:
             routines['repeat'] = dict(enabled=rs.repeat_enabled, state='boundary_wait' if rs.repeat_enabled else 'off',
                                        next_due_at=None, window_ends_at=None)
         for state in routines.values():
-            state.update(blocker=None if battle_visible else 'waiting_for_game_state', server_time=epoch)
+            state.update(blocker=state.get('blocker') if battle_visible else 'waiting_for_game_state', server_time=epoch)
         self.store.update_status(self.battle['id'], self.generation, dict(routines=routines, server_time=epoch,
             observed_wave=rs.tracker.last, last_wave_provenance='observed',
             observed_duration_sec=self._observed_duration, observation_gaps=copy.deepcopy(self._observation_gaps),

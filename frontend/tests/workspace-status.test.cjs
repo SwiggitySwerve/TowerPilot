@@ -564,7 +564,7 @@ async function renderHomePanels(S, emulatorInventory={instances:[]}, lifecycle=[
     api:async url => { requests.push(url); return url === '/api/runs' ? {runs:{}, readiness:{}} : emulatorInventory; },
     loadHomeData:async()=>{}, toast:()=>{}, starterBanner:()=>'',
     stopStream(){lifecycle.push('stopStream');}, renderStream(){}, renderRunner(){}, renderDay(){}, renderFlows(){}, renderBehaviors(){}, renderLoadouts(){},
-    renderGlobal(){}, renderHomeLive(){}, renderControlBlockers(){}, renderGetStarted(){}, renderWorkspaceStatus(){}, mountConfigurationPage(){}});
+    renderGlobal(){}, renderHomeLive(){}, renderControlBlockers(){}, renderGetStarted(){}, renderWorkspaceStatus(){}, mountConfigurationPage(){}, mountDiagnostics(){}});
   vm.runInContext(section('async function renderHome(){', '/* ------------------------------------------------------------- loadouts'), ctx);
   await vm.runInContext('renderHome()', ctx);
   const panel = name => panels['#panel-' + name]?.innerHTML || '';
@@ -647,7 +647,7 @@ test('old section deep-links open the tab that now holds the section', () => {
 });
 
 test('a refusal sent with HTTP 200 shows its message, not the status code', async () => {
-  const ctx = vm.createContext({});
+  const ctx = vm.createContext({reportDiagnostic(){}});
   vm.runInContext(section('async function api(', 'const post = '), ctx);
   const reply = (status, body) => { ctx.fetch = async () => ({ok:status < 400, status, json:async () => { if (!body) throw new Error('no json'); return body; }}); };
   reply(200, {ok:false, message:'cannot connect to 127.0.0.1:16384: No connection could be made'});
@@ -672,7 +672,7 @@ test('stream cleanup replaces the MJPEG source with a local image before detachi
       $:key => ({'#stream-slot':slot,'#stream-toggle':toggle,'#stream-slot img':attached?image:null})[key]});
     vm.runInContext(section('function stopStream(){','function renderHomeLive('),ctx);
     // Preserve the current live stream across unchanged status ticks.
-    slot.dataset.state = [true,true,true,''].join();
+    slot.dataset.state = JSON.stringify([true,true,true,'',4,'main','']);
     vm.runInContext('renderStream()',ctx);
     assert.deepEqual(events,[]);
     if (transition === 'navigate') ctx.S.tab = 'runs';
@@ -700,7 +700,7 @@ test('the Overview stream shows the live-screen placeholder offline and streams 
   assert.doesNotMatch(slot.innerHTML, /stream\.mjpg|<img/);
   ctx.S.status = statusWith('device');
   vm.runInContext('renderStream()', ctx);
-  assert.match(slot.innerHTML, /<img src="\/api\/stream\.mjpg\?fps=4&scale=0\.4&ts=\d+" alt="live stream">/);
+  assert.match(slot.innerHTML, /<img src="\/api\/stream\.mjpg\?fps=4&scale=0\.4&ts=\d+&instance=main&stream_id=[a-z0-9_]+" alt="live stream">/);
   slot.innerHTML = 'kept';                        // a status tick with nothing changed does not restart the stream
   vm.runInContext('renderStream()', ctx);
   assert.equal(slot.innerHTML, 'kept');

@@ -67,6 +67,12 @@
 .rw-history-summary strong { display:block; font-size:.9rem; }
 .rw-workspace details { margin:.55rem 0; }
 .rw-workspace summary { font-size:.77rem; }
+.rw-observation { margin:.6rem 0 0; font-size:.72rem; }
+.rw-observation > div { display:grid; grid-template-columns:7.5rem minmax(0,1fr); gap:.45rem; margin:.25rem 0; }
+.rw-observation dt { color:var(--pico-muted-color); }
+.rw-observation dd { margin:0; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+.rw-observation-details pre { max-height:18rem; overflow:auto; font-size:.67rem; white-space:pre-wrap; overflow-wrap:anywhere; }
+.rw-inspect { font-size:.73rem; }
 /* Both panes include identical padding/borders. Subtract those once, then
    divide the remaining width into shared chip tracks, including selector gaps. */
 @container rw-shopping (min-width:640px) {

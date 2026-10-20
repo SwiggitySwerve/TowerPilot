@@ -210,14 +210,20 @@ def test_capture_routes_capture_only_the_configured_serial(dash, device, monkeyp
     from device import adbclient
     import socket
 
-    monkeypatch.setattr(adbclient, "exec_out", lambda s, cmd, timeout=None: device["exec"].append((s, cmd)) or _png())
+    def capture(s, cmd, timeout=None):
+        import struct
+        device["exec"].append((s, cmd))
+        return _png() if " -p" in cmd else struct.pack("<IIII", 4, 4, 1, 0) + bytes(4 * 4 * 4)
+
+    monkeypatch.setattr(adbclient, "exec_out", capture)
     monkeypatch.setattr(socket, "create_connection", lambda *a, **k: socket.socket())
     with dash.app.test_client() as c:
         assert c.get(f"/api/frame.png?serial={serial}").status_code == 200
         r = c.get(f"/api/stream.mjpg?serial={serial}")
         assert next(iter(r.response)).startswith(b"--frame")
         r.close()
-    assert device["exec"] == [("127.0.0.1:16384", "screencap -p")] * 2
+    assert device["exec"] == [("127.0.0.1:16384", "screencap -p"),
+                              ("127.0.0.1:16384", "screencap")]
 
 
 def test_an_integer_display_is_used(dash, device):
@@ -265,6 +271,8 @@ def test_a_drive_relative_name_cannot_leave_profiles(dash, tmp_path, monkeypatch
     _write(tmp_path / "secret.yaml", "secret: 1\n")
     elsewhere = BACKEND.parent / "never-created" / "backend"                                 # repo drive
     monkeypatch.setattr(dash, "ROOT", str(elsewhere))
+    from control import diagnostics
+    monkeypatch.setattr(diagnostics, 'log_root', lambda root: tmp_path / 'diagnostics')
     monkeypatch.setattr(dash, "_calibration_dir", lambda cfg=None: str(elsewhere / "logs" / "main"))
     monkeypatch.chdir(tmp_path)                                                             # temp drive
     with dash.app.test_client() as c:

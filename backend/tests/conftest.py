@@ -62,3 +62,16 @@ def _event_log_in_tmp_path(tmp_path, monkeypatch):
 
     monkeypatch.setattr(logger, "_LOG_DIR", tmp_path / "logs")
     monkeypatch.setattr(logger, "_run_file", None)
+
+
+@pytest.fixture(autouse=True)
+def _dashboard_diagnostics_in_tmp_path(tmp_path, monkeypatch):
+    """Request diagnostics must never contaminate a live dashboard event log."""
+    from control import diagnostics
+    original = diagnostics.log_root
+    checkout = Path(__file__).resolve().parents[1]
+
+    def isolated(root):
+        return tmp_path / 'dashboard-logs' if Path(root).resolve() == checkout else original(root)
+
+    monkeypatch.setattr(diagnostics, 'log_root', isolated)

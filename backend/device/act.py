@@ -6,6 +6,7 @@ import subprocess
 import time
 
 from settings import CONFIG, instance, adb_args, input_args, run_hidden
+from runtime import logger
 
 
 class TapRefused(RuntimeError):
@@ -36,6 +37,20 @@ def _input(*parts) -> None:
 
 
 def tap(x: int, y: int, reason: str = "", instant: bool = False,
+        deadline: float | None = None) -> dict:
+    """Log each dispatch, dry run and refusal at the shared input boundary."""
+    with logger.attempt('device.tap', x=x, y=y, reason=reason,
+                        instant=instant, deadline=deadline) as attempt:
+        try:
+            result = _tap(x, y, reason, instant, deadline)
+        except TapRefused as exc:
+            attempt.finish('failed' if exc.__cause__ is not None else 'refused', dispatched=False)
+            raise
+        attempt.finish('dry_run' if result['dry_run'] else 'dispatched', **result)
+        return result
+
+
+def _tap(x: int, y: int, reason: str = "", instant: bool = False,
         deadline: float | None = None) -> dict:
     """Send one tap (native coords) honoring safety rails.
 
@@ -98,6 +113,20 @@ def tap(x: int, y: int, reason: str = "", instant: bool = False,
 
 
 def swipe(x0: int, y0: int, x1: int, y1: int, ms: int = 400,
+          reason: str = "") -> dict:
+    """Log the invocation outcome without interpreting the game's response."""
+    with logger.attempt('device.swipe', x=x0, y=y0, x1=x1, y1=y1,
+                        ms=ms, reason=reason) as attempt:
+        try:
+            result = _swipe(x0, y0, x1, y1, ms, reason)
+        except TapRefused as exc:
+            attempt.finish('failed' if exc.__cause__ is not None else 'refused', dispatched=False)
+            raise
+        attempt.finish('dry_run' if result['dry_run'] else 'dispatched', **result)
+        return result
+
+
+def _swipe(x0: int, y0: int, x1: int, y1: int, ms: int = 400,
           reason: str = "") -> dict:
     """Deliberate drag - used to scroll inventory grids. Same rails as tap()."""
     global _last_tap
