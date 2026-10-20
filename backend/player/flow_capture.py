@@ -25,15 +25,16 @@ Doctrine (why this is allowed to do what the rest of setup refuses):
     run already on screen, and it will not end someone else's run - exactly the
     fence tourney.ensure_home / shard.abandon_run draw. A normal run costs
     nothing to start or surrender; only tournament entries cost gems.
-  * It ABORTS INTO SAFETY. An unrecognised screen stops the flow and logs a
-    shot; it never blind-taps. Each flow is isolated - one failing leaves the
-    others and the rest of the scan intact - and each returns to Home.
+  * It ABORTS INTO SAFETY. An unrecognised screen stops setup and revokes run
+    ownership; it never blind-taps. Successful flows return to verified Home.
 
 Everything it writes is the account's own local pixels, declared writable in the
 bootstrap manifest's dynamic_targets and gated through calibrate.write_template
 like every other captured template; nothing ships (CLAUDE.md rules 6, 8).
 """
 import time
+import uuid
+from functools import wraps
 
 import cv2
 import numpy as np
@@ -123,9 +124,15 @@ class _Flow:
     def __init__(self, scanner):
         self.s = scanner
         self.cal = scanner.cal
+        from runtime.operations import environment_operation
+        _, operation_id = environment_operation()
+        self.operation_id = operation_id or uuid.uuid4().hex
+        # Persisted records are evidence, never authority to adopt an old run.
+        self._owned_battle_id = None
 
     # -- device
     def grab(self):
+        self.s.check_stop()
         return self.s.grab()
 
     def tap(self, x, y, reason):
@@ -386,12 +393,10 @@ def _sprint_glyph(frame):
 
 def capture_intro_sprint(flow: _Flow) -> None:
     """Tap the intro-sprint icon, capture the END INTRO SPRINT EARLY dialog and
-    its confirm, then CANCEL it (the sprint keeps running - nothing spent).
+    its confirm, then end the sprint so the owned run can be surrendered.
 
-    Best-effort: the icon only shows when the run started under an Intro Sprint
-    card. No icon, or no dialog after tapping, means it is skipped cleanly - the
-    tap lands in the empty left rail, which opens info dialogs, never a run
-    action."""
+    No icon is an optional capture gap. A missing dialog after a proven icon
+    tap stops setup before any further input."""
     frame, glyph = flow.poll(lambda f: _sprint_glyph(f)[1] is not None,
                              timeout=10.0, interval=0.5)
     icon_crop, centre = _sprint_glyph(frame)
@@ -406,7 +411,7 @@ def capture_intro_sprint(flow: _Flow) -> None:
     if not ok:
         flow.skip("home/intro_sprint_dialog.png",
                   "tapped the sprint rail but no dialog appeared")
-        return
+        raise RuntimeError('Intro Sprint dialog was not verified after its tap; no further input sent')
     # the tap proved the glyph is the icon: now it may be written (self-matched
     # against the frame it was read from - the icon stays visible behind the
     # dialog, but verify against its own frame)
@@ -429,13 +434,21 @@ def capture_intro_sprint(flow: _Flow) -> None:
                       "Intro sprint yes", {"side": "right"}, unique=False)
         flow.tap(right[0] + right[2] // 2, right[1] + right[3] // 2,
                  "end intro sprint early")
-        flow.poll(lambda f: _sprint_glyph(f)[1] is None, timeout=10.0)
+        _, ended = flow.poll(lambda f: _sprint_glyph(f)[1] is None
+                             and (flow.wave(f) is not None or flow.game_stats(f)), timeout=10.0)
+        if not ended:
+            raise RuntimeError('Could not verify the battle after ending Intro Sprint')
     else:
         yes = flow.locate(frame, R_DIALOG, "YES")
         if yes:
             flow.tap(yes[0], yes[1], "end intro sprint early")
-            flow.poll(lambda f: _sprint_glyph(f)[1] is None, timeout=10.0)
+            _, ended = flow.poll(lambda f: _sprint_glyph(f)[1] is None
+                                 and (flow.wave(f) is not None or flow.game_stats(f)), timeout=10.0)
+            if not ended:
+                raise RuntimeError('Could not verify the battle after ending Intro Sprint')
         flow.skip("home/intro_sprint_yes.png", "dialog button row not found")
+        if not yes:
+            raise RuntimeError('Intro Sprint confirmation could not be located; no further input sent')
 
 
 # ---------------------------------------------------------------- ultimate weapons
@@ -466,7 +479,7 @@ def capture_uw_weapons(flow: _Flow) -> None:
         flow.pause(.8)
     if detect.panel_tab(flow.grab()) != 'uw':
         flow.skip("uw/black_hole.png", "could not open the UW tab")
-        return
+        raise RuntimeError('Ultimate Weapons panel was not verified after its tap')
     shopper._scroll_to_top()
     previous = None
     for page in range(6):
@@ -497,9 +510,135 @@ def capture_uw_weapons(flow: _Flow) -> None:
     except Exception as e:                       # noqa: BLE001 - isolate
         from runtime import logger
         logger.event("flow_uw_switch_error", error=str(e)[:200])
+        raise
 
 
 # ---------------------------------------------------------------- end the run
+
+def _clean_home(flow, frame) -> tuple[bool, str]:
+    return can_start_battle(on_home=flow.on_home(frame), wave=flow.wave(frame),
+                            side_menu=flow.side_menu(frame), game_stats=flow.game_stats(frame),
+                            tournament=flow.in_tournament(frame))
+
+
+def _save_setup_battle(flow, **changes) -> dict:
+    from player.calibrate import _state_save, _state_load
+    from runtime import logger
+    battle = flow.s.state['setup_battle']
+    previous = dict(battle)
+    battle.update(changes)
+    try:
+        _state_save(flow.cal.p, flow.s.state)
+        if _state_load(flow.cal.p).get('setup_battle') != battle:
+            raise RuntimeError('Setup battle ownership could not be read back')
+    except BaseException:
+        battle.clear()
+        battle.update(previous)
+        raise
+    logger.event('setup_battle', **battle)
+    return battle
+
+
+def _owns_setup_battle(flow) -> bool:
+    battle = flow.s.state.get('setup_battle') or {}
+    return bool(flow._owned_battle_id and battle.get('id') == flow._owned_battle_id
+                and battle.get('operation_id') == flow.operation_id
+                and battle.get('status') in ('active', 'ending'))
+
+
+def mark_setup_unknown(flow, error) -> None:
+    """Revoke input authority after interruption; persist without touching the game."""
+    from player.calibrate import record_final_screen
+    battle = flow.s.state.get('setup_battle') or {}
+    if (flow._owned_battle_id and battle.get('id') == flow._owned_battle_id
+            and battle.get('operation_id') == flow.operation_id
+            and battle.get('status') != 'finished'):
+        _save_setup_battle(flow, status='unknown', reason=str(error))
+    record_final_screen(flow.cal.p, flow.s.state, 'unknown', verified=False, error=error)
+
+
+def _setup_lifecycle(function):
+    """An interrupted pass has no recovery-input path, including Stop and Abort."""
+    @wraps(function)
+    def guarded(flow, *args, **kwargs):
+        try:
+            action = {'_start_setup_run': 'setup.battle.start',
+                      'end_run_and_capture': 'setup.battle.end',
+                      'capture_game_stats': 'setup.battle.results'}.get(function.__name__)
+            if action:
+                from runtime import logger
+                with logger.attempt(action, setup_operation_id=flow.operation_id,
+                                    setup_battle_id=flow._owned_battle_id) as attempt:
+                    result = function(flow, *args, **kwargs)
+                    attempt.finish('refused' if result is False else 'verified',
+                                   setup_battle_id=flow._owned_battle_id)
+                    return result
+            return function(flow, *args, **kwargs)
+        except BaseException as error:
+            mark_setup_unknown(flow, error)
+            raise
+    return guarded
+
+
+@_setup_lifecycle
+def _start_setup_run(flow, reason):
+    """Own only the normal run this operation taps from freshly proven clean Home."""
+    flow.s.check_stop()
+    frame = flow.grab()
+    ok, why = _clean_home(flow, frame)
+    if not ok:
+        raise RuntimeError(f'No setup battle started: {why}')
+    previous = flow.s.state.get('setup_battle') or {}
+    if previous and previous.get('status') != 'finished':
+        raise RuntimeError('An earlier setup battle has no verified finish; no further battle will start')
+    point = flow.locate(frame, R_HOME_BATTLE, 'BATTLE')
+    if not point:
+        raise RuntimeError('Home BATTLE button not found; no setup battle started')
+    flow.s.state.pop('final_screen', None)
+    flow._owned_battle_id = uuid.uuid4().hex
+    flow.s.state['setup_battle'] = dict(id=flow._owned_battle_id, status='starting',
+        started_at=time.time(), operation_id=flow.operation_id, reason=reason)
+    _save_setup_battle(flow)
+    flow.tap(*point, reason)
+    frame, started = flow.poll(lambda f: flow.wave(f) is not None
+                               or _sprint_glyph(f)[1] is not None or flow.side_menu(f)
+                               or flow.game_stats(f), timeout=25.0, interval=.6)
+    if not started or flow.in_tournament(frame):
+        raise RuntimeError('Setup battle start was not verified as a normal run; no further input sent')
+    _save_setup_battle(flow, status='active')
+    return frame
+
+
+@_setup_lifecycle
+def _complete_setup_battle(flow) -> bool:
+    from player.calibrate import record_final_screen
+    flow.s.check_stop()
+    frame = flow.grab()
+    ok, why = _clean_home(flow, frame)
+    if not _owns_setup_battle(flow) or not ok:
+        raise RuntimeError(f'Setup battle final Home is unverified: {why or "run ownership lost"}')
+    # record_final_screen persists and reads back this exact operation's proof.
+    record_final_screen(flow.cal.p, flow.s.state, 'home', verified=True)
+    _save_setup_battle(flow, status='finished', finished_at=time.time())
+    return True
+
+
+@_setup_lifecycle
+def _finish_setup_run(flow) -> bool:
+    if not _owns_setup_battle(flow):
+        raise RuntimeError('Setup cannot finish a run it did not start in this operation')
+    frame = flow.grab()
+    if flow.in_tournament(frame):
+        raise RuntimeError('A tournament is on screen; setup will send no further input')
+    if _clean_home(flow, frame)[0]:
+        return _complete_setup_battle(flow)
+    if not flow.game_stats(frame) and _sprint_glyph(frame)[1] is not None:
+        capture_intro_sprint(flow)
+        frame = flow.grab()
+    reached = capture_game_stats(flow) if flow.game_stats(frame) else end_run_and_capture(flow)
+    if not reached:
+        raise RuntimeError('Setup battle did not return Home; no further battle will start')
+    return True
 
 def capture_missing_off_state(flow):
     """Exercise a verified switch only in the setup-owned battle, then restore."""
@@ -520,18 +659,16 @@ def capture_missing_off_state(flow):
     flow.progress('Verifying weapon OFF state, then restoring ON')
     flow.tap(x+w//2,y+h//2,'setup: capture OFF switch')
     flow.pause(.5)
-    try:
-        a=flow.grab(); flow.pause(.3); b=flow.grab()
-        capture_uw_switches(flow.cal,a,b)
-    finally:
-        rows=find_uw_switches(flow.grab(),labels)
-        off=next((r for state,r,n in rows if n==name and state=='off'),None)
-        if off:
-            x,y,w,h=off
-            flow.tap(x+w//2,y+h//2,'setup: restore weapon ON')
-            flow.pause(.5)
-        if not any(state=='on' and n==name for state,_,n in find_uw_switches(flow.grab(),labels)):
-            raise RuntimeError('Could not confirm weapon restored ON; inspect equipment before farming')
+    a=flow.grab(); flow.pause(.3); b=flow.grab()
+    capture_uw_switches(flow.cal,a,b)
+    rows=find_uw_switches(flow.grab(),labels)
+    off=next((r for state,r,n in rows if n==name and state=='off'),None)
+    if off:
+        x,y,w,h=off
+        flow.tap(x+w//2,y+h//2,'setup: restore weapon ON')
+        flow.pause(.5)
+    if not any(state=='on' and n==name for state,_,n in find_uw_switches(flow.grab(),labels)):
+        raise RuntimeError('Could not confirm weapon restored ON; inspect equipment before farming')
 
 def _skip_missing(flow: _Flow, rel: str, reason: str, *, optional: bool = False) -> None:
     """flow.skip(rel, ...) unless the image is already on disk (nothing is
@@ -550,7 +687,31 @@ def _skip_end_round_yes(flow: _Flow, why: str) -> None:
                   "cuts it only from an END ROUND confirm its own run shows")
 
 
+@_setup_lifecycle
 def end_run_and_capture(flow: _Flow) -> bool:
+    """End only this operation's setup battle; unknown screens revoke authority."""
+    if not _owns_setup_battle(flow):
+        mark_setup_unknown(flow, 'Refused to end an unowned or interrupted setup battle')
+        return False
+    flow.s.check_stop()
+    frame = flow.grab()
+    if (flow.in_tournament(frame) or flow.on_home(frame)
+            or not (flow.game_stats(frame) or flow.wave(frame) is not None
+                    or flow.side_menu(frame) or exit_label(_lines_text(frame))
+                    or _sprint_glyph(frame)[1] is not None)):
+        mark_setup_unknown(flow, 'Refused to end a tournament or unrecognized battle screen')
+        return False
+    _save_setup_battle(flow, status='ending', end_started_at=time.time())
+    if flow.game_stats(frame):
+        reached = capture_game_stats(flow)
+    else:
+        reached = _end_owned_run_and_capture(flow, frame)
+    if not reached:
+        mark_setup_unknown(flow, 'Could not verify Home after ending the setup battle')
+    return bool(reached)
+
+
+def _end_owned_run_and_capture(flow: _Flow, frame) -> bool:
     """Surrender the calibration run, capturing the exit dialog, GAME STATS
     screen and reward skip on the way to Home. Returns True on Home.
 
@@ -560,7 +721,6 @@ def end_run_and_capture(flow: _Flow) -> bool:
     run is on screen, and answer Surrender (never Go Home) on the exit dialog.
     """
     from settings import CONFIG
-    frame = flow.grab()
     if flow.in_tournament(frame):
         from runtime import logger
         logger.shot(frame, "flow_end_run_tournament")
@@ -582,6 +742,10 @@ def end_run_and_capture(flow: _Flow) -> bool:
     for _attempt in range(4):
         if label:
             break
+        if (flow.in_tournament(frame) or flow.side_menu(frame)
+                or flow.game_stats(frame) or flow.on_home(frame)
+                or (flow.wave(frame) is None and _sprint_glyph(frame)[1] is None)):
+            return False
         flow.tap(tog[0], tog[1], "open side menu")
         frame, label = flow.poll(lambda f: exit_label(_lines_text(f)), timeout=4.0)
     if not label:
@@ -645,8 +809,7 @@ def end_run_and_capture(flow: _Flow) -> bool:
     if not confirm:
         # the control that could not be found is the missing image - unless that
         # image is on disk, when only this dialog went unanswered (the event below
-        # and, where the caller raises on a False return, its "did not return
-        # Home" error are then the whole record; the UW lottery pass ignores it)
+        # and the caller's "did not return Home" error are then the record)
         from runtime import logger
         logger.event("flow_confirm_not_locatable", kind=kind)
         if kind == "surrender":
@@ -716,7 +879,19 @@ def end_run_and_capture(flow: _Flow) -> bool:
     return capture_game_stats(flow)
 
 
+@_setup_lifecycle
 def capture_game_stats(flow: _Flow) -> bool:
+    if not _owns_setup_battle(flow):
+        mark_setup_unknown(flow, 'Refused GAME STATS navigation for an unowned setup battle')
+        return False
+    reached = _capture_owned_game_stats(flow)
+    if reached:
+        return _complete_setup_battle(flow)
+    mark_setup_unknown(flow, 'GAME STATS did not return to verified Home')
+    return False
+
+
+def _capture_owned_game_stats(flow: _Flow) -> bool:
     """The GAME STATS screen a finished/surrendered run leaves: capture its
     header (OCR - large, reliable), the MORE STATS / PERKS pair and the RETRY /
     HOME pair by POSITION (left/right), tap HOME, and confirm Home. Used by both
@@ -759,6 +934,8 @@ def capture_game_stats(flow: _Flow) -> bool:
     # layout is unchanged until the tap lands) and re-tap until on_home reads.
     for _ in range(4):
         flow.s.check_stop()
+        if flow.in_tournament(frame) or not flow.game_stats(frame):
+            return False
         _hl, hr = _row_buttons(frame, *R_HOME_ROW, thresh=60)
         home_pt = ((hr[0] + hr[2] // 2, hr[1] + hr[3] // 2) if hr
                    else flow.locate(frame, R_STATS_BTNS, "HOME"))
@@ -880,7 +1057,7 @@ def capture_hud_targets(flow, screen="battle") -> dict:
         except Exception as e:                  # noqa: BLE001 - isolate
             from runtime import logger
             logger.event("flow_hud_error", target=spec["rel"], error=str(e)[:200])
-            continue
+            raise
         result[spec["rel"]] = "not_seen" if len(scanner.skipped) > before else "verified"
     from runtime import logger
     logger.event("flow_hud_targets", screen=screen, result=result)
@@ -888,6 +1065,7 @@ def capture_hud_targets(flow, screen="battle") -> dict:
         result.update(scanner.learned_cuts(screen, first, second))
     except Exception as e:                      # noqa: BLE001
         logger.event("flow_learned_error", screen=screen, error=str(e)[:200])
+        raise
     return result
 
 
@@ -929,7 +1107,7 @@ def capture_side_menu(flow) -> dict:
         if not icon_present(frame, open_):
             flow.skip("icons/tile_quests.png", "Side menu did not open")
             logger.event("flow_side_menu", opened=False)
-            return {}
+            raise RuntimeError('Side menu was not verified after its tap; no further input sent')
     flow.pause(0.3)
     follow = flow.grab()
     rels = [rel for rel, d in manifest().get("asset_bindings", {}).items() if d.get("screen") == "battle_menu"]
@@ -942,12 +1120,14 @@ def capture_side_menu(flow) -> dict:
         # messages alone run past 160
         logger.event("flow_side_menu_error",
                      error=(" ".join([type(e).__name__, *getattr(e, "__notes__", [])]) + f": {e}")[:200])
+        raise
     result.update(capture_hud_targets(flow, "battle_menu"))
     if was_shut:
         flow.tap(*point, "close the side menu")
         flow.pause(0.8)
         if not icon_present(flow.grab(), shut):
             logger.event("flow_side_menu", opened=True, closed=False)
+            raise RuntimeError('Side menu did not close; no further input sent')
     logger.event("flow_side_menu", opened=True, was_shut=was_shut, result=result)
     return result
 
@@ -971,7 +1151,7 @@ def capture_learned_targets(flow, screen="battle") -> dict:
     except Exception as e:                      # noqa: BLE001 - isolate: never end the pass
         from runtime import logger
         logger.event("flow_learned_error", screen=screen, error=str(e)[:200])
-        return {}
+        raise
     if result:
         from runtime import logger
         logger.event("flow_learned_targets", screen=screen, result=result)
@@ -1001,7 +1181,7 @@ def capture_artwork_targets(flow, rels, *, unique=True, label="controls") -> dic
     except Exception as e:                      # noqa: BLE001 - isolate: never end the pass
         from runtime import logger
         logger.event("flow_artwork_error", targets=wanted, error=str(e)[:200])
-        return {}
+        raise
     cal = getattr(flow, "cal", None)
     for rel, state in result.items():
         if state == "verified" and rel in HUD_ABILITY_TARGETS and cal is not None:
@@ -1106,7 +1286,10 @@ def set_tier(flow, target=TIER_FOR_END_ROUND):
     prev, stall = None, 0
     for _ in range(60):
         flow.s.check_stop()
-        cur = read_tier(flow.grab())
+        frame = flow.grab()
+        if not _clean_home(flow, frame)[0]:
+            raise RuntimeError('Difficulty selection lost clean Home; no further input sent')
+        cur = read_tier(frame)
         if cur is None:
             return None
         if cur == target:
@@ -1203,50 +1386,25 @@ def capture_missing_end_round(frame) -> bool:
 UW_REROLL_WAVE = 1000
 
 
+@_setup_lifecycle
 def _start_lottery_run(flow) -> bool:
     """From Home, start a NORMAL run and leave the Intro Sprint RUNNING - its
     per-wave perk roll is the whole point here (a battle pass, by contrast, ENDS
-    the sprint so it can surrender). Ensures max speed so the rolls fly. Returns
-    False if a run could not be brought up."""
+    the sprint so it can surrender). Ensures max speed so the rolls fly.
+    An unverified start raises and revokes ownership."""
     from flows import shard
-    from runtime import logger
-    frame = flow.grab()
-    if not flow.on_home(frame):
-        _safe_home(flow)
-        frame = flow.grab()
-    battle_pt = flow.locate(frame, R_HOME_BATTLE, "BATTLE")
-    if not battle_pt:
-        return False
-    flow.tap(battle_pt[0], battle_pt[1], "start UW lottery run")
-    frame, started = flow.poll(
-        lambda f: flow.wave(f) is not None or _sprint_glyph(f)[1] is not None,
-        timeout=25.0, interval=0.6)
-    if not started or flow.in_tournament(frame):
-        return False
-    try:
-        shard.wait_for_wave(1)
-        shard.ensure_max_speed()
-    except Exception as e:                       # noqa: BLE001 - best effort
-        logger.event("flow_uw_lottery", stage="start_warn", warn=str(e)[:150])
+    _start_setup_run(flow, 'start UW lottery run')
+    flow.s.check_stop()
+    shard.wait_for_wave(1)
+    flow.s.check_stop()
+    shard.ensure_max_speed()
     return True
 
 
 def _reroll_lottery_run(flow) -> bool:
-    """Abandon the current run and restart a fresh one via RETRY - the fast,
-    in-battle reroll flows/quest_sm.py uses (it keeps the Tier and returns
-    straight to a new sprint). Max speed, sprint running. Falls back to a Home
-    restart if RETRY does not bring a run back."""
-    from flows import shard
-    from runtime import logger
-    try:
-        shard.abandon_run()                      # side menu -> exit -> confirm -> RETRY
-        shard.wait_for_wave(1)
-        shard.ensure_max_speed()
-        return True
-    except Exception as e:                        # noqa: BLE001
-        logger.event("flow_uw_lottery", stage="reroll_fallback", error=str(e)[:150])
-        _safe_home(flow)
-        return _start_lottery_run(flow)
+    """Finish the owned run on verified Home before owning the next lottery run."""
+    _finish_setup_run(flow)
+    return _start_lottery_run(flow)
 
 
 def _sweep_uw_for_targets(flow) -> bool:
@@ -1259,10 +1417,7 @@ def _sweep_uw_for_targets(flow) -> bool:
         return False                             # not in a run - nothing to read
     if not shopper._tap_tab("uw"):
         return False
-    try:
-        shopper._scroll_to_top()
-    except Exception:                            # noqa: BLE001
-        pass
+    shopper._scroll_to_top()
     before = len(_uw_remaining())
     for _ in range(6):                           # walk the scrollable UW list
         f = flow.grab()
@@ -1275,6 +1430,7 @@ def _sweep_uw_for_targets(flow) -> bool:
     return len(_uw_remaining()) < before
 
 
+@_setup_lifecycle
 def _uw_lottery_pass(flow, max_minutes=None) -> None:
     """Capture the account's UNOWNED Ultimate Weapon labels via the Tier-1
     perk-roll lottery - the ONLY place they render.
@@ -1288,20 +1444,22 @@ def _uw_lottery_pass(flow, max_minutes=None) -> None:
         set Tier 1 -> start a run, sprint LEFT RUNNING (waves = rolls) ->
         every ~15s OCR-scan the UW panel for a still-missing target ->
           grant is a target  -> cut it, then reroll (one grant per run) ->
-          no grant by wave ~1000 -> the roll is spent -> reroll (abandon/RETRY)
+          no grant by wave ~1000 -> finish on verified Home, start a new run
         until every target is captured (or max_minutes, if set).
 
     Chrono Field is owned now, so every grant is one of the two real targets.
     `max_minutes=None` runs until both land, relying on the dashboard's stop
-    (check_stop) as the escape hatch. The caller's finally restores the tier."""
+    (check_stop) as the escape hatch. Successful completion restores the tier;
+    an interruption leaves the screen as-is."""
     import time
     from runtime import logger
     if not _uw_remaining():
         return
-    set_tier(flow, 1)
+    if set_tier(flow, 1) != 1:
+        raise RuntimeError('Could not select Tier 1; no setup lottery battle started')
     if not _start_lottery_run(flow):
         flow.skip("uw/smart_missiles.png", "could not start the Tier-1 lottery run")
-        return
+        raise RuntimeError('Could not start the Tier-1 lottery run')
     flow.progress("UW lottery: Tier-1 perk-roll run - watching for a grant")
     deadline = (time.monotonic() + max_minutes * 60) if max_minutes else None
     rerolls = 0
@@ -1314,14 +1472,16 @@ def _uw_lottery_pass(flow, max_minutes=None) -> None:
         f = flow.grab()
         if flow.in_tournament(f):                # never our screen - bail safely
             logger.shot(f, "flow_uw_lottery_tournament")
-            break
+            raise RuntimeError('A tournament is on screen; lottery capture stopped')
         # tower died / between runs -> reroll to a fresh Tier-1 sprint
-        if flow.game_stats(f) or (flow.wave(f) is None and not flow.side_menu(f)):
+        if flow.game_stats(f) or _clean_home(flow, f)[0]:
             rerolls += 1
             logger.event("flow_uw_lottery", stage="restart_dead", rerolls=rerolls)
             if not _reroll_lottery_run(flow):
-                break
+                raise RuntimeError('Could not verify the next setup lottery run')
             continue
+        if flow.wave(f) is None and not flow.side_menu(f):
+            raise RuntimeError('Lottery battle screen is unrecognized; no further input sent')
         got = _sweep_uw_for_targets(flow)
         if not _uw_remaining():
             break
@@ -1331,7 +1491,7 @@ def _uw_lottery_pass(flow, max_minutes=None) -> None:
                          rerolls=rerolls,
                          remaining=[r for r, _, _ in _uw_remaining()])
             if not _reroll_lottery_run(flow):
-                break
+                raise RuntimeError('Could not verify the next setup lottery run')
             continue
         w = flow.wave(flow.grab())
         if w is not None and w >= UW_REROLL_WAVE:
@@ -1340,24 +1500,12 @@ def _uw_lottery_pass(flow, max_minutes=None) -> None:
                          rerolls=rerolls,
                          remaining=[r for r, _, _ in _uw_remaining()])
             if not _reroll_lottery_run(flow):
-                break
+                raise RuntimeError('Could not verify the next setup lottery run')
         else:
             flow.pause(15)                       # let the sprint roll more perks
-    # Leave the account on a clean Home. Use the OCR-based surrender (proven on
-    # this layout in the END ROUND pass), NOT shard.abandon_run: on BlueStacks
-    # its coordinate-based side-menu taps mis-hit the stat/perk icons and opened
-    # overlays instead of Home (seen live 2026-09-07). Do NOT fall back to
-    # ensure_home on failure - it HOLDS on a live run (rule 3) and would hang
-    # setup; a leftover Tier-1 NORMAL run costs nothing (rule 3), so leaving it
-    # beats hanging. The run-died path taps HOME off GAME STATS directly.
-    try:
-        f = flow.grab()
-        if flow.game_stats(f):
-            capture_game_stats(flow)              # already on stats -> taps HOME
-        else:
-            end_run_and_capture(flow)             # live run -> surrender -> HOME
-    except Exception as e:                        # noqa: BLE001
-        logger.event("flow_uw_lottery", stage="final_exit_error", error=str(e)[:150])
+    # Only a verified exit completes the lottery. Failure propagates with the
+    # screen left as-is; no runner recovery helper may hide a failed surrender.
+    _finish_setup_run(flow)
     logger.event("flow_uw_lottery", result="done", rerolls=rerolls,
                  remaining=[r for r, _, _ in _uw_remaining()])
 
@@ -1434,60 +1582,134 @@ def capture_hud_digits(flow: _Flow) -> list[str]:
     return written
 
 
+def verify_saved_upgrade_labels(flow, wanted=None):
+    """Verify saved stat identities without device input or starting a run.
+
+    Shared by acquisition and the fully populated HUD pass. File existence
+    alone never clears a previous skip or makes a saved stat semantically valid.
+    Returns (verified images by slug, invalid evidence by relative path).
+    """
+    import hashlib
+    import settings
+    from player import accounts, battle_capture as bc
+    from vision import textocr
+    from runtime import logger
+    if wanted is None:
+        wanted = {r[6:-4] for r in accounts.generic_names() if r.startswith('stats/') and r.endswith('.png')}
+    with logger.attempt('setup_upgrade_verification', requested=len(wanted)) as attempt:
+        existing, hashes = {}, {}
+        for name in sorted(wanted):
+            path = settings.template_path(f'stats/{name}.png')
+            if path.exists():
+                data = path.read_bytes()
+                hashes[name] = hashlib.sha256(data).hexdigest()
+                existing[name] = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR) if data else None
+        verification = bc.verify_stat_labels(existing, lambda crops: textocr.read_texts(
+            crops, scales=(2.0,3.0), raise_on_error=True))
+        invalid = {}
+        for name, evidence in verification.items():
+            rel = f'stats/{name}.png'
+            logger.event('setup_upgrade_template_verification', rel=rel,
+                         image_sha256=hashes[name], **evidence)
+            if evidence['status'] == 'verified':
+                flow.withdraw_skips(rel)
+            else:
+                invalid[rel] = evidence
+                flow.skip(rel, f"Saved upgrade label {evidence['status']}: expected {name}, read {evidence['text']!r}; existing file kept")
+        known = {name: image for name,image in existing.items()
+                 if verification[name]['status'] == 'verified'}
+        attempt.finish('incomplete' if invalid else 'verified_existing' if existing else 'none_present',
+                       checked=len(verification), invalid=invalid,
+                       missing=sorted(f'stats/{name}.png' for name in wanted - existing.keys()))
+        return known, invalid
+
+
 def capture_upgrade_labels(flow):
     """Read native upgrade rows without purchasing upgrades."""
     import settings
     from player import battle_capture as bc, accounts
     from interactions import shopper
     from vision import detect, textocr
+    from runtime import logger
     wanted = {r[6:-4] for r in accounts.generic_names() if r.startswith('stats/') and r.endswith('.png')}
-    for tab in ('attack','defense','utility'):
-        flow.s.check_stop()
-        frame = flow.grab()
-        if flow.wave(frame) is None:
-            raise RuntimeError('Battle HUD no longer visible while reading upgrade labels')
-        if detect.panel_tab(frame) != tab:
-            flow.tap(*settings.CONFIG['tabs'][tab], f'open {tab} upgrades for capture')
-            flow.pause(.8)
-        if detect.panel_tab(flow.grab()) != tab:
-            raise RuntimeError(f'Could not verify {tab} upgrade panel')
-        shopper._scroll_to_top()
-        previous = None
-        for page in range(8):
+    missing = lambda: sorted(f'stats/{name}.png' for name in wanted
+                             if not settings.template_path(f'stats/{name}.png').exists())
+    with logger.attempt('setup_upgrade_labels', requested=len(wanted)) as attempt:
+        initial_missing = missing()
+        known, invalid = verify_saved_upgrade_labels(flow, wanted)
+        known.pop('max_label', None)
+        if not initial_missing:
+            attempt.finish('incomplete' if invalid else 'verified_existing',
+                           missing=[], invalid=invalid, written=[])
+            return
+        written = []
+        for tab in ('attack','defense','utility'):
             flow.s.check_stop()
-            flow.progress(f'Reading {tab} upgrades: page {page+1}')
             frame = flow.grab()
-            x,y,w,h=settings.CONFIG['rois']['upgrade_panel']
-            panel=frame[y:y+h,x:x+w]
-            def read(c):
-                text=textocr.read_text(c,scales=(2.0,3.0))
-                from runtime import logger
-                logger.event('setup_upgrade_label',tab=tab,page=page+1,text=text)
-                return text
-            cuts=bc.capture_stats(panel,read,wanted)
-            signature=frozenset(cuts)
-            if page and signature and signature == previous:
-                break
-            previous=signature
-            if not settings.template_path('stats/max_label.png').exists():
-                maximum=bc.capture_max_plaque(panel,read)
-                if maximum is not None: cuts['max_label']=maximum
-            flow.pause(.3)
-            follow=flow.grab()
-            for name,crop in cuts.items():
-                rel=f'stats/{name}.png'
-                if settings.template_path(rel).exists(): continue
-                _,score,_,point=cv2.minMaxLoc(cv2.matchTemplate(follow,crop,cv2.TM_CCOEFF_NORMED))
-                if score < .98: continue
-                flow.cut_crop(rel,crop,frame,name,{'rect':[point[0],point[1],crop.shape[1],crop.shape[0]],'screen':'battle'},unique=False)
-            # Slow, overlapping strokes keep a wrapped label from staying
-            # clipped at successive page boundaries (fast flings can skip it).
-            from device import act
-            act.swipe(x+w//2, y+int(h*.75), x+w//2, y+int(h*.35), 600,
-                      reason='setup overlapping upgrade scroll')
-            flow.pause(.6)
+            if flow.wave(frame) is None:
+                raise RuntimeError('Battle HUD no longer visible while reading upgrade labels')
+            if detect.panel_tab(frame) != tab:
+                flow.tap(*settings.CONFIG['tabs'][tab], f'open {tab} upgrades for capture')
+                flow.pause(.8)
+            if detect.panel_tab(flow.grab()) != tab:
+                raise RuntimeError(f'Could not verify {tab} upgrade panel')
+            shopper._scroll_to_top()
+            previous = None
+            for page in range(8):
+                flow.s.check_stop()
+                flow.progress(f'Reading {tab} upgrades: page {page+1}')
+                with logger.attempt('setup_upgrade_page', tab=tab, page=page+1) as page_attempt:
+                    frame = flow.grab()
+                    x,y,w,h=settings.CONFIG['rois']['upgrade_panel']
+                    panel=frame[y:y+h,x:x+w]
+                    def read_many(crops):
+                        texts = textocr.read_texts(crops, scales=(2.0,3.0), raise_on_error=True)
+                        for text in texts:
+                            logger.event('setup_upgrade_label', tab=tab, page=page+1, text=text)
+                        return texts
+                    cuts=bc.capture_stats(panel,None,wanted,read_many=read_many,known=known)
+                    signature=frozenset(cuts)
+                    if page and signature and signature == previous:
+                        page_attempt.finish('end_of_panel', labels=sorted(cuts))
+                        break
+                    previous=signature
+                    if 'max_label' in wanted and not settings.template_path('stats/max_label.png').exists():
+                        maximum=bc.capture_max_plaque(panel,None,read_many=read_many)
+                        if maximum is not None: cuts['max_label']=maximum
+                    pending = {name:crop for name,crop in cuts.items()
+                               if not settings.template_path(f'stats/{name}.png').exists()}
+                    page_written = []
+                    if pending:
+                        flow.pause(.3)
+                        follow=flow.grab()
+                        for name,crop in pending.items():
+                            rel=f'stats/{name}.png'
+                            _,score,_,point=cv2.minMaxLoc(cv2.matchTemplate(follow,crop,cv2.TM_CCOEFF_NORMED))
+                            if score < .98: continue
+                            flow.cut_crop(rel,crop,frame,name,{'rect':[point[0],point[1],crop.shape[1],crop.shape[0]],'screen':'battle'},unique=False)
+                            if settings.template_path(rel).exists():
+                                page_written.append(rel)
+                                written.append(rel)
+                                if name != 'max_label': known[name] = crop
+                    page_attempt.finish('observed', labels=sorted(cuts), written=page_written)
+                if not missing():
+                    attempt.finish('incomplete' if invalid else 'complete',
+                                   missing=[], invalid=invalid, written=written)
+                    return
+                # Overlapping strokes keep wrapped labels from remaining
+                # clipped at successive page boundaries.
+                from device import act
+                act.swipe(x+w//2, y+int(h*.75), x+w//2, y+int(h*.35), 600,
+                          reason='setup overlapping upgrade scroll')
+                flow.pause(.6)
+        remaining = missing()
+        for rel in remaining:
+            flow.skip(rel, 'Upgrade label was not read and independently confirmed on a fresh frame')
+        attempt.finish('incomplete' if remaining or invalid else 'complete', missing=remaining,
+                       invalid=invalid, written=written, initial_missing=initial_missing)
 
 
+@_setup_lifecycle
 def _hud_digit_pass(flow: _Flow) -> None:
     """Capture the HUD wave font at TIER 1, the one digit source that does not
     itself need digits (wave_reader refuses to read without the font, and
@@ -1527,34 +1749,13 @@ def _hud_digit_pass(flow: _Flow) -> None:
                       for rel in item['alternatives'] if rel.startswith('stats/')}
     stats_missing = any(not settings.template_path(rel).exists() for rel in required_stats)
     if digits_ok and not uw_never and not hud_missing and not stats_missing:
+        verify_saved_upgrade_labels(flow)
         return
     if set_tier(flow, 1) != 1:
         raise RuntimeError('Could not select Tier 1; no setup battle started')
-    frame = flow.grab()
-    if not flow.on_home(frame):
-        _safe_home(flow)
-        frame = flow.grab()
-    battle_pt = flow.locate(frame, R_HOME_BATTLE, "BATTLE")
-    if not battle_pt:
-        flow.skip("digits/0.png", "Home BATTLE button not found for the digit pass")
-        return
     flow.progress("Digit font: starting a Tier-1 run to read the wave counter")
-    flow.tap(battle_pt[0], battle_pt[1], "start Tier-1 digit run")
-    frame, started = flow.poll(
-        lambda f: flow.wave(f) is not None or _sprint_glyph(f)[1] is not None
-                  or flow.side_menu(f),
-        timeout=25.0, interval=0.6)
-    if not started:
-        logger.shot(frame, "flow_digits_run_did_not_start")
-        flow.skip("digits/0.png", "Tier-1 digit run did not start")
-        return
-    if flow.in_tournament(frame):
-        logger.shot(frame, "flow_digits_unexpected_tournament")
-        return
-    try:
-        capture_intro_sprint(flow)               # capture the dialog, then end the sprint
-    except Exception as e:                        # noqa: BLE001 - isolate
-        logger.event("flow_digits", stage="sprint_warn", error=str(e)[:150])
+    _start_setup_run(flow, 'start Tier-1 digit run')
+    capture_intro_sprint(flow)               # capture the dialog, then end the sprint
     _record_wall(flow, flow.grab())           # the HUD proves a wall (positive-only)
     capture_artwork_targets(flow, HUD_ABILITY_TARGETS, label="the ability buttons")
     capture_hud_targets(flow, "battle")          # the cart tile, the hamburger, learned HUD spots
@@ -1563,26 +1764,15 @@ def _hud_digit_pass(flow: _Flow) -> None:
     # The OWNED Ultimate Weapon labels live here too: the tower SURVIVES at
     # Tier 1, so the UW-tab sweep cannot race a death - at the account's top
     # tier (the END ROUND pass) it did, and the surrender must come first.
-    try:
-        capture_uw_weapons(flow)
-    except Exception as e:                        # noqa: BLE001 - isolate
-        logger.event("flow_uw_error", error=str(e)[:200])
+    capture_uw_weapons(flow)
     # the side menu's tiles (quests checkbox, the X) - the tower survives here
-    try:
-        capture_side_menu(flow)
-    except Exception as e:                        # noqa: BLE001 - isolate
-        logger.event("flow_side_menu_error", error=str(e)[:200])
-    frame = flow.grab()
-    if flow.game_stats(frame):
-        reached = capture_game_stats(flow)
-    else:
-        flow.progress("Digit pass done; ending the Tier-1 run")
-        reached = end_run_and_capture(flow)
-    logger.event("flow_digits", result="done", written=written, home=bool(reached))
-    if not reached:
-        raise RuntimeError('Could not return Home after the setup battle; no further battle will start')
+    capture_side_menu(flow)
+    flow.progress('Digit pass done; ending the Tier-1 run')
+    _finish_setup_run(flow)
+    logger.event("flow_digits", result="done", written=written, home=True)
 
 
+@_setup_lifecycle
 def capture_battle_flow(flow: _Flow, observe_minutes: float | None = None,
                         *, do_lottery: bool = False) -> None:
     """The END ROUND + results battle pass, then the difficulty is restored.
@@ -1601,8 +1791,8 @@ def capture_battle_flow(flow: _Flow, observe_minutes: float | None = None,
     `do_lottery=True` opts back into the blocking in-setup lottery
     (`_uw_lottery_pass`) for anyone who wants to force it now.
 
-    The player's original difficulty is always put back at the end - setup never
-    leaves the account on a harder tier than it found."""
+    Successful setup restores the original difficulty. An interruption leaves
+    the screen as-is and requires a person to resume from Home."""
     from runtime import logger
     frame = flow.grab()
     ok, why = can_start_battle(
@@ -1617,29 +1807,27 @@ def capture_battle_flow(flow: _Flow, observe_minutes: float | None = None,
     original_tier = read_tier(frame)
     if original_tier is None:
         raise RuntimeError('Could not read the original difficulty; no setup battle started')
-    try:
-        known_player = getattr(getattr(flow, 'cal', None), 'player', {})
-        if known_player.get('max_tier_verified_by') != 'setup':
-            _battle_pass(flow, TIER_FOR_END_ROUND, "highest unlocked tier; optional effects")
-        _hud_digit_pass(flow)          # the wave font, at Tier 1 (fresh account); a no-op once known
-        results = ('icons/game_stats.png', 'buttons/retry.png', 'home/game_stats_home.png',
-                   'buttons/exit_battle.png', 'home/exit_battle_dialog.png')
-        if set(results) - _have_templates(results):
-            _battle_pass(flow, 1, "exit and results capture")
-        if do_lottery and _uw_remaining():
-            _uw_lottery_pass(flow, max_minutes=observe_minutes)
-        # A run that ended on its own goes to capture_game_stats with no confirm
-        # to cut the Yes from; whatever the runs showed, a Yes still missing
-        # here is reported (a pass that raised instead is reported by the
-        # bootstrap's handler; _skip_end_round_yes never lists the image twice).
-        _skip_end_round_yes(flow, "no END ROUND confirm came up in this setup's runs")
-    finally:
-        restored_frame = flow.grab()
-        if flow.on_home(restored_frame) and read_tier(restored_frame) != original_tier:
-            set_tier(flow, original_tier)
-            logger.event("flow_tier_restored", tier=original_tier)
+    known_player = getattr(getattr(flow, 'cal', None), 'player', {})
+    if known_player.get('max_tier_verified_by') != 'setup':
+        _battle_pass(flow, TIER_FOR_END_ROUND, "highest unlocked tier; optional effects")
+    _hud_digit_pass(flow)          # the wave font, at Tier 1 (fresh account); a no-op once known
+    results = ('icons/game_stats.png', 'buttons/retry.png', 'home/game_stats_home.png',
+               'buttons/exit_battle.png', 'home/exit_battle_dialog.png')
+    if set(results) - _have_templates(results):
+        _battle_pass(flow, 1, "exit and results capture")
+    if do_lottery and _uw_remaining():
+        _uw_lottery_pass(flow, max_minutes=observe_minutes)
+    _skip_end_round_yes(flow, "no END ROUND confirm came up in this setup's runs")
+    # Restoration is a success path only. Stop/Abort must never trigger cleanup taps.
+    _safe_home(flow)
+    restored_frame = flow.grab()
+    if read_tier(restored_frame) != original_tier:
+        set_tier(flow, original_tier)
+        logger.event("flow_tier_restored", tier=original_tier)
+    _safe_home(flow)
 
 
+@_setup_lifecycle
 def _battle_pass(flow: _Flow, tier, label: str) -> None:
     """One battle at the top tier: start, capture the intro-sprint dialog and
     end the sprint, observe optional effects briefly, then finish - surrendering (END ROUND
@@ -1660,32 +1848,10 @@ def _battle_pass(flow: _Flow, tier, label: str) -> None:
             flow.cal.player["max_tier"] = reached
             flow.cal.player["max_tier_verified_by"] = "setup"
             logger.event("flow_top_tier", tier=reached)
-    frame = flow.grab()
-    if not flow.on_home(frame):
-        _safe_home(flow)
-        frame = flow.grab()
-    battle_pt = flow.locate(frame, R_HOME_BATTLE, "BATTLE")
-    if not battle_pt:
-        flow.skip("home/intro_sprint_dialog.png", "Home BATTLE button not found")
-        return
-    flow.progress(f"Battle pass ({label}): starting a Tier {read_tier(frame)} run")
-    flow.tap(battle_pt[0], battle_pt[1], "start run")
-    frame, started = flow.poll(
-        lambda f: flow.wave(f) is not None or _sprint_glyph(f)[1] is not None
-                  or flow.side_menu(f),
-        timeout=25.0, interval=0.6)
-    if not started:
-        logger.shot(frame, "flow_run_did_not_start")
-        flow.skip("home/intro_sprint_dialog.png", "run did not start")
-        return
-    if flow.in_tournament(frame):
-        logger.shot(frame, "flow_unexpected_tournament")
-        return
+    flow.progress(f"Battle pass ({label}): starting a setup run")
+    frame = _start_setup_run(flow, 'start run')
     _record_wall(flow, frame)
-    try:
-        capture_intro_sprint(flow)             # captures the dialog, then ends the sprint
-    except Exception as e:                       # noqa: BLE001 - isolate
-        logger.event("flow_intro_sprint_error", error=str(e)[:200])
+    capture_intro_sprint(flow)             # captures the dialog, then ends the sprint
     # Nothing else before the surrender: at the top tier the tower lives for
     # seconds, and the UW-tab sweep that used to sit here raced its death (then
     # only the plain GAME STATS path was left - no END ROUND dialog). The wave
@@ -1701,16 +1867,8 @@ def _battle_pass(flow: _Flow, tier, label: str) -> None:
     # Second Wind is transient and optional. Observe can learn it during
     # normal play; setup must never delay surrender looking for this badge.
     capture_hud_targets(flow, "battle")
-    if flow.game_stats(frame):
-        flow.progress("Run ended on its own; capturing the results screens")
-        reached = capture_game_stats(flow)
-    else:
-        flow.progress("Ending the run and capturing the results screens")
-        reached = end_run_and_capture(flow)
-    if not reached:
-        logger.event("flow_battle_incomplete",
-                     note="could not confirm Home after the run; left as-is")
-        raise RuntimeError('Setup battle did not return Home; no further battle will start')
+    flow.progress("Ending the setup run and capturing the results screens")
+    _finish_setup_run(flow)
 
 
 def observe_optional_effects(flow, seconds=90):
@@ -1768,10 +1926,12 @@ def capture_menu_extras(flow: _Flow) -> None:
                     ("buttons/quest_claim.png", "CLAIM", (160, 50), (0.2, 0.35)),
                     ("icons/event_calendar.png", "CALENDAR", (138, 124), (0.3, 0.5)),
                 ])
+            else:
+                raise RuntimeError('Event menu was not verified after its tap')
             tourney.return_to_game("events")
     except Exception as e:                       # noqa: BLE001
         logger.event("flow_menu_events_error", error=str(e)[:200])
-        _safe_home(flow)
+        raise
 
     # -- Store
     try:
@@ -1787,10 +1947,12 @@ def capture_menu_extras(flow: _Flow) -> None:
                     ("icons/store_cosmetics.png", "COSMETICS", (323, 43), (0.1, 0.3)),
                     ("buttons/store_owned.png", "OWNED", (170, 45), (0.2, 0.35)),
                 ])
+            else:
+                raise RuntimeError('Store menu was not verified after its tap')
             tourney.return_to_game("store")
     except Exception as e:                       # noqa: BLE001
         logger.event("flow_menu_store_error", error=str(e)[:200])
-        _safe_home(flow)
+        raise
 
     # -- Guild
     try:
@@ -1804,10 +1966,12 @@ def capture_menu_extras(flow: _Flow) -> None:
                     _menu_capture(flow, [
                         ("icons/guild_coin.png", "COIN", (66, 66), (0.3, 0.5)),
                     ])
+                else:
+                    raise RuntimeError('Guild menu was not verified after its tap')
                 tourney.return_to_game("guild")
     except Exception as e:                       # noqa: BLE001
         logger.event("flow_menu_guild_error", error=str(e)[:200])
-        _safe_home(flow)
+        raise
 
 
 def _safe_home(flow: _Flow) -> None:
@@ -1815,9 +1979,9 @@ def _safe_home(flow: _Flow) -> None:
     # A setup error must return promptly and honour Stop, not wait for hours.
     flow.s.check_stop()
     frame = flow.grab()
-    if flow.on_home(frame):
-        return
-    if flow.game_stats(frame) and capture_game_stats(flow):
+    if _clean_home(flow, frame)[0]:
+        from player.calibrate import record_final_screen
+        record_final_screen(flow.cal.p, flow.s.state, 'home', verified=True)
         return
     raise RuntimeError('Setup paused away from Home. Return Home before retrying; no automatic waiting or further taps.')
 
@@ -1826,8 +1990,8 @@ def _safe_home(flow: _Flow) -> None:
 
 def run_flows(flow_or_scanner, *, do_menus: bool = True, do_battle: bool = True,
               do_uw_lottery: bool = False) -> None:
-    """Run the consented action-capture flows as a starter-scan stage. Each is
-    isolated so one failing leaves the others and the rest of the scan intact.
+    """Run the consented action-capture flows as a starter-scan stage. A failing
+    flow stops setup without recovery input into the unexpected screen.
     Accepts a Scanner or an already-built _Flow (tests).
 
     `do_uw_lottery` is OFF by default: the unowned Ultimate Weapon labels are not
@@ -1844,11 +2008,13 @@ def run_flows(flow_or_scanner, *, do_menus: bool = True, do_battle: bool = True,
             capture_menu_extras(flow)
         except Exception as e:                   # noqa: BLE001
             logger.event("flow_menu_error", error=str(e)[:200])
-            _safe_home(flow)
+            mark_setup_unknown(flow, e)
+            raise
     if do_battle:
         try:
             capture_battle_flow(flow, do_lottery=do_uw_lottery)
         except Exception as e:                   # noqa: BLE001
             logger.event("flow_battle_error", error=str(e)[:200])
-            _safe_home(flow)
+            mark_setup_unknown(flow, e)
+            raise
     logger.event("flow_capture", stage="done")

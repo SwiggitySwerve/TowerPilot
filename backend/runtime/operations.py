@@ -7,6 +7,9 @@ from contextlib import contextmanager
 from towerpilot_workflows.operations import (
     Operations, Conflict, digest, file_revision, ACTIVE, STATUSES,
 )
+from runtime import build_info
+
+_BUILD = build_info.snapshot(Path(__file__).resolve().parents[2], 'worker')
 
 
 def environment_operation():
@@ -105,7 +108,7 @@ def _worker_operation(kind=None):
         return
     import psutil
     op = ledger.get(operation_id)
-    worker = {'pid': os.getpid(), 'creation_time': psutil.Process().create_time()}
+    worker = {'pid': os.getpid(), 'creation_time': psutil.Process().create_time(), 'build': _BUILD}
     if op['status'] == 'cancelling':
         ledger.transition(operation_id, op['revision'], 'cancelled', worker=worker)
         raise SystemExit('Operation cancelled before worker start')
@@ -146,31 +149,54 @@ def _worker_operation(kind=None):
         phase_names = {'c': 'cards', 'g': 'global', 'm': 'modules', 'u': 'guardians', 'b': 'bots', 'w': 'workshop', 'e': 'equipped_modules'}
         if op['kind'] == 'scan':
             phase_names = {'c': 'cards', 'g': 'guardians', 'm': 'modules', 'b': 'battle'}
-        requested = op['request'].get('phases', 'c,g,m,u,b,w')
+        requested = op['request'].get('phases', 'g,c,m' if op['kind'] == 'scan' else 'c,g,m,u,b,w')
         if isinstance(requested, str):
-            requested = requested.split(',')
+            requested = [key.strip() for key in requested.split(',') if key.strip()]
         selected_names = {phase_names.get(key, key) for key in requested}
+        if op['kind'] == 'scan' and op['request'].get('battle'):
+            selected_names.add('battle')
         if op['request'].get('bootstrap'):
             selected_names = {'bootstrap'}
         phases = state.get('phases', {})
+        if op['kind'] in ('calibrate', 'scan') and any(
+                phases.get(key, {}).get('status') != 'done' for key in selected_names):
+            failure = failure or {'code': 'capture_incomplete', 'message': 'Not every requested phase has a confirmed completed result'}
         phase_errors = any(x.get('status') in ('error', 'stopped', 'running', 'needs_attention')
                            or any(step.get('status') in ('error', 'stopped', 'needs_attention', 'running') for step in x.get('steps', []))
                            for key, x in phases.items() if key in selected_names)
         if filenames and state.get('operation_id') != operation_id:
             failure = failure or {'code': 'missing_capture_outcome', 'message': 'Worker did not publish observations for this operation'}
+        if op['kind'] == 'calibrate':
+            final_screen = state.get('final_screen') or {}
+            if (final_screen.get('operation_id') != operation_id
+                    or final_screen.get('name') != 'home'
+                    or final_screen.get('verified') is not True):
+                failure = failure or {'code': 'final_screen_unverified',
+                                      'message': 'Setup did not verify and persist its final Home screen'}
         if op['kind'] == 'screen_analysis' and state.get('status') != 'done':
             failure = failure or {'code': 'analysis_incomplete', 'message': state.get('message', 'Screen analysis did not complete')}
-        if restore:
-            status = 'restoration_required'
-        elif op['status'] == 'cancelling':
-            status = 'cancelled'
-        elif failure or phase_errors:
-            status = 'failed'
-        elif op['kind'] in ('calibrate', 'observe'):
-            status = 'awaiting_apply'
-        else:
-            status = 'succeeded'
-        ledger.transition(operation_id, op['revision'], status, result_refs=refs,
-                          error=failure or ({'code': 'capture_incomplete', 'message': 'Some capture phases did not complete'} if phase_errors else None),
-                          step='restore' if restore else 'capture_complete',
-                          recovery_action='Restore original module equipment before continuing' if restore else None)
+        for attempt in range(3):
+            # Cancellation can arrive while artifacts are read, or between this
+            # read and the CAS. Recompute precedence from the current operation.
+            op = ledger.get(operation_id)
+            if op['status'] not in ('running', 'cancelling'):
+                break  # Another owner already recorded a terminal outcome.
+            if restore:
+                status = 'restoration_required'
+            elif op['status'] == 'cancelling':
+                status = 'cancelled'
+            elif failure or phase_errors:
+                status = 'failed'
+            elif op['kind'] in ('calibrate', 'observe'):
+                status = 'awaiting_apply'
+            else:
+                status = 'succeeded'
+            try:
+                ledger.transition(operation_id, op['revision'], status, result_refs=refs,
+                                  error=failure or ({'code': 'capture_incomplete', 'message': 'Some capture phases did not complete'} if phase_errors else None),
+                                  step='restore' if restore else 'capture_complete',
+                                  recovery_action='Restore original module equipment before continuing' if restore else None)
+                break
+            except Conflict:
+                if attempt == 2 or ledger.get(operation_id)['revision'] == op['revision']:
+                    raise

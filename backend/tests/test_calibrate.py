@@ -455,7 +455,7 @@ def test_walk_grid_counts_each_physical_tile_once_across_overlapping_pages(tmp_p
     slugs, copies = calibrate._walk_grid(cal)
     # page 0 shows rows 0-4 whole (row 5 is behind the filter bar: 25 tiles);
     # page 1 (794 px on) shows rows 4-8 whole - row 4 repeats, rows 5-8 are new
-    assert len(copies) == 45 and len(slugs) == 45 and len(cut) == 45-int(resume_verified)
+    assert len(copies) == 45 and len(slugs) == 45 and len(cut) == 45
     assert "copies_on_page" not in cut[0]                     # every tile its own module here
     pages_logged = [kw for k, kw in events if k == "calibrate_grid_page"]
     assert [pg["tiles"] for pg in pages_logged] == [25, 45]
@@ -468,6 +468,47 @@ def test_walk_grid_test_ignores_a_stale_page_frame_left_by_another_test(tmp_path
     from interactions import inventory
     monkeypatch.setattr(inventory, "_page_frame", _tile_frame(0, seed=7), raising=False)
     test_walk_grid_counts_each_physical_tile_once_across_overlapping_pages(tmp_path, monkeypatch, False)
+
+
+@pytest.mark.parametrize('matching_copy', [True, False])
+def test_inventory_checks_later_rarity_copies_without_replacing_saved_image(tmp_path, monkeypatch, matching_copy):
+    from interactions import inventory, shatter
+    from player import calibrate
+    import numpy as np
+    rng = np.random.default_rng(187)
+    icons = [rng.integers(0, 256, (40, 40, 3), dtype=np.uint8) for _ in range(4)]
+    saved = tmp_path / 'amplifying_strike.png'
+    assert cv2.imwrite(str(saved), icons[1] if matching_copy else icons[3])
+    saved_bytes = saved.read_bytes()
+    frame = np.zeros((100, 300, 3), dtype=np.uint8)
+    for cx, icon in zip((50, 150, 250), icons):
+        frame[30:70, cx-20:cx+20] = icon
+    monkeypatch.setattr(calibrate, 'template_path', lambda rel: saved)
+    monkeypatch.setattr(inventory, 'park_top', lambda *a, **k: None)
+    monkeypatch.setattr(inventory, '_close_panel', lambda *a, **k: True)
+    monkeypatch.setattr(inventory, 'settle', lambda: frame.copy())
+    monkeypatch.setattr(inventory, 'next_page', lambda: 0)
+    monkeypatch.setattr(inventory, 'take_page_frame', lambda: None)
+    monkeypatch.setattr(inventory, 'COL_X', [50, 150, 250])
+    monkeypatch.setattr(inventory, 'TILE', 40)
+    monkeypatch.setattr(calibrate.pills, 'grid_rows', lambda frame: [50])
+    monkeypatch.setattr(shatter, 'tile_is_blue', lambda *a: False)
+    monkeypatch.setattr(calibrate, '_tile_plus', lambda *a: False)
+    monkeypatch.setattr(calibrate, '_ring_hue', lambda *a: None)
+    monkeypatch.setattr(calibrate, '_inspect', lambda x, y, icon:
+                        ('Amplifying Strike', 'epic' if x == 150 else 'legendary'))
+    cal = calibrate.Calibration({'state': '', 'stop': str(tmp_path/'stop'),
+                                 'report': '', 'evidence': str(tmp_path/'evidence')}, False)
+    slugs, copies = calibrate._walk_grid(cal)
+    assert slugs == ['amplifying_strike'] and len(copies) == 3
+    assert len(cal.entries) == 1
+    entry = cal.entries[0]
+    assert entry['verified'] is matching_copy
+    assert entry['status'] == ('exists' if matching_copy else 'stale')
+    if matching_copy:
+        assert entry['col'] == 1 and entry['rarity'] == 'epic'
+        assert entry['self'] >= .99
+    assert saved.read_bytes() == saved_bytes
 
 
 def test_existing_template_reports_the_fresh_cuts_score(tmp_path, monkeypatch):

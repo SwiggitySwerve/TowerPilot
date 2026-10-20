@@ -7,6 +7,7 @@ import json
 
 import cv2
 import numpy as np
+import pytest
 
 from player import bootstrap, calibrate, flow_capture as fc, learned
 from player.bootstrap_layout import manifest
@@ -176,3 +177,24 @@ def test_scan_plan_and_readiness_show_the_learned_spot(tmp_path, monkeypatch):
     result = readiness.check(tmp_path, cfg, body)
     sw = next(r for r in result["required"] if r["alternatives"] == ["floaters/second_wind.png"])
     assert sw["learned"]["floaters/second_wind.png"]["screen"] == "battle"
+
+
+def test_retired_generated_route_is_not_active_evidence_or_recaptured_from_learned_rows(tmp_path, monkeypatch):
+    import settings
+    retired = 'mapping/v11/route_17.png'
+    active = 'mapping/v11/route_17_label.png'
+    monkeypatch.setattr(settings, 'template_path', lambda rel: tmp_path / rel)
+    p = _p(tmp_path)
+    learned.record(p, retired, [910, 185, 165, 100], 'home', 'bootstrap')
+    learned_before = learned.path(p).read_bytes()
+    cal = calibrate.Calibration(p, False, bootstrap=True)
+    cal.entries = [{'rel': retired, 'verified': False, 'status': 'stale'},
+                   {'rel': active, 'verified': True}]
+    scanner = bootstrap.Scanner(cal, {}, grab=lambda: None, tap=lambda *a, **k: None,
+                                 pause=lambda _: None)
+    monkeypatch.setattr(cal, 'cut', lambda *a, **k: pytest.fail('retired route was recaptured'))
+    frame = np.random.default_rng(9).integers(0, 255, (2560, 1080, 3), np.uint8)
+    assert scanner.learned_cuts('home', frame, frame.copy()) == {}
+    assert cal.entries == [{'rel': active, 'verified': True}]
+    assert learned.path(p).read_bytes() == learned_before
+    assert retired in learned.known(p)  # account history stays intact

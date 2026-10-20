@@ -153,13 +153,122 @@ def test_capture_outcome_preserves_artifact_reference(tmp_path, monkeypatch, res
     directory.mkdir(parents=True)
     path = directory / 'calibrate_state.json'
     with worker_operation():
-        path.write_text(json.dumps({'operation_id': op['id'], 'player': {'card_presets': ['test']}, 'phases': {'cards': {'status': 'error' if failed else 'done'}}}))
+        path.write_text(json.dumps({'operation_id': op['id'], 'player': {'card_presets': ['test']}, 'phases': {'cards': {'status': 'error' if failed else 'done'}},
+                                    'final_screen': {'name': 'home', 'verified': True, 'operation_id': op['id']}}))
         if restore:
             (directory / 'module_restore.json').write_text('{}')
     saved = store.get(op['id'])
     assert saved['status'] == expected
     assert saved['result_refs']['calibrate_state.json']['revision'] == file_revision(path)
     assert 'player' not in saved
+
+
+@pytest.mark.parametrize('proof', [None, {},
+    {'name': 'home', 'verified': True, 'operation_id': 'previous-operation'},
+    {'name': 'unknown', 'verified': False},
+    {'name': 'home', 'verified': False},
+    {'name': 'home', 'verified': 'true'},
+    {'name': 'battle', 'verified': True},
+])
+def test_calibration_clean_exit_requires_current_verified_home(tmp_path, monkeypatch, proof):
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('calibrate', ctx, {'phases': 'c'})
+    monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    state = {'operation_id': op['id'], 'phases': {'cards': {'status': 'done'}}}
+    if proof is not None:
+        state['final_screen'] = {'operation_id': op['id'], **proof}
+    with worker_operation():
+        (directory / 'calibrate_state.json').write_text(json.dumps(state))
+    saved = store.get(op['id'])
+    assert saved['status'] == 'failed'
+    assert saved['error']['code'] == 'final_screen_unverified'
+
+
+@pytest.mark.parametrize('kind,requested,phases', [
+    ('calibrate', {'phases': 'c,m'}, {'cards': {'status': 'done'}}),
+    ('calibrate', {'bootstrap': True}, {}),
+    ('scan', {'phases': 'c,g'}, {'cards': {'status': 'done'}}),
+    ('scan', {'phases': 'c', 'battle': True}, {'cards': {'status': 'done'}}),
+])
+def test_missing_requested_phase_cannot_succeed(tmp_path, monkeypatch, kind, requested, phases):
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept(kind, ctx, requested)
+    monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    with worker_operation():
+        (directory / f'{kind}_state.json').write_text(json.dumps({
+            'operation_id': op['id'], 'phases': phases,
+            'final_screen': {'name': 'home', 'verified': True, 'operation_id': op['id']},
+        }))
+    saved = store.get(op['id'])
+    assert saved['status'] == 'failed'
+    assert saved['error']['code'] == 'capture_incomplete'
+
+
+@pytest.mark.parametrize('requested', [{}, {'phases': 'g, c, m'}])
+def test_scan_default_selection_matches_worker_without_home_requirement(tmp_path, monkeypatch, requested):
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('scan', ctx, requested)
+    monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    with worker_operation():
+        (directory / 'scan_state.json').write_text(json.dumps({
+            'operation_id': op['id'],
+            'phases': {name: {'status': 'done'} for name in ('guardians', 'cards', 'modules')},
+        }))
+    assert store.get(op['id'])['status'] == 'succeeded'
+    assert store.get(op['id'])['error'] is None
+
+
+@pytest.mark.parametrize('during', ['artifact_read', 'terminal_cas'])
+def test_cancellation_during_finalization_reaches_cancelled(tmp_path, monkeypatch, during):
+    from runtime import operations as runtime_ops
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('calibrate', ctx, {'phases': 'c'})
+    monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    original_revision = runtime_ops.file_revision
+    original_transition = Operations.transition
+    cancelled = []
+    def request_cancel():
+        current = store.get(op['id'])
+        original_transition(store, op['id'], current['revision'], 'cancelling')
+        cancelled.append(True)
+    def revision(path):
+        if not cancelled:
+            request_cancel()
+        return original_revision(path)
+    def transition(self, operation_id, expected_revision, status, **kwargs):
+        if status == 'awaiting_apply' and not cancelled:
+            request_cancel()
+        return original_transition(self, operation_id, expected_revision, status, **kwargs)
+    if during == 'artifact_read':
+        monkeypatch.setattr(runtime_ops, 'file_revision', revision)
+    else:
+        monkeypatch.setattr(Operations, 'transition', transition)
+    with worker_operation():
+        (directory / 'calibrate_state.json').write_text(json.dumps({
+            'operation_id': op['id'], 'phases': {'cards': {'status': 'done'}},
+            'final_screen': {'name': 'home', 'verified': True, 'operation_id': op['id']},
+        }))
+    saved = store.get(op['id'])
+    assert cancelled == [True]
+    assert saved['status'] == 'cancelled'
+    assert saved['error'] is None
+    assert saved['result_refs']['calibrate_state.json']['revision'] == original_revision(directory / 'calibrate_state.json')
 
 
 def test_clean_driver_exit_ignores_old_setup_errors(tmp_path, monkeypatch):
@@ -208,6 +317,51 @@ def test_status_uses_original_context_after_switch(dashboard):
     assert result['state']['player']['marker'] == 'original'
     assert result['operation']['context']['profile'] == 'mine'
     assert 'config' not in result['operation']['context']
+
+
+@pytest.mark.parametrize('activity_operation', ['current', 'previous', None])
+def test_calibration_status_reads_only_matching_persisted_activity(dashboard, monkeypatch, activity_operation):
+    dash, _, ctx = dashboard
+    store = service.ledger(dash.ROOT)
+    op, _ = store.accept('calibrate', ctx, {'phases': 'c'})
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    activity = {'operation_id': op['id'] if activity_operation == 'current' else activity_operation,
+                'phase': 'cards', 'kind': 'calibrate_progress', 'message': 'Cards: reading page 3', 't': 123}
+    (directory / 'calibrate_state.json').write_text(json.dumps({'operation_id': op['id'], 'activity': activity}))
+    monkeypatch.setattr(dash, '_newest_events', lambda *args, **kwargs: pytest.fail('Tracked progress must not scan event logs'))
+    with dash.app.test_client() as client:
+        for _ in range(2):
+            result = client.get('/api/calibrate/status?operation_id=' + op['id']).get_json()
+            assert result['activity'] == (activity if activity_operation == 'current' else None)
+
+
+def test_basic_progress_roundtrips_from_worker_state_to_status_api(dashboard, monkeypatch):
+    from player import calibrate
+    dash, _, ctx = dashboard
+    store = service.ledger(dash.ROOT)
+    op, _ = store.accept('calibrate', ctx, {'phases': 'm'})
+    op = store.transition(op['id'], op['revision'], 'running')
+    monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
+    monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
+    monkeypatch.setattr(service, 'worker_alive', lambda worker: True)
+    monkeypatch.setattr(dash, '_newest_events', lambda *args, **kwargs: pytest.fail('No event-log scan'))
+    directory = Path(ctx['artifact_dir'])
+    directory.mkdir(parents=True)
+    paths = {'state': str(directory / 'calibrate_state.json')}
+    state = {'phases': {'modules': {'status': 'running', 'started_at': 10}}}
+    calibrate._record_activity(paths, state, 'modules', 'Modules: identifying tile 8 on page 2')
+    persisted = json.loads(Path(paths['state']).read_text(encoding='utf-8'))
+    assert persisted['operation_id'] == op['id']
+    assert persisted['operation_revision'] > op['revision']
+    with dash.app.test_client() as client:
+        response = client.get('/api/calibrate/status?operation_id=' + op['id'])
+    assert response.status_code == 200
+    result = response.get_json()
+    assert result['activity'] == persisted['activity']
+    assert result['activity']['message'] == 'Modules: identifying tile 8 on page 2'
+    assert result['state']['phases']['modules']['status'] == 'running'
+    assert result['operation']['status'] == 'running'
 
 
 @pytest.mark.parametrize('kind,route,filename', [('scan', '/api/scan/status', 'scan_state.json'), ('screen_analysis', '/api/screen-analysis/status', 'screen_analysis.json')])

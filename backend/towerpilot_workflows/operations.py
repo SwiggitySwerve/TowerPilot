@@ -113,7 +113,7 @@ class Operations:
             op = dict(id=str(uuid.uuid4()), kind=kind, idempotency_key=key,
                       revision=1, status='accepted', context=context, request=command,
                       worker=None, step='accepted', created_at=now, updated_at=now,
-                      result_refs={}, error=None, recovery_action=None)
+                      result_refs={}, error=None, recovery_action=None, progress={})
             db.execute('INSERT INTO operations VALUES (?,?,?,?,?,?,?,?)',
                        (op['id'], device, kind, key, fingerprint, 1, 'accepted', json.dumps(op, sort_keys=True)))
             return op, True
@@ -121,7 +121,7 @@ class Operations:
     def transition(self, operation_id, expected_revision, status, **changes):
         if status not in STATUSES:
             raise ValueError('Unknown operation status')
-        if set(changes) - {'worker', 'step', 'result_refs', 'error', 'recovery_action', 'readiness'}:
+        if set(changes) - {'worker', 'step', 'result_refs', 'error', 'recovery_action', 'readiness', 'progress'}:
             raise ValueError('Immutable operation field')
         with self._db() as db:
             op = self._read(db, operation_id)

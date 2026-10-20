@@ -85,6 +85,33 @@ def _state_save(p, st) -> None:
     atomic_json(p["state"], st)
 
 
+def _record_activity(p, st, phase, message) -> None:
+    """Save the latest basic-scan observation without changing phase outcome."""
+    now = time.time()
+    st['activity'] = {'kind': 'calibrate_progress', 'phase': phase, 'message': message,
+                      't': now, 'operation_id': os.environ.get('TOWER_OPERATION_ID')}
+    st['phases'][phase].update(message=message, updated_at=now)
+    _state_save(p, st)
+
+
+def record_final_screen(p, st, name: str, *, verified: bool, error=None) -> dict:
+    """Persist and read back the final observation for this exact operation."""
+    from runtime import logger
+    from runtime.operations import environment_operation
+    _, operation_id = environment_operation()
+    result = dict(name=name, verified=bool(verified), observed_at=time.time(),
+                  operation_id=operation_id)
+    if error is not None:
+        result['error'] = str(error)
+    st['final_screen'] = result
+    _state_save(p, st)
+    with open(p['state'], encoding='utf-8') as stream:
+        if json.load(stream).get('final_screen') != result:
+            raise RuntimeError('Final screen observation could not be read back')
+    logger.event('setup_final_screen', **result)
+    return result
+
+
 def _stop_requested(p) -> bool:
     from runtime.operations import environment_operation
     ledger, operation_id = environment_operation()
@@ -287,9 +314,10 @@ def match_module_crop(crop, old):
 
 
 class Calibration:
-    def __init__(self, p, overwrite: bool, *, bootstrap: bool = False):
+    def __init__(self, p, overwrite: bool, *, bootstrap: bool = False, progress=None):
         self.p, self.overwrite = p, overwrite
         self.bootstrap = bootstrap
+        self._progress = progress
         self.entries: list[dict] = []
         self.player: dict = {}
 
@@ -354,6 +382,12 @@ class Calibration:
         if self.p.get("report"):
             self.save_report()
         return entry
+
+    def progress(self, phase, message) -> None:
+        from runtime import logger
+        logger.event('calibrate_' + phase + '_progress', message=message)
+        if self._progress is not None:
+            self._progress(phase, message)
 
     def save_report(self) -> None:
         from player.calibration_report import describe_report
@@ -520,8 +554,9 @@ def _tile_plus(frame, cx, cy):
 
 def _walk_grid(cal: Calibration, progress=lambda message: None):
     """Walk the whole inventory and return (slugs, copies), the modules at
-    Epic and above. Cuts `modules/<slug>.png` from the first tile opened for
-    each slug, and records a `copies` row for each tile opened and read at Epic
+    Epic and above. Cuts missing `modules/<slug>.png` from the first tile
+    opened for each slug; an existing image is checked against identified
+    copies until its appearance is found. Records a `copies` row for each tile opened and read at Epic
     or above (a name it cannot read raises at the end) or recognised as another
     copy of one.
     inventory.sweep's paging, with the tile rows read off each
@@ -568,6 +603,7 @@ def _walk_grid(cal: Calibration, progress=lambda message: None):
                 seen.append((image,rel[len('modules/'):-4],entry['rarity']))
     placed: list[tuple[int, int]] = []          # (absolute y, col) of tiles already counted
     slugs, copies = [], []
+    verified_slugs = set()
     offset = 0                                  # measured scroll so far, px
     unreadable = 0
     below_epic = opened = opened_below_epic = 0     # tiles counted below Epic / tiles tapped / of those tapped, read below Epic
@@ -617,6 +653,12 @@ def _walk_grid(cal: Calibration, progress=lambda message: None):
                         slugs.append(known[0])
                     copies.append({"slug": known[0], "rarity": known[1], "page": page,
                                    "row": r, "col": c})
+                    if known[0] not in verified_slugs:
+                        entry = cal.cut("modules", f"modules/{known[0]}.png", icon, grid, known[0],
+                                        {"rarity": known[1], "page": page, "row": r, "col": c})
+                        page_cuts.append(entry)
+                        if entry.get("verified"):
+                            verified_slugs.add(known[0])
                 continue
             progress(f"Modules: identifying tile {len(placed)} on page {page+1}")
             name, rarity = _inspect(cx, cy, icon)
@@ -639,9 +681,16 @@ def _walk_grid(cal: Calibration, progress=lambda message: None):
                 unreadable += 1
                 continue
             copies.append({"slug": s, "rarity": rarity, "page": page, "row": r, "col": c})
+            # One identity may have several rarity appearances. Keep checking
+            # its identified copies until the saved image matches one; a
+            # later different-rarity copy cannot invalidate that fresh proof.
+            if s not in verified_slugs:
+                entry = cal.cut("modules", f"modules/{s}.png", icon, grid, name,
+                                {"rarity": rarity, "page": page, "row": r, "col": c})
+                page_cuts.append(entry)
+                if entry.get("verified"):
+                    verified_slugs.add(s)
             if s not in slugs:
-                page_cuts.append(cal.cut("modules", f"modules/{s}.png", icon, grid, name,
-                                         {"rarity": rarity, "page": page, "row": r, "col": c}))
                 slugs.append(s)
         for entry in page_cuts:
             # copies of the cut module on the same page: its next-best score
@@ -684,12 +733,11 @@ def phase_cards(cal: Calibration) -> dict:
     if current:
         cal.player["cards_current"] = current[0]
     from player.card_inventory import scan
-    from runtime import logger
     def check_stop():
         if _stop_requested(cal.p):
             raise Stopped()
     inventory = scan(cal, check_stop=check_stop,
-                     progress=lambda message: logger.event("calibrate_cards_progress", message=message))
+                     progress=lambda message: cal.progress('cards', message))
     tourney.return_to_game("cards")
     return {"card_presets": cal.player["card_presets"], "names": [n for n, _s, _st in tabs], "inventory":inventory}
 
@@ -744,7 +792,7 @@ def phase_workshop(cal: Calibration) -> dict:
 def phase_modules(cal: Calibration) -> dict:
     from interactions import tourney
     tourney.open_nav("modules", "modules/buy_module.png", "modules screen")
-    result = read_module_contents(cal)
+    result = read_module_contents(cal, progress=lambda message: cal.progress('modules', message))
     tourney.return_to_game("modules")
     return result
 
@@ -763,9 +811,10 @@ def read_module_contents(cal: Calibration, progress=lambda message: None) -> dic
     cal.player.setdefault("category_presets", {})["modules"] = [n for n, _s, _st in rows]
     equipped = []
     unreadable = 0
-    for slot in pills.header_slots(frame):
+    for index, slot in enumerate(pills.header_slots(frame), 1):
         if not slot["occupied"]:
             continue
+        progress(f'Modules: identifying equipped slot {index}')
         cx, cy = slot["centre"]
         half = slot["half"]
         icon = frame[cy - half:cy + half, cx - half:cx + half].copy()
@@ -916,6 +965,9 @@ def main() -> None:
         # so a re-run refreshes them instead of forgetting the other phases
         selected_names = {PHASES[key.strip()][0] for key in a.phases.split(",") if key.strip() in PHASES}
         st["phases"] = {k:v for k,v in st.get("phases", {}).items() if k not in selected_names}
+    st.pop('final_screen', None)
+    st.pop('setup_battle', None)
+    st.pop('activity', None)
     st["preflight"] = {"status": "running"}
     _state_save(p, st)
     try:
@@ -938,7 +990,7 @@ def main() -> None:
     if "e" in wanted and st.get("phases", {}).get("modules", {}).get("status") != "done" and "m" not in wanted and not module_roundtrip.pending(p):
         raise SystemExit("Complete phase 1 Modules before scanning equipped modules")
     wanted = [key for key in wanted if key != "e"] + (["e"] if "e" in wanted else [])
-    cal = Calibration(p, a.overwrite)
+    cal = Calibration(p, a.overwrite, progress=lambda phase, message: _record_activity(p, st, phase, message))
     cal.entries = list(st.get("entries") or [])
     cal.player = dict(st.get("player") or {})
     if module_roundtrip.pending(p):
@@ -956,11 +1008,12 @@ def main() -> None:
             continue
         if _stop_requested(p):
             logger.event("calibrate", stage="stopped", before=name)
+            record_final_screen(p, st, 'unknown', verified=False, error='Stopped before phase')
             break
         phase_started = time.time()
         st["phases"][name] = {"status": "running", "started_at": phase_started,
                               "started": datetime.datetime.now().isoformat()}
-        _state_save(p, st)
+        cal.progress(name, 'Starting ' + name.replace('_', ' '))
         stopped = False
         previous_player = json.loads(json.dumps(cal.player))
         try:
@@ -969,41 +1022,46 @@ def main() -> None:
         except SystemExit:
             raise
         except Stopped as e:
-            from interactions import tourney
             stopped = True
             cal.player = previous_player
             st["phases"][name] = {"status": "stopped", "at": str(e)}
             logger.event("calibrate", stage="stopped", phase=name, at=str(e))
-            try:
-                tourney.ensure_home()
-            except Exception:                   # noqa: BLE001
-                pass
         except module_roundtrip.RestoreRequired as e:
             st["phases"][name] = {"status": "error", "error": str(e)}
-            _state_save(p, st)
+            cal.progress(name, str(e))
             cal.save_report()
             raise  # never continue with another phase while a module is removed
         except Exception as e:                  # noqa: BLE001 - phase isolation
-            from interactions import tourney
+            stopped = True
             cal.player = previous_player
             st["phases"][name] = {"status": "error", "error": str(e)[:300]}
             logger.event("calibrate", stage="phase_error", phase=name,
                          error=str(e)[:300])
-            try:
-                tourney.ensure_home()
-            except Exception:                   # noqa: BLE001
-                pass
         st["phases"][name].update(started_at=phase_started, finished_at=time.time())
         st["player"] = cal.player
         st["entries"] = cal.entries
-        _state_save(p, st)
+        cal.progress(name, name.replace('_', ' ').capitalize() + ': ' + st['phases'][name]['status']
+                     + (': ' + (st['phases'][name].get('error') or st['phases'][name].get('at'))
+                        if st['phases'][name].get('error') or st['phases'][name].get('at') else ''))
         cal.save_report()
         try:
             _merge_draft(cal.player)
         except Exception as e:                  # noqa: BLE001 - the cuts are on disk
             logger.event("calibrate_draft_failed", error=str(e)[:200])
         if stopped:
+            record_final_screen(p, st, 'unknown', verified=False,
+                                error=st['phases'][name].get('error') or st['phases'][name].get('at'))
             break
+    if not _stop_requested(p) and all(st['phases'].get(PHASES[key][0], {}).get('status') == 'done' for key in wanted):
+        try:
+            final = capture.grab()
+            home = screen_matches(final, textocr.read_lines(final, 1, raise_on_error=True), 'home')
+        except Exception as exc:
+            record_final_screen(p, st, 'unknown', verified=False, error=exc)
+            raise
+        record_final_screen(p, st, 'home' if home else 'unknown', verified=home)
+        if not home:
+            raise RuntimeError('Calibration did not verify its final Home screen; no further input sent')
     summary = {k: v.get("status") for k, v in st["phases"].items()}
     logger.event("calibrate", stage="done", phases=summary,
                  written=sum(1 for e in cal.entries if e["status"] == "written"),

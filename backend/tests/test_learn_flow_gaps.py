@@ -212,6 +212,8 @@ def test_a_coin_run_whose_rules_surrender_needs_the_surrender_images_too():
 # The surrender subroutine on synthetic frames: what it can cut is exactly what
 # the game shows. Screens by name; OCR answers for the screen last grabbed.
 _TEXT = {
+    "home": ["BATTLE", "Tier 1"],
+    "run": ["Wave 1"],
     "menu_exit": ["EXIT BATTLE"],
     "menu_end": ["END ROUND"],
     "surrender": ["EXIT BATTLE", "What would you like to do?", "Surrender", "Go Home"],
@@ -245,6 +247,7 @@ class _Scanner:
         self.screens, self.now = list(screens), None
         self.frame = _screen()
         self.clock = 0.0                 # flow.poll's deadlines run on this
+        self.state = {}
 
     def grab(self):
         self.now = self.screens.pop(0) if len(self.screens) > 1 else self.screens[0]
@@ -263,6 +266,11 @@ class _Scanner:
         pass
 
 
+@pytest.fixture(autouse=True)
+def _flow_calibration_paths(tmp_path, monkeypatch):
+    monkeypatch.setattr(_Cal, 'p', {'state': str(tmp_path / 'flow-state.json')}, raising=False)
+
+
 def _surrender(monkeypatch, screens, have=(), sc=None):
     """`have`: templates already on disk (fc._have_templates, which reads the
     machine's own calibration folder, is stubbed so no test depends on it).
@@ -277,11 +285,24 @@ def _surrender(monkeypatch, screens, have=(), sc=None):
     monkeypatch.setattr(textocr, "read_lines", lambda bgr, scale=2.0: [(600, 680, t) for t in _TEXT[sc.now]])
     monkeypatch.setattr(logger, "event", lambda *a, **k: None)
     monkeypatch.setattr(logger, "shot", lambda frame, tag: sc.shots.append(tag) or f"{tag}.png")
-    monkeypatch.setattr(fc, "time", SimpleNamespace(monotonic=lambda: sc.clock))
-    monkeypatch.setattr(fc, "capture_game_stats", lambda flow: True)
+    monkeypatch.setattr(fc, "time", SimpleNamespace(monotonic=lambda: sc.clock, time=lambda: sc.clock))
+    def reached_home(flow):
+        sc.screens = ['home']
+        return fc._complete_setup_battle(flow)
+    monkeypatch.setattr(fc, "capture_game_stats", reached_home)
     monkeypatch.setattr(fc, "_have_templates", lambda rels: {r for r in rels if r in have})
     flow = fc._Flow(sc)
     flow.in_tournament = lambda f: False
+    flow.on_home = lambda f: sc.now == 'home'
+    flow.wave = lambda f: None if sc.now in ('home', 'stats') else 1
+    flow.side_menu = lambda f: sc.now in ('menu_exit', 'menu_end')
+    # Exercise real ownership establishment; the end-screen controls below are
+    # still the unit under test, while the fake stats handler supplies Home proof.
+    sc.state.pop('setup_battle', None)
+    sc.screens = ['home', 'run']
+    fc._start_setup_run(flow, 'test setup battle')
+    sc.taps.clear()
+    sc.screens = list(screens)
     return sc, fc.end_run_and_capture(flow)
 
 
@@ -597,8 +618,8 @@ def test_the_end_of_setup_report_adds_nothing_when_the_yes_is_on_disk_or_already
 def _interrupted_battle_scan(tmp_path, monkeypatch, broken, *, have=()):
     """The real Scanner._run_flows over a capture_battle_flow in which `broken`
     (_battle_pass, _hud_digit_pass raise; read_tier reads no tier) interrupts it:
-    the bootstrap isolates that, recovers to Home and closes the battle step
-    needs_attention. Returns the scanner."""
+    the bootstrap records needs_attention and re-raises without recovery input.
+    Returns the scanner after observing that exception."""
     import socket
     from device import adbclient
     from runtime import logger
@@ -617,7 +638,7 @@ def _interrupted_battle_scan(tmp_path, monkeypatch, broken, *, have=()):
     sc.sweep = lambda: True
     sc.check_stop = lambda: None
     monkeypatch.setattr(fc, "capture_menu_extras", lambda flow: None)
-    monkeypatch.setattr(fc, "_safe_home", lambda flow: None)          # recovery found Home
+    monkeypatch.setattr(fc, "_safe_home", lambda flow: pytest.fail('unexpected recovery'))
     monkeypatch.setattr(fc, "can_start_battle", lambda **k: (True, ""))
     monkeypatch.setattr(fc, "read_tier", (lambda f: None) if broken == "read_tier" else lambda f: 14)
     monkeypatch.setattr(fc, "set_tier", lambda flow, t: t)
@@ -627,7 +648,8 @@ def _interrupted_battle_scan(tmp_path, monkeypatch, broken, *, have=()):
     for name, value in (("on_home", True), ("wave", None), ("side_menu", False), ("game_stats", False),
                         ("in_tournament", False)):
         monkeypatch.setattr(fc._Flow, name, lambda self, f, value=value: value)
-    sc._run_flows()
+    with pytest.raises(RuntimeError):
+        sc._run_flows()
     assert next(s for s in sc.steps if s["id"] == "flow_battle")["status"] == "needs_attention"
     return sc
 
