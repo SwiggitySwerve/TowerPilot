@@ -9,37 +9,39 @@ import yaml
 
 def accepted_envelope(operation):
     """Resolve a delegated child's immutable source through the existing ledger."""
+    from runtime.operations import validate_worker_context
+    validate_worker_context(operation)
     battle_id = os.environ.get('TOWER_BATTLE_ID')
     if not battle_id:
+        if os.environ.get('TOWER_BATTLE_GENERATION'):
+            raise ValueError('Delegated generation has no battle identity')
         return operation['request'].get('battle_envelope')
     from towerpilot_workflows.battles import Battles
-    battle = Battles(os.environ['TOWER_OPERATION_DB']).get(battle_id)
-    if (battle['operation_id'] != operation['id']
-            or battle['generation'] != os.environ.get('TOWER_BATTLE_GENERATION')
-            or battle['context']['device_key'] != operation['context']['device_key']
-            or battle['status'] not in ('prepared', 'active')):
-        raise ValueError('Delegated battle source is stale or belongs to another driver')
+    battle = Battles(os.environ['TOWER_OPERATION_DB']).validate_driver(
+        battle_id, os.environ.get('TOWER_BATTLE_GENERATION'), operation['id'])
     return copy.deepcopy(battle['envelope'])
 
 
 def accepted_source(name, chosen=None):
     """Return a worker's accepted source without re-reading editable profiles."""
-    from runtime.operations import environment_operation
+    from runtime.operations import environment_operation, validate_worker_context
     store, operation_id = environment_operation()
     if store is None:
         return None
     operation = store.get(operation_id)
+    validate_worker_context(operation, name)
     envelope = accepted_envelope(operation)
     if not envelope:
         return None
     cfg = copy.deepcopy(envelope['config'])
-    if name != operation['context']['instance']:
-        raise ValueError('Accepted run belongs to another emulator')
-    selected = chosen or cfg['instances'][name].get('preset') or cfg['preset']
+    selected = envelope.get('preset_key', cfg['preset'])
+    if chosen is not None and chosen != selected:
+        raise ValueError('Accepted run selected a different frozen preset')
     if selected not in cfg.get('presets', {}):
         raise ValueError('Selected run is absent from the accepted configuration')
     cfg['preset'] = selected
     cfg['active_instance'] = name
+    validate_worker_context(operation, name, cfg)
     return cfg, copy.deepcopy(envelope.get('profile'))
 
 
@@ -97,6 +99,8 @@ def reload_battle_source():
         if body is None or not body.get('defined', True):
             raise ValueError('The running run configuration is no longer available')
         cfg['preset'] = selected
+        from player.run_controls import effective_preset
+        body = effective_preset(cfg, selected)
     finally:
         playerprofile.CONFIG = previous
     from player import readiness

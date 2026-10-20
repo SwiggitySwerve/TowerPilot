@@ -12,16 +12,41 @@ from towerpilot_workflows.operations import (
 def environment_operation():
     operation_id = os.environ.get('TOWER_OPERATION_ID')
     path = os.environ.get('TOWER_OPERATION_DB')
+    battle_id, generation = os.environ.get('TOWER_BATTLE_ID'), os.environ.get('TOWER_BATTLE_GENERATION')
+    if (bool(operation_id) != bool(path) or bool(battle_id) != bool(generation)
+            or ((battle_id or generation) and not operation_id)):
+        raise Conflict('Incomplete accepted driver identity')
     return (Operations(path), operation_id) if operation_id and path else (None, None)
 
 
-def restore_worker_context(settings):
+def validate_worker_context(operation, name=None, config=None):
+    """Refuse a retired operation or redirected source before installing context."""
+    if operation['status'] not in ('accepted', 'running'):
+        raise Conflict('Driver operation is not active')
+    context = operation['context']
+    if name is not None and name != context['instance']:
+        raise Conflict('Accepted run belongs to another emulator')
+    if config is not None:
+        device = config.get('instances', {}).get(context['instance'], {})
+        if (config.get('active_instance') != context['instance']
+                or any(device.get(key) != context.get(key) for key in ('serial', 'account'))):
+            raise Conflict('Accepted source belongs to another device or account')
+
+
+def restore_worker_context(settings, name=None):
     """Pin configuration before device binding, including original profile."""
     ledger, operation_id = environment_operation()
     if ledger:
         op = ledger.get(operation_id)
+        validate_worker_context(op, name)
+        from runtime.battle_source import accepted_source
+        accepted = accepted_source(op['context']['instance'])
+        config = accepted[0] if accepted is not None else op['context']['config']
+        from device import adbclient
+        adbclient._HOST = (op['context'].get('adb_host', '127.0.0.1'),
+                           op['context'].get('adb_port', 5037))
         settings.CONFIG.clear()
-        settings.CONFIG.update(op['context']['config'])
+        settings.CONFIG.update(config)
         import copy
         settings._DEFAULTS = {k: copy.deepcopy(settings.CONFIG[k]) for k in settings._OVERRIDABLE if k in settings.CONFIG}
         settings._ACCOUNT_DEFAULTS = {k: copy.deepcopy(settings.CONFIG.get(k)) for k in ('loadouts', 'active_profile', 'tourney_card_tweaks')}

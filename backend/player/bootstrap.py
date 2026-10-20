@@ -48,6 +48,18 @@ def anchor_present(frame, lines, anchor):
                for _, _, t in textocr.read_lines(crop, scale))
 
 
+def selected_tab_index(frame, rects):
+    """Positive selected-tab evidence shared by setup and reward navigation."""
+    values = [float(np.median(cv2.cvtColor(region(frame, rect), cv2.COLOR_BGR2HSV)[:, :, 2]))
+              for rect in rects]
+    if not values:
+        return None
+    index = max(range(len(values)), key=values.__getitem__)
+    if any(values[index] < value + 20 for i, value in enumerate(values) if i != index):
+        return None
+    return index
+
+
 def screen_matches(frame, lines, screen):
     m = manifest()
     if frame.shape[:2] != (m["layout"]["height"], m["layout"]["width"]):
@@ -57,11 +69,8 @@ def screen_matches(frame, lines, screen):
         return False
     tabs=spec.get('selected_tab')
     if tabs:
-        values=[float(np.median(cv2.cvtColor(region(frame,r),cv2.COLOR_BGR2HSV)[:,:,2]))
-                for r in tabs['rects']]
-        selected=values[tabs['index']]
-        if any(selected < value+20 for i,value in enumerate(values) if i!=tabs['index']):
-                return False
+        if selected_tab_index(frame, tabs['rects']) != tabs['index']:
+            return False
     pills=spec.get('selected_pill')
     if pills:
         counts=[]

@@ -200,6 +200,14 @@
       return `<li class="rw-${esc(entry?.section || '')}"><span class="know-name">${index+1}. ${esc(entry?.label || label(item.id))}</span><small>${item.tap_limit===null?'No tap cap':`${esc(item.tap_limit)} taps`}${plan.queue_mode==='weighted_split'?` · ${esc(item.weight ?? 1)}/turn`:''}</small></li>`;
     }).join('')}</ol><details><summary>Conversion notes (${(conversion.warnings || []).length})</summary><ul class="rw-conversion-notes">${(conversion.warnings || []).map(w=>`<li>${esc(w)}</li>`).join('')}</ul></details><details><summary>Raw configuration</summary><pre>${esc(JSON.stringify(plan,null,2))}</pre></details>${support?`<button class="small" data-convert-plan ${!numeric(plan.cash_reserve)||plan.cash_reserve<0?'disabled':''}>Use reviewed queue</button>`:''}</details>`;
   }
+  function setupEvidenceHTML(setup) {
+    const state=value=>['verified','degraded'].includes(value)?value:'unknown';
+    const details={manual_equipment:'Manual equipment',global_preset_selection:'Global preset selection only; contents not inspected',as_is:'Equipment left as is; not verified',adopted:'Adopted battle; setup not verified',setup_refused:'Setup refused',equipped_header:'Equipped slot confirmed',not_in_expected_slot:'Not in expected slot',not_verified:'Not verified'};
+    const detail=value=>Object.hasOwn(details,value)?details[value]:label(value);
+    const outcome=state(setup?.state);
+    const modules=Array.isArray(setup?.modules)?setup.modules:[];
+    return `<div class="rw-setup-summary"><span>Setup <strong class="rw-setup-${outcome}">${label(outcome)}</strong></span>${setup?.loadout?`<span>Loadout: ${esc(setup.loadout)}</span>`:''}<span>${esc(setup?.detail?detail(setup.detail):'No setup evidence recorded')}</span>${setup?.continued_with_partial===true?'<strong class="rw-setup-degraded">Continued with partial setup</strong>':''}</div>${setup?.reason?`<p class="rw-setup-reason">${esc(setup.reason)}</p>`:''}${modules.length?`<details class="rw-setup-modules"><summary>Module evidence (${modules.length})</summary><ul>${modules.map(item=>`<li><strong>${esc(item.module)}</strong> (${esc(item.role==='category'?'Category slot':label(item.role || 'Role unknown'))}) · ${label(state(item.state))}${item.detail?` · ${esc(detail(item.detail))}`:''}${item.reason?` · ${esc(item.reason)}`:''}</li>`).join('')}</ul></details>`:''}`;
+  }
   function historySummaryHTML(battle) {
     const runtime=battle.runtime || {};
     const capture=runtime.stats_capture || battle.stats_capture;
@@ -207,7 +215,7 @@
     const elapsed=numeric(duration)?`${Math.floor(duration/60)}m ${Math.floor(duration%60)}s observed`:'Unknown';
     const wave=battle.final_wave ?? battle.boundary_evidence?.last_observed_wave ?? runtime.observed_wave;
     const captureState=capture?.status?label(capture.status):'Unknown';
-    return `<div class="rw-history-summary"><span>Last observed wave <strong>${esc(wave ?? 'unknown')}</strong></span><span>Observed duration <strong>${esc(elapsed)}</strong></span><span>Stats capture <strong>${esc(captureState)}</strong>${capture?.verified===true?' · verified':capture?.verified===false?' · unverified':''}</span><span>Gems <strong>unknown</strong></span></div>${capture?.reason || capture?.error?`<p class="muted rw-plan-note">${esc(capture.reason || capture.error)}</p>`:''}`;
+    return `<section class="rw-setup" aria-label="Setup evidence">${setupEvidenceHTML(runtime.setup)}</section><div class="rw-history-summary"><span>Last observed wave <strong>${esc(wave ?? 'unknown')}</strong></span><span>Observed duration <strong>${esc(elapsed)}</strong></span><span>Stats capture <strong>${esc(captureState)}</strong>${capture?.verified===true?' · verified':capture?.verified===false?' · unverified':''}</span><span>Gems <strong>unknown</strong></span></div>${capture?.reason || capture?.error?`<p class="muted rw-plan-note">${esc(capture.reason || capture.error)}</p>`:''}`;
   }
   function queueHTML(model) {
     const plan=fieldValue(model,'shopping_plan');
@@ -248,7 +256,7 @@
     return result;
   }
   function renderHTML(model) {
-    return `<div class="rw-workspace" data-scope="${model.scope}"><div class="rw-toolbar"><div><strong>${model.scope==='live'?'Current battle':'Saved run controls'}</strong><small>${model.scope==='live'?'Applies to this battle · frozen defaults are retained':'Autosaved for future battles'}</small></div>${model.scope==='live'?'<button class="small ghost" data-reset>Reset live overrides</button>':''}<span role="status" class="rw-status"></span></div>${model.snapshot.notice?`<p class="muted rw-plan-note">${esc(model.snapshot.notice)}</p>`:''}${routinesHTML(model)}<section class="rw-shopping"><header><strong>Workshop</strong></header><p data-shopping-warning class="warn" hidden></p>${shoppingHTML(model)}</section></div>`;
+    return `<div class="rw-workspace" data-scope="${model.scope}"><div class="rw-toolbar"><div><strong>${model.scope==='live'?'Current battle':'Saved run controls'}</strong><small>${model.scope==='live'?'Applies to this battle · frozen defaults are retained':'Autosaved for future battles'}</small></div>${model.scope==='live'?'<button class="small ghost" data-reset>Reset live overrides</button>':''}<span role="status" class="rw-status"></span></div>${model.scope==='live'?`<section class="rw-setup" data-setup aria-label="Setup evidence">${setupEvidenceHTML(model.snapshot.runtime?.setup)}</section>`:''}${model.snapshot.notice?`<p class="muted rw-plan-note">${esc(model.snapshot.notice)}</p>`:''}${routinesHTML(model)}<section class="rw-shopping"><header><strong>Workshop</strong></header><p data-shopping-warning class="warn" hidden></p>${shoppingHTML(model)}</section></div>`;
   }
   function create(options) {
     const {request,onError=()=>{}} = options;
@@ -269,6 +277,11 @@
       if (!current(host,model)) return;
       const el=host.querySelector('.rw-status');
       if (el) el.textContent=model.error || (model.invalid.size?'Enter a valid value':model.sending || Object.keys(model.draft).length || Object.keys(model.pending).length || unacknowledged(model) || actionBusy(model) ? 'Pending' : model.scope==='live'?'Driver acknowledged':'Saved');
+      const setup=host.querySelector('[data-setup]');
+      if(setup && model.scope==='live') {
+        const signature=JSON.stringify(model.snapshot.runtime?.setup ?? null);
+        if(setup.dataset.signature!==signature){setup.innerHTML=setupEvidenceHTML(model.snapshot.runtime?.setup);setup.dataset.signature=signature;}
+      }
       host.querySelectorAll('[data-control]').forEach(input=> {
         const path=input.dataset.control;
         if (input!==input.ownerDocument.activeElement && !model.invalid.has(path) && !Object.hasOwn(model.draft,path)) {
@@ -561,5 +574,5 @@
       destroy(){if(clockTimer)clearInterval(clockTimer);for(const timer of timers.values())clearTimeout(timer);liveHost=null;savedHost=null;historyHost=null;epoch++;historyRequest++;}
     };
   }
-  return {create,makeModel,refresh,effective,settings,fieldValue,countdown,durationHint,command,identity,renderHTML,allowed,editPlan,moveQueue,dropInQueue,conversionHTML,historySummaryHTML,observationValues,inspectLink};
+  return {create,makeModel,refresh,effective,settings,fieldValue,countdown,durationHint,command,identity,renderHTML,allowed,editPlan,moveQueue,dropInQueue,conversionHTML,setupEvidenceHTML,historySummaryHTML,observationValues,inspectLink};
 });

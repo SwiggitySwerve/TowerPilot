@@ -65,6 +65,14 @@
 .rw-conversion pre { max-height:15rem; overflow:auto; font-size:.72rem; }
 .rw-history-summary { display:flex; flex-wrap:wrap; gap:.6rem 1.4rem; font-size:.75rem; margin:.8rem 0; }
 .rw-history-summary strong { display:block; font-size:.9rem; }
+.rw-setup { margin:0 0 .7rem; padding:.45rem .6rem; border:1px solid var(--glass-border); border-radius:6px; font-size:.73rem; overflow-wrap:anywhere; }
+.rw-setup-summary { display:flex; flex-wrap:wrap; gap:.3rem .8rem; }
+.rw-setup-verified { color:#a4d5b2; }
+.rw-setup-degraded { color:#f0ca82; }
+.rw-setup-unknown { color:var(--pico-muted-color); }
+.rw-setup-reason { margin:.25rem 0 0; font-size:inherit; }
+.rw-setup-modules ul { margin:.3rem 0 0; padding-left:1.2rem; font-size:.72rem; }
+.rw-setup-modules li { margin:.15rem 0; }
 .rw-workspace details { margin:.55rem 0; }
 .rw-workspace summary { font-size:.77rem; }
 .rw-observation { margin:.6rem 0 0; font-size:.72rem; }

@@ -362,11 +362,11 @@ def test_bootstrap_acquires_lease_before_running_or_target_import(tmp_path, monk
     if busy:
         with pytest.raises(device_lease.DeviceBusy):
             operation_worker.main()
-        assert order == ['lease']
+        assert order == ['context', 'lease']
         assert store.get(op['id'])['status'] == 'failed'
     else:
         operation_worker.main()
-        assert order == ['lease', 'context', 'target']
+        assert order == ['context', 'lease', 'target']
         assert store.get(op['id'])['status'] == 'succeeded'
 
 

@@ -12,6 +12,23 @@ from towerpilot_workflows.control_settings import FIELDS, flatten, validate_patc
 REWARD_GATHER_KEYS = ('free_store_gems', 'guild_store', 'quests_8h', 'quest_rewards', 'guild')
 REWARD_GLOBAL_KEYS = ('free_store_gems', 'daily_missions', 'event_missions', 'guild_progress')
 
+
+def effective_preset(config: dict, key: str | None = None) -> dict:
+    """Resolve the driver's existing single-level inheritance into an owned copy."""
+    preset = config['presets'][config['preset'] if key is None else key]
+    if 'base' not in preset:
+        return copy.deepcopy(preset)
+    base = config['presets'][preset['base']]
+    merged = {}
+    for name, value in base.items():
+        merged[name] = ({**value, **preset.get(name, {})} if isinstance(value, dict)
+                        else preset.get(name, value))
+    for name, value in preset.items():
+        if name not in merged and name != 'base':
+            merged[name] = value
+    return copy.deepcopy(merged)
+
+
 def resolve(preset: dict, config: dict) -> dict:
     gather = preset.get('gather', {})
     options = resolve_ad_gem_options(gather.get('ad_gem_options'))

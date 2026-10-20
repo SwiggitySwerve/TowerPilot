@@ -120,6 +120,30 @@ class Battles(Operations):
         with self._db() as db:
             return self._battle(db, battle_id)
 
+    def validate_driver(self, battle_id, generation, operation_id=None):
+        """Read and fence a driver without activating or updating its battle."""
+        with self._db() as db:
+            battle = self._battle(db, battle_id)
+            self._scope(battle, generation, operation_id)
+            self._owner(db, battle)
+            return battle
+
+    def reconcile_driver(self, operation_id, device, generation, *, reason):
+        """Interrupt only the exited driver's remaining live observations.
+
+        Repeated runs share a generation; previously observed ends retain their
+        evidence and a late process handle cannot retire a successor driver.
+        """
+        with self._db() as db:
+            rows = db.execute("SELECT body FROM battles WHERE device=? AND status IN ('prepared','active')",
+                              (device,)).fetchall()
+            finished = []
+            for row in rows:
+                battle = json.loads(row[0])
+                if battle['operation_id'] == operation_id and battle['generation'] == generation:
+                    finished.append(self._finish(db, battle, reason=reason, status='interrupted'))
+            return finished
+
     def active(self, device=None):
         with self._db() as db:
             query = "SELECT body FROM battles WHERE status IN ('prepared','active')"
@@ -332,27 +356,30 @@ class Battles(Operations):
             raise ValueError('Invalid battle finalization')
         if status == 'interrupted' and outcome != 'unknown':
             raise ValueError('Interrupted observation has unknown outcome')
-        fingerprint = digest(dict(reason=reason, outcome=outcome, status=status, evidence=evidence))
         with self._db() as db:
             battle = self._battle(db, battle_id)
             self._scope(battle, generation, live=False)
-            if battle['status'] not in LIVE:
-                if battle.get('finalization_fingerprint') != fingerprint:
-                    raise Conflict('Battle already finalized with different evidence')
-                return battle
-            now = time.time()
-            battle.update(status=status, outcome=outcome, reason=reason, ended_at=now,
-                          boundary_evidence=copy.deepcopy(evidence), finalization_fingerprint=fingerprint)
-            battle['segments'][-1]['ended_at'] = now
-            for row in db.execute('SELECT id,body FROM battle_commands WHERE battle_id=?', (battle_id,)).fetchall():
-                command = json.loads(row[1])
-                if command['state'] not in TERMINAL_COMMANDS:
-                    command.update(state='expired', reason='battle_ended', updated_at=now)
-                    db.execute('UPDATE battle_commands SET body=? WHERE id=?', (json.dumps(command, sort_keys=True), row[0]))
-                    self._event(db, battle, 'command_expired', command=command)
-            self._save(db, battle)
-            self._event(db, battle, status, outcome=outcome, reason=reason, evidence=evidence)
+            return self._finish(db, battle, reason=reason, outcome=outcome, status=status, evidence=evidence)
+
+    def _finish(self, db, battle, *, reason, outcome='unknown', status='ended', evidence=None):
+        fingerprint = digest(dict(reason=reason, outcome=outcome, status=status, evidence=evidence))
+        if battle['status'] not in LIVE:
+            if battle.get('finalization_fingerprint') != fingerprint:
+                raise Conflict('Battle already finalized with different evidence')
             return battle
+        now = time.time()
+        battle.update(status=status, outcome=outcome, reason=reason, ended_at=now,
+                      boundary_evidence=copy.deepcopy(evidence), finalization_fingerprint=fingerprint)
+        battle['segments'][-1]['ended_at'] = now
+        for row in db.execute('SELECT id,body FROM battle_commands WHERE battle_id=?', (battle['id'],)).fetchall():
+            command = json.loads(row[1])
+            if command['state'] not in TERMINAL_COMMANDS:
+                command.update(state='expired', reason='battle_ended', updated_at=now)
+                db.execute('UPDATE battle_commands SET body=? WHERE id=?', (json.dumps(command, sort_keys=True), row[0]))
+                self._event(db, battle, 'command_expired', command=command)
+        self._save(db, battle)
+        self._event(db, battle, status, outcome=outcome, reason=reason, evidence=evidence)
+        return battle
 
     def events(self, battle_id):
         with self._db() as db:

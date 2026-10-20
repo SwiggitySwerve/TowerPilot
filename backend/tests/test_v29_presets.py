@@ -337,6 +337,10 @@ def test_modules_restore_without_preset_gets_advisory(profile, monkeypatch):
 
 
 def test_ilm_quest_restores_after_last_cycle(monkeypatch):
+    from flows import _quest_run
+    from types import SimpleNamespace
+    monkeypatch.setattr(_quest_run, "QuestRun", lambda: SimpleNamespace(
+        home=lambda: None, start=lambda: None))
     from runtime import device_lease
     monkeypatch.setattr(device_lease, "prepare_instance", lambda name: None)
     # This test exercises dispatch after readiness; missing-image refusal is tested separately.
@@ -352,7 +356,7 @@ def test_ilm_quest_restores_after_last_cycle(monkeypatch):
     monkeypatch.setattr(q, "_bind_preset", lambda i, n: None)
     monkeypatch.setattr(q, "_preset", lambda: {"loadout": "zz", "tier": 1})
     monkeypatch.setattr(q, "one_cycle",
-                        lambda n, last: order.append(f"cycle{n}"))
+                        lambda n, last, run: order.append(f"cycle{n}"))
     import interactions.loadout as loadout
     import interactions.tourney as tourney
     from flows import shard
@@ -557,13 +561,17 @@ def test_ilm_cycle_polls_gems_through_wait(monkeypatch):
     class FakeWatch:
         def poll(self, frame):
             polls.append(frame)
+            return frame
 
     monkeypatch.setattr(shard, "GemWatch", lambda **k: FakeWatch())
-    monkeypatch.setattr(shard, "wait_for_wave", lambda w: ("F", 1))
-    monkeypatch.setattr(shard, "ensure_max_speed", lambda: None)
+    monkeypatch.setattr(shard, "wait_for_wave", lambda w, **kw: ("F", 1))
+    monkeypatch.setattr(shard, "ensure_max_speed", lambda **kw: None)
     monkeypatch.setattr(shard, "abandon_run", lambda **k: None)
     monkeypatch.setattr(q, "_preset", lambda: {"cycle_sec": 0.05})
     monkeypatch.setattr(capture, "grab", lambda: "FRAME")
     monkeypatch.setattr(rl, "event", lambda *a, **k: None)
-    q.one_cycle(2, last=False)          # n=2 skips the UW sweep
+    from types import SimpleNamespace
+    run = SimpleNamespace(guard=lambda f, *a: f, check=lambda f: f,
+                          observe=lambda f: f, abandon=lambda **kw: None)
+    q.one_cycle(2, last=False, run=run)  # n=2 skips the UW sweep
     assert polls and all(f == "FRAME" for f in polls)

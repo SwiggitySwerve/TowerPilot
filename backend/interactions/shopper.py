@@ -35,7 +35,12 @@ _TOP_RESETS = 3            # upward swipes to guarantee panel is at the top
 _SETTLE_SEC = 0.25         # UI settle time after tab tap / scroll
 
 
-def _tap_tab(name: str) -> bool:
+def _quest_frame(guard=None):
+    frame = capture.grab()
+    return guard(frame, "battle") if guard is not None else frame
+
+
+def _tap_tab(name: str, *, guard=None) -> bool:
     """Ensure the panel is open on the given tab.
 
     CRITICAL: tapping the tab that is ALREADY open CLOSES the panel. So we
@@ -48,7 +53,7 @@ def _tap_tab(name: str) -> bool:
         logger.event("shop_error", error=f"tab '{name}' not calibrated")
         return False
     for _ in range(2):
-        frame = capture.grab()
+        frame = _quest_frame(guard)
         if detect.panel_tab(frame) == name:
             return True
         # TOWER ON SCREEN OR HANDS OFF: the tab strip only exists in battle,
@@ -67,13 +72,15 @@ def _tap_tab(name: str) -> bool:
             logger.event("tap_refused", button=f"tab_{name}", error=str(e))
             return False
         time.sleep(_SETTLE_SEC)
-    return detect.panel_tab(capture.grab()) == name
+    return detect.panel_tab(_quest_frame(guard)) == name
 
 
-def _swipe(down: bool):
+def _swipe(down: bool, *, guard=None):
     """Scroll panel content one step, organically randomized per swipe:
     x drifts +/-60px, endpoints +/-40px, duration 250-450ms, and start/end
     x differ slightly so the stroke is never perfectly vertical."""
+    if guard is not None:
+        _quest_frame(guard)
     box = CONFIG["rois"]["upgrade_panel"]
     x0 = box[0] + box[2] // 2 + random.randint(-60, 60)
     x1 = x0 + random.randint(-25, 25)
@@ -88,8 +95,8 @@ def _swipe(down: bool):
     time.sleep(0.12 + random.uniform(0.0, 0.08))
 
 
-def _swipe_panel_down():
-    _swipe(down=True)
+def _swipe_panel_down(*, guard=None):
+    _swipe(down=True, **({"guard": guard} if guard is not None else {}))
 
 
 def _panel_gray(frame=None):
@@ -97,14 +104,15 @@ def _panel_gray(frame=None):
     return cv2.cvtColor(capture.roi(frame, "upgrade_panel"), cv2.COLOR_BGR2GRAY)
 
 
-def _scroll_to_top():
+def _scroll_to_top(*, guard=None):
     """Swipe up until the content stops SHIFTING - measured structurally via
     phase correlation, which ignores ticking numbers/prices (raw frame-diff
     is fooled by them and kept swiping at the top)."""
-    prev = np.float32(_panel_gray())
+    opts = {"guard": guard} if guard is not None else {}
+    prev = np.float32(_panel_gray() if guard is None else _panel_gray(_quest_frame(guard)))
     for _ in range(_TOP_RESETS):
-        _swipe(down=False)
-        cur = np.float32(_panel_gray())
+        _swipe(down=False, **opts)
+        cur = np.float32(_panel_gray() if guard is None else _panel_gray(_quest_frame(guard)))
         (_, dy), _ = cv2.phaseCorrelate(prev, cur)
         diff = float(np.mean(cv2.absdiff(prev, cur)))
         if abs(dy) < 15 and diff < 6.0:   # content froze -> already at top
@@ -718,16 +726,17 @@ class Shopper:
                          too_expensive=skipped, not_found=list(remaining))
 
 
-def uw_toggle(weapon: str, want_on: bool) -> bool:
+def uw_toggle(weapon: str, want_on: bool, *, guard=None) -> bool:
     """Set a UW's ON/OFF toggle, verifying state before and after."""
-    if not _tap_tab("uw"):
+    opts = {"guard": guard} if guard is not None else {}
+    if not _tap_tab("uw", **opts):
         logger.event("uw_fail", weapon=weapon, stage="open_uw_tab")
         return False
-    if not _hunt_uw(weapon):
+    if not _hunt_uw(weapon, **opts):
         logger.event("uw_fail", weapon=weapon, stage="hunt",
                      error=f"uw '{weapon}' not found")
         return False
-    frame = capture.grab()
+    frame = _quest_frame(guard)
     state = _uw_state(frame, weapon)
     if state is None:
         # The hunt stops at the FIRST sight of the name, which for the
@@ -735,9 +744,9 @@ def uw_toggle(weapon: str, want_on: bool) -> bool:
         # position with the pill still below the screen edge. One more
         # swipe brings the full row into view; only then is the pill
         # genuinely unreadable.
-        _swipe_panel_down()
+        _swipe_panel_down(**opts)
         time.sleep(_SETTLE_SEC)
-        frame = capture.grab()
+        frame = _quest_frame(guard)
         state = _uw_state(frame, weapon)
     if state is None:
         # pill unreadable - previously returned False with NO log, so a CL
@@ -758,14 +767,15 @@ def uw_toggle(weapon: str, want_on: bool) -> bool:
         logger.event("tap_refused", button=f"uw_{weapon}", error=str(e))
         return False
     time.sleep(_SETTLE_SEC)
-    return _uw_state(capture.grab(), weapon) == want_on
+    return _uw_state(_quest_frame(guard), weapon) == want_on
 
 
-def _hunt_uw(weapon: str) -> bool:
-    _scroll_to_top()
+def _hunt_uw(weapon: str, *, guard=None) -> bool:
+    opts = {"guard": guard} if guard is not None else {}
+    _scroll_to_top(**opts)
     prev_gray = None
     for _ in range(_SCROLL_STEPS + 1):
-        frame = capture.grab()
+        frame = _quest_frame(guard)
         g = np.float32(cv2.cvtColor(
             capture.roi(frame, "upgrade_panel"), cv2.COLOR_BGR2GRAY))
         if prev_gray is not None:
@@ -778,7 +788,7 @@ def _hunt_uw(weapon: str) -> bool:
         if hit:
             return True
         prev_gray = g
-        _swipe_panel_down()
+        _swipe_panel_down(**opts)
     return False
 
 

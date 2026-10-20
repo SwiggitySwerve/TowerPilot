@@ -15,7 +15,7 @@ def test_scheduler_child_adopts_exact_delegated_snapshot_and_marks_partial_origi
     from scheduling import combo
     from runtime import device_lease, logger
     cfg = dict(preset='combo', active_instance='main', active_profile=None,
-               instances={'main': {'preset': 'combo'}},
+               instances={'main': {'preset': 'combo', 'serial': 'fake'}},
                presets={'combo': {'kind': 'combo'}, 'farm': {'kind': 'coin', 'tier': 1, 'label': 'At entry', 'shopping': []}})
     path = tmp_path/'operations.db'
     context = dict(device_key='device', instance='main', account=None, serial='fake')

@@ -36,12 +36,15 @@ class BattleSession:
 
     @classmethod
     def from_environment(cls, preset, config, *, origin='started'):
-        operation_id, path = os.environ.get('TOWER_OPERATION_ID'), os.environ.get('TOWER_OPERATION_DB')
-        if not operation_id or not path:
+        from runtime.operations import environment_operation, validate_worker_context
+        operations, operation_id = environment_operation()
+        if operations is None:
             return None
+        path = operations.path
         store = Battles(path)
         from towerpilot_workflows.operations import Operations
-        operation = Operations(path).get(operation_id)
+        operation = operations.get(operation_id)
+        validate_worker_context(operation, config.get('active_instance'), config)
         if os.environ.get('TOWER_BATTLE_ID'):
             from runtime.battle_source import accepted_envelope
             envelope = accepted_envelope(operation)
@@ -94,7 +97,19 @@ class BattleSession:
         self._gap_started_at = None
         self._observation_gaps = []
         self._tag()
+        from interactions.loadout import unknown_setup
+        self.set_setup(unknown_setup(
+            self.base_preset.get('loadout'),
+            detail='adopted' if origin in ('adopted', 'partial_adoption') else 'as_is',
+            reason='Setup has not been verified for this battle'))
         return self.battle
+
+    def set_setup(self, report):
+        """Keep observed setup evidence in durable runtime history, outside source."""
+        self.store.validate_driver(self.battle['id'], self.generation, self.operation_id)
+        self.battle = self.store.update_status(self.battle['id'], self.generation,
+                                               {'setup': copy.deepcopy(report)})
+        return copy.deepcopy(self.battle['runtime']['setup'])
 
     def _tag(self):
         from runtime import logger
@@ -121,6 +136,7 @@ class BattleSession:
 
     def observe(self, rs, wave):
         """Call after boundary classification, before any action-producing helper."""
+        self.battle = self.store.validate_driver(self.battle['id'], self.generation, self.operation_id)
         if wave is not None and self.battle['status'] == 'prepared':
             self.battle = self.store.activate(self.battle['id'], self.generation, self.capabilities(rs))
         return self.battle['status'] == 'active'
@@ -180,6 +196,7 @@ class BattleSession:
     def checkpoint(self, rs, *, battle_visible):
         if self.battle['status'] not in ('prepared', 'active'):
             return
+        self.battle = self.store.validate_driver(self.battle['id'], self.generation, self.operation_id)
         self._manual_progress(rs)
         commands = self.store.pending_commands(self.battle['id'], self.generation)
         for command in commands:

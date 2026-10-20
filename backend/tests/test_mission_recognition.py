@@ -20,18 +20,24 @@ def test_weekly_chest_waits_for_delayed_reward_before_return(monkeypatch):
     from vision import wave_reader
     taps=[]
     monkeypatch.setattr(missions,'find_tile',lambda *a:(1,1))
-    monkeypatch.setattr(missions,'_tap',lambda x,y,reason,**kw:taps.append(reason))
+    def tap(x,y,reason,**kw):
+        taps.append(reason)
+        return {'dry_run':False}
+    monkeypatch.setattr(missions,'_tap',tap)
+    monkeypatch.setattr(missions,'reward_screen',lambda f:
+                        'battle_menu' if f[0,0,0]==0 else 'quests' if f[0,0,0]==1 else 'reward')
     monkeypatch.setattr(missions,'missions_screen',lambda f:f[0,0,0]==1)
     monkeypatch.setattr(missions,'find_claim',lambda f:None)
     monkeypatch.setattr(missions,'claimable_chests',lambda f:[(2,2)])
     monkeypatch.setattr(missions,'find_skip',lambda f:(3,3) if f[0,0,0]==2 else None)
-    monkeypatch.setattr(missions.act,'swipe',lambda *a,**kw:None)
+    monkeypatch.setattr(missions.act,'swipe',lambda *a,**kw:{'dry_run':False})
     monkeypatch.setattr(missions.logger,'event',lambda *a,**kw:None)
     monkeypatch.setattr(missions.logger,'shot',lambda *a:None)
     monkeypatch.setattr(wave_reader,'read_wave',lambda f:110) # misleading number on reward
     menu=np.ones((2560,1080,3),np.uint8)
     reward=menu*2
     flow=missions.quest_flow(); next(flow)
+    flow.send(menu*0)  # ownership begins with our entry from the battle menu
     for _ in range(20):
         flow.send(menu)
         if 'weekly_chest' in taps: break

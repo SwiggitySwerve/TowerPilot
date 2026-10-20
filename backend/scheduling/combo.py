@@ -94,52 +94,83 @@ def due(now: datetime.datetime | None = None) -> str:
 
 
 # ------------------------------------------------------------------ runners
-def _spawn(args: list) -> subprocess.Popen:
+def _spawn(args: list, *, setup=None) -> subprocess.Popen:
     from runtime.device_lease import child_environment
     environment = child_environment()  # proves no delegated child still owns input
     environment.pop('TOWER_BATTLE_ID', None)
     environment.pop('TOWER_BATTLE_GENERATION', None)
     pending = None
-    from runtime.operations import environment_operation
+    from runtime.operations import environment_operation, validate_worker_context
     operations, operation_id = environment_operation()
     if operations is not None:
-        from player.run_controls import resolve
+        from player.run_controls import effective_preset, resolve
         from towerpilot_workflows.battles import Battles
         import uuid
         store = Battles(operations.path)
         operation = operations.get(operation_id)
+        validate_worker_context(operation)
         previous = None
         for old in store.active(operation['context']['device_key']):
             if old['operation_id'] != operation_id:
                 raise ValueError('Another operation still owns this device battle')
             store.finish(old['id'], old['generation'], reason='delegated_driver_exited', status='interrupted')
             previous = old['id']
+        if previous is None:
+            recent = store.list(limit=1, device=operation['context']['device_key'])
+            if recent and recent[0]['operation_id'] == operation_id:
+                previous = recent[0]['id']
         # Only the generic driver implements per-battle observation and control
         # acknowledgement. A shard/quest batch is not one observed battle.
         if _Path(args[0]).as_posix() == flows.ENGINE:
             selected = args[args.index('--preset')+1] if '--preset' in args else CONFIG['preset']
             frozen_config = copy.deepcopy(CONFIG)
             frozen_config['preset'] = selected
-            body = copy.deepcopy(frozen_config['presets'][selected])
+            body = effective_preset(frozen_config, selected)
             from player import playerprofile
             envelope = dict(config=frozen_config, preset=body, preset_key=selected,
                             controls=resolve(body, frozen_config), profile=copy.deepcopy(getattr(playerprofile, 'PROFILE', None)),
                             source=copy.deepcopy(body.get('_source')), source_revision=(body.get('_source') or {}).get('profile_revision'))
             pending = store.create(operation_id, operation['context'], envelope, generation=str(uuid.uuid4()),
                                    origin='partial_adoption', previous_battle_id=previous)
+            from interactions.loadout import unknown_setup
+            pending = store.update_status(pending['id'], pending['generation'], {
+                'setup': copy.deepcopy(setup) if setup is not None else unknown_setup(
+                    body.get('loadout'), detail='adopted',
+                    reason='No setup evidence was recorded for this handoff')})
             environment['TOWER_BATTLE_ID'] = pending['id']
             environment['TOWER_BATTLE_GENERATION'] = pending['generation']
+            # The child observes battles under this already-running parent;
+            # it never enters worker_operation or finalizes the scheduler.
+            environment['TOWER_OPERATION_ID'] = operation_id
+            environment['TOWER_OPERATION_DB'] = operations.path
         else:
             logger.event('combo_driver_capability', operation_id=operation_id, driver=args[0],
                          battle_history='unsupported', live_controls='unsupported')
     logger.event("combo_spawn", cmd=" ".join(args))
     try:
-        return subprocess.Popen([sys.executable] + args, env=environment,
-                                stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        process = subprocess.Popen([sys.executable] + args, env=environment,
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        if pending is not None:
+            process.battle_delegation = dict(path=store.path, operation_id=operation_id,
+                                            device=pending['context']['device_key'],
+                                            battle_id=pending['id'],
+                                            generation=pending['generation'])
+        return process
     except BaseException:
         if pending is not None:
             store.finish(pending['id'], pending['generation'], reason='delegated_launch_failed', status='interrupted')
         raise
+
+
+def _reconcile_child(proc):
+    """Retire observation only after this exact child has demonstrably exited."""
+    delegation = getattr(proc, 'battle_delegation', None)
+    if delegation is None or proc.poll() is None:
+        return
+    from towerpilot_workflows.battles import Battles
+    Battles(delegation['path']).reconcile_driver(
+        delegation['operation_id'], delegation['device'], delegation['generation'],
+        reason='delegated_driver_exited')
 
 
 # The constant-era phases, resolved through the flow registry so there is
@@ -292,14 +323,14 @@ def _find_running(phase: str, instance: str):
     return None
 
 
-def _runner(phase: str, instance: str) -> subprocess.Popen:
+def _runner(phase: str, instance: str, *, setup=None) -> subprocess.Popen:
     # With a profile loaded the phase runs its BLUEPRINT (bp_<name>); with
     # none, the literal legacy preset names, unchanged. A profile that cannot
     # supply one raises rather than quietly spawning the legacy runner.
     bp = _require_blueprint(phase)
     if phase == "coin":
         return _spawn([PHASE_CMD["coin"][0], "--instance", instance,
-                       "--preset", f"bp_{bp}" if bp else "normal_run"])
+                       "--preset", f"bp_{bp}" if bp else "normal_run"], setup=setup)
     if phase == "shards":
         # Resume from the persisted per-day counter, not from zero: an
         # aborted block (a human touching the screen ends one) keeps its
@@ -312,10 +343,10 @@ def _runner(phase: str, instance: str) -> subprocess.Popen:
             tier = (CONFIG["presets"].get(f"bp_{bp}") or {}).get("tier")
             if tier:
                 args += ["--tier", str(tier)]
-        return _spawn(args)
+        return _spawn(args, setup=setup)
     if phase == "tournament":
         return _spawn([PHASE_CMD["tournament"][0], "--instance", instance,
-                       "--preset", f"bp_{bp}" if bp else "tournament"])
+                       "--preset", f"bp_{bp}" if bp else "tournament"], setup=setup)
     raise ValueError(phase)
 
 
@@ -938,9 +969,9 @@ def _block_argv(b, instance: str) -> list:
     return args + flows.extra_argv(b["kind"], body, remaining=remaining)
 
 
-def _block_runner(b, instance: str) -> subprocess.Popen:
+def _block_runner(b, instance: str, *, setup=None) -> subprocess.Popen:
     if b.get("legacy"):
-        return _runner(b["phase"], instance)
+        return _runner(b["phase"], instance, setup=setup)
     argv = _block_argv(b, instance)
     spec = flows.flow(b["kind"])
     # A "loadout" handoff leaves the block's battle LIVE on screen. A runner
@@ -949,10 +980,10 @@ def _block_runner(b, instance: str) -> subprocess.Popen:
     # whoever started it). _block_argv stays the adoption-matching argv.
     if spec["handoff"] == "loadout" and spec.get("adopt_arg"):
         argv = argv + [spec["adopt_arg"]]
-    return _spawn(argv)
+    return _spawn(argv, setup=setup)
 
 
-def _block_handoff(b, instance: str) -> None:
+def _block_handoff(b, instance: str):
     """Put a battle on screen for this block.
 
     A legacy block keeps _handoff verbatim - that path is not re-implemented
@@ -974,7 +1005,9 @@ def _block_handoff(b, instance: str) -> None:
     # away), "home_only" (tourney.setup() equips and enters by itself), or
     # "loadout" (equip the blueprint's loadout and set its tier below).
     from player import readiness
-    readiness.require(settings.ROOT, CONFIG, CONFIG["presets"].get(b["preset"]) or {})
+    from player.run_controls import effective_preset
+    body = effective_preset(CONFIG, b['preset'])
+    readiness.require(settings.ROOT, CONFIG, body)
     handoff = flows.flow(b["kind"])["handoff"]
     if handoff == "none":
         logger.event("combo_handoff_skipped", block=b["id"], kind=b["kind"],
@@ -988,7 +1021,6 @@ def _block_handoff(b, instance: str) -> None:
     tourney.ensure_home()
     if handoff == "home_only":
         return
-    body = CONFIG["presets"].get(b["preset"]) or {}
     name, tier = body.get("loadout"), body.get("tier")
     if tier is None or (not name and b["kind"] != "coin"):
         # NO GUESSING HERE EITHER. The constants can fall back to
@@ -1003,10 +1035,12 @@ def _block_handoff(b, instance: str) -> None:
     # deck and the chips are already correct by the time modules can fail, and
     # farming with the wrong modules is a bad night while a dead scheduler is a
     # dead weekend. The event log records what was left wrong.
+    setup = loadout.unknown_setup(name, detail='as_is', reason='No loadout was requested')
     try:
         if name:
-            loadout.apply(name)
+            setup = loadout.apply(name)['setup']
     except tourney.Abort as e:
+        setup = loadout.setup_failure(name, e)
         logger.event("combo_loadout_partial", phase=b["block"],
                      block=b["id"], error=str(e))
     tourney.ensure_home()
@@ -1014,11 +1048,14 @@ def _block_handoff(b, instance: str) -> None:
     # enter_run, not start_battle: a dissonance blueprint enters through its
     # own dialog and a blueprint with perk bans sets them first (2026-09-14).
     shard.enter_run(body)
+    if setup.get('state') == 'degraded':
+        setup = dict(setup, continued_with_partial=True)
     logger.event("combo_handoff", phase=b["block"], block=b["id"], tier=tier,
                  dissonant=body.get("dissonant_tab"))
+    return setup
 
 
-def _handoff(phase: str, instance: str) -> None:
+def _handoff(phase: str, instance: str):
     """Equip the phase's loadout and put a battle on screen.
 
     orchestrator.py will not start a run from a menu - it sees no tower and correctly
@@ -1042,9 +1079,11 @@ def _handoff(phase: str, instance: str) -> None:
     _require_blueprint(phase)
 
     from player import readiness
+    from player.run_controls import effective_preset
     legacy_kind = "shard" if phase == "shards" else phase
     legacy_key = flows.flow(legacy_kind).get("legacy_preset")
-    legacy_body = dict(CONFIG["presets"].get(legacy_key) or {}, kind=legacy_kind)
+    legacy_body = dict(effective_preset(CONFIG, legacy_key) if legacy_key in CONFIG['presets'] else {},
+                       kind=legacy_kind)
     if phase in ("coin", "shards"):
         legacy_body["loadout"] = "coin_farm" if phase == "coin" else "shard_farm"
     readiness.require(settings.ROOT, CONFIG, legacy_body)
@@ -1069,15 +1108,19 @@ def _handoff(phase: str, instance: str) -> None:
     # Farming with the wrong modules is a bad night; a dead scheduler is a dead
     # weekend. The event log records exactly which modules were left wrong.
     try:
-        loadout.apply(name)
+        setup = loadout.apply(name)['setup']
     except tourney.Abort as e:
+        setup = loadout.setup_failure(name, e)
         logger.event("combo_loadout_partial", phase=phase, error=str(e))
     tourney.ensure_home()
     tier = CONFIG["loadouts"][name].get("tier") or (
-        CONFIG["presets"]["normal_run"]["tier"] if phase == "coin" else 18)
+        legacy_body["tier"] if phase == "coin" else 18)
     shard.set_tier(tier)
     shard.start_battle()
+    if setup.get('state') == 'degraded':
+        setup = dict(setup, continued_with_partial=True)
     logger.event("combo_handoff", phase=phase, tier=tier)
+    return setup
 
 
 def _stop_and_wait(proc: subprocess.Popen, reason: str,
@@ -1106,6 +1149,8 @@ def _stop_and_wait(proc: subprocess.Popen, reason: str,
             proc.wait(timeout=30)
         except subprocess.TimeoutExpired:
             proc.kill()
+            proc.wait(timeout=30)
+    _reconcile_child(proc)
     runflag.clear()
 
 
@@ -1226,6 +1271,7 @@ def run(instance: str = "main") -> None:
             # the runner left on its own: a finished shard block, a finished
             # tournament, or a crash. Either way this block's turn is over.
             if proc is not None and proc.poll() is not None:
+                _reconcile_child(proc)
                 logger.event("combo_runner_exit", phase=cur["block"],
                              block=cur["id"], code=proc.returncode)
                 _close_block(cur, base)
@@ -1331,7 +1377,7 @@ def run(instance: str = "main") -> None:
                     time.sleep(POLL)
                     continue
                 try:
-                    _block_handoff(want, instance)
+                    setup = _block_handoff(want, instance)
                 except Exception as e:              # noqa: BLE001
                     # A block that cannot be set up must not spin. Close it for
                     # the day and fall through to the next one - the filler
@@ -1343,7 +1389,7 @@ def run(instance: str = "main") -> None:
                         continue
                     raise
                 base = _block_progress(want)
-                proc = _block_runner(want, instance)
+                proc = _block_runner(want, instance, setup=setup)
                 cur = want
                 logger.event("combo_phase", phase=want["block"],
                              block=want["id"])
