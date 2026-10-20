@@ -156,3 +156,46 @@ def test_catalog_uses_consumer_defaults_and_integer_gem_delay(dash):
         for field in module['fields']:
             expected = 1 if field['type'] == 'integer' or field['wholeNumbers'] else 'any'
             assert field['step'] == expected
+
+
+def test_preview_settings_are_per_instance_and_editable_with_starter_profile(dash):
+    cfg = yaml.safe_load(Path(dash.CONFIG_PATH).read_text())
+    cfg['accounts']['alice']['active_profile'] = 'default'
+    Path(dash.CONFIG_PATH).write_text(yaml.safe_dump(cfg))
+    profile_before = Path(dash.ROOT, 'profiles', 'default.yaml').read_bytes()
+    with dash.app.test_client() as client:
+        snapshot = client.get('/api/settings').get_json()
+        preview = next(m for m in snapshot['modules'] if m['id'] == 'device-preview')
+        assert (preview['title'], preview['group'], preview['scope'], preview['editable']) == (
+            'Video preview', 'Setup', 'instance', True)
+        fields = {f['key']: f for f in preview['fields']}
+        assert {key: f['value'] for key, f in fields.items()} == {
+            'backend': 'auto', 'fps': 15, 'mumu.install_dir': '', 'mumu.index': -1,
+            'scrcpy.bitrate': 8000000}
+        values = {'backend': 'mumu', 'fps': 30, 'mumu.install_dir': 'C:/MuMu Player',
+                  'mumu.index': 2, 'scrcpy.bitrate': 12000000}
+        response = save(client, snapshot, 'device-preview', values)
+        assert response.status_code == 200
+        current = next(m for m in response.get_json()['modules'] if m['id'] == 'device-preview')
+        assert {f['key']: f['value'] for f in current['fields']} == values
+    stored = yaml.safe_load(Path(dash.CONFIG_PATH).read_text())
+    assert stored['instances']['main']['preview'] == {
+        'backend': 'mumu', 'fps': 30, 'mumu': {'install_dir': 'C:/MuMu Player', 'index': 2},
+        'scrcpy': {'bitrate': 12000000}}
+    assert stored['instances']['other'] == {'account': 'bob'}
+    assert 'preview' not in stored
+    assert Path(dash.ROOT, 'profiles', 'default.yaml').read_bytes() == profile_before
+
+
+@pytest.mark.parametrize('values', [
+    {'backend': 'unknown'}, {'backend': True}, {'mumu.install_dir': 123},
+    {'mumu.install_dir': None}, {'mumu.index': -2}, {'mumu.index': 1025},
+    {'mumu.index': 1.5}, {'mumu.index': True}, {'fps': .4}, {'fps': 31},
+    {'fps': float('nan')}, {'scrcpy.bitrate': 999999}, {'scrcpy.bitrate': 40000001},
+    {'scrcpy.bitrate': 8000000.5}])
+def test_invalid_preview_settings_do_not_write_config(dash, values):
+    before = Path(dash.CONFIG_PATH).read_bytes()
+    with dash.app.test_client() as client:
+        snapshot = client.get('/api/settings').get_json()
+        assert save(client, snapshot, 'device-preview', values).status_code == 400
+    assert Path(dash.CONFIG_PATH).read_bytes() == before

@@ -33,6 +33,7 @@ __pycache__/
 .pytest_cache/
 .venv/
 backend/tools/platform-tools/
+backend/tools/scrcpy/
 backend/tools/adb-install-*/
 .local-backups/
 dist/

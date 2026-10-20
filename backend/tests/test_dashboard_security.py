@@ -208,7 +208,6 @@ def test_capture_routes_capture_only_the_configured_serial(dash, device, monkeyp
     # no page sends `serial`: the preview and the live stream show the
     # configured device, whatever the query names
     from device import adbclient
-    import socket
 
     def capture(s, cmd, timeout=None):
         import struct
@@ -216,14 +215,51 @@ def test_capture_routes_capture_only_the_configured_serial(dash, device, monkeyp
         return _png() if " -p" in cmd else struct.pack("<IIII", 4, 4, 1, 0) + bytes(4 * 4 * 4)
 
     monkeypatch.setattr(adbclient, "exec_out", capture)
-    monkeypatch.setattr(socket, "create_connection", lambda *a, **k: socket.socket())
     with dash.app.test_client() as c:
         assert c.get(f"/api/frame.png?serial={serial}").status_code == 200
-        r = c.get(f"/api/stream.mjpg?serial={serial}")
+        r = c.get(f"/api/stream.mjpg?backend=adb&serial={serial}")
         assert next(iter(r.response)).startswith(b"--frame")
         r.close()
     assert device["exec"] == [("127.0.0.1:16384", "screencap -p"),
                               ("127.0.0.1:16384", "screencap")]
+
+
+@pytest.mark.parametrize("backend", ["auto", "mumu", "scrcpy"])
+@pytest.mark.parametrize("serial", ["127.0.0.1:16416", "127.0.0.1:5555;reboot", "emulator-5554"])
+def test_accelerated_preview_ignores_query_device_and_executable(dash, device, monkeypatch, backend, serial):
+    import numpy as np
+    from device.preview.manager import PreviewCapture
+
+    opened, closed = [], []
+
+    class VideoSource:
+        def read(self, timeout=2.0):
+            return np.zeros((4, 4, 3), dtype=np.uint8)
+
+        def close(self):
+            closed.append(True)
+
+    def open_source(preview, source_name):
+        opened.append((preview.serial, preview.adb_exe, source_name))
+        return VideoSource()
+
+    monkeypatch.setattr(PreviewCapture, "_open", open_source)
+    with dash.app.test_client() as client:
+        response = client.get("/api/stream.mjpg", query_string={
+            "backend": backend, "serial": serial, "adb": "C:/untrusted/program.exe", "stream_id": "routing"})
+        try:
+            assert response.status_code == 200
+            assert next(iter(response.response)).startswith(b"--frame")
+            status = client.get("/api/stream/status?stream_id=routing").get_json()
+            assert status["frames"] == 1 and status["errors"] == 0
+            assert status["requested_backend"] == backend
+        finally:
+            response.close()
+    assert len(opened) == 1
+    assert opened[0][:2] == ("127.0.0.1:16384", "C:\\emu\\adb.exe")
+    assert opened[0][2] == ("scrcpy" if backend == "scrcpy" else "mumu")
+    assert closed == [True]
+    assert device["exec"] == [] and device["run"] == []
 
 
 def test_an_integer_display_is_used(dash, device):

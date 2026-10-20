@@ -20,6 +20,35 @@ test("granular numbers and ranges retain exact values and reject invalid input",
   assert.throws(() => parseField({ type: "integer" }, "1.5"));
   assert.throws(() => parseField({ type: "range" }, ["45", "15"]));
 });
+
+test("preview source choices and installation paths preserve exact text and escape rendered markup", () => {
+  const source = { key: "backend", label: "Preview source", type: "enum",
+    options: [{ value: "auto", label: "Auto" }, { value: "mumu", label: "MuMu native" }] };
+  assert.equal(parseField(source, "mumu"), "mumu");
+  assert.throws(() => parseField(source, "unknown"), /listed option/);
+  assert.throws(() => parseField(source, 0));
+  assert.match(fieldHTML(source, "mumu", false), /value="mumu" selected>MuMu native/);
+  const directory = { key: "mumu.install_dir", type: "string", label: "MuMu directory" };
+  const path = 'C:\\MuMu & "custom"';
+  assert.equal(parseField(directory, path), path);
+  assert.equal(parseField(directory, ""), "");
+  assert.throws(() => parseField(directory, null));
+  assert.match(fieldHTML(directory, path, true), /type="text"[^]*disabled[^]*&amp; &quot;custom&quot;/);
+});
+
+test("emulator route mounts the preview module in the existing page without another navigation tree", () => {
+  const vm = require("node:vm"), { section } = require("./helpers.cjs");
+  const host = {}, calls = [];
+  const S = { tab: "emulators" };
+  const ctx = vm.createContext({ S, $: selector => selector === "#emulators-settings" ? host : null,
+    settingsWorkspace: { mountPage: (element, options) => calls.push([element, options]) } });
+  vm.runInContext(section("function mountConfigurationPage(){", '$("#app-sidebar").addEventListener("keydown"'), ctx);
+  vm.runInContext("mountConfigurationPage();mountConfigurationPage()", ctx);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0][0], host);
+  assert.deepEqual(Array.from(calls[0][1].moduleIds), ["device-preview"]);
+  assert.equal(calls[0][1].policyModules, undefined);
+});
 test("switching modules preserves drafts; discarding only removes selected changes", () => {
   const s = new Store();
   s.accept(payload());
@@ -152,6 +181,27 @@ function mountHost() {
     },
   };
 }
+
+test("preview settings show their connection timing while other modules retain driver timing", async () => {
+  const { create } = require("../webui/settings.js");
+  const notice = "Saved changes apply on the next preview connection. No automation restart is needed.";
+  const data = payload();
+  data.modules.push({ id: "device-preview", title: "Video preview", scope: "instance", editable: true,
+    apply_notice: notice, fields: [{ key: "fps", type: "number", value: 15 }] });
+  const host = mountHost(), view = create({ get: async () => data });
+  view.mountPage(host, { moduleIds: ["device-preview"] });
+  await new Promise(setImmediate);
+  assert.match(host.nodes.content.innerHTML, /Emulator: emu/);
+  assert.ok(host.nodes.content.innerHTML.includes(notice));
+  assert.doesNotMatch(host.nodes.content.innerHTML, /next driver start|Restarting automation is a separate action/);
+  view.mountPage(host, { moduleIds: ["loop"] });
+  assert.match(host.nodes.content.innerHTML, /Saved changes apply on the next driver start/);
+  data.modules.find(m => m.id === "device-preview").apply_notice = "<custom notice>";
+  view.mountPage(host, { moduleIds: ["device-preview"] });
+  await new Promise(setImmediate);
+  assert.match(host.nodes.content.innerHTML, /&lt;custom notice&gt;/);
+  assert.doesNotMatch(host.nodes.content.innerHTML, /<custom notice>/);
+});
 test("controller groups policy modules, switches selected policy, and blocks changed-context drafts", async () => {
   const { create } = require("../webui/settings.js");
   let current = {

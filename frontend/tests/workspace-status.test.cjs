@@ -673,7 +673,9 @@ test('stream cleanup replaces the MJPEG source with a local image before detachi
       $:key => ({'#stream-slot':slot,'#stream-toggle':toggle,'#stream-slot img':attached?image:null})[key]});
     vm.runInContext(section('function stopStream(){','function renderHomeLive('),ctx);
     // Preserve the current live stream across unchanged status ticks.
-    slot.dataset.state = JSON.stringify([true,true,true,'',4,'native','main','']);
+    vm.runInContext('renderStream()',ctx);
+    attached = true;
+    events.length = 0;
     vm.runInContext('renderStream()',ctx);
     assert.deepEqual(events,[]);
     if (transition === 'navigate') ctx.S.tab = 'runs';
@@ -701,7 +703,7 @@ test('the Overview stream shows the live-screen placeholder offline and streams 
   assert.doesNotMatch(slot.innerHTML, /stream\.mjpg|<img/);
   ctx.S.status = statusWith('device');
   vm.runInContext('renderStream()', ctx);
-  assert.match(slot.innerHTML, /<img src="\/api\/stream\.mjpg\?fps=4&scale=1&q=90&ts=\d+&instance=main&stream_id=[a-z0-9_]+" alt="live stream">/);
+  assert.match(slot.innerHTML, /<img src="\/api\/stream\.mjpg\?fps=15&scale=1&q=90&ts=\d+&instance=main&stream_id=[a-z0-9_]+" alt="live stream">/);
   slot.innerHTML = 'kept';                        // a status tick with nothing changed does not restart the stream
   vm.runInContext('renderStream()', ctx);
   assert.equal(slot.innerHTML, 'kept');

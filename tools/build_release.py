@@ -5,7 +5,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-TOP = {'VERSION', 'LICENSE', 'README.md', 'requirements.txt', 'requirements-dev.txt', 'requirements-portable.lock',
+TOP = {'VERSION', 'LICENSE', 'README.md', 'requirements.txt', 'requirements-dev.txt', 'requirements-portable.lock', 'requirements-scrcpy.txt',
        'pytest.ini', 'pyproject.toml', 'Start Tower Pilot.cmd', 'Start-TowerPilot.ps1', '.gitignore', '.gitattributes',
        # agent rules and skills ship with the source (0.2-beta): CLAUDE.md is
        # the rule book, AGENTS.md points Codex and others at it
@@ -14,7 +14,7 @@ DOCS = {'README.md', 'ACCOUNT_SETUP.md', 'BLUESTACKS.md', 'GLOBAL_REWARDS.md',
         'RUN_TEMPLATES.md', 'RELEASE_0.1_BETA.md', 'RELEASE_0.2_BETA.md', 'RELEASE_0.3_BETA.md', 'RELEASE_0.4_BETA.md', 'RELEASE_0.5_BETA.md', 'RUNTIME_GEOMETRY.md',
         'PORTABLE_BUILD.md', 'SETTINGS.md', 'LEARNING_FLOWS.md', 'OBSERVABILITY.md',
         'WORKFLOW_ARCHITECTURE_PROPOSAL.md', 'RUN_LIFECYCLE_PLAN.md',
-        'RUN_WORKSPACE_REVIEW.md'}
+        'RUN_WORKSPACE_REVIEW.md', 'VIDEO_PREVIEW.md'}
 # Whole folders that ship as they are: the Claude Code skills, agents, hooks
 # and workflow helpers, the project-local Codex config, the release workflow.
 # Personal files never do: .claude/settings.local.json is a per-machine

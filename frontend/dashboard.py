@@ -801,6 +801,9 @@ def api_settings_post():
                 node = node[part]
             for key, value in values.items():
                 write(node, key, value)
+            if module['id'] == 'device-preview':
+                from device.preview.common import options as preview_options
+                preview_options(node)
             if module['scope'] == 'profile':
                 # Preserve unrelated legacy/unknown fields; validate this policy's
                 # known fields rather than rejecting an entire existing profile.
@@ -1450,25 +1453,30 @@ _STREAM_LIMIT = 32
 
 
 def _stream_decode(raw):
-    """Decode Android's 12/16-byte raw RGBA header, including MuMu warnings."""
-    import cv2
-    import numpy as np
-    for _ in range(4):
-        if len(raw) >= 12:
-            width, height, pixel_format = struct.unpack_from("<III", raw)
-            header = len(raw) - width * height * 4
-            if 0 < width <= 10000 and 0 < height <= 10000 and header in (12, 16):
-                if pixel_format not in (1, 2):  # RGBA_8888 / RGBX_8888
-                    raise ValueError(f"unsupported screencap pixel format: {pixel_format}")
-                rgba = np.frombuffer(raw, np.uint8, offset=header).reshape(height, width, 4)
-                return cv2.cvtColor(rgba, cv2.COLOR_RGBA2BGR)
-        if not raw.startswith(b"[Warning]"):
-            break
-        newline = raw.find(b"\n", 0, 512)
-        if newline < 0:
-            break
-        raw = raw[newline + 1:]
-    raise ValueError("invalid raw screencap (device offline or display changed?)")
+    from device.preview.common import decode_raw
+    return decode_raw(raw)
+
+
+@app.get("/api/stream/backends")
+def api_stream_backends():
+    """Read local package availability without starting captures or downloads."""
+    from device.preview.common import options as preview_options, PreviewUnavailable
+    from device.preview.mumu import discover_target
+    from device.preview.scrcpy_package import status as scrcpy_status
+    cfg = load_config()
+    instance = cfg.get("active_instance", "main")
+    inst = cfg["instances"][instance]
+    try:
+        settings = preview_options(inst.get("preview"))
+    except ValueError as exc:
+        return jsonify(ok=False, error=str(exc)), 400
+    try:
+        target = discover_target(inst.get("serial", ""), cfg.get("adb", {}).get("exe", ""), settings["mumu"])
+        native = dict(available=True, target=target, reason=None)
+    except PreviewUnavailable as exc:
+        native = dict(available=False, reason=str(exc))
+    return jsonify(ok=True, instance=instance, settings=settings,
+                   mumu=native, scrcpy=scrcpy_status(), adb=dict(available=True))
 
 
 @app.get("/api/stream/status")
@@ -1490,14 +1498,10 @@ def api_stream_status():
 
 @app.get("/api/stream.mjpg")
 def api_stream():
-    """Socket-only raw captures, paced to a target cap; no queued catch-up frames.
-
-    The cap stays at 4 FPS to bound additional emulator work. Actual throughput
-    depends on capture and encoding time and is exposed per session. Raw capture
-    avoids encoding PNG on the device just to decode it back into a JPEG here.
-    """
+    """Native MuMu preview with optional scrcpy and socket screenshot fallbacks."""
     import math
     import secrets
+    from device.preview.common import BACKENDS, options as preview_options
     cfg = load_config()
     instance = cfg.get("active_instance", "main")
     inst = cfg["instances"][instance]
@@ -1508,12 +1512,17 @@ def api_stream():
         return jsonify(ok=False, error="Active emulator changed; refresh the stream"), 409
     serial = inst["serial"]             # the configured device only, as api_frame
     asked_display = request.args.get("display") or inst.get("display")
+    explicit_display = bool(request.args.get("display"))
     try:
-        fps = float(request.args.get("fps", 2))
+        settings = preview_options(inst.get("preview"))
+        backend = request.args.get("backend", settings["backend"])
+        if backend not in BACKENDS:
+            raise ValueError("backend must be auto, mumu, scrcpy, or adb")
+        fps = float(request.args.get("fps", settings["fps"]))
         quality = int(request.args.get("q", 90))
         scale = float(request.args.get("scale", 1))
-        if not math.isfinite(fps) or not 0.5 <= fps <= 4:
-            raise ValueError("fps must be between 0.5 and 4")
+        if not math.isfinite(fps) or not 0.5 <= fps <= 30:
+            raise ValueError("fps must be between 0.5 and 30")
         if not 30 <= quality <= 90:
             raise ValueError("q must be between 30 and 90")
         if not math.isfinite(scale) or not 0.2 <= scale <= 1:
@@ -1531,6 +1540,8 @@ def api_stream():
     stats = dict(stream_id=stream_id, instance=instance, target_fps=fps,
                  scale=scale, quality=quality, width=None, height=None, jpeg_bytes=None,
                  frames=0, errors=0, capture_ms=None, encode_ms=None,
+                 backend=None, requested_backend=backend, effective_fps=fps,
+                 backend_failures=[], frame_age_ms=None,
                  active=True, last_error=None, _frames=[], _started=False)
     correlation = dict(getattr(g, "diagnostic_ids", {}))
     with _STREAM_LOCK:
@@ -1557,9 +1568,9 @@ def api_stream():
 
     def gen():
         from device import adbclient
+        from device.preview.manager import PreviewCapture
         import cv2
         import numpy as np
-        period = 1.0 / fps
         # THE STREAM MUST NEVER STARVE THE SERVER (2026-08-18, live): with
         # the emulator offline every frame blocked 15 s inside the adb
         # timeout, pinning a Flask thread; /api/status calls queued behind
@@ -1588,7 +1599,23 @@ def api_stream():
 
         with _STREAM_LOCK:
             stats["_started"] = True
-        event("stream_started", target_fps=fps, scale=scale, quality=quality)
+        event("stream_started", target_fps=fps, scale=scale, quality=quality, requested_backend=backend)
+
+        def raw_capture():
+            cmd = _screencap_cmd(serial, _game_display(serial, asked_display), png=False)
+            raw = adbclient.exec_out(serial, cmd, timeout=2.0)
+            try:
+                return _stream_decode(raw)
+            except ValueError:
+                _forget_display(serial)
+                raise
+
+        source = PreviewCapture(
+            serial=serial, adb_exe=cfg.get("adb", {}).get("exe", ""), settings=settings,
+            raw_capture=raw_capture, physical_display=lambda: _game_display(serial, asked_display),
+            requested_backend=backend, fps=fps, explicit_display=explicit_display,
+            event=event,
+        )
         try:
             while True:
                 t0 = time.monotonic()
@@ -1596,14 +1623,8 @@ def api_stream():
                 try:
                     if not _port_up():
                         raise OSError("emulator port closed")
-                    cmd = _screencap_cmd(serial, _game_display(serial, asked_display), png=False)
-                    raw = adbclient.exec_out(serial, cmd, timeout=2.0)
+                    img = source.read(timeout=2.0)
                     captured = time.monotonic()
-                    try:
-                        img = _stream_decode(raw)
-                    except ValueError:
-                        _forget_display(serial)
-                        raise
                     if scale != 1.0:
                         img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
                     ok, jpg = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, quality])
@@ -1616,6 +1637,7 @@ def api_stream():
                                      width=img.shape[1], height=img.shape[0], jpeg_bytes=len(jpg),
                                      capture_ms=round((captured - t0) * 1000, 2),
                                      encode_ms=round((completed - captured) * 1000, 2))
+                        stats.update(source.status())
                         stats["_frames"] = (stats["_frames"] + [completed])[-16:]
                     if recovered:
                         event("stream_recovered")
@@ -1627,6 +1649,7 @@ def api_stream():
                     with _STREAM_LOCK:
                         first_failure = stats["last_error"] is None
                         stats.update(errors=stats["errors"] + 1, last_error=str(exc))
+                        stats.update(source.status())
                     if first_failure:
                         event("stream_error", error=str(exc), error_type=type(exc).__name__)
                     canvas = np.zeros((96, 270, 3), np.uint8)
@@ -1638,11 +1661,19 @@ def api_stream():
                     yield multipart(jpg)
                 # Capture/encoding/browser backpressure consume the period. A
                 # slow capture never queues catch-up work or adds another period.
-                wait = (3.0 if failed else period) - (time.monotonic() - t0)
+                wait = (3.0 if failed else 1.0 / source.effective_fps) - (time.monotonic() - t0)
                 if wait > 0:
                     time.sleep(wait)
         finally:
-            finish_stream()
+            try:
+                source.close()
+            except Exception as exc:  # cleanup remains visible in session diagnostics
+                with _STREAM_LOCK:
+                    stats.update(last_error=str(exc), errors=stats["errors"] + 1)
+                    stats.update(source.status())
+                event("stream_cleanup_failed", error=str(exc), error_type=type(exc).__name__)
+            finally:
+                finish_stream()
 
     response = Response(gen(),
                         mimetype="multipart/x-mixed-replace; boundary=frame",

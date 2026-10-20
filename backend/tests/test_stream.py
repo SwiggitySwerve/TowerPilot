@@ -39,7 +39,7 @@ def stream(monkeypatch, tmp_path):
     monkeypatch.setattr(dash, "ROOT", str(tmp_path / 'backend'))
     monkeypatch.setattr(dash, "time", clock)
     monkeypatch.setattr(dash, "load_config", lambda: {
-        "active_instance": "main", "instances": {"main": {"serial": "emulator-5554"}}})
+        "active_instance": "main", "instances": {"main": {"serial": "emulator-5554", "preview": {"backend": "adb"}}}})
     monkeypatch.setattr(dash, "_game_display", lambda *args: "123")
     from device import adbclient
 
@@ -52,7 +52,7 @@ def stream(monkeypatch, tmp_path):
     return dash, clock, calls
 
 
-@pytest.mark.parametrize("query", ["fps=oops", "fps=nan", "fps=inf", "fps=0", "fps=4.1",
+@pytest.mark.parametrize("query", ["fps=oops", "fps=nan", "fps=inf", "fps=0", "fps=30.1", "backend=unknown",
                                   "fps=-1", "q=oops", "q=100", "q=29", "q=89.5",
                                   "scale=nan", "scale=inf", "scale=0", "scale=1.1",
                                   "stream_id=bad%20id", "instance=other"])
@@ -260,7 +260,61 @@ def test_generator_and_response_close_emit_one_stop_for_started_stream(stream, m
     assert len(calls) == 1
     response.close()
     response.close()
-    assert [kind for kind, _ in events] == ["stream_started", "stream_stopped"]
+    assert [kind for kind, _ in events] == ["stream_started", "preview_backend_selected", "stream_stopped"]
     assert events[-1][1]["frames"] == 1
     assert events[-1][1]["errors"] == 0
     assert dash._STREAMS["started"]["active"] is False
+
+
+def test_accelerated_preview_exposes_backend_and_closes_helper(stream, monkeypatch):
+    from device.preview.manager import PreviewCapture
+    dash, clock, calls = stream
+
+    class Source:
+        closed = 0
+
+        def read(self, timeout):
+            clock.now += .005
+            return np.zeros((4, 4, 3), dtype=np.uint8)
+
+        def close(self):
+            self.closed += 1
+
+    source = Source()
+    monkeypatch.setattr(PreviewCapture, '_open', lambda self, backend: source)
+    client = dash.app.test_client()
+    response = client.get('/api/stream.mjpg?backend=mumu&fps=30&stream_id=native')
+    iterator = iter(response.response)
+    next(iterator)
+    next(iterator)
+    status = client.get('/api/stream/status?stream_id=native').get_json()
+    assert status['backend'] == status['requested_backend'] == 'mumu'
+    assert status['effective_fps'] == 30
+    assert status['actual_fps'] == 30
+    assert status['backend_failures'] == []
+    assert not calls
+    response.close()
+    assert source.closed == 1
+
+
+def test_screenshot_fallback_caps_high_target_and_explains_failure(stream, monkeypatch):
+    from device.preview.manager import PreviewCapture
+    from device.preview.common import PreviewUnavailable
+    dash, _, calls = stream
+    original = PreviewCapture._open
+
+    def open_source(self, backend):
+        if backend != 'adb':
+            raise PreviewUnavailable(f'{backend} unavailable for this device')
+        return original(self, backend)
+
+    monkeypatch.setattr(PreviewCapture, '_open', open_source)
+    client = dash.app.test_client()
+    response = client.get('/api/stream.mjpg?backend=auto&fps=30&stream_id=fallback')
+    status = client.get('/api/stream/status?stream_id=fallback').get_json()
+    assert status['backend'] == 'adb'
+    assert status['requested_backend'] == 'auto'
+    assert status['target_fps'] == 30 and status['effective_fps'] == 4
+    assert [row['backend'] for row in status['backend_failures']] == ['mumu', 'scrcpy']
+    assert len(calls) == 1
+    response.close()

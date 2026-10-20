@@ -20,6 +20,12 @@
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   function parseField(field, raw) {
     if (field.type === "boolean") return !!raw;
+    if (field.type === "string" || field.type === "enum") {
+      if (typeof raw !== "string") throw Error("Enter text.");
+      if (field.type === "enum" && !field.options.some(option => option.value === raw))
+        throw Error("Choose a listed option.");
+      return raw;
+    }
     const number = (value) => {
       if (String(value).trim() === "") throw Error("Enter a number.");
       const n = Number(value);
@@ -179,7 +185,11 @@
         ? `<input type="checkbox" ${attrs} ${value ? "checked" : ""}>`
         : f.type === "range" || f.type === "point"
           ? `<div class="settings-pair">${value.map((v, i) => `<label>${f.type === "range" ? (i ? "Maximum" : "Minimum") : i ? "Y" : "X"}${number(v, i)}</label>`).join("")}</div>`
-          : number(value);
+          : f.type === "enum"
+            ? `<select ${attrs}>${f.options.map(option => `<option value="${esc(option.value)}" ${option.value === value ? "selected" : ""}>${esc(option.label)}</option>`).join("")}</select>`
+            : f.type === "string"
+              ? `<input type="text" ${attrs} value="${esc(value)}">`
+              : number(value);
     const title = `<strong>${esc(f.label)}</strong>${f.unit ? ` <span class="muted">(${esc(f.unit)})</span>` : ""}`;
     const control = paired
       ? `<fieldset><legend>${title}</legend>${input}</fieldset>`
@@ -281,7 +291,8 @@
           : item.scope === "instance"
             ? `Emulator: ${store.payload.context.instance}`
             : `Shared profile: ${store.payload.context.profile}`;
-      return `<h2>${esc(title)}</h2>${selector}<p>${esc(item.description)}</p><p class="settings-scope">${esc(scope)}</p>${item.affected_runs ? `<p>Affected runs: ${esc(item.affected_runs.join(", ") || "None")}</p>` : ""}<p class="muted">Saved changes apply on the next driver start. Restarting automation is a separate action.</p>${!item.editable ? '<p role="status">Select an editable profile to change these settings.</p>' : ""}<form data-settings-form data-settings-module="${esc(item.id)}">${item.fields.map((f) => fieldHTML(f, store.displayValues(item.id)[f.key], !item.editable || store.saving || contextConflict)).join("")}<div class="settings-save"><span role="status">${esc(store.errors.get(item.id) || (store.dirty(item.id) ? "Unsaved changes" : "Saved"))}</span><button type="submit" ${!item.editable || !store.dirty(item.id) || store.saving || contextConflict || store.invalid(item.id) ? "disabled" : ""}>${store.saving ? "Saving…" : "Save changes"}</button><button type="button" class="ghost" data-settings-discard ${!store.dirty(item.id) || store.saving ? "disabled" : ""}>Discard</button></div></form>`;
+      const applyNotice = item.apply_notice || "Saved changes apply on the next driver start. Restarting automation is a separate action.";
+      return `<h2>${esc(title)}</h2>${selector}<p>${esc(item.description)}</p><p class="settings-scope">${esc(scope)}</p>${item.affected_runs ? `<p>Affected runs: ${esc(item.affected_runs.join(", ") || "None")}</p>` : ""}<p class="muted">${esc(applyNotice)}</p>${!item.editable ? '<p role="status">Select an editable profile to change these settings.</p>' : ""}<form data-settings-form data-settings-module="${esc(item.id)}">${item.fields.map((f) => fieldHTML(f, store.displayValues(item.id)[f.key], !item.editable || store.saving || contextConflict)).join("")}<div class="settings-save"><span role="status">${esc(store.errors.get(item.id) || (store.dirty(item.id) ? "Unsaved changes" : "Saved"))}</span><button type="submit" ${!item.editable || !store.dirty(item.id) || store.saving || contextConflict || store.invalid(item.id) ? "disabled" : ""}>${store.saving ? "Saving…" : "Save changes"}</button><button type="button" class="ghost" data-settings-discard ${!store.dirty(item.id) || store.saving ? "disabled" : ""}>Discard</button></div></form>`;
     }
     function validateForms() {
       for (const form of host.querySelectorAll("[data-settings-form]")) {

@@ -1,14 +1,15 @@
 """Explicit dashboard settings, independent of device-bound runner imports."""
 import copy
 import math
+from device.preview.common import DEFAULTS as PREVIEW_DEFAULTS
 from player.gather_settings import AD_GEM_FIELDS, ORBIT_TIMING_FIELDS
 
 
-def field(key, label, kind, default, low=None, high=None, unit='', description='', whole_numbers=False):
+def field(key, label, kind, default, low=None, high=None, unit='', description='', whole_numbers=False, options=None):
     return dict(key=key, path=key, label=label, type=kind, default=default,
                 min=low, max=high, step=1 if kind == 'integer' or whole_numbers else 'any',
                 wholeNumbers=whole_numbers,
-                unit=unit, description=description)
+                unit=unit, description=description, options=options)
 
 
 def read(data, key, default):
@@ -35,6 +36,10 @@ def validate(spec, value):
     kind = spec['type']
     if kind == 'boolean':
         valid = isinstance(value, bool)
+    elif kind in ('string', 'enum'):
+        valid = isinstance(value, str)
+        if valid and kind == 'enum':
+            valid = value in [option['value'] for option in spec['options']]
     elif kind in ('range', 'point'):
         valid = isinstance(value, list) and len(value) == 2
     else:
@@ -43,7 +48,7 @@ def validate(spec, value):
             valid = type(value) is int
     if not valid:
         raise ValueError(f"{spec['label']}: expected {kind}")
-    if kind == 'boolean':
+    if kind in ('boolean', 'string', 'enum'):
         return
     numbers = value if kind in ('range', 'point') else [value]
     for number in numbers:
@@ -63,9 +68,9 @@ def validate(spec, value):
 def catalog(cfg, profile, editable):
     modules = []
 
-    def add(ident, title, group, scope, path, data, specs, description):
+    def add(ident, title, group, scope, path, data, specs, description, apply_notice=None):
         modules.append(dict(id=ident, title=title, group=group, scope=scope,
-                            description=description, editable=scope != 'profile' or editable,
+                            description=description, apply_notice=apply_notice, editable=scope != 'profile' or editable,
                             fields=[dict(s, value=read(data, s['key'], s['default'])) for s in specs],
                             storage_path=path))
 
@@ -76,6 +81,19 @@ def catalog(cfg, profile, editable):
         'Shared tap timing for every emulator on this machine.')
     inst = cfg.get('active_instance', 'main')
     instance = (cfg.get('instances') or {}).get(inst) or {}
+    add('device-preview', 'Video preview', 'Setup', 'instance', ['instances', inst, 'preview'],
+        instance.get('preview') or {}, [
+            field('backend', 'Preview source', 'enum', PREVIEW_DEFAULTS['backend'], options=[
+                {'value': 'auto', 'label': 'Auto'}, {'value': 'mumu', 'label': 'MuMu native'},
+                {'value': 'scrcpy', 'label': 'scrcpy'}, {'value': 'adb', 'label': 'ADB screenshots'}]),
+            field('fps', 'Target frame rate', 'number', PREVIEW_DEFAULTS['fps'], .5, 30, 'fps'),
+            field('mumu.install_dir', 'MuMu installation directory', 'string', PREVIEW_DEFAULTS['mumu']['install_dir'],
+                  description='Leave empty to detect the installation automatically.'),
+            field('mumu.index', 'MuMu instance index', 'integer', PREVIEW_DEFAULTS['mumu']['index'], -1, 1024,
+                  description='Use -1 to detect the instance from its emulator connection.'),
+            field('scrcpy.bitrate', 'scrcpy bitrate', 'integer', PREVIEW_DEFAULTS['scrcpy']['bitrate'], 1000000, 40000000, 'bits/sec')],
+        'Auto prefers MuMu native, then scrcpy, then ADB screenshots. ADB preview is capped at 4 FPS. Farming capture is independent.',
+        apply_notice='Saved changes apply on the next preview connection. No automation restart is needed.')
     for ident, title, specs in [
         ('loop', 'Observation loop', [field('fps', 'Frames per second', 'number', 2, .1, 30, 'fps'), field('dry_run', 'Log taps without sending them', 'boolean', False)]),
         ('missions', 'Mission visits', [field('visit_delay_sec', 'Delay between mission visits', 'range', [60, 600], 0, 86400, 'sec')]),
