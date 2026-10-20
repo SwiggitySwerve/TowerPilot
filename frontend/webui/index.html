@@ -53,6 +53,9 @@
     box-shadow:0 10px 34px rgba(0,0,0,.45);
   }
   #savebar span { font-size:.88rem; opacity:.85; }
+  #savebar { border-radius:18px; flex-wrap:wrap; max-width:min(94vw,780px); width:max-content; }
+  #savebar [data-save-feedback] { flex-basis:100%; max-height:12rem; overflow:auto; }
+  .seconds-field { display:inline-flex; flex-direction:column; gap:.15rem; }
   main { padding:1.1rem 1.3rem 4rem; max-width:1500px; margin:0 auto; }
   .grid2 { display:grid; grid-template-columns:1fr 360px; gap:1.1rem; align-items:start; }
   @media (max-width:1100px){ .grid2 { grid-template-columns:1fr; } }
@@ -317,8 +320,10 @@
 <div id="toasts"></div>
 <div id="savebar" hidden>
   <span id="savebar-n"></span>
-  <button class="small" onclick="saveAll()">Save changes</button>
-  <button class="small ghost" onclick="discardAll()">Discard</button>
+  <button class="small" data-save-all onclick="saveAll()">Save changes</button>
+  <button class="small ghost" data-save-discard onclick="discardAll()">Discard</button>
+  <button class="small ghost" data-save-dismiss onclick="dismissSaveFeedback()">Dismiss result</button>
+  <div data-save-feedback role="status" aria-live="polite"></div>
 </div>
 <dialog id="editor"></dialog>
 <dialog id="editor2"></dialog>
@@ -369,6 +374,7 @@
 }
 </script>
 
+<script src="duration-format.js"></script>
 <script src="settings.js"></script>
 <script src="workspace-status.js"></script>
 <script src="learning-state.js"></script>
@@ -418,20 +424,41 @@ function toast(msg, err=false){
 
 async function api(path, opts){
   const requestId=globalThis.crypto?.randomUUID?.() || `ui-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const read=(opts?.method || 'GET').toUpperCase()==='GET';
+  let timer, controller, cancel;
   try {
-    const r = await fetch(path, {...opts,headers:{...opts?.headers,'X-Request-ID':requestId}});
-    let j = null;
-    try { j = await r.json(); }
-    catch(error){if(r.ok)throw new Error('Server returned invalid JSON');}
-    if (!r.ok || (j && j.ok === false)) {
-      const m = j && (j.error || j.message || (j.problems || []).join("\n")) || `HTTP ${r.status}`;
-      throw Object.assign(new Error(m), {status:r.status});
+    const request=async()=>{
+      const r = await fetch(path, {...opts,...(controller ? {signal:controller.signal} : {}),headers:{...opts?.headers,'X-Request-ID':requestId}});
+      let j = null;
+      try { j = await r.json(); }
+      catch(error){if(r.ok)throw new Error('Server returned invalid JSON');}
+      if (!r.ok || (j && j.ok === false)) {
+        const m = j && (j.error || j.message || (j.problems || []).join("\n")) || `HTTP ${r.status}`;
+        throw Object.assign(new Error(m), {status:r.status});
+      }
+      return j;
+    };
+    if (!read) return await request();
+    controller=new AbortController();
+    if(opts?.signal){
+      cancel=()=>controller.abort(opts.signal.reason);
+      if(opts.signal.aborted)cancel();else opts.signal.addEventListener('abort',cancel,{once:true});
     }
-    return j;
+    // Bound the complete read, including a stalled JSON body. Aborting releases
+    // the connection; the race also releases single flight if transport stalls.
+    return await Promise.race([request(),new Promise((_,reject)=>{
+      timer=setTimeout(()=>{
+        reject(Object.assign(new Error('Status read timed out. Showing the last snapshot; retry status.'),{name:'TimeoutError'}));
+        controller.abort();
+      },5000);
+    })]);
   } catch(error) {
     error.requestId=requestId;
     reportDiagnostic('api_error',{request_id:requestId,path,method:opts?.method || 'GET',message:error.message,stack:error.stack});
     throw error;
+  } finally {
+    if(timer !== undefined)clearTimeout(timer);
+    if(cancel)opts.signal.removeEventListener('abort',cancel);
   }
 }
 const post = async (p, b) => {
@@ -447,19 +474,33 @@ const post = async (p, b) => {
 };
 
 /* ---- profile patching: one field, one request, validator verdict verbatim */
-async function patch(path, value, op){
-  const body = { name:S.profiles.active, path, value };
+async function observeSaveAcknowledgement(request){
+  let timer;
+  try{return await Promise.race([request,new Promise((_,reject)=>{
+    timer=setTimeout(()=>reject(Error('Save acknowledgement timed out. The outcome is unknown; read the saved result before retrying.')),15000);
+  })]);}
+  finally{if(timer!==undefined)clearTimeout(timer);}
+}
+async function patch(path, value, op, intent){
+  const name=intent?.name || S.profiles.active;
+  const body = intent?.body || { name, path, value };
   if (op) body.op = op;
+  if(!intent?.body && S.profileRevision)body.expected_revision=S.profileRevision;
+  if(intent)intent.body=deep(body);
+  S.patchError=null;
   try {
-    const r = await post("/api/profile-patch", body);
+    const r = await observeSaveAcknowledgement(post("/api/profile-patch", body));
+    if(!r.profile || intent && !r.revision)throw Error('The server did not confirm the saved profile revision. Read saved status before retrying.');
+    if(name!==S.profiles?.active || intent && intent.context!==LearningStore.context(S.config || {}).id)throw Error('The selected profile changed while saving. Read the saved result for the original profile.');
+    if(r.revision)S.profileRevision=r.revision;
     S.serverProfile = JSON.parse(JSON.stringify(r.profile));
     S.profile = r.profile;
     // staged-but-unsaved edits stay visible on top of the fresh server truth
     for (const [, e] of (S.pending || new Map()))
-      try { applyLocal(S.profile, e.path, e.value, e.op); } catch(_){ /* stale path */ }
+      if(e !== intent)try { applyLocal(S.profile, e.path, e.value, e.op); } catch(_){ /* stale path */ }
     (r.warnings || []).forEach(w => toast("note: " + w));
     return true;
-  } catch(e){ toast(e.message, true); return false; }
+  } catch(e){ S.patchError={message:e.message,status:e.status};toast(e.message, true); return false; }
 }
 
 /* ---- staged edits: NOTHING is written on change. Every edit queues here
@@ -467,6 +508,10 @@ async function patch(path, value, op){
    explicit Save - the dialog buttons or the sticky bar. Validation happens
    at Save, against whole objects, so a half-finished edit never errors. */
 const deep = v => v === undefined ? v : JSON.parse(JSON.stringify(v));
+function sameSavedValue(left,right){
+  const canonical=value=>JSON.stringify(value,(_,v)=>v && typeof v==='object' && !Array.isArray(v)?Object.fromEntries(Object.keys(v).sort().map(key=>[key,v[key]])):v);
+  return canonical(left)===canonical(right);
+}
 function applyLocal(root, path, value, op){
   let node = root;
   for (let i = 0; i < path.length - 1; i++) {
@@ -482,7 +527,9 @@ function applyLocal(root, path, value, op){
   else node[leaf] = value;
 }
 function queuePatch(path, value, op){
-  S.pending.set(JSON.stringify(path), { path:deep(path), value:deep(value), op });
+  const key=JSON.stringify(path),previous=S.pending.get(key);
+  S.pending.set(key, { path:deep(path), value:deep(value), op, name:S.profiles?.active,
+    context:LearningStore.context(S.config || {}).id, blocked:previous?.blocked });
   applyLocal(S.profile, path, deep(value), op);
   syncSaveBar();
 }
@@ -506,16 +553,88 @@ function dropPending(prefixes){
   syncSaveBar();
 }
 async function saveAll(){
-  for (const [key, e] of [...S.pending.entries()]) {
-    if (!(await patch(e.path, e.value, e.op))) { rerenderEdits(); return false; }
-    S.pending.delete(key);
-  }
-  syncSaveBar(); rerenderEdits();
-  toast("saved ✓");
-  return true;
+  if(S.saveBusy)return S.saveFlight;
+  if(!S.pending.size)return true;
+  // Retain the original unconfirmed intent for readback, including when a newer
+  // draft replaced the pending entry while its request was in flight.
+  if([...S.pending.values()].some(entry=>entry.blocked)){syncSaveBar();return false;}
+  S.saveBusy=true;
+  const items=[...S.pending.entries()].map(([key,entry])=>({key,entry,state:'queued',message:''}));
+  S.saveBatch={state:'saving',items,message:'Saving staged changes…'};
+  syncSaveBar();
+  S.saveFlight=(async()=>{try{
+    for(const item of items){
+      const e=item.entry;
+      if(e.blocked)throw Error('A prior save is unconfirmed or conflicted. Read its saved result before retrying.');
+      if(e.name!==S.profiles?.active || e.context!==LearningStore.context(S.config || {}).id)throw Error('The selected account or profile changed. These edits still belong to their original target.');
+      if(!S.profileRevision)throw Error('The saved profile revision is unavailable. Reload profile data before saving.');
+      item.state='saving';S.saveBatch.message='Saving '+e.path.join(' / ')+'…';
+      e.expectedProfile=deep(S.serverProfile);applyLocal(e.expectedProfile,e.path,deep(e.value),e.op);
+      syncSaveBar();
+      if(!(await patch(e.path,e.value,e.op,e))){
+        const error=S.patchError || {message:'Save was not confirmed.'};
+        const unknown=!(error.status>=400 && error.status<500);
+        e.blocked=unknown || error.status===409;
+        if(S.pending.get(item.key))S.pending.get(item.key).blocked=e.blocked;
+        item.state=unknown?'unknown':error.status===409?'conflict':'failed';item.message=error.message;
+        S.saveBatch.state=item.state;S.saveBatch.message='Save stopped at '+e.path.join(' / ')+': '+error.message;
+        return false;
+      }
+      item.state='saved';
+      if(S.pending.get(item.key)===e)S.pending.delete(item.key);
+      syncSaveBar();
+    }
+    S.saveBatch.state='saved';S.saveBatch.message=`Saved ${items.length} change${items.length===1?'':'s'} to ${items[0].entry.name}.`+(S.pending.size?' Newer edits remain unsaved.':'');
+    return true;
+  }catch(error){
+    const item=items.find(row=>row.state==='saving' || row.state==='queued');
+    if(item){item.state=item.entry.blocked?'unknown':'failed';item.message=error.message;}
+    S.saveBatch.state='failed';S.saveBatch.message=error.message;return false;
+  }finally{S.saveBusy=false;syncSaveBar();rerenderEdits();}})();
+  return S.saveFlight;
+}
+function saveFeedbackHTML(){
+  const batch=S.saveBatch;if(!batch)return '';
+  const labels={queued:'Not saved',saving:'Saving',saved:'Saved',failed:'Failed',conflict:'Conflict; not verified',unknown:'Unknown; not verified'};
+  return `<p>${esc(batch.message)}</p><details><summary>Change results</summary><ol>${batch.items.map(item=>`<li>${esc(item.entry.name)} / ${esc(item.entry.path.join(' / '))}: <b>${labels[item.state]}</b>${item.message?' — '+esc(item.message):''}</li>`).join('')}</ol></details>`+
+    (batch.items.some(item=>item.entry.blocked)?'<button class="small ghost" onclick="reconcileSavedChanges()">Read saved result</button>':'')+
+    (S.savedReview?.message?`<p>${esc(S.savedReview.message)}</p><details><summary>Current saved profile for review</summary><pre>${esc(JSON.stringify(S.savedReview.profile,null,2))}</pre></details>`:'');
+}
+async function reconcileSavedChanges(){
+  if(S.saveBusy || S.saveReconciling)return;
+  const item=S.saveBatch?.items.find(row=>row.entry.blocked);if(!item)return;
+  S.saveReconciling=true;
+  try{
+    const e=item.entry,result=await api('/api/profile-src/'+encodeURIComponent(e.name));
+    if(e.name!==S.profiles?.active || e.context!==LearningStore.context(S.config || {}).id)throw Error('Select the original account and profile before reviewing its saved result.');
+    if(!result.profile || !result.revision)throw Error('The saved profile revision is unavailable.');
+    const matches=e.expectedProfile && sameSavedValue(result.profile,e.expectedProfile);
+    S.savedReview={name:e.name,context:e.context,profile:result.profile,revision:result.revision,
+      message:matches?'Readback confirms this change is saved. Remaining changes still require Save.':'Saved data differs from the requested result. Drafts are retained. Review the saved profile, then explicitly discard and re-enter conflicting edits.'};
+    if(matches){
+      item.state='saved';item.message='Confirmed by saved profile readback.';e.blocked=false;
+      if(S.pending.get(item.key)===e)S.pending.delete(item.key);
+      else if(S.pending.get(item.key))S.pending.get(item.key).blocked=false;
+      S.serverProfile=deep(result.profile);S.profileRevision=result.revision;
+      S.profile=deep(result.profile);for(const [,pending] of S.pending)applyLocal(S.profile,pending.path,deep(pending.value),pending.op);
+      S.saveBatch.state=S.pending.size?'partial':'saved';S.saveBatch.message=S.savedReview.message;
+    }
+  }catch(error){S.savedReview={message:'Saved result remains unconfirmed: '+error.message};}
+  finally{S.saveReconciling=false;syncSaveBar();}
+}
+function hasUnresolvedSave(){
+  return !!S.saveBatch?.items.some(item=>item.entry.blocked && S.pending.get(item.key)?.blocked);
+}
+function dismissSaveFeedback(){
+  if(S.saveBusy || S.saveReconciling || hasUnresolvedSave())return;
+  S.saveBatch=null;S.savedReview=null;syncSaveBar();
 }
 function discardAll(){
+  if(S.saveBusy)return;
   S.pending.clear();
+  if(S.savedReview?.profile && S.savedReview.name===S.profiles?.active && S.savedReview.context===LearningStore.context(S.config || {}).id){
+    S.serverProfile=deep(S.savedReview.profile);S.profileRevision=S.savedReview.revision;
+  }
   if (S.serverProfile) S.profile = deep(S.serverProfile);
   syncSaveBar(); rerenderEdits();
 }
@@ -527,8 +646,15 @@ function syncSaveBar(){
   // but be unclickable. Each editor carries its own Save ✓ (which commits
   // staged edits too), so the bar yields while one is open and returns on
   // close (the dialogs' close listeners re-run this).
-  bar.hidden = n === 0 || !!document.querySelector("dialog[open]");
+  bar.hidden = n === 0 && !S.saveBatch || !!document.querySelector("dialog[open]");
   $("#savebar-n").textContent = n === 1 ? "1 unsaved change" : `${n} unsaved changes`;
+  for(const button of document.querySelectorAll('[data-save-all], [data-save-discard]'))button.disabled=!!S.saveBusy;
+  for(const button of document.querySelectorAll('[data-save-dismiss]')){
+    button.disabled=!!S.saveBusy || !!S.saveReconciling || hasUnresolvedSave();
+    button.title=hasUnresolvedSave()?'Read the saved result or discard pending edits before dismissing.':'';
+  }
+  const feedback=saveFeedbackHTML();
+  for(const region of document.querySelectorAll('[data-save-feedback]'))if(region._saveHTML!==feedback){region.innerHTML=feedback;region._saveHTML=feedback;}
 }
 function rerenderEdits(){
   if (S.view === "home" && S.profile) {
@@ -541,27 +667,25 @@ function rerenderEdits(){
 }
 
 /* ------------------------------------------------------------- data loads */
-/* The one 2.5 s status tick (also called after actions): /api/status and
-   /api/calibrate/status in parallel. The calibration result is dropped when a
-   mutation started or finished while it was in flight (workspace epoch). */
+/* Status publishes independently of calibration and battle observations. */
 async function loadStatus(){
   if (S.statusLoading) return;
   S.statusLoading=true;
   const request=(S.statusRequest || 0)+1; S.statusRequest=request;
-  const calibrationRequest=(S.calibrationRequest || 0)+1; S.calibrationRequest=calibrationRequest;
   const context=LearningStore.context(S.config || {}).id;
   const epoch = S.workspaceEpoch || 0;
-  const [status, calibration] = await Promise.allSettled([api("/api/status"), learningStatus()]);
-  S.statusLoading=false;
-  if (request !== S.statusRequest || context !== LearningStore.context(S.config || {}).id) return;
-  if (status.status === "fulfilled") { S.status = status.value; S.statusError = ""; }
-  else S.statusError = status.reason.message;
-  if (calibrationRequest === S.calibrationRequest && epoch === (S.workspaceEpoch || 0) && !S.workspaceMutations) {
-    if (calibration.status === "fulfilled") {
-      const finished = S.workspace?.calibration?.running === true && !calibration.value.running;
-      receiveCalibration(calibration.value);
-      if (finished) refreshWorkspaceStatus();   // a finished worker changes run readiness
-    } else calibrationUnavailable(calibration.reason);
+  const current=()=>request === S.statusRequest && context === LearningStore.context(S.config || {}).id && epoch === (S.workspaceEpoch || 0) && !S.workspaceMutations;
+  try {
+    const status=await api('/api/status');
+    if (!current()) return;
+    S.status=status; S.statusError=''; S.statusCheckedAt=Date.now(); S.statusFailures=0; S.statusRetryAt=0;
+  } catch(error) {
+    if (!current()) return;
+    S.statusError=error.message;
+    S.statusFailures=(S.statusFailures || 0)+1;
+    S.statusRetryAt=Date.now()+Math.min(30000,500*2**Math.min(6,S.statusFailures));
+  } finally {
+    S.statusLoading=false;
   }
   applyGate();
   renderBootStatus();
@@ -569,11 +693,29 @@ async function loadStatus(){
   renderWorkspaceStatus();
 }
 
+/* One lightweight clock drives independent single-flight reads. Visible active
+   reads start every 500ms (at most 750ms with clock quantization); idle and
+   hidden tabs back off. No mutation is dispatched or retried here. */
+function pollDashboard(force=false){
+  const now=Date.now(), hidden=document.hidden;
+  const active=!S.status || !!S.statusError || S.status.process_refresh?.state==='unknown' || S.status.process_refresh?.state==='stale' ||
+    !!S.status.processes?.length || !!S.workspace?.calibration?.running || !!S.scanLaunchPending || !!S.runStarting || !!S.reconnecting;
+  const due=(key,delay,retryAt=0)=>{
+    if(!force && now<retryAt)return false;
+    if(!force && now-(S[key] ?? -Infinity)<delay)return false;
+    S[key]=now;return true;
+  };
+  if(due('statusReadAt',hidden?10000:active?500:2500,S.statusRetryAt))loadStatus();
+  if(due('calibrationReadAt',hidden?10000:(S.workspace?.calibration?.running || S.scanLaunchPending)?500:2500,S.calibrationRetryAt))pollCalibrate();
+  if(!hidden && S.view==='home' && S.tab==='overview' && due('battleReadAt',(active || S.battleActive!==false)?500:2500,S.battleRetryAt))runWorkspace.poll();
+}
+
 /* Shared status reads never dispatch preparation, apply, or emulator actions. */
 function workspaceOperation(){
   const st = S.workspace?.calibration;
   const {mode,record} = WorkspaceStatus.selectOperation(st,st ? basicScanProgress(st) : null);
   return WorkspaceStatus.operation({record, mode, running:st?.running === true,
+    attempt:st?.operation, context:LearningStore.context(S.config || {}),finalScreen:st?.state?.final_screen,setupBattle:st?.state?.setup_battle,
     restorePending:st?.restore_pending === true, checkedAt:S.workspace?.checkedAt,
     unavailable:S.workspaceError || '', starting:!!S.scanLaunchPending});
 }
@@ -600,7 +742,7 @@ function renderWorkspaceStatus(){
     ...data, tools:S.tools || data.tools, accounts:S.accounts || data.accounts,
     wizard:S.wizard || data.wizard, status:S.status, unavailable:S.workspaceError || S.statusError || ''}));
   const announcement = $('#workspace-announcement');
-  const text = operation.unavailable ? 'Progress status unavailable; showing the last snapshot and retrying.'
+  const text = S.statusError ? 'Live status unavailable; showing the last snapshot and retrying.' : operation.unavailable ? 'Progress status unavailable; showing the last snapshot and retrying.'
     : operation.headline + '. ' + operation.message;
   if (announcement && announcement.textContent !== text) announcement.textContent = text;
 }
@@ -681,9 +823,9 @@ async function loadHomeData(){
   S.profile = null;
   if (S.profiles.active) {
     try {
-      const profile=await api('/api/profile/'+encodeURIComponent(S.profiles.active)+'.yaml');
+      const source=await api('/api/profile-src/'+encodeURIComponent(S.profiles.active));
       if (request !== S.homeDataRequest || epoch !== (S.workspaceEpoch || 0)) return;
-      S.profile=profile;
+      S.profile=source.profile;S.profileRevision=source.revision;
     }
     catch(e){ if (request !== S.homeDataRequest || epoch !== (S.workspaceEpoch || 0)) return; toast("active profile unreadable: " + e.message, true); }
   }
@@ -721,7 +863,21 @@ function defaultView(){
    renderer; Profiles and Emulators share setup; Recognition owns calibration.
    Configuration forms mount only on the visible page and keep drafts in Store. */
 const TABS = ["overview", "runs", "history", "schedule", "equipment", "collection", "abilities", "profiles", "emulators", "screens", "runtime"];
-const runWorkspace = RunWorkspace.create({request:api,onError:error=>toast(error.message,true)});
+const runWorkspace = RunWorkspace.create({request:async(path,opts)=>{
+  const context=LearningStore.context(S.config || {}).id,epoch=S.workspaceEpoch || 0;
+  const current=()=>context===LearningStore.context(S.config || {}).id && epoch===(S.workspaceEpoch || 0);
+  try{
+    const response=await api(path,opts);
+    if(path==='/api/battles/active' && current()){S.battleActive=!!response.battle;S.battleFailures=0;S.battleRetryAt=0;}
+    return response;
+  }catch(error){
+    if(path==='/api/battles/active' && current()){
+      S.battleFailures=(S.battleFailures || 0)+1;
+      S.battleRetryAt=Date.now()+Math.min(30000,500*2**Math.min(6,S.battleFailures));
+    }
+    throw error;
+  }
+},onError:error=>toast(error.message,true)});
 const diagnosticsView = DiagnosticsView.create({request:api});
 function mountDiagnostics(){
   if(S.tab==='runtime')diagnosticsView.mount($('#runtime-diagnostics'),{instance:S.config?.active_instance || '',filters:DiagnosticsView.fromHash(location.hash)});
@@ -1361,7 +1517,7 @@ async function renderCalibrate(){
 
       <p class="muted">Switch on the unlocked features you want to scan. Off means “skip in the next basic scan”; it does not mean unknown or locked. Choices are remembered for this account and emulator.</p>
       <section><h3>Prepare recognition from your installed game</h3><p>Extract the installed artwork, map it to the shipped manifest, then verify it on Home and the available menus. Full setup goes further: it starts and cancels a normal battle and opens Events, Store and Guild to capture the controls that only appear during play — you'll see it tap around your own profile. It never touches a tournament. Images stay on this computer. Open Home and allow navigation below to begin.</p><button id="bootstrap-start" onclick="startBootstrap()">Capture battle screens (optional)</button><div id="asset-library-summary"></div></section>
-      <section><h3>Understand the current screen</h3><p>Take one snapshot and compare it with the installed artwork. This only observes; it does not navigate or change equipment.</p><button id="analyze-screen" onclick="analyzeScreen()">Analyze this screen</button><p id="analysis-progress" role="status" aria-live="polite"></p><div id="analysis-result"></div></section>
+      <section><h3>Understand the current screen</h3><p>Take one snapshot and compare it with the installed artwork. This only observes; it does not navigate or change equipment.</p><button id="analyze-screen" onclick="analyzeScreen()">Analyze this screen</button><button id="analysis-retry" class="ghost" onclick="pollScreenAnalysis()" hidden>Retry analysis status</button><p id="analysis-progress" role="status" aria-live="polite"></p><div id="analysis-result"></div></section>
       <div id="scan-plan"><p>Loading the image acquisition plan…</p></div>
       <fieldset><legend>Include in the next basic scan</legend>
         ${[["c","Cards and presets"],["m","Modules"],["g","Global presets"],["u","Guardians"],["b","Bots"],["w","Workshop presets"]].map(([id,label]) => `<label class="inline"><input type="checkbox" name="calibration-phase" value="${id}" ${prefs.phases.includes(id) ? "checked" : ""} onchange="rememberCalibration()">${label}</label>`).join("")}
@@ -1897,14 +2053,18 @@ async function analyzeScreen(){
   } finally { S.analysisStarting=false; }
 }
 async function pollScreenAnalysis(){
+  if(S.analysisLoading)return S.analysisFlight;
   clearTimeout(S.analysisPoll);
   const status=$('#analysis-progress'), result=$('#analysis-result');
   if(!status || !result) return;
-  const context=LearningStore.context(S.config || {}),ref=screenAnalysisReference(context);
+  const context=LearningStore.context(S.config || {});
+  let ref=screenAnalysisReference(context);
   if (!ref) return;
+  const retry=$('#analysis-retry'); if(retry)retry.hidden=true;
   const request=(S.analysisRequest || 0)+1; S.analysisRequest=request;
-  const current=()=>request === S.analysisRequest && context.id === LearningStore.context(S.config || {}).id;
-  try {
+  S.analysisLoading=true;
+  const current=()=>request === S.analysisRequest && context.id === LearningStore.context(S.config || {}).id && status === $('#analysis-progress') && result === $('#analysis-result');
+  S.analysisFlight=(async()=>{try {
     const r=await api('/api/screen-analysis/status'+(ref.operationId ? '?operation_id='+encodeURIComponent(ref.operationId) : ''));
     if (!current()) return;
     const operation=r.operation;
@@ -1912,12 +2072,13 @@ async function pollScreenAnalysis(){
       throw new Error('Analysis status did not confirm the requested operation.');
     const latest=screenAnalysisReference(context);
     if (!latest || latest.idempotencyKey !== ref.idempotencyKey || latest.operationId !== ref.operationId || operation.revision < (latest.revision || 0)) return;
-    localStorage.setItem('screenAnalysis:'+context.id,JSON.stringify({...ref,operationId:operation.id,revision:operation.revision,outcome:operation.status}));
+    ref={...ref,operationId:operation.id,revision:operation.revision,outcome:operation.status};
+    localStorage.setItem('screenAnalysis:'+context.id,JSON.stringify(ref));
     $('#analyze-screen').disabled=r.status==='running';
     status.textContent=r.message || (r.status==='done' ? `Screen: ${r.screen.name}. Compared ${r.tested} artwork images.` : '');
     if(r.status==='running'){
       result.innerHTML=r.total ? `<progress max="${r.total}" value="${r.completed}"></progress><p>${r.completed} / ${r.total} artwork images checked</p>` : '';
-      S.analysisPoll=setTimeout(pollScreenAnalysis,1500);
+      S.analysisPoll=setTimeout(pollScreenAnalysis,document.hidden?10000:500);
     } else if(r.status==='done'){
       const matches=r.matches || [];
       result.innerHTML=`<p class="muted">Snapshot from ${esc(new Date(r.captured_at*1000).toLocaleTimeString())}. Artwork names are source labels; only confirmed manifest roles explain their purpose. Unmatched objects and repeated copies may be missed.</p>
@@ -1925,7 +2086,19 @@ async function pollScreenAnalysis(){
       <svg viewBox="0 0 ${r.width} ${r.height}" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">${matches.map((m,i)=>`<rect x="${m.rect[0]}" y="${m.rect[1]}" width="${m.rect[2]}" height="${m.rect[3]}" fill="none" stroke="${m.ambiguous?'#ffcc66':'#30d158'}" stroke-width="5"/><text x="${m.rect[0]}" y="${Math.max(30,m.rect[1])}" fill="white" stroke="black" stroke-width="1" font-size="32">${i+1}</text>`).join('')}</svg></div>
       <ol>${matches.map(m=>`<li><b>${esc(m.names.join(' / '))}</b> — ${m.ambiguous?'Competing artwork matches; identity uncertain':m.roles.length?esc(m.roles.map(role=>role.replace(/\.png$/,'').split('/').pop().replaceAll('_',' ')).join(', ')):'Artwork matched; manifest role unknown'} <small>(${m.inliers} matching details)</small></li>`).join('')}</ol>${matches.length?'':'<p>No artwork passed the geometric checks.</p>'}`;
     }
-  }catch(e){if(current()){status.textContent=e.message;$('#analyze-screen').disabled=false;}}
+  }catch(e){const latest=screenAnalysisReference(context);if(current() && latest?.idempotencyKey === ref.idempotencyKey && latest?.operationId === ref.operationId){
+    status.textContent='Analysis status unavailable; the last result may be stale. '+e.message;
+    $('#analyze-screen').disabled=true;
+    if(retry)retry.hidden=false;
+  }} finally {
+    S.analysisLoading=false;
+    S.analysisFlight=null;
+    // A new panel or accepted operation may have joined this bounded read.
+    // Follow the latest identity; revision-only updates are already observed.
+    const latest=screenAnalysisReference(context);
+    if(!current() || latest && (latest.operationId !== ref.operationId || latest.idempotencyKey !== ref.idempotencyKey))pollScreenAnalysis();
+  }})();
+  return S.analysisFlight;
 }
 function scanTimelineHTML(record, running=false, title="Scan progress"){
   const labels = Object.fromEntries(Object.entries(WorkspaceStatus.stepStates).map(([key,value])=>[key,value.label]));
@@ -1996,9 +2169,9 @@ function basicScanProgress(st){
   const phases=st.state?.phases || {};
   const names={c:"cards",m:"modules",g:"global",u:"guardians",b:"bots",w:"workshop",e:"equipped_modules"};
   const labels={cards:"Cards and presets",modules:"Module inventory",global:"Global presets",guardians:"Guardians",bots:"Bots",workshop:"Workshop presets",equipped_modules:"Scan and restore modules"};
-  const keys=calibrationMode(st) === "basic" && st.running ? (st.selection?.phases || []).map(k=>names[k]).filter(Boolean) : Object.keys(phases).filter(k=>k !== "bootstrap");
+  const keys=calibrationMode(st) === "basic" && st.selection?.phases?.length ? st.selection.phases.map(k=>names[k]).filter(Boolean) : Object.keys(phases).filter(k=>k !== "bootstrap");
   if (!keys.length) return null;
-  const steps=keys.map(key=>({id:key,label:labels[key] || key,status:phases[key]?.status || "pending",message:phases[key]?.error || phases[key]?.at,started_at:phases[key]?.started_at,finished_at:phases[key]?.finished_at}));
+  const steps=keys.map(key=>({id:key,label:labels[key] || key,status:phases[key]?.status || "pending",message:phases[key]?.error || phases[key]?.at || phases[key]?.message,started_at:phases[key]?.started_at,finished_at:phases[key]?.finished_at,updated_at:phases[key]?.updated_at}));
   const history=steps.flatMap(step=>[
     ...(step.started_at ? [{at:step.started_at,message:`Started ${step.label}`}] : []),
     ...(step.finished_at ? [{at:step.finished_at,message:`${step.label}: ${step.status}${step.message ? ` — ${step.message}` : ""}`}] : [])
@@ -2007,7 +2180,8 @@ function basicScanProgress(st){
   const message=activity?.kind === "calibrate_cut" ? `Checking ${activity.name}` : activity?.message;
   const started=steps.map(step=>step.started_at).filter(Number.isFinite);
   const finished=steps.map(step=>step.finished_at).filter(Number.isFinite);
-  return {steps,history,status:st.running && calibrationMode(st) !== "bootstrap" ? "running" : steps.some(s=>s.status === 'error') ? 'error' : steps.every(s=>s.status === "done") ? "done" : "stopped",active_step:steps.find(s=>s.status === "running")?.id,message:message || "",updated_at:activity?.t,started_at:started.length ? Math.min(...started) : undefined,finished_at:finished.length ? Math.max(...finished) : undefined};
+  const updated=steps.map(step=>step.updated_at).filter(Number.isFinite);
+  return {steps,history,status:st.running && calibrationMode(st) !== "bootstrap" ? "running" : steps.some(s=>s.status === 'error') ? 'error' : steps.every(s=>s.status === "done") ? "done" : "stopped",active_step:steps.find(s=>s.status === "running")?.id,message:message || "",updated_at:activity?.t ?? (updated.length ? Math.max(...updated) : undefined),started_at:started.length ? Math.min(...started) : undefined,finished_at:finished.length ? Math.max(...finished) : undefined};
 }
 function calibReport(st){
   const el = $("#calib-report"); if (!el) return;
@@ -2026,9 +2200,12 @@ function calibReport(st){
   observationFeedback(st);
   $("#calib-phase2").disabled = st.running || st.state?.phases?.modules?.status !== "done";
   renderCalibrationIntent();
-  let starter = st.state?.phases?.bootstrap;
-  const incompleteMaps = Object.entries(st.state?.screen_map || {}).filter(([,row])=>row.status!=='verified').map(([name])=>name);
-  if (starter?.status === 'done' && incompleteMaps.length) starter = {...starter,status:'needs_attention',message:starter.message+' Incomplete screen maps: '+incompleteMaps.join(', ')+'.'};
+  const basic=basicScanProgress(st);
+  const selected=WorkspaceStatus.selectOperation(st,basic);
+  const summary=WorkspaceStatus.operation({...selected,attempt:st.operation,running:st.running,restorePending:st.restore_pending,
+    finalScreen:st.state?.final_screen,setupBattle:st.state?.setup_battle});
+  const starter = selected.mode === 'bootstrap' && selected.record
+    ? {...selected.record,status:summary.state,message:summary.message} : st.state?.phases?.bootstrap;
   const map = $("#screen-mapping");
   if (map) map.innerHTML = Object.entries(st.state?.screen_map || {}).map(([name,row])=> {
     const list = st.state?.collections?.[name];
@@ -2045,8 +2222,7 @@ function calibReport(st){
   const starterRunning=st.running && calibrationMode(st) === "bootstrap";
   renderScanTimeline("#bootstrap-timeline", starter || (S.starterPlan ? {steps:S.starterPlan.map(s=>({...s,status:"pending"}))} : null), starterRunning, starter?.kind === "battle" ? "Battle preparation — saved inventory retained" : "Extract, map and verify");
   updateWorkspaceRegion("#asset-library-summary", assetLibraryHTML(starter?.assets));
-  const basic=basicScanProgress(st);
-  if (basic) renderScanTimeline("#calib-timeline",basic,st.running && !starterRunning,"Account scan");
+  if (basic) renderScanTimeline("#calib-timeline",selected.mode === 'basic' ? {...basic,status:summary.state,message:summary.message} : basic,st.running && !starterRunning,"Account scan");
   else if (calibrationMode(st) === "observe") {
     const timeline = $("#calib-timeline");
     // reset the cache renderScanTimeline compares with, so the same timeline is drawn again later
@@ -2065,15 +2241,15 @@ function calibReport(st){
   const activity = st.activity;
   const progress = $("#calib-progress");
   if (progress) {
-    const age = activity ? Math.max(0, Math.round(Date.now()/1000 - activity.t)) : null;
+    const age = Number.isFinite(activity?.t) ? WorkspaceStatus.duration(Date.now()/1000 - activity.t) : null;
     const detail = activity?.kind === "calibrate_cut" ? `Checking ${activity.name}`
       : activity?.kind === "calibrate_grid_page" ? `Module page ${activity.page + 1}: ${activity.tiles} tiles inspected`
       : activity?.message || "Preparing or navigating to the next screen";
     progress.textContent = st.running
-      ? `Calibration running. ${detail}.${age !== null ? ` Last activity ${age}s ago.` : ""} Large inventories can take several minutes.`
-      : Object.keys(st.state?.phases || {}).length && Object.values(st.state.phases).every(p => p.status === "done")
+      ? `Calibration running. ${detail}.${age !== null ? ` Last activity ${age} ago.` : ""} Large inventories can take several minutes.`
+      : summary.state === "done"
         ? `Calibration finished. ${(st.report?.entries || []).filter(e => ["stale","rejected"].includes(e.status)).length} images need attention; review the saved discoveries below.`
-        : "Calibration is stopped. Review the saved discoveries below; unfinished steps can be resumed.";
+        : `${WorkspaceStatus.stepStates[summary.state].label}. ${summary.message} ${summary.guidance}`;
   }
   if (st.restore_pending && !st.running && progress) progress.textContent = "Original equipment restoration is pending. Keep the game on Home, then resume calibration. Other runs are blocked until restoration is verified.";
   const entries = ((st.report || {}).entries) || [];
@@ -2081,7 +2257,7 @@ function calibReport(st){
   const preflight = (st.state || {}).preflight;
   if (preflight?.status === "error") { updateWorkspaceRegion("#calib-report", `<p class="bad">${esc(preflight.error)}</p>`); return; }
   const stEl = $("#calib-state");
-  if (stEl) stEl.textContent = st.running ? "Scan running" : st.restore_pending ? "Restoration pending" : "Choose captures or scans below";
+  if (stEl) stEl.textContent = st.running ? "Scan running" : st.restore_pending ? "Restoration pending" : summary.saved ? WorkspaceStatus.stepStates[summary.state].label : "Choose captures or scans below";
   if (!entries.length) {
     updateWorkspaceRegion("#calib-report", st.taps_allowed === false
       ? '<p class="muted">No recognition images recorded yet. Choose features in “What to scan next” to begin.</p>' : "");
@@ -2143,16 +2319,30 @@ function calibrationUnavailable(e){
   const timeline = $("#bootstrap-timeline");
   if (timeline) timeline._timelineHTML = null;
 }
-/* One immediate calibration read (on entering Calibrate and right after a
-   launch). Repeated reads come from the 2.5 s status tick in loadStatus. */
+/* One calibration read, independent of status publication. Calls while the same
+   resource is loading share the bounded read rather than accumulating work. */
 async function pollCalibrate(){
+  if(S.calibrationLoading)return S.calibrationFlight;
+  S.calibrationLoading=true;
   const request=(S.calibrationRequest || 0)+1; S.calibrationRequest=request;
   const context=LearningStore.context(S.config || {}).id;
   const epoch = S.workspaceEpoch || 0;
-  try {
+  const current=()=>request === S.calibrationRequest && context === LearningStore.context(S.config || {}).id && epoch === (S.workspaceEpoch || 0) && !S.workspaceMutations;
+  S.calibrationFlight=(async()=>{try {
     const st = await learningStatus();
-    if (request === S.calibrationRequest && context === LearningStore.context(S.config || {}).id && epoch === (S.workspaceEpoch || 0)) receiveCalibration(st);
-  } catch(e){ if (request === S.calibrationRequest && context === LearningStore.context(S.config || {}).id && epoch === (S.workspaceEpoch || 0)) calibrationUnavailable(e); }
+    if (!current())return;
+    S.calibrationFailures=0;S.calibrationRetryAt=0;
+    const finished=S.workspace?.calibration?.running === true && !st.running;
+    receiveCalibration(st);
+    renderWorkspaceStatus();
+    if(finished)refreshWorkspaceStatus();
+  } catch(e){ if (current()) {
+    S.calibrationFailures=(S.calibrationFailures || 0)+1;
+    S.calibrationRetryAt=Date.now()+Math.min(30000,500*2**Math.min(6,S.calibrationFailures));
+    calibrationUnavailable(e);
+  } }
+  finally { S.calibrationLoading=false; }})();
+  return S.calibrationFlight;
 }
 function renderMappingPlan(model){
   if (!model) return '';
@@ -2256,8 +2446,11 @@ async function renderHome(){
           </select>
         </label>
         <small class="muted">Auto follows this emulator's Video preview settings. ADB screenshots are capped at 4 FPS. These controls affect the preview.</small>
+        <button id="stream-reconnect" class="small ghost" onclick="reconnectPreview()">Reconnect preview</button>
+        <p id="stream-availability" class="muted" role="status" aria-live="polite"></p>
         <div id="stream-slot"></div>
         <small id="stream-stats" class="muted" aria-live="polite"></small>
+        <small class="muted">Delivery and last-frame age describe frames sent by the server; browser decode/display latency is not measured. Preview availability does not grant automation input.</small>
       </article>
     </div>
   </div>
@@ -2292,6 +2485,7 @@ async function renderHome(){
   <article><header>Weapon and rescue policies</header><div id="ability-policies"></div></article>`;
   $("#panel-runtime").innerHTML = `<div id="runtime-settings"></div><div id="runtime-diagnostics"></div>`;
   renderStream();
+  refreshStreamBackends();
   renderRunner();
   renderDay();
   renderFlows();
@@ -2343,11 +2537,17 @@ function loUsedBy(name){
   return Object.entries((S.profile || {}).blueprints || {})
     .filter(([, b]) => (b || {}).loadout === name).map(([n]) => n);
 }
+function loMissing(body){
+  const player=S.profile?.player || {},missing=[];
+  if(body.global_preset && !(player.global_presets || []).includes(body.global_preset))missing.push('Global preset: '+body.global_preset);
+  for(const [key,label,options] of LO_CATS)if(body[key] && !options(player).includes(body[key]))missing.push(label+': '+body[key]);
+  return missing;
+}
 function renderLoadouts(){
   const bodyEl = $("#loadouts-body");
   if (!bodyEl || !S.profile || !S.config) return;
   const loadouts = S.config.loadouts || {};
-  bodyEl.innerHTML = Object.keys(loadouts).sort().map(n => {
+  bodyEl.innerHTML = (S.loadoutFeedback?`<p role="status">${esc(S.loadoutFeedback)}</p>`:'')+Object.keys(loadouts).sort().map(n => {
     const lo = loadouts[n] || {};
     const used = loUsedBy(n);
     return `<div class="rowline">
@@ -2355,6 +2555,7 @@ function renderLoadouts(){
       <span class="chip kind">${esc(loMode(lo))}</span>
       <span class="muted">${esc(loSummary(lo))}${used.length
         ? " · used by " + used.map(n => esc(bpLabel(n))).join(", ") : ""}</span>
+      ${loMissing(lo).length?`<span class="warn">Not discovered on this account: ${esc(loMissing(lo).join(', '))}. <a href="#screens">Scan equipment</a></span>`:''}
       <span style="margin-left:auto">
         ${lo.defined === false ? "" :
           `<button class="small ghost" onclick="openLoadout('${esc(n)}')">✎ edit</button>`}
@@ -2369,6 +2570,7 @@ function renderLoadouts(){
 function openLoadout(name){
   L2.name = name;
   L2.draft = deep((S.config.loadouts || {})[name] || {});
+  L2.before=deep(L2.draft);L2.context=LearningStore.context(S.config || {}).id;L2.revision=S.config.config_revision;L2.result=null;L2.blocked=false;
   loRender();
 }
 function loRender(){
@@ -2376,6 +2578,7 @@ function loRender(){
   const d = L2.draft; const p = (S.profile || {}).player || {};
   const mode = loMode(d);
   const gp = p.global_presets || [];
+  const missing=loMissing(d),used=loUsedBy(L2.name);
   const radio = (val, label, extra="") => `
     <label class="inline"><input type="radio" name="lomode" ${mode === val ? "checked" : ""}
       ${extra} onchange="loSetMode('${val}')"> ${label}</label>`;
@@ -2384,25 +2587,32 @@ function loRender(){
       <span><b>${esc(L2.name)}</b><span class="chip kind">loadout</span></span>
       <span style="display:flex; gap:.4rem">
         <button class="small ghost" onclick="$('#editor3').close()">Cancel</button>
-        <button class="small" onclick="loSave()">Save ✓</button>
+        <button class="small" onclick="loSave()" ${L2.saving || L2.blocked?'disabled':''}>Save ✓</button>
       </span></header>
+    <p class="muted">Saved equipment for ${esc(S.profiles?.active || S.config?.active_profile || 'the selected profile')}. Affected runs: ${used.length?used.map(name=>esc(bpLabel(name))).join(', '):'none'}. Applied at battle entry.</p>
+    <p>Before: ${esc(loSummary(L2.before || {}))}. After save: ${esc(loSummary(d))}.</p>
+    ${missing.length?`<p class="warn">Not discovered on this account: ${esc(missing.join(', '))}. <a href="#screens">Scan equipment</a> or choose an available preset.</p>`:''}
+    <p role="status" aria-live="polite">${esc(L2.result?.message || '')}</p>
+    ${L2.blocked?'<button class="small ghost" onclick="loReadSaved()">Read saved result</button>':''}
     <fieldset><legend>How this loadout equips</legend>
       ${radio("global", `One <b>global preset</b> — the game applies the whole
         build at battle entry`, gp.length ? "" : "disabled")}
       ${mode === "global" ? `<div class="kv" style="margin-left:1.6rem">
         <label>Global preset</label>
         <select onchange="L2.draft = { global_preset: this.value }; loRender()">
+          ${d.global_preset && !gp.includes(d.global_preset)?`<option selected>${esc(d.global_preset)}</option>`:''}
           ${gp.map(g => `<option ${d.global_preset === g ? "selected" : ""}>${esc(g)}</option>`).join("")}
         </select></div>` : ""}
       ${radio("presets", "Per-category <b>preset selections</b> (picker ends on “None”)")}
       ${mode === "presets" ? `<div class="kv" style="margin-left:1.6rem">
         ${LO_CATS.map(([key, label, opts]) => { const names = opts(p);
-          return names.length ? `
+          return `
             <label>${label}</label>
             <select onchange="loSetCat('${key}', this.value)">
               <option value="" ${!d[key] ? "selected" : ""}>(don’t touch)</option>
+              ${d[key] && !names.includes(d[key])?`<option selected>${esc(d[key])}</option>`:''}
               ${names.map(nm => `<option ${d[key] === nm ? "selected" : ""}>${esc(nm)}</option>`).join("")}
-            </select>` : ""; }).join("")}
+            </select>${!names.length?'<small class="muted">No selections discovered yet. Scan equipment in Recognition.</small>':''}`; }).join("")}
         </div>` : ""}
       ${mode === "manual" ? `
         ${radio("manual", "Manual equipment (legacy)", "")}
@@ -2437,19 +2647,48 @@ function loSetCat(key, val){
   loRender();
 }
 async function loSave(){
+  if(L2.saving || L2.blocked)return;
   const body = deep(L2.draft);
   if (loMode(body) === "presets"
       && !LO_CATS.some(([k]) => body[k])) {
-    toast("select at least one preset, or Cancel", true); return;
+    L2.result={state:'failed',message:'Select at least one preset, or Cancel.'};loRender();return;
   }
+  L2.saving=true;L2.result={state:'saving',message:'Saving equipment selection…'};loRender();
+  const name=L2.name,context=L2.context;
   try {
-    const r = await post("/api/loadout-patch", { name:L2.name, body });
+    if(!L2.revision)throw Error('The saved configuration revision is unavailable. Refresh profile data before saving.');
+    if(context!==LearningStore.context(S.config || {}).id)throw Error('The selected account or profile changed. Reopen this equipment selection.');
+    const r = await observeSaveAcknowledgement(post("/api/loadout-patch", { name, body,expected_revision:L2.revision }));
+    if(context!==LearningStore.context(S.config || {}).id || L2.name!==name)throw Error('The selected equipment target changed while saving. Read the original saved result.');
+    if(!r.loadouts || !r.config_revision)throw Error('The server did not confirm the saved configuration revision.');
     S.config.loadouts = r.loadouts;
+    S.config.config_revision=r.config_revision;L2.revision=r.config_revision;
     (r.warnings || []).forEach(w => toast("note: " + w));
-    toast("saved ✓");
+    L2.result={state:'saved',message:'Saved equipment selection '+name+'. Applies at the next battle entry.'};S.loadoutFeedback=L2.result.message;
     $("#editor3").close();
     renderLoadouts(); renderFlows();
-  } catch(e){ toast(e.message, true); }
+  } catch(e){
+    L2.blocked=!(e.status>=400 && e.status<500) || e.status===409;
+    L2.result={state:L2.blocked?'unconfirmed':'failed',message:'Equipment save '+(L2.blocked?'unconfirmed':'failed')+': '+e.message};
+    S.loadoutFeedback=L2.result.message;loRender();
+  }finally{L2.saving=false;if($('#editor3')?.open)loRender();}
+}
+async function loReadSaved(){
+  if(L2.reading)return;L2.reading=true;
+  const name=L2.name,context=L2.context;
+  try{
+    const config=await api('/api/config');
+    if(context!==LearningStore.context(S.config || {}).id || context!==LearningStore.context(config).id || L2.name!==name)throw Error('Select the original account and profile before reviewing its equipment.');
+    if(!config.config_revision)throw Error('The saved configuration revision is unavailable.');
+    const saved=config.loadouts?.[name];L2.before=deep(saved || {});
+    if(sameSavedValue(saved,L2.draft)){
+      S.config.loadouts=config.loadouts;S.config.config_revision=config.config_revision;
+      L2.revision=config.config_revision;L2.blocked=false;
+      L2.result={state:'saved',message:'Saved equipment selection confirmed by readback.'};
+    }else L2.result={state:'conflict',message:'Saved equipment differs from this draft. Review Before and After above; Cancel and reopen to edit the latest saved selection.'};
+    S.loadoutFeedback=L2.result.message;loRender();renderLoadouts();
+  }catch(error){L2.result={state:'unconfirmed',message:'Equipment result remains unconfirmed: '+error.message};loRender();}
+  finally{L2.reading=false;}
 }
 
 /* ---------------------------------------------------- behavior library */
@@ -2564,6 +2803,62 @@ function streamBackends(){
   return [{id:'auto',label:'Auto'}, {id:'mumu',label:'MuMu native'},
     {id:'scrcpy',label:'scrcpy'}, {id:'adb',label:'ADB screenshots'}];
 }
+function streamTarget(){
+  const instance=S.config?.active_instance || 'main',inst=S.config?.instances?.[instance] || {};
+  return JSON.stringify([instance,inst.serial,inst.account,inst.preview || {}]);
+}
+function renderStreamAvailability(){
+  const output=$('#stream-availability');if(!output)return;
+  const target=streamTarget(),availability=S.streamAvailability;
+  const recovery=S.streamRecovery?.target===target?S.streamRecovery:null;
+  const parts=[];
+  if(recovery)parts.push(recovery.message);
+  if(availability?.target===target){
+    if(availability.error)parts.push('Backend availability unconfirmed: '+availability.error);
+    else if(availability.result)parts.push(...streamBackends().filter(source=>source.id!=='auto').map(source=>{
+      const backend=availability.result[source.id];
+      const state=backend?.available===true?'available':backend?.available===false?
+        source.id==='scrcpy' && (backend.installed===false || backend.decoder_available===false)?'optional package unavailable':'unavailable':'not checked';
+      return source.label+': '+state+(backend?.reason?' ('+backend.reason+')':'');
+    }));
+  }else parts.push('Preview backend availability has not been checked.');
+  output.textContent=parts.join(' ');
+  const button=$('#stream-reconnect');if(button)button.disabled=!!S.streamReconnectBusy;
+}
+async function refreshStreamBackends(force=false){
+  const target=streamTarget();
+  if(S.streamAvailabilityLoading)return S.streamAvailabilityFlight;
+  if(!force && S.streamAvailability?.target===target)return S.streamAvailability;
+  S.streamAvailabilityLoading=true;
+  S.streamAvailabilityFlight=(async()=>{try{
+    const result=await api('/api/stream/backends');
+    if(target!==streamTarget())return;
+    if(result.instance!==(S.config?.active_instance || 'main'))throw Error('Preview availability belongs to another emulator.');
+    S.streamAvailability={target,result,checkedAt:Date.now()};
+  }catch(error){if(target===streamTarget())S.streamAvailability={target,error:error.message};}
+  finally{S.streamAvailabilityLoading=false;renderStreamAvailability();}
+  return S.streamAvailability;})();
+  return S.streamAvailabilityFlight;
+}
+async function reconnectPreview(){
+  if(S.streamReconnectBusy)return;
+  S.streamReconnectBusy=true;
+  const target=streamTarget();
+  S.streamRecovery={target,state:'checking',message:'Checking preview sources before reconnecting…'};
+  renderStreamAvailability();
+  try{
+    const availability=await refreshStreamBackends(true);
+    if(target!==streamTarget())return;
+    if(!availability || availability.target!==target || availability.error)throw Error(availability?.error || 'Backend availability was not confirmed. Retry preview reconnect.');
+    const slot=$('#stream-slot');if(!slot)throw Error('Open Dashboard to reconnect its preview.');
+    slot.dataset.state='';
+    renderStream();
+    if(!S.streamSession)throw Error('Preview did not start. Enable it on Dashboard with the emulator online.');
+    S.streamRecovery={target,session:S.streamSession,state:'connecting',message:'Preview reconnected; waiting for a verified frame delivery.'};
+    refreshStreamStats();
+  }catch(error){if(target===streamTarget())S.streamRecovery={target,state:'failed',message:'Preview reconnect failed: '+error.message};}
+  finally{S.streamReconnectBusy=false;renderStreamAvailability();}
+}
 function streamConfig(){
   return S.config?.instances?.[S.config?.active_instance || 'main']?.preview || {};
 }
@@ -2623,12 +2918,26 @@ async function refreshStreamStats(){
     const quality = stats.width == null ? '' : ` · ${stats.width}×${stats.height} · JPEG ${stats.quality}`;
     const timing = stats.capture_ms == null ? '' : ` · capture ${Math.round(stats.capture_ms)} ms · encode ${Math.round(stats.encode_ms)} ms`;
     const age = stats.frame_age_ms == null ? '' : ` · frame age ${Math.round(stats.frame_age_ms)} ms`;
+    const deliveryAge=typeof stats.last_frame_age_s==='number'?` · last delivered frame ${stats.last_frame_age_s.toFixed(1)}s ago`:' · last delivered frame age unknown';
     const fallback = (stats.backend_failures || []).map(failure=>`${failure.backend}: ${failure.reason}`).join('; ');
-    output.textContent = `${source} · ${rate} / target ${stats.target_fps} FPS${cap}${quality}${timing}${age} · ${stats.errors} errors`+
+    output.textContent = `${source} · ${rate} / target ${stats.target_fps} FPS${cap}${quality}${timing}${age}${deliveryAge} · ${stats.errors} errors`+
       (fallback ? ` · fallback: ${fallback}` : '')+
       (stats.last_error ? ` · ${stats.last_error}` : '');
+    S.streamStatsSnapshot={session,text:output.textContent,checkedAt:Date.now()};
+    const fresh=typeof stats.last_frame_age_s==='number' && stats.last_frame_age_s<=Math.max(3,2/stats.target_fps);
+    const delivered=stats.frames>0 && fresh && !stats.last_error && stats.active!==false;
+    const usingFallback=(stats.backend_failures || []).length>0;
+    S.streamRecovery={target:streamTarget(),session,state:delivered?(usingFallback?'fallback':'delivering'):stats.last_error || stats.active===false?'failed':'unconfirmed',
+      message:delivered?`Verified server delivery from ${source}${usingFallback?' using fallback; reconnect to retry the preferred source':''}.`:
+        stats.last_error?'Preview delivery failed: '+stats.last_error:stats.active===false?'Preview session ended. Reconnect preview to resume.':'Preview delivery is unconfirmed; waiting for a fresh frame. Reconnect preview if it does not recover.'};
+    renderStreamAvailability();
   } catch (error) {
-    if (S.streamSession === session) output.textContent = 'Stream metrics unavailable: '+error.message;
+    if (S.streamSession === session) {
+      const previous=S.streamStatsSnapshot?.session===session?S.streamStatsSnapshot.text:'';
+      output.textContent='Stream metrics unavailable; delivery is unconfirmed: '+error.message+(previous?' Last known report: '+previous:'');
+      S.streamRecovery={target:streamTarget(),session,state:'unknown',message:'Preview delivery is unconfirmed. Retry with Reconnect preview.'};
+      renderStreamAvailability();
+    }
   } finally {
     if (S.streamStatsPending === session) S.streamStatsPending = null;
   }
@@ -2666,12 +2975,11 @@ function renderStream(){
 
 function renderHomeLive(){
   if (S.view !== "home" || !S.status) return;
-  if(S.tab==='overview')runWorkspace.poll();
   const ev = $("#events");
-  if (ev) ev.innerHTML = (S.status.events || []).slice(-14).map(r =>
+  if (ev) updateWorkspaceRegion('#events',(S.status.events || []).slice(-14).map(r =>
     `<div>${esc(new Date(r.t * 1000).toLocaleTimeString())}  ${esc(r.kind)}` +
     `${r.wave ? " w" + esc(r.wave) : ""}${r.preset ? " " + esc(r.preset) : ""}</div>`
-  ).join("") || '<div class="muted">no events yet</div>';
+  ).join("") || '<div class="muted">no events yet</div>');
   const rb = $("#runner-body");
   if (rb) renderRunner();
 }
@@ -2679,7 +2987,7 @@ function renderHomeLive(){
 function renderRunner(){
   const body = $("#runner-body");
   if (!body || !S.status) return;
-  // The status poll calls this every 2.5s. A blind innerHTML rewrite slams
+  // A blind innerHTML rewrite on every status poll slams
   // the preset dropdown shut mid-choice, so: never rewrite while the user
   // is inside a form control here, and only rewrite when the content that
   // drives the card actually changed.
@@ -2687,7 +2995,8 @@ function renderRunner(){
   if (ae && body.contains(ae) && ae.matches("select, input, textarea")) return;
   const procs = S.status.processes || [];
   const ready = S.runReadiness || {};
-  const key = JSON.stringify([S.readinessFresh,S.readinessContext,procs.map(p => [p.pid,p.runner,p.operation?.id,p.operation?.revision,p.stop_flag]),
+  const processState=S.status.process_refresh?.state || 'fresh';
+  const key = JSON.stringify([S.readinessFresh,S.readinessContext,S.statusError,processState,procs.map(p => [p.pid,p.runner,p.operation?.id,p.operation?.revision,p.operation?.step,p.operation?.recovery_action,p.stop_flag]),
                               !!S.status.stop_flag,
                               WorkspaceStatus.startBlockers({status:S.status, config:S.config}).map(b => b.text),
                               Object.entries(ready).map(([n, r]) => [n, r.ready, (r.missing || []).length])]);
@@ -2718,15 +3027,18 @@ function renderRunner(){
   const firstReady = (presets.find(p => p.name === "bp_coin_default" && p.ok) || presets.find(p => p.ok) || presets[0] || {}).name;
   const tapsAllowed = !!S.config.instances?.[S.config.active_instance]?.allow_taps;
   body.innerHTML = `
-    <label class="inline"><input type="checkbox" ${tapsAllowed ? "checked" : ""} ${procs.length ? "disabled" : ""} onchange="setAutomationAccess(this.checked)"> Allow automation to tap this emulator</label>
+    ${S.statusError ? `<p class="status-warning" role="status">Live status unavailable; showing the last snapshot. ${esc(S.statusError)} <button class="small ghost" onclick="loadStatus()">Retry status</button></p>` : ''}
+    ${processState!=='fresh' ? `<p class="status-warning" role="status">${processState==='unknown'?'Automation process state is unknown.':'Automation process state is stale; showing the last discovery.'} <button class="small ghost" onclick="loadStatus()">Retry status</button></p>` : ''}
+    <label class="inline"><input type="checkbox" ${tapsAllowed ? "checked" : ""} ${procs.length || processState!=='fresh' || S.statusError ? "disabled" : ""} onchange="setAutomationAccess(this.checked)"> Allow automation to tap this emulator</label>
     ${!tapsAllowed ? '<p class="muted">Read-only: the game will not be controlled until you enable taps.</p>' : ""}
     ${procs.length ? procs.map(p => `
       <div class="flowcard"><div><b>${p.runner === "gem_collector" ? "Diamond collector" : p.operation?.context?.selected_run ? esc(S.runs?.[p.operation.context.selected_run]?.label || p.operation.context.selected_run) : esc(p.runner)}</b>
         ${p.operation?.context?.instance ? `<span class="chip">${esc(p.operation.context.instance)}</span>` : ""}
+        ${p.operation?.step==='boundary_wait' || p.operation?.step==='boundary_overdue' ? `<p class="${p.operation.step==='boundary_overdue'?'status-warning':'muted'}">${esc(p.operation.recovery_action || 'Waiting for the current game run to end naturally.')}</p>` : ''}
         <details class="process-details"><summary>Process details</summary><p>PID ${esc(p.pid)}</p><code>${esc(p.cmdline || "")}</code></details></div>
         <button class="small danger" ${p.operation ? `data-operation-id="${esc(p.operation.id)}" data-operation-revision="${p.operation.revision}" onclick="killPid(${p.pid},this.dataset.operationId,Number(this.dataset.operationRevision))"` : `onclick="killPid(${p.pid})"`}>Stop now</button>
       </div>`).join("")
-      : '<p class="muted">Nothing is running.</p>'}
+      : processState!=='fresh' || S.statusError ? '<p class="muted">No running automation was confirmed by the latest read.</p>' : '<p class="muted">Nothing is running.</p>'}
     ${procs.length && finishFlag ? `<div class="action-row current-run-actions">
         <button class="ghost" onclick="ctl('clear_flag'${finishArgs})"${finishAttrs}>Stopping after this run · Cancel</button></div>` : ""}
     ${procs.length ? `<p class="muted">Stop now stops automation. The game battle keeps playing.</p>` : ""}
@@ -2776,7 +3088,7 @@ function renderRunReady(){
     return;
   }
   const blockers = WorkspaceStatus.startBlockers({status:S.status, config:S.config});
-  if (gems) gems.disabled = blockers.length > 0 || !(adsEnabled || orbitEnabled);
+  if (gems) gems.disabled = !!S.statusError || blockers.length > 0 || !(adsEnabled || orbitEnabled);
   const blocked = blockers.length ? `<p><b>Start is disabled:</b></p><ul class="control-blockers">${blockers.map(b =>
     `<li>${esc(b.text)} <a href="${b.href}" data-workspace-section="${b.section}">${esc(b.link)}</a></li>`).join("")}</ul>` : "";
   const r = (S.runReadiness || {})[sel.value];
@@ -2802,8 +3114,8 @@ function renderRunReady(){
 }
 /* Prepare is refused while automation runs or the emulator is not online. */
 function prepareBlocked(){
-  return !!S.status?.processes?.length
-    || WorkspaceStatus.startBlockers({status:S.status, config:S.config}).some(b => b.id === "connection");
+  return !!S.statusError || !!S.status?.processes?.length
+    || WorkspaceStatus.startBlockers({status:S.status, config:S.config}).some(b => b.id === "connection" || b.id === "processes");
 }
 async function killPid(pid,operationId,expectedRevision){
   if (!confirm("Stop this runner process? The game itself is never touched.")) return;
@@ -3199,10 +3511,11 @@ function editorHtml(bpName){
         ${bp.label ? `<span class="chip" title="identifier">${esc(bpName)}</span>` : ""}
         <span class="chip kind">${esc(bpKindLabel(bp))}</span></span>
       <span style="display:flex; gap:.4rem">
-        <button class="small ghost" onclick="editorCancel('${esc(bpName)}')">Cancel</button>
-        <button class="small" onclick="editorSave()">Save ✓</button>
+        <button class="small ghost" data-save-discard onclick="editorCancel('${esc(bpName)}')">Cancel</button>
+        <button class="small" data-save-all onclick="editorSave()">Save ✓</button>
       </span>
     </header>
+    <div data-save-feedback role="status" aria-live="polite"></div>
 
     <fieldset><legend>Name</legend>
       <div class="kv">
@@ -3519,13 +3832,23 @@ function gatherHtml(){
       opened, and back off when a visit claims nothing.</p></article>`;
 }
 /* ---- generic param rendering off the vocab specs */
-function pInput(spec, val, js){
+function updateSecondsHint(input){
+  const hint=input.nextElementSibling;if(!hint)return;
+  const text=TowerDuration.format(input.value==='' || input.validity?.badInput?null:Number(input.value));
+  hint.textContent=text;hint.hidden=!text;
+}
+function legacySecondsInput(value,change){
+  const hint=TowerDuration.format(value);
+  return `<span class="seconds-field"><input type="number" step="any" value="${esc(value ?? '')}" oninput="updateSecondsHint(this)" onchange="${change}"><small class="muted" ${hint?'':'hidden'}>${esc(hint)}</small></span>`;
+}
+function pInput(spec, val, js, key=''){
   if ((spec.values || []).length && spec.type !== "bool")
     return `<select onchange="${js}(this.value)">
       ${spec.values.map(v => `<option ${String(val) === String(v) ? "selected" : ""}>${esc(v)}</option>`).join("")}
     </select>`;
   if (spec.type === "bool")
     return `<input type="checkbox" ${val ? "checked" : ""} onchange="${js}(this.checked)">`;
+  if(key.endsWith('_sec'))return legacySecondsInput(val,`${js}(this.value === '' ? null : Number(this.value))`);
   return `<input type="number" step="any" title="${esc(spec.doc || "")}"
     value="${val ?? ""}" onchange="${js}(this.value === '' ? null : Number(this.value))">`;
 }
@@ -3582,12 +3905,12 @@ function trigParamsHtml(i, k, p){
             <span class="muted">to</span>${pInput({ type:"int" }, p.hi, `p2trig(${i}, 'hi',`)}`;
   const fields = (S.vocab.rule_triggers.fields[k] || {}).fields || {};
   return Object.entries(fields).map(([key, spec]) =>
-    `<span class="muted">${key}</span>${pInput(spec, p[key], `p2trig(${i}, '${key}',`)}`).join(" ");
+    `<span class="muted">${key}</span>${pInput(spec, p[key], `p2trig(${i}, '${key}',`,key)}`).join(" ");
 }
 function actParamsHtml(i, k, p){
   const fields = (S.vocab.rule_actions.fields[k] || {}).fields || {};
   return Object.entries(fields).map(([key, spec]) =>
-    `<span class="muted">${key}</span>${pInput(spec, p[key], `p2act(${i}, '${key}',`)}`).join(" ");
+    `<span class="muted">${key}</span>${pInput(spec, p[key], `p2act(${i}, '${key}',`,key)}`).join(" ");
 }
 
 /* draft mutators wired from the param inputs */
@@ -3636,13 +3959,16 @@ function p2arm(key, val){
 function p2field(key, val){ P2.draft[key] = val; p2Save(); }
 
 function p2Header(title){
+  const used=P2.kind?behUsedBy(P2_SECTION[P2.kind],P2.name):[];
   return `<header style="display:flex; justify-content:space-between; align-items:center">
     <span><b>${esc(P2.draft.label || P2.name)}</b><span class="chip kind">${title}</span>
       <span class="chip" title="the identifier other settings refer to">${esc(P2.name)}</span></span>
     <span style="display:flex; gap:.4rem">
-      <button class="small ghost" onclick="p2Cancel()">Cancel</button>
-      <button class="small" onclick="p2Commit()">Save ✓</button>
+      <button class="small ghost" data-save-discard onclick="p2Cancel()">Cancel</button>
+      <button class="small" data-save-all onclick="p2Commit()">Save ✓</button>
     </span></header>
+  <div data-save-feedback role="status" aria-live="polite"></div>
+  <p class="muted">Saved policy in ${esc(S.profiles?.active || S.config?.active_profile || 'the selected profile')}. ${used.length?'Affected runs: '+used.map(name=>esc(bpLabel(name))).join(', ')+'.':'No run currently uses this policy.'} Applies to new battles using this policy.</p>
   <div class="kv" style="margin-bottom:.7rem">
     <label>Display name <span class="muted">(how menus show it)</span></label>
     <input value="${esc(P2.draft.label || "")}" placeholder="${esc(P2.name)}"
@@ -3664,11 +3990,9 @@ function rescueHtml(){
         Hold everything until after a <b>Second Wind</b> (accounts that have it)</label>
       ${sw ? `<div class="kv" style="margin-left:1.6rem; margin-bottom:.5rem">
         <label>Watch for how long after it (sec, empty = rest of the run)</label>
-        <input type="number" value="${arm.watch_sec ?? ""}"
-          onchange="p2arm('watch_sec', this.value === '' ? null : Number(this.value))">
+        ${legacySecondsInput(arm.watch_sec,"p2arm('watch_sec', this.value === '' ? null : Number(this.value))")}
         <label>Immunity backstop (sec)</label>
-        <input type="number" value="${arm.immunity_sec ?? ""}"
-          onchange="p2arm('immunity_sec', this.value === '' ? null : Number(this.value))">
+        ${legacySecondsInput(arm.immunity_sec,"p2arm('immunity_sec', this.value === '' ? null : Number(this.value))")}
       </div>` : ""}
       <label class="inline"><input type="radio" name="arm" ${!sw ? "checked" : ""}
         onchange="p2arm('mode', 'always')">
@@ -3703,8 +4027,7 @@ function rescueHtml(){
               <input type="checkbox" ${r.repeat ? "checked" : ""}
                 onchange="p2rule(${i}, 'repeat', this.checked || null)"> may repeat</label>
             <span class="muted">cooldown s</span>
-            <input type="number" step="any" value="${r.refire_sec ?? ""}"
-              onchange="p2rule(${i}, 'refire_sec', this.value === '' ? null : Number(this.value))">
+            ${legacySecondsInput(r.refire_sec,`p2rule(${i}, 'refire_sec', this.value === '' ? null : Number(this.value))`)}
             <span style="margin-left:auto">
               ${i > 0 ? `<button class="small ghost" onclick="p2moveRule(${i},-1)">↑</button>` : ""}
               ${i < d.rules.length - 1 ? `<button class="small ghost" onclick="p2moveRule(${i},1)">↓</button>` : ""}
@@ -3839,8 +4162,9 @@ function p2clPair(key, idx, val){
   // behind the backdrop); `close` fires for Save, Cancel and Esc alike.
   for (const d of document.querySelectorAll("dialog"))
     d.addEventListener("close", syncSaveBar);
-  await loadStatus();
-  setInterval(loadStatus, 2500);   // the only status timer; route() loads workspace data
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollDashboard(true);});
+  pollDashboard(true);
+  setInterval(pollDashboard, 250);   // one clock; independent reads retain single flight
   route();
 })();
 </script>

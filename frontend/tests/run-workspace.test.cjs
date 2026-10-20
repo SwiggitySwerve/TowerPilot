@@ -168,7 +168,8 @@ test('legacy conversion requires an explicit reviewed action and never silently 
 test('history presents observed duration, last wave and capture failures without inventing metrics',()=>{
   const html=UI.historySummaryHTML({boundary_evidence:{last_observed_wave:123},runtime:{observed_duration_sec:65,stats_capture:{status:'failed',verified:false,reason:'clipboard_stale'}}});
   assert.match(html,/123/);assert.match(html,/1m 5s observed/);assert.match(html,/Failed/);assert.match(html,/unverified/);assert.match(html,/clipboard_stale/);
-  assert.match(html,/Gems <strong>unknown/);
+  assert.match(html,/Recorded collection evidence <strong>Not recorded/);
+  assert.match(html,/Gem total unknown/);
   const empty=UI.historySummaryHTML({});assert.match(empty,/Observed duration <strong>Unknown/);assert.doesNotMatch(empty,/0m 0s/);
 });
 

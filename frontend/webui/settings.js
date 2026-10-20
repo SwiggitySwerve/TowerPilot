@@ -1,8 +1,8 @@
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module === 'object' && module.exports ? require('./duration-format.js') : root.TowerDuration);
   if (typeof module === "object") module.exports = api;
   else root.TowerSettings = api;
-})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+})(typeof globalThis !== "undefined" ? globalThis : this, function (Duration) {
   "use strict";
   const clone = (value) => JSON.parse(JSON.stringify(value));
   const esc = (value) =>
@@ -177,8 +177,11 @@
   function fieldHTML(f, value, disabled) {
     const key = esc(f.key),
       attrs = `data-field="${key}" ${disabled ? "disabled" : ""}`;
-    const number = (v, index) =>
-      `<input type="number" ${attrs} ${index == null ? "" : `data-index="${index}"`} value="${esc(v)}" step="${f.type === "integer" || f.wholeNumbers ? 1 : "any"}" ${f.min == null ? "" : `min="${f.min}"`} ${f.max == null ? "" : `max="${f.max}"`}>`;
+    const number = (v, index) => {
+      const hint = ['s','sec','seconds'].includes(f.unit) ? Duration.format(Number(v)) : '';
+      return `<input type="number" ${attrs} ${index == null ? "" : `data-index="${index}"`} value="${esc(v)}" step="${f.type === "integer" || f.wholeNumbers ? 1 : "any"}" ${f.min == null ? "" : `min="${f.min}"`} ${f.max == null ? "" : `max="${f.max}"`}>` +
+        (['s','sec','seconds'].includes(f.unit) ? `<small class="muted" data-settings-duration="${key}" data-index="${index ?? ''}" ${hint?'':'hidden'}>${esc(hint)}</small>` : '');
+    };
     const paired = f.type === "range" || f.type === "point";
     const input =
       f.type === "boolean"
@@ -438,6 +441,14 @@
             : f.type === "range" || f.type === "point"
               ? controls.map((c) => c.value)
               : e.target.value;
+        if (['s','sec','seconds'].includes(f.unit)) {
+          const hints = Array.from(form.querySelectorAll('[data-settings-duration]'))
+            .filter(note => note.dataset.settingsDuration === f.key);
+          hints.forEach((note,index) => {
+            const hint=Duration.format(Number(Array.isArray(raw)?raw[index]:raw));
+            note.textContent=hint;note.hidden=!hint;
+          });
+        }
         const err = Array.from(
           form.querySelectorAll("[data-field-error]"),
         ).find((c) => c.dataset.fieldError === f.key);

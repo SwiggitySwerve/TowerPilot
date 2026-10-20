@@ -498,7 +498,7 @@ test('the calibration Stop button is hidden unless a worker is running', () => {
 
 test('one status timer drives the dashboard and the dead scan poller is gone', () => {
   assert.equal(html.match(/setInterval\(/g).length, 1);
-  assert.match(html, /setInterval\(loadStatus, 2500\)/);
+  assert.match(html, /setInterval\(pollDashboard, 250\)/);
   assert.doesNotMatch(html, /startScan|pollScan|scan-state|connect-overlay/);
 });
 
@@ -563,7 +563,7 @@ async function renderHomePanels(S, emulatorInventory={instances:[]}, lifecycle=[
     $:selector => (panels[selector] ||= {options:[],_html:'',get innerHTML(){return this._html;},set innerHTML(value){lifecycle.push(selector);this._html=value;}}),
     api:async url => { requests.push(url); return url === '/api/runs' ? {runs:{}, readiness:{}} : emulatorInventory; },
     loadHomeData:async()=>{}, toast:()=>{}, starterBanner:()=>'',
-    stopStream(){lifecycle.push('stopStream');}, renderStream(){}, renderRunner(){}, renderDay(){}, renderFlows(){}, renderBehaviors(){}, renderLoadouts(){},
+    stopStream(){lifecycle.push('stopStream');}, refreshStreamBackends(){},renderStream(){}, renderRunner(){}, renderDay(){}, renderFlows(){}, renderBehaviors(){}, renderLoadouts(){},
     renderGlobal(){}, renderHomeLive(){}, renderControlBlockers(){}, renderGetStarted(){}, renderWorkspaceStatus(){}, mountConfigurationPage(){}, mountDiagnostics(){}});
   vm.runInContext(section('function streamPresets(){', 'function setStreamFps('), ctx);
   vm.runInContext(section('async function renderHome(){', '/* ------------------------------------------------------------- loadouts'), ctx);
@@ -648,7 +648,7 @@ test('old section deep-links open the tab that now holds the section', () => {
 });
 
 test('a refusal sent with HTTP 200 shows its message, not the status code', async () => {
-  const ctx = vm.createContext({reportDiagnostic(){}});
+  const ctx = vm.createContext({AbortController,setTimeout,clearTimeout,reportDiagnostic(){}});
   vm.runInContext(section('async function api(', 'const post = '), ctx);
   const reply = (status, body) => { ctx.fetch = async () => ({ok:status < 400, status, json:async () => { if (!body) throw new Error('no json'); return body; }}); };
   reply(200, {ok:false, message:'cannot connect to 127.0.0.1:16384: No connection could be made'});

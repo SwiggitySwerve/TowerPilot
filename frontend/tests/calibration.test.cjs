@@ -67,11 +67,11 @@ test('the status tick survives a stopped response and a connection failure witho
     learningTracker:()=>({observe:()=>{},unavailable:()=>{}})});
   vm.runInContext(section('async function loadStatus(){', '/* Shared status reads'),ctx);
   vm.runInContext(section('function launchSettled(', 'function renderMappingPlan('),ctx);
-  await vm.runInContext('loadStatus()',ctx);
+  await vm.runInContext('Promise.all([loadStatus(),pollCalibrate()])',ctx);
   assert.deepEqual(reports,[false]);
-  await vm.runInContext('loadStatus()',ctx);
+  await vm.runInContext('Promise.all([loadStatus(),pollCalibrate()])',ctx);
   assert.match(progress.textContent,/Retrying/);
-  await vm.runInContext('loadStatus()',ctx);
+  await vm.runInContext('Promise.all([loadStatus(),pollCalibrate()])',ctx);
   assert.deepEqual(reports,[false,true]);
   // one /api/status and one /api/calibrate/status per tick, nothing else
   assert.deepEqual(requests,Array(3).fill(['/api/status','/api/calibrate/status']).flat());
@@ -88,7 +88,7 @@ test('a calibration read that overlaps a mutation is discarded by the status tic
     learningTracker:()=>({observe:()=>{},unavailable:()=>{}})});
   vm.runInContext(section('async function loadStatus(){', '/* Shared status reads'),ctx);
   vm.runInContext(section('function launchSettled(', 'function renderMappingPlan('),ctx);
-  const pending = vm.runInContext('loadStatus()',ctx);
+  const pending = vm.runInContext('Promise.all([loadStatus(),pollCalibrate()])',ctx);
   ctx.S.workspaceEpoch++;
   release({running:false});
   await pending;

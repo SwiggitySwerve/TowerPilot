@@ -145,3 +145,56 @@ def test_process_cache_is_invalidated_when_selected_transport_changes(dash, monk
     assert dash._procs_cached() == [{'pid': 1}]
     target[2] = 'test:second'
     assert dash._procs_cached() == [{'pid': 2, 'serial': 'test:second'}]
+
+
+def test_failed_discovery_retains_same_target_rows_with_visible_error(dash, monkeypatch, caplog):
+    import time
+    target = ('localhost', 5037, 'test:first')
+    monkeypatch.setattr(dash, '_process_target', lambda: target)
+    monkeypatch.setattr(dash, '_PROCS_CACHE', {'at': time.time(), 'target': target, 'procs': [{'pid': 1}]})
+
+    def fail(_):
+        raise PermissionError('process table unavailable')
+    monkeypatch.setattr(dash, '_scan_procs', fail)
+    assert dash._procs_refresh() == [{'pid': 1}]
+    state = dash._procs_status()
+    assert state['state'] == 'stale'
+    assert state['error']['type'] == 'PermissionError'
+    assert state['last_success_at'] is not None
+    assert 'process table unavailable' in caplog.text
+
+
+def test_background_refresh_never_blocks_status_or_leaks_other_device(dash, monkeypatch):
+    import threading
+    target = ('localhost', 5037, 'test:second')
+    monkeypatch.setattr(dash, '_process_target', lambda: target)
+    monkeypatch.setattr(dash, '_PROCS_CACHE', {'at': 1.0, 'target': ('localhost', 5037, 'test:first'), 'procs': [{'pid': 1}]})
+    monkeypatch.setattr(dash, '_PROCS_THREAD', types.SimpleNamespace(is_alive=lambda: True))
+    wake = threading.Event()
+    monkeypatch.setattr(dash, '_PROCS_WAKE', wake)
+    monkeypatch.setattr(dash, '_procs_refresh', lambda: pytest.fail('status performed blocking scan'))
+    assert dash._procs_cached() == []
+    assert wake.is_set()
+    assert dash._procs_status()['state'] == 'unknown'
+
+
+def test_process_discovery_recovers_from_failure(dash, monkeypatch):
+    target = ('localhost', 5037, 'test:second')
+    monkeypatch.setattr(dash, '_process_target', lambda: target)
+    monkeypatch.setattr(dash, '_PROCS_CACHE', {'at': 0, 'target': target, 'procs': [], 'error': {'message': 'prior failure'}})
+    monkeypatch.setattr(dash, '_scan_procs', lambda selected: [{'pid': 2}])
+    assert dash._procs_refresh() == [{'pid': 2}]
+    state = dash._procs_status()
+    assert state['state'] == 'fresh'
+    assert state['error'] is None
+
+
+def test_runtime_endpoint_reports_source_at_start_and_capabilities(dash, monkeypatch):
+    monkeypatch.setattr(dash.build_info, 'compare', lambda root, started: dict(started, source_changed=True))
+    monkeypatch.setattr(dash.operation_api, 'ledger', lambda root: types.SimpleNamespace(active=lambda: []))
+    monkeypatch.setattr(dash, '_procs_status', lambda: {'state': 'unknown'})
+    response = dash.app.test_client().get('/api/runtime')
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body['server']['source_changed'] is True
+    assert 'battle_controls' in body['capabilities']

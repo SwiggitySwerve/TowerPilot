@@ -1,10 +1,10 @@
 /* Shared saved/live run controls. Server snapshots, drafts and acknowledgements
    stay separate; polling never replaces an input the person is editing. */
 (function(root, factory) {
-  const api = factory();
+  const api = factory(typeof module === 'object' && module.exports ? require('./duration-format.js') : root.TowerDuration);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.RunWorkspace = api;
-})(typeof globalThis === 'object' ? globalThis : this, function() {
+})(typeof globalThis === 'object' ? globalThis : this, function(Duration) {
   'use strict';
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const get = (value, path) => path.split('.').reduce((v,k) => v?.[k], value);
@@ -13,13 +13,42 @@
   const label = value => String(value).replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
   const identity = battle => battle ? [battle.id, battle.operation_id, battle.generation].join(':') : '';
   const savedIdentity = snapshot => JSON.stringify([snapshot.blueprint,snapshot.context?.instance,snapshot.context?.account,snapshot.context?.profile]);
-  function durationHint(value) {
-    if(!numeric(value) || value<=60)return '';
-    // Keep decimal digits from the input's numeric representation: subtracting
-    // minutes introduces floating-point tails, while rounding changes durations.
-    const fraction=String(value).match(/^\d+\.(\d+)$/)?.[1];
-    const seconds=String(Math.floor(value)%60).padStart(2,'0');
-    return `${Math.floor(value/60)}m ${seconds}${fraction?'.'+fraction:''}s`;
+  const durationHint=Duration.format;
+  const terminalCommand = command => ['applied','completed','failed','rejected','expired'].includes(command?.state || command?.status);
+  const commandAction = command => command?.payload?.action || command?.action;
+  function commandRows(model) {
+    const rows=model.snapshot.commands || [];
+    const result=new Map((Array.isArray(rows)?rows:Object.values(rows)).map(row=>[row.id,row]));
+    for(const row of Object.values(model.receipts || {})) {
+      const observed=result.get(row.id);
+      if(!observed || (!terminalCommand(observed) && (terminalCommand(row) || (row.updated_at || 0)>(observed.updated_at || 0))))result.set(row.id,row);
+      else result.set(row.id,{...row,...observed});
+    }
+    return [...result.values()];
+  }
+  function resultText(action, evidence) {
+    if(action?.startsWith('shopping')) {
+      const sweep=evidence?.last_sweep || evidence;
+      const reason=sweep?.reason || evidence?.outcome?.reason;
+      return numeric(sweep?.confirmed_purchases)?`Verified purchases ${sweep.confirmed_purchases}${reason?` · ${label(reason)}`:''}`:reason?`${label(reason)}; purchase outcome unknown`:'Purchase outcome unknown';
+    }
+    if(evidence?.confirmed===true)return action==='floating_gems'?'Balance +2 confirmed':action==='ad_gems'?'Claim disappeared; balance total unknown':'Confirmation recorded';
+    if(evidence?.confirmed===false)return `Unconfirmed${evidence.reason?`: ${label(evidence.reason)}`:''}`;
+    return evidence?.reason?`${label(evidence.reason)}; reward unknown`:'Reward outcome unknown';
+  }
+  function commandFeedback(model, target, action=false, now=Date.now()/1000) {
+    const rows=commandRows(model).filter(row=>action?commandAction(row)===target:row.kind==='controls' && Object.hasOwn(flatOverrides(row.payload),target));
+    const row=rows.sort((a,b)=>(b.requested_at || b.updated_at || 0)-(a.requested_at || a.updated_at || 0)).at(0);
+    const uncertain=model.uncertain;
+    if(uncertain && (action?uncertain.action===target:Object.hasOwn(uncertain.changes || {},target)))return 'Acknowledgement unavailable · outcome unknown';
+    if(!row)return '';
+    const state=row.state || row.status;
+    const title={requested:'Accepted',pending:'Waiting',started:'Executing',running:'Executing',executing:'Executing',applied:'Applied',completed:'Finished',failed:'Failed',rejected:'Rejected',expired:'Expired'}[state] || label(state || 'Unknown');
+    const at=row.updated_at ?? row.requested_at;
+    const age=numeric(at)?` · ${Math.max(0,Math.floor(now-at))}s ago`:'';
+    const reason=row.reason?` · ${label(row.reason)}`:'';
+    const result=action && state==='completed'?` · ${resultText(target,row.evidence)}`:'';
+    return title+age+reason+result;
   }
   function flatOverrides(value,prefix='') {
     const result={};
@@ -41,15 +70,18 @@
     return result;
   }
   function countdown(runtime, enabled, now = Date.now()/1000) {
-    if (enabled === false) return 'Off';
+    const manual=runtime?.manual_active || runtime?.manual_pending;
+    if (enabled === false && !manual) return 'Off';
     if (!runtime) return 'Timing unknown';
     const state = runtime.state || runtime.status;
     if(runtime.blocker)return label(runtime.blocker);
-    if (['blocked','paused','off','condition','waiting_condition','busy'].includes(state))
+    if (['blocked','paused','condition','waiting_condition','busy'].includes(state) || (state==='off' && !manual))
       return runtime.blocked_reason || runtime.condition || label(state);
     const observed=runtime.observed_at ?? runtime.server_time;
     if (!numeric(observed) || now-observed > 15) return 'Stale observation';
-    if(numeric(runtime.window_ends_at))return `Window ${Math.max(0,Math.ceil(runtime.window_ends_at-now))}s`;
+    if(runtime.manual_pending)return 'Manual request waiting';
+    if(numeric(runtime.window_ends_at))return `${runtime.manual_active?'Manual window':'Window'} ${Math.max(0,Math.ceil(runtime.window_ends_at-now))}s`;
+    if(runtime.manual_active)return 'Manual collection active';
     if(['active','running'].includes(state))return label(state);
     const deadline = runtime.deadline ?? runtime.next_due_at;
     if (!numeric(deadline)) return 'Timing unknown';
@@ -68,6 +100,8 @@
     const applied = snapshot.applied_revision;
     for (const [path,item] of Object.entries(model.pending)) {
       if (numeric(applied) && numeric(item.revision) && applied >= item.revision) delete model.pending[path];
+      const ended=commandRows(model).find(row=>row.kind==='controls' && row.revision===item.revision && ['rejected','expired'].includes(row.state));
+      if(ended){delete model.pending[path];model.error=ended.reason || `Controls ${ended.state}`;}
     }
     return true;
   }
@@ -107,10 +141,10 @@
       : `<input type="number" ${attrs} value="${esc(value)}" ${constraint.min!==undefined?`min="${esc(constraint.min)}"`:''} ${constraint.max!==undefined?`max="${esc(constraint.max)}"`:''} step="${esc(constraint.step ?? 'any')}" ${options.inherit?'placeholder="Inherit"':''}>`;
     const duration=!options.boolean && path.endsWith('_sec')?durationHint(value):'';
     const hint=!options.boolean && path.endsWith('_sec')?`<small class="rw-duration-hint" data-duration="${esc(path)}" ${duration?'':'hidden'}>${esc(duration)}</small>`:'';
-    return `<label class="rw-field ${options.boolean?'rw-toggle':''}"><span>${esc(title)}</span>${control}${hint}<small data-pending="${esc(path)}">${pending?'Pending':model.scope==='live'?`Default ${esc(base ?? 'unknown')}${overridden?' · override':''}`:options.inherit?'Blank inherits':''}</small></label>`;
+    return `<label class="rw-field ${options.boolean?'rw-toggle':''}"><span>${esc(title)}</span>${control}${hint}<small data-pending="${esc(path)}">${pending?'Pending':model.scope==='live'?`Default ${esc(base ?? 'unknown')}${overridden?' · override':''}`:options.inherit?'Blank inherits':''}</small>${model.scope==='live'?`<small class="rw-command" data-command-control="${esc(path)}"></small>`:''}</label>`;
   }
   function actionHTML(model,action,title='Run now') {
-    return model.scope !== 'live' ? '' : `<button type="button" class="small ghost" data-action="${esc(action)}" aria-label="${esc(title==='▶'?`Try once: ${label(action.split(':').at(-1))}`:title+': '+label(action.split(':').at(-1)))}" ${allowed(model,action,true)&&!model.sending?'':'disabled'}>${esc(title)}</button>`;
+    return model.scope !== 'live' ? '' : `<span class="rw-action"><button type="button" class="small ghost" data-action="${esc(action)}" aria-label="${esc(title==='▶'?`Try once: ${label(action.split(':').at(-1))}`:title+': '+label(action.split(':').at(-1)))}" ${allowed(model,action,true)&&!model.sending?'':'disabled'}>${esc(title)}</button><small class="rw-command" data-command-action="${esc(action)}"></small></span>`;
   }
   function inspectLink(battle, runtime={}) {
     const query=new URLSearchParams();
@@ -156,7 +190,7 @@
       ['visibility','Offer'],['first_seen','First observed'],['appearance','Appearance bounds'],
       ['freshness','Freshness'],['timing','Collection'],['next_check','Observation'],
       ['failure','Latest failed attempt'],['counters','Counts'],['durations','Timing evidence']
-    ].map(([key,title])=>`<div><dt>${title}</dt><dd data-observation-field="${key}">Unknown</dd></div>`).join('')}</dl>`:'';
+    ].map(([key,title])=>`<div><dt>${title}</dt><dd data-observation-field="${key}">Unknown</dd></div>`).join('')}</dl>`:name==='floating_gems'?'<p class="rw-command" data-orbit-refusal>No refusal recorded</p>':'';
     return `${fields}<details class="rw-observation-details"><summary>Observation details</summary><a class="rw-inspect" data-inspect="${esc(name)}" href="${esc(inspectLink(model.snapshot))}">Inspect events</a><pre data-runtime-raw="${esc(name)}">Observation unavailable</pre></details>`;
   }
   function routinesHTML(model) {
@@ -185,7 +219,7 @@
       const play=model.scope==='live'?actionHTML(model,`shopping:${sid}:${entry.id}`,'\u25b6'):`<button class="small ghost" type="button" disabled aria-label="Try once: ${esc(entry.label)}" title="Available in the current battle">\u25b6</button>`;
       return `<li class="chip rw-upgrade ${selected?'on':''}" data-upgrade="${esc(entry.id)}" draggable="${supported&&!unavailable}" title="${esc(hint)}"><button class="rw-chip-toggle" type="button" data-shop-toggle="${path}.enabled" aria-pressed="${selected}" aria-label="${esc(entry.label)}" aria-description="${esc(hint)}" ${supported&&!unavailable?'':'disabled'}><span class="know-name">${esc(entry.label)}</span><span class="know-marks"><span aria-label="${selected?'active':'unselected'}">${selected?'\u2713':'\u25cb'}</span>${unavailable?'<span aria-label="unsupported">?</span>':''}</span></button><div class="rw-chip-controls" ${selected?'':'hidden'}>${chipNumber(`${path}.tap_limit`,item?.tap_limit,entry.label)}<span data-weight-field ${plan.queue_mode==='weighted_split'?'':'hidden'}><span aria-hidden="true">×</span>${chipNumber(`${path}.weight`,item?.weight ?? 1,entry.label,true)}</span>${play}</div></li>`;
     }).join('')}</ul></section>`).join('')}</div>`;
-    return `<div class="rw-queue-layout"><section class="rw-global-queue"><header><strong>Global priority queue</strong></header><div class="rw-fields">${number('cash_reserve',plan.cash_reserve,'Keep cash ($)')}<label class="rw-field"><span>Purchase pattern</span><select data-shop="queue_mode" ${supported?'':'disabled'}><option value="round_robin" ${plan.queue_mode==='round_robin'?'selected':''}>Round robin</option><option value="highest_affordable" ${plan.queue_mode==='highest_affordable'?'selected':''}>Single focus (affordable)</option><option value="weighted_split" ${plan.queue_mode==='weighted_split'?'selected':''}>Weighted split</option></select></label></div><p class="muted rw-plan-note">Single focus selects the highest priority affordable upgrade. Round robin rotates through eligible upgrades. Weighted split uses each upgrade's per-turn amount. Purchases wait when reserve, quantity or available cash cannot be verified.</p><ol class="rw-queue" data-queue>${queueHTML(model)}</ol></section>${selectors}</div>`;
+    return `<div class="rw-queue-layout"><section class="rw-global-queue"><header><strong>Global priority queue</strong></header><div class="rw-fields">${number('cash_reserve',plan.cash_reserve,'Keep cash ($)')}<label class="rw-field"><span>Purchase pattern</span><select data-shop="queue_mode" ${supported?'':'disabled'}><option value="round_robin" ${plan.queue_mode==='round_robin'?'selected':''}>Round robin</option><option value="highest_affordable" ${plan.queue_mode==='highest_affordable'?'selected':''}>Single focus (affordable)</option><option value="weighted_split" ${plan.queue_mode==='weighted_split'?'selected':''}>Weighted split</option></select></label></div><label class="rw-field rw-cadence"><span>Shopping cadence</span><select data-shop="cadence" ${supported?'':'disabled'}><option value="single_attempt" ${(plan.cadence || 'single_attempt')==='single_attempt'?'selected':''}>Single attempt</option><option value="while_affordable" ${plan.cadence==='while_affordable'?'selected':''}>While affordable</option></select></label><p class="muted rw-plan-note">While affordable uses fresh price and balance evidence after each confirmed purchase, yielding between actions. Each continuation window allows at most 4 purchases or 20 seconds; refusals and unknown results wait for the normal interval.</p><p class="muted rw-plan-note">Single focus selects the highest priority affordable upgrade. Round robin rotates through eligible upgrades. Weighted split uses each upgrade's per-turn amount. Purchases wait when reserve, quantity or available cash cannot be verified.</p><ol class="rw-queue" data-queue>${queueHTML(model)}</ol></section>${selectors}</div>`;
   }
   function conversionHTML(model) {
     const conversion=model.snapshot.legacy_conversion;
@@ -208,6 +242,16 @@
     const modules=Array.isArray(setup?.modules)?setup.modules:[];
     return `<div class="rw-setup-summary"><span>Setup <strong class="rw-setup-${outcome}">${label(outcome)}</strong></span>${setup?.loadout?`<span>Loadout: ${esc(setup.loadout)}</span>`:''}<span>${esc(setup?.detail?detail(setup.detail):'No setup evidence recorded')}</span>${setup?.continued_with_partial===true?'<strong class="rw-setup-degraded">Continued with partial setup</strong>':''}</div>${setup?.reason?`<p class="rw-setup-reason">${esc(setup.reason)}</p>`:''}${modules.length?`<details class="rw-setup-modules"><summary>Module evidence (${modules.length})</summary><ul>${modules.map(item=>`<li><strong>${esc(item.module)}</strong> (${esc(item.role==='category'?'Category slot':label(item.role || 'Role unknown'))}) · ${label(state(item.state))}${item.detail?` · ${esc(detail(item.detail))}`:''}${item.reason?` · ${esc(item.reason)}`:''}</li>`).join('')}</ul></details>`:''}`;
   }
+  function historyActivityText(event) {
+    if(typeof event.reason==='string' && event.reason)return event.reason;
+    const status=event.status;
+    if(typeof status==='string')return status;
+    if(!status || typeof status!=='object' || Array.isArray(status))return '';
+    const parts=[];
+    if(typeof status.observation_status==='string' && status.observation_status)parts.push(label(status.observation_status));
+    if(numeric(status.observed_wave))parts.push(`Wave ${status.observed_wave}`);
+    return parts.join(' · ');
+  }
   function historySummaryHTML(battle) {
     const runtime=battle.runtime || {};
     const capture=runtime.stats_capture || battle.stats_capture;
@@ -215,7 +259,14 @@
     const elapsed=numeric(duration)?`${Math.floor(duration/60)}m ${Math.floor(duration%60)}s observed`:'Unknown';
     const wave=battle.final_wave ?? battle.boundary_evidence?.last_observed_wave ?? runtime.observed_wave;
     const captureState=capture?.status?label(capture.status):'Unknown';
-    return `<section class="rw-setup" aria-label="Setup evidence">${setupEvidenceHTML(runtime.setup)}</section><div class="rw-history-summary"><span>Last observed wave <strong>${esc(wave ?? 'unknown')}</strong></span><span>Observed duration <strong>${esc(elapsed)}</strong></span><span>Stats capture <strong>${esc(captureState)}</strong>${capture?.verified===true?' · verified':capture?.verified===false?' · unverified':''}</span><span>Gems <strong>unknown</strong></span></div>${capture?.reason || capture?.error?`<p class="muted rw-plan-note">${esc(capture.reason || capture.error)}</p>`:''}`;
+    const evidence=runtime.collection_evidence;
+    const count=value=>Number.isInteger(value) && value>=0;
+    const recorded=evidence?.coverage==='sampled_driver_observations' && evidence.generation===battle.generation
+      && numeric(battle.created_at) && numeric(evidence.started_at) && evidence.started_at>=battle.created_at
+      && count(evidence.ad_claim_confirmations) && count(evidence.orbit_balance_confirmations)
+      && evidence.orbit_recorded_increase===2*evidence.orbit_balance_confirmations;
+    const gems=recorded?`Ad claims ${evidence.ad_claim_confirmations} · Orbit +2 confirmations ${evidence.orbit_balance_confirmations} (recorded increase +${evidence.orbit_recorded_increase})`:'Not recorded';
+    return `<section class="rw-setup" aria-label="Setup evidence">${setupEvidenceHTML(runtime.setup)}</section><div class="rw-history-summary"><span>Last observed wave <strong>${esc(wave ?? 'unknown')}</strong></span><span>Observed duration <strong>${esc(elapsed)}</strong></span><span>Stats capture <strong>${esc(captureState)}</strong>${capture?.verified===true?' · verified':capture?.verified===false?' · unverified':''}</span><span>Recorded collection evidence <strong>${esc(gems)}</strong><small>${recorded?'Sampled driver observations; gaps may exist. Ad disappearance confirms a claim, not its balance increase.':'No confirmation coverage recorded.'} Gem total unknown.</small></span></div>${capture?.reason || capture?.error?`<p class="muted rw-plan-note">${esc(capture.reason || capture.error)}</p>`:''}`;
   }
   function queueHTML(model) {
     const plan=fieldValue(model,'shopping_plan');
@@ -256,21 +307,21 @@
     return result;
   }
   function renderHTML(model) {
-    return `<div class="rw-workspace" data-scope="${model.scope}"><div class="rw-toolbar"><div><strong>${model.scope==='live'?'Current battle':'Saved run controls'}</strong><small>${model.scope==='live'?'Applies to this battle · frozen defaults are retained':'Autosaved for future battles'}</small></div>${model.scope==='live'?'<button class="small ghost" data-reset>Reset live overrides</button>':''}<span role="status" class="rw-status"></span></div>${model.scope==='live'?`<section class="rw-setup" data-setup aria-label="Setup evidence">${setupEvidenceHTML(model.snapshot.runtime?.setup)}</section>`:''}${model.snapshot.notice?`<p class="muted rw-plan-note">${esc(model.snapshot.notice)}</p>`:''}${routinesHTML(model)}<section class="rw-shopping"><header><strong>Workshop</strong></header><p data-shopping-warning class="warn" hidden></p>${shoppingHTML(model)}</section></div>`;
+    return `<div class="rw-workspace" data-scope="${model.scope}"><div class="rw-toolbar"><div><strong>${model.scope==='live'?'Current battle':'Saved run controls'}</strong><small>${model.scope==='live'?'Applies to this battle · frozen defaults are retained':'Autosaved for future battles'}</small></div>${model.scope==='live'?'<button class="small ghost" data-reset>Reset live overrides</button><button class="small ghost" data-retry-command hidden>Retry acknowledgement</button>':''}<span role="status" class="rw-status"></span></div>${model.scope==='live'?`<section class="rw-setup" data-setup aria-label="Setup evidence">${setupEvidenceHTML(model.snapshot.runtime?.setup)}</section>`:''}${model.snapshot.notice?`<p class="muted rw-plan-note">${esc(model.snapshot.notice)}</p>`:''}${routinesHTML(model)}<section class="rw-shopping"><header><strong>Workshop</strong><small class="rw-command" data-command-control="shopping_plan"></small></header><p data-shopping-warning class="warn" hidden></p>${shoppingHTML(model)}</section></div>`;
   }
   function create(options) {
     const {request,onError=()=>{}} = options;
     let liveHost=null, savedHost=null, historyHost=null, live=null, saved=null;
-    let selected='', epoch=0, pollBusy=false, historyKey='', historyRequest=0, context='';
+    let selected='', epoch=0, pollBusy=false, historyKey='', historyRequest=0, detailRequest=0, context='', mountedHistoryHost=null;
+    let historyState={instance:'',limit:20,offset:0,status:'',rows:[],loaded:false,hasNext:false,loading:false,error:'',scope:null,detailHTML:''};
     const timers = new Map();
     const bindings = new WeakMap();
     const clockTimer=globalThis.document?setInterval(()=>{if(liveHost?.isConnected && live)clocks(liveHost,live);},1000):null;
     const current = (host,model) => host && bindings.get(host)===model && (model.scope==='live'?host===liveHost && model===live:host===savedHost && model===saved);
-    const unacknowledged = model => model.scope==='live' && numeric(model.snapshot.control_revision) && (!numeric(model.snapshot.applied_revision) || model.snapshot.applied_revision<model.snapshot.control_revision);
+    const unacknowledged = model => model.scope==='live' && numeric(model.snapshot.control_revision) && (!numeric(model.snapshot.applied_revision) || model.snapshot.applied_revision<model.snapshot.control_revision)
+      && !commandRows(model).some(row=>row.kind==='controls' && row.revision===model.snapshot.control_revision && ['rejected','expired'].includes(row.state));
     const actionBusy = model => {
-      const commands=model.snapshot.commands || [];
-      const values=Array.isArray(commands)?commands:Object.values(commands);
-      return !!model.actionPending || values.some(c=>['requested','pending','started','running','executing'].includes(c.state || c.status));
+      return !!model.actionPending || !!model.uncertain || commandRows(model).some(c=>['requested','pending','started','running','executing'].includes(c.state || c.status));
     };
     const fetchJSON = (url,body) => request(url,body===undefined?undefined:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     function status(host,model) {
@@ -326,13 +377,15 @@
       host.querySelectorAll('[data-action]').forEach(button=>button.disabled=model.sending || model.observationUnavailable || model.invalid.size>0 || actionBusy(model) || unacknowledged(model) || !allowed(model,button.dataset.action,true) || Object.keys(model.pending).length>0 || Object.keys(model.draft).length>0 || !['active','running'].includes(model.snapshot.status));
       const reset=host.querySelector('[data-reset]');
       if(reset) reset.disabled=model.sending || actionBusy(model) || !Object.keys(flatOverrides(model.snapshot.overrides)).length;
+      const retry=host.querySelector('[data-retry-command]');
+      if(retry){retry.hidden=!model.uncertain;retry.disabled=model.sending || model.observationUnavailable;}
       clocks(host,model);
     }
     function clocks(host,model) {
       if(!current(host,model))return;
       const now=Date.now()/1000+(model.clockOffset || 0);
       host?.querySelectorAll('[data-countdown]').forEach(el=> {
-        el.textContent=model.scope==='live'?countdown(model.snapshot.runtime?.routines?.[el.dataset.countdown],fieldValue(model,`routines.${el.dataset.countdown}.enabled`),now):'';
+        el.textContent=model.scope==='live'?(model.observationUnavailable?'Status unavailable':countdown(model.snapshot.runtime?.routines?.[el.dataset.countdown],fieldValue(model,`routines.${el.dataset.countdown}.enabled`),now)):'';
       });
       const routines=model.snapshot.runtime?.routines || {};
       host.querySelectorAll('[data-observation="ad_gems"]').forEach(region=> {
@@ -344,6 +397,15 @@
         if(el.textContent!==raw)el.textContent=raw;
       });
       host.querySelectorAll('[data-inspect]').forEach(el=>el.href=inspectLink(model.snapshot,routines[el.dataset.inspect]));
+      host.querySelectorAll('[data-command-control]').forEach(el=>el.textContent=commandFeedback(model,el.dataset.commandControl,false,now));
+      host.querySelectorAll('[data-command-action]').forEach(el=> {
+        const feedback=commandFeedback(model,el.dataset.commandAction,true,now);
+        const outcome=routines[el.dataset.commandAction]?.last_outcome;
+        el.textContent=feedback || (outcome?`Last result: ${resultText(el.dataset.commandAction,outcome)}`:'');
+        el.hidden=!el.textContent;
+      });
+      const refusal=routines.floating_gems?.last_refusal;
+      host.querySelectorAll('[data-orbit-refusal]').forEach(el=>el.textContent=refusal?`Latest refusal: ${label(refusal.reason || 'unknown')}${numeric(refusal.observed_at)?` · ${Math.max(0,Math.floor(now-refusal.observed_at))}s ago`:''}`:'No refusal recorded');
     }
     function mount(host,model) {
       bindings.set(host,model);
@@ -381,6 +443,7 @@
         clearTimeout(timers.get(model)); timers.set(model,setTimeout(()=>flush(host,model),450));
       };
       host.onclick=event=> {
+        if(event.target.closest('[data-retry-command]')){retryCommand(host,model);return;}
         const convert=event.target.closest('[data-convert-plan]');
         if(convert && !convert.disabled && allowed(model,'shopping_plan') && model.snapshot.legacy_conversion?.plan) {
           model.draft.shopping_plan=clone(model.conversionDraft || model.snapshot.legacy_conversion.plan);mount(host,model);flush(host,model);return;
@@ -394,7 +457,7 @@
         }
         const add=event.target.closest('[data-new-plan]');
         if(add && allowed(model,'shopping_plan')) {
-          model.draft.shopping_plan={version:2,enabled:true,interval_sec:5,cash_reserve:null,queue_mode:'highest_affordable',queue:[],excluded_upgrades:['defense_absolute']};
+          model.draft.shopping_plan={version:2,enabled:true,interval_sec:5,cadence:'single_attempt',cash_reserve:null,queue_mode:'highest_affordable',queue:[],excluded_upgrades:['defense_absolute']};
           mount(host,model);flush(host,model);return;
         }
         const toggle=event.target.closest('[data-shop-toggle]');
@@ -442,28 +505,45 @@
       const queue=host.querySelector('[data-queue]');if(queue)queue.innerHTML=queueHTML(model);
       model.error='';status(host,model);clearTimeout(timers.get(model));timers.set(model,setTimeout(()=>flush(host,model),450));
     }
-    async function flush(host,model) {
-      if(!current(host,model) || model.sending || model.invalid.size || unacknowledged(model) || !Object.keys(model.draft).length)return;
-      const changes={...model.draft}; model.draft={}; model.sending=true; model.error='';
+    function receipt(model,row,extra) {
+      if(!row?.id)return;
+      const now=Date.now()/1000+(model.clockOffset || 0);
+      (model.receipts ||= {})[row.id]={requested_at:now,updated_at:now,...extra,...row};
+    }
+    async function flush(host,model,retry=false) {
+      if(!current(host,model) || model.sending || (!retry && (model.uncertain || model.invalid.size || unacknowledged(model) || !Object.keys(model.draft).length)))return;
+      const previous=retry?model.uncertain:null;
+      const changes=previous?.changes || {...model.draft};
+      const body=previous?.body || (model.scope==='live'?command(model,{changes}):{blueprint:model.snapshot.blueprint,context:model.snapshot.context,expected_revision:model.snapshot.profile_revision,changes});
+      if(!retry)model.draft={};
+      model.sending=true; model.error='';
       const key=model.key;
       for(const [path,value] of Object.entries(changes))model.pending[path]={value,revision:null};
       status(host,model);
       try {
-        const result=await fetchJSON(model.scope==='live'?`/api/operations/${encodeURIComponent(model.snapshot.operation_id)}/live-controls`:'/api/run-controls',model.scope==='live'?command(model,{changes}):{blueprint:model.snapshot.blueprint,context:model.snapshot.context,expected_revision:model.snapshot.profile_revision,changes});
+        const result=await fetchJSON(model.scope==='live'?`/api/operations/${encodeURIComponent(model.snapshot.operation_id)}/live-controls`:'/api/run-controls',body);
         if(model.key!==key || !current(host,model))return;
         if(model.scope==='saved') {
           if(!result.settings)throw new Error('Saved settings were not returned; refresh before editing again.');
           refresh(model,{...model.snapshot,...result});
           for(const path of Object.keys(changes))delete model.pending[path];
         } else {
+          model.uncertain=null;
+          receipt(model,result.command,{kind:'controls',payload:changes});
           const revision=result.control_revision ?? result.battle?.control_revision;
           for(const path of Object.keys(changes))model.pending[path].revision=revision;
           if(result.battle)refresh(model,{...model.snapshot,...result.battle});
           else if(numeric(revision))model.snapshot.control_revision=revision;
         }
       } catch(error) {
-        model.error=error.message;
-        for(const [path,value] of Object.entries(changes)) { delete model.pending[path]; if(!Object.hasOwn(model.draft,path))model.draft[path]=value; }
+        if(!current(host,model))return;
+        if(model.scope==='live') {
+          model.uncertain={kind:'controls',body,changes};
+          model.error=`Command acknowledgement unavailable; outcome unknown: ${error.message}`;
+        } else {
+          model.error=error.message;
+          for(const [path,value] of Object.entries(changes)) { delete model.pending[path]; if(!Object.hasOwn(model.draft,path))model.draft[path]=value; }
+        }
         onError(error);
       } finally {
         model.sending=false; status(host,model);
@@ -471,15 +551,25 @@
         for(const resolve of model.waiters || [])resolve();model.waiters=[];
       }
     }
-    async function runAction(host,model,action) {
-      if(model.sending || actionBusy(model) || unacknowledged(model) || Object.keys(model.draft).length || Object.keys(model.pending).length)return;
+    async function runAction(host,model,action,retry=false) {
+      if(!current(host,model) || model.sending || (!retry && (actionBusy(model) || unacknowledged(model) || Object.keys(model.draft).length || Object.keys(model.pending).length)))return;
+      const body=retry?model.uncertain.body:command(model,{action});
       model.sending=true; model.error=''; status(host,model);
       try {
-        const result=await fetchJSON(`/api/operations/${encodeURIComponent(model.snapshot.operation_id)}/actions`,command(model,{action}));
+        const result=await fetchJSON(`/api/operations/${encodeURIComponent(model.snapshot.operation_id)}/actions`,body);
+        if(!current(host,model))return;
+        if(!result.command?.id && !result.command_id)throw new Error('No command acknowledgement returned');
+        model.uncertain=null;
+        receipt(model,result.command,{kind:'action',payload:{action}});
         if(result.battle)refresh(model,{...model.snapshot,...result.battle});
         model.actionPending=['applied','rejected','failed','completed','expired'].includes(result.command?.state)?null:result.command?.id || result.command_id || action;
-      } catch(error) {model.error=error.message;onError(error);}
+      } catch(error) {if(!current(host,model))return;model.uncertain={kind:'action',body,action};model.error=`Command acknowledgement unavailable; outcome unknown: ${error.message}`;onError(error);}
       finally {model.sending=false;status(host,model);}
+    }
+    function retryCommand(host,model) {
+      if(!model.uncertain || model.sending || model.observationUnavailable || !current(host,model))return;
+      if(model.uncertain.kind==='action')return runAction(host,model,model.uncertain.action,true);
+      return flush(host,model,true);
     }
     async function choose(blueprint) {
       selected=blueprint; const token=++epoch;
@@ -533,33 +623,104 @@
         else liveHost.textContent=`Live controls unavailable: ${error.message}`;
       } finally {pollBusy=false;}
     }
-    async function history(instance='') {
+    const sameContext=(first,second)=>!first || !second || ['device_key','instance','account','serial'].every(key=>(first[key] ?? null)===(second[key] ?? null));
+    function historyToolbar() {
+      const host=historyHost;if(!host)return;
+      const message=host.querySelector('[data-history-status]');
+      if(message)message.textContent=historyState.error?`${historyState.error}${historyState.loaded?' - Last known records retained.':''}`:historyState.loading?'Refreshing battle history...':historyState.loaded?`Page ${Math.floor(historyState.offset/historyState.limit)+1} - ${historyState.rows.length} records`:'';
+      host.querySelectorAll('[data-history-command]').forEach(button=> {
+        const kind=button.dataset.historyCommand;
+        button.hidden=kind==='retry' && !historyState.error;
+        button.disabled=historyState.loading || (kind==='previous' && historyState.offset===0) || (kind==='next' && !historyState.hasNext);
+      });
+      const filter=host.querySelector('[data-history-filter]');
+      if(filter){filter.value=historyState.status;filter.disabled=historyState.loading;}
+    }
+    function mountHistory() {
+      if(!historyHost || mountedHistoryHost===historyHost)return;
+      mountedHistoryHost=historyHost;
+      historyHost.innerHTML=`<div class="rw-history-toolbar"><label>Status <select data-history-filter><option value="">All recorded battles</option><option value="active">Active</option><option value="prepared">Prepared</option><option value="ended">Ended</option><option value="interrupted">Observation interrupted</option></select></label><button class="small ghost" data-history-command="refresh">Refresh</button><button class="small ghost" data-history-command="retry" hidden>Retry</button><button class="small ghost" data-history-command="previous">Previous</button><button class="small ghost" data-history-command="next">Next</button><small role="status" data-history-status></small></div><div class="rw-history-list"></div><div class="rw-history-detail">${historyState.detailHTML}</div>`;
+      historyHost.onclick=event=> {
+        const row=event.target.closest('[data-battle]');if(row){detail(row.dataset.battle);return;}
+        if(event.target.closest('[data-detail-retry]')){detail(historyKey);return;}
+        const button=event.target.closest('[data-history-command]');if(!button || button.disabled)return;
+        const kind=button.dataset.historyCommand;
+        const offset=kind==='next'?historyState.offset+historyState.limit:kind==='previous'?Math.max(0,historyState.offset-historyState.limit):historyState.offset;
+        history(historyState.instance,{offset});
+      };
+      historyHost.onchange=event=> {
+        const filter=event.target.closest('[data-history-filter]');
+        if(filter)history(historyState.instance,{offset:0,status:filter.value});
+      };
+      renderHistoryRows();historyToolbar();
+    }
+    function renderHistoryRows() {
+      const target=historyHost?.querySelector('.rw-history-list');if(!target)return;
+      target.innerHTML=historyState.rows.map(b=>`<button class="ghost rw-history-row" data-battle="${esc(b.id)}" aria-pressed="${b.id===historyKey}"><strong>${esc(b.label || b.blueprint || b.id)}</strong><span>${esc(b.status ?? 'Unknown status')}</span><span>Tier ${esc(b.tier ?? 'unknown')} - wave ${esc(b.wave ?? b.final_wave ?? 'unknown')}</span><small>${esc(b.started_at ? new Date(b.started_at*1000).toLocaleString():'Start time unknown')}</small></button>`).join('') || `<p>${historyState.loaded?'No battles match this filter.':'No history loaded yet.'}</p>`;
+    }
+    async function history(instance=historyState.instance, options={}) {
       if(!historyHost)return;
-      const token=++historyRequest;
-      historyHost.textContent='Loading battle history…';
+      if(instance!==historyState.instance) {
+        historyState={instance,limit:20,offset:0,status:'',rows:[],loaded:false,hasNext:false,loading:false,error:'',scope:null,detailHTML:''};
+        historyKey='';detailRequest++;mountedHistoryHost=null;
+      }
+      mountHistory();
+      const token=++historyRequest, host=historyHost, targetContext=context;
+      const offset=options.offset ?? historyState.offset, filter=options.status ?? historyState.status;
+      historyState.loading=true;historyState.error='';historyToolbar();
       try {
-        const result=await fetchJSON(`/api/battles?instance=${encodeURIComponent(instance)}`);
-        if(token!==historyRequest || !historyHost)return;
-        historyHost.innerHTML=`<div class="rw-history-list">${(result.battles || []).map(b=>`<button class="ghost rw-history-row" data-battle="${esc(b.id)}"><strong>${esc(b.label || b.blueprint || b.id)}</strong><span>${esc(b.status ?? 'Unknown status')}</span><span>Tier ${esc(b.tier ?? 'unknown')} · wave ${esc(b.wave ?? b.final_wave ?? 'unknown')}</span><small>${esc(b.started_at ? new Date(b.started_at*1000).toLocaleString():'Start time unknown')}</small></button>`).join('') || '<p>No recorded battles.</p>'}</div><div class="rw-history-detail"></div>`;
-        historyHost.onclick=event=> {const row=event.target.closest('[data-battle]');if(row)detail(row.dataset.battle);};
-      } catch(error) {if(token===historyRequest)historyHost.textContent=error.message;}
+        const params=new URLSearchParams({instance,limit:String(historyState.limit+1),offset:String(offset)});
+        if(filter)params.set('status',filter);
+        const result=await fetchJSON(`/api/battles?${params}`);
+        if(token!==historyRequest || host!==historyHost || targetContext!==context)return;
+        if(!Array.isArray(result.battles))throw new Error('Battle history response was incomplete');
+        if(result.context && instance && result.context.instance!==instance)throw new Error('History context changed; refresh the selected device');
+        if(result.context && result.battles.some(row=>!row.context || !sameContext(row.context,result.context)))throw new Error('History returned another device context');
+        if(historyState.scope && result.context && !sameContext(historyState.scope,result.context)) {
+          historyKey='';detailRequest++;historyState.detailHTML='';
+          const detail=host.querySelector('.rw-history-detail');
+          if(detail)detail.textContent='Selected account changed; choose a recorded battle.';
+        }
+        historyState.rows=result.battles.slice(0,historyState.limit);
+        historyState.hasNext=result.battles.length>historyState.limit;
+        historyState.scope=result.context || historyState.scope;
+        historyState.offset=offset;historyState.status=filter;historyState.loaded=true;
+        renderHistoryRows();
+      } catch(error) {
+        if(token===historyRequest && host===historyHost && targetContext===context)historyState.error=`History unavailable: ${error.message}`;
+      } finally {
+        if(token===historyRequest && host===historyHost && targetContext===context){historyState.loading=false;historyToolbar();}
+      }
     }
     async function detail(id) {
+      const sameSelection=historyKey===id;
       historyKey=id;
-      const target=historyHost?.querySelector('.rw-history-detail');if(!target)return;
-      target.textContent='Loading battle…';
+      const host=historyHost, target=host?.querySelector('.rw-history-detail');if(!target)return;
+      const token=++detailRequest, targetContext=context, instance=historyState.instance;
+      const scope=historyState.scope;
+      if(!sameSelection)historyState.detailHTML='';
+      if(!historyState.detailHTML)target.textContent='Loading battle...';
+      renderHistoryRows();
       try {
-        const result=await fetchJSON(`/api/battles/${encodeURIComponent(id)}`);if(historyKey!==id)return;
+        const result=await fetchJSON(`/api/battles/${encodeURIComponent(id)}${instance?`?instance=${encodeURIComponent(instance)}`:''}`);
+        if(token!==detailRequest || historyKey!==id || host!==historyHost || targetContext!==context)return;
         const battle=result.battle;
-        target.innerHTML=`<article><header>${esc(battle.label || battle.blueprint || battle.id)}</header><p>${esc(battle.status ?? 'Unknown status')} · tier ${esc(battle.tier ?? 'unknown')}</p><p>Result: ${esc(battle.result ?? battle.outcome ?? 'unknown')} · end reason: ${esc(battle.end_reason ?? battle.reason ?? 'unknown')}</p>${historySummaryHTML(battle)}<details><summary>Configuration snapshot</summary><pre>${esc(JSON.stringify(battle.envelope ?? {status:'Configuration was not recorded'},null,2))}</pre></details><details open><summary>Recorded activity</summary><div class="rw-activity">${(result.events || []).map(e=>`<p><time>${esc(e.t ? new Date(e.t*1000).toLocaleTimeString():'Time unknown')}</time> ${esc(e.kind || e.action || 'Activity')}<small>${esc(e.reason || e.status || '')}</small></p>`).join('') || '<p>Activity was not recorded.</p>'}</div></details></article>`;
-      } catch(error) {if(historyKey===id)target.textContent=error.message;}
+        if(!battle || battle.id!==id || (scope && (!battle.context || !result.context)) || !sameContext(battle.context,scope) || !sameContext(result.context,scope))throw new Error('Battle detail context changed');
+        if(instance && result.context && result.context.instance!==instance)throw new Error('Battle detail belongs to another device');
+        const html=`<article><header>${esc(battle.label || battle.blueprint || battle.id)}</header><p>${esc(battle.status ?? 'Unknown status')} - tier ${esc(battle.tier ?? 'unknown')}</p><p>Result: ${esc(battle.result ?? battle.outcome ?? 'unknown')} - end reason: ${esc(battle.end_reason ?? battle.reason ?? 'unknown')}</p>${historySummaryHTML(battle)}<details><summary>Configuration snapshot</summary><pre>${esc(JSON.stringify(battle.envelope ?? {status:'Configuration was not recorded'},null,2))}</pre></details><details open><summary>Recorded activity</summary><div class="rw-activity">${(result.events || []).map(e=>`<p><time>${esc(e.t ? new Date(e.t*1000).toLocaleTimeString():'Time unknown')}</time> ${esc(e.kind || e.action || 'Activity')}<small>${esc(historyActivityText(e))}</small></p>`).join('') || '<p>Activity was not recorded.</p>'}</div></details></article>`;
+        historyState.detailHTML=html;target.innerHTML=html;
+      } catch(error) {
+        if(token===detailRequest && historyKey===id && host===historyHost && targetContext===context)target.innerHTML=`<p role="status">Battle detail unavailable: ${esc(error.message)}${historyState.detailHTML?' - Last known detail retained.':''} <button class="small ghost" data-detail-retry>Retry detail</button></p>${historyState.detailHTML}`;
+      }
     }
     return {
       attach(hosts) {
         const incoming=hosts.context || '';
         if(context!==incoming){
           if(saved)clearTimeout(timers.get(saved));
-          saved=null;live=null;epoch++;historyRequest++;historyKey='';
+          saved=null;live=null;epoch++;historyRequest++;detailRequest++;historyKey='';mountedHistoryHost=null;historyState={instance:'',limit:20,offset:0,status:'',rows:[],loaded:false,hasNext:false,loading:false,error:'',scope:null,detailHTML:''};
+          if(hosts.history)hosts.history.textContent='History not loaded for this context.';
+          if(hosts.live)hosts.live.textContent='Loading current battle…';
         }
         context=incoming;
         liveHost=hosts.live;savedHost=hosts.saved;historyHost=hosts.history;
@@ -571,8 +732,8 @@
       async prepareEntry(){if(saved)await settleSaved(saved);return true;},
       tick(){if(live)clocks(liveHost,live);},
       selected:()=>selected,
-      destroy(){if(clockTimer)clearInterval(clockTimer);for(const timer of timers.values())clearTimeout(timer);liveHost=null;savedHost=null;historyHost=null;epoch++;historyRequest++;}
+      destroy(){if(clockTimer)clearInterval(clockTimer);for(const timer of timers.values())clearTimeout(timer);liveHost=null;savedHost=null;historyHost=null;epoch++;historyRequest++;detailRequest++;}
     };
   }
-  return {create,makeModel,refresh,effective,settings,fieldValue,countdown,durationHint,command,identity,renderHTML,allowed,editPlan,moveQueue,dropInQueue,conversionHTML,setupEvidenceHTML,historySummaryHTML,observationValues,inspectLink};
+  return {create,makeModel,refresh,effective,settings,fieldValue,countdown,durationHint,command,identity,renderHTML,allowed,editPlan,moveQueue,dropInQueue,conversionHTML,setupEvidenceHTML,historySummaryHTML,observationValues,inspectLink,commandFeedback,resultText};
 });

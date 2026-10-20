@@ -17,7 +17,7 @@ test('API errors carry the exact request ID sent to the server and one diagnosti
 });
 test('network and malformed successful responses are observable failures',async()=>{
   for(const fetch of [async()=>{throw Error('offline');},async()=>({ok:true,status:200,json:async()=>{throw Error('not json');}})]){
-    const events=[],ctx=vm.createContext({fetch,reportDiagnostic:(...args)=>events.push(args)});
+    const events=[],ctx=vm.createContext({fetch,AbortController,setTimeout,clearTimeout,reportDiagnostic:(...args)=>events.push(args)});
     vm.runInContext(section('async function api(', 'const post = '),ctx);
     await assert.rejects(ctx.api('/api/status'));
     assert.equal(events.length,1);assert.equal(events[0][0],'api_error');

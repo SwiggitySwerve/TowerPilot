@@ -6,12 +6,12 @@ const {section}=require('./helpers.cjs');
 function editor(rules) {
   const saves=[];
   const draft={arm:'always',rules:structuredClone(rules)};
-  const ctx=vm.createContext({P2:{name:'saved_rules',draft},S:{vocab:{
+  const ctx=vm.createContext({TowerDuration:require('../webui/duration-format.js'),P2:{name:'saved_rules',draft},S:{vocab:{
     rule_triggers:{fields:{wave_at_least:{fields:{}}}},
     rule_actions:{fields:{cancel_sprint:{fields:{}},toggle_uw:{fields:{weapon:{type:'string',values:['chain_lightning','poison_swamp']},want_on:{type:'bool'}}}}}
   }},esc:value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'),
     p2Save:()=>saves.push(structuredClone(draft))});
-  vm.runInContext(section('function pInput(', 'function shopHtml(){'),ctx);
+  vm.runInContext(section('function updateSecondsHint(', 'function shopHtml(){'),ctx);
   return {ctx,draft,saves,render:()=>ctx.rescueHtml()};
 }
 

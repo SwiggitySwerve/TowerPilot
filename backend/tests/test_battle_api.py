@@ -1,6 +1,7 @@
 """Saved and live HTTP transactions use temporary profiles and real SQLite."""
 import copy
 import importlib.util
+import time
 from pathlib import Path
 
 import pytest
@@ -44,6 +45,46 @@ def live(dash):
     battle = store.activate(battle['id'], 'driver', {
         'controls': ['routines.ad_gems.enabled'], 'actions': ['ad_gems']})
     return store, operation, battle
+
+
+def test_history_and_detail_are_fenced_to_requested_device_and_account(dash, monkeypatch):
+    _, _, battle = live(dash)
+    client = dash.app.test_client()
+    first = client.get('/api/battles?instance=main').get_json()
+    assert first['context']['instance'] == 'main'
+    assert first['battles'][0]['id'] == battle['id']
+    assert client.get('/api/battles?instance=other').get_json()['battles'] == []
+    assert client.get(f"/api/battles/{battle['id']}?instance=other").status_code == 404
+    detail = client.get(f"/api/battles/{battle['id']}?instance=main").get_json()
+    assert detail['context'] == first['context']
+    assert detail['battle']['id'] == battle['id']
+    assert client.get('/api/battles?instance=missing').status_code == 400
+    assert client.get(f"/api/battles/{battle['id']}?instance=missing").status_code == 400
+
+    cfg = dash.load_config()
+    cfg['instances']['main']['account'] = 'another_account'
+    cfg['accounts'] = {'another_account': {'active_profile': 'mine'}}
+    monkeypatch.setattr(dash, 'load_config', lambda: copy.deepcopy(cfg))
+    assert client.get('/api/battles?instance=main').get_json()['battles'] == []
+    assert client.get(f"/api/battles/{battle['id']}?instance=main").status_code == 404
+
+
+def test_schedule_status_reads_recorded_decision_and_rejects_other_context(dash):
+    _, operation, _ = live(dash)
+    store = operations.ledger(dash.ROOT)
+    snapshot = dict(availability='available', observed_at=time.time(),
+                    winner={'id': 'block', 'label': 'Recorded selection'},
+                    reason='first_eligible_block', context={key: operation['context'].get(key)
+                    for key in ('instance', 'account', 'serial', 'profile')})
+    store.transition(operation['id'], operation['revision'], 'running',
+                     progress={'schedule': snapshot})
+    client = dash.app.test_client()
+    observed = client.get('/api/schedule/status?instance=main').get_json()
+    assert observed['available'] is True
+    assert observed['winner'] == snapshot['winner']
+    assert observed['operation_id'] == operation['id']
+    assert client.get('/api/schedule/status?instance=other').get_json()['winner'] is None
+    assert client.get('/api/schedule/status?instance=missing').status_code == 400
 
 
 def test_saved_controls_isolated_revisioned_and_return_effective_settings(dash):

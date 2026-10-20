@@ -49,6 +49,20 @@
       (error?`Latest: ${error.exception_type || 'Error'}: ${error.message || 'details unavailable'}${numeric(error.t)?` at ${new Date(error.t*1000).toLocaleString()}`:''}. `:'')+
       'Other processes’ writers are not covered by this health snapshot.';
   }
+  function runtimeHTML(result) {
+    const server=result.server || {}, scan=result.process_refresh || {};
+    const revision=build=>build?.source_revision?.slice(0,12) || 'unavailable (packaged or unversioned source)';
+    const provenance=build=>build?.source_fingerprint?`source ${build.source_fingerprint.slice(0,12)}`:'source identity unknown';
+    const changed=server.source_changed===true?'Source changed since server load; restart the dashboard to load backend changes.':
+      server.source_changed===false?'Server source snapshot matches disk.':'Source freshness unknown.';
+    const workers=(result.workers || []).map(op=>{
+      const build=op.worker?.build;
+      const matches=build?.source_fingerprint && result.server?.disk_source_fingerprint?
+        build.source_fingerprint===result.server.disk_source_fingerprint?'matches current source':'source differs from disk':'source freshness unknown';
+      return `<li>${esc(op.kind)} · ${esc(op.instance)} · PID ${esc(op.worker?.pid ?? 'unknown')} · ${op.alive?'running':'not verified alive'} · ${esc(revision(build))} · ${esc(provenance(build))} · ${esc(matches)}</li>`;
+    }).join('');
+    return `<strong>Server and workers</strong><p>Port ${esc(result.port)} · PID ${esc(server.pid)} · revision ${esc(revision(server))} · ${esc(provenance(server))}</p><p>${esc(changed)}${server.error?` ${esc(server.error.message)}`:''}</p><p>Source captured ${numeric(server.captured_at)?esc(new Date(server.captured_at*1000).toLocaleString()):'at an unknown time'}. This snapshot identifies source at load time; existing workers keep their own code.</p><p>Process discovery: ${esc(scan.state || 'unknown')}${numeric(scan.age_sec)?` · last success ${Math.floor(scan.age_sec)}s ago`:''}${scan.error?` · ${esc(scan.error.type)}: ${esc(scan.error.message)}`:''}</p>${workers?`<ul>${workers}</ul>`:'<p>No active operations recorded.</p>'}<details><summary>Capabilities and raw runtime identity</summary><pre>${esc(JSON.stringify(result,null,2))}</pre></details>`;
+  }
   function eventKey(event,index) {return `${event._log?.file ?? ''}:${event._log?.offset ?? index}`;}
   function eventsHTML(events,opened=new Set()) {
     return events.map((event,index)=> {
@@ -67,9 +81,23 @@
   function create(options) {
     const request=options.request, doc=options.document ?? globalThis.document;
     const setTimer=options.setInterval ?? globalThis.setInterval, clearTimer=options.clearInterval ?? globalThis.clearInterval;
-    let host=null,filters={},result=null,resultFilters={},timer=null,generation=0,busy=false,queued=false,dirty=false,auto=true,sourceKey='';
+    let host=null,filters={},result=null,resultFilters={},timer=null,generation=0,busy=false,queued=false,dirty=false,auto=true,sourceKey='',runtimeBusy=false;
     function visible() {return !!host?.isConnected && doc?.visibilityState!=='hidden' && !host.closest?.('[hidden]');}
     function status(text) {const el=host?.querySelector('[data-diag-status]');if(el)el.textContent=text;}
+    async function refreshRuntime() {
+      const target=host,token=generation,region=host?.querySelector('[data-diag-runtime]');
+      if(!region || runtimeBusy || !visible())return;
+      runtimeBusy=true;
+      try {
+        const response=await request('/api/runtime');
+        if(host===target && token===generation)region.innerHTML=runtimeHTML(response);
+      } catch(error) {
+        if(host===target && token===generation)region.textContent=`Runtime identity unavailable: ${error.message}. Refresh to retry; older servers may not expose this endpoint.`;
+      } finally {
+        runtimeBusy=false;
+        if(host!==target || token!==generation)refreshRuntime();
+      }
+    }
     function readFilters() {
       const values={};
       host.querySelectorAll('[data-diag-filter]').forEach(input=>values[input.dataset.diagFilter]=input.type==='checkbox'?input.checked:input.value);
@@ -80,6 +108,7 @@
     }
     async function refresh() {
       if(!visible())return;
+      refreshRuntime();
       if(busy){queued=true;return;}
       const target=host,token=generation,applied={...filters};
       busy=true;
@@ -130,6 +159,8 @@
       unmount();host=target;sourceKey=key;filters=incoming;result=null;dirty=false;auto=true;
       if(!host)return;
       host.innerHTML=renderHTML(filters);
+      const runtime=doc?.createElement?.('section');
+      if(runtime){runtime.dataset.diagRuntime='';runtime.className='diag-runtime';runtime.setAttribute('aria-live','polite');host.prepend(runtime);}
       host.oninput=event=>{if(event.target.closest('[data-diag-filter], [data-diag-since]')){dirty=true;status('Filters changed; apply them to update results.');}};
       host.onchange=event=>{if(event.target.closest('[data-diag-auto]'))auto=event.target.checked;};
       host.onsubmit=event=> {
@@ -145,5 +176,5 @@
       refresh();
     },unmount,refresh,destroy:unmount};
   }
-  return {create,fromHash,query,coverageText,writerHealthText,eventsHTML,renderHTML,exportPayload};
+  return {create,fromHash,query,coverageText,writerHealthText,runtimeHTML,eventsHTML,renderHTML,exportPayload};
 });

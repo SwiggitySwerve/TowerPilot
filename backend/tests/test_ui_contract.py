@@ -21,8 +21,10 @@ import json
 import os
 import re
 import shutil
+from pathlib import Path
 
 import pytest
+import yaml
 
 BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INDEX = os.path.join(os.path.dirname(BACKEND), "frontend", "webui",
@@ -269,6 +271,36 @@ def test_api_empty_label_refused(dash, ui_profile):
                ["policies", "gather", "all_on", "label"], "")
     assert r.status_code == 400
     assert ".label" in r.get_json()["error"]
+
+
+def test_profile_revision_blocks_uncertain_repeat_delete(dash, ui_profile):
+    """A lost response cannot turn retrying one deletion into two deletions."""
+    with dash.app.test_client() as client:
+        before = client.get(f'/api/profile-src/{ui_profile}').get_json()
+        owned = before['profile']['player']['card_presets']
+        payload = dict(name=ui_profile, path=['player', 'card_presets', 0],
+                       op='delete', expected_revision=before['revision'])
+        # Keep the ordinary schema validator; remove a preset not bound by a loadout.
+        payload['path'][-1] = owned.index('disco')
+        first = client.post('/api/profile-patch', json=payload)
+        assert first.status_code == 200, first.get_json()
+        result = first.get_json()
+        assert result['revision'] != before['revision']
+        retry = client.post('/api/profile-patch', json=payload)
+        assert retry.status_code == 409
+        assert retry.get_json()['code'] == 'revision_conflict'
+        after = client.get(f'/api/profile-src/{ui_profile}').get_json()
+        assert after['revision'] == result['revision']
+        assert after['profile'] == result['profile']
+        stored = yaml.safe_load(Path(dash._profile_path(ui_profile)).read_text())
+        assert stored == result['profile']
+
+
+def test_profile_failed_readback_never_returns_success(dash, ui_profile, monkeypatch):
+    monkeypatch.setattr(dash, '_save_yaml_backup', lambda path, data: 'unwritten')
+    response = _patch(dash, ui_profile, ['policies', 'gather', 'all_on', 'label'], 'Changed')
+    assert response.status_code == 500
+    assert 'readback' in response.get_json()['error']
 
 
 # ------------------------------------------------------ runner start argv
