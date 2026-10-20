@@ -6,3 +6,6 @@
 # Codex reads AGENTS.md from the project root by default. Keep the project's
 # own instruction file as the single source of truth.
 project_doc_max_bytes = 65536
+
+[agents]
+max_concurrent_threads_per_session = 10

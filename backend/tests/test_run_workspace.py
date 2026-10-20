@@ -107,6 +107,23 @@ def test_repeated_queue_updates_reuse_owned_key_without_accumulating_policies(pr
     assert playerprofile.validate(second['profile']) == []
 
 
+def test_sustained_cadence_roundtrips_saved_profile_without_changing_interval_or_reserve(profile, tmp_path):
+    import yaml
+    plan = shopping_plan.normalize_plan(dict(version=2, interval_sec=90, cash_reserve=50,
+                                            queue=[{'id': 'health'}]))
+    original = run_workspace.update(profile, {}, 'farm', {'shopping_plan': plan})
+    plan['cadence'] = 'while_affordable'
+    updated = run_workspace.update(original['profile'], {}, 'farm', {'shopping_plan': plan})
+    target = tmp_path / 'synthetic-profile.yaml'
+    target.write_text(yaml.safe_dump(updated['profile']), encoding='utf-8')
+    restored = yaml.safe_load(target.read_text(encoding='utf-8'))
+    saved = run_workspace.read(restored, {}, 'farm')['settings']['shopping_plan']
+    assert saved['cadence'] == 'while_affordable'
+    assert saved['interval_sec'] == 90 and saved['cash_reserve'] == 50
+    assert restored['policies']['shopping_lists']['shared'] == profile['policies']['shopping_lists']['shared']
+    assert playerprofile.compile_preset(restored, 'farm')['shopping_plan'] == saved
+
+
 def test_owned_policy_name_collision_never_overwrites_unrelated_entry(profile):
     profile['policies']['gather']['farm_controls_gather'] = {'ad_gems': False}
     result = run_workspace.update(profile, {}, 'farm', {'routines.ad_gems.window_sec': 20})

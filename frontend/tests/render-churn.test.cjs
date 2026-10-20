@@ -1,6 +1,7 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
+const WorkspaceStatus = require('../webui/workspace-status.js');
 const {section} = require('./helpers.cjs');
 
 /* The Screens tab re-renders on every 2.5 s status tick. A panel that embeds
@@ -34,6 +35,7 @@ function page() {
   };
   const ids = ['#calib-report', '#asset-library-summary', '#calib-knowledge'];
   const ctx = vm.createContext({
+    WorkspaceStatus,
     S: {calib: {have: Array.from({length: TARGETS}, (_, i) => `group/target_${i}.png`)}},
     $: selector => ids.includes(selector) ? region(selector) : selector === '#calib-phase2' ? {} : null,
     esc: v => String(v ?? ''), Date, JSON, Object, Array, Number,

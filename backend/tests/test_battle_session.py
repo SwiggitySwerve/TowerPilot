@@ -122,6 +122,103 @@ def test_collector_only_driver_never_advertises_other_gates(driver):
     session.publish(rs, battle_visible=False)
 
 
+def test_collection_summary_counts_distinct_scoped_confirmations_and_persists_success(driver, monkeypatch):
+    from runtime import battle_session
+    session, rs, _ = driver
+    start = session.battle['created_at']
+    now = [start+3, 100.0]
+    monkeypatch.setattr(battle_session.time, 'time', lambda: now[0])
+    monkeypatch.setattr(battle_session.time, 'monotonic', lambda: now[1])
+    ad = dict(confirmed=True, reason='offer_disappeared', observed_at=start+1, claim_attempt_id='ad-1')
+    orbit = dict(confirmed=True, reason='balance_increased', observed_at=start+2, window_id='orbit-1')
+    monkeypatch.setattr(rs.gems.ad_gems, 'status', lambda: {'last_outcome': copy.deepcopy(ad)})
+    monkeypatch.setattr(rs.gems.orbit, 'status', lambda: {'last_outcome': copy.deepcopy(orbit)})
+    for _ in range(2):
+        session.publish(rs, battle_visible=True)
+        now[0] += 1
+        now[1] += 1
+    stored = Battles(session.store.path).get(session.battle['id'])['runtime']['collection_evidence']
+    assert stored['ad_claim_confirmations'] == stored['orbit_balance_confirmations'] == 1
+    assert stored['orbit_recorded_increase'] == 2
+    assert stored['coverage'] == 'sampled_driver_observations'
+    # Non-error terminal command/collector states are not reward evidence.
+    ad.update(confirmed=False, reason='timeout', observed_at=start+4, claim_attempt_id='ad-2')
+    orbit.update(confirmed=True, reason='completed', observed_at=start+4, window_id='orbit-2')
+    session.publish(rs, battle_visible=True)
+    now[0] += 1
+    now[1] += 1
+    ad.update(confirmed=True, reason='offer_disappeared', observed_at=start+5)
+    orbit.update(reason='balance_increased', observed_at=start+5)
+    session.publish(rs, battle_visible=True)
+    session.finish('observed_death', outcome='death')
+    finished = Battles(session.store.path).get(session.battle['id'])
+    summary = finished['runtime']['collection_evidence']
+    assert finished['status'] == 'ended' and finished['outcome'] == 'death'
+    assert summary['ad_claim_confirmations'] == summary['orbit_balance_confirmations'] == 2
+    assert summary['orbit_recorded_increase'] == 4
+    assert summary['generation'] == session.generation
+    assert 'total_gems' not in summary
+
+
+@pytest.mark.parametrize('defect', ['stale', 'future', 'unconfirmed', 'no_id', 'wrong_reason'])
+def test_collection_summary_never_counts_stale_or_incomplete_outcomes(driver, monkeypatch, defect):
+    from runtime import battle_session
+    session, rs, _ = driver
+    start = session.battle['created_at']
+    monkeypatch.setattr(battle_session.time, 'time', lambda: start+3)
+    monkeypatch.setattr(battle_session.time, 'monotonic', lambda: 100)
+    outcome = dict(confirmed=True, reason='offer_disappeared', observed_at=start+1, claim_attempt_id='ad')
+    if defect == 'stale': outcome['observed_at'] = start-1
+    if defect == 'future': outcome['observed_at'] = start+4
+    if defect == 'unconfirmed': outcome['confirmed'] = False
+    if defect == 'no_id': outcome.pop('claim_attempt_id')
+    if defect == 'wrong_reason': outcome['reason'] = 'completed'
+    monkeypatch.setattr(rs.gems.ad_gems, 'status', lambda: {'last_outcome': outcome})
+    session.publish(rs, battle_visible=True)
+    summary = Battles(session.store.path).get(session.battle['id'])['runtime']['collection_evidence']
+    assert summary['ad_claim_confirmations'] == summary['orbit_recorded_increase'] == 0
+
+
+def test_new_battle_cannot_inherit_collector_confirmation_counts(driver, monkeypatch):
+    from runtime import battle_session
+    session, rs, _ = driver
+    start = session.battle['created_at']
+    now = [start+3, 100.0]
+    monkeypatch.setattr(battle_session.time, 'time', lambda: now[0])
+    monkeypatch.setattr(battle_session.time, 'monotonic', lambda: now[1])
+    monkeypatch.setattr(rs.gems.ad_gems, 'status', lambda: {'last_outcome': dict(confirmed=True, reason='offer_disappeared', observed_at=start+1, claim_attempt_id='old')})
+    session.publish(rs, battle_visible=True)
+    session.finish('test_boundary')
+    session.prepare_next()
+    now[0] += 2
+    now[1] += 2
+    session.publish(rs, battle_visible=True)
+    summary = session.store.get(session.battle['id'])['runtime']['collection_evidence']
+    assert summary['ad_claim_confirmations'] == 0
+
+
+def test_live_shopping_cadence_reaches_applied_ledger_and_shopper(driver):
+    from player.shopping_plan import default_plan
+    session, rs, operation = driver
+    plan = default_plan()
+    plan['cash_reserve'] = 0
+    session.finish('test_boundary')
+    body = session.effective_preset()
+    body['shopping_plan'] = copy.deepcopy(plan)
+    session.prepare_next(body)
+    rs.shop = Shopper(body)
+    session.observe(rs, 123)
+    plan['cadence'] = 'while_affordable'
+    command = session.store.request_controls(session.battle['id'], operation['id'], session.generation, 0,
+                                             {'shopping_plan': plan}, 'sustained-shopping')
+    session.checkpoint(rs, battle_visible=True)
+    stored = Battles(session.store.path).get(session.battle['id'])
+    assert stored['applied_revision'] == command['revision']
+    assert stored['applied_controls']['shopping_plan']['cadence'] == 'while_affordable'
+    assert rs.shop.status()['cadence'] == 'while_affordable'
+    assert session.store.commands(session.battle['id'])[-1]['state'] == 'applied'
+
+
 def test_ability_rescue_gates_are_independent_and_reenable_reobserves_weapons(driver):
     session, rs, operation = driver
     rs.cl_normalized = rs.uw_normalized = True

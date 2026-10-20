@@ -217,13 +217,20 @@ def preflight():
 
 class Scanner:
     def __init__(self, cal, state, grab=None, tap=None, read=None, pause=None,
-                 flows=False, battle_only=False, sweep=None):
+                 flows=False, battle_only=False, sweep=None, reset_setup_evidence=True):
         from device import capture, act, overlays
         from vision import textocr
         self.cal, self.state = cal, state
+        from player.bootstrap_layout import retired_route_captures
+        retired = retired_route_captures()
+        self.cal.entries = [entry for entry in self.cal.entries if entry.get('rel') not in retired]
         previous = state.get('phases', {}).get('bootstrap')
-        if previous:
-            state['scan_history'] = (state.get('scan_history', []) + [previous])[-8:]
+        if reset_setup_evidence and previous:
+            state['scan_history'] = (state.get('scan_history', []) + [dict(previous,
+                final_screen=state.get('final_screen'), setup_battle=state.get('setup_battle'))])[-8:]
+        if reset_setup_evidence:
+            state.pop('final_screen', None)
+            state.pop('setup_battle', None)
         self.grab, self.tap = grab or capture.grab, tap or act.tap
         # Ad overlays are swept before each stage that trusts the screen
         # (overlays.sweep). A scanner built on an injected frame source has
@@ -564,6 +571,13 @@ class Scanner:
         self.progress(f"{name.replace('_',' ')}: {verified}/{available} available blocks verified")
 
     def module_detail(self, grid):
+        from runtime import logger
+        with logger.attempt('setup.module_detail', screen='modules') as attempt:
+            observed = bool(self._module_detail(grid))
+            attempt.finish('observed' if observed else 'unavailable',
+                           descriptor_verified=observed, modules_grid_returned=observed)
+
+    def _module_detail(self, grid):
         from interactions import inventory
         from vision import pills
         from player import module_descriptor
@@ -582,8 +596,10 @@ class Scanner:
             raise RuntimeError("Inventory changed before opening its captured tile")
         self.check_stop()
         self.tap(cx,cy,reason="starter scan: inspect captured inventory tile")
-        self.pause(.8)
-        panel=self.grab()
+        def grab_panel():
+            self.check_stop()
+            return self.grab()
+        panel=module_descriptor.settled_panel(icon,grab_panel(),grab_panel,self.pause)
         name,rarity,box=module_descriptor.read_descriptor(icon,panel)
         close=inventory._find_close(panel)
         if close is None:
@@ -622,13 +638,19 @@ class Scanner:
             self.pause(.6)
             frame = self.grab()
             if screen_matches(frame, self.read(frame), "modules"):
-                return
+                return True
             spot = inventory._find_close(frame)
             if spot is None:
                 break
+            # A cyan glyph alone does not prove this is still the dialog we
+            # opened. Only retry while the same captured module is readable.
+            retry_name,retry_rarity,_ = module_descriptor.read_descriptor(icon,frame)
+            if (retry_name,retry_rarity)!=(name,rarity):
+                raise RuntimeError("Module description changed after closing; no further input sent")
             close = spot
             self.check_stop()
         self.observed("modules")
+        return True
 
     def card_inventory(self):
         from player.card_inventory import scan
@@ -669,15 +691,19 @@ class Scanner:
         self.begin_step(self.step_index("finish"))
         self.progress("Verifying return to Home and saving discoveries")
         self.observed("home")
+        from player.calibrate import record_final_screen
+        record_final_screen(self.cal.p,self.state,'home',verified=True)
         self.cal.save_report()
         from player.calibrate import _merge_draft
         _merge_draft(self.cal.player)
         self.finish_step(message="Returned to Home; discoveries saved")
-        attention = sum(not e.get("verified") for e in self.cal.entries)
+        attention = sum(not e.get("verified") for e in self.cal.entries
+                        if e.get("t", 0) >= self.started_at)
         # optional skips (a CLAIM button no finished quest shows) are listed,
         # never a reason to hold the scan in needs_attention
         skipped = [s for s in self.skipped if not s.get("optional")]
-        incomplete = [name for name,row in self.state.get('screen_map',{}).items() if row['status']!='verified']
+        incomplete = [name for name,row in self.state.get('screen_map',{}).items()
+                      if name in self.visited and row['status']!='verified']
         tail = ("" if self.flows
                 else " Battle and rare-dialog captures remain separate.")
         if incomplete:
@@ -700,9 +726,13 @@ class Scanner:
         if not rows:
             return out
         from player.bootstrap_layout import screen_targets
+        from player.bootstrap_layout import retired_route_captures
+        retired = retired_route_captures()
         icons = {t["rel"]: t for name in list(manifest()["screens"]) + list(manifest().get("hud", {}))
                  for t in screen_targets(name) if t.get("icon")}
         for rel, row in rows.items():
+            if rel in retired:
+                continue
             if settings.template_path(rel).exists():
                 continue
             self.check_stop()
@@ -736,9 +766,9 @@ class Scanner:
 
     def _run_flows(self):
         """The consented action-capture stage: menu-surfaced controls, then a
-        started-and-cancelled battle with its dialogs. Each is isolated so one
-        failing leaves the other and the rest of the scan intact, and each
-        returns to Home. Only reached when the starter scan was launched with
+        started-and-cancelled battle with its dialogs. Unexpected failures stop
+        setup without recovery input; successful flows return to Home.
+        Only reached when the starter scan was launched with
         flows enabled (the dashboard's popup is the consent)."""
         from player import flow_capture
         from runtime import logger
@@ -765,6 +795,9 @@ class Scanner:
                         flow.skip('buttons/quest_claim.png', 'Could not verify the mission screen route; '
                                   'captured by the quest flow when a quest is claimable', optional=True)
                         logger.event('flow_menu_error', error='mission screen route not verified', optional=True)
+                        # A missing optional control sends no input, but the
+                        # second observation may have lost screen identity.
+                        # Continue only after fresh read-only Home proof.
                         flow_capture._safe_home(flow)
                         break
                     if edge['destination'] == 'daily_missions':
@@ -780,8 +813,9 @@ class Scanner:
                 self.finish_step(message="Menu controls captured")
             except Exception as e:                   # noqa: BLE001 - isolate
                 logger.event("flow_menu_error", error=str(e)[:200])
-                flow_capture._safe_home(flow)
-                self.finish_step("needs_attention", "Menu capture interrupted; returned Home")
+                flow_capture.mark_setup_unknown(flow, e)
+                self.finish_step("needs_attention", "Menu capture interrupted; screen left as-is")
+                raise
         self.begin_step(self.step_index("flow_battle"))
         self.progress("Starting and cancelling a battle to capture its dialogs")
         try:
@@ -792,15 +826,13 @@ class Scanner:
             # the final status reads the skipped list, not this step: an
             # interrupted capture that never cut the Yes still has to name it
             flow_capture._skip_end_round_yes(flow, f"the battle capture was interrupted ({str(e)[:150]})")
-            try:
-                flow_capture._safe_home(flow)
-            except Exception as recovery:
-                raise RuntimeError(f"Battle capture stopped: {e}. {recovery}") from e
-            self.finish_step("needs_attention", "Battle capture interrupted; returned Home")
+            flow_capture.mark_setup_unknown(flow, e)
+            self.finish_step("needs_attention", "Battle capture interrupted; screen left as-is")
+            raise
 
 
 def run(p, overwrite=False, flows=False, battle_only=False):
-    from player.calibrate import Calibration, _state_load, _state_save, Stopped, _merge_draft
+    from player.calibrate import Calibration, _state_load, _state_save, Stopped, _merge_draft, record_final_screen
     st = _state_load(p)
     cal = Calibration(p, overwrite, bootstrap=True)
     cal.entries = list(st.get("entries") or [])
@@ -813,6 +845,7 @@ def run(p, overwrite=False, flows=False, battle_only=False):
         scanner.prepare_assets()
         scanner.run()
     except Exception as e:
+        record_final_screen(p,st,'unknown',verified=False,error=str(e))
         scanner.progress(str(e), "stopped" if isinstance(e, Stopped) else "error")
         cal.save_report()
         raise
@@ -840,7 +873,7 @@ def observe(p, watch=0.0):
     cal = Calibration(p, False, bootstrap=True)
     cal.entries = list(st.get("entries") or [])
     cal.player = dict(st.get("player") or {})
-    scanner = Scanner(cal, st)
+    scanner = Scanner(cal, st, reset_setup_evidence=False)
     def progress(message, status="running", **extra):
         st["observation"] = {"message": message, "status": status, "t": time.time(), **extra}
         _state_save(p, st)

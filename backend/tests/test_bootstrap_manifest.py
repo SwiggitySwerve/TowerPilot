@@ -197,6 +197,57 @@ def test_incomplete_home_never_taps(tmp_path,monkeypatch):
     assert taps==[]
 
 
+def test_new_setup_archives_and_clears_stale_final_observation(tmp_path):
+    previous={'status':'done','message':'previous setup'}
+    final={'name':'home','verified':True,'observed_at':1}
+    battle={'started':True,'tier':1}
+    state={'phases':{'bootstrap':previous},'final_screen':final,'setup_battle':battle}
+    cal=calibrate.Calibration({'state':str(tmp_path/'state.json'),'stop':str(tmp_path/'stop')},False)
+    bootstrap.Scanner(cal,state,grab=lambda:None)
+    assert 'final_screen' not in state and 'setup_battle' not in state
+    archived=state['scan_history'][-1]
+    assert archived['final_screen']==final and archived['setup_battle']==battle
+    assert archived['status']=='done'
+
+
+def test_failed_setup_persists_unknown_final_screen_without_input(tmp_path,monkeypatch):
+    import pytest
+    p={'state':str(tmp_path/'state.json'),'report':str(tmp_path/'report.json'),
+       'stop':str(tmp_path/'stop')}
+    def fail_preflight():
+        raise RuntimeError('lost foreground')
+    monkeypatch.setattr(bootstrap,'preflight',fail_preflight)
+    with pytest.raises(RuntimeError,match='lost foreground'):
+        bootstrap.run(p)
+    saved=json.loads(Path(p['state']).read_text())
+    assert saved['final_screen']['name']=='unknown'
+    assert saved['final_screen']['verified'] is False
+    assert saved['final_screen']['error']=='lost foreground'
+    assert saved['phases']['bootstrap']['status']=='error'
+
+
+def test_read_only_observe_preserves_setup_terminal_and_ownership_evidence(tmp_path,monkeypatch):
+    import settings
+    from player import asset_library, learned
+    p={'state':str(tmp_path/'state.json'),'report':str(tmp_path/'report.json'),
+       'stop':str(tmp_path/'stop')}
+    final={'name':'home','verified':True,'observed_at':1}
+    battle={'started':True,'tier':1}
+    state={'phases':{'bootstrap':{'status':'done'}},'final_screen':final,'setup_battle':battle}
+    Path(p['state']).write_text(json.dumps(state))
+    existing=tmp_path/'existing-template-marker'
+    existing.touch()
+    monkeypatch.setattr(settings,'template_path',lambda rel:existing)
+    monkeypatch.setattr(asset_library,'acquire',lambda *a: (tmp_path,{'installation':{'version':'test'}}))
+    monkeypatch.setattr(asset_library,'map_targets',lambda *a: {})
+    monkeypatch.setattr(learned,'known',lambda p: {})
+    monkeypatch.setattr(bootstrap,'_observe_pass',lambda *a: pytest.fail('already captured'))
+    assert bootstrap.observe(p)=={}
+    saved=json.loads(Path(p['state']).read_text())
+    assert saved['final_screen']==final and saved['setup_battle']==battle
+    assert not saved.get('scan_history')
+
+
 def test_battle_preparation_reuses_menu_scan(tmp_path, monkeypatch):
     from player.mapping_session import Session
     cal=calibrate.Calibration({'state':str(tmp_path/'state.json'),'stop':str(tmp_path/'stop')},False)
@@ -216,3 +267,27 @@ def test_battle_preparation_reuses_menu_scan(tmp_path, monkeypatch):
     scanner.run()
     assert state['collections']['cards']['count']==31
     assert state['screen_map']['cards']['status']=='verified'
+
+
+@pytest.mark.parametrize('current_failure', [False, True])
+def test_battle_outcome_preserves_but_does_not_inherit_prior_menu_failures(tmp_path, monkeypatch, current_failure):
+    cal=calibrate.Calibration({'state':str(tmp_path/'state.json'),'stop':str(tmp_path/'stop')},False)
+    cal.entries=[{'rel':'modules/old.png','verified':False,'t':1}]
+    state={'screen_map':{'home':{'status':'verified'},'guild_store':{'status':'needs_mapping'}}}
+    scanner=bootstrap.Scanner(cal,state,flows=True,battle_only=True,grab=lambda:None,pause=lambda _:None)
+    monkeypatch.setattr(scanner,'observed',lambda name:(None,[]))
+    monkeypatch.setattr(scanner,'harvest',lambda name,*a:scanner.visited.add(name))
+    def flows():
+        if current_failure:
+            cal.entries.append({'rel':'home/current.png','verified':False,'t':scanner.started_at+1})
+    monkeypatch.setattr(scanner,'_run_flows',flows)
+    monkeypatch.setattr(cal,'save_report',lambda:None)
+    monkeypatch.setattr(calibrate,'_merge_draft',lambda *a:None)
+    scanner.run()
+    saved=json.loads(Path(cal.p['state']).read_text())
+    result=saved['phases']['bootstrap']
+    assert result['status']==('needs_attention' if current_failure else 'done')
+    assert result['needs_attention']==int(current_failure)
+    assert 'guild_store' not in result['message']
+    assert saved['screen_map']['guild_store']['status']=='needs_mapping'
+    assert saved['entries'][0]=={'rel':'modules/old.png','verified':False,'t':1}

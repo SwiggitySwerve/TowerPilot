@@ -16,6 +16,7 @@ import os
 import socket
 import threading
 import time
+from types import SimpleNamespace
 
 import pytest
 
@@ -55,7 +56,8 @@ def dash(tmp_path, monkeypatch):
     import player.scan_plan
 
     monkeypatch.setattr(player.scan_plan, "control_gate", lambda root, cfg: {})
-    monkeypatch.setattr(mod, "_procs_cached", lambda: [])
+    mod.process_rows = []
+    monkeypatch.setattr(mod, "_scan_procs", lambda target: list(mod.process_rows))
     monkeypatch.setattr(mod, "_procs", lambda: [])
     monkeypatch.setattr(mod, "_setup_complete", lambda: True)
     monkeypatch.setattr(mod, "_calibrate_missing", lambda: [])
@@ -104,6 +106,11 @@ def _expire_backoff(dash):
     dash._RECONNECT["next_at"] = 0.0
 
 
+def _set_process_rows(dash, rows):
+    dash.process_rows[:] = rows
+    dash._procs_refresh()
+
+
 def _give_up(dash, c):
     """Ten failed attempts (each starts the moment its backoff is waived)."""
     for _ in range(10):
@@ -135,6 +142,124 @@ def test_a_dropped_device_with_its_port_open_is_recovered_in_the_background(dash
         j = _status(c)
     assert dash.recovered == [SERIAL]
     assert j["reconnect"] == {"state": "idle", "attempts": 0, "next_try_in": None, "last_error": ""}
+
+
+def _discovery_snapshot(dash, case):
+    target = dash._process_target()
+    cache = dict(target=target, at=time.time(), attempted_at=time.time(), procs=[], error=None)
+    if case == 'pending':
+        cache['at'] = 0.
+    elif case == 'stale':
+        cache['at'] -= 7
+    elif case == 'error':
+        cache['error'] = {'type': 'PermissionError', 'message': 'process discovery failed'}
+    elif case == 'wrong_serial':
+        cache['target'] = (*target[:2], 'emulator-5556')
+    elif case == 'wrong_host':
+        cache['target'] = ('other-adb-host', *target[1:])
+    elif case == 'wrong_port':
+        cache['target'] = (target[0], target[1] + 1, target[2])
+    elif case == 'future':
+        cache['at'] += 60
+    elif case == 'active_runner':
+        cache['procs'] = [{'pid': 1, 'runner': 'orchestrator', 'cmdline': ''}]
+    dash._PROCS_CACHE = cache
+    # Model normal server startup: discovery is asynchronous and a pending
+    # snapshot cannot be replaced by an inline scan on the status request.
+    dash._PROCS_THREAD = SimpleNamespace(is_alive=lambda: True)
+    return cache
+
+
+UNSAFE_DISCOVERY = ['pending', 'stale', 'error', 'wrong_serial', 'wrong_host',
+                    'wrong_port', 'future', 'active_runner']
+
+
+@pytest.mark.parametrize('case', UNSAFE_DISCOVERY)
+def test_transport_recovery_requires_fresh_success_for_the_exact_target(dash, case):
+    _discovery_snapshot(dash, case)
+    dash._reconnect_tick(dash.cfg, SERIAL, 'offline', True)
+    _settle(dash)
+    assert dash.recovered == []
+    assert dash._RECONNECT['state'] == 'idle' and dash._RECONNECT['attempts'] == 0
+
+
+@pytest.mark.parametrize('case', UNSAFE_DISCOVERY)
+def test_unknown_discovery_still_allows_server_only_recovery(dash, case):
+    _discovery_snapshot(dash, case)
+    dash.result.update(start=True, state='missing')
+    dash._reconnect_tick(dash.cfg, SERIAL, 'no_server', True)
+    _settle(dash)
+    assert dash.recovered == [SERIAL]
+    assert dash.recover_kw == [{'attempts': 0}]
+    assert dash.spawned == [[ADB, 'start-server']]
+
+
+def test_fresh_successful_empty_discovery_allows_transport_recovery(dash):
+    _discovery_snapshot(dash, 'fresh_empty')
+    dash._reconnect_tick(dash.cfg, SERIAL, 'offline', True)
+    _settle(dash)
+    assert dash.recovered == [SERIAL] and dash.recover_kw == [{}]
+
+
+def test_an_in_progress_scan_cannot_authorize_recovery_from_its_previous_empty_result(dash):
+    _discovery_snapshot(dash, 'fresh_empty')
+    with dash._PROCS_LOCK:
+        dash._reconnect_tick(dash.cfg, SERIAL, 'offline', True)
+    _settle(dash)
+    assert dash.recovered == [] and dash._RECONNECT['attempts'] == 0
+
+
+def test_cache_replacement_during_snapshot_selection_cannot_combine_old_rows_with_new_evidence(dash, monkeypatch):
+    _discovery_snapshot(dash, 'fresh_empty')
+    original = dash._procs_snapshot
+    def racing_snapshot(*args, **kwargs):
+        cache, target = original(*args, **kwargs)
+        dash._PROCS_CACHE = dict(cache, procs=[{'pid': 2}])
+        return cache, target
+    monkeypatch.setattr(dash, '_procs_snapshot', racing_snapshot)
+    dash._reconnect_tick(dash.cfg, SERIAL, 'offline', True)
+    _settle(dash)
+    assert dash.recovered == []
+
+
+@pytest.mark.parametrize('change', ['snapshot', 'serial', 'host', 'stale', 'pending_scan'])
+def test_recovery_thread_rechecks_snapshot_and_target_before_touching_transport(dash, monkeypatch, change):
+    cache = _discovery_snapshot(dash, 'fresh_empty')
+    scheduled = []
+    class DeferredThread:
+        def __init__(self, *, target, args, **kwargs):
+            self.run = lambda: target(*args)
+        def start(self):
+            scheduled.append(self)
+        def is_alive(self):
+            return False
+        def join(self, timeout=None):
+            pass
+    monkeypatch.setattr(dash.threading, 'Thread', DeferredThread)
+    dash._reconnect_tick(dash.cfg, SERIAL, 'offline', True)
+    assert len(scheduled) == 1
+    if change == 'snapshot':
+        dash._PROCS_CACHE = dict(cache, procs=[{'pid': 2}])
+    elif change == 'serial':
+        dash.cfg['instances']['main']['serial'] = 'emulator-5556'
+    elif change == 'host':
+        monkeypatch.setattr(adbclient, '_HOST', ('different-host', adbclient._HOST[1]))
+    elif change == 'stale':
+        cache['at'] -= 7
+    if change == 'pending_scan':
+        with dash._PROCS_LOCK:
+            scheduled[0].run()
+    else:
+        scheduled[0].run()
+    assert dash.recovered == [] and dash._RECONNECT['attempts'] == 0
+    assert dash._RECONNECT['state'] == 'idle'
+
+
+def test_request_config_and_reported_serial_must_agree_before_recovery(dash):
+    _discovery_snapshot(dash, 'fresh_empty')
+    dash._reconnect_tick(dash.cfg, 'emulator-5556', 'offline', True)
+    _settle(dash)
+    assert dash.recovered == []
 
 
 def test_no_attempt_while_the_emulator_port_is_closed(dash):
@@ -304,7 +429,7 @@ def test_a_down_server_is_started_for_a_serial_without_a_port(dash):
 def test_no_transport_is_touched_while_a_runner_owns_the_device(dash):
     # the manual reconnect refuses with 409 while runners live (a reconnect
     # can bounce the transport); the runner's capture.grab recovers its own
-    dash._procs_cached = lambda: [{"pid": 1, "runner": "orchestrator", "cmdline": ""}]
+    _set_process_rows(dash, [{"pid": 1, "runner": "orchestrator", "cmdline": ""}])
     with dash.app.test_client() as c:
         j = _status(c)
         _settle(dash)
@@ -315,7 +440,7 @@ def test_no_transport_is_touched_while_a_runner_owns_the_device(dash):
 def test_a_down_server_is_only_started_while_a_runner_lives(dash):
     # no server = no transport to bounce: start it, but connect nothing
     # (attempts=0) - the runner re-attaches its own device
-    dash._procs_cached = lambda: [{"pid": 1, "runner": "orchestrator", "cmdline": ""}]
+    _set_process_rows(dash, [{"pid": 1, "runner": "orchestrator", "cmdline": ""}])
     dash.state["now"] = "no_server"
     dash.result.update(start=True, state="missing")
     with dash.app.test_client() as c:
@@ -326,7 +451,7 @@ def test_a_down_server_is_only_started_while_a_runner_lives(dash):
 
 
 def test_a_server_that_stays_down_for_a_runner_still_gives_up(dash):
-    dash._procs_cached = lambda: [{"pid": 1, "runner": "orchestrator", "cmdline": ""}]
+    _set_process_rows(dash, [{"pid": 1, "runner": "orchestrator", "cmdline": ""}])
     dash.state["now"] = "no_server"
     dash.result.update(start=True, state="no_server")
     with dash.app.test_client() as c:
@@ -334,7 +459,7 @@ def test_a_server_that_stays_down_for_a_runner_still_gives_up(dash):
 
 
 def test_a_server_start_that_raises_for_a_runner_is_still_a_failure(dash):
-    dash._procs_cached = lambda: [{"pid": 1, "runner": "orchestrator", "cmdline": ""}]
+    _set_process_rows(dash, [{"pid": 1, "runner": "orchestrator", "cmdline": ""}])
     dash.state["now"] = "no_server"
     dash.result["raise"] = FileNotFoundError("adb.exe not found")
     with dash.app.test_client() as c:
@@ -775,7 +900,7 @@ def test_a_server_that_dies_after_every_start_is_bounded_without_a_connect_too(d
     # the device never `device` does not zero the count, so the same loop
     # gets the same 20 starts and the same final give-up as the connect path
     if outage == "runner_live":
-        dash._procs_cached = lambda: [{"pid": 1, "runner": "orchestrator", "cmdline": ""}]
+        _set_process_rows(dash, [{"pid": 1, "runner": "orchestrator", "cmdline": ""}])
     else:
         dash.port["open"] = False
     with dash.app.test_client() as c:

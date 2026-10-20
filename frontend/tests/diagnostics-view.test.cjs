@@ -28,6 +28,35 @@ test('writer health explicitly covers only the current dashboard process and exp
   assert.deepEqual(JSON.parse(UI.exportPayload({...result(),writer_health:health},{},200)).writer_health,health);
 });
 
+test('runtime provenance distinguishes old workers, disk changes, and discovery failure',()=>{
+  const html=UI.runtimeHTML({port:8620,server:{pid:7,source_revision:'abcdef1234567',source_fingerprint:'old',disk_source_fingerprint:'new',source_changed:true,captured_at:100},
+    process_refresh:{state:'stale',age_sec:12,error:{type:'PermissionError',message:'<denied>'}},
+    workers:[{kind:'run',instance:'test',alive:true,worker:{pid:8,build:{source_fingerprint:'old'}}},
+      {kind:'scan',instance:'test',alive:false,worker:{pid:9}}]});
+  assert.match(html,/Source changed since server load/);
+  assert.match(html,/source differs from disk/);
+  assert.match(html,/source freshness unknown/);
+  assert.match(html,/last success 12s ago/);
+  assert.match(html,/&lt;denied&gt;/);
+  assert.doesNotMatch(html,/<denied>/);
+});
+
+test('slow runtime identity never delays diagnostic results and is single-flight',async()=>{
+  const h=fakeHost(),region={dataset:{},setAttribute(){},innerHTML:''};
+  const select=h.querySelector.bind(h);
+  h.querySelector=selector=>selector==='[data-diag-runtime]'?region:select(selector);
+  h.prepend=()=>{};
+  let finish,calls=0,tick;
+  const ui=UI.create({document:{visibilityState:'visible',createElement:()=>region},
+    request:url=>url==='/api/runtime'?(calls++,new Promise(resolve=>finish=resolve)):Promise.resolve(result()),
+    setInterval:fn=>{tick=fn;return 1;},clearInterval(){}});
+  ui.mount(h);await settle();
+  assert.match(h.rows.innerHTML,/offer_moved/);
+  tick();await settle();assert.equal(calls,1);
+  ui.unmount();finish({server:{source_changed:true}});await settle();
+  assert.equal(region.innerHTML,'');
+});
+
 test('coverage explicitly reports bounds, truncation, malformed records and read errors',()=>{
   const text=UI.coverageText(coverage);
   for(const fragment of ['2 files','200 bytes','3 matches','1 returned','Truncated: yes','Malformed records: 1','Read errors: 1','8 files / 1000 bytes','only the records scanned'])assert.ok(text.includes(fragment),fragment);

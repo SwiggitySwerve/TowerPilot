@@ -83,7 +83,8 @@ def _side_menu_errors(sc, frame, monkeypatch):
         def progress(self, *a, **k): pass
         def skip(self, *a, **k): pass
     flow = Flow()
-    fc.capture_side_menu(flow)
+    with pytest.raises((KeyError, ValueError)):
+        fc.capture_side_menu(flow)
     assert flow.taps == []
     return [k["error"] for kind, k in events if kind == "flow_side_menu_error"]
 

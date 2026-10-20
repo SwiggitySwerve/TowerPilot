@@ -131,6 +131,9 @@ class _Scan:
     def grab(self):
         return self.frame
 
+    def check_stop(self):
+        pass
+
     def progress(self, message, **extra):
         self.messages.append(message)
 
@@ -160,7 +163,8 @@ def test_only_optional_skips_leave_the_scan_done(tmp_path, monkeypatch):
     assert [s["target"] for s in sc.skipped if not s.get("optional")] == ["icons/event_calendar.png"]
 
 
-def test_battle_preparation_goes_on_without_the_mission_route(tmp_path, monkeypatch):
+@pytest.mark.parametrize('home_confirmed', [True, False])
+def test_battle_preparation_goes_on_without_the_mission_route(tmp_path, monkeypatch, home_confirmed):
     """A mission route that cannot be verified used to raise and end the
     whole battle preparation; it is an optional skip now and the battle
     capture still runs."""
@@ -179,14 +183,22 @@ def test_battle_preparation_goes_on_without_the_mission_route(tmp_path, monkeypa
     monkeypatch.setattr(mapping_session, "Session", _Session)
     monkeypatch.setattr(manifest_driver, "transitions",
                         lambda: [{"source": "home", "destination": "daily_missions", "route": []}])
-    monkeypatch.setattr(fc, "_safe_home", lambda flow: None)
+    def verify_home(flow):
+        if not home_confirmed:
+            raise RuntimeError('Final Home is unverified')
+    monkeypatch.setattr(fc, "_safe_home", verify_home)
     ran = []
     monkeypatch.setattr(fc, "capture_battle_flow", lambda flow, **kw: ran.append("battle"))
-    sc._run_flows()
-    assert ran == ["battle"]
+    if home_confirmed:
+        sc._run_flows()
+        assert ran == ["battle"]
+        assert sc.steps[sc.step_index("flow_battle")]["status"] == "done"
+    else:
+        with pytest.raises(RuntimeError, match='Home is unverified'):
+            sc._run_flows()
+        assert ran == []
     assert sc.skipped and sc.skipped[0]["target"] == "buttons/quest_claim.png"
     assert sc.skipped[0]["optional"] is True
-    assert sc.steps[sc.step_index("flow_battle")]["status"] == "done"
 
 
 def test_quest_flow_learns_the_claim_image_it_taps_missing_only(tmp_path, monkeypatch):

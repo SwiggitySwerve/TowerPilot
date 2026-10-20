@@ -25,6 +25,7 @@ test('another profile cannot reuse readiness from the previous profile',()=>{
 });
 test('a status outage cannot enable Start from cached readiness',()=>{
   const p=readyPage({bp_farm:{ready:true}});p.ctx.S.statusError='offline';p.render();assert.equal(p.controls['#start-run'].disabled,true);
+  assert.equal(p.controls['#start-gems'].disabled,true);
 });
 test('operation revisions discard older observations without a timer',()=>{
   const ctx=vm.createContext({S:{workspace:{calibration:{operation:{id:'a',revision:5}}}}});
@@ -41,24 +42,24 @@ test('acceptance for one operation cannot be cleared by a different result',()=>
 });
 test('a delayed status request cannot publish after the selected profile changed',async()=>{
   const gate=deferred(),values=[],conf=config();
-  const ctx=vm.createContext({S:{config:conf},LearningStore,api:async()=>({processes:[]}),learningStatus:()=>gate.promise,
+  const ctx=vm.createContext({S:{config:conf},LearningStore,api:()=>gate.promise,
     receiveCalibration:v=>values.push(v),calibrationUnavailable:()=>{},applyGate:()=>{},renderBootStatus:()=>{},renderWorkspaceStatus:()=>{}});
   vm.runInContext(section('async function loadStatus(){','/* Shared status reads'),ctx);
   const job=ctx.loadStatus();conf.active_profile='bob';gate.resolve({operation:{id:'a',revision:1}});await job;
-  assert.deepEqual(values,[]);
+  assert.deepEqual(values,[]);assert.equal(ctx.S.status,undefined);
 });
 test('status requests use single flight',async()=>{
   const gate=deferred();let requests=0;
-  const ctx=vm.createContext({S:{config:config()},LearningStore,api:async()=>{requests++;return {};},learningStatus:()=>gate.promise,
+  const ctx=vm.createContext({S:{config:config()},LearningStore,api:()=>{requests++;return gate.promise;},
     receiveCalibration:()=>{},calibrationUnavailable:()=>{},applyGate:()=>{},renderBootStatus:()=>{},renderWorkspaceStatus:()=>{}});
   vm.runInContext(section('async function loadStatus(){','/* Shared status reads'),ctx);
   const first=ctx.loadStatus();await ctx.loadStatus();assert.equal(requests,1);gate.resolve({});await first;
 });
-test('reversed immediate polls publish only the latest request',async()=>{
-  const gates=[deferred(),deferred()],values=[];let calls=0;
-  const ctx=vm.createContext({S:{config:config()},LearningStore,learningStatus:()=>gates[calls++].promise,receiveCalibration:v=>values.push(v),calibrationUnavailable:()=>{}});
+test('overlapping immediate calibration polls share one read',async()=>{
+  const gate=deferred(),values=[];let calls=0;
+  const ctx=vm.createContext({S:{config:config()},LearningStore,learningStatus:()=>{calls++;return gate.promise;},receiveCalibration:v=>values.push(v),calibrationUnavailable:()=>{},renderWorkspaceStatus:()=>{}});
   vm.runInContext(section('async function pollCalibrate(){','function renderMappingPlan('),ctx);
-  const first=ctx.pollCalibrate(),second=ctx.pollCalibrate();gates[1].resolve({revision:2});await second;gates[0].resolve({revision:1});await first;
+  const first=ctx.pollCalibrate(),second=ctx.pollCalibrate();assert.equal(calls,1);gate.resolve({revision:2});await Promise.all([first,second]);
   assert.deepEqual(values,[{revision:2}]);
 });
 test('reload retains the same operation and sends revision-bound apply',async()=>{
@@ -234,10 +235,11 @@ test('analysis polling ignores a response after the selected context changes',as
   const job=p.ctx.pollScreenAnalysis();p.ctx.S.config.active_profile='bob';gate.resolve({status:'error',message:'old profile result',operation:{id:'analysis-a',revision:2}});await job;
   assert.equal(p.controls['#analysis-progress'].textContent,undefined);
 });
-test('analysis polls discard reversed responses and retain the newest revision',async()=>{
+test('analysis polls share one read and reject a response older than the saved revision',async()=>{
   const gates=[deferred(),deferred()];let n=0;const p=analysisPage({api:()=>gates[n++].promise});p.records.set(p.key,JSON.stringify({operationId:'analysis-a',revision:1}));
-  const first=p.ctx.pollScreenAnalysis(),second=p.ctx.pollScreenAnalysis();gates[1].resolve({status:'error',message:'new observation',operation:{id:'analysis-a',revision:4}});await second;
-  gates[0].resolve({status:'error',message:'old observation',operation:{id:'analysis-a',revision:2}});await first;
+  const first=p.ctx.pollScreenAnalysis(),shared=p.ctx.pollScreenAnalysis();assert.equal(n,1);
+  gates[0].resolve({status:'error',message:'new observation',operation:{id:'analysis-a',revision:4}});await Promise.all([first,shared]);
+  const second=p.ctx.pollScreenAnalysis();gates[1].resolve({status:'error',message:'old observation',operation:{id:'analysis-a',revision:2}});await second;
   assert.equal(p.controls['#analysis-progress'].textContent,'new observation');assert.equal(JSON.parse(p.records.get(p.key)).revision,4);
 });
 test('analysis identity mismatch never renders a completed frame',async()=>{
@@ -250,11 +252,33 @@ test('analysis retries an uncertain acceptance with the same idempotency key',as
 });
 
 for (const replacement of [{idempotencyKey:'new-intent-b'},null]) test('late analysis observation preserves '+(replacement ? 'another tab unbound intent' : 'a removed operation reference'),async()=>{
-  const gate=deferred(),p=analysisPage({api:()=>gate.promise});
+  const gate=deferred(),followup=deferred();let reads=0;
+  const p=analysisPage({api:()=>++reads===1?gate.promise:followup.promise});
   p.records.set(p.key,JSON.stringify({operationId:'analysis-a',revision:1,idempotencyKey:'old-intent-a'}));
   const pending=p.ctx.pollScreenAnalysis();
   if (replacement) p.records.set(p.key,JSON.stringify(replacement)); else p.records.delete(p.key);
   gate.resolve({status:'error',message:'old A result',operation:{id:'analysis-a',revision:4}});await pending;
   assert.equal(p.records.get(p.key),replacement ? JSON.stringify(replacement) : undefined);
   assert.equal(p.controls['#analysis-progress'].textContent,undefined);
+  assert.equal(reads,replacement?2:1);
+});
+
+test('a newly accepted analysis is observed after an older in-flight read finishes',async()=>{
+  const old=deferred(),next=deferred(),paths=[];
+  const p=analysisPage({api:path=>{paths.push(path);return paths.length===1?old.promise:next.promise;}});
+  p.records.set(p.key,JSON.stringify({operationId:'old-analysis',revision:1,idempotencyKey:'old-intent'}));
+  const pending=p.ctx.pollScreenAnalysis();
+  await p.ctx.analyzeScreen();
+  assert.equal(JSON.parse(p.records.get(p.key)).operationId,'analysis-a');
+  old.resolve({status:'error',message:'old result',operation:{id:'old-analysis',revision:3}});
+  await pending;
+  assert.deepEqual(paths,['/api/screen-analysis/status?operation_id=old-analysis','/api/screen-analysis/status?operation_id=analysis-a']);
+  assert.equal(p.controls['#analysis-progress'].textContent,undefined);
+  const followed=p.ctx.S.analysisFlight;
+  next.resolve({status:'error',message:'new operation observed',operation:{id:'analysis-a',revision:2}});
+  await followed;
+  assert.equal(p.controls['#analysis-progress'].textContent,'new operation observed');
+  assert.equal(JSON.parse(p.records.get(p.key)).revision,2);
+  assert.equal(paths.length,2);
+  assert.equal(p.ctx.S.analysisLoading,false);
 });

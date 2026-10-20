@@ -153,15 +153,32 @@ class Battles(Operations):
                 params = (device,)
             return [json.loads(row[0]) for row in db.execute(query, params).fetchall()]
 
-    def list(self, limit=50, offset=0, device=None):
+    def list(self, limit=50, offset=0, device=None, status=None, context=None):
         if type(limit) is not int or not 1 <= limit <= 200 or type(offset) is not int or offset < 0:
             raise ValueError('Invalid battle pagination')
+        if status is not None and status not in ('prepared', 'active', 'ended', 'interrupted'):
+            raise ValueError('Invalid battle status filter')
+        if context is not None and (not isinstance(context, dict)
+                or set(context) - {'device_key', 'instance', 'account', 'serial'}):
+            raise ValueError('Invalid battle context filter')
         with self._db() as db:
             query = 'SELECT body FROM battles'
-            params = []
+            params, conditions = [], []
             if device is not None:
-                query += ' WHERE device=?'
+                conditions.append('device=?')
                 params.append(device)
+            if status is not None:
+                conditions.append('status=?')
+                params.append(status)
+            for key, value in (context or {}).items():
+                if value is not None and not isinstance(value, str):
+                    raise ValueError('Invalid battle context value')
+                # Keys are allowlisted above; IS includes explicitly unbound
+                # account/serial values, and filtering precedes pagination.
+                conditions.append(f"json_extract(body, '$.context.{key}') IS ?")
+                params.append(value)
+            if conditions:
+                query += ' WHERE ' + ' AND '.join(conditions)
             query += ' ORDER BY rowid DESC LIMIT ? OFFSET ?'
             return [json.loads(row[0]) for row in db.execute(query, (*params, limit, offset)).fetchall()]
 

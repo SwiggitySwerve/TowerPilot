@@ -330,6 +330,7 @@ class GemOrbitTapper:
         self.next_at = 0.0
         self.next_window_at = 0.0
         self._last_skip = None
+        self.last_refusal = None
         self.last_window_started_at = None
         self.manual_requested = False
         self.manual_active = False
@@ -371,7 +372,8 @@ class GemOrbitTapper:
                     window_ends_at=None if self.attempt_started is None else epoch+self.window_ends_at-now,
                     manual_pending=self.manual_requested, manual_active=self.manual_active,
                     window_id=self.window_id, attempt_id=self.attempt_id,
-                    last_outcome=self.last_outcome, server_time=epoch)
+                    last_outcome=self.last_outcome, last_refusal=self.last_refusal,
+                    server_time=epoch)
 
     def _reset_attempt(self):
         self.balance_before = None
@@ -380,6 +382,8 @@ class GemOrbitTapper:
         self.manual_active = False
 
     def _backoff(self, reason):
+        self.last_refusal = dict(reason=reason, observed_at=time.time(),
+                                 window_id=self.window_id, attempt_id=self.attempt_id)
         if reason != self._last_skip:
             logger.event("gem_orbit_skip", reason=reason)
             self._last_skip = reason

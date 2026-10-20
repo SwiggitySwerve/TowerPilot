@@ -19,6 +19,7 @@ Start:  python dashboard.py           (or pythonw for headless)
 """
 import datetime
 import glob
+import hashlib
 import json
 import os
 import shutil
@@ -71,6 +72,22 @@ def _run(args, **kw):
 app = Flask(__name__, static_folder="webui", static_url_path="/ui")
 
 from control import operations as operation_api
+from runtime import build_info
+
+_BUILD = build_info.snapshot(Path(ROOT).parent, 'dashboard')
+_CAPABILITIES = ['battle_controls', 'run_history', 'stream_backends', 'runtime_identity',
+                 'process_refresh_status', 'schedule_status', 'revisioned_editor_saves']
+
+
+@app.get('/api/runtime')
+def api_runtime():
+    workers = [dict(operation_id=op['id'], kind=op['kind'], status=op['status'],
+                    instance=op['context'].get('instance'), worker=op.get('worker'),
+                    alive=operation_api.worker_alive(op.get('worker')))
+               for op in operation_api.ledger(ROOT).active()]
+    return jsonify(server=build_info.compare(Path(ROOT).parent, _BUILD),
+                   capabilities=_CAPABILITIES, api_contract=1, port=PORT,
+                   workers=workers, process_refresh=_procs_status())
 
 
 @app.errorhandler(operation_api.Conflict)
@@ -122,6 +139,35 @@ def _battle_device(cfg):
     return operation_api.context(ROOT, cfg, {}, None)['device_key']
 
 
+def _battle_history_context():
+    cfg = load_config()
+    instance = request.args.get('instance')
+    if instance:
+        if instance not in cfg.get('instances', {}):
+            raise ValueError('Unknown emulator')
+        cfg['active_instance'] = instance
+    context = operation_api.context(ROOT, cfg, {}, None)
+    return {key: context.get(key) for key in ('device_key', 'instance', 'account', 'serial')}
+
+
+@app.get('/api/schedule/status')
+def api_schedule_status():
+    from control import schedule_status
+    from player import accounts
+    try:
+        cfg = load_config()
+        instance = request.args.get('instance') or cfg.get('active_instance', 'main')
+        if instance not in cfg.get('instances', {}):
+            raise ValueError('Unknown emulator')
+        cfg['active_instance'] = instance
+        cfg = accounts.effective(cfg)
+        context = operation_api.context(ROOT, cfg, {}, None)
+        return jsonify(schedule_status.read(ROOT, **{key: context.get(key) for key in
+                       ('instance', 'account', 'serial', 'profile', 'device_key')}))
+    except ValueError as exc:
+        return jsonify(ok=False, availability='unavailable', error=str(exc)), 400
+
+
 @app.get('/api/battles/active')
 def api_battle_active():
     from control import battles
@@ -131,21 +177,17 @@ def api_battle_active():
 @app.get('/api/battles')
 def api_battle_history():
     from control import battles
-    cfg = load_config()
-    instance = request.args.get('instance')
-    if instance:
-        if instance not in cfg.get('instances', {}):
-            return jsonify(ok=False, error='Unknown emulator'), 400
-        cfg['active_instance'] = instance
     store = battles.ledger(ROOT)
-    device = _battle_device(cfg)
-    battles.reconcile(ROOT, store, device)
     try:
+        context = _battle_history_context()
+        device = context['device_key']
+        battles.reconcile(ROOT, store, device)
         limit, offset = int(request.args.get('limit', 50)), int(request.args.get('offset', 0))
-        rows = store.list(limit=limit, offset=offset, device=device)
+        rows = store.list(limit=limit, offset=offset, device=device,
+                          status=request.args.get('status') or None, context=context)
     except ValueError as exc:
         return jsonify(ok=False, error=str(exc)), 400
-    return jsonify(battles=[battles.public(store, row) for row in rows])
+    return jsonify(battles=[battles.public(store, row) for row in rows], context=context)
 
 
 @app.get('/api/battles/<battle_id>')
@@ -153,11 +195,16 @@ def api_battle_detail(battle_id):
     from control import battles
     store = battles.ledger(ROOT)
     try:
+        context = _battle_history_context()
         row = store.get(battle_id)
+        if any(row['context'].get(key) != value for key, value in context.items()):
+            return jsonify(ok=False, error='Battle does not belong to the selected emulator and account'), 404
         events = [dict(event, t=event['timestamp']) for event in store.events(battle_id)]
-        return jsonify(battle=battles.public(store, row), events=events)
+        return jsonify(battle=battles.public(store, row), events=events, context=context)
     except KeyError:
         return jsonify(ok=False, error='Unknown battle'), 404
+    except ValueError as exc:
+        return jsonify(ok=False, error=str(exc)), 400
 
 
 @app.post('/api/operations/<operation_id>/live-controls')
@@ -701,6 +748,7 @@ def load_config() -> dict:
 
 def save_config(data: dict) -> str:
     from player import accounts
+    data = {key: value for key, value in data.items() if key != 'config_revision'}
     with open(CONFIG_PATH, encoding="utf-8") as fh:
         original = yaml.safe_load(fh)
     data = accounts.persist(data, original)
@@ -971,7 +1019,12 @@ def index():
 
 @app.get("/api/config")
 def api_config_get():
-    return jsonify(load_config())
+    from player import accounts
+    with _CONFIG_WRITE_LOCK:
+        seed_config()
+        raw = Path(CONFIG_PATH).read_bytes()
+        cfg = accounts.effective(yaml.safe_load(raw))
+    return jsonify(dict(cfg, config_revision=hashlib.sha256(raw).hexdigest()))
 
 
 @app.post("/api/config")
@@ -1007,9 +1060,9 @@ def _proc_in_tree(pid: int) -> bool:
     return cwd == os.path.normcase(ROOT)
 
 
-def _process_target():
+def _process_target(cfg=None):
     from device import adbclient
-    cfg = load_config()
+    cfg = load_config() if cfg is None else cfg
     inst = (cfg.get('instances') or {}).get(cfg.get('active_instance', 'main')) or {}
     return (*adbclient._HOST, inst.get('serial'))
 
@@ -1049,43 +1102,80 @@ def _scan_procs(target=None):
 # must never be on that request's critical path. A background thread keeps
 # a snapshot fresh (every 2 s) and the endpoint returns it instantly.
 # Control actions (kill/start) call _procs_refresh() to update it at once.
-_PROCS_CACHE = {"at": 0.0, "procs": []}
-_PROCS_LOCK = None
+_PROCS_CACHE = {"at": 0.0, "procs": [], "attempted_at": None, "error": None}
+_PROCS_LOCK = threading.Lock()
+_PROCS_WAKE = threading.Event()
+_PROCS_THREAD = None
 
 
 def _procs_refresh():
-    import threading
-    global _PROCS_LOCK
-    if _PROCS_LOCK is None:
-        _PROCS_LOCK = threading.Lock()
+    global _PROCS_CACHE
     with _PROCS_LOCK:
-        target = _process_target()
-        _PROCS_CACHE["procs"] = _scan_procs(target)
-        _PROCS_CACHE["target"] = target
-        _PROCS_CACHE["at"] = __import__("time").time()
-    return _PROCS_CACHE["procs"]
+        target = None
+        attempted = time.time()
+        try:
+            target = _process_target()
+            rows = _scan_procs(target)
+        except Exception as exc:  # a failed discovery is visible; control scans still raise
+            previous = _PROCS_CACHE if _PROCS_CACHE.get('target') == target else {}
+            _PROCS_CACHE = dict(previous, target=target, attempted_at=attempted,
+                                at=previous.get('at', 0.0), procs=previous.get('procs', []),
+                                error={'type': type(exc).__name__, 'message': str(exc)})
+            app.logger.exception('Runner process discovery failed for %s', target)
+        else:
+            _PROCS_CACHE = dict(target=target, attempted_at=attempted, at=time.time(),
+                                procs=rows, error=None)
+        return _PROCS_CACHE['procs']
+
+
+def _procs_snapshot(target=None, *, refresh=True):
+    """Keep rows and discovery evidence in one atomically published snapshot."""
+    target = _process_target() if target is None else target
+    cache = _PROCS_CACHE
+    if refresh and (time.time() - cache['at'] > 6 or cache.get('target') != target):
+        if _PROCS_THREAD is not None and _PROCS_THREAD.is_alive():
+            _PROCS_WAKE.set()  # status never waits for a running process-table scan
+        else:
+            _procs_refresh()  # imports/test clients without the normal server startup
+            cache = _PROCS_CACHE
+    return cache, target
 
 
 def _procs_cached():
-    import time as _t
-    if (_t.time() - _PROCS_CACHE["at"] > 6
-            or _PROCS_CACHE.get('target') != _process_target()):
-        return _procs_refresh()                # refresh inline once
-    return _PROCS_CACHE["procs"]
+    cache, target = _procs_snapshot()
+    return cache['procs'] if cache.get('target') == target else []
+
+
+def _procs_status():
+    cache, target = _procs_snapshot(refresh=False)
+    matches = cache.get('target') == target
+    age = max(0.0, time.time() - cache['at']) if matches and cache['at'] else None
+    return dict(state='unknown' if age is None else 'stale' if age > 6 or cache.get('error') else 'fresh',
+                age_sec=age, last_success_at=cache['at'] if matches and cache['at'] else None,
+                last_attempt_at=cache.get('attempted_at') if matches else None,
+                error=cache.get('error') if matches else None)
+
+
+def _process_snapshot_idle(cache, target):
+    """Only fresh, successful, unchanged discovery proves transport recovery safe."""
+    return (not _PROCS_LOCK.locked() and cache is _PROCS_CACHE and cache.get('target') == target
+            and target == _process_target() and cache.get('error') is None
+            and cache.get('at', 0) > 0 and 0 <= time.time() - cache['at'] <= 6
+            and cache.get('procs') == [])
 
 
 def _start_procs_refresher():
-    import threading
-    import time as _t
+    global _PROCS_THREAD
+    if _PROCS_THREAD is not None and _PROCS_THREAD.is_alive():
+        return
 
     def loop():
         while True:
-            try:
-                _procs_refresh()
-            except Exception:                   # noqa: BLE001
-                pass
-            _t.sleep(2.0)
-    threading.Thread(target=loop, daemon=True, name="procs-refresher").start()
+            _PROCS_WAKE.clear()
+            _procs_refresh()
+            _PROCS_WAKE.wait(2.0)
+    _PROCS_THREAD = threading.Thread(target=loop, daemon=True, name="procs-refresher")
+    _PROCS_THREAD.start()
 
 
 _CONN_CACHE = {"t": 0.0, "serial": None, "device_state": "unknown", "port_open": False}
@@ -1194,7 +1284,11 @@ def _reconnect_tick(cfg, serial, device_state, port_open):
     keeps the failure count; an attempt waiting out its backoff reads
     'trying'. Returns at once either way."""
     now = time.time()
-    connect = port_open and not (device_state != "device" and _procs_cached())
+    target = _process_target(cfg)
+    snapshot = None
+    if port_open and device_state not in ('device', 'unauthorized') and target[-1] == serial:
+        snapshot, _ = _procs_snapshot(target)
+    connect = snapshot is not None and _process_snapshot_idle(snapshot, target)
     with _RECONNECT_LOCK:
         r = _RECONNECT
         if r["thread"] is not None and r["thread"].is_alive():
@@ -1218,12 +1312,13 @@ def _reconnect_tick(cfg, serial, device_state, port_open):
             return
         adb = (cfg.get("adb") or {}).get("exe") or ""
         r.update(state="trying", next_at=now + 5.0, down=down)
-        r["thread"] = threading.Thread(target=_reconnect_attempt, args=(serial, adb, connect),
+        r["thread"] = threading.Thread(target=_reconnect_attempt,
+                                       args=(serial, adb, connect, target, snapshot),
                                        daemon=True, name="adb-reconnect")
         r["thread"].start()
 
 
-def _reconnect_attempt(serial, adb, connect):
+def _reconnect_attempt(serial, adb, connect, target, snapshot):
     """One adbclient.recover for `serial` (its start_server: `<adb>
     start-server` through _run, the sanctioned lifecycle spawn; with
     `connect` False, attempts=0: start a down server, touch no transport),
@@ -1233,6 +1328,14 @@ def _reconnect_attempt(serial, adb, connect):
     the backoff and records whether the server was down when the attempt
     ended. Dropped when a reset or another serial took over meanwhile."""
     from device import adbclient
+
+    # A refresh, selection change or delayed thread can invalidate the tick's
+    # evidence. Refuse transport changes before recover can connect/disconnect.
+    if connect and not _process_snapshot_idle(snapshot, target):
+        with _RECONNECT_LOCK:
+            if _RECONNECT['serial'] == serial:
+                _RECONNECT['state'] = 'idle'
+        return
 
     def start_server():
         _run([adb, "start-server"], capture_output=True, timeout=15)
@@ -1323,6 +1426,8 @@ def api_status():
     conn = _device_state(cfg)
     return jsonify({
         "processes": operation_api.project_processes(ROOT, _procs_cached()),
+        "process_refresh": _procs_status(),
+        "runtime": dict(server=_BUILD, capabilities=_CAPABILITIES, api_contract=1, port=PORT),
         "daily_state": daily,
         "stop_flag": os.path.exists(flag),
         "events": _newest_events(inst),
@@ -2030,7 +2135,9 @@ def api_calibrate_status():
     # immediately after Popen used to make the UI declare completion.
     processes = [] if operation else [pr for pr in _procs() if pr["runner"] == "calibrate"]
     selection = None
-    activity = None
+    activity = out['state'].get('activity')
+    if not isinstance(activity, dict) or (operation and activity.get('operation_id') != operation['id']):
+        activity = None
     if processes:
         command = processes[0].get("cmdline", "")
         match = re.search(r"--phases\s+([a-z,]+)", command)
@@ -2039,10 +2146,11 @@ def api_calibrate_status():
                          "taps": "--allow-navigation" in command,
                          "overwrite": "--overwrite" in command}
         # Also supports workers launched before incremental reports existed.
-        events = [row for row in _newest_events(inst, n=2000)
-                  if row.get("kind", "").startswith("calibrate")]
-        if events:
-            activity = events[-1]
+        if activity is None:
+            events = [row for row in _newest_events(inst, n=2000)
+                      if row.get("kind", "").startswith("calibrate")]
+            if events:
+                activity = events[-1]
     if operation:
         processes = operation['status'] in ('accepted', 'running', 'cancelling')
         selection = dict(operation['request'], mode='observe' if operation['kind'] == 'observe' else 'bootstrap' if operation['request'].get('bootstrap') else 'basic')
@@ -2479,8 +2587,9 @@ def api_profile_src(name):
     if not os.path.exists(path):
         return jsonify({"ok": False, "error": f"no such profile: {name}"}), 404
     try:
-        with open(path, encoding="utf-8") as fh:
-            data = yaml.safe_load(fh)
+        with _profile_lock(path):
+            raw = Path(path).read_bytes()
+            data = yaml.safe_load(raw)
     except (OSError, yaml.YAMLError) as e:
         return jsonify({"ok": False, "error": str(e)}), 400
     if not isinstance(data, dict):
@@ -2494,6 +2603,7 @@ def api_profile_src(name):
     except Exception as e:                      # noqa: BLE001
         verr = f"{type(e).__name__}: {e}"
     return jsonify({"ok": True, "name": name, "profile": data,
+                    "revision": hashlib.sha256(raw).hexdigest(),
                     "problems": problems, "warnings": warns,
                     "validator_error": verr})
 
@@ -2593,8 +2703,12 @@ def api_profile_patch():
             f"Complete it on the Profile tab, then edit it here.")}), 409
     with _profile_lock(path):
         try:
-            with open(path, encoding="utf-8") as fh:
-                data = yaml.safe_load(fh)
+            raw = Path(path).read_bytes()
+            revision = hashlib.sha256(raw).hexdigest()
+            if 'expected_revision' in body and body['expected_revision'] != revision:
+                return jsonify(ok=False, code='revision_conflict', revision=revision,
+                               error='Saved profile changed. Reload and reconcile the pending edit before saving again.'), 409
+            data = yaml.safe_load(raw)
         except (OSError, yaml.YAMLError) as e:
             return jsonify({"ok": False, "error": str(e)}), 400
         if not isinstance(data, dict):
@@ -2616,6 +2730,10 @@ def api_profile_patch():
                             "error": problems[0]}), 400
         try:
             backup = _save_yaml_backup(path, data)
+            stored = Path(path).read_bytes()
+            if yaml.safe_load(stored) != data:
+                raise RuntimeError('Saved profile readback does not match the requested change')
+            revision = hashlib.sha256(stored).hexdigest()
         except Exception as e:                  # noqa: BLE001
             return jsonify({"ok": False, "error": f"write failed: {e}"}), 500
     warns = []
@@ -2625,7 +2743,7 @@ def api_profile_patch():
     except Exception:                           # noqa: BLE001 - advisory only
         pass
     return jsonify({"ok": True, "backup": backup, "profile": data,
-                    "warnings": warns})
+                    "warnings": warns, "revision": revision})
 
 
 @app.post("/api/loadout-patch")
@@ -2653,6 +2771,10 @@ def api_loadout_patch():
         return jsonify({"ok": False,
                         "error": "body must be a non-empty loadout mapping"}), 400
     with _CONFIG_WRITE_LOCK:
+        revision = operation_api.file_revision(CONFIG_PATH)
+        if 'expected_revision' in body and body['expected_revision'] != revision:
+            return jsonify(ok=False, code='revision_conflict', config_revision=revision,
+                           error='Saved configuration changed. Reload and reconcile the pending edit before saving again.'), 409
         cfg = load_config()
         if name not in (cfg.get("loadouts") or {}):
             return jsonify({"ok": False,
@@ -2682,12 +2804,17 @@ def api_loadout_patch():
         cfg["loadouts"] = patched
         try:
             backup = save_config(cfg)
+            stored = Path(CONFIG_PATH).read_bytes()
+            from player import accounts
+            if accounts.effective(yaml.safe_load(stored)).get('loadouts') != patched:
+                raise RuntimeError('Saved loadout readback does not match the requested change')
+            revision = hashlib.sha256(stored).hexdigest()
         except Exception as e:                  # noqa: BLE001
             return jsonify({"ok": False, "error": f"write failed: {e}"}), 500
         from settings import CONFIG as LIVE_CONFIG
         LIVE_CONFIG["loadouts"] = patched
     return jsonify({"ok": True, "backup": backup, "loadouts": patched,
-                    "warnings": warns})
+                    "warnings": warns, "config_revision": revision})
 
 
 @app.post("/api/profile-copy")

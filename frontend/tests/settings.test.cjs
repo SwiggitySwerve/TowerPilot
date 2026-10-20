@@ -1,6 +1,16 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { Store, parseField, fieldHTML } = require("../webui/settings.js");
+
+test('seconds hints cover scalar fields and each range endpoint without changing stored values',()=>{
+  const field={key:'pause',label:'Pause',type:'range',unit:'sec'};
+  const html=fieldHTML(field,[60,125.25],false);
+  assert.match(html,/value="125.25"/);
+  assert.match(html,/data-settings-duration="pause" data-index="0" hidden/);
+  assert.match(html,/data-settings-duration="pause" data-index="1"[^>]*>2m 05.25s/);
+  assert.match(fieldHTML({...field,type:'number'},720,false),/>12m 00s/);
+  assert.doesNotMatch(fieldHTML({...field,type:'number',unit:'px'},720,false),/data-settings-duration/);
+});
 const payload = (revision = "r1", instance = "emu") => ({
   context: { instance, account: "a", profile: "p" },
   revision,

@@ -30,12 +30,17 @@
   }
   function selectOperation(st, basic) {
     const observation = st?.state?.observation;
+    let bootstrap = st?.state?.phases?.bootstrap;
+    const incompleteMaps = Object.entries(st?.state?.screen_map || {}).filter(([name,row]) => row.status !== 'verified'
+      && (bootstrap?.kind !== 'battle' || bootstrap.screens?.includes(name))).map(([name]) => name);
+    if (bootstrap?.status === 'done' && incompleteMaps.length) bootstrap = {...bootstrap,status:'needs_attention',
+      message:[bootstrap.message,'Incomplete screen maps: '+incompleteMaps.join(', ')+'.'].filter(Boolean).join(' ')};
     const choices = [
-      {mode:'bootstrap',record:st?.state?.phases?.bootstrap},
+      {mode:'bootstrap',record:bootstrap},
       {mode:'basic',record:basic},
       {mode:'observe',record:observation ? {...observation,updated_at:observation.t} : null},
     ];
-    if (st?.running) {
+    if (st?.running || st?.operation) {
       const mode = st.selection?.mode || (st.state?.phases?.bootstrap?.status === 'running' ? 'bootstrap' : 'basic');
       return choices.find(choice => choice.mode === mode) || choices[0];
     }
@@ -81,52 +86,72 @@
       return {id,label,state,steps:group};
     }).filter(group => group.steps.length);
   }
-  function operation({record, running=false, mode='bootstrap', restorePending=false,
+  function operation({record, attempt, context, finalScreen, setupBattle, running=false, mode='bootstrap', restorePending=false,
                       checkedAt, unavailable='', now=Date.now()/1000, starting=false}) {
     const detail = describeSteps(starting ? null : record, running);
-    const state = starting ? 'running' : restorePending ? 'needs_attention'
-      : record?.status === 'error' ? 'error' : running ? 'running'
+    restorePending = restorePending || attempt?.status === 'restoration_required';
+    const terminal = {failed:'error',cancelled:'stopped',interrupted:'stopped',awaiting_apply:'needs_attention',applying:'running'}[attempt?.status];
+    const recordedState = record?.status === 'error' ? 'error' : running ? 'running'
       : record?.status === 'running' ? 'stopped'
       : stepStates[record?.status] ? record.status : 'pending';
+    const state = starting ? 'running' : restorePending ? 'needs_attention' : terminal ||
+      (attempt?.status === 'succeeded' && !['error','stopped','needs_attention'].includes(recordedState) ? 'done' : recordedState);
     const lastAt = record?.updated_at ?? record?.finished_at;
     const finalAt = finite(lastAt) ? lastAt : Math.max(0,
       ...detail.steps.map(step => step.finished_at || 0), ...(record?.history || []).map(event => event.at || 0));
-    const elapsed = finite(record?.started_at) && (running || finalAt > 0)
-      ? duration((running ? unavailable ? checkedAt ?? finalAt : now : finalAt) - record.started_at) : 'Not recorded';
+    const startedAt = record?.started_at ?? attempt?.created_at;
+    const elapsed = finite(startedAt) && (running || finalAt > 0 || finite(attempt?.updated_at))
+      ? duration((running ? unavailable ? checkedAt ?? finalAt : now : finalAt || attempt.updated_at) - startedAt) : 'Not recorded';
     const current = detail.active || detail.steps.find(step => step.status === 'error' || step.status === 'stopped');
     const label = mode === 'observe' ? 'Screen observation' : mode === 'basic' ? 'Targeted profile scan'
       : record?.kind === 'battle' ? 'Battle preparation' : 'Screen learning';
     const headline = starting ? 'Starting screen learning'
       : restorePending ? 'Equipment restoration pending'
       : running ? state === 'error' ? 'Worker active · issue reported' : label + ' in progress'
-      : record ? 'Last ' + label.toLowerCase() + ' result' : 'Screen learning has not started';
+      : record || attempt ? 'Last ' + label.toLowerCase() + ' result' : 'Screen learning has not started';
     const message = starting ? 'Waiting for the first worker update. Do not start another scan.'
       : restorePending ? 'The saved equipment must be restored before other automation can run.'
-      : record?.message || current?.message || (running ? 'Waiting for the worker to report its next action.'
+      : attempt?.error?.message || (attempt?.status === 'awaiting_apply' ? 'Capture saved. Applying discoveries to the profile is not yet confirmed.' : '')
+      || record?.message || current?.message || (running ? 'Waiting for the worker to report its next action.'
         : 'Create a profile and connect the emulator, then learn screens from Overview.');
     const guidance = running ? 'Keep the emulator and The Tower running throughout this operation. Leave the game untouched. Longer phases may report less frequently.'
       : restorePending ? 'Keep the game at Home and review the equipment restoration details below.'
-      : state === 'error' || state === 'stopped' ? 'The last attempt is saved. Review its message and connection before choosing a retry.'
+      : attempt?.recovery_action || (state === 'error' || state === 'stopped' ? 'The last attempt is saved. Review its message and connection before choosing a retry.'
       : state === 'done' || state === 'needs_attention' ? 'Review saved discoveries and check readiness for the run you want to use.'
-      : 'Learning screens needs Home with no active or resumable battle. It starts only after your confirmation.';
+      : 'Learning screens needs Home with no active or resumable battle. It starts only after your confirmation.');
+    const target = attempt?.context || context;
+    const targetText = target ? [['Emulator',target.instance],['Account',target.account],['Profile',target.profile],['Connection',target.serial]]
+      .filter(([,value]) => value).map(([label,value]) => label+': '+value).join(' · ') : '';
+    const matchingFinal = !!attempt?.id && finalScreen?.operation_id === attempt.id;
+    const returnEvidence = mode === 'bootstrap' && !running && (record || attempt)
+      ? matchingFinal && finalScreen.verified === true && finalScreen.name === 'home'
+        ? 'Home verified' + (finite(finalScreen.observed_at) ? ' · '+duration(now-finalScreen.observed_at)+' ago' : '')
+        : 'Final screen unverified' : '';
+    const resetLabels = {starting:'Starting setup test battle',active:'Setup test battle active',ending:'Returning from the setup test battle',finished:'Setup test battle returned to Home',resetting:'Returning from the setup test battle',home_verified:'Setup test battle returned to Home',failed:'Setup test battle return failed',unknown:'Setup test battle state unconfirmed'};
+    const resetEvidence = !!attempt?.id && setupBattle?.operation_id === attempt.id && resetLabels[setupBattle.status]
+      ? resetLabels[setupBattle.status]+(setupBattle.error || setupBattle.reason ? ': '+(setupBattle.error?.message || setupBattle.error || setupBattle.reason) : '') : '';
     return {...detail,state,label,headline:unavailable ? 'Last known: ' + headline : headline,message,guidance,current,phases:phaseGroups(detail.steps),elapsed,
       workerAge:finite(lastAt) ? duration(now - lastAt) + ' ago' : 'Not recorded',
       checkedAge:finite(checkedAt) ? duration(now - checkedAt) + ' ago' : 'Not checked',
-      unavailable, running, saved:!!record, starting};
+      unavailable, running, saved:!!record || !!attempt, starting,targetText,returnEvidence,resetEvidence};
   }
   function operationHTML(model) {
     const m = model, state = stepStates[m.state];
     return `<section class="operation-summary" aria-label="${escape(m.label)} status">
       <div class="workspace-heading"><h3>${escape(m.headline)}</h3><span class="status-tag status-${escape(m.state)}">${state.symbol} ${state.label}</span></div>
-      ${m.unavailable ? `<p class="status-warning" role="status">Status unavailable — showing last known progress; retrying. ${escape(m.unavailable)}</p>` : ''}
+      ${m.unavailable ? `<p class="status-warning" role="status">Status unavailable — showing last known progress; retrying. ${escape(m.unavailable)} <button class="small ghost" onclick="pollCalibrate()">Retry status</button></p>` : ''}
       <p class="operation-message">${escape(m.message)}</p>
+      ${m.targetText ? `<p class="muted operation-target">${escape(m.targetText)}</p>` : ''}
       <dl class="operation-metrics"><div><dt>Elapsed${m.running ? '' : ' (saved)'}</dt><dd>${escape(m.elapsed)}</dd></div><div><dt>Last checked</dt><dd>${escape(m.checkedAge)}</dd></div><div><dt>Last worker update</dt><dd>${escape(m.workerAge)}</dd></div></dl>
       ${m.total ? `<p><b>${m.processed} of ${m.total} steps processed</b> · ${m.done} successful${m.skipped ? ` · ${m.skipped} skipped` : ''}${m.attention ? ` · ${m.attention} need attention` : ''}${m.failed ? ` · ${m.failed} failed` : ''}</p>
         <progress value="${m.processed}" max="${m.total}" aria-label="Processed learning steps"></progress>
         <p class="muted">Steps have different durations; this is not a time estimate.</p>` : ''}
       ${m.phases.length ? `<ol class="phase-overview" aria-label="Learning phases">${m.phases.map(phase => `<li class="status-${phase.state}" ${phase.state === 'running' ? 'aria-current="step"' : ''}><span aria-hidden="true">${stepStates[phase.state].symbol}</span><b>${escape(phase.label)}</b><small>${stepStates[phase.state].label}</small></li>`).join('')}</ol>` : ''}
       ${m.current ? `<p><b>Current step:</b> ${escape(m.current.label)}</p>` : ''}
+      ${m.current?.units?.total > 0 ? `<p>${escape(m.current.units.label)}: ${escape(m.current.units.completed)} / ${escape(m.current.units.total)}</p>` : ''}
       ${m.running && m.next ? `<p class="muted"><b>Next step:</b> ${escape(m.next.label)}</p>` : ''}
+      ${m.returnEvidence ? `<p><b>Final screen:</b> ${escape(m.returnEvidence)}</p>` : ''}
+      ${m.resetEvidence ? `<p class="operation-reset">${escape(m.resetEvidence)}</p>` : ''}
       <p class="operation-guidance">${escape(m.guidance)}</p>
       ${!m.running && ['error','stopped'].includes(m.state) ? '<p><a href="#emulators" data-workspace-section="setup-connection">Review emulator connection</a></p>' : ''}
     </section>`;
@@ -181,6 +206,7 @@
     const out = [];
     if (!conn.online) out.push({id:'connection', text:connectionReason(conn), href:'#emulators', section:'setup-connection', link:'Check the connection'});
     if (!inst.allow_taps) out.push({id:'taps', text:'Game input is disabled. Tick “Allow automation to tap this emulator” in Live control.', href:'#overview', section:'card-runner', link:'Live control'});
+    if(status?.process_refresh && status.process_refresh.state!=='fresh')out.push({id:'processes',text:'Automation process state is unconfirmed. Retry status before starting automation.',href:'#overview',section:'card-runner',link:'Live control'});
     return out;
   }
   const reasonHTML = reason => `<li>${escape(reason.text)} <a href="${reason.href}" data-workspace-section="${reason.section}">${escape(reason.link)}</a></li>`;
@@ -203,6 +229,8 @@
   function contextHTML({config={}, status, error='', runs={}, readiness={}, emulators=[]}) {
     const inst = config.instances?.[config.active_instance] || {};
     const running = (status?.processes || []).filter(process => process.runner !== 'calibrate');
+    const processState=status?.process_refresh?.state || 'fresh';
+    const automation=!status?'Not checked':processState==='unknown'?'Unknown':processState==='stale'?`Last known ${running.length?'running':'idle'}`:running.length?'Running':'Idle';
     const eligible = Object.keys(runs).filter(name => name !== 'combo');
     const checked = eligible.filter(name => readiness[name]);
     const ready = checked.filter(name => readiness[name].ready === true);
@@ -213,9 +241,9 @@
     const blockedReconnect = status?.processes?.length && !['device','unconfigured'].includes(conn.key);
     return `<dl class="workspace-context-grid"><div><dt>Emulator</dt><dd>${escape(emulatorName || 'Not selected')}</dd><small>${escape(inst.serial || 'No connection selected')}</small></div>
       <div><dt>Connection</dt><dd class="${conn.verified ? 'ok' : status ? 'warn' : ''}">${escape(conn.label)}</dd><small>${escape(error ? 'Last known status. ' + conn.hint : conn.hint)}</small>${blockedReconnect ? '<small>Reconnect waits until automation stops; reconnecting can drop its connection.</small>' : ''}${conn.key === 'unconfigured' ? '<a href="#emulators" data-workspace-section="setup-connection">Choose emulator</a>' : ''}</div>
-      <div><dt>Automation</dt><dd>${status ? running.length ? 'Running' : 'Idle' : 'Not checked'}</dd><small>${inst.allow_taps ? 'Game input allowed' : 'Game input disabled'}</small></div>
+      <div><dt>Automation</dt><dd>${automation}</dd><small>${inst.allow_taps ? 'Game input allowed' : 'Game input disabled'}</small>${processState!=='fresh'?'<button class="small ghost" onclick="loadStatus()">Retry status</button>':''}</div>
       <div><dt>Individual runs</dt><dd>${checked.length ? `${ready.length} of ${eligible.length} ready` : 'Not checked'}</dd><small>${checked.length < eligible.length ? 'Some readiness checks unavailable' : 'Saved-image checks; game can be closed'}</small></div></dl>
-      ${error ? `<p class="status-warning" role="status">Live status unavailable; showing the last snapshot. ${escape(error)}</p>` : ''}`;
+      ${error ? `<p class="status-warning" role="status">Live status unavailable; showing the last snapshot. ${escape(error)} <button class="small ghost" onclick="pollDashboard(true)">Retry status</button></p>` : ''}`;
   }
   /* The header: the active profile's name and a compact connection pill with
      the Reconnect action (adb's view of the configured serial, as contextHTML).

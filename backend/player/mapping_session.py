@@ -27,6 +27,10 @@ class Session:
         self.saved = {'version': manifest()['version'],
                       'controls': previous.get('controls', {}) if previous.get('version') == manifest()['version'] else {},
                       'history': []}
+        from player.bootstrap_layout import route_capture_targets
+        active = route_capture_targets()
+        self.saved['controls'] = {key: row for key, row in self.saved['controls'].items()
+                                  if key not in active or row.get('template') == active[key]}
         self.geometry = None
         if getattr(scanner, 'display', None) is not None:
             from player.geometry import Resolver
@@ -46,7 +50,6 @@ class Session:
             self.navigation[name] = (d, map_targets(scanner.asset_index or {'images': []}, {name: d})[name])
 
     def observe(self):
-        self.scanner.pause(.25)
         try:
             frame, self.lines = self.scanner.observed(self.expected)
             return frame, self.expected
@@ -121,7 +124,6 @@ class Session:
         self.scanner.check_stop()
         self.scanner.tap(x, y, reason=f"manifest scan: {self.edge['action']}")
         self.expected = self.edge['destination']
-        self.scanner.pause(.8)
 
     def collect(self, screen, frame):
         from player.bootstrap import region
@@ -131,7 +133,8 @@ class Session:
         hit = self.last_hit
         rect = hit['rect']
         image = region(self.last_source, rect)
-        rel = f"mapping/v{manifest()['version']}/{self.edge['id']}.png"
+        from player.bootstrap_layout import route_capture_targets
+        rel = route_capture_targets()[self.edge['id']]
         entry = self.scanner.cal.cut('bootstrap', rel, image, self.last_source,
             self.edge['action'], dict(rect=rect, screen=self.edge['source'],
                 source_kind=hit['source_kind'], confirmation_method='two_frame_control_identity',
@@ -194,8 +197,11 @@ class Session:
                 self.scanner.pause(.6)
                 matched = self.driver.step(edge)
             if not matched:
-                self.scanner.skipped.append(dict(screen=edge['destination'],
-                    reason='Control not verified against installed artwork or text'))
+                skipped = dict(screen=edge['destination'],
+                    reason='Control not verified against installed artwork or text')
+                if edge.get('route', {}).get('optional') is True:
+                    skipped['optional'] = True
+                self.scanner.skipped.append(skipped)
                 self.scanner.finish_step('skipped', 'Control unavailable; no input sent')
                 continue
             mapping = self.scanner.state['screen_map'][edge['destination']]

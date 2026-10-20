@@ -85,7 +85,8 @@ def decide(plan: dict, wave: int | None, observations: dict, counters: dict, now
 
 
 def normalize_queue(value: dict) -> dict:
-    allowed = {'version', 'enabled', 'interval_sec', 'cash_reserve', 'queue_mode', 'queue', 'excluded_upgrades'}
+    allowed = {'version', 'enabled', 'interval_sec', 'cash_reserve', 'queue_mode', 'queue',
+               'excluded_upgrades', 'cadence'}
     if set(value) - allowed:
         raise ValueError('queue plan: unsupported fields')
     interval, reserve = value.get('interval_sec', 5), value.get('cash_reserve')
@@ -99,6 +100,9 @@ def normalize_queue(value: dict) -> dict:
     mode = value.get('queue_mode', 'highest_affordable')
     if mode not in ('highest_affordable', 'round_robin', 'weighted_split'):
         raise ValueError('queue_mode: unsupported')
+    cadence = value.get('cadence', 'single_attempt')
+    if cadence not in ('single_attempt', 'while_affordable'):
+        raise ValueError('cadence: unsupported')
     known = {c['id'] for c in catalog()}
     excluded = value.get('excluded_upgrades', ['defense_absolute'])
     if not isinstance(excluded, list) or any(x not in known for x in excluded):
@@ -123,7 +127,8 @@ def normalize_queue(value: dict) -> dict:
             raise ValueError('weight: expected integer from 1 to 100')
         queue.append(dict(id=uid, enabled=_boolean(row.get('enabled', True), uid), tap_limit=limit, from_wave=start, until_wave=end, weight=weight))
     return dict(version=2, enabled=_boolean(value.get('enabled', True), 'enabled'), interval_sec=interval,
-                cash_reserve=reserve, queue_mode=mode, queue=queue, excluded_upgrades=list(excluded))
+                cash_reserve=reserve, queue_mode=mode, cadence=cadence,
+                queue=queue, excluded_upgrades=list(excluded))
 
 
 def queue_candidates(plan: dict, wave: int | None, counters: dict, *, section=None, upgrade=None) -> list[dict]:
@@ -161,7 +166,8 @@ def decide_queue(plan: dict, wave, observations: dict, counters: dict, now: floa
             continue
         if obs['state'] != 'buy':
             continue
-        if not (type(obs.get('quantity')) is int and obs['quantity'] == 1) and obs.get('total_price_verified') is not True:
+        if (not (type(obs.get('quantity')) is int and obs['quantity'] == 1)
+                and (plan.get('cadence') == 'while_affordable' or obs.get('total_price_verified') is not True)):
             return dict(action='wait', reason='quantity_unverified', **base)
         price, cash = obs.get('price'), obs.get('cash')
         if any(isinstance(n, bool) or not isinstance(n, (int, float)) or not math.isfinite(n) for n in (price, cash)) or price <= 0:

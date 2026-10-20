@@ -2,8 +2,8 @@
 
 Device I/O is faked: these prove the decision points a wrong reading could make
 dangerous (start-battle gate, exit-dialog classification), the capture wiring
-(OCR -> verified write via Calibration.cut), and that one flow failing does not
-take the others down. The live taps themselves are watched on a real run.
+(OCR -> verified write via Calibration.cut), and that a failing flow stops setup
+without recovery input. Live taps require a separate real-run check.
 """
 import types
 import numpy as np
@@ -77,6 +77,7 @@ class _FakeScanner:
         self.skipped = []
         self.taps = []
         self.messages = []
+        self.state = {}
 
     def grab(self):
         return self._frame
@@ -93,6 +94,11 @@ class _FakeScanner:
 
     def progress(self, message, **extra):
         self.messages.append(message)
+
+
+@pytest.fixture(autouse=True)
+def _fake_calibration_paths(tmp_path, monkeypatch):
+    monkeypatch.setattr(_FakeCal, 'p', {'state': str(tmp_path / 'state.json')}, raising=False)
 
 
 def _frame():
@@ -136,10 +142,10 @@ def test_capture_reports_a_rejected_cut_as_skipped(monkeypatch):
 
 
 # ------------------------------------------------------------- isolation
-def test_run_flows_isolates_a_failing_stage(monkeypatch):
+def test_run_flows_stops_after_a_failing_stage_without_recovery(monkeypatch):
     from runtime import logger
     monkeypatch.setattr(logger, "event", lambda *a, **k: None)
-    monkeypatch.setattr(fc, "_safe_home", lambda flow: None)
+    monkeypatch.setattr(fc, "_safe_home", lambda flow: calls.append('unexpected recovery'))
     calls = []
     monkeypatch.setattr(fc, "capture_menu_extras",
                         lambda flow: (_ for _ in ()).throw(RuntimeError("boom")))
@@ -147,8 +153,10 @@ def test_run_flows_isolates_a_failing_stage(monkeypatch):
                         lambda flow, **kw: calls.append(("battle", kw)))
 
     flow = fc._Flow(_FakeScanner(_frame()))
-    fc.run_flows(flow)                     # must not raise despite the menu boom
-    assert calls == [("battle", {"do_lottery": False})]   # ran, lottery OFF by default
+    with pytest.raises(RuntimeError, match='boom'):
+        fc.run_flows(flow)
+    assert calls == []
+    assert flow.s.state['final_screen']['verified'] is False
 
 
 # ------------------------------------------- run-time UW-label subroutine
@@ -194,6 +202,7 @@ def test_setup_uw_lottery_is_opt_in_off_by_default(monkeypatch):
     monkeypatch.setattr(fc, "read_tier", lambda f: 14)
     monkeypatch.setattr(fc, "set_tier", lambda flow, t: t)
     monkeypatch.setattr(fc, "_battle_pass", lambda flow, tier, label: None)
+    monkeypatch.setattr(fc, "_hud_digit_pass", lambda flow: None)
     monkeypatch.setattr(fc, "_uw_remaining",
                         lambda: [("uw/smart_missiles.png", "Smart Missiles", (1, 1))])
     lot = []

@@ -299,6 +299,40 @@ def test_api_loadout_unknown_name_404(dash, config_guard):
     assert r.status_code == 404
 
 
+def test_loadout_revision_readback_and_stale_retry(dash, config_guard, monkeypatch):
+    import yaml
+    from pathlib import Path
+    # Isolate save/revision behavior from account-specific preset ownership.
+    cfg = dash.load_config()
+    cfg['active_profile'] = None
+    dash.save_config(cfg)
+    with dash.app.test_client() as client:
+        before = client.get('/api/config').get_json()
+        payload = dict(name='coin_farm', body={'global_preset': 'New preset'},
+                       expected_revision=before['config_revision'])
+        first = client.post('/api/loadout-patch', json=payload)
+        assert first.status_code == 200, first.get_json()
+        assert client.post('/api/loadout-patch', json=payload).status_code == 409
+        after = client.get('/api/config').get_json()
+        assert after['config_revision'] == first.get_json()['config_revision']
+        assert after['loadouts']['coin_farm'] == payload['body']
+        # API metadata must never become machine configuration.
+        dash.save_config(after)
+        stored = yaml.safe_load(Path(dash.CONFIG_PATH).read_text())
+        assert 'config_revision' not in stored
+        assert stored['loadouts']['coin_farm'] == payload['body']
+
+
+def test_loadout_failed_readback_never_returns_success(dash, config_guard, monkeypatch):
+    cfg = dash.load_config()
+    cfg['active_profile'] = None
+    dash.save_config(cfg)
+    monkeypatch.setattr(dash, 'save_config', lambda data: 'unwritten')
+    response = _patch_loadout(dash, 'coin_farm', {'global_preset': 'New preset'})
+    assert response.status_code == 500
+    assert 'readback' in response.get_json()['error']
+
+
 # ---------------------------------------------------- modules_restore (v29)
 def test_modules_restore_validates_and_is_owned(profile, monkeypatch):
     _with_loadout(monkeypatch, "zz_q",

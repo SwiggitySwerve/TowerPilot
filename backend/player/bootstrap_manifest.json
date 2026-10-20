@@ -1294,13 +1294,14 @@
       "from": "home",
       "to": "daily_missions",
       "optional": true,
+      "capture_rel": "mapping/v11/route_17_label.png",
       "verify": {
         "text": "MISSIONS",
         "rect": [
           910,
           185,
           165,
-          100
+          48
         ]
       }
     },

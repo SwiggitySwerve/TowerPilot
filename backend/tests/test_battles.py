@@ -197,3 +197,34 @@ def test_pure_alias_mapping_isolated_and_numeric_values_validated():
     assert out['global_behaviors']['daily_missions'] is False
     assert preset == saved
     assert controls['routines']['repeat']['enabled'] is False
+
+
+def test_history_context_and_status_filters_precede_pagination_and_survive_reload(setup):
+    store, operation, battle, envelope = setup
+    operations = Operations(store.path)
+    store.finish(battle['id'], 'driver', reason='observed_end', outcome='death')
+    cancelled = operations.transition(operation['id'], operation['revision'], 'cancelling')
+    operations.transition(cancelled['id'], cancelled['revision'], 'cancelled')
+    original = battle['context']
+    for index, changes in enumerate(({'account': 'other'}, {'serial': 'other'}, {'instance': 'other'}, {'device_key': 'other'}, {})):
+        context = {**original, **changes}
+        operation, _ = operations.accept('run', context, {})
+        row = store.create(operation['id'], context, envelope, generation=f'driver-{index}')
+        store.finish(row['id'], row['generation'], reason='observed_end', outcome='death')
+        cancelled = operations.transition(operation['id'], operation['revision'], 'cancelling')
+        operations.transition(cancelled['id'], cancelled['revision'], 'cancelled')
+    reloaded = Battles(store.path)
+    first = reloaded.list(limit=1, offset=0, device='device', status='ended', context=original)
+    second = reloaded.list(limit=1, offset=1, device='device', status='ended', context=original)
+    assert first[0]['id'] == row['id']
+    assert second[0]['id'] == battle['id']
+    assert reloaded.list(limit=1, offset=2, device='device', status='ended', context=original) == []
+    assert reloaded.list(device='device', status='active', context=original) == []
+
+
+@pytest.mark.parametrize('filters', [dict(status='succeeded'), dict(context={'unknown': 'x'}),
+                                    dict(context=[]), dict(context={'account': 0})])
+def test_history_rejects_invalid_filters(setup, filters):
+    store, *_ = setup
+    with pytest.raises(ValueError):
+        store.list(**filters)

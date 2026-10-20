@@ -114,7 +114,7 @@ test('preview reports measured delivery and capture latency separately from the 
   const p=page();p.render();p.render();
   await new Promise(resolve=>setImmediate(resolve));
   assert.match(p.requests[0],/^\/api\/stream\/status\?stream_id=/);
-  assert.equal(p.stats.textContent,'ADB screenshots · 1.25 FPS delivered by server / target 15 FPS · effective cap 4 FPS · 1080×2560 · JPEG 90 · capture 750 ms · encode 12 ms · 0 errors');
+  assert.equal(p.stats.textContent,'ADB screenshots · 1.25 FPS delivered by server / target 15 FPS · effective cap 4 FPS · 1080×2560 · JPEG 90 · capture 750 ms · encode 12 ms · last delivered frame age unknown · 0 errors');
 });
 
 test('old metrics responses cannot overwrite a replaced stream',async()=>{

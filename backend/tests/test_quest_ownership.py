@@ -389,7 +389,7 @@ def test_ad_gem_capture_guard_cannot_be_swallowed_as_collection_error(game, monk
     run = owned(game)
     events = []
     monkeypatch.setattr(logger, "event", lambda name, **data: events.append((name, data)))
-    monkeypatch.setattr(ad_gems, "find_claim_rect", lambda f: (1, 1, 100, 100))
+    monkeypatch.setattr(ad_gems, "find_claim_rect", lambda f, **kwargs: (1, 1, 100, 100))
     collector = ad_gems.AdGemCollector(delay=(0, 0), guard=run.guard)
     game.frame = Frame("cards")
     with pytest.raises(tourney.Abort):
