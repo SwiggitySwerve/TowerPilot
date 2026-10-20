@@ -40,6 +40,7 @@ import cv2
 import random
 import sys
 import time
+import uuid
 from pathlib import Path
 
 # Flow files are runnable as scripts (`python flows/shard.py`) with the
@@ -318,6 +319,8 @@ class GemOrbitTapper:
         self.manual_requested = False
         self.manual_active = False
         self.last_outcome = None
+        self.window_id = None
+        self.attempt_id = None
         self._reset_attempt()
 
     def configure(self, values):
@@ -352,6 +355,7 @@ class GemOrbitTapper:
                     next_due_at=epoch+self.next_window_at-now if self.next_window_at else epoch,
                     window_ends_at=None if self.attempt_started is None else epoch+self.window_ends_at-now,
                     manual_pending=self.manual_requested, manual_active=self.manual_active,
+                    window_id=self.window_id, attempt_id=self.attempt_id,
                     last_outcome=self.last_outcome, server_time=epoch)
 
     def _reset_attempt(self):
@@ -376,14 +380,22 @@ class GemOrbitTapper:
     def _expire_attempt(self, balance: int | None) -> bool:
         if self.attempt_started is None or time.monotonic() < self.window_ends_at:
             return False
-        logger.event("gem_orbit_claim", confirmed=False, reason="attempt_timeout",
-                     before=self.balance_before, after=balance)
-        self.last_outcome = dict(confirmed=False, reason='attempt_timeout', observed_at=time.time())
+        with logger.context(window_id=self.window_id, attempt_id=self.attempt_id):
+            logger.event("gem_orbit_claim", confirmed=False, reason="attempt_timeout",
+                         before=self.balance_before, after=balance)
+        self.last_outcome = dict(confirmed=False, reason='attempt_timeout', observed_at=time.time(),
+                                 window_id=self.window_id, attempt_id=self.attempt_id)
         self._reset_attempt()
         self.next_at = self.next_window_at
         return True
 
     def poll(self, frame):
+        candidate = self.window_id if self.attempt_started is not None else uuid.uuid4().hex
+        attempt_id = uuid.uuid4().hex
+        with logger.context(window_id=candidate, attempt_id=attempt_id):
+            return self._poll(frame)
+
+    def _poll(self, frame):
         if self._expire_attempt(None):
             return frame
         manual = self.manual_requested
@@ -399,6 +411,7 @@ class GemOrbitTapper:
                 self.next_at = self.next_window_at
                 return frame
             self.attempt_started = time.monotonic()
+            self.window_id = logger.current_context()['window_id']
             self.last_window_started_at = self.attempt_started
             self.manual_requested = False
             self.manual_active = manual
@@ -406,6 +419,7 @@ class GemOrbitTapper:
             self.window_ends_at = self.attempt_started + min(self.attempt_timeout, self.interval)
             logger.event("gem_orbit_window", duration_sec=min(self.attempt_timeout, self.interval),
                          interval_sec=self.interval)
+        self.attempt_id = logger.current_context()['attempt_id']
         if wave_reader.read_wave(frame) is None:
             self._backoff("no_wave")
             return frame
@@ -426,7 +440,8 @@ class GemOrbitTapper:
                     pause = max(0.0, self.next_window_at - time.monotonic())
                     logger.event("gem_orbit_claim", confirmed=True,
                                  before=self.balance_before, after=balance, pause_sec=round(pause, 3))
-                    self.last_outcome = dict(confirmed=True, reason='balance_increased', observed_at=time.time())
+                    self.last_outcome = dict(confirmed=True, reason='balance_increased', observed_at=time.time(),
+                                             window_id=self.window_id, attempt_id=self.attempt_id)
                     self._reset_attempt()
                     self.next_at = self.next_window_at
                 else:

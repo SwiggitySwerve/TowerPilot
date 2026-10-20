@@ -1,9 +1,13 @@
 """Frame capture from a MuMu instance via adb screencap (works minimized)."""
 import subprocess
+import time
+import traceback
+import uuid
 import cv2
 import numpy as np
 
 from settings import CONFIG, adb_args, run_hidden
+from runtime import logger
 
 
 class CaptureError(RuntimeError):
@@ -59,6 +63,33 @@ def refresh_display(serial: str | None = None) -> str | None:
 
 
 def grab(serial: str | None = None, display: str | None = None, *, discover=False) -> np.ndarray:
+    """Capture normally without per-frame logs; retain retry/failure diagnostics."""
+    started = time.monotonic_ns()
+    diagnostic = {'retries': 0, 'started': started}
+    with logger.context(capture_id=uuid.uuid4().hex):
+        try:
+            frame = _grab(serial, display, discover=discover, diagnostic=diagnostic)
+        except Exception as exc:
+            logger.event('capture_failed', serial=serial, display=display,
+                         retries=diagnostic['retries'],
+                         duration_ms=round((time.monotonic_ns() - started) / 1_000_000, 3),
+                         exception_type=type(exc).__name__, exception_message=str(exc),
+                         traceback=''.join(traceback.format_exception(type(exc), exc, exc.__traceback__)))
+            raise
+        if diagnostic['retries']:
+            logger.event('capture_recovered', retries=diagnostic['retries'],
+                         duration_ms=round((time.monotonic_ns() - started) / 1_000_000, 3))
+        return frame
+
+
+def _capture_retry(diagnostic, **fields):
+    diagnostic['retries'] += 1
+    logger.event('capture_retry', retry=diagnostic['retries'],
+                 duration_ms=round((time.monotonic_ns() - diagnostic['started']) / 1_000_000, 3),
+                 **fields)
+
+
+def _grab(serial: str | None = None, display: str | None = None, *, discover=False, diagnostic) -> np.ndarray:
     """Return the current screen as a BGR ndarray at native resolution.
 
     Uses RAW screencap (no -p): ~344ms vs ~700ms for PNG - the on-device PNG
@@ -97,9 +128,15 @@ def grab(serial: str | None = None, display: str | None = None, *, discover=Fals
             buf = adbclient.exec_out(serial, cmd, timeout=15)
             if len(buf) >= 1000:
                 break
+            if attempt == 1:
+                _capture_retry(diagnostic, serial=serial, display=display,
+                               reason='short_payload', bytes_received=len(buf))
         except (OSError, adbclient.AdbError) as e:
             if attempt == 2:
                 raise CaptureError(f"screencap failed: {e}") from e
+            _capture_retry(diagnostic, serial=serial, display=display,
+                           exception_type=type(e).__name__, exception_message=str(e),
+                           reason='transport_error')
             adbclient.recover(serial)
     if len(buf) < 1000:
         # THE MuMu DISPLAY-CHURN SIGNATURE: the emulator recreates its
@@ -110,7 +147,8 @@ def grab(serial: str | None = None, display: str | None = None, *, discover=Fals
         # once and retry; only for the instance's own display, never for
         # an explicitly requested one (wizard probes ask for exact ids).
         if from_instance and display and refresh_display(serial) not in (None, display):
-            return grab(discover=discover)
+            _capture_retry(diagnostic, serial=serial, display=display, reason='display_changed')
+            return _grab(discover=discover, diagnostic=diagnostic)
         raise CaptureError(f"screencap returned {len(buf)} bytes")
     exp_w, exp_h = CONFIG["screen"]["width"], CONFIG["screen"]["height"]
     # multi-display instances (Main Tower) prepend a text warning line to the
@@ -132,7 +170,8 @@ def grab(serial: str | None = None, display: str | None = None, *, discover=Fals
         # lives on the secondary mumuscreen: derive it once and retry. Single-
         # display emulators return None from the probe and fall through.
         if from_instance and not display and refresh_display(serial):
-            return grab(discover=discover)
+            _capture_retry(diagnostic, serial=serial, display=display, reason='resolution_display_refresh')
+            return _grab(discover=discover, diagnostic=diagnostic)
         raise CaptureError(f"unexpected resolution {w}x{h}, expected {exp_w}x{exp_h} "
                            "(resolution lock violated - recalibrate or fix instance)")
     header = len(buf) - w * h * 4        # 12 (Android <12) or 16 bytes

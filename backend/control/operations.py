@@ -1,8 +1,10 @@
 """Local application operation adapter; no device/runtime-settings imports."""
 import copy
 import os
+from functools import partial
 from pathlib import Path
 
+from control import diagnostics as diagnostic_store
 from towerpilot_workflows.operations import Conflict, Operations, digest, file_revision
 
 
@@ -46,22 +48,42 @@ def worker_alive(worker):
 
 
 def launch(root, cfg, kind, command, cmd, popen, profile_path=None, **kwargs):
+    from runtime import diagnostics
+    emit = partial(diagnostics.event_to, diagnostic_store.log_root(root) / '_dashboard')
+    with diagnostics.attempt('operation.launch', emit=emit, operation_kind=kind) as attempt:
+        result = _launch(root, cfg, kind, command, cmd, popen, profile_path, **kwargs)
+        attempt.finish('accepted', operation_id=result['id'], operation_status=result['status'])
+        return result
+
+
+def _launch(root, cfg, kind, command, cmd, popen, profile_path=None, **kwargs):
+    from runtime import diagnostics
     previous = retry(root, cfg, kind, command, profile_path)
     if previous:
         return previous
     store = ledger(root)
     payload = {k: v for k, v in command.items() if k != 'idempotency_key'}
     target = context(root, cfg, payload, profile_path)
+    # Correlation travels through the environment, never the business command
+    # or target digest: retries keep the same idempotency semantics.
+    diagnostic = diagnostics.current_context()
     expected = command.get('expected_context')
     if expected is not None:
         if not isinstance(expected, dict) or any(expected.get(key) != target.get(key) for key in ('instance', 'account', 'serial', 'rendering', 'profile')):
             raise Conflict('Selected account, device or profile changed before acceptance')
     for active in store.active(target['device_key']):
-        store.reconcile(active['id'], worker_alive)
+        resolve(root, active['id'])
     op, created = store.accept(kind, target, payload, command.get('idempotency_key'))
     if not created:
         return op
+    diagnostics.event_to(diagnostic_store.log_root(root) / '_dashboard', 'operation_accepted',
+                         operation_id=op['id'], operation_kind=kind, outcome=op['status'],
+                         instance=target['instance'])
     env = dict(os.environ, TOWER_OPERATION_DB=store.path, TOWER_OPERATION_ID=op['id'])
+    for key, name in (('trace_id', 'TOWER_TRACE_ID'), ('request_id', 'TOWER_REQUEST_ID'),
+                      ('span_id', 'TOWER_PARENT_SPAN_ID')):
+        if diagnostic.get(key):
+            env[name] = str(diagnostic[key])
     try:
         process = popen([cmd[0], '-m', 'runtime.operation_worker', *cmd[1:]], env=env, **kwargs)
         import psutil
@@ -72,6 +94,10 @@ def launch(root, cfg, kind, command, cmd, popen, profile_path=None, **kwargs):
         if creation_time is not None:
             store.launched(op['id'], {'pid': process.pid, 'creation_time': creation_time})
     except (OSError, ValueError) as exc:
+        diagnostics.event_to(diagnostic_store.log_root(root) / '_dashboard', 'operation_launch_failed',
+                             operation_id=op['id'], operation_kind=kind, outcome='failed',
+                             exception_type=type(exc).__name__, exception_message=str(exc),
+                             instance=target['instance'])
         store.transition(op['id'], op['revision'], 'failed', error={'code': 'launch_failed', 'message': str(exc)})
         raise
     return store.get(op['id'])
@@ -79,7 +105,15 @@ def launch(root, cfg, kind, command, cmd, popen, profile_path=None, **kwargs):
 
 def resolve(root, operation_id):
     store = ledger(root)
-    return store.reconcile(operation_id, worker_alive)
+    before = store.get(operation_id)
+    result = store.reconcile(operation_id, worker_alive)
+    if result['status'] != before['status']:
+        from runtime import diagnostics
+        with diagnostics.context(operation_id=operation_id, instance=before['context'].get('instance')):
+            diagnostics.event_to(diagnostic_store.log_root(root) / '_dashboard', 'operation_reconciled', previous_status=before['status'],
+                         outcome=result['status'], error=result.get('error'),
+                         worker=before.get('worker'))
+    return result
 
 
 def retry(root, cfg, kind, command, profile_path):

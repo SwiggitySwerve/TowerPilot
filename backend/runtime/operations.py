@@ -45,6 +45,34 @@ def publish_progress(state):
 
 @contextmanager
 def worker_operation(kind=None):
+    """Retain one durable worker outcome, including failures without exceptions."""
+    from runtime import logger
+    ledger, operation_id = environment_operation()
+    op = ledger.get(operation_id) if ledger else None
+    identity = op['context'] if op else {}
+    fields = {}
+    if op:
+        fields.update(operation_id=operation_id, instance=identity.get('instance'),
+                      operation_kind=op['kind'])
+    with logger.context(**fields), logger.attempt('operation.worker') as attempt:
+        try:
+            with _worker_operation(kind):
+                yield
+        except SystemExit as exc:
+            if exc.code in (None, 0):
+                attempt.finish('exited', exit_code=exc.code)
+            raise
+        finally:
+            if ledger:
+                final = ledger.get(operation_id)
+                logger.event('operation_worker_finished', outcome=final['status'],
+                             error=final.get('error'), revision=final['revision'])
+                if attempt.outcome is None:
+                    attempt.finish(final['status'])
+
+
+@contextmanager
+def _worker_operation(kind=None):
     """Entrypoint wrapper. Lease ownership remains the worker's responsibility."""
     ledger, operation_id = environment_operation()
     if ledger is None:
@@ -58,7 +86,10 @@ def worker_operation(kind=None):
         raise SystemExit('Operation cancelled before worker start')
     if op['status'] != 'accepted':
         raise Conflict('Worker launch is no longer accepted')
-    ledger.transition(operation_id, op['revision'], 'running', worker=worker, step='capture')
+    running = ledger.transition(operation_id, op['revision'], 'running', worker=worker, step='capture')
+    from runtime import logger
+    logger.event('operation_worker_started', operation_kind=op['kind'],
+                 revision=running['revision'], worker=worker)
     failure = None
     try:
         yield
