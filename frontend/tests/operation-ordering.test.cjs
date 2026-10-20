@@ -147,8 +147,8 @@ test('a missing operation reference never falls back to PID cancellation for a t
 test('tracked Stop requires a concrete operation revision',async()=>{
   const p=runnerCommands();await p.ctx.killPid(42,'tracked',NaN);assert.deepEqual(p.calls,[]);
 });
-for (const action of ['stop_after_run','clear_flag']) test(action+' carries the rendered original operation target',async()=>{
-  const p=runnerCommands();await p.ctx.ctl(action,'original-run',8);
+test('clear_flag carries the rendered original operation target',async()=>{
+  const action='clear_flag',p=runnerCommands();await p.ctx.ctl(action,'original-run',8);
   assert.equal(p.calls[0].path,'/api/control');assert.equal(p.calls[0].body.operation_id,'original-run');assert.equal(p.calls[0].body.expected_revision,8);
   assert.equal(p.calls[0].body.action,action);
 });
@@ -158,9 +158,9 @@ test('rendered tracked controls retain operation revision and original instance 
     LearningStore,WorkspaceStatus,LearningView:require('../webui/learning-view.js'),$:key=>key === '#runner-body'?body:null,document:{activeElement:null},esc:String,renderRunReady:()=>{}});
   vm.runInContext(section('function renderRunner(){','function renderRunReady('),ctx);ctx.renderRunner();
   assert.match(body.innerHTML,/data-operation-id="run-old" data-operation-revision="6" onclick="killPid/);
-  assert.match(body.innerHTML,/ctl\('stop_after_run',this.dataset.operationId,Number\(this.dataset.operationRevision\)\)" data-operation-id="run-old" data-operation-revision="6"/);
+  assert.doesNotMatch(body.innerHTML,/ctl\('stop_after_run'/);
   ctx.S.status.processes[0].stop_flag=true;ctx.renderRunner();
-  assert.match(body.innerHTML,/ctl\('clear_flag',this.dataset.operationId/);
+  assert.match(body.innerHTML,/ctl\('clear_flag',this.dataset.operationId,Number\(this.dataset.operationRevision\)\)" data-operation-id="run-old" data-operation-revision="6"/);
 });
 
 function gemsPage(post){

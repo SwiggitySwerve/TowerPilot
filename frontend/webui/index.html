@@ -343,8 +343,7 @@
     "fleet_mark": { "fleet_mark": { "after_waves": 3, "window_waves": 60 } },
     "wave_at_least": { "wave_at_least": 1000 },
     "wave_between": { "wave_between": [1000, 2000] },
-    "second_wind": { "second_wind": { "state": "after_immunity" } },
-    "death_screen": { "death_screen": true }
+    "second_wind": { "second_wind": { "state": "after_immunity" } }
   },
   "actions": {
     "burst": { "burst": { "fire": "demon_mode", "cancel_sprint": true } },
@@ -352,8 +351,7 @@
     "fire": { "fire": { "button": "nuke" } },
     "toggle_uw": { "toggle_uw": { "weapon": "chain_lightning", "want_on": true } },
     "cancel_sprint": { "cancel_sprint": true },
-    "surrender_retry": { "surrender_retry": true },
-    "stop_after_run": { "stop_after_run": true }
+    "surrender_retry": { "surrender_retry": true }
   },
   "cl_modes": {
     "off": {},
@@ -2729,22 +2727,22 @@ function renderRunner(){
         <button class="small danger" ${p.operation ? `data-operation-id="${esc(p.operation.id)}" data-operation-revision="${p.operation.revision}" onclick="killPid(${p.pid},this.dataset.operationId,Number(this.dataset.operationRevision))"` : `onclick="killPid(${p.pid})"`}>Stop now</button>
       </div>`).join("")
       : '<p class="muted">Nothing is running.</p>'}
-    ${procs.length ? `<div class="action-row current-run-actions">${finishFlag
-        ? `<button class="ghost" onclick="ctl('clear_flag'${finishArgs})"${finishAttrs}>Stopping after this run · Cancel</button>`
-        : `<button class="ghost" onclick="ctl('stop_after_run'${finishArgs})"${finishAttrs}>Finish current run, then stop</button>`}</div>
-        <p class="muted">Stop now stops automation. The game battle keeps playing.</p>` : ""}
+    ${procs.length && finishFlag ? `<div class="action-row current-run-actions">
+        <button class="ghost" onclick="ctl('clear_flag'${finishArgs})"${finishAttrs}>Stopping after this run · Cancel</button></div>` : ""}
+    ${procs.length ? `<p class="muted">Stop now stops automation. The game battle keeps playing.</p>` : ""}
     <details class="next-run" ${nextRunOpen ? "open" : ""}><summary>${procs.length ? "Next run configuration" : "Start automation"}</summary>
     <div class="action-row">
       <select id="start-preset" onchange="renderRunReady()">
         ${presets.map(p => `<option value="${esc(p.name)}" title="${esc(p.title)}"
             ${p.name === firstReady ? "selected" : ""}>${esc(p.label)}</option>`).join("")}
       </select>
-      <button data-prepare-run onclick="prepareRun()">Prepare this run</button><button id="start-run" onclick="startPreset()">▶ Start</button>
+      <button data-prepare-run onclick="prepareRun()">Prepare this run</button><button id="start-run" onclick="startPreset()">▶ Start playing</button>
       <button id="start-gems" onclick="startGemsOnly()" ${procs.length ? "disabled" : ""}>Collect diamonds only</button>
     </div>
     <div id="run-ready" class="muted" style="margin-top:.4rem"></div>
     <p id="run-collection-summary" class="muted"></p>
     <p class="prepare-run-status" role="status" aria-live="polite">${esc(LearningView.text(S.learningFlow) || S.prepareMessage || '')}</p>
+    <p class="muted">A new Start cancels any pending stop for that emulator once the driver takes ownership. Prepare this run sets up equipment without starting a battle.</p>
     <p class="muted" style="margin-top:.4rem">“Combo (day plan)” runs the whole
       day plan in <a href="#schedule">Schedule</a>. <a href="#runs">Edit run policies</a> or <a href="#collection">adjust collection settings</a>.</p></details>`;
   if (chosen) {
@@ -2774,7 +2772,7 @@ function renderRunReady(){
   if (running) {
     if (btn) btn.disabled = true;
     if (gems) gems.disabled = true;
-    out.textContent = 'Automation is running. Use Stop now to stop the driver, or finish current run to stop after the battle.';
+    out.textContent = 'Automation is running. Use the current battle controls to finish at a run boundary, or Stop now to stop the driver.';
     return;
   }
   const blockers = WorkspaceStatus.startBlockers({status:S.status, config:S.config});
@@ -3535,13 +3533,13 @@ function pInput(spec, val, js){
 /* ---- RULE model: source spellings <-> {kind, params} */
 const TRIG_LABEL = { bar:"a bar is low / falling", wall_collapse:"the wall collapses",
   fleet_mark:"a fleet spawns", wave_at_least:"wave is reached",
-  wave_between:"between two waves", second_wind:"Second Wind state",
-  death_screen:"the run just ended" };
+  wave_between:"between two waves", second_wind:"Second Wind state" };
 const ACT_LABEL = { burst:"emergency burst (sprint→confirm→ability)",
   fire:"fire an ability", toggle_uw:"switch a weapon on/off",
-  cancel_sprint:"end the intro sprint", surrender_retry:"surrender & retry",
-  stop_after_run:"stop after this run" };
-const FLAG_ACTS = ["cancel_sprint", "surrender_retry", "stop_after_run"];
+  cancel_sprint:"end the intro sprint", surrender_retry:"surrender & retry" };
+// RETIRED 2026-09-27: `stop_after_run` and the "the run just ended"
+// trigger - the only way a run type could end the farm by itself.
+const FLAG_ACTS = ["cancel_sprint", "surrender_retry"];
 
 function trigParse(when){
   const kinds = Object.keys(S.vocab.rule_triggers.fields);
@@ -3550,7 +3548,6 @@ function trigParse(when){
   if (k === "wave_at_least") return { k, p:{ wave: when.wave_at_least ?? when.wave } };
   if (k === "wave_between") { const v = when.wave_between || when.value || [];
     return { k, p:{ lo:v[0], hi:v[1] } }; }
-  if (k === "death_screen") return { k, p:{} };
   return { k, p:{ ...(typeof when[k] === "object" ? when[k] : {}) } };
 }
 function trigBuild(k, p){
@@ -3559,7 +3556,6 @@ function trigBuild(k, p){
   if (k === "bar") return { ...clean };
   if (k === "wave_at_least") return { wave_at_least: clean.wave };
   if (k === "wave_between") return { wave_between: [clean.lo, clean.hi] };
-  if (k === "death_screen") return { death_screen: true };
   return { [k]: clean };
 }
 function actParse(doo){
@@ -3683,6 +3679,13 @@ function rescueHtml(){
     </fieldset>
     <fieldset><legend>If this… then that (top rule wins first)</legend>
       ${(d.rules || []).map((r, i) => {
+        if (Object.hasOwn(r.when || {}, 'death_screen') || Object.hasOwn(r.do || {}, 'stop_after_run')) {
+          return `<div class="rulecard">
+            <p class="warn"><b>Retired rule — ignored.</b> This rule uses a retired trigger or action and does not run.</p>
+            <details><summary>Original rule</summary><pre>${esc(JSON.stringify(r, null, 2))}</pre></details>
+            <button class="small danger" onclick="p2delRule(${i})">Delete retired rule</button>
+          </div>`;
+        }
         const t = trigParse(r.when); const a = actParse(r.do);
         return `<div class="rulecard">
           <div class="rowline"><b>WHEN</b>

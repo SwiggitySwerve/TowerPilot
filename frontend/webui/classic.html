@@ -377,16 +377,14 @@
             <button onclick="startPreset()">Start</button>
           </span>
           <span role="group">
-            <button class="ghost" onclick="control('stop_after_run')">
-              Stop after run</button>
             <button class="ghost" onclick="control('clear_flag')">
               Clear stop flag</button>
           </span>
           <span id="flag" class="pill"></span>
         </div>
-        <p class="note">"Stop after run" is the safe stop: the runner leaves at
-        the next run boundary. Kill only when you accept dropping a live
-        run's bookkeeping (the game itself is never touched).</p>
+        <p class="note">Stopping automation leaves the game battle playing.
+        A new Start clears a pending stop once its driver takes ownership.
+        Clear stop flag cancels a pending day-plan switch.</p>
       </article>
       <article class="card"><h2>Daily state</h2><div id="daily" class="kv"></div></article>
     </div>

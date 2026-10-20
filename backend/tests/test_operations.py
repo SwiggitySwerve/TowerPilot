@@ -328,32 +328,46 @@ def test_apply_retries_saved_profile_after_config_failure_without_capture(dashbo
     assert file_revision(state) == op['result_refs']['calibrate_state.json']['revision']
 
 
-def test_expected_context_prevents_launch_retargeting(tmp_path):
+@pytest.mark.parametrize('kind', ['run', 'calibrate'])
+def test_expected_context_prevents_launch_retargeting(tmp_path, kind):
     cfg, ctx = target(tmp_path)
     command = {'expected_context': {key: ctx[key] for key in ('instance', 'account', 'serial', 'rendering', 'profile')}}
     cfg['instances']['main']['serial'] = 'fake:changed'
+    flag = tmp_path / 'logs' / 'main' / 'stop_after_run'
+    flag.parent.mkdir(parents=True)
+    flag.write_text('active scheduler transition', encoding='utf-8')
     launches = []
     with pytest.raises(Conflict, match='before acceptance'):
-        service.launch(tmp_path, cfg, 'calibrate', command, ['python', 'fake.py'], lambda *args, **kwargs: launches.append(args), ctx['profile_path'])
+        service.launch(tmp_path, cfg, kind, command, ['python', 'fake.py'], lambda *args, **kwargs: launches.append(args), ctx['profile_path'])
     assert not launches
+    assert flag.read_text() == 'active scheduler transition'
 
 
 @pytest.mark.parametrize('busy', [False, True])
-def test_bootstrap_acquires_lease_before_running_or_target_import(tmp_path, monkeypatch, busy):
+@pytest.mark.parametrize('kind', ['run', 'gems'])
+def test_bootstrap_acquires_lease_before_running_or_target_import(tmp_path, monkeypatch, busy, kind):
     from runtime import device_lease, operation_worker
     _, ctx = target(tmp_path)
     store = Operations(tmp_path / 'ops.db')
-    op, _ = store.accept('run', ctx, {})
+    op, _ = store.accept(kind, ctx, {})
+    flag = Path(store.path).parent / ctx['instance'] / 'stop_after_run'
+    flag.parent.mkdir()
+    flag.write_text('old stop', encoding='utf-8')
+    other = flag.parent.parent / 'another' / 'stop_after_run'
+    other.parent.mkdir()
+    other.write_text('other scheduler transition', encoding='utf-8')
     monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
     monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
     order = []
     def acquire(serial, host, port):
         assert store.get(op['id'])['status'] == 'accepted'
+        assert flag.read_text() == 'old stop'
         order.append('lease')
         if busy:
             raise device_lease.DeviceBusy('fake occupied transport')
     def execute(path, run_name):
         assert store.get(op['id'])['status'] == 'running'
+        assert flag.exists() is (kind != 'run')
         order.append('target')
     monkeypatch.setattr(device_lease, 'acquire', acquire)
     monkeypatch.setattr(operation_worker, 'restore_worker_context', lambda settings: order.append('context'))
@@ -364,10 +378,12 @@ def test_bootstrap_acquires_lease_before_running_or_target_import(tmp_path, monk
             operation_worker.main()
         assert order == ['context', 'lease']
         assert store.get(op['id'])['status'] == 'failed'
+        assert flag.read_text() == 'old stop'
     else:
         operation_worker.main()
         assert order == ['context', 'lease', 'target']
         assert store.get(op['id'])['status'] == 'succeeded'
+    assert other.read_text() == 'other scheduler transition'
 
 
 def test_retry_resolves_original_operation_after_mutable_revisions_change(tmp_path):
@@ -402,16 +418,23 @@ def test_new_start_reconciles_dead_worker_without_prior_poll(tmp_path, monkeypat
 def test_launch_propagates_correlation_without_changing_idempotent_payload(tmp_path, monkeypatch):
     from runtime import diagnostics
     cfg, ctx = target(tmp_path)
+    flag = tmp_path / 'logs' / 'main' / 'stop_after_run'
+    flag.parent.mkdir(parents=True)
+    flag.write_text('old stop', encoding='utf-8')
     launches = []
     def spawn(command, **kwargs):
+        assert flag.read_text() == 'old stop'
         launches.append(kwargs['env'])
         return types.SimpleNamespace(pid=99999999)
     command = {'idempotency_key': 'same-business-command', 'preset': 'test'}
     with diagnostics.context(trace_id='original-trace', request_id='original-request', span_id='request-span'):
         first = service.launch(tmp_path, cfg, 'run', command, ['python', 'fake.py'], spawn, ctx['profile_path'])
+    assert flag.read_text() == 'old stop'
+    flag.write_text('new scheduler transition', encoding='utf-8')
     with diagnostics.context(trace_id='retried-trace', request_id='retried-request'):
         second = service.launch(tmp_path, cfg, 'run', command, ['python', 'fake.py'], spawn, ctx['profile_path'])
     assert first == second
+    assert flag.read_text() == 'new scheduler transition'
     assert first['request'] == {'preset': 'test'}
     assert 'diagnostic' not in first['context']
     assert len(launches) == 1
@@ -467,17 +490,37 @@ def test_process_projection_requires_creation_identity(tmp_path, monkeypatch):
     assert store.get(op['id'])['status'] == 'interrupted'
 
 
-def test_finish_flag_uses_operation_original_instance(dashboard, monkeypatch):
+def test_clear_flag_uses_operation_original_instance_and_revision(dashboard):
     dash, cfg, ctx = dashboard
     store = service.ledger(dash.ROOT)
     op, _ = store.accept('run', ctx, {})
+    flag = Path(dash.ROOT) / 'logs' / 'main' / 'stop_after_run'
+    flag.parent.mkdir(parents=True, exist_ok=True)
+    flag.write_text('scheduler transition', encoding='utf-8')
     cfg['active_instance'] = 'different'
     cfg['instances']['different'] = {'serial': 'fake:other'}
+    other = Path(dash.ROOT) / 'logs' / 'different' / 'stop_after_run'
+    other.parent.mkdir(parents=True)
+    other.write_text('another scheduler transition', encoding='utf-8')
+    with dash.app.test_client() as client:
+        stale = client.post('/api/control', json={'action': 'clear_flag', 'operation_id': op['id'], 'expected_revision': op['revision'] + 1})
+        assert stale.status_code == 409
+        assert flag.read_text() == 'scheduler transition'
+        response = client.post('/api/control', json={'action': 'clear_flag', 'operation_id': op['id'], 'expected_revision': op['revision']})
+    assert response.status_code == 200
+    assert not flag.exists()
+    assert other.read_text() == 'another scheduler transition'
+
+
+def test_legacy_stop_after_run_action_is_refused(dashboard):
+    dash, _, ctx = dashboard
+    store = service.ledger(dash.ROOT)
+    op, _ = store.accept('run', ctx, {})
     with dash.app.test_client() as client:
         response = client.post('/api/control', json={'action': 'stop_after_run', 'operation_id': op['id'], 'expected_revision': op['revision']})
-    assert response.status_code == 200
-    assert (Path(dash.ROOT) / 'logs' / 'main' / 'stop_after_run').exists()
-    assert not (Path(dash.ROOT) / 'logs' / 'different' / 'stop_after_run').exists()
+    assert response.status_code == 400
+    assert response.get_json()['error'] == 'unknown action'
+    assert not (Path(dash.ROOT) / 'logs' / 'main' / 'stop_after_run').exists()
 
 
 @pytest.mark.parametrize('width', [1080, 720])

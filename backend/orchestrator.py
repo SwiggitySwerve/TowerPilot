@@ -30,6 +30,7 @@ from device import capture
 from device import overlays
 from vision import wave_reader
 from vision import detect
+from vision import fleet_scan
 from runtime import logger
 from device import act
 from interactions import shopper
@@ -118,7 +119,70 @@ def marks():
     proactive Nuke in both loops, the Chain Lightning choreography and the
     danger-window shots - reads this one list."""
     from scheduling import fleets
-    return fleets.marks(run_tier(), CONFIG)
+    cfg = _battle_session.config if _battle_session is not None else CONFIG
+    return fleets.marks(run_tier(), cfg)
+
+
+def fleet_gate(rs, frame, mark: int, wave: int) -> str | None:
+    """Why the fleet Nuke may fire for `mark` on this frame, or None = hold.
+
+    A fleet is ONE big outlined pentagon of a random type (saboteur red,
+    commander orange, overcharge blue; vision/fleet_scan.py reads shape +
+    colour) and brings a Scatter swarm - the pale triangles - that is what
+    kills the tower: GAME STATS "Killed By Scatter" at 3753, 4498 and 4498
+    (2026-10-18), 3-8 waves after the spawn, while a 10-wave "is it dying?"
+    hold kept the Nuke idle. So every SIGHTED fleet is nuked on sight (user,
+    2026-10-18): the Nuke refreshes in ~300 waves and fleets come every 750,
+    holding it saves nothing. Blue or not only labels the event.
+
+    The gate still refuses to fire before a fleet is on screen, so the
+    schedule alone never burns the Nuke (a wrong tier row, a mark the run
+    skipped past). Once sighted the decision sticks for the mark, so a
+    pentagon that scrolls off between frames still gets its Nuke.
+    `fleet.sighting.enabled: false` restores the plain schedule. The caller
+    has already applied nuke_on_fleet.after_waves / window_waves."""
+    run_cfg = _battle_session.config if _battle_session is not None else CONFIG
+    cfg = (run_cfg.get("fleet") or {}).get("sighting") or {}
+    if not cfg.get("enabled", True):
+        return "schedule"
+    seen = rs.fleet_seen.setdefault(mark, {"types": {}, "blue": False})
+    try:
+        from player.bootstrap_layout import manifest
+        x, y, w, h = manifest()["side_menu"]["column"]
+        counts = fleet_scan.scan(
+            frame, field=run_cfg["rois"]["field"], exclude=(x, y, x + w, y + h),
+            min_area=float(cfg.get("min_area", fleet_scan.MIN_AREA)))
+    except Exception as e:                  # noqa: BLE001 - vision must not kill the loop
+        logger.event("fleet_scan_error", mark=mark, error=repr(e))
+        counts = {}                       # an earlier sighting still holds
+    for t, n in counts.items():
+        if n and n > seen["types"].get(t, 0):
+            seen["types"][t] = n
+            logger.event("fleet_sighting", mark=mark, wave=wave, type=t, count=n,
+                         shot=logger.shot(frame, f"fleet_seen_{t}_w{wave}"))
+    if counts.get(fleet_scan.BLUE):
+        seen["blue"] = True
+    if seen["blue"]:
+        return "blue_fleet"
+    if seen["types"]:
+        return "fleet_" + max(seen["types"], key=seen["types"].get)
+    return None
+
+
+def fleet_fire_skipped(rs, frame, mark: int, wave: int, why: str) -> None:
+    """fire_button returns False WITHOUT an event when the button is absent
+    or not ready - the intro sprint locks the ability row, so the 1495 fleet
+    on 2026-10-18 was sighted, never tapped, and nothing in the log said why.
+    One event per mark, with the button state the decision was made on."""
+    seen = rs.fleet_seen.setdefault(mark, {"types": {}, "blue": False})
+    if seen.get("skip_logged"):
+        return
+    seen["skip_logged"] = True
+    st = detect.button_state(frame, "nuke")
+    logger.event("fleet_fire_skipped", mark=mark, wave=wave, why=why,
+                 present=bool(st.present), ready=bool(st.ready),
+                 score=round(float(st.score or 0), 3),
+                 shot=logger.shot(frame, f"fleet_skip_w{wave}"))
 
 
 # consecutive badge-free frames before the Second Wind window counts as closed.
@@ -146,6 +210,7 @@ class RunState:
                                       # fixed point taps the wrong ability)
         self.nuked_marks: set[int] = set()   # fleet marks already nuked/passed
         self.fleet_try_at = 0.0              # throttle for fleet-nuke retries
+        self.fleet_seen: dict[int, dict] = {}  # mark -> sighted types / blue flag
         self.wave_hwm: int | None = None     # highest confirmed wave THIS run
                                              # (the unseen-boundary detector)
         self.last_fire = {"nuke": 0.0, "demon_mode": 0.0}
@@ -496,13 +561,15 @@ _COOLDOWN_KEYS = (("rule", "refire_sec"), ("rule", "cooldown_sec"),
 # point of profiles is that a rule the player wrote either runs or says why not.
 RULE_TRIGGERS = ("wave_at_least", "wave_between", "bar", "wall_collapse",
                  "fleet_mark", "second_wind")
-RULE_ACTIONS = ("fire", "burst", "cancel_sprint", "stop_after_run",
+RULE_ACTIONS = ("fire", "burst", "cancel_sprint",
                 "switch_cards", "toggle_uw", "surrender_retry")
-# THE DEATH SCREEN IS ITS OWN PHASE, not a trigger the observe loop can see:
-# by the time the dialog exists the loop has already returned "dead" and handed
-# over. A death rule is recognised by the compiler's own `latency` field and
-# runs from run_death_rules() below.
-RULE_DEATH_TRIGGERS = ("death_screen",)
+# THE DEATH SCREEN WAS ITS OWN PHASE until 2026-09-27, when its trigger and
+# its one action (`stop_after_run`) were retired: they were the only way a run
+# type could end the farm by itself. The compiler cannot build such a rule any
+# more (player/playerprofile.py, the RETIRED note), so the phase has nothing
+# left to run and the death handler owns that screen alone. The run flag still
+# exists - the day plan writes it to switch activities at a run boundary.
+RULE_DEATH_TRIGGERS = ()
 # ...and ONE action may fire there: the one that touches no screen at all.
 #
 # (Codex P4 #3.) The stats dialog has no ability row, no sprint and no wall, so
@@ -519,9 +586,11 @@ RULE_DEATH_TRIGGERS = ("death_screen",)
 #     On a stats dialog there is nothing to surrender and no such button; it
 #     would hunt, fail and Abort.
 # So both are refused with a message naming the reason. That is deliberately
-# NARROWER than playerprofile.DEATH_SCREEN_ACTIONS: a compiled rule of that
-# kind is retired LOUDLY here rather than tapping into a menu.
-RULE_DEATH_ACTIONS = ("stop_after_run",)
+# EMPTY since the retirement, and kept empty rather than deleted: a preset
+# compiled BEFORE it still carries `latency: death_handler`, and an empty
+# table retires such a rule loudly (`rule_unsupported`) instead of letting an
+# old profile quietly stop the farm one more time.
+RULE_DEATH_ACTIONS = ()
 # (There is deliberately no "acting actions" table any more. Whether an action
 # touched the screen is REPORTED BY THE ACTION, from where it actually knows -
 # see _rule_act's two return values - rather than predicted from its name.)
@@ -1337,13 +1406,6 @@ def _rule_act(rs: "RunState", frame, i: int, rid: str, name: str,
         ok = end_intro_sprint(rs, rid)
         rs.sprint_ended = rs.sprint_ended or bool(ok)
         return True, bool(ok)
-    if name == "stop_after_run":
-        # NOT an interrupt: the runner still leaves at its death handler, at a
-        # run boundary (the runflag contract). No rule ends a live run. The one
-        # action in the vocabulary that touches no screen at all, which is also
-        # why it is the only one allowed in the death phase.
-        runflag.request(rid)
-        return False, True
     if name == "switch_cards":
         return _rule_switch_cards(rs, p["preset"], i)
     if name == "toggle_uw":
@@ -1389,16 +1451,12 @@ def run_death_rules(rs: "RunState", frame) -> bool:
     """The DEATH PHASE of the same interpreter, called once from the death
     handler after the run log is collected and before the restart.
 
-    Separate from eval_rules because the two phases see different screens: on
-    the stats dialog there is no ability row, no sprint and no wall, so only
-    RULE_DEATH_ACTIONS may run (see that constant - it is exactly one action,
-    and it touches nothing) and the whole bar/wave vocabulary is meaningless.
-    The death handler keeps RETRY, the restart and the screen.
-
-    Returns True if a rule touched the screen. Nothing in RULE_DEATH_ACTIONS
-    can today, so it is always False - the contract is kept live because the
-    caller re-grabs on it, and that is what makes narrowing the action set the
-    safe default rather than a thing to remember.
+    Nothing can run here any more: the death-screen trigger and its one
+    action were retired (RULE_DEATH_ACTIONS above), and the compiler no longer
+    builds a rule that claims this phase. What is left is the RETIREMENT path
+    for a preset compiled before that - such a rule is refused loudly here
+    instead of stopping the farm - so this returns False, and the caller's
+    re-grab contract stays live for whenever the phase earns an action again.
     """
     return _run_rules(rs, frame, rs.tracker.last, "death")
 
@@ -1635,15 +1693,20 @@ def _fast_wall_watch(rs: "RunState", ab: dict) -> str:
                             rs.nuked_marks.add(m)
                             continue
                         if wv >= m + after and now_m >= rs.fleet_try_at:
+                            why = fleet_gate(rs, frame, m, wv)
+                            if why is None:
+                                break
                             rs.fleet_try_at = now_m + throttle
                             if fire_button(frame, "nuke", f"fleet_{m}",
                                            require_ready=fleet_ready):
                                 rs.nuked_marks.add(m)
                                 logger.event(
-                                    "fleet_nuke", mark=m, wave=wv,
+                                    "fleet_nuke", mark=m, wave=wv, why=why,
                                     fast_watch=True,
                                     shot=logger.shot(frame,
                                                      f"fleet_nuke_w{wv}"))
+                            else:
+                                fleet_fire_skipped(rs, frame, m, wv, why)
                         break           # only the nearest pending mark
         ext, state = detect.wall_overheal(frame)
         if state == "immune":
@@ -2030,6 +2093,9 @@ def watch_frame(rs: "RunState", frame, observation=None) -> str | None:
                 rs.nuked_marks.add(m)
                 continue
             if wave_now >= m + after and now >= rs.fleet_try_at:
+                why = fleet_gate(rs, frame, m, wave_now)
+                if why is None:
+                    break
                 # THROTTLED: a confirmed fire costs ~1.1s (tap + settle +
                 # re-read). Retrying every frame for a 60-wave window would
                 # cripple the observe loop while the nuke is on cooldown.
@@ -2037,8 +2103,10 @@ def watch_frame(rs: "RunState", frame, observation=None) -> str | None:
                 if fire_button(frame, "nuke", f"fleet_{m}",
                                require_ready=fleet_ready):
                     rs.nuked_marks.add(m)
-                    logger.event("fleet_nuke", mark=m, wave=wave_now,
+                    logger.event("fleet_nuke", mark=m, wave=wave_now, why=why,
                                  shot=logger.shot(frame, f"fleet_nuke_w{wave_now}"))
+                else:
+                    fleet_fire_skipped(rs, frame, m, wave_now, why)
             break                    # only the nearest pending mark matters
 
     demon_mode_always(rs, frame, wave_now, now)

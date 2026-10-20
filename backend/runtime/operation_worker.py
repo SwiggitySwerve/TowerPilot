@@ -56,6 +56,12 @@ def _main():
         args = sys.argv[1:]
         if not args:
             raise ValueError('Worker target is required')
+        if ledger and op['kind'] == 'run':
+            # Explicit Start owns this device only after lease acquisition and
+            # the running transition. Retried/rejected launches and scheduler
+            # handoffs must never cancel another driver's boundary request.
+            flag = Path(ledger.path).parent / op['context']['instance'] / 'stop_after_run'
+            flag.unlink(missing_ok=True)
         if args[0] == '-m':
             module = args[1]
             sys.argv = [module, *args[2:]]

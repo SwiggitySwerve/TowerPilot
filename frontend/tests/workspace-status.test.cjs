@@ -442,7 +442,7 @@ test('Start and Collect diamonds stay disabled with visible reasons until the ru
   assert.match(controls['#run-ready'].innerHTML, /Ready to start/);
 });
 
-test('Stop now and Finish current run are rendered enabled while the emulator is offline', () => {
+test('Stop now stays enabled while the emulator is offline without offering a legacy stop flag', () => {
   const body = {dataset:{},contains:()=>false};
   let readyCalls = 0;
   const ctx = vm.createContext({S:{status:statusWith('offline',{processes:[{pid:42,runner:'orchestrator'}],stop_flag:false,calibration:{ready:false}}),
@@ -451,7 +451,7 @@ test('Stop now and Finish current run are rendered enabled while the emulator is
   vm.runInContext(section('function renderRunner(){', 'function renderRunReady(){'), ctx);
   vm.runInContext('renderRunner()', ctx);
   assert.match(body.innerHTML, /<button class="small danger" onclick="killPid\(42\)">Stop now<\/button>/);
-  assert.match(body.innerHTML, /<button class="ghost" onclick="ctl\('stop_after_run'\)">Finish current run, then stop<\/button>/);
+  assert.doesNotMatch(body.innerHTML, /ctl\('stop_after_run'/);
   assert.equal(readyCalls, 1);
 });
 

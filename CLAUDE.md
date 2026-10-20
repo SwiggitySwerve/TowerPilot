@@ -1,4 +1,8 @@
 # Tower Pilot
+> **Status:** Active
+> **Type:** Project guidance
+> **Created:** 2026-09-05
+> **Updated:** 2026-10-20
 
 Vision-driven autopilot for "The Tower" in an Android emulator: adb
 screencaps in, human-like taps out. No memory reading, no modded APK.
@@ -106,6 +110,18 @@ and skills apply.
   the run's tier from the compiled preset; `flows/shard.py` derives its
   sprint-cancel / Nuke waves from the same table. Never hardcode a fleet
   wave elsewhere; override a tier with `fleet.by_tier` in config.
+
+- **Screen geometry lives in the native layout manifest**
+  (`player/bootstrap_layout.manifest()`), never in the flow that uses it:
+  `device/layout.activate` rescales it for the player's display and rebinds
+  the readers (`vision/pills`, `interactions/inventory`), so a module holding
+  its own copy is wrong on every other resolution and goes stale on the next
+  game update. Read it per call. Where a control carries text, tap it WHERE IT
+  IS READ (`vision/textocr`, as `interactions/shatter.tab_points` and the
+  calibrator's Inventory tab do), and never take a brightness threshold as
+  proof of which tab is open - the shatter chore did both, tapped the Shatter
+  tab at y=923 against a bar the game draws at y 1000-1100, and spent three
+  days selecting Inventory tiles, one of which it equipped (2026-09-13).
 
 - A coin-kind run is entered from Home through ONE function,
   `flows/shard.enter_run(body)`: perk bans first (`interactions/perks.py`,
