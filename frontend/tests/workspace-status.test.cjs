@@ -565,6 +565,7 @@ async function renderHomePanels(S, emulatorInventory={instances:[]}, lifecycle=[
     loadHomeData:async()=>{}, toast:()=>{}, starterBanner:()=>'',
     stopStream(){lifecycle.push('stopStream');}, renderStream(){}, renderRunner(){}, renderDay(){}, renderFlows(){}, renderBehaviors(){}, renderLoadouts(){},
     renderGlobal(){}, renderHomeLive(){}, renderControlBlockers(){}, renderGetStarted(){}, renderWorkspaceStatus(){}, mountConfigurationPage(){}, mountDiagnostics(){}});
+  vm.runInContext(section('function streamPresets(){', 'function setStreamFps('), ctx);
   vm.runInContext(section('async function renderHome(){', '/* ------------------------------------------------------------- loadouts'), ctx);
   await vm.runInContext('renderHome()', ctx);
   const panel = name => panels['#panel-' + name]?.innerHTML || '';
@@ -672,7 +673,7 @@ test('stream cleanup replaces the MJPEG source with a local image before detachi
       $:key => ({'#stream-slot':slot,'#stream-toggle':toggle,'#stream-slot img':attached?image:null})[key]});
     vm.runInContext(section('function stopStream(){','function renderHomeLive('),ctx);
     // Preserve the current live stream across unchanged status ticks.
-    slot.dataset.state = JSON.stringify([true,true,true,'',4,'main','']);
+    slot.dataset.state = JSON.stringify([true,true,true,'',4,'native','main','']);
     vm.runInContext('renderStream()',ctx);
     assert.deepEqual(events,[]);
     if (transition === 'navigate') ctx.S.tab = 'runs';
@@ -700,7 +701,7 @@ test('the Overview stream shows the live-screen placeholder offline and streams 
   assert.doesNotMatch(slot.innerHTML, /stream\.mjpg|<img/);
   ctx.S.status = statusWith('device');
   vm.runInContext('renderStream()', ctx);
-  assert.match(slot.innerHTML, /<img src="\/api\/stream\.mjpg\?fps=4&scale=0\.4&ts=\d+&instance=main&stream_id=[a-z0-9_]+" alt="live stream">/);
+  assert.match(slot.innerHTML, /<img src="\/api\/stream\.mjpg\?fps=4&scale=1&q=90&ts=\d+&instance=main&stream_id=[a-z0-9_]+" alt="live stream">/);
   slot.innerHTML = 'kept';                        // a status tick with nothing changed does not restart the stream
   vm.runInContext('renderStream()', ctx);
   assert.equal(slot.innerHTML, 'kept');

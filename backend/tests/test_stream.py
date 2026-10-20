@@ -53,7 +53,8 @@ def stream(monkeypatch, tmp_path):
 
 
 @pytest.mark.parametrize("query", ["fps=oops", "fps=nan", "fps=inf", "fps=0", "fps=4.1",
-                                  "fps=-1", "q=oops", "q=100", "scale=nan", "scale=0",
+                                  "fps=-1", "q=oops", "q=100", "q=29", "q=89.5",
+                                  "scale=nan", "scale=inf", "scale=0", "scale=1.1",
                                   "stream_id=bad%20id", "instance=other"])
 def test_invalid_stream_parameters_never_capture(stream, query):
     dash, _, calls = stream
@@ -61,6 +62,42 @@ def test_invalid_stream_parameters_never_capture(stream, query):
     assert response.status_code in (400, 409)
     assert response.get_json()["ok"] is False
     assert not calls
+
+
+@pytest.mark.parametrize("query,scale,quality,width,height", [
+    ("", 1, 90, 100, 200),
+    ("scale=1&q=90", 1, 90, 100, 200),
+    ("scale=.65&q=85", .65, 85, 65, 130),
+    ("scale=.4&q=70", .4, 70, 40, 80),
+    ("scale=.2&q=30", .2, 30, 20, 40),
+])
+def test_stream_encodes_requested_resolution_and_quality(stream, monkeypatch, query, scale, quality,
+                                                        width, height):
+    import cv2
+    from device import adbclient
+    dash, _, _ = stream
+    # Synthetic detail makes the actual JPEG quality observable in encoded bytes.
+    pixels = np.arange(100 * 200 * 4, dtype=np.uint8).reshape(200, 100, 4)
+    raw = struct.pack("<IIII", 100, 200, 1, 0) + pixels.tobytes()
+    monkeypatch.setattr(adbclient, "exec_out", lambda *args, **kwargs: raw)
+    client = dash.app.test_client()
+    response = client.get("/api/stream.mjpg?stream_id=quality&" + query)
+    try:
+        part = next(iter(response.response))
+        jpg = part.split(b"\r\n\r\n", 1)[1][:-2]
+        image = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR)
+        assert image.shape == (height, width, 3)
+        expected = cv2.cvtColor(pixels, cv2.COLOR_RGBA2BGR)
+        if scale != 1:
+            expected = cv2.resize(expected, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+        ok, encoded = cv2.imencode(".jpg", expected, [cv2.IMWRITE_JPEG_QUALITY, quality])
+        assert ok and jpg == encoded.tobytes()
+        stats = client.get("/api/stream/status?stream_id=quality").get_json()
+        assert (stats["width"], stats["height"], stats["quality"], stats["scale"]) == (width, height, quality, scale)
+        assert stats["jpeg_bytes"] == len(jpg)
+        assert stats["frames"] == 1 and stats["errors"] == 0
+    finally:
+        response.close()
 
 
 @pytest.mark.parametrize("header", [12, 16])

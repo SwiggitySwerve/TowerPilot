@@ -1510,8 +1510,8 @@ def api_stream():
     asked_display = request.args.get("display") or inst.get("display")
     try:
         fps = float(request.args.get("fps", 2))
-        quality = int(request.args.get("q", 70))
-        scale = float(request.args.get("scale", 0.5))
+        quality = int(request.args.get("q", 90))
+        scale = float(request.args.get("scale", 1))
         if not math.isfinite(fps) or not 0.5 <= fps <= 4:
             raise ValueError("fps must be between 0.5 and 4")
         if not 30 <= quality <= 90:
@@ -1529,6 +1529,7 @@ def api_stream():
         return Response(mimetype="multipart/x-mixed-replace; boundary=frame",
                         headers={"Cache-Control": "no-cache"})
     stats = dict(stream_id=stream_id, instance=instance, target_fps=fps,
+                 scale=scale, quality=quality, width=None, height=None, jpeg_bytes=None,
                  frames=0, errors=0, capture_ms=None, encode_ms=None,
                  active=True, last_error=None, _frames=[], _started=False)
     correlation = dict(getattr(g, "diagnostic_ids", {}))
@@ -1587,7 +1588,7 @@ def api_stream():
 
         with _STREAM_LOCK:
             stats["_started"] = True
-        event("stream_started", target_fps=fps, scale=scale)
+        event("stream_started", target_fps=fps, scale=scale, quality=quality)
         try:
             while True:
                 t0 = time.monotonic()
@@ -1612,6 +1613,7 @@ def api_stream():
                     with _STREAM_LOCK:
                         recovered = stats["last_error"] is not None
                         stats.update(frames=stats["frames"] + 1, last_error=None,
+                                     width=img.shape[1], height=img.shape[0], jpeg_bytes=len(jpg),
                                      capture_ms=round((captured - t0) * 1000, 2),
                                      encode_ms=round((completed - captured) * 1000, 2))
                         stats["_frames"] = (stats["_frames"] + [completed])[-16:]
