@@ -2225,6 +2225,7 @@ async function renderHome(){
   if (!S.emus || !inst.serial) S.emus = await api("/api/wizard/emulators").catch(e => ({error:e.message}));
   if (S.view !== "home") return;   // another view was opened while loading
   stopStream();
+  const stream = streamPreferences();
   $("#panel-overview").innerHTML = `
   <article id="control-status" aria-label="Status and what blocks automation"><section id="workspace-context" aria-label="Current game and connection"></section><div id="control-blockers"></div><div id="control-connect" hidden></div></article>
   <div class="dashboard-grid">
@@ -2240,7 +2241,12 @@ async function renderHome(){
         </label></header>
         <label class="inline">Stream target FPS
           <select id="stream-fps" onchange="setStreamFps(this.value)" style="width:auto;margin:0">
-            ${[0.5,1,2,4].map(fps=>`<option value="${fps}" ${fps===(S.streamFps ?? 4)?'selected':''}>${fps}</option>`).join('')}
+            ${[0.5,1,2,4].map(fps=>`<option value="${fps}" ${fps===stream.fps?'selected':''}>${fps}</option>`).join('')}
+          </select>
+        </label>
+        <label class="inline">Quality
+          <select id="stream-quality" onchange="setStreamQuality(this.value)" style="width:auto;margin:0">
+            ${streamPresets().map(preset=>`<option value="${preset.id}" ${preset.id===stream.preset.id?'selected':''}>${preset.label}</option>`).join('')}
           </select>
         </label>
         <small class="muted">Actual rate depends on capture speed. This controls the preview.</small>
@@ -2541,10 +2547,39 @@ function stopStream(){
   if (image) image.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
   S.streamSession = null;
 }
+function streamPresets(){
+  return [
+    {id:'native',label:'Native',scale:1,q:90},
+    {id:'balanced',label:'Balanced',scale:0.65,q:85},
+    {id:'low',label:'Low bandwidth',scale:0.4,q:70}
+  ];
+}
+function streamPreferences(){
+  if (!S.streamPrefsLoaded) {
+    let saved;
+    try { saved = JSON.parse(localStorage.getItem('towerpilot.stream')); } catch {}
+    S.streamFps = [0.5,1,2,4].includes(saved?.fps) ? saved.fps : 4;
+    S.streamQuality = streamPresets().some(preset=>preset.id===saved?.quality) ? saved.quality : 'native';
+    S.streamPrefsLoaded = true;
+  }
+  return {fps:S.streamFps,preset:streamPresets().find(preset=>preset.id===S.streamQuality)};
+}
+function saveStreamPreferences(){
+  try { localStorage.setItem('towerpilot.stream',JSON.stringify({fps:S.streamFps,quality:S.streamQuality})); } catch {}
+}
 function setStreamFps(value){
   const fps = Number(value);
   if (![0.5,1,2,4].includes(fps)) return;
+  streamPreferences();
   S.streamFps = fps;
+  saveStreamPreferences();
+  renderStream();
+}
+function setStreamQuality(value){
+  if (!streamPresets().some(preset=>preset.id===value)) return;
+  streamPreferences();
+  S.streamQuality = value;
+  saveStreamPreferences();
   renderStream();
 }
 async function refreshStreamStats(){
@@ -2555,8 +2590,9 @@ async function refreshStreamStats(){
     const stats = await api('/api/stream/status?stream_id='+encodeURIComponent(session));
     if (S.streamSession !== session) return;
     const rate = stats.actual_fps == null ? 'measuring' : `${stats.actual_fps.toFixed(2)} FPS delivered`;
+    const quality = stats.width == null ? '' : ` · ${stats.width}×${stats.height} · JPEG ${stats.quality}`;
     const timing = stats.capture_ms == null ? '' : ` · capture ${Math.round(stats.capture_ms)} ms · encode ${Math.round(stats.encode_ms)} ms`;
-    output.textContent = `${rate} / target ${stats.target_fps} FPS${timing} · ${stats.errors} errors`+
+    output.textContent = `${rate} / target ${stats.target_fps} FPS${quality}${timing} · ${stats.errors} errors`+
       (stats.last_error ? ` · ${stats.last_error}` : '');
   } catch (error) {
     if (S.streamSession === session) output.textContent = 'Stream metrics unavailable: '+error.message;
@@ -2574,18 +2610,18 @@ function renderStream(){
   }
   const online = WorkspaceStatus.connectionState(S.status).online;
   const visible = S.tab === "overview" && (typeof document === 'undefined' || !document.hidden);
-  const fps = S.streamFps ?? 4;
+  const {fps,preset} = streamPreferences();
   const instance = S.config?.active_instance || 'main';
   const device = S.config?.instances?.[instance]?.serial || '';
   const placeholder = online ? "" : WorkspaceStatus.screenPlaceholderHTML(S.status);
-  const state = JSON.stringify([on, online, visible, placeholder, fps, instance, device]);
+  const state = JSON.stringify([on, online, visible, placeholder, fps, preset.id, instance, device]);
   if (slot.dataset.state === state) { refreshStreamStats(); return; }
   slot.dataset.state = state;
   stopStream();
   if (on && online && visible) S.streamSession = Date.now().toString(36)+'_'+Math.random().toString(36).slice(2);
   slot.innerHTML = !on ? `<p class="muted">stream off</p>`
     : !online ? placeholder
-    : visible ? `<img src="/api/stream.mjpg?fps=${fps}&scale=0.4&ts=${Date.now()}&instance=${encodeURIComponent(instance)}&stream_id=${S.streamSession}" alt="live stream">` : "";
+    : visible ? `<img src="/api/stream.mjpg?fps=${fps}&scale=${preset.scale}&q=${preset.q}&ts=${Date.now()}&instance=${encodeURIComponent(instance)}&stream_id=${S.streamSession}" alt="live stream">` : "";
   const stats = $('#stream-stats');
   if (stats) stats.textContent = S.streamSession ? `Connecting · target ${fps} FPS` : '';
 }

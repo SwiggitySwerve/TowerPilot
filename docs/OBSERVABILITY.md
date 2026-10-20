@@ -97,7 +97,21 @@ Source: [bounded event queries](../backend/control/diagnostics.py) and
 
 ---
 
-## Compare target and measured stream FPS
+## Set stream quality and compare measured FPS
+
+The Dashboard's **Quality** selector defaults to **Native**. It controls image
+resolution and JPEG compression independently of the FPS cap. FPS and quality
+selections are remembered in this browser when local storage is available.
+
+| Quality | Resolution | JPEG quality |
+|---|---|---|
+| Native | Full emulator resolution | 90 |
+| Balanced | 65% of each dimension | 85 |
+| Low bandwidth | 40% of each dimension | 70 |
+
+Native preserves small text and game details; it sends larger frames. The status
+line shows the delivered dimensions and JPEG quality so you can verify the feed.
+Changing this selector does not alter the emulator's display settings or calibration.
 
 Dashboard's stream selector requests **0.5, 1, 2 or 4 FPS**. The target is a cap,
 not guaranteed throughput. The displayed delivered rate measures completed frames
@@ -106,8 +120,8 @@ error count and the latest error help explain a lower rate.
 
 Streaming uses raw screencaps through the adb socket and encodes JPEG on the host,
 avoiding a device PNG encode/decode round trip. The server caps requests at 4 FPS.
-Changing the selector replaces the stream request; ordinary status ticks retain
-the selected target. Switching pages, hiding the browser tab or turning streaming
+Changing FPS or quality replaces the stream request; ordinary status ticks retain
+the selected settings. Switching pages, hiding the browser tab or turning streaming
 off releases the stream request.
 
 Source: [stream server](../frontend/dashboard.py) and

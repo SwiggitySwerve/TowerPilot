@@ -8,7 +8,7 @@
 **0.5-beta — Windows x64 portable release.** Download the `windows-x64` ZIP,
 extract the whole folder, and double-click **Start Tower Pilot.cmd**. Python and
 dependencies are bundled; no separate Python installation is needed. The browser
-opens Setup automatically. No console window opens: Tower Pilot sits in
+opens Setup automatically. The server runs in the background: Tower Pilot sits in
 the notification area near the clock (click to open the dashboard, right-click
 to quit). The separate `source` ZIP requires Python 3.12.
 See [what changed and the beta limits](docs/RELEASE_0.5_BETA.md).
@@ -79,9 +79,13 @@ Steps 1–3 below apply only to the source distribution.
    2560 x 1080 landscape panel that the game rotates, and the Setup page's
    **Prepare** button writes it - step by step in
    [docs/BLUESTACKS.md](docs/BLUESTACKS.md).
-2. Open PowerShell in the project folder and run `py -3.12 -m pip install -r requirements.txt`.
-3. Run `py -3.12 frontend/dashboard.py` and open
-   [Setup](http://127.0.0.1:8620/ui/index.html#setup). Keep the Python process running.
+2. Double-click **Start Tower Pilot.cmd**. The source launcher creates its local
+   Python environment and installs dependencies. Its setup console closes after
+   launch; the server runs without a terminal window.
+3. Use the Tower Pilot notification-area icon to open
+   [Setup](http://127.0.0.1:8620/ui/index.html#setup), or right-click it to quit
+   the dashboard. Startup failures appear in a dialog, with details in
+   `backend/logs/launcher.log`. Quitting the dashboard leaves detached runners alive.
    The first start copies `backend/config.example.yaml` to
    `backend/config.yaml` - that file is your machine and is git-ignored.
 4. **Setup** page: choose **Install connection tools** to let the Python app
@@ -122,7 +126,7 @@ The default dashboard port is **8620**; our development/test instance uses
 
 ```powershell
 $env:TOWER_PILOT_PORT = "8621"
-py -3.12 frontend/dashboard.py
+.\Start-TowerPilot.ps1
 ```
 
 Open [Control on port 8621](http://127.0.0.1:8621/ui/index.html#home).
