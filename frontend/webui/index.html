@@ -263,6 +263,7 @@
 <link rel="stylesheet" href="settings.css">
 <link rel="stylesheet" href="app-shell.css">
 <link rel="stylesheet" href="run-workspace.css">
+<link rel="stylesheet" href="diagnostics-view.css">
 </head>
 <body>
 
@@ -377,6 +378,7 @@
 <script src="learning-controller.js"></script>
 <script src="learning-view.js"></script>
 <script src="run-workspace.js"></script>
+<script src="diagnostics-view.js"></script>
 <script>
 "use strict";
 /* Tower Pilot UI: one flat sidebar, with routes declared in TABS below.
@@ -394,6 +396,16 @@ const SEEDS = JSON.parse(document.getElementById("ui-seeds").textContent);
 function esc(s){ return String(s ?? "").replace(/[&<>"']/g,
   c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
+function reportDiagnostic(kind, fields){
+  // Use the transport directly: a failed diagnostic must not report itself.
+  fetch('/api/diagnostics/client', {method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({kind,page:location.hash,...fields}),keepalive:true}).catch(()=>{});
+}
+window.addEventListener('error', event=>reportDiagnostic('javascript_error',
+  {message:event.message,stack:event.error?.stack,path:event.filename}));
+window.addEventListener('unhandledrejection', event=>reportDiagnostic('unhandled_rejection',
+  {message:String(event.reason?.message ?? event.reason),stack:event.reason?.stack}));
+
 function toast(msg, err=false){
   // one toast per message: a refusal repeated by every retry stacks the same
   // verdict four times high and hides the page behind it
@@ -407,15 +419,22 @@ function toast(msg, err=false){
 }
 
 async function api(path, opts){
-  const r = await fetch(path, opts);
-  let j = null; try { j = await r.json(); } catch(e){}
-  if (!r.ok || (j && j.ok === false)) {
-    // a refusal names its reason in `error`, `message` (e.g. adb's reply to a
-    // failed reconnect, sent with HTTP 200) or `problems`; the status code is last
-    const m = j && (j.error || j.message || (j.problems || []).join("\n")) || `HTTP ${r.status}`;
-    throw Object.assign(new Error(m), {status: r.status});   // the status tells a busy refusal (409) apart
+  const requestId=globalThis.crypto?.randomUUID?.() || `ui-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  try {
+    const r = await fetch(path, {...opts,headers:{...opts?.headers,'X-Request-ID':requestId}});
+    let j = null;
+    try { j = await r.json(); }
+    catch(error){if(r.ok)throw new Error('Server returned invalid JSON');}
+    if (!r.ok || (j && j.ok === false)) {
+      const m = j && (j.error || j.message || (j.problems || []).join("\n")) || `HTTP ${r.status}`;
+      throw Object.assign(new Error(m), {status:r.status});
+    }
+    return j;
+  } catch(error) {
+    error.requestId=requestId;
+    reportDiagnostic('api_error',{request_id:requestId,path,method:opts?.method || 'GET',message:error.message,stack:error.stack});
+    throw error;
   }
-  return j;
 }
 const post = async (p, b) => {
   S.readinessFresh=false;
@@ -705,6 +724,11 @@ function defaultView(){
    Configuration forms mount only on the visible page and keep drafts in Store. */
 const TABS = ["overview", "runs", "history", "schedule", "equipment", "collection", "abilities", "profiles", "emulators", "screens", "runtime"];
 const runWorkspace = RunWorkspace.create({request:api,onError:error=>toast(error.message,true)});
+const diagnosticsView = DiagnosticsView.create({request:api});
+function mountDiagnostics(){
+  if(S.tab==='runtime')diagnosticsView.mount($('#runtime-diagnostics'),{instance:S.config?.active_instance || '',filters:DiagnosticsView.fromHash(location.hash)});
+  else diagnosticsView.unmount();
+}
 async function selectRunControls(name){await runWorkspace.choose(name);const picker=$('#run-controls-blueprint');if(picker)picker.value=runWorkspace.selected();}
 async function openRunEntry(){
   const name=runWorkspace.selected();if(!name)return;
@@ -721,17 +745,20 @@ async function route(){
     const dlg = $("#" + id);
     if (dlg && dlg.open) dlg.close();   // staged edits persist in the save bar
   }
-  let tab = (location.hash || "").replace("#","");
+  const hashParts=(location.hash || '').replace('#','').split('?');
+  let tab = hashParts[0];
   tab = TAB_ALIASES[tab] || tab;
   if (!TABS.includes(tab)) tab = defaultView();
   refreshWorkspaceStatus();
 
   // keep the hash honest after an alias or a bounce, or the next click on the
   // same tab fires no hashchange and the page looks dead
-  if (location.hash !== "#" + tab) history.replaceState(null, "", "#" + tab);
+  const routeHash='#'+tab+(tab==='runtime' && hashParts[1]?'?'+hashParts[1]:'');
+  if (location.hash !== routeHash) history.replaceState(null, "", routeHash);
   const view = TAB_VIEWS[tab] || "home";
   const rendered = view === "home" && S.view === "home";
   if (S.tab !== tab) {
+    diagnosticsView.unmount();
     settingsWorkspace.unmount(); S.configurationHost = null;
     $("#view").scrollTop = 0;
   }
@@ -757,6 +784,7 @@ async function route(){
   }
   if (request !== S.routeRequest) return;
   mountConfigurationPage();
+  mountDiagnostics();
   if(tab==='history')runWorkspace.history(S.config?.active_instance || '');
   if(tab==='overview')runWorkspace.poll();
   renderStream();
@@ -2210,7 +2238,14 @@ async function renderHome(){
         <label class="inline" style="float:right; font-weight:400">
           <input type="checkbox" id="stream-toggle" checked onchange="renderStream()"> stream
         </label></header>
+        <label class="inline">Stream target FPS
+          <select id="stream-fps" onchange="setStreamFps(this.value)" style="width:auto;margin:0">
+            ${[0.5,1,2,4].map(fps=>`<option value="${fps}" ${fps===(S.streamFps ?? 4)?'selected':''}>${fps}</option>`).join('')}
+          </select>
+        </label>
+        <small class="muted">Actual rate depends on capture speed. This controls the preview.</small>
         <div id="stream-slot"></div>
+        <small id="stream-stats" class="muted" aria-live="polite"></small>
       </article>
     </div>
   </div>
@@ -2243,7 +2278,7 @@ async function renderHome(){
   <article id="card-global"><header>Between-run tasks</header><div id="global-body"></div></article>`;
   $("#panel-abilities").innerHTML = `${configIntro}<div id="abilities-settings"></div>
   <article><header>Weapon and rescue policies</header><div id="ability-policies"></div></article>`;
-  $("#panel-runtime").innerHTML = `<div id="runtime-settings"></div>`;
+  $("#panel-runtime").innerHTML = `<div id="runtime-settings"></div><div id="runtime-diagnostics"></div>`;
   renderStream();
   renderRunner();
   renderDay();
@@ -2256,6 +2291,7 @@ async function renderHome(){
   renderGetStarted();
   renderWorkspaceStatus();   // the status summary region is new
   mountConfigurationPage();
+  mountDiagnostics();
 }
 
 /* ------------------------------------------------------------- loadouts
@@ -2503,20 +2539,55 @@ function stopStream(){
   // Switch to a local image before detaching it so navigation releases the request.
   const image = $("#stream-slot img");
   if (image) image.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+  S.streamSession = null;
+}
+function setStreamFps(value){
+  const fps = Number(value);
+  if (![0.5,1,2,4].includes(fps)) return;
+  S.streamFps = fps;
+  renderStream();
+}
+async function refreshStreamStats(){
+  const output = $("#stream-stats"), session = S.streamSession;
+  if (!output || !session || S.streamStatsPending === session) return;
+  S.streamStatsPending = session;
+  try {
+    const stats = await api('/api/stream/status?stream_id='+encodeURIComponent(session));
+    if (S.streamSession !== session) return;
+    const rate = stats.actual_fps == null ? 'measuring' : `${stats.actual_fps.toFixed(2)} FPS delivered`;
+    const timing = stats.capture_ms == null ? '' : ` · capture ${Math.round(stats.capture_ms)} ms · encode ${Math.round(stats.encode_ms)} ms`;
+    output.textContent = `${rate} / target ${stats.target_fps} FPS${timing} · ${stats.errors} errors`+
+      (stats.last_error ? ` · ${stats.last_error}` : '');
+  } catch (error) {
+    if (S.streamSession === session) output.textContent = 'Stream metrics unavailable: '+error.message;
+  } finally {
+    if (S.streamStatsPending === session) S.streamStatsPending = null;
+  }
 }
 function renderStream(){
   const on = $("#stream-toggle") ? $("#stream-toggle").checked : true;
   const slot = $("#stream-slot");
   if (!slot) return;
-  const online = WorkspaceStatus.connectionState(S.status).online, visible = S.tab === "overview";
+  if (typeof document !== 'undefined' && document.addEventListener && !S.streamVisibilityBound) {
+    document.addEventListener('visibilitychange', renderStream);
+    S.streamVisibilityBound = true;
+  }
+  const online = WorkspaceStatus.connectionState(S.status).online;
+  const visible = S.tab === "overview" && (typeof document === 'undefined' || !document.hidden);
+  const fps = S.streamFps ?? 4;
+  const instance = S.config?.active_instance || 'main';
+  const device = S.config?.instances?.[instance]?.serial || '';
   const placeholder = online ? "" : WorkspaceStatus.screenPlaceholderHTML(S.status);
-  const state = [on, online, visible, placeholder].join();
-  if (slot.dataset.state === state) return;
+  const state = JSON.stringify([on, online, visible, placeholder, fps, instance, device]);
+  if (slot.dataset.state === state) { refreshStreamStats(); return; }
   slot.dataset.state = state;
   stopStream();
+  if (on && online && visible) S.streamSession = Date.now().toString(36)+'_'+Math.random().toString(36).slice(2);
   slot.innerHTML = !on ? `<p class="muted">stream off</p>`
     : !online ? placeholder
-    : visible ? `<img src="/api/stream.mjpg?fps=4&scale=0.4&ts=${Date.now()}" alt="live stream">` : "";
+    : visible ? `<img src="/api/stream.mjpg?fps=${fps}&scale=0.4&ts=${Date.now()}&instance=${encodeURIComponent(instance)}&stream_id=${S.streamSession}" alt="live stream">` : "";
+  const stats = $('#stream-stats');
+  if (stats) stats.textContent = S.streamSession ? `Connecting · target ${fps} FPS` : '';
 }
 
 function renderHomeLive(){

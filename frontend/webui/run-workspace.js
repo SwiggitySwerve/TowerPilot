@@ -112,9 +112,56 @@
   function actionHTML(model,action,title='Run now') {
     return model.scope !== 'live' ? '' : `<button type="button" class="small ghost" data-action="${esc(action)}" aria-label="${esc(title==='▶'?`Try once: ${label(action.split(':').at(-1))}`:title+': '+label(action.split(':').at(-1)))}" ${allowed(model,action,true)&&!model.sending?'':'disabled'}>${esc(title)}</button>`;
   }
+  function inspectLink(battle, runtime={}) {
+    const query=new URLSearchParams();
+    for(const [key,value] of Object.entries({battle_id:battle.id,operation_id:battle.operation_id,
+      offer_id:runtime.offer_id,
+      since:numeric(runtime.first_seen_at)?Math.max(0,runtime.first_seen_at-60):undefined})) {
+      if(value!==undefined && value!==null && value!=='')query.set(key,value);
+    }
+    return '#runtime?'+query.toString();
+  }
+  function observationValues(runtime, now=Date.now()/1000, unavailable=false) {
+    const r=runtime || {}, age=value=>numeric(value)?`${Math.max(0,Math.floor(now-value))}s ago`:'unknown';
+    const local=value=>numeric(value)?new Date(value*1000).toLocaleString():'unknown';
+    const due=value=>numeric(value)?value>now?`in ${Math.ceil(value-now)}s`:'due; awaiting driver':'unknown';
+    const fresh=numeric(r.last_observed_at) && now-r.last_observed_at<= (r.stale_after_sec ?? 15);
+    const visible=!unavailable && fresh && r.visibility==='visible';
+    const visibility=visible?'Visible on last battle frame':!unavailable && fresh && r.visibility==='absent'?
+      'Absent on last battle frame':`Unknown${unavailable?' (live status unavailable)':!fresh && numeric(r.last_observed_at)?' (stale observation)':r.visibility_reason?` (${label(r.visibility_reason)})`:''}`;
+    const first=numeric(r.first_seen_at)?`${local(r.first_seen_at)} (${age(r.first_seen_at)})`:'Not observed';
+    const appearance=numeric(r.appearance_after_at) && numeric(r.first_seen_at)?
+      `After ${local(r.appearance_after_at)}, by ${local(r.first_seen_at)} (${Math.max(0,r.first_seen_at-r.appearance_after_at).toFixed(1)}s observation interval)`:
+      'Appearance time unknown; first observation is not spawn time';
+    let timing;
+    if(numeric(r.window_ends_at)) {
+      timing=numeric(r.response_due_at)?`Response ${due(r.response_due_at)}; window closes ${due(r.window_ends_at)}`:
+        `Collection window closes ${due(r.window_ends_at)}`;
+    } else timing=`Scheduled window ${due(r.next_due_at)}`;
+    if(r.enabled===false && !r.manual_active && !r.manual_pending)timing='Collection off';
+    if(unavailable)timing='Last reported: '+timing;
+    const failed=r.last_failed_attempt;
+    const counts=r.counters || {}, count=key=>numeric(counts[key])?counts[key]:'?';
+    const durations=r.durations || {}, seconds=key=>numeric(durations[key])?`${durations[key]}s`:'unknown';
+    return {visibility,first_seen:first,appearance,
+      freshness:numeric(r.last_observed_at)?`Last battle observation ${age(r.last_observed_at)}${fresh && !unavailable?'':' (stale or unavailable)'}`:'No battle observation',
+      timing,next_check:`Passive check ${due(r.next_check_at)}`,
+      failure:failed?`${label(failed.reason || failed.outcome || 'Unknown failure')} · ${local(failed.observed_at)} (${age(failed.observed_at)})`:'No failed attempt recorded in this collector',
+      counters:`Attempts ${count('attempts')} · confirmed ${count('confirmed')} · skips ${count('skips')} · missed windows ${count('windows_missed')}`,
+      durations:`Last timing: schedule wait ${seconds('scheduling_wait_sec')} · response delay ${seconds('response_delay_sec')} · verification ${seconds('verification_sec')}`};
+  }
+  function observationHTML(model,name) {
+    if(model.scope!=='live')return '';
+    const fields=name==='ad_gems'?`<dl class="rw-observation" data-observation="ad_gems">${[
+      ['visibility','Offer'],['first_seen','First observed'],['appearance','Appearance bounds'],
+      ['freshness','Freshness'],['timing','Collection'],['next_check','Observation'],
+      ['failure','Latest failed attempt'],['counters','Counts'],['durations','Timing evidence']
+    ].map(([key,title])=>`<div><dt>${title}</dt><dd data-observation-field="${key}">Unknown</dd></div>`).join('')}</dl>`:'';
+    return `${fields}<details class="rw-observation-details"><summary>Observation details</summary><a class="rw-inspect" data-inspect="${esc(name)}" href="${esc(inspectLink(model.snapshot))}">Inspect events</a><pre data-runtime-raw="${esc(name)}">Observation unavailable</pre></details>`;
+  }
   function routinesHTML(model) {
     return `<div class="rw-routines">${Object.entries(settings(model).routines || {}).map(([name,values]) =>
-      `<section class="rw-routine" data-routine="${esc(name)}"><div class="rw-routine-title"><strong>${esc(label(name))}</strong><span data-countdown="${esc(name)}" class="rw-clock"></span>${actionHTML(model,name)}</div><div class="rw-fields">${inputHTML(model,`routines.${name}.enabled`,'On',{boolean:true})}${Object.entries(routineFields[name]||{}).filter(([key])=>Object.hasOwn(values,key)).map(([key,title])=>inputHTML(model,`routines.${name}.${key}`,`${title} (s)`)).join('')}</div></section>`).join('')}</div>`;
+      `<section class="rw-routine" data-routine="${esc(name)}"><div class="rw-routine-title"><strong>${esc(label(name))}</strong><span data-countdown="${esc(name)}" class="rw-clock"></span>${actionHTML(model,name)}</div><div class="rw-fields">${inputHTML(model,`routines.${name}.enabled`,'On',{boolean:true})}${Object.entries(routineFields[name]||{}).filter(([key])=>Object.hasOwn(values,key)).map(([key,title])=>inputHTML(model,`routines.${name}.${key}`,`${title} (s)`)).join('')}</div>${observationHTML(model,name)}</section>`).join('')}</div>`;
   }
   function shoppingHTML(model) {
     const plan=fieldValue(model,'shopping_plan');
@@ -274,6 +321,16 @@
       host?.querySelectorAll('[data-countdown]').forEach(el=> {
         el.textContent=model.scope==='live'?countdown(model.snapshot.runtime?.routines?.[el.dataset.countdown],fieldValue(model,`routines.${el.dataset.countdown}.enabled`),now):'';
       });
+      const routines=model.snapshot.runtime?.routines || {};
+      host.querySelectorAll('[data-observation="ad_gems"]').forEach(region=> {
+        const values=observationValues(routines.ad_gems,now,model.observationUnavailable);
+        region.querySelectorAll('[data-observation-field]').forEach(el=>el.textContent=values[el.dataset.observationField] || 'Unknown');
+      });
+      host.querySelectorAll('[data-runtime-raw]').forEach(el=> {
+        const raw=JSON.stringify(routines[el.dataset.runtimeRaw] ?? {status:'Observation unavailable'},null,2);
+        if(el.textContent!==raw)el.textContent=raw;
+      });
+      host.querySelectorAll('[data-inspect]').forEach(el=>el.href=inspectLink(model.snapshot,routines[el.dataset.inspect]));
     }
     function mount(host,model) {
       bindings.set(host,model);
@@ -504,5 +561,5 @@
       destroy(){if(clockTimer)clearInterval(clockTimer);for(const timer of timers.values())clearTimeout(timer);liveHost=null;savedHost=null;historyHost=null;epoch++;historyRequest++;}
     };
   }
-  return {create,makeModel,refresh,effective,settings,fieldValue,countdown,durationHint,command,identity,renderHTML,allowed,editPlan,moveQueue,dropInQueue,conversionHTML,historySummaryHTML};
+  return {create,makeModel,refresh,effective,settings,fieldValue,countdown,durationHint,command,identity,renderHTML,allowed,editPlan,moveQueue,dropInQueue,conversionHTML,historySummaryHTML,observationValues,inspectLink};
 });

@@ -1,0 +1,19 @@
+.diagnostics-view { margin-top:1rem; }
+.diagnostics-view header p,.diag-coverage,.diag-status,.diag-writer-health { font-size:.76rem; margin:.5rem 0; }
+.diag-filters { display:grid; grid-template-columns:repeat(auto-fit,minmax(165px,1fr)); gap:.4rem .8rem; }
+.diag-filters label { font-size:.7rem; margin:0; }
+.diag-filters input { margin:.18rem 0; padding:.35rem .5rem; height:auto; font-size:.75rem; }
+.diag-actions { display:flex; gap:.55rem; flex-wrap:wrap; align-items:center; margin:.65rem 0; }
+.diag-actions label { display:flex; gap:.3rem; align-items:center; margin:0; font-size:.72rem; }
+.diag-actions input { margin:0; }
+.diag-actions button { margin:0; }
+.diag-coverage { color:var(--pico-muted-color); overflow-wrap:anywhere; }
+.diag-event { border:1px solid var(--glass-border); border-radius:7px; padding:.5rem .65rem; margin:.45rem 0; }
+.diag-event.diag-failure { border-left:3px solid var(--ios-orange,#e6a34c); }
+.diag-event summary { display:flex; flex-wrap:wrap; gap:.3rem .8rem; font-size:.75rem; }
+.diag-event summary > span { overflow-wrap:anywhere; }
+.diag-event time { color:var(--pico-muted-color); font-variant-numeric:tabular-nums; }
+.diag-identities { display:flex; gap:.35rem 1rem; flex-wrap:wrap; margin:.5rem 0; font-size:.68rem; }
+.diag-identities span { overflow-wrap:anywhere; min-width:0; }
+.diagnostics-view pre { max-height:28rem; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; font-size:.7rem; margin:.6rem 0; }
+.diag-coverage-details summary { font-size:.73rem; }

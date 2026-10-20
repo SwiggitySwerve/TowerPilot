@@ -440,3 +440,65 @@ test('switching saved runs flushes the previous valid draft before loading the n
   assert.equal(requests[2].url,'/api/run-controls?blueprint=other');assert.equal(workspace.selected(),'other');
   workspace.destroy();
 });
+
+test('ad observation distinguishes first observed bounds from unknown spawn time and stale visibility',()=>{
+  const runtime={enabled:true,state:'scheduled',visibility:'visible',visibility_reason:'battle_frame',
+    first_seen_at:100,last_observed_at:108,last_seen_at:108,stale_after_sec:8,next_due_at:200,next_check_at:112,
+    appearance_after_at:98,counters:{attempts:3,confirmed:1,skips:2,windows_missed:1}};
+  const fresh=UI.observationValues(runtime,110);
+  assert.equal(fresh.visibility,'Visible on last battle frame');
+  assert.match(fresh.first_seen,/10s ago/);
+  assert.match(fresh.appearance,/2\.0s observation interval/);
+  assert.equal(fresh.timing,'Scheduled window in 90s');
+  assert.equal(fresh.next_check,'Passive check in 2s');
+  assert.equal(fresh.counters,'Attempts 3 · confirmed 1 · skips 2 · missed windows 1');
+  assert.equal(UI.observationValues(runtime,117).visibility,'Unknown (stale observation)');
+  assert.equal(UI.observationValues(runtime,110,true).visibility,'Unknown (live status unavailable)');
+  assert.match(UI.observationValues({...runtime,appearance_after_at:null},110).appearance,/first observation is not spawn time/);
+  assert.match(UI.observationValues(null,110).visibility,/Unknown/);
+});
+
+test('ad response and window countdowns identify failures independently of schedule wait',()=>{
+  const runtime={visibility:'visible',last_observed_at:100,stale_after_sec:8,window_ends_at:140,response_due_at:115,
+    last_failed_attempt:{reason:'offer_moved',observed_at:99}};
+  const values=UI.observationValues(runtime,105);
+  assert.equal(values.timing,'Response in 10s; window closes in 35s');
+  assert.match(values.failure,/Offer moved.*6s ago/);
+  assert.match(UI.observationValues(runtime,116).timing,/Response due; awaiting driver/);
+  assert.equal(UI.observationValues({...runtime,enabled:false},105).timing,'Collection off');
+});
+
+test('live observation markup is stable and inspect links preserve exact escaped identities',()=>{
+  const model=UI.makeModel('live',battle({id:'battle &/1',operation_id:'op?1',instance:'emulator-main'}));
+  const html=UI.renderHTML(model);
+  assert.match(html,/data-observation-field="first_seen"/);
+  assert.match(html,/data-runtime-raw="ad_gems"/);
+  assert.match(html,/Inspect events/);
+  const link=UI.inspectLink(model.snapshot,{offer_id:'offer#1',window_id:'window:2',first_seen_at:100});
+  const params=new URLSearchParams(link.split('?')[1]);
+  assert.equal(params.get('battle_id'),'battle &/1');
+  assert.equal(params.get('operation_id'),'op?1');
+  assert.equal(params.get('offer_id'),'offer#1');
+  assert.equal(params.get('since'),'40');
+  assert.equal(params.has('window_id'),false,'offer history spans collection windows');
+  assert.equal(params.has('instance'),false,'dashboard and driver evidence remain joined');
+  assert.doesNotMatch(UI.renderHTML(UI.makeModel('saved',{blueprint:'farm',settings:base})),/data-observation-field/);
+});
+
+test('observation clock ticks update text without replacing controls or focused drafts',async()=>{
+  const h=host(),field={dataset:{observationField:'visibility'},textContent:''};
+  const region={querySelectorAll:()=>[field]},raw={dataset:{runtimeRaw:'ad_gems'},textContent:''};
+  const original=h.querySelectorAll;
+  h.querySelectorAll=selector=>selector==='[data-observation="ad_gems"]'?[region]:selector==='[data-runtime-raw]'?[raw]:original(selector);
+  let snapshot=battle({runtime:{routines:{ad_gems:{visibility:'visible',last_observed_at:Date.now()/1000,stale_after_sec:8}}}});
+  const workspace=UI.create({request:async()=>({battle:snapshot})});
+  workspace.attach({live:h});await settle();
+  const renders=h.renderCount;h.ownerDocument.activeElement=h.input;h.input.value='1234';
+  workspace.tick();assert.equal(field.textContent,'Visible on last battle frame');
+  snapshot=battle({runtime:{routines:{ad_gems:{visibility:'unknown',visibility_reason:'not_battle'}}}});
+  await workspace.poll();workspace.tick();
+  assert.match(field.textContent,/Unknown/);
+  assert.equal(h.renderCount,renders);assert.equal(h.input.value,'1234');assert.equal(h.ownerDocument.activeElement,h.input);
+  assert.match(raw.textContent,/not_battle/);
+  workspace.destroy();
+});
