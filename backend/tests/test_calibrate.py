@@ -158,6 +158,31 @@ def test_harvest_row_cuts_names_and_records_states(tmp_path, monkeypatch):
     assert events.count("calibrate_cut") == 2
 
 
+def test_harvest_row_verifies_look_alike_default_preset_names(tmp_path, monkeypatch):
+    # A new account's tabs are "Preset 1".."Preset N": same pill, same font,
+    # one digit apart, so each crop also scores high on its siblings.
+    from player import calibrate
+    from vision import pills, textocr
+    monkeypatch.setattr(calibrate.settings, "ROOT", tmp_path)
+    labels = ["Preset 1", "Preset 2", "Preset 3"]
+    frame, _ = _pill_frame(labels, w=200, gap=14, active=0)
+    crops = [pills.text_crop(frame, p["rect"])[0] for p in pills.pills(frame, 330, 560)]
+    assert all(pills.match(frame, c)[2] >= 0.85 for c in crops)   # genuinely ambiguous
+    readings = iter(labels)
+    monkeypatch.setattr(textocr, "read_text", lambda crop: next(readings))
+    import runtime.logger as lg
+    monkeypatch.setattr(lg, "event", lambda kind, **kw: None)
+    p = {"state": "", "stop": str(tmp_path / "stop"), "report": "", "evidence": str(tmp_path)}
+    cal = calibrate.Calibration(p, overwrite=False)
+    out = calibrate.harvest_row(cal, frame, (330, 560), "cards/preset_", "cards")
+    assert out == [("Preset 1", "preset_1", "green"), ("Preset 2", "preset_2", "cyan"),
+                   ("Preset 3", "preset_3", "cyan")]
+    files = [tmp_path / "templates" / "cards" / f"preset_preset_{i}.png" for i in (1, 2, 3)]
+    assert all(f.exists() for f in files)
+    assert len({f.read_bytes() for f in files}) == 3
+    assert all(e["verified"] and e["self"] >= 0.99 for e in cal.entries)
+
+
 def test_unreadable_label_does_not_invent_a_preset(tmp_path, monkeypatch):
     from player import calibrate
     from vision import textocr
@@ -260,8 +285,8 @@ def test_calibrate_endpoints_guard_taps_and_report_state(dash, tmp_path, monkeyp
             encoding="utf-8")
         st = c.get("/api/calibrate/status").get_json()
         assert st["report"]["entries"][0]["rel"] == "cards/preset_x.png"
-        assert c.post("/api/calibrate/stop", json={}).status_code == 200
-        assert (tmp_path / "logs" / "main" / "calibrate_stop").exists()
+        assert c.post("/api/calibrate/stop", json={}).status_code == 409
+        assert not (tmp_path / "logs" / "main" / "calibrate_stop").exists()
     monkeypatch.setattr(dash, "_procs", lambda: [{"runner": "orchestrator", "pid": 1}])
     cfg["instances"]["main"]["allow_taps"] = True
     with dash.app.test_client() as c:
@@ -271,9 +296,11 @@ def test_calibrate_endpoints_guard_taps_and_report_state(dash, tmp_path, monkeyp
 
 def test_calibrator_counts_as_a_runner_for_the_process_guards():
     src = (REPO / "frontend" / "dashboard.py").read_text(encoding="utf-8")
-    assert src.count("scan|calibrate|clicker|boot|dashboard") == 2
-    scan_src = (BACKEND / "player" / "scan.py").read_text(encoding="utf-8")
-    assert '"calibrate"' in scan_src
+    assert "runners.other_runners(" in src
+    from runtime.runners import RUNNER_SCRIPTS
+    assert "calibrate.py" in RUNNER_SCRIPTS
+    for guard in ("scan.py", "bootstrap.py"):
+        assert "runners.other_runners()" in (BACKEND / "player" / guard).read_text(encoding="utf-8"), guard
 
 
 def test_ui_offers_the_calibrate_button_and_report():
@@ -397,10 +424,11 @@ def test_walk_grid_counts_each_physical_tile_once_across_overlapping_pages(tmp_p
     frames = iter(pages)
     monkeypatch.setattr(inventory, "settle", lambda *a, **k: next(frames))
     monkeypatch.setattr(inventory, "next_page", lambda: next(moves))
+    monkeypatch.setattr(inventory, "take_page_frame", lambda: None)   # no hand-off from another test's real next_page()
     names = {}
     def inspect(cx, cy, icon):
         assert icon.shape[:2] == (150, 150)
-        return f"Module {names.setdefault((cx, cy), len(names) + 1)}", "rare"
+        return f"Module {names.setdefault((cx, cy), len(names) + 1)}", "epic"
     monkeypatch.setattr(calibrate, "_inspect", inspect)
     monkeypatch.setattr(calibrate, "module_slug", lambda name: name.lower().replace(" ", "_"))
     cut = []
@@ -423,7 +451,7 @@ def test_walk_grid_counts_each_physical_tile_once_across_overlapping_pages(tmp_p
         cv2.imwrite(str(saved), first_icon)
         monkeypatch.setattr(calibrate, 'template_path', lambda rel: saved)
         cal.entries = [{'phase':'modules','verified':True,'rel':'modules/resumed.png',
-                        'rarity':'rare','image_sha256':hashlib.sha256(saved.read_bytes()).hexdigest()}]
+                        'rarity':'epic','image_sha256':hashlib.sha256(saved.read_bytes()).hexdigest()}]
     slugs, copies = calibrate._walk_grid(cal)
     # page 0 shows rows 0-4 whole (row 5 is behind the filter bar: 25 tiles);
     # page 1 (794 px on) shows rows 4-8 whole - row 4 repeats, rows 5-8 are new
@@ -432,6 +460,14 @@ def test_walk_grid_counts_each_physical_tile_once_across_overlapping_pages(tmp_p
     pages_logged = [kw for k, kw in events if k == "calibrate_grid_page"]
     assert [pg["tiles"] for pg in pages_logged] == [25, 45]
     assert [pg["moved"] for pg in pages_logged] == [794, 0]
+
+
+def test_walk_grid_test_ignores_a_stale_page_frame_left_by_another_test(tmp_path, monkeypatch):
+    """inventory._page_frame is module state a real next_page() leaves behind:
+    preset to a frame of another grid, the walk test above must not read it as page 1."""
+    from interactions import inventory
+    monkeypatch.setattr(inventory, "_page_frame", _tile_frame(0, seed=7), raising=False)
+    test_walk_grid_counts_each_physical_tile_once_across_overlapping_pages(tmp_path, monkeypatch, False)
 
 
 def test_existing_template_reports_the_fresh_cuts_score(tmp_path, monkeypatch):

@@ -183,6 +183,8 @@ def _cli(argv=None):
 
 def main() -> None:
     a = _cli()
+    from runtime.device_lease import prepare_instance
+    prepare_instance(a.instance)
     _bind_preset(a.instance, a.preset)
     from player import readiness
     readiness.require(settings.ROOT, settings.CONFIG, _preset())

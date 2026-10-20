@@ -363,12 +363,14 @@ def test_fleet_mark_fires_once_per_mark_and_shares_the_ledger(orchestrator, monk
                                                               rules):
     """The Tier B fleet rule retires the mark in rs.nuked_marks too, so the
     Tier A schedule in watch_frame can never nuke the same mark again."""
+    # marks come from the run's tier (scheduling/fleets.py); an untiered
+    # preset reads the legacy fleet.first_wave config keys, gone since 67af5d6
     rules([{"when": {"kind": "fleet_mark", "after_waves": 3,
                      "window_waves": 60}, "repeat": True,
-            "do": {"kind": "fire", "button": "nuke"}}])
+            "do": {"kind": "fire", "button": "nuke"}}], tier=14)
     fired = _fires(orchestrator, monkeypatch)
     rs = _rs()
-    for w in (2400, 2497, 2498, 2500):      # first mark is 2495
+    for w in (2400, 2497, 2498, 2500):      # T14's first mark is 2495
         rs.rule_next.clear()
         orchestrator.eval_rules(rs, "FRAME", w)
     assert len(fired) == 1                  # 2498 = 2495 + 3
@@ -379,7 +381,7 @@ def test_fleet_mark_past_the_window_is_retired_never_fired_late(orchestrator,
                                                                 monkeypatch,
                                                                 rules):
     rules([{"when": {"fleet_mark": {"after_waves": 1, "window_waves": 60}},
-            "repeat": True, "do": {"fire": {"button": "nuke"}}}])
+            "repeat": True, "do": {"fire": {"button": "nuke"}}}], tier=14)
     fired = _fires(orchestrator, monkeypatch)
     rs = _rs()
     orchestrator.eval_rules(rs, "FRAME", 2600)     # 2495 + 60 is long gone
@@ -803,7 +805,7 @@ def test_a_tier_b_burst_uses_the_confirming_fire_path(orchestrator, monkeypatch,
                         lambda rs, why: ended.append(why) or True)
     seen = []
     monkeypatch.setattr(orchestrator, "fire_button",
-                        lambda frame, name, why, require_ready=True:
+                        lambda frame, name, why, require_ready=True, **kwargs:
                         seen.append((frame, name, why)) or True)
     rs = _rs()
     orchestrator.eval_rules(rs, "FRAME", 100)
@@ -854,7 +856,7 @@ def test_burst_retaps_are_bounded_verified_retries(orchestrator, monkeypatch, ru
     monkeypatch.setattr(_f(orchestrator, "detect"), "hp_fill", lambda frame: 0.1)
     tries = []
     monkeypatch.setattr(orchestrator, "fire_button",
-                        lambda frame, name, why, require_ready=True:
+                        lambda frame, name, why, require_ready=True, **kwargs:
                         tries.append(why) or False)
     grabs = []
     monkeypatch.setattr(_f(orchestrator, "capture"), "grab",

@@ -209,6 +209,9 @@ def dash(tmp_path_factory):
     config = tmp_path_factory.mktemp("dashboard_config") / "config.yaml"
     shutil.copyfile(os.path.join(BACKEND, "config.example.yaml"), config)
     mod.CONFIG_PATH = str(config)
+    mod.ROOT = str(config.parent)
+    (config.parent / 'profiles').mkdir()
+    shutil.copyfile(os.path.join(BACKEND, 'profiles', 'default.yaml'), config.parent / 'profiles' / 'default.yaml')
     return mod
 
 
@@ -216,10 +219,10 @@ def dash(tmp_path_factory):
 def ui_profile(dash):
     """A throwaway copy of the default profile for real patch round-trips."""
     src = os.path.join(BACKEND, "tests", "fixtures", "golden_profile.yaml")
-    dst = os.path.join(BACKEND, "profiles", "zz_uitest.yaml")
+    dst = os.path.join(dash.ROOT, "profiles", "zz_uitest.yaml")
     shutil.copyfile(src, dst)
     yield "zz_uitest"
-    for f in glob.glob(os.path.join(BACKEND, "profiles", "zz_uitest.yaml*")):
+    for f in glob.glob(os.path.join(dash.ROOT, "profiles", "zz_uitest.yaml*")):
         os.remove(f)
 
 
@@ -280,11 +283,13 @@ class _FakeChild:
 
 
 @pytest.fixture()
-def start_cmds(dash, monkeypatch):
+def start_cmds(dash, monkeypatch, tmp_path):
     """Capture the argv /api/control action=start would spawn, spawn nothing."""
     cmds = []
     monkeypatch.setattr(dash, "_procs", lambda: [])
     monkeypatch.setattr(dash, "_procs_refresh", lambda: [])
+    from runtime.operations import Operations
+    monkeypatch.setattr(dash.operation_api, 'ledger', lambda root: Operations(tmp_path / 'operations.db'))
 
     def fake_popen(cmd, **kw):
         cmds.append(cmd)
@@ -359,8 +364,8 @@ def test_starter_profile_is_read_only_in_the_dashboard(dash):
     an editable profile is a VERBATIM copy."""
     r = _patch(dash, "default", ["blueprints", "coin_default", "label"], "Mine")
     assert r.status_code == 409 and r.get_json()["starter"] is True
-    starter = os.path.join(BACKEND, "profiles", "default.yaml")
-    dst = os.path.join(BACKEND, "profiles", "zz_copytest.yaml")
+    starter = os.path.join(dash.ROOT, "profiles", "default.yaml")
+    dst = os.path.join(dash.ROOT, "profiles", "zz_copytest.yaml")
     with dash.app.test_client() as c:
         r = c.post("/api/profile-promote", json={"draft": "main", "name": "default"})
         assert r.status_code == 409, r.get_json()
@@ -386,5 +391,5 @@ def test_home_page_offers_the_starter_copy():
     with open(INDEX, encoding="utf-8") as fh:
         html = fh.read()
     for needle in ("function starterBanner", "function copyStarter", "/api/profile-copy",
-                   "${starterBanner()}", "Copy the starter into my own profile"):
+                   "requirementHTML('configuration') + starterBanner()", "Copy the starter into my own profile"):
         assert needle in html, needle

@@ -116,7 +116,8 @@ def dash():
 def test_apply_writes_the_wall_region_to_config_and_the_wall_to_the_profile(dash, tmp_path, monkeypatch):
     name = "zz_wallapply"
     src = os.path.join(BACKEND, "tests", "fixtures", "golden_profile.yaml")
-    dst = os.path.join(BACKEND, "profiles", f"{name}.yaml")
+    (tmp_path / 'profiles').mkdir()
+    dst = str(tmp_path / 'profiles' / f'{name}.yaml')
     with open(src, encoding="utf-8") as fh:
         profile = yaml.safe_load(fh)
     profile["player"]["wall"] = False
@@ -130,12 +131,13 @@ def test_apply_writes_the_wall_region_to_config_and_the_wall_to_the_profile(dash
                                         "shard_farm", "inner_land_mines_quest")}}
     saved = []
     monkeypatch.setattr(dash, "load_config", lambda: copy.deepcopy(cfg))
+    monkeypatch.setattr(dash, 'ROOT', str(tmp_path))
     monkeypatch.setattr(dash, "_procs", lambda: [])
     monkeypatch.setattr(dash, "_calibration_dir", lambda cfg: str(tmp_path))
     monkeypatch.setattr(dash, "save_config", lambda data: saved.append(copy.deepcopy(data)) or "bak")
     try:
         with dash.app.test_client() as c:
-            r = c.post("/api/calibrate/apply", json={})
+            r = c.post("/api/calibrate/apply", json={"saved_observations": True})
         assert r.status_code == 200, r.get_json()
         assert r.get_json()["wall_bar"] == [84, 1559, 424, 44]
         with open(dst, encoding="utf-8") as fh:
@@ -147,8 +149,8 @@ def test_apply_writes_the_wall_region_to_config_and_the_wall_to_the_profile(dash
         saved.clear()
         cfg["instances"]["main"]["rois"] = {"wall_bar": [1, 2, 3, 4]}
         with dash.app.test_client() as c:
-            assert c.post("/api/calibrate/apply", json={}).status_code == 200
+            assert c.post("/api/calibrate/apply", json={"saved_observations": True}).status_code == 200
         assert saved == []
     finally:
-        for f in glob.glob(os.path.join(BACKEND, "profiles", f"{name}.yaml*")):
+        for f in glob.glob(str(tmp_path / 'profiles' / f'{name}.yaml*')):
             os.remove(f)

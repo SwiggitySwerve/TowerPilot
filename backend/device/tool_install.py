@@ -16,8 +16,9 @@ FILES = ("adb.exe", "AdbWinApi.dll", "AdbWinUsbApi.dll")
 def ensure_server(root, executable, run):
     """Start the daemon once on a cold machine; never replace a live server."""
     import socket
+    from device import adbclient
     try:
-        with socket.create_connection(("127.0.0.1", 5037), timeout=1):
+        with socket.create_connection(adbclient._HOST, timeout=1):
             return
     except OSError:
         pass

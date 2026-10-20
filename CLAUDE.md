@@ -156,7 +156,7 @@ and skills apply.
 ## Verification habits
 
 - After edits: `python -m py_compile <files>` before any relaunch.
-- `python -m pytest` from the repo root (offline, 790+ tests).
+- `python -m pytest` from the repo root (offline; setup in README.md Development).
 - Template work: self-match must score ~1.0, next-best clearly below.
 - New behavior: watch the first live occurrence in the events log before
   trusting it.

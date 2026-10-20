@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Learning flow offline harness</title>
+<style>body{max-width:900px;margin:40px auto;padding:16px;font:16px system-ui;background:#17202b;color:#eef2f7}button{padding:12px;margin:4px}pre{white-space:pre-wrap}#status{padding:20px;border:1px solid #789;border-radius:10px;line-height:1.7}dialog{max-width:500px}label{display:block;margin:15px 0}</style>
+<h1>Learning flow offline harness</h1>
+<p>All worker, readiness and storage adapters are simulated. This page has no dashboard or emulator connection.</p>
+<label>Preparation result <select id="readiness"><option value="ready">Ready from saved data</option><option value="crop_image">Manual capture required</option><option value="edit_run">Equipment selection required</option></select></label>
+<button id="learn">Learn screens</button><button id="prepare">Prepare this run</button>
+<button id="running">Worker running</button><button id="done">Worker complete</button>
+<button id="offline">Status unavailable</button><button id="restore">Restoration required</button>
+<label><input type="checkbox" id="busy">Simulate busy apply</label>
+<p id="status" role="status" aria-live="polite">No flow started.</p>
+<h2>Recorded transitions</h2><pre id="history"></pre><h2>Simulated calls</h2><pre id="calls"></pre>
+<dialog id="consent"><p>Game must be at Home, with no battle running. This harness simulates consent only.</p><button id="accept">Continue</button><button id="cancel">Cancel</button></dialog>
+<script src="../../webui/learning-state.js"></script><script src="../../webui/learning-store.js"></script>
+<script src="../../webui/learning-controller.js"></script><script src="../../webui/learning-view.js"></script>
+<script>
+const $=id=>document.getElementById(id),saved=new Map(),calls=[];
+let started=100,revision=1,active=false;
+const record=(status,restore_pending=false)=>({operation:{id:'demo-'+started,revision,status:status==='done'?'awaiting_apply':status,context:{instance:'demo',account:'demo',profile:'demo'}},running:status==='running',restore_pending,state:{phases:{bootstrap:{kind:'full',started_at:started,status}}}});
+const log=value=>{calls.push(value);$('calls').textContent=calls.join('\n');};
+const flow=LearningController.create({
+  config:()=>({active_instance:'demo',active_profile:'demo',instances:{demo:{account:'demo'}}}),now:()=>started*1000,
+  storage:{getItem:k=>saved.get(k)??null,setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)},
+  status:async()=>active ? record('running') : {running:false,state:{}},
+  confirm:()=>new Promise(resolve=>{const dialog=$('consent');dialog.showModal();$('accept').onclick=()=>{dialog.close();resolve(true);};$('cancel').onclick=()=>{dialog.close();resolve(false);};}),
+  start:async()=>{active=true;revision=1;log('start simulated worker');return {operation:record('accepted').operation};},
+  apply:async()=>{log('apply discoveries');if($('busy').checked)throw Object.assign(Error('Another action is in progress; wait for its result'),{status:409});revision++;return {operation:{...record('succeeded').operation,status:'succeeded'}};},
+  applySaved:async()=>log('apply saved discoveries'),
+  readiness:async()=>{log('check readiness');const next=$('readiness').value;return {ready:next==='ready',next_action:next,message:next==='crop_image'?'Capture the requested screen.':'Choose equipment for this run.'};},
+  changed:s=>{$('status').textContent=LearningView.text(s);$('history').textContent=s.history.map(h=>h.from+' -> '+h.to).join('\n');},
+  wait:async()=>{},error:e=>log(e.message),
+});
+$('learn').onclick=()=>{started++;return flow.learn();};
+$('prepare').onclick=()=>flow.prepare('bp_demo');
+$('running').onclick=()=>{revision++;return flow.observe(record('running'));};
+$('done').onclick=()=>{active=false;revision++;return flow.observe(record('done'));};
+$('restore').onclick=()=>{revision++;return flow.observe(record('done',true));};
+$('offline').onclick=()=>flow.unavailable(Error('Simulated lost connection'));
+</script></html>

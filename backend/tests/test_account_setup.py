@@ -191,7 +191,7 @@ def test_apply_discoveries_does_not_require_unrelated_run_readiness(dash):
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "calibrate_state.json").write_text(json.dumps({
             "player": {"card_presets": ["my_cards"]}, "phases": {"cards": {"status": "done"}}}))
-        result = client.post("/api/calibrate/apply", json={})
+        result = client.post("/api/calibrate/apply", json={"saved_observations": True})
         assert result.status_code == 200, result.json
         saved = yaml.safe_load(path.read_text())
         assert saved["player"]["card_presets"] == ["my_cards"]
@@ -258,7 +258,8 @@ def test_navigation_permission_is_only_passed_to_calibration(dash, monkeypatch):
     from player import scan_plan
     monkeypatch.setattr(scan_plan, "missing_navigation", lambda *a, **k: [])
     commands = []
-    monkeypatch.setattr(dash.subprocess, "Popen", lambda args, **kwargs: commands.append(args))
+    from types import SimpleNamespace
+    monkeypatch.setattr(dash.subprocess, "Popen", lambda args, **kwargs: commands.append(args) or SimpleNamespace(pid=99999999))
     with dash.app.test_client() as client:
         result = client.post("/api/calibrate/start", json={"phases": "c", "allow_navigation": True})
         assert result.status_code == 200

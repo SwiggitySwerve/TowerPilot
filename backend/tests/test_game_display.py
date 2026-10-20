@@ -49,6 +49,20 @@ def test_strip_warning_only_drops_a_text_prefix_ahead_of_a_png():
     assert displays.strip_warning(b"") == b""
 
 
+@pytest.fixture(autouse=True)
+def _no_real_adb_server(monkeypatch):
+    """A failed frame runs the dashboard's _device_state, i.e. the real
+    adbclient.get_state; point adbclient at a loopback port nothing listens on
+    so no test here reaches the adb server on 5037."""
+    import socket
+    from device import adbclient
+    s = socket.socket()
+    s.bind(("127.0.0.1", 0))
+    host = s.getsockname()
+    s.close()
+    monkeypatch.setattr(adbclient, "_HOST", host)
+
+
 @pytest.fixture(scope="module")
 def dash():
     path = os.path.join(os.path.dirname(BACKEND), "frontend", "dashboard.py")
@@ -93,6 +107,29 @@ def test_preview_and_screen_check_ask_for_the_game_display(dash, mumu):
     assert (r["ok"], r["width"], r["height"], r["expected"]) == (True, 1080, 2560, True)
     assert mumu[-1] == "screencap -d 4619827767814508545"
     assert "127.0.0.1:16416" in dash._DISPLAY_CACHE          # derived once, cached
+
+
+def test_a_failed_frame_queries_only_the_redirected_adb_server(dash, mumu, monkeypatch):
+    # a failed frame runs _device_state (adbclient.get_state + the serial's port
+    # dial); every dial is refused here and recorded, none is forwarded.
+    import socket
+    from device import adbclient
+    dialed = []
+
+    def dial(addr, *args, **kwargs):
+        dialed.append(addr)
+        raise ConnectionRefusedError()
+    monkeypatch.setattr(socket, "create_connection", dial)
+    monkeypatch.setattr(dash, "_reconnect_tick", lambda *a: None)   # no recovery thread, no adb spawn
+
+    def down(serial, cmd, timeout=None):
+        raise OSError("device down")
+    monkeypatch.setattr(adbclient, "exec_out", down)
+    dash._CONN_CACHE["t"] = 0.0
+    with dash.app.test_client() as c:
+        assert c.get("/api/frame.png").status_code == 502
+    assert adbclient._HOST in dialed
+    assert ("127.0.0.1", 5037) not in dialed
 
 
 def test_screen_check_never_reads_a_warning_as_a_resolution(dash, mumu, monkeypatch):

@@ -52,7 +52,8 @@ def bound(dash, tmp_path, monkeypatch):
     Lightning, and a calibration state whose verified cuts prove it does."""
     name = "zz_uwapply"
     src = os.path.join(BACKEND, "tests", "fixtures", "golden_profile.yaml")
-    dst = os.path.join(BACKEND, "profiles", f"{name}.yaml")
+    (tmp_path / 'profiles').mkdir()
+    dst = str(tmp_path / 'profiles' / f'{name}.yaml')
     with open(src, encoding="utf-8") as fh:
         profile = yaml.safe_load(fh)
     profile["player"]["uws"]["chain_lightning"] = False
@@ -69,17 +70,18 @@ def bound(dash, tmp_path, monkeypatch):
            "loadouts": {k: {} for k in ("coin_farm", "tourney_1", "dissonance",
                                         "shard_farm", "inner_land_mines_quest")}}
     monkeypatch.setattr(dash, "load_config", lambda: copy.deepcopy(cfg))
+    monkeypatch.setattr(dash, 'ROOT', str(tmp_path))
     monkeypatch.setattr(dash, "_procs", lambda: [])
     monkeypatch.setattr(dash, "_calibration_dir", lambda cfg: str(tmp_path))
     yield name, dst, profile["player"]["uws"]
-    for f in glob.glob(os.path.join(BACKEND, "profiles", f"{name}.yaml*")):
+    for f in glob.glob(str(tmp_path / 'profiles' / f'{name}.yaml*')):
         os.remove(f)
 
 
 def test_apply_writes_proven_ownership_into_the_profile(dash, bound):
     name, path, before = bound
     with dash.app.test_client() as c:
-        r = c.post("/api/calibrate/apply", json={})
+        r = c.post("/api/calibrate/apply", json={"saved_observations": True})
     assert r.status_code == 200, r.get_json()
     with open(path, encoding="utf-8") as fh:
         profile = yaml.safe_load(fh)

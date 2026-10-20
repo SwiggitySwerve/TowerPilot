@@ -1,5 +1,13 @@
 """Ad Gems must not route to the Store or tap when the HUD shifts."""
 from interactions import ad_gems
+from types import SimpleNamespace
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def battle_screen(monkeypatch):
+    monkeypatch.setattr(ad_gems.screen, 'identify', lambda frame: SimpleNamespace(name='battle'))
+    monkeypatch.setattr(ad_gems.overlays, 'windows', lambda serial, **kw: [ad_gems.overlays.GAME_PKG+'/Activity'])
 
 
 def test_missing_offer_image_requires_both_claim_and_six(monkeypatch,tmp_path):
@@ -25,23 +33,149 @@ def test_disabled_and_nonbattle_never_tap(monkeypatch):
 def test_claim_rechecks_position_and_confirms_disappearance(monkeypatch):
     events=[];taps=[]
     monkeypatch.setattr(ad_gems.wave_reader,'read_wave',lambda f:100)
-    points=iter([(100,1300),(100,1300),None])
-    monkeypatch.setattr(ad_gems,'find_claim',lambda f:next(points))
+    points=iter([(0,1250,200,100),(0,1250,200,100),None])
+    monkeypatch.setattr(ad_gems,'find_claim_rect',lambda f:next(points))
     monkeypatch.setattr(ad_gems.capture,'grab',lambda:None)
     monkeypatch.setattr(ad_gems.time,'sleep',lambda t:None)
     monkeypatch.setattr(ad_gems.act,'tap',lambda *a,**k:taps.append(a) or {})
     monkeypatch.setattr(ad_gems.logger,'event',lambda name,**k:events.append((name,k)))
-    c=ad_gems.AdGemCollector();c.poll(None);c.poll(None)
-    assert taps==[(100,1300)]
-    assert events[-1]==('ad_gems_claim',{'confirmed':True})
+    c=ad_gems.AdGemCollector(delay=(0, 0));c.poll(None);c.poll(None)
+    assert len(taps) == 1
+    assert 11 <= taps[0][0] <= 188 and 1261 <= taps[0][1] <= 1338
+    assert ('ad_gems_claim', {'confirmed': True}) in events
+    assert events[-1][0] == 'ad_gems_window_ended'
+    assert events[-1][1]['reason'] == 'confirmed'
 
 def test_moving_claim_is_not_clicked(monkeypatch):
     monkeypatch.setattr(ad_gems.wave_reader,'read_wave',lambda f:100)
-    points=iter([(100,1300),(100,1500)])
-    monkeypatch.setattr(ad_gems,'find_claim',lambda f:next(points))
+    points=iter([(0,1250,200,100),(0,1450,200,100)])
+    monkeypatch.setattr(ad_gems,'find_claim_rect',lambda f:next(points))
     monkeypatch.setattr(ad_gems.capture,'grab',lambda:None)
     monkeypatch.setattr(ad_gems.act,'tap',lambda *a,**k: (_ for _ in ()).throw(AssertionError('tap')))
-    ad_gems.AdGemCollector().poll(None)
+    ad_gems.AdGemCollector(delay=(0, 0)).poll(None)
+
+
+def test_contour_edge_noise_does_not_restart_verified_claim(monkeypatch):
+    # Measured on successive live frames: edge/size deltas sum to 15px,
+    # while the verified button's center moves only 4px.
+    initial, fresh, after = object(), object(), object()
+    rectangles = {initial: (10, 1384, 261, 157), fresh: (17, 1383, 255, 158), after: None}
+    frames = iter([fresh, after])
+    taps, events = [], []
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda frame: 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', rectangles.get)
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
+    monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *args, **kwargs: taps.append(args) or {})
+    monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **data: events.append((name, data)))
+
+    collector = ad_gems.AdGemCollector(delay=(0, 0))
+    assert collector.poll(initial) is after
+    assert len(taps) == 1
+    assert collector.last_outcome['confirmed'] is True
+    assert next(data for name, data in events if name == 'ad_gems_tap')['claim_rect'] == rectangles[fresh]
+
+
+def test_offer_wait_is_nonblocking_and_revalidates_after_delay(monkeypatch):
+    import random
+    now = [100.0]
+    frame, fresh, after = object(), object(), object()
+    taps, events = [], []
+    monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
+    monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: None if f is after else (0, 1250, 200, 100))
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: pytest.fail('captured during response wait'))
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: taps.append(a) or {})
+    monkeypatch.setattr(ad_gems.logger, 'event', lambda kind, **kw: events.append((kind, kw)))
+    collector = ad_gems.AdGemCollector(rng=random.Random(8))
+    assert collector.poll(frame) is frame
+    assert 3 <= collector.claim_at - now[0] <= 10
+    assert taps == []
+    now[0] = collector.claim_at
+    frames = iter([fresh, after])
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
+    assert collector.poll(frame) is after
+    assert len(taps) == 1
+    assert 11 <= taps[0][0] <= 188 and 1261 <= taps[0][1] <= 1338
+    tap_event = next(data for name, data in events if name == 'ad_gems_tap')
+    assert 3 <= tap_event['offer_wait_sec'] <= 10
+    assert collector.next_at == 820
+    assert collector.window_deadline is None
+
+
+def test_offer_disappearing_during_wait_cancels_pending_claim(monkeypatch):
+    now = [100.0]
+    visible = [True]
+    monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: (0, 1250, 200, 100) if visible[0] else None)
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: pytest.fail('stale offer tapped'))
+    collector = ad_gems.AdGemCollector(delay=(5, 5))
+    collector.poll(None)
+    visible[0] = False
+    now[0] = 106
+    collector.poll(None)
+    assert collector.claim_at is None
+    visible[0] = True
+    now[0] = 111
+    collector.poll(None)
+    assert collector.claim_at == 116
+
+
+def test_default_poll_and_response_deadlines_vary_with_seed(monkeypatch):
+    import random
+    monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: 100)
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: (0, 1250, 200, 100))
+    collectors = [ad_gems.AdGemCollector(rng=random.Random(seed)) for seed in range(8)]
+    for collector in collectors:
+        collector.poll(None)
+        assert 102 <= collector.next_at <= 104
+        assert 103 <= collector.claim_at <= 110
+    assert len({c.next_at for c in collectors}) == 8
+    assert len({c.claim_at for c in collectors}) == 8
+
+
+@pytest.mark.parametrize('after_wave,after_screen,dry', [
+    (None, 'game_stats', False),
+    (100, 'exit_battle', False),
+    (100, 'battle', True),
+])
+def test_claim_never_confirms_a_departed_battle_or_dry_run(monkeypatch, after_wave, after_screen, dry):
+    initial, fresh, after = object(), object(), object()
+    events = []
+    frames = iter([fresh, after])
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: after_wave if f is after else 100)
+    monkeypatch.setattr(ad_gems.screen, 'identify', lambda f: SimpleNamespace(name=after_screen if f is after else 'battle'))
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: None if f is after else (0, 1250, 200, 100))
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: {'dry_run': dry})
+    monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
+    monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **kw: events.append((name, kw)))
+    result = ad_gems.AdGemCollector(delay=(0, 0)).poll(initial)
+    assert result is (fresh if dry else after)
+    assert ('ad_gems_claim', {'confirmed': True}) not in events
+
+
+def test_modal_over_readable_wave_prevents_claim(monkeypatch):
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: (0, 1250, 200, 100))
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: None)
+    monkeypatch.setattr(ad_gems.screen, 'identify', lambda f: SimpleNamespace(name='exit_battle'))
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: pytest.fail('tap on modal'))
+    ad_gems.AdGemCollector(delay=(0, 0)).poll(None)
+
+
+@pytest.mark.parametrize('cover', ['com.android.vending/Activity', 'app.lawnchair/Launcher',
+                                   'com.bluestacks.appmart/Activity', 'NotificationShade'])
+def test_an_app_covering_the_game_prevents_claim(monkeypatch, cover):
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda f: 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: (0, 1250, 200, 100))
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: None)
+    monkeypatch.setattr(ad_gems.overlays, 'windows', lambda serial, **kw: [cover, ad_gems.overlays.GAME_PKG+'/Activity'])
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: pytest.fail('tap on another app'))
+    ad_gems.AdGemCollector(delay=(0, 0)).poll(None)
 
 def test_separate_readiness_requirements():
     from player import readiness
@@ -95,3 +229,206 @@ def test_offer_moves_with_effect_rows_and_closed_upgrade_panel(monkeypatch,tmp_p
         frame=np.zeros((2560,1080,3),np.uint8)
         cv2.rectangle(frame,(20,top),(268,top+148),(255,255,0),4)
         assert ad_gems.find_claim(frame)==(144,top+74)
+
+
+@pytest.mark.parametrize('upper', [False, True])
+def test_entire_press_stays_five_pixels_inside_offer_at_jitter_extremes(monkeypatch, upper):
+    cfg = {'tap': {'jitter_px': 8, 'jitter_ms': [15, 50], 'max_rate_per_sec': 12},
+           'screen': {'width': 1080, 'height': 2560}, 'loop': {'dry_run': False}}
+    monkeypatch.setattr(ad_gems.settings, 'CONFIG', cfg)
+    monkeypatch.setattr(ad_gems.act, 'CONFIG', cfg)
+    monkeypatch.setattr(ad_gems.act, 'instance', lambda: {'allow_taps': True})
+    rng = SimpleNamespace(randint=lambda low, high: high if upper else low,
+                          uniform=lambda low, high: low, gauss=lambda *args: 85)
+    monkeypatch.setattr(ad_gems.act, 'random', rng)
+    monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
+    monkeypatch.setattr(ad_gems.act, '_last_tap', 0)
+    commands = []
+    monkeypatch.setattr(ad_gems.act, '_input', lambda *args: commands.append(args))
+    rect = (20, 1200, 248, 148)
+    point = ad_gems._claim_point(rect, rng)
+    ad_gems.act.tap(*point)
+    _, x, y, end_x, end_y, _ = commands[0]
+    assert 25 <= x <= 262 and 1205 <= y <= 1342
+    assert (end_x, end_y) == ((262, 1342) if upper else (25, 1205))
+
+
+def test_claim_sampling_spans_button_interior_and_refuses_tiny_targets(monkeypatch):
+    import random
+    monkeypatch.setattr(ad_gems.settings, 'CONFIG', {
+        'tap': {'jitter_px': 4}, 'screen': {'width': 1080, 'height': 2560}})
+    rng = random.Random(21)
+    points = [ad_gems._claim_point((20, 1200, 248, 148), rng) for _ in range(64)]
+    assert max(x for x, _ in points)-min(x for x, _ in points) > 150
+    assert max(y for _, y in points)-min(y for _, y in points) > 80
+    assert all(31 <= x <= 256 and 1211 <= y <= 1336 for x, y in points)
+    assert ad_gems._claim_point((20, 1200, 20, 20), rng) is None
+
+
+def test_requested_long_offer_delay_does_not_tap_early(monkeypatch):
+    import random
+    now = [100.0]
+    monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda _: (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: pytest.fail('early tap'))
+    collector = ad_gems.AdGemCollector(delay=(15, 45), rng=random.Random(17))
+    collector.poll(None)
+    assert 115 <= collector.claim_at <= 145
+    now[0] = 114.9
+    collector.poll(None)
+
+
+@pytest.mark.parametrize('confirmed, cooldown', [(True, 26), (False, 9)])
+def test_custom_settings_control_poll_inset_and_claim_cooldown(monkeypatch, confirmed, cooldown):
+    now = [100.0]
+    initial, fresh, after = object(), object(), object()
+    frames = iter([fresh, after])
+    rect = (20, 1200, 248, 148)
+    taps, events = [], []
+    monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
+    monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: None if f is after and confirmed else rect)
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: taps.append(a) or {})
+    monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **kw: events.append((name, kw)))
+    monkeypatch.setattr(ad_gems.settings, 'CONFIG', {
+        'tap': {'jitter_px': 4}, 'screen': {'width': 1080, 'height': 2560}})
+    rng = SimpleNamespace(randint=lambda low, high: low, uniform=lambda low, high: low)
+    monkeypatch.setattr(ad_gems.settings, 'instance', lambda: {'serial': 'test-device'})
+    collector = ad_gems.AdGemCollector(delay=(15, 15), rng=rng, options={
+        'poll_sec': [6, 7], 'edge_inset_px': 12,
+        'confirmed_cooldown_sec': [41, 42], 'retry_cooldown_sec': [9, 10]})
+    collector.poll(initial)
+    assert collector.next_at == 106
+    now[0] = 115
+    collector.poll(initial)
+    assert taps == [(38, 1218)]  # inset12 + position jitter4 + press drift2
+    assert next(data for name, data in events if name == 'ad_gems_tap')['edge_inset_px'] == 12
+    assert collector.next_at == 115 + cooldown
+
+
+@pytest.mark.parametrize('mode', ['absent', 'nonbattle', 'unconfirmed', 'dry', 'blocked', 'refused'])
+def test_attempt_window_expires_without_extending_and_waits_for_next_cycle(monkeypatch, mode):
+    now = [100.0]
+    taps = []
+    rect = (20, 1200, 248, 148)
+    monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
+    monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: None if mode == 'nonbattle' else 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda _: None if mode == 'absent' else rect)
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: None)
+    monkeypatch.setattr(ad_gems.overlays, 'foreground_blocker', lambda _: 'human' if mode == 'blocked' else None)
+    def tap(*args, **kwargs):
+        taps.append(now[0])
+        if mode == 'refused':
+            raise ad_gems.act.TapRefused('unsafe')
+        return {'dry_run': mode == 'dry'}
+    monkeypatch.setattr(ad_gems.act, 'tap', tap)
+    collector = ad_gems.AdGemCollector(delay=(0, 0), options={
+        'poll_sec': [2, 2], 'retry_cooldown_sec': [4, 4]})
+    for second in range(100, 820):
+        now[0] = second
+        collector.poll(None)
+    assert collector.next_at == 820
+    assert collector.window_deadline is None
+    assert collector.claim_at is None
+    assert all(100 <= timestamp < 160 for timestamp in taps)
+    if mode in ('unconfirmed', 'dry', 'refused'):
+        assert taps
+    else:
+        assert taps == []
+    now[0] = 820
+    collector.poll(None)
+    assert collector.window_deadline == 880
+    assert collector.next_window_at == 1540
+
+
+@pytest.mark.parametrize('io_stage', ['capture', 'windows'])
+def test_window_expiring_during_fresh_io_never_taps(monkeypatch, io_stage):
+    now = [100.0]
+    monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda _: (20, 1200, 248, 148))
+    def capture():
+        if io_stage == 'capture':
+            now[0] = 160
+        return None
+    def windows(*args, **kwargs):
+        if io_stage == 'windows':
+            now[0] = 160
+        return [ad_gems.overlays.GAME_PKG+'/Activity']
+    monkeypatch.setattr(ad_gems.capture, 'grab', capture)
+    monkeypatch.setattr(ad_gems.overlays, 'windows', windows)
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: pytest.fail('tap after window deadline'))
+    collector = ad_gems.AdGemCollector(delay=(0, 0))
+    collector.poll(None)
+    assert collector.next_at == 820
+    assert collector.window_deadline is None
+
+
+def test_short_interval_limits_window_and_delayed_offer_cannot_escape(monkeypatch):
+    now = [100.0]
+    monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda _: (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: pytest.fail('delayed offer escaped window'))
+    collector = ad_gems.AdGemCollector(delay=(15, 15), options={'confirmed_cooldown_sec': [10, 10]})
+    collector.poll(None)
+    assert collector.window_deadline == 110
+    assert collector.next_window_at == 110
+    now[0] = 110
+    collector.poll(None)
+    assert collector.window_deadline == 120
+    assert collector.claim_at == 125
+
+
+def test_confirmed_claim_closes_window_and_skips_all_checks_until_next_start(monkeypatch):
+    now = [100.0]
+    initial, fresh, after = object(), object(), object()
+    frames = iter([fresh, after])
+    taps = []
+    monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
+    monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: None if f is after else (20, 1200, 248, 148))
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: taps.append(now[0]) or {})
+    collector = ad_gems.AdGemCollector(delay=(15, 15))
+    collector.poll(initial)
+    now[0] = 115
+    collector.poll(initial)
+    assert taps == [115]
+    assert collector.window_deadline is None
+    assert collector.next_at == 820
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: pytest.fail('checked during long pause'))
+    for second in (116, 159, 160, 500, 819):
+        now[0] = second
+        assert collector.poll(initial) is initial
+    assert taps == [115]
+
+
+@pytest.mark.parametrize('confirmed, end_at, pause', [(True, 115, 705), (False, 160, 660)])
+def test_window_events_report_schedule_and_end_reason(monkeypatch, confirmed, end_at, pause):
+    now = [100.0]
+    events = []
+    initial, fresh, after = object(), object(), object()
+    frames = iter([fresh, after])
+    monkeypatch.setattr(ad_gems.time, 'monotonic', lambda: now[0])
+    monkeypatch.setattr(ad_gems.time, 'sleep', lambda _: None)
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda _: 100)
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', lambda f: (20, 1200, 248, 148) if confirmed and f is not after else None)
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *a, **kw: {})
+    monkeypatch.setattr(ad_gems.logger, 'event', lambda name, **data: events.append((name, data)))
+    collector = ad_gems.AdGemCollector(delay=(15, 15))
+    collector.poll(initial)
+    assert events[0] == ('ad_gems_window', {'duration_sec': 60, 'interval_sec': 720})
+    now[0] = end_at
+    collector.poll(initial)
+    assert events[-1] == ('ad_gems_window_ended', {
+        'reason': 'confirmed' if confirmed else 'timeout', 'pause_sec': pause})
+    now[0] += 1
+    collector.poll(initial)
+    assert sum(name == 'ad_gems_window_ended' for name, _ in events) == 1

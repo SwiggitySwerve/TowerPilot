@@ -12,6 +12,12 @@ from player.bootstrap_layout import manifest
 from player.asset_library import atomic_json
 
 
+def _write_state(path, state):
+    from runtime.operations import publish_progress
+    publish_progress(state)
+    atomic_json(path, state)
+
+
 def classify(frame, lines):
     matches = [name for name in manifest()['screens'] if screen_matches(frame, lines, name)]
     # A child page retains its parent's header. Do not label it as the parent.
@@ -85,9 +91,9 @@ def main():
     directory = accounts.calibration_dir(settings.ROOT, settings.CONFIG)
     state = directory/'screen_analysis.json'
     def progress(n, total):
-        atomic_json(state, {'status':'running','completed':n,'total':total,'message':'Matching installed artwork against the captured screen'})
+        _write_state(state, {'status':'running','completed':n,'total':total,'message':'Matching installed artwork against the captured screen'})
     try:
-        atomic_json(state, {'status':'running','message':'Checking the installed artwork library'})
+        _write_state(state, {'status':'running','message':'Checking the installed artwork library'})
         identity = installed(settings.instance()['serial'])
         folder = directory/'asset_library'/identity['key']
         index = json.loads((folder/'index.json').read_text(encoding='utf-8'))
@@ -95,13 +101,14 @@ def main():
             raise RuntimeError('Extract artwork first; the local library is missing or damaged')
         frame = capture.grab()
         captured_at = time.time()
-        cv2.imwrite(str(directory/'screen_analysis.png'), frame)
-        atomic_json(state, {'status':'running','message':'Reading screen labels'})
+        if not cv2.imwrite(str(directory/'screen_analysis.png'), frame):
+            raise OSError('Screen analysis screenshot could not be saved')
+        _write_state(state, {'status':'running','message':'Reading screen labels'})
         result = analyze(frame, textocr.read_lines(frame, 1), folder, index, progress)
         result.update(status='done', captured_at=captured_at)
-        atomic_json(state, result)
+        _write_state(state, result)
     except Exception as exc:
-        atomic_json(state, {'status':'error','message':str(exc)})
+        _write_state(state, {'status':'error','message':str(exc)})
 
 
 if __name__ == '__main__':

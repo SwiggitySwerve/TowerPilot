@@ -3725,6 +3725,8 @@ def _blueprint_of_kind(prof, kind):
 # name vocab() uses - and the coverage assertion below makes a new field
 # without a probe value fail rather than go untested.
 _LEGAL_BLUEPRINT_VALUE = {
+    "automation": {"repeat": True},
+    "global_behaviors": {"free_store_gems": False},
     "kind": None,                       # filled per kind: it IS the kind
     "label": "probe",
     "loadout": "coin_farm",
@@ -3798,7 +3800,11 @@ def _profile_with(prof, path, spec, value):
         prof["policies"]["rescue_policies"]["bound_probe"] = policy
         prof["blueprints"]["coin_default"]["policies"]["rescue"] = "bound_probe"
     elif section == "gather_keys":
-        prof["policies"]["gather"]["all_on"][name] = value
+        gather = prof["policies"]["gather"]["all_on"]
+        if param:
+            gather.setdefault(name, {})[param] = value
+        else:
+            gather[name] = value
     elif section == "block_fields":
         prof["plan"]["days"]["farm_day"][0][name] = value
     else:
@@ -3842,7 +3848,7 @@ def test_vocab_ranges_are_the_ones_the_validator_enforces(prof):
             assert any(field in p for p in problems), \
                 f"{path}: under the floor and only the route was reported"
         checked += 1
-    assert checked == 27, f"{checked} bounded specs exercised, expected 27"
+    assert checked == 32, f"{checked} bounded specs exercised, expected 32"
 
 
 def test_vocab_unit_floats_are_really_0_to_1(prof):

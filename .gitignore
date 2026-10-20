@@ -23,6 +23,9 @@ backend/recordings/
 backend/_scan_backup_*/
 backend/.last_scan_backup
 docs/HANDOVER_SCANNING.md
+# Personal agent state and session handoffs are not public project docs.
+.omo/
+docs/HANDOFF-2026-10-12.txt
 
 # --- python ------------------------------------------------------------
 __pycache__/
@@ -33,6 +36,8 @@ backend/tools/platform-tools/
 backend/tools/adb-install-*/
 .local-backups/
 dist/
+build/
+*.egg-info/
 venv/
 
 # --- editors / os ------------------------------------------------------

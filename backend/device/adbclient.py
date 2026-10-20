@@ -21,6 +21,7 @@ cleanly, which is what the buffer-space exhaustion was really about.
 """
 import socket
 import select
+import time
 
 _HOST = ("127.0.0.1", 5037)
 _TIMEOUT = 15.0
@@ -98,6 +99,9 @@ def exec_out(serial: str, command: str, timeout: float = _TIMEOUT) -> bytes:
         _status(sock, "transport")
         _send(sock, f"exec:{command}")
         _status(sock, "exec")
+        # the server opened a transport, so the serial is online: end its
+        # offline clock (a runner reads no get_state outside recover())
+        _offline_since.pop((_HOST, serial), None)
         chunks = []
         while True:
             chunk = sock.recv(1 << 20)
@@ -115,10 +119,67 @@ def shell(serial: str, command: str, timeout: float = _TIMEOUT) -> bytes:
 
 
 def alive(serial: str) -> bool:
+    """True when the server opens a transport to `serial` and runs `true` on
+    it. `true` prints nothing, so success of the exec IS the answer. False
+    when it raises OSError (no server, empty serial, socket timeout) or
+    AdbError (device missing, offline or unauthorized)."""
     try:
-        return b"device" in exec_out(serial, "true", timeout=5) or True
+        exec_out(serial, "true", timeout=5)
     except (OSError, AdbError):
         return False
+    return True
+
+
+def _ask_state(serial: str, timeout: float = 1.0) -> str:
+    """The adb server's view of one device, from ONE host query.
+
+    Sends `host-serial:<serial>:get-state` on a single socket to the server -
+    no device transport, no exec, so a hung device cannot block it; the
+    socket timeout bounds the whole call. Returns the server's state string
+    as sent ("device", "offline", "unauthorized", "bootloader", ...). A FAIL
+    reply is mapped: "not found" -> "missing", "offline" -> "offline",
+    "unauthorized" -> "unauthorized" (the server answers a non-online device
+    with FAIL "device offline" / "device unauthorized" rather than OKAY).
+    A failed connect to 5037 (refused OR timed out - this cannot tell
+    them apart; recover asks _server_refuses) -> "no_server"; empty serial ->
+    "unconfigured" (the server is not contacted); any other failure ->
+    "unknown". Never raises for those cases.
+    """
+    if not serial:
+        return "unconfigured"
+    try:
+        sock = socket.create_connection(_HOST, timeout=timeout)
+    except OSError:
+        return "no_server"
+    try:
+        sock.settimeout(timeout)
+        _send(sock, f"host-serial:{serial}:get-state")
+        _status(sock, "get-state")
+        n = int(_recv_exact(sock, 4), 16)
+        return _recv_exact(sock, n).decode(errors="replace").strip() or "unknown"
+    except AdbError as e:
+        why = str(e).lower()
+        for needle, state in (("not found", "missing"), ("offline", "offline"),
+                              ("unauthorized", "unauthorized")):
+            if needle in why:
+                return state
+        return "unknown"
+    except (OSError, ValueError):
+        return "unknown"
+    finally:
+        sock.close()
+
+
+def _host_reply(payload: str, what: str, timeout: float = 10) -> str:
+    """Send one host-service request on its own socket and return the
+    server's length-prefixed OKAY reply text. Raises OSError (no server,
+    timeout) or AdbError (FAIL / bad status)."""
+    with socket.create_connection(_HOST, timeout=timeout) as sock:
+        sock.settimeout(timeout)
+        _send(sock, payload)
+        _status(sock, what)
+        n = int(_recv_exact(sock, 4), 16)
+        return _recv_exact(sock, n).decode(errors="replace")
 
 
 def reconnect(serial: str) -> bool:
@@ -127,21 +188,147 @@ def reconnect(serial: str) -> bool:
     kill-server was the old recovery and it was actively wrong: MuMu is
     reached over TCP, so killing the server drops the device and every later
     call fails with "device not found". A plain host:connect re-attaches it and
-    leaves every other client alone.
+    leaves every other client alone. True when the reply contains "connected"
+    ("connected to" / "already connected to"); False on any other reply, no
+    server or a FAIL.
     """
     try:
-        sock = socket.create_connection(_HOST, timeout=10)
-    except OSError:
-        return False
-    try:
-        _send(sock, f"host:connect:{serial}")
-        _status(sock, "connect")
-        n = int(_recv_exact(sock, 4), 16)
-        return b"connected" in _recv_exact(sock, n).lower()
+        return "connected" in _host_reply(f"host:connect:{serial}", "connect").lower()
     except (OSError, AdbError):
         return False
-    finally:
-        sock.close()
+
+
+def disconnect(serial: str) -> bool:
+    """host:disconnect:<serial> - drop the server's transport to one TCP
+    device (nothing else). True on OKAY; False on no server or a FAIL (the
+    server holds no such transport)."""
+    try:
+        _host_reply(f"host:disconnect:{serial}", "disconnect")
+    except (OSError, AdbError):
+        return False
+    return True
+
+
+def devices(timeout: float = 5.0) -> list[str]:
+    """Serials the adb server lists in state `device`, from ONE host:devices
+    query (rows "<serial>\\t<state>"). Raises OSError when no server listens
+    and AdbError on a FAIL."""
+    reply = _host_reply("host:devices", "devices", timeout)
+    return [line.split("\t")[0] for line in reply.splitlines()
+            if line.endswith("\tdevice")]
+
+
+def _server_refuses(timeout: float = 5.0) -> bool:
+    """True only when a plain TCP connect to the adb server address is
+    REFUSED (ConnectionRefusedError, WinError 10061): nothing listens. A
+    timeout, any other OSError or an accepted connect is False - a slow or
+    wedged server is listening, and `adb start-server` from a client whose
+    version differs from the running server's kills that server. The default
+    timeout outlasts Windows' SYN retries: a closed loopback port answers
+    WinError 10061 only after ~2 s (measured), so a shorter wait reads a
+    refused connect as a timeout."""
+    try:
+        socket.create_connection(_HOST, timeout=timeout).close()
+    except ConnectionRefusedError:
+        return True
+    except OSError:
+        return False
+    return False
+
+
+# How long a serial must keep reading 'offline' (as observed by this process)
+# before recover() drops the server's transport to it with host:disconnect. A
+# fresh TCP transport reads 'offline' until its handshake completes, and the
+# callers poll recover() every 3-60 s (boot 3 s, shard twice per capture
+# failure, the dashboard 5-60 s), so a transport this process first read
+# 'offline' less than that long ago is never torn down.
+_OFFLINE_STALE_S = 30.0
+# (server address, serial) -> time.monotonic() of the FIRST read of the serial
+# as 'offline' since this process last saw it online or gone. get_state stamps
+# it on an 'offline' read if absent (never re-stamps) and drops it on a
+# 'device', 'missing' or 'no_server' read; a successful exec_out drops it too;
+# recover() also drops it when it sends the host:disconnect. host:connect never
+# touches it. Time nobody read the serial counts as offline. Per process: two
+# processes recovering one serial keep separate clocks.
+_offline_since: dict = {}
+
+
+def get_state(serial: str, timeout: float = 1.0) -> str:
+    """The adb server's view of one device, from ONE host query (_ask_state:
+    its states and failure mapping), and the _offline_since clock of (server,
+    serial) kept in step with the answer: 'offline' starts it if it is not
+    running, 'device', 'missing' and 'no_server' stop it, any other answer
+    leaves it as it is. ('no_server' also answers a connect timeout, which
+    only delays a teardown; a restarted server drops every transport, so what
+    is attached afterwards is a new one.) Every read in this process goes
+    through here, the dashboard's status polls included, so the clock cannot
+    outlive a transport some poll saw dropped."""
+    state = _ask_state(serial, timeout)
+    key = (_HOST, serial)
+    if state == "offline":
+        _offline_since.setdefault(key, time.monotonic())
+    elif state in ("device", "missing", "no_server"):
+        _offline_since.pop(key, None)
+    return state
+
+
+def recover(serial: str, start_server=None, *, attempts: int = 3,
+            settle: float = 2.0) -> str:
+    """Bring a TCP device (`host:port` serial) back to `device` over the
+    server socket; returns the state it ends on.
+
+    First, for ANY serial: 'no_server' AND a refused plain connect to the
+    server address (nothing listens; get_state also says 'no_server' for a
+    connect timeout, which leaves the state as read) -> call `start_server()`
+    once - the caller's sanctioned daemon spawn; this module never spawns -
+    and ask again. A serial without ':' (emulator-NNNN, usb, empty) has no host:port
+    to connect, so its state is returned here, as is every state when
+    `attempts` is 0. Then each of at most `attempts` rounds acts on the
+    current state:
+      'offline'   -> host:disconnect first, but only when this process's first
+                     'offline' read of the serial is at least _OFFLINE_STALE_S
+                     old (see _offline_since; the clock restarts after the
+                     disconnect). The server still holds the dead
+                     transport, and a connect for a serial it holds only
+                     answers "already connected". A younger 'offline' is left
+                     in place: it may be a handshake still running;
+      'missing'   -> host:connect.
+    After either the round sends host:connect; when the server answered
+    "connected" ("already connected" included) the state is re-read every
+    0.2 s for up to `settle` s and the round ends at the first 'device'. The
+    connect never restarts the offline clock, so a caller polling more often
+    than _OFFLINE_STALE_S still tears down a transport that stays offline,
+    once per _OFFLINE_STALE_S. Any other answer ('device', 'unauthorized',
+    'unknown', a 'no_server' with no or a spent `start_server` or a connect
+    that was not refused) is returned untouched. Never kill-server: the
+    server is shared and killing it drops every TCP device.
+    """
+    state = get_state(serial)
+    if state == "no_server" and start_server is not None and _server_refuses():
+        start_server()
+        state = get_state(serial)
+    if ":" not in serial:
+        return state
+    key = (_HOST, serial)
+    for _ in range(attempts):
+        if state == "offline":
+            # a stamp another thread's 'device' / 'missing' read just dropped
+            # counts as age 0 (no teardown)
+            now = time.monotonic()
+            if now - _offline_since.get(key, now) >= _OFFLINE_STALE_S:
+                disconnect(serial)
+                _offline_since.pop(key, None)
+        elif state != "missing":
+            return state
+        if reconnect(serial):
+            deadline = time.monotonic() + settle
+            state = get_state(serial)
+            while state != "device" and time.monotonic() < deadline:
+                time.sleep(0.2)
+                state = get_state(serial)
+        else:
+            state = get_state(serial)
+    return state
 
 
 def exec_to(serial, command, sink, *, timeout=30, progress=None, check_stop=None):

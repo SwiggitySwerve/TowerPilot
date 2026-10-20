@@ -1,14 +1,13 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const fs=require('node:fs');
 const vm=require('node:vm');
-const html=fs.readFileSync(require('node:path').join(__dirname,'../webui/index.html'),'utf8');
-const source=html.slice(html.indexOf('let clientClickerGeneration'),html.indexOf('async function observeNow('));
+const {section}=require('./helpers.cjs');
+const source=section('let clientClickerGeneration','async function observeNow(');
 function setup(post){
   const status={}, history={children:[],prepend(row){this.children.unshift(row);}};
   const nodes={'#clicker-status':status,'#clicker-history':history,'#clicker-action':{value:'guild'},'#clicker-preview':{style:{}}};
   const ctx=vm.createContext({S:{config:{active_instance:'main',instances:{main:{account:'test'}}}},
-    $:key=>nodes[key], location:{hash:'#calibrate'}, post, setTimeout,
+    $:key=>nodes[key], location:{hash:'#screens'}, post, setTimeout,
     document:{hidden:false,querySelectorAll:()=>[],createElement:()=>({}),addEventListener:()=>{}},
     window:{addEventListener:()=>{}}});
   vm.runInContext(source,ctx);

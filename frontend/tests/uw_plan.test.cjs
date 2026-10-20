@@ -1,9 +1,7 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
 const vm = require('node:vm');
-const html = fs.readFileSync(require('node:path').join(__dirname, '../webui/index.html'), 'utf8');
-const section = (start, end) => html.slice(html.indexOf(start), html.indexOf(end, html.indexOf(start)));
+const {section} = require('./helpers.cjs');
 
 const policies = {uw_policies: {
   farm_cl_choreo: {chain_lightning: {mode: 'fleet_marks'}},

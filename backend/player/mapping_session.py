@@ -199,6 +199,9 @@ class Session:
                 self.scanner.finish_step('skipped', 'Control unavailable; no input sent')
                 continue
             mapping = self.scanner.state['screen_map'][edge['destination']]
-            attention = len(self.scanner.skipped)>before or mapping['status'] != 'verified'
+            # an optional skip (a guardian chip drawn as a padlock) is listed,
+            # never attention - the same rule as the scan's final status
+            missed = [s for s in self.scanner.skipped[before:] if not s.get('optional')]
+            attention = bool(missed) or mapping['status'] != 'verified'
             self.scanner.finish_step('needs_attention' if attention else 'done',
                                     f"{edge['action']} mapped")

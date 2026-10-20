@@ -33,6 +33,14 @@ from _fakes import (_patch_flows_shard, install_modules,       # noqa: E402
 _MISSING = object()
 
 
+@pytest.fixture(autouse=True)
+def _fake_device_authority(monkeypatch):
+    """Scheduler semantics use fake devices; real OS exclusion has its own tests."""
+    from runtime import device_lease
+    monkeypatch.setattr(device_lease, "ensure_current", lambda: None)
+    monkeypatch.setattr(device_lease, "child_environment", lambda: {})
+
+
 # --------------------------------------------------------------- the fakes
 
 class FakeLogger(types.ModuleType):

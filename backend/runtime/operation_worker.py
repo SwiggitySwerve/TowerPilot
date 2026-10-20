@@ -1,0 +1,40 @@
+"""Isolated worker bootstrap for every dashboard long-running launch."""
+import runpy
+import sys
+
+from runtime.operations import Conflict, environment_operation, file_revision, restore_worker_context, worker_operation
+
+
+def main():
+    ledger, operation_id = environment_operation()
+    if ledger:
+        op = ledger.get(operation_id)
+        from runtime.device_lease import acquire
+        try:
+            acquire(op['context']['serial'], op['context'].get('adb_host', '127.0.0.1'), op['context'].get('adb_port', 5037))
+            profile = op['context'].get('profile_path')
+            if profile and not op['request'].get('battle_envelope') and file_revision(profile) != op['context'].get('profile_revision'):
+                raise Conflict('Profile changed after this operation was accepted')
+        except Exception as exc:
+            op = ledger.get(operation_id)
+            ledger.transition(op['id'], op['revision'], 'failed', error={'code': 'device_busy', 'message': str(exc)})
+            raise
+        from device import adbclient
+        adbclient._HOST = (op['context'].get('adb_host', '127.0.0.1'), op['context'].get('adb_port', 5037))
+        import settings
+        restore_worker_context(settings)
+    with worker_operation():
+        args = sys.argv[1:]
+        if not args:
+            raise ValueError('Worker target is required')
+        if args[0] == '-m':
+            module = args[1]
+            sys.argv = [module, *args[2:]]
+            runpy.run_module(module, run_name='__main__')
+        else:
+            sys.argv = args
+            runpy.run_path(args[0], run_name='__main__')
+
+
+if __name__ == '__main__':
+    main()

@@ -4,7 +4,6 @@ OCR is confined to this calibration process. Every input has a proved source
 and destination. Unsupported/obscured screens stop input; optional absent Home
 icons are skipped. No purchases, equipment changes, rewards or battles.
 """
-import os
 import time
 from pathlib import Path
 import cv2
@@ -164,21 +163,15 @@ def icon_present(frame, spec):
 
 
 def preflight():
-    import psutil
     import settings
     from device import adbclient, capture, layout, overlays
+    from runtime import runners
     if not settings.instance().get("allow_taps"):
         raise RuntimeError("Allow menu navigation before starting the starter scan")
     # CLI and dashboard use the same exclusive-device principle. Refuse every
     # other runner, including foreign checkouts (they may share the device).
-    for p in psutil.process_iter(["pid", "name", "cmdline"]):
-        if p.info["pid"] == os.getpid() or "python" not in (p.info["name"] or "").lower():
-            continue
-        args = p.info["cmdline"] or []
-        runners = {"orchestrator.py", "shard.py", "combo.py", "tourney.py", "quest_sm.py",
-                   "quest_ilm.py", "scan.py", "calibrate.py", "clicker.py", "boot.py", "harness.py"}
-        if any(Path(arg).name in runners for arg in args):
-            raise RuntimeError(f"Stop the other runner first (PID {p.pid})")
+    for pid, script, _ in runners.other_runners():
+        raise RuntimeError(f"Stop the other runner first (PID {pid}: {script})")
     inst = settings.instance()
     command = "wm density"
     if inst.get("input_display") is not None:
@@ -367,42 +360,96 @@ class Scanner:
         through verify_assets; the battle passes call this directly for the
         HUD ability buttons and the UW panel switches. `unique=False` for
         controls that repeat on screen (every owned weapon has a switch).
-        Returns {rel: verification} for the rels that had a binding."""
+        Returns {rel: verification} for the rels that had a binding.
+        mapping.json is published even when a target raises; the exception
+        then carries a note naming that target."""
         out={}
-        for rel in rels:
-            definition=manifest().get("asset_bindings",{}).get(rel)
-            if not definition or not self.asset_folder or rel not in self.asset_mappings:
-                continue
-            self.check_stop()
-            self.progress(f"Verifying extracted artwork: {', '.join(definition['names'])}")
-            hit=self.asset_hit(rel,frame)
-            confirmed=self.asset_hit(rel,follow) if hit else None
-            mapping=self.asset_mappings[rel]
-            if not hit or not confirmed:
-                mapping['verification']='not_seen'
-                out[rel]='not_seen'
-                continue
-            if hit['asset_sha256']!=confirmed['asset_sha256'] or max(abs(a-b) for a,b in zip(hit['rect'],confirmed['rect']))>3:
-                mapping['verification']='unstable'
-                out[rel]='unstable'
-                continue
-            crop=region(frame,hit['rect']).copy()
-            patch=region(follow,hit['rect'])
-            score=float(cv2.matchTemplate(patch,crop,cv2.TM_CCOEFF_NORMED)[0,0])
-            if not np.isfinite(score) or score<.95:
-                mapping['verification']='unstable'
-                out[rel]='unstable'
-                continue
-            entry=self.cal.cut('bootstrap',rel,crop,frame,hit['asset_name'],
-                {'source_kind':'installed_asset','asset_id':hit['asset_id'],'asset_sha256':hit['asset_sha256'],
-                 'game_version':self.asset_summary['version'],'rect':hit['rect'],'confirmation':round(score,3),
-                 'source_inliers':hit['inliers'],'screen':definition.get('screen')},
-                unique=unique and not definition.get('repeated', False))
-            mapping['verification']='verified' if entry['verified'] else 'needs_attention'
-            mapping['observed_rect']=hit['rect']
-            out[rel]=mapping['verification']
-        self.publish_assets()
+        try:
+            for rel in rels:
+                definition=manifest().get("asset_bindings",{}).get(rel)
+                if not definition or not self.asset_folder or rel not in self.asset_mappings:
+                    continue
+                self.check_stop()
+                self.progress(f"Verifying extracted artwork: {', '.join(definition['names'])}")
+                hit=self.asset_hit(rel,frame)
+                confirmed=self.asset_hit(rel,follow) if hit else None
+                mapping=self.asset_mappings[rel]
+                if not hit or not confirmed:
+                    mapping['verification']='not_seen'
+                    out[rel]='not_seen'
+                    continue
+                if hit['asset_sha256']!=confirmed['asset_sha256'] or max(abs(a-b) for a,b in zip(hit['rect'],confirmed['rect']))>3:
+                    mapping['verification']='unstable'
+                    out[rel]='unstable'
+                    continue
+                crop=region(frame,hit['rect']).copy()
+                patch=region(follow,hit['rect'])
+                score=float(cv2.matchTemplate(patch,crop,cv2.TM_CCOEFF_NORMED)[0,0])
+                if not np.isfinite(score) or score<.95:
+                    mapping['verification']='unstable'
+                    out[rel]='unstable'
+                    continue
+                entry=self.cal.cut('bootstrap',rel,crop,frame,hit['asset_name'],
+                    {'source_kind':'installed_asset','asset_id':hit['asset_id'],'asset_sha256':hit['asset_sha256'],
+                     'game_version':self.asset_summary['version'],'rect':hit['rect'],'confirmation':round(score,3),
+                     'source_inliers':hit['inliers'],'screen':definition.get('screen')},
+                    unique=unique and not definition.get('repeated', False))
+                mapping['verification']='verified' if entry['verified'] else 'needs_attention'
+                mapping['observed_rect']=hit['rect']
+                out[rel]=mapping['verification']
+            # A control this account has not unlocked (a guardian chip) is drawn as
+            # a padlock in its slot, not as its artwork: 'locked', an optional skip,
+            # never a mapping gap. Everything else not found stays 'not_seen'.
+            for rel in [r for r,v in out.items() if v=='not_seen']:
+                if self.locked(rel, frame, follow, out):
+                    self.asset_mappings[rel]['verification']=out[rel]='locked'
+                    self.skipped.append({'target':rel, 'optional':True,
+                        'reason':'Locked on this account: the game draws a padlock where it belongs; '
+                                 'a later setup or observe pass captures it once unlocked'})
+        except Exception as e:
+            # the caller's error log names the target this raised on
+            e.add_note(f'while verifying {rel}')
+            raise
+        finally:
+            # what this call settled is published even when a target raised
+            self.publish_assets()
         return out
+
+    def locked(self, rel, frame, follow, seen):
+        """True when the binding names padlock art (`locked_art`) and that art
+        is found on BOTH frames, at most 3 px apart, inside the target's slot:
+        its reference_rect moved by the median offset of the same-screen
+        targets `seen` ({rel: verification} of THIS frame pair) verified,
+        padded 48 px like best_match's nearby search and cut to the frame.
+        False without `locked_art`, a reference_rect, a slot inside the frame
+        or a sibling verified on this frame pair - the observe pass hands this every missing rel on whatever
+        screen is up, and only a sibling found here proves the frame shows
+        the target's screen (and the slot on this layout). False too when the
+        verified siblings' offsets differ by more than 3 px on either axis:
+        they then show no single layout shift, and the median is an offset
+        no chip shows. One sibling has nothing to disagree with."""
+        from player import asset_library, asset_verify
+        bindings=manifest().get('asset_bindings',{})
+        definition=bindings[rel]
+        if not definition.get('locked_art') or not definition.get('reference_rect'):
+            return False
+        moved=[(m['observed_rect'][0]-bindings[r]['reference_rect'][0], m['observed_rect'][1]-bindings[r]['reference_rect'][1])
+               for r,m in self.asset_mappings.items()
+               if seen.get(r)=='verified' and m.get('observed_rect') and r in bindings
+               and bindings[r]['screen']==definition['screen'] and bindings[r].get('reference_rect')]
+        if not moved or any(max(d[i] for d in moved)-min(d[i] for d in moved)>3 for i in (0,1)):
+            return False
+        dx,dy=(int(np.median([d[i] for d in moved])) for i in (0,1))
+        x,y,w,h=definition['reference_rect']
+        x0,y0=max(0,x+dx-48),max(0,y+dy-48)
+        x1,y1=min(frame.shape[1],x+dx+w+48),min(frame.shape[0],y+dy+h+48)
+        if x1<=x0 or y1<=y0:
+            return False        # the slot lies wholly off the frame: nothing of it is on screen
+        slot=[x0,y0,x1-x0,y1-y0]
+        art=asset_library.map_targets(self.asset_index,{rel:{'names':definition['locked_art'],'screen':definition['screen']}})[rel]
+        first=asset_verify.best_match(self.asset_folder,art,frame,{'search':slot})
+        second=asset_verify.best_match(self.asset_folder,art,follow,{'search':slot}) if first else None
+        return bool(second) and max(abs(a-b) for a,b in zip(first['rect'],second['rect']))<=3
 
     def observed(self, name):
         self.check_stop()
@@ -494,6 +541,8 @@ class Scanner:
                     if e.get('t', 0) >= self.started_at and e.get('rel') in expected}
         optional = {r['icon']['rel'] for r in manifest()['routes']
                     if r.get('optional') and r.get('icon') and r['from']==name}
+        # a control this account has not unlocked (verify_asset_rels: 'locked')
+        optional.update(rel for rel, m in self.asset_mappings.items() if m.get('verification') == 'locked')
         blocks = [{"target":rel, "status":"verified" if evidence.get(rel, {}).get('verified') else "unavailable" if rel in optional else "needs_mapping"}
                   for rel in sorted(expected)]
         if not blocks:
@@ -731,6 +780,9 @@ class Scanner:
             self.finish_step(message="Battle and results captured")
         except Exception as e:                   # noqa: BLE001 - isolate
             logger.event("flow_battle_error", error=str(e)[:200])
+            # the final status reads the skipped list, not this step: an
+            # interrupted capture that never cut the Yes still has to name it
+            flow_capture._skip_end_round_yes(flow, f"the battle capture was interrupted ({str(e)[:150]})")
             try:
                 flow_capture._safe_home(flow)
             except Exception as recovery:

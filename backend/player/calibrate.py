@@ -80,10 +80,22 @@ def _state_load(p) -> dict:
 
 def _state_save(p, st) -> None:
     from runtime.files import atomic_json
+    from runtime.operations import publish_progress
+    publish_progress(st)
     atomic_json(p["state"], st)
 
 
 def _stop_requested(p) -> bool:
+    from runtime.operations import environment_operation
+    ledger, operation_id = environment_operation()
+    if ledger:
+        if ledger.get(operation_id)['status'] == 'cancelling':
+            return True
+        try:
+            with open(p['stop'], encoding='utf-8') as marker:
+                return marker.read().strip() == operation_id
+        except FileNotFoundError:
+            return False
     return os.path.exists(p["stop"])
 
 
@@ -242,6 +254,12 @@ def parse_rarity(text: str | None) -> str | None:
     return None
 
 
+def _below_epic(rarity: str | None) -> bool:
+    """Does a rarity read ('rare', 'rare+', 'common') rank below Epic in RARITIES?
+    False for None and for Epic and above."""
+    return bool(rarity) and rarity.rstrip("+") in RARITIES[RARITIES.index("epic") + 1:]
+
+
 # ----------------------------------------------------------- the harvest
 def match_module_crop(crop, old):
     """Compare the same tile at native scale, allowing small grid offsets.
@@ -341,6 +359,7 @@ class Calibration:
         from player.calibration_report import describe_report
         from runtime.files import atomic_json
         atomic_json(self.p["report"], describe_report({"entries": self.entries, "player": self.player,
+                    "operation_id": os.environ.get('TOWER_OPERATION_ID'),
                     "written_at": datetime.datetime.now().isoformat(timespec="seconds")}))
 
 
@@ -378,8 +397,11 @@ def harvest_row(cal: Calibration, frame, band, prefix: str, phase: str,
         if s in seen_names:
             raise RuntimeError(f"Preset labels collide after normalization: {name!r}. Give them distinct names in the game and retry.")
         seen_names.add(s)
+        # Pills in one row are look-alike siblings (default "Preset 1".."Preset 5"
+        # differ by one digit): identity is the row position plus the OCR name,
+        # so they are cut with the sibling allowance, not global uniqueness.
         entry = cal.cut(phase, f"{prefix}{s}.png", crop, frame, name,
-                        {"state": p["state"], "ocr": text, "rect": list(trect)})
+                        {"state": p["state"], "ocr": text, "rect": list(trect)}, unique=False)
         if entry["verified"]:
             out.append((name, s, p["state"]))
         else:
@@ -440,25 +462,104 @@ def _inspect(cx: int, cy: int, icon=None):
     return name, rarity
 
 
+COPY_MATCH = 0.95       # match_module_crop score from which two tile crops are one module (cut() verifies at 0.95 too)
+BORDER_HUE_TOL = 10     # circular hue gap (OpenCV 0-179) within which two tile frames are one rarity colour
+PLUS_MARKER_SIDE = (8, 14)  # bounding-box side, px, of one pale marker on a '+' frame (measured 8-13)
+PLUS_MARKER_MIN_PX = 40     # its area, px (measured 58-75; pale pink art on plain tiles: thin lines, specks, big blobs)
+PLUS_MARKERS = 3            # markers from which a tile reads as the '+' variant (measured 3 or 4 on every '+' tile, 0 on plain)
+
+
+def _ring_hue(frame, cx, cy):
+    """Median hue of the lit pixels of the diamond ring around the tile centred
+    at (cx, cy) - the ring shatter.tile_is_blue samples, where the frame glow
+    carries the rarity colour - or None when the ring leaves the frame or fewer
+    than shatter.BLUE_MIN_PX of its pixels are lit (no colour to trust)."""
+    import numpy as np
+    from interactions.shatter import BLUE_MIN_PX, RING_INNER, RING_OUTER
+    if cy - RING_OUTER < 0 or cx - RING_OUTER < 0 or cy + RING_OUTER > frame.shape[0] or cx + RING_OUTER > frame.shape[1]:
+        return None
+    hsv = cv2.cvtColor(frame[cy - RING_OUTER:cy + RING_OUTER, cx - RING_OUTER:cx + RING_OUTER], cv2.COLOR_BGR2HSV)
+    yy, xx = np.mgrid[-RING_OUTER:RING_OUTER, -RING_OUTER:RING_OUTER]
+    d = np.abs(yy) + np.abs(xx)
+    lit = (d > RING_INNER) & (d < RING_OUTER) & (hsv[..., 1] > 60) & (hsv[..., 2] > 90)
+    return float(np.median(hsv[..., 0][lit])) if int(lit.sum()) >= BLUE_MIN_PX else None
+
+
+def _same_border(a, b) -> bool:
+    """Are two ring hues one rarity colour? Hue wraps at 180; an unreadable
+    ring (None) is never the same as anything."""
+    if a is None or b is None:
+        return False
+    gap = abs(a - b)
+    return min(gap, 180 - gap) <= BORDER_HUE_TOL
+
+
+def _tile_plus(frame, cx, cy):
+    """Does the tile centred at (cx, cy) carry the '+' of its rarity? A '+'
+    variant (Epic+, Legendary+, ...) shows 3 or 4 small pale-pink markers on
+    its frame, in the same ring colour as the plain one: at the four tips of a
+    diamond frame (partly outside the 150 px crop), inside the crop on the
+    circular and triangular frames. Counts the compact pale-pink blobs (hue 150-179 or
+    0-8, saturation 25-80, value >= 200, PLUS_MARKER_SIDE box, PLUS_MARKER_MIN_PX
+    area) in the shatter.RING_OUTER box: True from PLUS_MARKERS of them, False
+    for none, None for one or two (neither a plain nor a '+' frame: nothing to
+    trust) or when the box leaves the frame."""
+    import numpy as np
+    from interactions.shatter import RING_OUTER
+    if cy - RING_OUTER < 0 or cx - RING_OUTER < 0 or cy + RING_OUTER > frame.shape[0] or cx + RING_OUTER > frame.shape[1]:
+        return None
+    hsv = cv2.cvtColor(frame[cy - RING_OUTER:cy + RING_OUTER, cx - RING_OUTER:cx + RING_OUTER], cv2.COLOR_BGR2HSV)
+    h, s, v = hsv[..., 0], hsv[..., 1], hsv[..., 2]
+    pale = (((h >= 150) | (h <= 8)) & (s >= 25) & (s <= 80) & (v >= 200)).astype(np.uint8)
+    n, _, stats, _ = cv2.connectedComponentsWithStats(pale, connectivity=8)
+    lo, hi = PLUS_MARKER_SIDE
+    markers = sum(1 for i in range(1, n) if stats[i, cv2.CC_STAT_AREA] >= PLUS_MARKER_MIN_PX
+                  and lo <= stats[i, cv2.CC_STAT_WIDTH] <= hi and lo <= stats[i, cv2.CC_STAT_HEIGHT] <= hi)
+    return True if markers >= PLUS_MARKERS else False if markers == 0 else None
+
+
 def _walk_grid(cal: Calibration, progress=lambda message: None):
-    """Every inventory tile: tap, read, cut `modules/<slug>.png` for the
-    first copy of each module. inventory.sweep's paging, with the tile rows
-    read off each frame (the lattice shifts when "New" badges show)."""
+    """Walk the whole inventory and return (slugs, copies), the modules at
+    Epic and above. Cuts `modules/<slug>.png` from the first tile opened for
+    each slug, and records a `copies` row for each tile opened and read at Epic
+    or above (a name it cannot read raises at the end) or recognised as another
+    copy of one.
+    inventory.sweep's paging, with the tile rows read off each
+    frame (the lattice shifts when "New" badges show).
+    A tile framed in rare-blue (shatter.tile_is_blue, read off the grid frame)
+    is only counted: it is never tapped, identified, recorded or cut. Any tile
+    that is not positively rare-blue is opened, unless it is another copy of a
+    module already read: the same plus state as that module's rarity (_tile_plus:
+    Epic and Epic+ share the ring colour, so neither it nor, where the markers
+    lie outside the crop, the crop score tells them apart) AND either a near-identical crop
+    (inventory._same_icon, mean absdiff < 6) or match_module_crop (shift
+    tolerant) at COPY_MATCH with the same ring colour as the rarity that module
+    was read at. A near miss, an unreadable plus state or a ring with no
+    readable colour opens the tile. An opened tile whose panel reads below Epic
+    (Rare, Rare+ or Common: a frame tile_is_blue missed) is counted like the blue
+    ones: the tap is spent and nothing is recorded or cut. It is not remembered,
+    so each tile like it is opened again (a misread Epic tile then costs only
+    itself). The count is kept in
+    cal.player["modules_below_epic"]. The pages after the first use the settled
+    frame next_page() ended on (inventory.take_page_frame); when the glide had
+    not ended there is none, and the walk settles that page itself."""
     from device import capture
     from interactions import inventory
+    from interactions.shatter import tile_is_blue
     from runtime import logger
     if not inventory._close_panel():
         raise RuntimeError("a modal is open and will not close - not walking the grid")
     inventory.park_top()
-    seen: list[tuple] = []                      # (icon, slug or None, rarity)
+    seen: list[tuple] = []                      # (icon, slug or None, rarity); slug None: an unreadable name
     # Resume verified inventory identities from this account's report. Require
     # the exact saved file and its rarity; visually different copies still open.
+    # A Rare or Common entry (from a report written before they were skipped) is not resumed.
     import hashlib
     for entry in cal.entries:
         rel = entry.get('rel','')
         if (entry.get('phase') != 'modules' or not entry.get('verified') or
             not rel.startswith('modules/') or '/' in rel[len('modules/'):] or
-            not entry.get('image_sha256') or not entry.get('rarity')):
+            not entry.get('image_sha256') or not entry.get('rarity') or _below_epic(entry['rarity'])):
             continue
         path = template_path(rel)
         if path.exists() and hashlib.sha256(path.read_bytes()).hexdigest() == entry['image_sha256']:
@@ -469,11 +570,19 @@ def _walk_grid(cal: Calibration, progress=lambda message: None):
     slugs, copies = [], []
     offset = 0                                  # measured scroll so far, px
     unreadable = 0
+    below_epic = opened = opened_below_epic = 0     # tiles counted below Epic / tiles tapped / of those tapped, read below Epic
+    # Ring hue of the first tile opened at each rarity this run (Epic and above).
+    # A saved crop (a resumed entry) holds no frame
+    # colour, so its colour is that of the rarity it was saved at; until a tile of
+    # that rarity with a readable ring has been opened, a shifted copy of it
+    # matches nothing and is opened.
+    hue_of: dict[str, float] = {}
+    held = None                                 # the settled frame next_page() ended on (None: its glide had not ended, so settle)
     for page in range(inventory.MAX_PAGES):
         if _stop_requested(cal.p):
             raise Stopped(f"modules grid page {page}")
         progress(f"Modules: reading inventory page {page+1}")
-        grid = inventory.settle()
+        grid = held if held is not None else inventory.settle()
         _evidence(cal.p, grid, f"modules_grid_{page}")
         rows = pills.grid_rows(grid)          # whole rows only; none = nothing to read
         tiles = [(r, cy, c, cx, inventory._tile_icon(grid, cx, cy))
@@ -488,10 +597,21 @@ def _walk_grid(cal: Calibration, progress=lambda message: None):
             if any(abs(ay - py) < 80 and c == pc for py, pc in placed):
                 continue                        # the overlap rows: counted on the page before
             placed.append((ay, c))
-            known = next(((s, rar) for ic, s, rar in seen if inventory._same_icon(icon, ic)), None)
+            if tile_is_blue(grid, cx, cy):
+                below_epic += 1                 # rare-blue frame: counted, never tapped or cut
+                continue
+            hue = _ring_hue(grid, cx, cy)
+            plus = _tile_plus(grid, cx, cy)
+            known = next(((s, rar) for ic, s, rar in seen
+                          if ic.shape == icon.shape and plus == bool(rar and rar.endswith("+"))
+                          and (inventory._same_icon(icon, ic)
+                               or (_same_border(hue, hue_of.get(rar)) and match_module_crop(icon, ic)[0] >= COPY_MATCH))), None)
             if known is not None:
-                # the same tile again = another copy of a module already read
-                # (same icon, same rarity frame) - counted without a tap
+                # another copy of a module already read, in the same plus state
+                # (an unreadable one, None, equals neither state):
+                # a near-identical crop (_same_icon tolerates mean absdiff < 6),
+                # or the same art, shift tolerant, in the same rarity colour -
+                # counted without a tap
                 if known[0]:
                     if known[0] not in slugs:
                         slugs.append(known[0])
@@ -500,9 +620,19 @@ def _walk_grid(cal: Calibration, progress=lambda message: None):
                 continue
             progress(f"Modules: identifying tile {len(placed)} on page {page+1}")
             name, rarity = _inspect(cx, cy, icon)
+            new += 1
+            if _below_epic(rarity):
+                # a tile_is_blue miss (it fails safe by tapping) whose panel reads below Epic is
+                # counted with the blue ones, nothing recorded, nothing cut. It is not put on
+                # `seen`: one misread of an Epic tile's rarity must cost that tile only, never
+                # its copies, so each copy of it is opened and read for itself
+                below_epic += 1
+                opened_below_epic += 1
+                continue
             s = module_slug(name)
             seen.append((icon, s, rarity))
-            new += 1
+            if rarity and hue is not None:
+                hue_of.setdefault(rarity, hue)  # what this rarity's frame looks like on this screen
             if s is None:
                 logger.event("calibrate_module_unknown", where="grid", page=page,
                              row=r, col=c, ocr=name)
@@ -520,7 +650,10 @@ def _walk_grid(cal: Calibration, progress=lambda message: None):
                        if cp["page"] == page and cp["slug"] == entry["rel"][8:-4])
             if same > 1:
                 entry["copies_on_page"] = same
+        opened += new
+        progress(f"Modules: counted {below_epic} below Epic ({below_epic - opened_below_epic} not opened)")
         moved = inventory.next_page()
+        held = inventory.take_page_frame()
         logger.event("calibrate_grid_page", page=page, new=new, total=len(copies),
                      tiles=len(placed), moved=moved, offset=offset)
         if moved is None:
@@ -530,8 +663,10 @@ def _walk_grid(cal: Calibration, progress=lambda message: None):
         offset += moved
     else:
         raise RuntimeError("Inventory walk reached its page limit before proving the end. Previous inventory is kept.")
+    logger.event("calibrate_modules_below_epic", count=below_epic, opened=opened, opened_below_epic=opened_below_epic)
     if unreadable:
         raise RuntimeError(f"{unreadable} module tiles could not be read. Previous inventory is kept; retry Modules.")
+    cal.player["modules_below_epic"] = below_epic       # this walk's count (replaced, not added to)
     return slugs, copies
 
 
@@ -695,6 +830,25 @@ def _merge_draft(player: dict) -> str:
     return sp["draft"]
 
 
+def _prepare_display():
+    from device import layout
+    from runtime.operations import environment_operation
+    ledger, operation_id = environment_operation()
+    if ledger:
+        # A tracked operation cannot silently change its rendering identity
+        # or rewrite the machine configuration selected after acceptance.
+        from dataclasses import asdict
+        display = layout.discover()
+        expected = ledger.get(operation_id)['context'].get('rendering')
+        if expected is None:
+            layout.require_native(display.width, display.height, display.dpi)
+        elif expected != asdict(display):
+            raise ValueError('Rendering changed after acceptance; configure the display in Setup before preparing again')
+        layout.activate(display)
+    else:
+        layout.prepare_scan()
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--instance", default="main")
@@ -717,7 +871,11 @@ def main() -> None:
     ap.add_argument("--fresh", action="store_true",
                     help="ignore previous state, redo all phases")
     a = ap.parse_args()
+    from runtime.operations import restore_worker_context
+    restore_worker_context(settings)
     settings.bind_device(a.instance)
+    from runtime.device_lease import ensure_current
+    ensure_current()
     settings.CONFIG["preset"] = "normal_run"
     if a.allow_navigation:
         settings.instance()["allow_taps"] = True
@@ -725,7 +883,7 @@ def main() -> None:
     from player import scan
     from device import layout
     try:
-        layout.prepare_scan()
+        _prepare_display()
     except Exception as exc:
         p = _paths()
         st = _state_load(p)

@@ -125,9 +125,14 @@ def requirements(cfg, body):
         need("uw/toggle_on.png", "Ultimate weapon settings")
         need("uw/toggle_off.png", "Ultimate weapon settings")
     # Read compiled rules, not every policy in the library.
+    surrenders = []
+
     def walk(value):
         if isinstance(value, dict):
             for k, v in value.items():
+                # compiled shape: do = {"kind": "surrender_retry"} (playerprofile._compile_action)
+                if k == "kind" and v == "surrender_retry":
+                    surrenders.append(v)
                 if k in ("button", "fire") and isinstance(v, str) and v in ("nuke", "demon_mode"):
                     need(f"buttons/{v}.png", "Rescue ability")
                 if k == "second_wind" or (k == "on" and v == "second_wind"):
@@ -151,9 +156,35 @@ def requirements(cfg, body):
         # instance) and capture.roi raises without it. Full setup detects the
         # wall bar from the battle HUD and Apply writes the region.
         need(WALL_BAR_REQUIREMENT, "Wall bar region (Full setup detects it from the battle HUD)")
-    if body.get("max_wave") or kind in ("shard", "cycle_quest", "uw_grant_quest"):
-        for rel in ("home/surrender.png", "buttons/end_round.png", "home/end_round_yes.png"):
-            need(rel, "End a run started by this flow")
+    # a `surrender_retry` rule reaches shard.abandon_run (orchestrator._rule_surrender) like max_wave
+    if body.get("max_wave") or surrenders or kind in ("shard", "cycle_quest", "uw_grant_quest"):
+        need("home/surrender.png", "End a run started by this flow")
+        # shard.abandon_run taps the menu's exit control and a confirm only
+        # where a template matched (tourney.find: None for a missing file), but
+        # taps the side-menu toggle whenever detect.side_menu_open reads False
+        # - and that read is template-based too (test_learn_flow_gaps).
+        # buttons/end_round.png: setup cuts it only when the menu of the run it
+        # ends reads END ROUND, which an account whose top tier shows EXIT
+        # BATTLE never does (2026-10-12, Tier 16); a coin run that collects
+        # menu rewards also learns it from its open menu
+        # (flow_capture.capture_missing_end_round) - shard and quest runs
+        # never do. Listed, not blocking: without it abandon_run Aborts with
+        # an END ROUND menu open, and a later abandon_run reads that menu as
+        # shut and taps the toggle, which closes it, then Aborts again.
+        # home/end_round_yes.png: setup cuts it from the END ROUND confirm on
+        # either path - opened by END ROUND, or the second confirm that can
+        # follow an EXIT BATTLE Surrender - and cannot when no such confirm
+        # comes up; nothing else writes it, so then only a person's own crop
+        # does (template_docs says so, and setup reports the skip as
+        # needs_attention). BLOCKING: without it abandon_run Aborts with the confirm
+        # still up, and a later abandon_run over that dialog matches no confirm
+        # and no open menu and taps the toggle point onto the dialog (rule 7).
+        need("buttons/end_round.png", "Exit a run whose side menu shows END ROUND (abandon_run taps only a "
+             "matched template: without it abandon_run Aborts with the menu open, and the next abandon_run "
+             "taps the toggle that closes it)", blocking=False)
+        need("home/end_round_yes.png", "Confirm END ROUND - its own dialog or the one that can follow Surrender "
+             "(without it abandon_run Aborts with the confirm up, and the next abandon_run taps the side-menu "
+             "toggle onto that dialog)")
     if body.get("dissonant_tab"):
         # The dialog images are what the RUNNER needs to enter a dissonant
         # run by itself (a Start from Home, the restart after a death). A run
@@ -266,7 +297,37 @@ def check(root, cfg, body):
     if missing and all(r['alternatives'] == ['floaters/second_wind.png'] for r in missing):
         result.update(next_action='edit_run', action_label='Choose rescue timing',
                       message='This run waits for Second Wind. Choose rescue timing that does not wait for it, or capture its indicator during normal play. Another setup scan will not help.')
+    elif missing and all(r['alternatives'] == ['home/end_round_yes.png'] for r in missing):
+        # the Yes row's own card says how: setup cuts it only from a confirm it saw
+        result.update(next_action='crop_image', action_label='Crop the END ROUND Yes button',
+                      message=missing[0]['docs'][0]['how'])
     return result
+
+
+def check_plan(root, cfg, presets, week):
+    """Combo's readiness: `check()` of every compiled preset the compiled day
+    plan `week` ({weekday: [block, ...]}, playerprofile.compile_plan) names on
+    ANY weekday - combo hands off to each of them. `ready` only when all are.
+    A missing / advisory row is merged across runs by its alternatives; its
+    `runs` lists "<preset> (<block names>)" and each reason is prefixed with
+    that run, so the block that holds Combo back is named."""
+    blocks = {}
+    for day in week.values():
+        for b in day:
+            blocks.setdefault(b["preset"], set()).add(b.get("block") or b["id"])
+    merged = {}
+    for preset in sorted(blocks):
+        run = f"{preset} ({', '.join(sorted(blocks[preset]))})"
+        result = check(root, cfg, presets[preset])
+        for key in ("missing", "advisory"):
+            for row in result[key]:
+                out = merged.setdefault((key, tuple(row["alternatives"])), dict(row, reasons=[], runs=[]))
+                out["reasons"] += [f"{run}: {why}" for why in row["reasons"]]
+                out["runs"].append(run)
+    missing = [row for (key, _), row in merged.items() if key == "missing"]
+    return {"ready": not missing, "missing": missing,
+            "advisory": [row for (key, _), row in merged.items() if key == "advisory"],
+            "calibration_url": "/ui/index.html#calibrate"}
 
 
 def require(root, cfg, body):
