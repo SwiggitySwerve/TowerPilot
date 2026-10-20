@@ -46,20 +46,8 @@ def preset() -> dict:
     """Active preset; supports single-level inheritance via 'base'."""
     if _battle_session is not None:
         return _battle_session.effective_preset()
-    p = CONFIG["presets"][CONFIG["preset"]]
-    if "base" not in p:
-        return p
-    base = CONFIG["presets"][p["base"]]
-    merged = {}
-    for k, v in base.items():
-        if isinstance(v, dict):
-            merged[k] = {**v, **p.get(k, {})}
-        else:
-            merged[k] = p.get(k, v)
-    for k, v in p.items():
-        if k not in merged and k != "base":
-            merged[k] = v
-    return merged
+    from player.run_controls import effective_preset
+    return effective_preset(CONFIG)
 
 
 def automation_enabled(routine: str) -> bool:
@@ -2904,7 +2892,7 @@ def _cli():
 if __name__ == "__main__":
     _args = _cli()
     from runtime.device_lease import prepare_instance
-    prepare_instance(_args.instance or CONFIG["active_instance"])
+    prepare_instance(_args.instance)
     # bind BEFORE anything reads CONFIG-derived state (logger names its file
     # after the instance, capture resolves the display, act reads allow_taps)
     settings.select_instance(_args.instance or CONFIG["active_instance"],

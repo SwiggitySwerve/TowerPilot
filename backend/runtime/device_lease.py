@@ -177,12 +177,12 @@ def ensure_current():
     return acquire(settings.instance()["serial"], *adbclient._HOST)
 
 
-def prepare_instance(name):
+def prepare_instance(name=None):
     """Restore accepted context and own the target before binding/config writes."""
     import settings
     from device import adbclient
     from runtime.operations import restore_worker_context
-    restore_worker_context(settings)
+    restore_worker_context(settings, name)
     return acquire(settings.instance(name)["serial"], *adbclient._HOST)
 
 
@@ -230,6 +230,8 @@ def child_environment():
     env = dict(os.environ)
     env.pop("TOWER_OPERATION_ID", None)
     env.pop("TOWER_OPERATION_DB", None)
+    env.pop("TOWER_BATTLE_ID", None)
+    env.pop("TOWER_BATTLE_GENERATION", None)
     env[_ENV] = json.dumps(lease.grant())
     return env
 

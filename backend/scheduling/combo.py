@@ -100,27 +100,32 @@ def _spawn(args: list) -> subprocess.Popen:
     environment.pop('TOWER_BATTLE_ID', None)
     environment.pop('TOWER_BATTLE_GENERATION', None)
     pending = None
-    from runtime.operations import environment_operation
+    from runtime.operations import environment_operation, validate_worker_context
     operations, operation_id = environment_operation()
     if operations is not None:
-        from player.run_controls import resolve
+        from player.run_controls import effective_preset, resolve
         from towerpilot_workflows.battles import Battles
         import uuid
         store = Battles(operations.path)
         operation = operations.get(operation_id)
+        validate_worker_context(operation)
         previous = None
         for old in store.active(operation['context']['device_key']):
             if old['operation_id'] != operation_id:
                 raise ValueError('Another operation still owns this device battle')
             store.finish(old['id'], old['generation'], reason='delegated_driver_exited', status='interrupted')
             previous = old['id']
+        if previous is None:
+            recent = store.list(limit=1, device=operation['context']['device_key'])
+            if recent and recent[0]['operation_id'] == operation_id:
+                previous = recent[0]['id']
         # Only the generic driver implements per-battle observation and control
         # acknowledgement. A shard/quest batch is not one observed battle.
         if _Path(args[0]).as_posix() == flows.ENGINE:
             selected = args[args.index('--preset')+1] if '--preset' in args else CONFIG['preset']
             frozen_config = copy.deepcopy(CONFIG)
             frozen_config['preset'] = selected
-            body = copy.deepcopy(frozen_config['presets'][selected])
+            body = effective_preset(frozen_config, selected)
             from player import playerprofile
             envelope = dict(config=frozen_config, preset=body, preset_key=selected,
                             controls=resolve(body, frozen_config), profile=copy.deepcopy(getattr(playerprofile, 'PROFILE', None)),
@@ -129,17 +134,38 @@ def _spawn(args: list) -> subprocess.Popen:
                                    origin='partial_adoption', previous_battle_id=previous)
             environment['TOWER_BATTLE_ID'] = pending['id']
             environment['TOWER_BATTLE_GENERATION'] = pending['generation']
+            # The child observes battles under this already-running parent;
+            # it never enters worker_operation or finalizes the scheduler.
+            environment['TOWER_OPERATION_ID'] = operation_id
+            environment['TOWER_OPERATION_DB'] = operations.path
         else:
             logger.event('combo_driver_capability', operation_id=operation_id, driver=args[0],
                          battle_history='unsupported', live_controls='unsupported')
     logger.event("combo_spawn", cmd=" ".join(args))
     try:
-        return subprocess.Popen([sys.executable] + args, env=environment,
-                                stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        process = subprocess.Popen([sys.executable] + args, env=environment,
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        if pending is not None:
+            process.battle_delegation = dict(path=store.path, operation_id=operation_id,
+                                            device=pending['context']['device_key'],
+                                            battle_id=pending['id'],
+                                            generation=pending['generation'])
+        return process
     except BaseException:
         if pending is not None:
             store.finish(pending['id'], pending['generation'], reason='delegated_launch_failed', status='interrupted')
         raise
+
+
+def _reconcile_child(proc):
+    """Retire observation only after this exact child has demonstrably exited."""
+    delegation = getattr(proc, 'battle_delegation', None)
+    if delegation is None or proc.poll() is None:
+        return
+    from towerpilot_workflows.battles import Battles
+    Battles(delegation['path']).reconcile_driver(
+        delegation['operation_id'], delegation['device'], delegation['generation'],
+        reason='delegated_driver_exited')
 
 
 # The constant-era phases, resolved through the flow registry so there is
@@ -1106,6 +1132,8 @@ def _stop_and_wait(proc: subprocess.Popen, reason: str,
             proc.wait(timeout=30)
         except subprocess.TimeoutExpired:
             proc.kill()
+            proc.wait(timeout=30)
+    _reconcile_child(proc)
     runflag.clear()
 
 
@@ -1226,6 +1254,7 @@ def run(instance: str = "main") -> None:
             # the runner left on its own: a finished shard block, a finished
             # tournament, or a crash. Either way this block's turn is over.
             if proc is not None and proc.poll() is not None:
+                _reconcile_child(proc)
                 logger.event("combo_runner_exit", phase=cur["block"],
                              block=cur["id"], code=proc.returncode)
                 _close_block(cur, base)

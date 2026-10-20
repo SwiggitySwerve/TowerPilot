@@ -33,20 +33,25 @@ def _main():
     ledger, operation_id = environment_operation()
     if ledger:
         op = ledger.get(operation_id)
+        if op['status'] == 'cancelling':
+            # Preserve the operation worker's pre-start cancellation outcome,
+            # without acquiring a device or installing a retired context.
+            with worker_operation():
+                return
         from runtime.device_lease import acquire
         try:
+            import settings
+            restore_worker_context(settings)
             acquire(op['context']['serial'], op['context'].get('adb_host', '127.0.0.1'), op['context'].get('adb_port', 5037))
             profile = op['context'].get('profile_path')
             if profile and not op['request'].get('battle_envelope') and file_revision(profile) != op['context'].get('profile_revision'):
                 raise Conflict('Profile changed after this operation was accepted')
         except Exception as exc:
             op = ledger.get(operation_id)
-            ledger.transition(op['id'], op['revision'], 'failed', error={'code': 'device_busy', 'message': str(exc)})
+            if op['status'] in ('accepted', 'running'):
+                ledger.transition(op['id'], op['revision'], 'failed',
+                                  error={'code': 'bootstrap_failed', 'message': str(exc)})
             raise
-        from device import adbclient
-        adbclient._HOST = (op['context'].get('adb_host', '127.0.0.1'), op['context'].get('adb_port', 5037))
-        import settings
-        restore_worker_context(settings)
     with worker_operation():
         args = sys.argv[1:]
         if not args:

@@ -81,12 +81,13 @@ def operation_conflict(error):
 def _launch_operation(cfg, kind, body, cmd, **kwargs):
     if kind in ('run', 'gems'):
         import copy
-        from player.run_controls import resolve
+        from player.run_controls import effective_preset, resolve
         body = copy.deepcopy(body)
         selected = body.get('preset')
         preset = cfg.get('presets', {}).get(selected)
         if preset is None:
             raise ValueError('Run was not compiled before acceptance')
+        preset = effective_preset(cfg, selected)
         frozen = copy.deepcopy(cfg)
         frozen['preset'] = selected
         profile = frozen.pop('_profile_snapshot', None)

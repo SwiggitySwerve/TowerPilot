@@ -98,7 +98,9 @@ def test_removed_selected_blueprint_refuses_boundary_instead_of_switching_run(so
 
 
 def accepted(monkeypatch, cfg, profile=None):
-    operation = {'context': {'instance': 'main'}, 'request': {'battle_envelope': {
+    operation = {'status': 'running',
+                 'context': dict(instance='main', serial='fake:1', account='test'),
+                 'request': {'battle_envelope': {'preset_key': cfg['preset'],
         'config': copy.deepcopy(cfg), 'profile': copy.deepcopy(profile)}}}
     monkeypatch.setattr(operations, 'environment_operation', lambda: (
         SimpleNamespace(get=lambda _: copy.deepcopy(operation)), 'operation-1'))
@@ -108,6 +110,7 @@ def accepted(monkeypatch, cfg, profile=None):
 def test_accepted_snapshot_ignores_midflight_profile_edits_and_uses_child_selection(source, monkeypatch):
     cfg = copy.deepcopy(settings.CONFIG)
     cfg['presets']['bp_child'] = {'kind': 'coin', 'tier': 3}
+    cfg['preset'] = 'bp_child'
     op = accepted(monkeypatch, cfg, source.profile)
     source.profile['blueprints']['farm']['tier'] = 9
     source.profile_path.write_text(yaml.safe_dump(source.profile), encoding='utf-8')
@@ -121,13 +124,14 @@ def test_accepted_snapshot_ignores_midflight_profile_edits_and_uses_child_select
     assert op['request']['battle_envelope']['config']['presets']['bp_child']['tier'] == 3
     with pytest.raises(ValueError, match='another emulator'):
         battle_source.accepted_source('other', 'bp_child')
-    with pytest.raises(ValueError, match='absent'):
+    with pytest.raises(ValueError, match='different frozen preset'):
         battle_source.accepted_source('main', 'missing')
 
 
 def test_settings_frozen_branch_skips_profile_recompile_and_preserves_selected_child(source, monkeypatch):
     cfg = copy.deepcopy(settings.CONFIG)
     cfg['presets']['bp_child'] = {'kind': 'coin', 'tier': 3}
+    cfg['preset'] = 'bp_child'
     accepted(monkeypatch, cfg, source.profile)
     bindings = []
     monkeypatch.setattr(settings, 'bind_device', lambda name: bindings.append((name, settings.CONFIG['preset'])))
@@ -167,13 +171,12 @@ def test_worker_checks_profile_revision_only_without_accepted_envelope(tmp_path,
         assert transitions == []
         assert calls == ['restore', (('fake_target',), {'run_name': '__main__'})]
         assert operation_worker.sys.argv == ['fake_target', '--preset', 'bp_child']
-        assert adbclient._HOST == ('127.0.0.2', 5040)
     else:
         with pytest.raises(operations.Conflict, match='Profile changed'):
             operation_worker.main()
         assert revisions == [str(profile)]
         assert transitions[0][0] == ('operation-1', 1, 'failed')
-        assert calls == []
+        assert calls == ['restore']
     assert bindings == [('fake:1', '127.0.0.2', 5040)]
     rows = [json.loads(line) for path in (tmp_path / 'logs' / 'main').glob('events_*.jsonl')
             for line in path.read_text().splitlines()]
