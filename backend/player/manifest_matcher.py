@@ -22,6 +22,12 @@ class LocalMatcher:
         if (not row.get('verified') or row.get('screen') != edge['source']
                 or row.get('manifest_version') != self.version):
             return None
+        if 'route' in edge:
+            from player.bootstrap_layout import route_capture_targets
+            if row.get('template') != route_capture_targets().get(edge['id']):
+                return None
+        if row.get('destination') is not None and row['destination'] != edge.get('destination'):
+            return None
         try:
             raw = self.read_bytes(row['template'])
             digest = hashlib.sha256(raw).hexdigest()
