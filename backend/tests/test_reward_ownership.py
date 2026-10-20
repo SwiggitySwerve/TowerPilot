@@ -68,7 +68,7 @@ def world(monkeypatch, tmp_path):
     monkeypatch.setattr(textocr, 'read_lines', lambda *a: [(0, 0, '10H' if state.free else 'CLAIM REWARDS')])
     monkeypatch.setattr(wave_reader, 'read_wave', lambda frame: 100 if name(frame) == 'battle' else None)
     monkeypatch.setattr(store, 'read_balance', lambda frame: 100)
-    monkeypatch.setattr(store, 'scan_frame', lambda frame: {})
+    monkeypatch.setattr(store, 'scan_frame', lambda frame, *a, **kw: store.StoreScan([], []))
 
     def tap(x, y, reason='', **kwargs):
         state.inputs.append((state.kind, 'tap', reason))
