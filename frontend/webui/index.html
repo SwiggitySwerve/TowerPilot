@@ -827,6 +827,7 @@ function filterNavigation(query){
 }
 function mountConfigurationPage(){
   const pages = {
+    emulators: {moduleIds:['device-preview']},
     collection: {moduleIds:['rewards'], policyModules:['ad','orbit','gather']},
     abilities: {moduleIds:['global_abilities']},
     runtime: {moduleIds:['loop','tap','missions','fleet','logging']}
@@ -1133,6 +1134,8 @@ async function renderSetup(){
   const profileContent = [...content.children].filter(el => ['setup-profile','setup-journey','workspace-operation'].includes(el.id));
   $("#panel-profiles").replaceChildren(...profileContent);
   $("#panel-emulators").replaceChildren(...content.children);
+  $("#panel-emulators").insertAdjacentHTML('beforeend', '<section id="emulators-settings" aria-label="Video preview settings"></section>');
+  mountConfigurationPage();
   renderWorkspaceStatus();
 }
 
@@ -2241,7 +2244,12 @@ async function renderHome(){
         </label></header>
         <label class="inline">Stream target FPS
           <select id="stream-fps" onchange="setStreamFps(this.value)" style="width:auto;margin:0">
-            ${[0.5,1,2,4].map(fps=>`<option value="${fps}" ${fps===stream.fps?'selected':''}>${fps}</option>`).join('')}
+            ${streamFpsOptions().map(fps=>`<option value="${fps}" ${fps===stream.fps?'selected':''}>${fps}</option>`).join('')}
+          </select>
+        </label>
+        <label class="inline">Preview source
+          <select id="stream-backend" onchange="setStreamBackend(this.value)" style="width:auto;margin:0">
+            ${streamBackends().map(source=>`<option value="${source.id}" ${source.id===stream.backend?'selected':''}>${source.label}</option>`).join('')}
           </select>
         </label>
         <label class="inline">Quality
@@ -2249,7 +2257,7 @@ async function renderHome(){
             ${streamPresets().map(preset=>`<option value="${preset.id}" ${preset.id===stream.preset.id?'selected':''}>${preset.label}</option>`).join('')}
           </select>
         </label>
-        <small class="muted">Actual rate depends on capture speed. This controls the preview.</small>
+        <small class="muted">Auto follows this emulator's Video preview settings. ADB screenshots are capped at 4 FPS. These controls affect the preview.</small>
         <div id="stream-slot"></div>
         <small id="stream-stats" class="muted" aria-live="polite"></small>
       </article>
@@ -2536,10 +2544,10 @@ async function behDel(sec, name){
   if (await patch(["policies", sec, name], null, "delete")) renderBehaviors();
 }
 
-/* Overview's live stream: requested only while Overview is the visible tab and the
-   emulator is online; offline it shows the Screens live-screen placeholder. Rebuilt
-   only when the toggle, the online state, the visible tab or (offline) the
-   placeholder text changes, so the status tick never restarts the stream. */
+/* Overview's live stream: requested only while Overview is visible and the
+   emulator is online; offline it shows the Screens live-screen placeholder.
+   Reconnect when device, controls or preview configuration change; unchanged
+   status ticks only refresh metrics. */
 function stopStream(){
   // Removing an MJPEG image alone can leave its HTTP connection open in Chromium.
   // Switch to a local image before detaching it so navigation releases the request.
@@ -2554,22 +2562,37 @@ function streamPresets(){
     {id:'low',label:'Low bandwidth',scale:0.4,q:70}
   ];
 }
+function streamBackends(){
+  return [{id:'auto',label:'Auto'}, {id:'mumu',label:'MuMu native'},
+    {id:'scrcpy',label:'scrcpy'}, {id:'adb',label:'ADB screenshots'}];
+}
+function streamConfig(){
+  return S.config?.instances?.[S.config?.active_instance || 'main']?.preview || {};
+}
+function streamDefaultFps(){
+  const fps = streamConfig().fps;
+  return typeof fps === 'number' && Number.isFinite(fps) && fps >= 0.5 && fps <= 30 ? fps : 15;
+}
+function streamFpsOptions(){
+  return [...new Set([0.5,1,2,4,10,15,30,streamDefaultFps()])].sort((a,b)=>a-b);
+}
 function streamPreferences(){
   if (!S.streamPrefsLoaded) {
     let saved;
     try { saved = JSON.parse(localStorage.getItem('towerpilot.stream')); } catch {}
-    S.streamFps = [0.5,1,2,4].includes(saved?.fps) ? saved.fps : 4;
+    S.streamFps = streamFpsOptions().includes(saved?.fps) ? saved.fps : null;
     S.streamQuality = streamPresets().some(preset=>preset.id===saved?.quality) ? saved.quality : 'native';
+    S.streamBackend = streamBackends().some(source=>source.id===saved?.backend) ? saved.backend : 'auto';
     S.streamPrefsLoaded = true;
   }
-  return {fps:S.streamFps,preset:streamPresets().find(preset=>preset.id===S.streamQuality)};
+  return {fps:S.streamFps ?? streamDefaultFps(),backend:S.streamBackend,preset:streamPresets().find(preset=>preset.id===S.streamQuality)};
 }
 function saveStreamPreferences(){
-  try { localStorage.setItem('towerpilot.stream',JSON.stringify({fps:S.streamFps,quality:S.streamQuality})); } catch {}
+  try { localStorage.setItem('towerpilot.stream',JSON.stringify({fps:S.streamFps ?? undefined,quality:S.streamQuality,backend:S.streamBackend})); } catch {}
 }
 function setStreamFps(value){
   const fps = Number(value);
-  if (![0.5,1,2,4].includes(fps)) return;
+  if (!streamFpsOptions().includes(fps)) return;
   streamPreferences();
   S.streamFps = fps;
   saveStreamPreferences();
@@ -2582,6 +2605,13 @@ function setStreamQuality(value){
   saveStreamPreferences();
   renderStream();
 }
+function setStreamBackend(value){
+  if (!streamBackends().some(source=>source.id===value)) return;
+  streamPreferences();
+  S.streamBackend = value;
+  saveStreamPreferences();
+  renderStream();
+}
 async function refreshStreamStats(){
   const output = $("#stream-stats"), session = S.streamSession;
   if (!output || !session || S.streamStatsPending === session) return;
@@ -2589,10 +2619,15 @@ async function refreshStreamStats(){
   try {
     const stats = await api('/api/stream/status?stream_id='+encodeURIComponent(session));
     if (S.streamSession !== session) return;
-    const rate = stats.actual_fps == null ? 'measuring' : `${stats.actual_fps.toFixed(2)} FPS delivered`;
+    const rate = stats.actual_fps == null ? 'measuring' : `${stats.actual_fps.toFixed(2)} FPS delivered by server`;
+    const source = streamBackends().find(source=>source.id===stats.backend)?.label || stats.backend || 'connecting';
+    const cap = stats.effective_fps == null ? '' : ` · effective cap ${stats.effective_fps} FPS`;
     const quality = stats.width == null ? '' : ` · ${stats.width}×${stats.height} · JPEG ${stats.quality}`;
     const timing = stats.capture_ms == null ? '' : ` · capture ${Math.round(stats.capture_ms)} ms · encode ${Math.round(stats.encode_ms)} ms`;
-    output.textContent = `${rate} / target ${stats.target_fps} FPS${quality}${timing} · ${stats.errors} errors`+
+    const age = stats.frame_age_ms == null ? '' : ` · frame age ${Math.round(stats.frame_age_ms)} ms`;
+    const fallback = (stats.backend_failures || []).map(failure=>`${failure.backend}: ${failure.reason}`).join('; ');
+    output.textContent = `${source} · ${rate} / target ${stats.target_fps} FPS${cap}${quality}${timing}${age} · ${stats.errors} errors`+
+      (fallback ? ` · fallback: ${fallback}` : '')+
       (stats.last_error ? ` · ${stats.last_error}` : '');
   } catch (error) {
     if (S.streamSession === session) output.textContent = 'Stream metrics unavailable: '+error.message;
@@ -2610,18 +2645,23 @@ function renderStream(){
   }
   const online = WorkspaceStatus.connectionState(S.status).online;
   const visible = S.tab === "overview" && (typeof document === 'undefined' || !document.hidden);
-  const {fps,preset} = streamPreferences();
+  const {fps,preset,backend} = streamPreferences();
+  const fpsControl = $('#stream-fps');
+  if (fpsControl && Number(fpsControl.value) !== fps) {
+    fpsControl.innerHTML = streamFpsOptions().map(value=>`<option value="${value}" ${value===fps?'selected':''}>${value}</option>`).join('');
+    fpsControl.value = String(fps);
+  }
   const instance = S.config?.active_instance || 'main';
   const device = S.config?.instances?.[instance]?.serial || '';
   const placeholder = online ? "" : WorkspaceStatus.screenPlaceholderHTML(S.status);
-  const state = JSON.stringify([on, online, visible, placeholder, fps, preset.id, instance, device]);
+  const state = JSON.stringify([on, online, visible, placeholder, fps, preset.id, backend, instance, device, streamConfig()]);
   if (slot.dataset.state === state) { refreshStreamStats(); return; }
   slot.dataset.state = state;
   stopStream();
   if (on && online && visible) S.streamSession = Date.now().toString(36)+'_'+Math.random().toString(36).slice(2);
   slot.innerHTML = !on ? `<p class="muted">stream off</p>`
     : !online ? placeholder
-    : visible ? `<img src="/api/stream.mjpg?fps=${fps}&scale=${preset.scale}&q=${preset.q}&ts=${Date.now()}&instance=${encodeURIComponent(instance)}&stream_id=${S.streamSession}" alt="live stream">` : "";
+    : visible ? `<img src="/api/stream.mjpg?fps=${fps}&scale=${preset.scale}&q=${preset.q}&ts=${Date.now()}&instance=${encodeURIComponent(instance)}&stream_id=${S.streamSession}${backend==='auto'?'':'&backend='+encodeURIComponent(backend)}" alt="live stream">` : "";
   const stats = $('#stream-stats');
   if (stats) stats.textContent = S.streamSession ? `Connecting · target ${fps} FPS` : '';
 }

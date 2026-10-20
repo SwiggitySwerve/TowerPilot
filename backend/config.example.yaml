@@ -30,6 +30,13 @@ instances:
     allow_taps: false
     preset: normal_run
     autostart: false
+    # Video preview only; automation keeps its foreground-screen screenshot guards.
+    # Auto prefers verified local MuMu native capture, optional scrcpy, then ADB.
+    preview:
+      backend: auto
+      fps: 15
+      mumu: {install_dir: '', index: -1}  # -1 = resolve from this serial
+      scrcpy: {bitrate: 8000000}
     # MuMu Player runs the game on a SECONDARY display: add
     #   display: '<physical display id>'   (screencap -d)
     #   input_display: <logical display id> (input -d)

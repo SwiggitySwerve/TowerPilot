@@ -13,6 +13,10 @@ the notification area near the clock (click to open the dashboard, right-click
 to quit). The separate `source` ZIP requires Python 3.12.
 See [what changed and the beta limits](docs/RELEASE_0.5_BETA.md).
 
+The development preview prefers native MuMu capture, with an optional scrcpy
+package and socket screenshots as fallbacks. See [video preview setup and
+configuration](docs/VIDEO_PREVIEW.md).
+
 [Download 0.5-beta](https://github.com/TaBuPeH/TowerPilot/releases/tag/v0.5-beta)
 — choose **windows-x64.zip** for the app with Python included, or **source.zip**
 for development. Both now carry the full source, the agent rule book

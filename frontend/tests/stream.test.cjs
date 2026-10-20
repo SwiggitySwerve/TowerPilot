@@ -17,7 +17,7 @@ function page(storage = new Map()){
     connectionState:status=>({online:status.online}),screenPlaceholderHTML:()=>'<p>offline</p>'},
     $:name=>({'#stream-slot':slot,'#stream-slot img':slot.markup.includes('<img')?image:null,
       '#stream-toggle':toggle,'#stream-stats':stats})[name],
-    api:async path=>{requests.push(path);return {target_fps:4,actual_fps:1.25,capture_ms:750,encode_ms:12,errors:0,
+    api:async path=>{requests.push(path);return {target_fps:15,effective_fps:4,backend:'adb',actual_fps:1.25,capture_ms:750,encode_ms:12,errors:0,
       width:1080,height:2560,quality:90};}});
   vm.runInContext(section('function stopStream(){','function renderHomeLive('),ctx);
   return {ctx,state,slot,stats,toggle,writes,requests,listeners,document,
@@ -26,7 +26,7 @@ function page(storage = new Map()){
 
 test('stream target control changes the actual image URL and does not restart on unchanged ticks',async()=>{
   const p=page();p.render();
-  assert.match(p.slot.innerHTML,/fps=4&scale=1&q=90&/);
+  assert.match(p.slot.innerHTML,/fps=15&scale=1&q=90&/);
   const session=p.state.streamSession;
   p.writes.length=0;
   p.render();await Promise.resolve();
@@ -68,18 +68,18 @@ test('FPS and quality preferences survive a new page and invalid selections leav
   vm.runInContext('setStreamFps("nan");setStreamFps("12");setStreamQuality("toString")',second.ctx);
   assert.equal(second.state.streamSession,session);
   assert.equal(second.writes.length,0);
-  assert.deepEqual(JSON.parse(storage.get('towerpilot.stream')),{fps:1,quality:'balanced'});
+  assert.deepEqual(JSON.parse(storage.get('towerpilot.stream')),{fps:1,quality:'balanced',backend:'auto'});
 });
 
 test('corrupt, stale or unavailable browser storage keeps valid sharp defaults',()=>{
   for(const value of ['{oops','null','{"fps":12,"quality":"toString"}','{"fps":"2","quality":"old"}']){
     const p=page(new Map([['towerpilot.stream',value]]));p.render();
-    assert.match(p.slot.innerHTML,/fps=4&scale=1&q=90&/);
+    assert.match(p.slot.innerHTML,/fps=15&scale=1&q=90&/);
   }
   const p=page();
   p.ctx.localStorage={getItem(){throw new Error('denied');},setItem(){throw new Error('denied');}};
   p.render();
-  assert.match(p.slot.innerHTML,/fps=4&scale=1&q=90&/);
+  assert.match(p.slot.innerHTML,/fps=15&scale=1&q=90&/);
   vm.runInContext('setStreamFps("2");setStreamQuality("low")',p.ctx);
   assert.match(p.slot.innerHTML,/fps=2&scale=0.4&q=70&/);
 });
@@ -114,7 +114,7 @@ test('preview reports measured delivery and capture latency separately from the 
   const p=page();p.render();p.render();
   await new Promise(resolve=>setImmediate(resolve));
   assert.match(p.requests[0],/^\/api\/stream\/status\?stream_id=/);
-  assert.equal(p.stats.textContent,'1.25 FPS delivered / target 4 FPS · 1080×2560 · JPEG 90 · capture 750 ms · encode 12 ms · 0 errors');
+  assert.equal(p.stats.textContent,'ADB screenshots · 1.25 FPS delivered by server / target 15 FPS · effective cap 4 FPS · 1080×2560 · JPEG 90 · capture 750 ms · encode 12 ms · 0 errors');
 });
 
 test('old metrics responses cannot overwrite a replaced stream',async()=>{
@@ -125,4 +125,49 @@ test('old metrics responses cannot overwrite a replaced stream',async()=>{
   settle({target_fps:4,actual_fps:2,capture_ms:350,encode_ms:4,errors:0});
   await new Promise(resolve=>setImmediate(resolve));
   assert.equal(p.stats.textContent,'Connecting · target 1 FPS');
+});
+
+test('source preference overrides only explicit sources and preserves old FPS choices',()=>{
+  const storage=new Map([['towerpilot.stream',JSON.stringify({fps:4,quality:'native'})]]);
+  const p=page(storage);p.state.config.instances.main.preview={backend:'mumu',fps:10};p.render();
+  assert.match(p.slot.innerHTML,/fps=4&/);
+  assert.doesNotMatch(p.slot.innerHTML,/&backend=/);
+  const initial=p.state.streamSession;
+  vm.runInContext('setStreamBackend("scrcpy")',p.ctx);
+  assert.match(p.slot.innerHTML,/&backend=scrcpy/);
+  assert.notEqual(p.state.streamSession,initial);
+  const second=page(storage);second.render();
+  assert.match(second.slot.innerHTML,/&backend=scrcpy/);
+  const session=second.state.streamSession;
+  vm.runInContext('setStreamBackend("<bad>")',second.ctx);
+  assert.equal(second.state.streamSession,session);
+  vm.runInContext('setStreamBackend("auto")',second.ctx);
+  assert.doesNotMatch(second.slot.innerHTML,/&backend=/);
+});
+
+test('configured preview updates reconnect and follow configured FPS until the user overrides it',()=>{
+  const p=page();p.state.config.instances.main.preview={backend:'mumu',fps:12};p.render();
+  assert.match(p.slot.innerHTML,/fps=12&/);
+  vm.runInContext('setStreamQuality("balanced")',p.ctx);
+  const session=p.state.streamSession;
+  p.state.config.instances.main.preview.fps=30;p.render();
+  assert.match(p.slot.innerHTML,/fps=30&/);
+  assert.notEqual(p.state.streamSession,session);
+  const changed=p.state.streamSession;
+  p.state.config.instances.main.preview.mumu={install_dir:'C:/MuMu',index:1};p.render();
+  assert.notEqual(p.state.streamSession,changed);
+  vm.runInContext('setStreamFps("10")',p.ctx);
+  p.state.config.instances.main.preview.fps=15;p.render();
+  assert.match(p.slot.innerHTML,/fps=10&/);
+});
+
+test('fallback diagnostics remain literal text and distinguish server delivery from effective cap',async()=>{
+  const p=page();p.ctx.api=async()=>({target_fps:30,effective_fps:4,actual_fps:2.5,
+    backend:'adb',backend_failures:[{backend:'mumu',reason:'<img src=x onerror=alert(1)>'}],
+    frame_age_ms:123.4,errors:0});
+  p.render();p.render();await new Promise(setImmediate);
+  assert.match(p.stats.textContent,/ADB screenshots · 2.50 FPS delivered by server \/ target 30 FPS · effective cap 4 FPS/);
+  assert.match(p.stats.textContent,/frame age 123 ms/);
+  assert.match(p.stats.textContent,/fallback: mumu: <img src=x onerror=alert\(1\)>/);
+  assert.equal(p.stats.innerHTML,undefined);
 });
