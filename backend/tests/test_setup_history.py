@@ -10,7 +10,7 @@ from control.battles import public
 from device import adbclient
 from flows import shard
 from interactions import loadout, tourney
-from player import readiness
+from player import playerprofile, readiness
 from player.run_controls import effective_preset
 from runtime import battle_source, device_lease, logger
 from runtime.battle_session import BattleSession
@@ -37,6 +37,8 @@ def setup_driver(tmp_path, monkeypatch):
         monkeypatch.delenv(key, raising=False)
     for module in (settings, combo, orchestrator):
         monkeypatch.setattr(module, 'CONFIG', cfg)
+    monkeypatch.setattr(playerprofile, 'CONFIG', cfg)
+    monkeypatch.setattr(playerprofile, 'PROFILE', copy.deepcopy(playerprofile.PROFILE))
     monkeypatch.setattr(orchestrator, '_battle_session', None)
     monkeypatch.setattr(adbclient, '_HOST', ('127.0.0.1', 5037))
     monkeypatch.setattr(readiness, 'require', lambda *args: None)

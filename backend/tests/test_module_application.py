@@ -324,3 +324,100 @@ def test_optional_tournament_setup_continuation_is_persisted_only_after_entry(wo
     setup_events = [event['status']['setup'] for event in session.store.history(stored['id'])
                     if event['kind'] == 'status' and 'setup' in event['status']]
     assert setup_events[-1] == report
+
+
+@pytest.mark.parametrize('route,outcome,proof', [
+    ('normal', 'swallowed', None), ('normal', 'dry', None),
+    ('post_ticket', 'swallowed', None), ('post_ticket', 'dry', None),
+    ('normal', 'delayed', 'screen'), ('normal', 'delayed', 'wave'),
+    ('post_ticket', 'delayed', 'badge'), ('auto_ticket', 'observed', 'badge'),
+    ('auto_ticket', 'observed', 'screen'),
+])
+def test_real_tournament_entry_requires_observation_before_partial_continuation(
+        world, monkeypatch, tmp_path, route, outcome, proof):
+    from control.battles import public
+    from runtime.battle_session import BattleSession
+    from towerpilot_workflows.battles import Battles
+    from towerpilot_workflows.operations import Operations
+    path = tmp_path / 'entry.db'
+    context = dict(device_key='synthetic-observed-entry', instance='main', account=None, serial='fake')
+    operation, _ = Operations(path).accept('run', context, {})
+    session = BattleSession(Battles(path), operation['id'], {'kind': 'tournament', 'tier': 1}, {})
+    def image(kind, *, wave=None, badge=False):
+        return SimpleNamespace(kind=kind, wave=wave, badge=badge)
+    tournament = image('tournament')
+    positive = image('battle' if proof == 'screen' else 'unknown',
+                     wave=12 if proof == 'wave' else None, badge=proof == 'badge')
+    frames = [image('home')]
+    if route in ('post_ticket', 'auto_ticket'):
+        frames.append(image('buy_ticket'))
+        frames.extend([image('battle'), positive] if route == 'auto_ticket' else [tournament, tournament])
+    if route != 'auto_ticket':
+        frames.append(tournament)
+        if outcome == 'delayed':
+            frames.extend([image('unknown'), positive])
+    remaining = iter(frames)
+    last = frames[-1]
+    observed = []
+    def grab():
+        nonlocal last
+        last = next(remaining, last)
+        observed.append(last)
+        return last
+    monkeypatch.setattr(tourney.capture, 'grab', grab)
+    monkeypatch.setattr(tourney, 'CONFIG', dict(loop={'dry_run': outcome == 'dry'}, preset='synthetic',
+                        presets={'synthetic': {'gem_entry_max': 10}}))
+    monkeypatch.setattr(tourney, 'open_tournament', lambda: tournament)
+    monkeypatch.setattr(tourney, 'read_conditions', lambda frame: None)
+    monkeypatch.setattr(tourney, 'card_tweaks', lambda: None)
+    monkeypatch.setattr(tourney, 'verify_loadout', lambda name: [])
+    monkeypatch.setattr(tourney, 'in_tournament', lambda frame: frame.badge)
+    monkeypatch.setattr(tourney.wave_reader, 'read_wave', lambda frame: frame.wave)
+    monkeypatch.setattr(tourney.screen, 'identify', lambda frame: SimpleNamespace(name=frame.kind))
+    monkeypatch.setattr(tourney, '_in_battle', lambda frame: pytest.fail('Stats/dialog-inclusive evidence used'))
+    monkeypatch.setattr(loadout, 'spec', lambda name: {'bot_preset': 'optional'})
+    def select(category, preset):
+        raise tourney.Abort('Optional bot preset unavailable')
+    monkeypatch.setattr(presets, 'select_category', select)
+    def find(frame, rel, *args, **kwargs):
+        if frame.kind == 'tournament' and rel in tourney.BATTLE_BUTTONS:
+            return ((500, 1800), 1.0)
+        if frame.kind == 'buy_ticket' and rel == tourney.BUY_TICKET_VIDEO and route == 'post_ticket':
+            return ((300, 1500), 1.0)
+        if frame.kind == 'buy_ticket' and rel == tourney.BUY_TICKET_CANCEL:
+            return ((300, 1500), 1.0)
+        return None
+    monkeypatch.setattr(tourney, 'find', find)
+    monkeypatch.setattr(tourney, 'read_gem_price', lambda frame: 10)
+    inputs, shots, reports = [], [], []
+    def tap(point, reason):
+        inputs.append(reason)
+        assert session.store.get(session.battle['id'])['runtime']['setup']['continued_with_partial'] is False
+    monkeypatch.setattr(tourney, 'tap_at', tap)
+    monkeypatch.setattr(tourney.logger, 'shot', lambda frame, tag: shots.append(tag))
+    def callback(report):
+        session.set_setup(report)
+        reports.append(copy.deepcopy(report))
+    success = proof is not None
+    if success:
+        assert tourney.setup(loadout_name='synthetic_optional', on_setup=callback) is True
+    else:
+        with pytest.raises(tourney.Abort, match='battle entry was not observed'):
+            tourney.setup(loadout_name='synthetic_optional', on_setup=callback)
+    battle = session.store.get(session.battle['id'])
+    report = public(session.store, battle)['runtime']['setup']
+    assert report['state'] == 'degraded'
+    assert report['continued_with_partial'] is success
+    assert all(not item['continued_with_partial'] for item in reports[:-1])
+    battle_inputs = [reason for reason in inputs if reason.startswith('tournament BATTLE')]
+    assert battle_inputs == (['tournament BATTLE', 'tournament BATTLE (after ticket)']
+                             if route == 'post_ticket' else ['tournament BATTLE'])
+    assert not any('cancel' in reason or 'end' in reason or 'recover' in reason for reason in inputs)
+    assert shots.count('tourney_started') == int(success)
+    assert shots.count('tourney_entry_unconfirmed') == int(not success)
+    if route in ('post_ticket', 'auto_ticket'):
+        assert len([reason for reason in inputs if reason.startswith('buy ticket:')]) == 1
+    if not success:
+        assert len(observed) < 30  # observation-only timeout is bounded
+        assert report['detail'] == 'setup_refused'
+        assert any(kind == 'tourney_battle_unconfirmed' for kind, fields in world.events)

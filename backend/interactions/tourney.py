@@ -1161,6 +1161,21 @@ def _handle_buy_ticket(frame, gem_max: int = 0):
     return False
 
 
+def _wait_for_battle_entry(frame):
+    """Observe entry after one BATTLE dispatch; never retry or navigate."""
+    for attempt in range(20):
+        name = screen.identify(frame).name
+        if (name == 'battle' or wave_reader.read_wave(frame) is not None
+                or in_tournament(frame)):
+            return frame
+        if attempt < 19:
+            time.sleep(.5)
+            frame = capture.grab()
+    logger.event('tourney_battle_unconfirmed', screen=name)
+    logger.shot(frame, 'tourney_entry_unconfirmed')
+    raise Abort(f'tournament battle entry was not observed; last screen {name!r}')
+
+
 def start_battle():
     frame = open_tournament()
     pt, which = find_any(frame, BATTLE_BUTTONS)
@@ -1190,11 +1205,12 @@ def start_battle():
         # a tournament run (user: "you NEVER cancel a tournament run EVER").
         time.sleep(2.0)
         frame = capture.grab()
-        if in_tournament(frame) or wave_reader.read_wave(frame) is not None:
+        sc = screen.identify(frame)
+        if (in_tournament(frame) or wave_reader.read_wave(frame) is not None
+                or sc.name == 'battle'):
             logger.event("tourney_battle", started="via ticket purchase")
             logger.shot(frame, "tourney_started")
             return frame
-        sc = screen.identify(frame)
         if sc.name != "tournament":
             logger.shot(frame, "tourney_post_ticket_unknown")
             raise Abort(f"after buying the ticket: unrecognized screen "
@@ -1208,6 +1224,7 @@ def start_battle():
         time.sleep(2.5)
         frame = capture.grab()
 
+    frame = _wait_for_battle_entry(frame)
     logger.shot(frame, "tourney_started")
     return frame
 
