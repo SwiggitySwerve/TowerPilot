@@ -16,6 +16,17 @@ PYTHON = '3.12.10'
 URL = f'https://www.python.org/ftp/python/{PYTHON}/python-{PYTHON}-embed-amd64.zip'
 SHA256 = '4acbed6dd1c744b0376e3b1cf57ce906f9dc9e95e68824584c8099a63025a3c3'
 SOURCE_LAUNCHERS = {'Start-TowerPilot.ps1', 'Start Tower Pilot.cmd'}
+SOURCE_BUILD_NOTICE = (
+    'Source-build exception: tpk_ar==0.2.4 has no wheel on PyPI; its sdist SHA-256 is pinned.\n'
+    'A compiler may be needed on the build machine for source builds.\n'
+    'Isolated build dependencies and the locally built wheel are not hash-locked.\n')
+
+
+def install_dependencies(target: Path, lock: Path = ROOT / 'requirements-portable.lock') -> None:
+    """Let pip verify every runtime artifact; only tpk_ar may build from source."""
+    subprocess.run([sys.executable, '-m', 'pip', 'install', '--require-hashes',
+                    '--only-binary=:all:', '--no-binary=tpk_ar', '--no-cache-dir',
+                    '--no-compile', '--target', str(target), '-r', str(lock)], check=True)
 
 
 def stage_tree(stage: Path, root: Path = ROOT, files: Iterable[str] | None = None) -> None:
@@ -70,9 +81,7 @@ def build():
             archive.extractall(runtime)
         (runtime / 'python312._pth').write_text(
             'python312.zip\n.\nLib/site-packages\n../backend\n../frontend\n..\nimport site\n')
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '--only-binary=:all:', '--no-binary=tpk_ar',
-                        '--no-compile', '--target', str(runtime / 'Lib/site-packages'),
-                        '-r', str(ROOT / 'requirements-portable.lock')], check=True)
+        install_dependencies(runtime / 'Lib/site-packages', ROOT / 'requirements-portable.lock')
         (stage / 'tools').mkdir(exist_ok=True)
         shutil.copyfile(ROOT / 'tools/portable_launcher.py', stage / 'tools/portable_launcher.py')
         shutil.copyfile(ROOT / 'requirements-portable.lock', stage / 'requirements-portable.lock')
@@ -100,7 +109,9 @@ def build():
         (stage / 'THIRD_PARTY.txt').write_text(
             'Python '+PYTHON+' from '+URL+'\nSHA256: '+SHA256+'\n'
             'Python license: runtime/LICENSE.txt\n'
-            'Package versions: requirements-portable.lock\n'
+            'Package versions and artifact hashes: requirements-portable.lock\n'
+            'Upstream pin evidence: tools/portable_pins.json\n'
+            + SOURCE_BUILD_NOTICE +
             'Dependency licenses/notices: runtime/Lib/site-packages/*.dist-info/\n'
             'Dashboard app npm packages and their licenses: '+APP_BUILD+'/'+APP_NOTICES+'\n')
         output = write_zip(stage, dist / (prefix + '.zip'), prefix)

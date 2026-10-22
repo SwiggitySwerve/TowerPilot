@@ -55,7 +55,7 @@ def allowed(name):
     if name in {'backend/config.example.yaml', 'backend/profiles/default.yaml',
                 'backend/tests/fixtures/golden_profile.yaml', 'backend/tools/winocr.ps1',
                 'tools/build_release.py', 'tools/build_portable.py', 'tools/check_release_zips.py',
-                'tools/portable_launcher.py'}:
+                'tools/portable_launcher.py', 'tools/portable_pins.json'}:
         return True
     if p.parts[0] == 'backend':
         return (len(p.parts) > 1 and p.parts[1] not in {
