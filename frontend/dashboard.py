@@ -74,7 +74,7 @@ app = Flask(__name__, static_folder="webui", static_url_path="/ui")
 from control import operations as operation_api
 from control import battles as battle_api
 from control import harvest as harvest_api
-from runtime import build_info
+from runtime import build_info, environment
 from towerpilot_workflows.harvest import gem_policy_revision
 
 _BUILD = build_info.snapshot(Path(ROOT).parent, 'dashboard')
@@ -92,6 +92,8 @@ def api_runtime():
                for op in active if not operation_api.synchronous_persistence(op)]
     persistence = [operation_api.public(op) for op in active if operation_api.synchronous_persistence(op)]
     return jsonify(server=build_info.compare(Path(ROOT).parent, _BUILD),
+                   environment=environment.report(Path(ROOT).parent, emulators={
+                       'mumu': _mumu_manager(), 'bluestacks': _bluestacks_player()}),
                    capabilities=_CAPABILITIES, api_contract=1, port=PORT,
                    workers=workers, persistence_operations=persistence, process_refresh=_procs_status())
 
@@ -2445,23 +2447,18 @@ def _stream_decode(raw):
 @app.get("/api/stream/backends")
 def api_stream_backends():
     """Read local package availability without starting captures or downloads."""
-    from device.preview.common import options as preview_options, PreviewUnavailable
-    from device.preview.mumu import discover_target
-    from device.preview.scrcpy_package import status as scrcpy_status
-    cfg = load_config()
-    instance = cfg.get("active_instance", "main")
-    inst = cfg["instances"][instance]
     try:
-        settings = preview_options(inst.get("preview"))
+        return jsonify(environment.stream_backends(Path(ROOT).parent, load_config()))
     except ValueError as exc:
         return jsonify(ok=False, error=str(exc)), 400
-    try:
-        target = discover_target(inst.get("serial", ""), cfg.get("adb", {}).get("exe", ""), settings["mumu"])
-        native = dict(available=True, target=target, reason=None)
-    except PreviewUnavailable as exc:
-        native = dict(available=False, reason=str(exc))
-    return jsonify(ok=True, instance=instance, settings=settings,
-                   mumu=native, scrcpy=scrcpy_status(), adb=dict(available=True))
+
+
+@app.post('/api/environment/probe')
+def api_environment_probe():
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict) or body != {'probe': 'windows_ocr'}:
+        return jsonify(ok=False, error='Expected {"probe": "windows_ocr"}'), 400
+    return jsonify(ok=True, windows_ocr=environment.probe_windows_ocr(Path(ROOT).parent, _run))
 
 
 @app.get("/api/stream/status")
