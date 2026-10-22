@@ -1,12 +1,11 @@
 import { recognitionAdvanced as t } from '../../../copy/recognitionAdvanced.ts';
-import { launchAnswer, unknownWords } from '../../../core/recognition.ts';
 import type {
   RecognitionAdvancedState,
   RecognitionAdvancedStore,
 } from '../../../store/recognitionAdvanced.ts';
 import { selectAdvanced } from '../../../store/selectors/recognitionAdvanced.ts';
 import { Button } from '../../../ui/Button.tsx';
-import { Data } from './Data.tsx';
+import { Coordinates, Data, Values } from './Data.tsx';
 export function Analysis({
   store,
   state,
@@ -20,7 +19,7 @@ export function Analysis({
   const target = vm.target;
   const a = vm.analysis;
   const blocked = state.context === null || target?.checking === true || vm.launchPending;
-  const answer = target?.launch?.answer == null ? null : launchAnswer(target.launch.answer);
+  const answer = vm.launch;
   return (
     <>
       <p>{t.observation.short}</p>
@@ -59,23 +58,19 @@ export function Analysis({
         </p>
       ) : null}
       {target?.contextError === true ? <p role="status">{t.contextError.short}</p> : null}
-      {target?.launch != null ? (
+      {answer.kind !== 'none' ? (
         <div role="status">
           <p>
-            {answer?.kind === 'accepted'
+            {answer.kind === 'accepted'
               ? t.accepted.short
-              : answer?.kind === 'refused'
+              : answer.kind === 'refused'
                 ? t.refused.short
-                : target.launch.phase === 'sending'
+                : answer.kind === 'sending'
                   ? t.sending.short
-                  : target.launch.readSettlement === 'applied'
-                    ? t.accepted.short
-                    : t.unknown.short}
+                  : t.unknown.short}
           </p>
-          {answer?.kind === 'unknown' && target.launch.answer !== null ? (
-            <Data value={unknownWords(target.launch.answer)} />
-          ) : null}
-          {answer?.kind === 'refused' ? (
+          {answer.message !== null ? <Data value={answer.message} /> : null}
+          {answer.kind === 'refused' ? (
             <>
               <Data value={answer.code} />
               <Data value={answer.error} />
@@ -100,21 +95,29 @@ export function Analysis({
           {vm.analysisStale ? <p>{t.stale.short}</p> : null}
           <div role="status">
             {a.status === null ? t.unavailable.short : <Data value={a.status} />}
-            <Data value={a.message} />
-            <Data value={a.code} />
+            {a.message === null ? null : <Data value={a.message} />}
+            {a.code === null ? null : <Data value={a.code} />}
           </div>
-          <p>
-            {t.screen.short}
-            <Data value={{ name: a.screen, candidates: a.candidates }} />
-          </p>
-          <p>
-            {t.tested.short}
-            <Data value={[a.tested, a.total, a.completed]} />
-          </p>
-          <p>
-            {t.captured.short}
-            <Data value={a.capturedAt} />
-          </p>
+          {a.available ? (
+            <>
+              <p>
+                {t.screen.short}
+                <Data value={a.screen} />
+              </p>
+              <p>
+                {t.candidates.short}
+                <Values values={a.candidates} />
+              </p>
+              <p>
+                {t.tested.short}
+                <Values values={[a.tested, a.total, a.completed]} />
+              </p>
+              <p>
+                {t.captured.short}
+                <Data value={a.capturedAt} />
+              </p>
+            </>
+          ) : null}
           {a.frame !== null && !target.snapshotError ? (
             <div className="tp-advanced__snapshot">
               <img
@@ -145,25 +148,25 @@ export function Analysis({
             </div>
           ) : null}
           {target.snapshotError ? <p>{t.snapshotError.short}</p> : null}
-          {a.status === 'done' && a.matches.length === 0 ? <p>{t.noMatches.short}</p> : null}
+          {a.noMatches ? <p>{t.noMatches.short}</p> : null}
           <ul>
             {a.matches.map((m) => (
               <li key={m.id}>
                 <p>
                   {t.names.short}
-                  <Data value={m.names} />
+                  <Values values={m.names} />
                 </p>
                 <p>
                   {t.roles.short}
                   {m.roles.length === 0 ? (
                     <span>{t.unknownRole.short}</span>
                   ) : (
-                    <Data value={m.roles} />
+                    <Values values={m.roles} />
                   )}
                 </p>
                 <p>
                   {t.rect.short}
-                  <Data value={m.rect} />
+                  <Coordinates value={m.rect} />
                   {t.inliers.short}
                   <Data value={m.inliers} />
                 </p>

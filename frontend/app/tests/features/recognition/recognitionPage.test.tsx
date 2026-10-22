@@ -818,3 +818,401 @@ describe('Recognition page accessibility and wording', () => {
     },
   );
 });
+
+describe('Recognition compliance round 1', () => {
+  it('R7 F6R10-R1-01 a battle read that fails at the click sends nothing, whatever an older read said', async () => {
+    let failing = false;
+    const page = await openRecognition(
+      {},
+      {
+        before: (fake) => {
+          fake.route('GET', '/api/battles/active', () =>
+            failing
+              ? { status: 503, body: 'Service Unavailable' }
+              : answer(v1('battles_active.null_no_driver')),
+          );
+        },
+      },
+    );
+    await page.user.click(
+      within(region('recognitionLearn')).getByRole('button', { name: 'Learn screens' }),
+    );
+    failing = true;
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Start learning' }));
+    await page.advance(2_000);
+    expect(posts(page, '/api/calibrate/start')).toEqual([]);
+    expect(document.querySelector('[data-not-sent="safety_read_failed"]')).not.toBeNull();
+  });
+
+  it('R8 F6R10-R1-01 a calibrator read that fails at the click sends nothing; the stale facts are labelled', async () => {
+    let failing = false;
+    const page = await openRecognition(
+      {},
+      {
+        before: (fake) => {
+          fake.route('GET', '/api/calibrate/status', () =>
+            failing
+              ? { status: 503, body: 'Service Unavailable' }
+              : answer(
+                  pages(
+                    'recognition_reads.calibrate_status_without_an_operation_reads_the_latest_of_the_context',
+                  ),
+                ),
+          );
+        },
+      },
+    );
+    await page.user.click(
+      within(region('recognitionLearn')).getByRole('button', { name: 'Learn screens' }),
+    );
+    failing = true;
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Start learning' }));
+    await page.advance(2_000);
+    expect(posts(page, '/api/calibrate/start')).toEqual([]);
+    expect(document.querySelector('[data-not-sent="safety_read_failed"]')).not.toBeNull();
+    // The polled read failed too: the shown facts are the last answered read, and they permit nothing.
+    await page.advance(10_000);
+    expect(region('recognitionTarget').querySelector('[data-stale]')).not.toBeNull();
+    expect(
+      within(region('recognitionObserve')).getByRole('button', { name: 'Capture now' }),
+    ).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it("R2 R3 F6R10-R1-02 a followed operation that cannot be read shows none of the newest operation's evidence", async () => {
+    const page = await openRecognition(
+      {
+        calibrate: () =>
+          pages(
+            'recognition_reads.calibrate_status_setup_battle_finished_and_home_verified_with_target_evidence',
+          ),
+        operation: () => pages('recognition_reads.calibrate_status_unknown_operation_409'),
+      },
+      { newKey: () => 'cal-start-1' },
+    );
+    page.fake.route('POST', '/api/calibrate/start', () =>
+      answer(pages('calibrate_writes.start_basic_phases_accepted')),
+    );
+    const more = region('recognitionMore');
+    await page.user.click(within(more).getByText('Basic scan'));
+    await page.user.click(within(more).getByRole('button', { name: 'Start basic scan' }));
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Start scan' }));
+    await page.advance(3_000);
+    const evidence = region('recognitionEvidence');
+    expect(evidence.querySelector('[data-evidence-unavailable]')).not.toBeNull();
+    expect(evidence.querySelector('[data-entry-status]')).toBeNull();
+    expect(evidence.querySelector('[data-group]')).toBeNull();
+    const operation = region('recognitionOperation');
+    expect(operation.querySelector('[data-final-screen]')).toBeNull();
+    expect(operation.querySelector('[data-stage]')).toBeNull();
+    expect(operation.querySelector('[data-operation-unread]')).not.toBeNull();
+  });
+
+  it('R2 F6R10-R1-02 a followed operation whose newest read failed keeps its own last answer, labelled stale', async () => {
+    let failing = false;
+    const page = await openRecognition(
+      {
+        operation: () =>
+          failing ? 'hold' : pages('calibrate_writes.read_the_running_calibration_by_operation'),
+      },
+      { newKey: () => 'cal-start-1' },
+    );
+    page.fake.route('POST', '/api/calibrate/start', () =>
+      answer(pages('calibrate_writes.start_basic_phases_accepted')),
+    );
+    page.fake.route('GET', /^\/api\/calibrate\/status\?operation_id=/u, () =>
+      failing
+        ? { status: 503, body: 'Service Unavailable' }
+        : answer(pages('calibrate_writes.read_the_running_calibration_by_operation')),
+    );
+    const more = region('recognitionMore');
+    await page.user.click(within(more).getByText('Basic scan'));
+    await page.user.click(within(more).getByRole('button', { name: 'Start basic scan' }));
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Start scan' }));
+    await page.advance(3_000);
+    failing = true;
+    await page.advance(5_000);
+    const operation = region('recognitionOperation');
+    expect(operation.querySelector<HTMLElement>('[data-stage]')?.dataset['stage']).toBe('accepted');
+    expect(region('recognitionEvidence').querySelector('[data-stale]')).not.toBeNull();
+  });
+
+  it('R4 F6R10-R1-03 applying saved observations reads the config at the click; another profile sends nothing', async () => {
+    let profile = 'mine';
+    const page = await openRecognition(
+      {
+        calibrate: () =>
+          pages('recognition_reads.calibrate_status_shared_files_of_an_untracked_calibration'),
+      },
+      {
+        config: () => ({
+          active_instance: 'main',
+          active_profile: profile,
+          instances: { main: { serial: 'fake:1', allow_taps: true } },
+        }),
+      },
+    );
+    page.fake.route('POST', '/api/calibrate/apply', () =>
+      answer(pages('calibrate_writes.apply_saved_observations_of_no_operation')),
+    );
+    const operation = region('recognitionOperation');
+    await page.user.click(
+      within(operation).getByRole('button', { name: 'Apply saved observations' }),
+    );
+    profile = 'theirs';
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Apply' }));
+    await page.advance(2_000);
+    expect(posts(page, '/api/calibrate/apply')).toEqual([]);
+    expect(document.querySelector('[data-not-sent="context_changed"]')).not.toBeNull();
+  });
+
+  it('R4 F6R10-R1-03 with the same context at the click, saved observations are applied once', async () => {
+    const page = await openRecognition({
+      calibrate: () =>
+        pages('recognition_reads.calibrate_status_shared_files_of_an_untracked_calibration'),
+    });
+    page.fake.route('POST', '/api/calibrate/apply', () =>
+      answer(pages('calibrate_writes.apply_saved_observations_of_no_operation')),
+    );
+    const operation = region('recognitionOperation');
+    await page.user.click(
+      within(operation).getByRole('button', { name: 'Apply saved observations' }),
+    );
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Apply' }));
+    await page.advance(2_000);
+    expect(posts(page, '/api/calibrate/apply')).toEqual([{ saved_observations: true }]);
+  });
+
+  it('R1 R4 F6R10-R1-05 a failed capture keeps its discoveries applicable; the failure stays shown', async () => {
+    const page = await openRecognition({
+      calibrate: () =>
+        pages(
+          'recognition_reads.calibrate_status_failed_keeps_the_error_and_the_evidence_that_was_sealed',
+        ),
+    });
+    // Modified recorded answer: no recorded apply answer names operation 94 (the recorded
+    // failed read); the failed-capture apply answer's operation id is replaced by the sent one.
+    const recorded = pages(
+      'calibrate_writes.apply_after_a_failed_capture_keeps_the_failure_on_the_operation',
+    );
+    const reply = structuredClone(recorded.body) as { operation: Record<string, unknown> };
+    reply.operation['id'] = '00000094-0000-4000-8000-000000000000';
+    page.fake.route('POST', '/api/calibrate/apply', () => ({
+      status: recorded.status,
+      body: reply,
+    }));
+    const operation = region('recognitionOperation');
+    expect(operation.querySelector<HTMLElement>('[data-stage]')?.dataset['stage']).toBe('failed');
+    await page.user.click(
+      within(operation).getByRole('button', { name: 'Apply discoveries to this profile' }),
+    );
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Apply' }));
+    await page.advance(1_000);
+    expect(posts(page, '/api/calibrate/apply')).toEqual([
+      { operation_id: '00000094-0000-4000-8000-000000000000', expected_revision: 3 },
+    ]);
+    expect(
+      operation.querySelector<HTMLElement>('[data-kind="calibrate_apply"]')?.dataset['outcome'],
+    ).toBe('applied');
+    expect(operation.querySelector<HTMLElement>('[data-stage]')?.dataset['stage']).toBe('failed');
+  });
+
+  it('R1 R4 F6R10-R1-05 an interrupted capture offers its apply too', async () => {
+    await openRecognition({
+      calibrate: () => pages('calibrate_writes.read_the_calibration_whose_worker_exited'),
+    });
+    expect(
+      within(region('recognitionOperation')).getByRole('button', {
+        name: 'Apply discoveries to this profile',
+      }),
+    ).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it.each([
+    [3, 'applied_by_read'],
+    [2, 'unknown'],
+  ] as const)(
+    'R4 F6R10-R1-07 a lost apply is settled only by its operation recording the sent revision (recorded %s: %s)',
+    async (recordedRevision, outcome) => {
+      let after = false;
+      // Modified recorded read: no recorded read follows an apply of operation 94; the
+      // recorded read after the failed-capture apply gets the sent operation id and the
+      // tested apply revision.
+      const read = pages('calibrate_writes.read_the_failed_capture_after_the_apply');
+      const applied = structuredClone(read.body) as {
+        operation: { id: string; result_refs: Record<string, unknown> };
+      };
+      applied.operation.id = '00000094-0000-4000-8000-000000000000';
+      applied.operation.result_refs['apply_request_revision'] = recordedRevision;
+      const page = await openRecognition({
+        calibrate: () =>
+          after
+            ? { ...read, body: applied }
+            : pages(
+                'recognition_reads.calibrate_status_failed_keeps_the_error_and_the_evidence_that_was_sealed',
+              ),
+      });
+      page.fake.route('POST', '/api/calibrate/apply', () => 'hold');
+      const operation = region('recognitionOperation');
+      await page.user.click(
+        within(operation).getByRole('button', { name: 'Apply discoveries to this profile' }),
+      );
+      await page.user.click(within(dialog()).getByRole('button', { name: 'Apply' }));
+      await page.advance(100);
+      page.fake.next('/api/calibrate/apply', 'POST').lose();
+      after = true;
+      await page.advance(10_000);
+      expect(
+        operation.querySelector<HTMLElement>('[data-kind="calibrate_apply"]')?.dataset['outcome'],
+      ).toBe(outcome);
+      expect(posts(page, '/api/calibrate/apply')).toHaveLength(1);
+    },
+  );
+
+  it.each([
+    ['read_the_calibration_that_was_asked_to_stop', 'recorded'],
+    ['read_the_calibration_whose_worker_exited', 'unknown'],
+  ] as const)(
+    'R2 R8 F6R10-R1-07 a lost stop is settled only by a read showing it past the sent revision (%s: %s)',
+    async (name, outcome) => {
+      let after = false;
+      // Modified recorded read: no recorded read follows a stop of operation 9e (the recorded
+      // running read); the recorded read's operation id is replaced by the stopped one.
+      const read = pages(`calibrate_writes.${name}`);
+      const later = structuredClone(read.body) as { operation: { id: string } };
+      later.operation.id = '0000009e-0000-4000-8000-000000000000';
+      const page = await openRecognition({
+        calibrate: () =>
+          after
+            ? { ...read, body: later }
+            : pages('recognition_reads.calibrate_status_setup_battle_active_no_final_screen_yet'),
+      });
+      page.fake.route('POST', '/api/calibrate/stop', () => 'hold');
+      const operation = region('recognitionOperation');
+      await page.user.click(within(operation).getByRole('button', { name: 'Stop this scan' }));
+      await page.user.click(within(dialog()).getByRole('button', { name: 'Ask it to stop' }));
+      await page.advance(100);
+      page.fake.next('/api/calibrate/stop', 'POST').lose();
+      after = true;
+      await page.advance(10_000);
+      expect(
+        operation.querySelector<HTMLElement>('[data-kind="calibrate_stop"]')?.dataset['outcome'],
+      ).toBe(outcome);
+      expect(posts(page, '/api/calibrate/stop')).toHaveLength(1);
+    },
+  );
+
+  it('R6 F6R10-R1-07 every choice reaches the body; fresh off and replace on are sent as chosen', async () => {
+    const page = await openRecognition({}, { newKey: () => 'key-all' });
+    const more = region('recognitionMore');
+    await page.user.click(within(more).getByText('Basic scan'));
+    for (const name of ['Global presets', 'Guardians', 'Bots', 'Workshop presets'])
+      await page.user.click(within(more).getByRole('checkbox', { name }));
+    await page.user.click(
+      within(more).getByRole('checkbox', { name: 'Start the steps over (otherwise resume them)' }),
+    );
+    await page.user.click(
+      within(more).getByRole('checkbox', { name: 'Replace images that already exist' }),
+    );
+    await page.user.click(
+      within(more).getByRole('checkbox', { name: "Let the scan tap this emulator's menus" }),
+    );
+    await page.user.click(within(more).getByRole('button', { name: 'Start basic scan' }));
+    expect(
+      within(dialog()).getByText('Replaces existing images with new captures.'),
+    ).toBeInTheDocument();
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Start scan' }));
+    await page.advance(1_000);
+    expect(posts(page, '/api/calibrate/start')).toEqual([
+      {
+        phases: 'c,m,g,u,b,w',
+        fresh: false,
+        overwrite: true,
+        allow_navigation: true,
+        expected_context: CONTEXT,
+        idempotency_key: 'key-all',
+      },
+    ]);
+  });
+
+  it('R6 F6R10-R1-07 no step chosen is refused before sending; a refusal keeps the choices', async () => {
+    const page = await openRecognition(
+      {
+        taps: false,
+        calibrate: () => pages('recognition_reads.calibrate_status_of_the_first_account'),
+      },
+      { newKey: () => 'k-t1' },
+    );
+    const more = region('recognitionMore');
+    await page.user.click(within(more).getByText('Basic scan'));
+    await page.user.click(within(more).getByRole('checkbox', { name: 'Cards and presets' }));
+    await page.user.click(within(more).getByRole('checkbox', { name: 'Modules' }));
+    expect(within(more).getByText('Choose at least one step')).toBeInTheDocument();
+    await page.user.click(within(more).getByRole('checkbox', { name: 'Cards and presets' }));
+    // The read says taps are allowed, so the click is sent; the server refuses it as recorded.
+    page.fake.route('POST', '/api/calibrate/start', () =>
+      answer(pages('calibrate_writes.start_taps_off_409')),
+    );
+    await page.user.click(within(more).getByRole('button', { name: 'Start basic scan' }));
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Start scan' }));
+    await page.advance(1_000);
+    expect(posts(page, '/api/calibrate/start')).toHaveLength(1);
+    expect(
+      region('recognitionOperation').querySelector<HTMLElement>('[data-kind="calibrate_start"]')
+        ?.dataset['outcome'],
+    ).toBe('refused');
+    expect(within(more).getByRole('checkbox', { name: 'Cards and presets' })).toBeChecked();
+    expect(within(more).getByRole('checkbox', { name: 'Modules' })).not.toBeChecked();
+  });
+
+  it("R6 F6R10-R1-07 choices belong to their emulator and account: another account's page starts from the defaults", async () => {
+    const page = await openRecognition();
+    const more = region('recognitionMore');
+    await page.user.click(within(more).getByText('Basic scan'));
+    await page.user.click(within(more).getByRole('checkbox', { name: 'Bots' }));
+    const storage = page.storage;
+    page.view.unmount();
+    page.data.stop();
+    await openRecognition(
+      {},
+      {
+        storage,
+        config: () => ({
+          active_instance: 'main',
+          active_profile: 'theirs',
+          instances: { main: { serial: 'fake:1', allow_taps: true } },
+        }),
+      },
+    );
+    const other = region('recognitionMore');
+    expect(within(other).getByRole('checkbox', { name: 'Bots', hidden: true })).not.toBeChecked();
+    expect(
+      within(other).getByRole('checkbox', { name: 'Cards and presets', hidden: true }),
+    ).toBeChecked();
+  });
+});
+
+describe('Recognition launch context', () => {
+  it('R1 R5 F6R10-R1-04 a launch sends the rendering descriptor the click-time config read names', async () => {
+    // The config body is the test's own (as e0Config): a prepared scan persists
+    // instances.<instance>.rendering as {width, height, dpi} (backend/device/layout.py activate).
+    const rendering = { width: 1080, height: 2560, dpi: 360 };
+    const page = await openRecognition(
+      {},
+      {
+        newKey: () => 'key-rendering',
+        config: () => ({
+          active_instance: 'main',
+          active_profile: 'mine',
+          instances: { main: { serial: 'fake:1', allow_taps: true, rendering } },
+        }),
+      },
+    );
+    await page.user.click(
+      within(region('recognitionObserve')).getByRole('button', { name: 'Capture now' }),
+    );
+    await page.advance(1_000);
+    expect(posts(page, '/api/calibrate/observe')).toEqual([
+      { expected_context: { ...CONTEXT, rendering }, idempotency_key: 'key-rendering' },
+    ]);
+  });
+});

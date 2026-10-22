@@ -344,6 +344,11 @@ function TargetSection() {
         </ul>
         {vm.contextConfirmed ? null : <Line entry={t.target.unconfirmed} />}
         <div className="tp-recognition__facts-block" data-status-read={s.read}>
+          {s.stale ? (
+            <div data-stale="true">
+              <Line entry={t.status.stale} />
+            </div>
+          ) : null}
           {s.read === 'not_read' ? <Line entry={t.status.notRead} /> : null}
           {s.read === 'unavailable' ? <Line entry={t.status.unavailable} /> : null}
           {s.read === 'ready' ? (
@@ -763,25 +768,37 @@ function EvidenceSection() {
   return (
     <RegionBody>
       <Line entry={e.intro} />
+      {s.evidenceUnavailable ? (
+        <div data-evidence-unavailable="true">
+          <Line entry={e.unavailable} />
+        </div>
+      ) : null}
+      {s.stale ? (
+        <div data-stale="true">
+          <Line entry={t.status.stale} />
+        </div>
+      ) : null}
       <div className="tp-recognition__roadmap" data-roadmap="true">
         <h3>{r.title.short}</h3>
         <Line entry={r.intro} />
-        <ul className="tp-recognition__groups">
-          {s.groups.map((group) => (
-            <li key={group.group} data-group={group.group} data-count={group.entries.length}>
-              <span className="tp-recognition__group-name">{r.groups[group.group].short}</span>
-              {group.entries.length === 0 ? (
-                <span>{r.notInReport.short}</span>
-              ) : (
-                <ul className="tp-recognition__entries">
-                  {group.entries.map((entry) => (
-                    <EntryItem key={entry.rel} entry={entry} />
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
+        {s.evidenceUnavailable ? null : (
+          <ul className="tp-recognition__groups">
+            {s.groups.map((group) => (
+              <li key={group.group} data-group={group.group} data-count={group.entries.length}>
+                <span className="tp-recognition__group-name">{r.groups[group.group].short}</span>
+                {group.entries.length === 0 ? (
+                  <span>{r.notInReport.short}</span>
+                ) : (
+                  <ul className="tp-recognition__entries">
+                    {group.entries.map((entry) => (
+                      <EntryItem key={entry.rel} entry={entry} />
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
         <div data-not-reported="gaps">
           <Line entry={r.gaps} />
         </div>
@@ -802,21 +819,23 @@ function EvidenceSection() {
           </ul>
         </div>
       )}
-      <Disclosure
-        label={e.title.short}
-        count={s.entries.length}
-        focusKey="recognition:evidence:entries"
-      >
-        {s.entries.length === 0 ? (
-          <p>{e.none.short}</p>
-        ) : (
-          <ul className="tp-recognition__entries" data-report-entries="true">
-            {s.entries.map((entry) => (
-              <EntryItem key={entry.rel} entry={entry} />
-            ))}
-          </ul>
-        )}
-      </Disclosure>
+      {s.evidenceUnavailable ? null : (
+        <Disclosure
+          label={e.title.short}
+          count={s.entries.length}
+          focusKey="recognition:evidence:entries"
+        >
+          {s.entries.length === 0 ? (
+            <p>{e.none.short}</p>
+          ) : (
+            <ul className="tp-recognition__entries" data-report-entries="true">
+              {s.entries.map((entry) => (
+                <EntryItem key={entry.rel} entry={entry} />
+              ))}
+            </ul>
+          )}
+        </Disclosure>
+      )}
       {s.modules.length === 0 && s.cards.length === 0 && s.player.length === 0 ? null : (
         <Disclosure
           label={e.player.short}

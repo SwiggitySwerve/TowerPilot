@@ -1,5 +1,6 @@
 import type { RecognitionAdvancedApi } from '../api/recognitionAdvanced.ts';
 import type { PageContext } from '../api/context.ts';
+import type { LaunchContext } from '../api/clickContext.ts';
 import type { IntentRecord } from '../api/intents/types.ts';
 import { own } from '../core/read.ts';
 import {
@@ -180,7 +181,7 @@ export function createRecognitionAdvancedStore(
     requests.add(controller);
     const named = await api.readClickContext(controller.signal);
     requests.delete(controller);
-    return active(key, epoch) && api.sameContext(named, context);
+    return active(key, epoch) && named !== null && api.sameContext(named, context) ? named : null;
   };
   const refresh = async () => {
     const { key, epoch, run, context } = store.getSnapshot();
@@ -215,9 +216,9 @@ export function createRecognitionAdvancedStore(
       let next = {
         ...t,
         busy: false,
-        readError: !same || results.some((r) => r.result.kind !== 'answered'),
+        readError: same === null || results.some((r) => r.result.kind !== 'answered'),
       };
-      if (!same) return next;
+      if (same === null) return next;
       for (const { kind, result } of results)
         if (result.kind === 'answered') next = { ...next, [kind]: result.answer.body };
       return { ...next, readAt: now(), imageRevision: next.imageRevision + 1 };
@@ -252,8 +253,14 @@ export function createRecognitionAdvancedStore(
       return;
     const body = result.kind === 'answered' ? result.answer.body : result.answer?.body;
     const operation = operationView(own(body, 'operation'));
-    if (!same || (operation !== null && !api.operationMatches(operation, context))) {
-      change(key, (t) => ({ ...t, analysis: null, analysisBusy: false, analysisError: true }));
+    if (same === null || (operation !== null && !api.operationMatches(operation, context))) {
+      change(key, (t) => ({
+        ...t,
+        analysis: null,
+        analysisAt: now(),
+        analysisBusy: false,
+        analysisError: true,
+      }));
       return;
     }
     const launch = currentAdvanced(store.getSnapshot())?.launch;
@@ -280,16 +287,18 @@ export function createRecognitionAdvancedStore(
           : {}),
     }));
   };
-  const withCheck = async (fn: (key: string, context: PageContext, t: AdvancedTarget) => void) => {
+  const withCheck = async (
+    fn: (key: string, context: LaunchContext, t: AdvancedTarget) => void,
+  ) => {
     const { key, context, epoch } = store.getSnapshot();
     const target = currentAdvanced(store.getSnapshot());
     if (key === null || context === null || target === null || target.checking || disposed) return;
     change(key, (t) => ({ ...t, checking: true, contextError: false }));
     const same = await checked(key, epoch, context);
     if (!active(key, epoch)) return;
-    change(key, (t) => ({ ...t, checking: false, contextError: !same }));
+    change(key, (t) => ({ ...t, checking: false, contextError: same === null }));
     const latest = currentAdvanced(store.getSnapshot());
-    if (same && latest !== null) fn(key, context, latest);
+    if (same !== null && latest !== null) fn(key, same, latest);
   };
   const draw = (rect: Rect) => {
     const { key } = store.getSnapshot();

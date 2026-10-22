@@ -1,5 +1,5 @@
 import { finite, id, list, own, ownPath, stringList, text } from './read.ts';
-import { operationView } from './recognition.ts';
+import { launchAnswer, operationView, templateWriteAnswer, unknownWords } from './recognition.ts';
 
 /** R9-R11 rules: image presence, observed matches and verified recognition remain separate.
  * Native-pixel crops belong to one explicit still-frame token. No reader authorizes input.
@@ -113,7 +113,13 @@ export function scanPlan(raw: unknown) {
       status: text(own(s, 'status')) ?? null,
       total: finite(own(s, 'total')) ?? null,
       verified: finite(own(s, 'verified')) ?? null,
-      controls: list(own(s, 'controls')) ?? [],
+      controls: (list(own(s, 'controls')) ?? []).map((control, index) => ({
+        id: id(own(control, 'id')) ?? String(index),
+        label: text(own(control, 'label')) ?? null,
+        status: text(own(control, 'status')) ?? null,
+        template: text(own(control, 'template')) ?? null,
+        optional: flag(own(control, 'optional')),
+      })),
     })),
     steps: (list(own(raw, 'steps')) ?? []).map((s, i) => ({
       id: id(own(s, 'id')) ?? String(i),
@@ -189,10 +195,13 @@ export function moduleCatalogue(raw: unknown) {
         ];
   });
 }
-export function analysisStatus(raw: unknown, selected: string | null) {
+export function analysisStatus(raw: unknown, selected: string | null, readSucceeded = true) {
   const operation = operationView(own(raw, 'operation'));
   const belongs =
-    selected !== null && operation?.id === selected && operation.kind === 'screen_analysis';
+    readSucceeded &&
+    selected !== null &&
+    operation?.id === selected &&
+    operation.kind === 'screen_analysis';
   const status = text(own(raw, 'status')) ?? null;
   const matches = belongs
     ? (list(own(raw, 'matches')) ?? []).map((m, i) => ({
@@ -204,18 +213,27 @@ export function analysisStatus(raw: unknown, selected: string | null) {
         inliers: finite(own(m, 'inliers')) ?? null,
       }))
     : [];
-  const size = nativeSize([own(raw, 'width'), own(raw, 'height')]);
+  const size = belongs ? nativeSize([own(raw, 'width'), own(raw, 'height')]) : null;
+  const diagnosticBelongs =
+    operation === null || (operation.id === selected && operation.kind === 'screen_analysis');
   return {
-    operation,
-    status: belongs || selected === null || selected === '' ? status : null,
-    message: text(own(raw, 'message')) ?? text(own(raw, 'error')) ?? null,
-    code: text(own(raw, 'code')) ?? operation?.error?.code ?? null,
-    screen: text(ownPath(raw, 'screen', 'name')) ?? null,
-    candidates: stringList(ownPath(raw, 'screen', 'candidates')) ?? [],
-    tested: finite(own(raw, 'tested')) ?? null,
-    total: finite(own(raw, 'total')) ?? null,
-    completed: finite(own(raw, 'completed')) ?? null,
-    capturedAt: finite(own(raw, 'captured_at')) ?? null,
+    available: belongs,
+    noMatches: belongs && status === 'done' && matches.length === 0,
+    operation: belongs ? operation : null,
+    status:
+      belongs || (readSucceeded && operation === null && (selected === null || selected === ''))
+        ? status
+        : null,
+    message: diagnosticBelongs
+      ? (text(own(raw, 'message')) ?? text(own(raw, 'error')) ?? null)
+      : null,
+    code: diagnosticBelongs ? (text(own(raw, 'code')) ?? operation?.error?.code ?? null) : null,
+    screen: belongs ? (text(ownPath(raw, 'screen', 'name')) ?? null) : null,
+    candidates: belongs ? (stringList(ownPath(raw, 'screen', 'candidates')) ?? []) : [],
+    tested: belongs ? (finite(own(raw, 'tested')) ?? null) : null,
+    total: belongs ? (finite(own(raw, 'total')) ?? null) : null,
+    completed: belongs ? (finite(own(raw, 'completed')) ?? null) : null,
+    capturedAt: belongs ? (finite(own(raw, 'captured_at')) ?? null) : null,
     size,
     matches,
     frame:
@@ -236,5 +254,83 @@ export function restoreCrop(raw: unknown): CropDraft {
     y: text(own(raw, 'y')) ?? '',
     w: text(own(raw, 'w')) ?? '',
     h: text(own(raw, 'h')) ?? '',
+  };
+}
+
+interface Receipt {
+  readonly phase: string;
+  readonly readSettlement: string | null;
+  readonly answer: { readonly status: number; readonly body: unknown } | null;
+}
+/** The domain classifies write evidence; components only select the corresponding copy. */
+export function analysisReceipt(receipt: Receipt | null) {
+  const answer = receipt?.answer == null ? null : launchAnswer(receipt.answer);
+  const kind: 'none' | 'accepted' | 'refused' | 'sending' | 'unknown' =
+    receipt === null
+      ? 'none'
+      : answer?.kind === 'accepted' || receipt.readSettlement === 'applied'
+        ? 'accepted'
+        : answer?.kind === 'refused'
+          ? 'refused'
+          : receipt.phase === 'sending'
+            ? 'sending'
+            : 'unknown';
+  return {
+    kind,
+    code: answer?.kind === 'refused' ? answer.code : null,
+    error: answer?.kind === 'refused' ? answer.error : null,
+    message:
+      answer?.kind === 'unknown' && receipt?.answer != null ? unknownWords(receipt.answer) : null,
+  };
+}
+export function cropReceipt(receipt: Receipt | null) {
+  const answer = receipt?.answer == null ? null : templateWriteAnswer(receipt.answer);
+  const kind: 'none' | 'written' | 'refused' | 'sending' | 'unknown' =
+    receipt === null
+      ? 'none'
+      : answer?.kind === 'written'
+        ? 'written'
+        : answer?.kind === 'refused'
+          ? 'refused'
+          : receipt.phase === 'sending'
+            ? 'sending'
+            : 'unknown';
+  return {
+    kind,
+    code: answer?.kind === 'refused' ? answer.code : null,
+    error: answer?.kind === 'refused' ? answer.error : null,
+    message:
+      answer?.kind === 'unknown' && receipt?.answer != null ? unknownWords(receipt.answer) : null,
+    rel: answer?.kind === 'written' ? answer.rel : null,
+    width: answer?.kind === 'written' ? answer.width : null,
+    height: answer?.kind === 'written' ? answer.height : null,
+    secondBest: answer?.kind === 'written' ? answer.secondBest : null,
+  };
+}
+export function cropTargetExists(
+  name: string,
+  have: readonly string[],
+  receipt: {
+    readonly answer: { readonly body: unknown } | null;
+    readonly meta: { readonly name?: string };
+  } | null,
+): boolean {
+  return (
+    have.includes(name) ||
+    (own(receipt?.answer?.body, 'exists') === true && receipt?.meta['name'] === name)
+  );
+}
+export function requiredRepairTarget(
+  row: ReturnType<typeof requiredImages>['rows'][number],
+): RepairTarget {
+  return {
+    rel: row.rel,
+    label: row.feature ?? row.rel,
+    status: null,
+    required: true,
+    automatic: false,
+    learned: null,
+    learnedSize: null,
+    reference: null,
   };
 }

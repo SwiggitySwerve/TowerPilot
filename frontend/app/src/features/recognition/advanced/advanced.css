@@ -109,7 +109,8 @@
   max-width: none;
 }
 
-.tp-advanced p > .tp-server {
+.tp-advanced p > .tp-server,
+.tp-advanced p > .tp-advanced__value {
   margin-inline-start: 0.35em;
 }
 .tp-advanced [role='status'] > .tp-server {

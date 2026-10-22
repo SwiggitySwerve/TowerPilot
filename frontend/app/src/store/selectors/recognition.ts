@@ -1,6 +1,11 @@
 import type { ApplyTarget } from '../../api/intents/recognition.ts';
 import { idleForConnectionChange } from '../../core/connection.ts';
-import { readinessCheck, runDefined, type ReadinessCard } from '../../core/readiness.ts';
+import {
+  contextsEqual,
+  readinessCheck,
+  runDefined,
+  type ReadinessCard,
+} from '../../core/readiness.ts';
 import { entries, own } from '../../core/read.ts';
 import {
   EVIDENCE_GROUPS,
@@ -101,6 +106,10 @@ export interface EvidenceEntryVM {
 export interface StatusVM {
   readonly read: ReadState;
   readonly ageSec: number | null;
+  /** The newest read did not answer: what is shown is the last answered read. */
+  readonly stale: boolean;
+  /** The followed operation's evidence could not be read: none is shown (never another's). */
+  readonly evidenceUnavailable: boolean;
   readonly tapsAllowed: boolean | null;
   readonly restorePending: boolean;
   /** A calibrator worker is running (possibly one no operation tracks). */
@@ -363,26 +372,30 @@ function playerValue(value: unknown): ServerText<'message'> | null {
 }
 
 function statusVM(
+  facts: CalibrateStatusView | null,
   view: CalibrateStatusView | null,
   read: ReadRecord | null,
   ageSec: number | null,
+  flags: { readonly stale: boolean; readonly unavailable: boolean },
 ): StatusVM {
   const report = view?.report ?? [];
   const shown = report.map(entryVM);
   const entriesVM = shown.flatMap((entry) => (entry === null ? [] : [entry]));
   return {
-    read: readState(read, view !== null),
+    read: readState(read, facts !== null),
     ageSec,
-    tapsAllowed: view?.tapsAllowed ?? null,
-    restorePending: view?.restorePending ?? false,
-    running: view?.running ?? false,
+    stale: flags.stale,
+    evidenceUnavailable: flags.unavailable,
+    tapsAllowed: facts?.tapsAllowed ?? null,
+    restorePending: facts?.restorePending ?? false,
+    running: facts?.running ?? false,
     selection:
-      view?.selection == null
+      facts?.selection == null
         ? null
         : {
-            mode: fromServer('id', view.selection.mode),
-            phases: ids(view.selection.phases),
-            flows: view.selection.flows,
+            mode: fromServer('id', facts.selection.mode),
+            phases: ids(facts.selection.phases),
+            flows: facts.selection.flows,
           },
     activity:
       view?.activity == null
@@ -648,10 +661,7 @@ function readinessVM(state: DashboardState): ReadinessVM | null {
   const forThisPage =
     named === undefined || now === null
       ? null
-      : own(named, 'instance') === now.instance &&
-        own(named, 'serial') === now.serial &&
-        own(named, 'account') === now.account &&
-        own(named, 'profile') === now.profile;
+      : contextsEqual(named, now, ['instance', 'serial', 'account', 'profile']);
   return {
     state: 'answered',
     httpStatus: check.outcome.status,
@@ -666,8 +676,19 @@ function readinessVM(state: DashboardState): ReadinessVM | null {
   };
 }
 
+/** The body of a slot's newest read when it answered 200; null when it failed or refused. */
+function newest200(read: ReadRecord | null): unknown {
+  return read?.outcome.kind === 'answered' && read.outcome.status === 200
+    ? read.outcome.body
+    : undefined;
+}
+
+/**
+ * F6R10-R1-01: the battle fact a launch is judged by comes from the newest battle read; one
+ * that failed leaves it unknown (an older answer is history, never permission).
+ */
 function battleFact(state: DashboardState): boolean | null {
-  const read = state.reads.battlesActive.lastAnswered;
+  const read = state.reads.battlesActive.latest;
   return read?.outcome.kind === 'answered' && read.outcome.status === 200
     ? battleTracked(read.outcome.body)
     : null;
@@ -676,7 +697,8 @@ function battleFact(state: DashboardState): boolean | null {
 /** The facts every launch of this page is judged by (core launchBlock), from the newest reads. */
 export function launchFacts(state: DashboardState): LaunchFacts {
   const launches = contextIntents(state).filter((record) => LAUNCH_KINDS.has(record.kind));
-  const latestView = calibrateStatusView(answeredBody(state, 'calibrate'));
+  // F6R10-R1-01: only the newest calibrator read, when it answered, permits a launch.
+  const latestView = calibrateStatusView(newest200(state.reads.calibrate.latest));
   const latestOperation = latestView?.operation ?? null;
   return {
     contextConfirmed: state.contextConfirmed && state.context !== null,
@@ -743,18 +765,28 @@ export function selectRecognitionPage(state: DashboardState): RecognitionPageVM 
       : tracked === null && latestView?.operation != null
         ? { operation: latestView.operation, source: 'latest' }
         : null;
-  // The status and evidence shown belong to the operation shown (its own read when followed).
+  // F6R10-R1-02: the evidence shown is the shown operation's own (its read by id when
+  // followed); a followed operation that cannot be read shows none, never the newest
+  // operation's report. Taps, restoration and the running worker come from the plain read.
+  // A newest read that failed after an answer marks what is shown as the last answered read.
+  const statusStale =
+    state.reads.calibrate.latest !== null && state.reads.calibrate.latest !== statusAnswered;
+  const opStale = followed !== null && opLatest !== null && opLatest !== opAnswered;
   const status =
     followed !== null && opView !== null
       ? statusVM(
+          latestView,
           opView,
-          state.reads.calibrateOperation.latest,
+          state.reads.calibrate.latest,
           opAnswered === null ? null : readAgeSec(state, opAnswered),
+          { stale: opStale || statusStale, unavailable: false },
         )
       : statusVM(
           latestView,
+          tracked === null ? latestView : null,
           state.reads.calibrate.latest,
           statusAnswered === null ? null : readAgeSec(state, statusAnswered),
+          { stale: statusStale, unavailable: tracked !== null },
         );
 
   const facts = launchFacts(state);

@@ -19,6 +19,8 @@ import { initialDashboardState } from '../../../../src/store/dashboardStore.ts';
 import type { DashboardCase } from '../../../support/dashboardFixture.ts';
 import { createFakeTransport, createMemoryStorage } from '../../../support/fakeTransport.ts';
 import { renderRegion } from '../../dashboard/harness.tsx';
+import { textOutsideCatalogue } from '../../../copy/renderedText.ts';
+import { selectAdvanced } from '../../../../src/store/selectors/recognitionAdvanced.ts';
 const cases = loadJsonWithIdentity(DASHBOARD_PAGES_FIXTURE_PATH).fixture;
 function fixture(family: string, name: string): DashboardCase {
   const c = ownPath(cases, 'cases', family, name);
@@ -123,7 +125,11 @@ it('R9 one analysis click sends once with context and idempotency key; retry onl
     expect(s.fake.writes()).toHaveLength(1);
   });
   const body = JSON.parse(s.fake.writes()[0]?.body ?? '{}') as Record<string, unknown>;
-  expect(body['expected_context']).toEqual(s.context);
+  expect(body['expected_context']).toEqual({ ...s.context, rendering: null });
+  expect(body).toEqual({
+    expected_context: { ...s.context, rendering: null },
+    idempotency_key: s.current()?.launch?.key,
+  });
   expect(typeof body['idempotency_key']).toBe('string');
   await user.click(screen.getByRole('button', { name: 'Read analysis status' }));
   expect(s.fake.writes()).toHaveLength(1);
@@ -154,6 +160,63 @@ it('R9 an operation switch clears the previous snapshot and matches; only succee
   });
   expect(screen.queryByRole('img')).toBeNull();
   expect(screen.queryByText('SecondWind')).toBeNull();
+  expect(screen.queryByText('1799999900', { exact: true })).toBeNull();
+  expect(screen.queryByText('212', { exact: true })).toBeNull();
+  expect(screen.queryByText('home', { exact: true })).toBeNull();
+  expect(screen.queryByText('Observed screen')).toBeNull();
+  expect(screen.queryByText('Candidate screens')).toBeNull();
+});
+it('R9 F6R10-R1-02 a warm failed analysis read withdraws the entire previous result bundle', async () => {
+  const s = await setup();
+  await change(async () => {
+    await s.store.readAnalysis();
+  });
+  expect(screen.getByText('1799999900', { exact: true })).toBeVisible();
+  expect(screen.getByText('212', { exact: true })).toBeVisible();
+  expect(
+    screen.getByRole('img', { name: 'Still snapshot of this analysis operation' }),
+  ).toBeVisible();
+  s.fake.route('GET', /\/api\/screen-analysis\/status/, () => 'hold');
+  await change(async () => {
+    const reading = s.store.readAnalysis();
+    s.fake.next(/\/api\/screen-analysis\/status/).lose();
+    await reading;
+  });
+  expect(screen.getByText('Unavailable', { exact: true })).toBeVisible();
+  expect(
+    screen.getByText(
+      'This read failed. Any retained data is an older observation; retry the read.',
+    ),
+  ).toBeVisible();
+  expect(screen.queryByText('1799999900', { exact: true })).toBeNull();
+  expect(screen.queryByText('212', { exact: true })).toBeNull();
+  expect(screen.queryByText('home', { exact: true })).toBeNull();
+  expect(screen.queryByText('Observed screen')).toBeNull();
+  expect(screen.queryByText('Candidate screens')).toBeNull();
+  expect(screen.queryByText('SecondWind', { exact: true })).toBeNull();
+  expect(
+    screen.queryByRole('img', { name: 'Still snapshot of this analysis operation' }),
+  ).toBeNull();
+  expect(s.fake.writes()).toEqual([]);
+});
+it('R9 F6R10-R1-04 analysis sends the exact five-field launch context from the click-time rendering read', async () => {
+  const s = await setup();
+  const config = fixture('calibrate_writes', 'read_the_configuration_after_the_wall_bar_apply');
+  const instance = ownPath(config.body, 'instances', s.context.instance) as Record<string, unknown>;
+  // Analysis launch recordings use rendering:null. Change only the recorded config's rendering
+  // to model a prepared emulator; the click must use this new descriptor, not the earlier read.
+  const rendering = { width: 1080, height: 2560, density: 360 };
+  instance['rendering'] = rendering;
+  s.fake.route('GET', '/api/config', () => config);
+  await change(async () => {
+    await s.store.analyze();
+  });
+  expect(s.fake.writes()).toHaveLength(1);
+  expect(s.fake.writes()[0]?.path).toBe('/api/screen-analysis/start');
+  expect(JSON.parse(s.fake.writes()[0]?.body ?? '{}')).toEqual({
+    expected_context: { ...s.context, rendering },
+    idempotency_key: s.current()?.launch?.key,
+  });
 });
 it('R9 a lost launch stays Unknown on an unchanged status and is never resent', async () => {
   const s = await setup();
@@ -298,7 +361,7 @@ it('R11 an existing file requires separate named replacement consent; cancel sen
   const replace = screen.getByRole('button', { name: 'Replace existing image' });
   await user.click(replace);
   const dialog = screen.getByRole('dialog');
-  expect(within(dialog).getByText('buttons/exit_battle.png')).toBeVisible();
+  expect(within(dialog).getByText('Replace file: buttons/exit_battle.png')).toBeVisible();
   expect(s.fake.writes()).toHaveLength(0);
   await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
   expect(replace).toHaveFocus();
@@ -374,6 +437,53 @@ it('R9 R10 R11 accessible regions and fields pass axe and keep focused draft thr
   });
   expect(input).toHaveFocus();
   expect(await axe(s.mounted?.view.container ?? document.body)).toHaveNoViolations();
+  expect(textOutsideCatalogue(s.mounted?.view.container ?? document.body)).toEqual([]);
+}, 15000);
+
+it('R9 R10 R11 F6R10-R1-06 typed projections keep catalogue labels outside scalar server markers', async () => {
+  const s = await setup();
+  await change(async () => {
+    await s.store.readAnalysis();
+  });
+  await frame(s);
+  await change(async () => {
+    await s.store.save();
+  });
+  await waitFor(() => {
+    expect(s.current()?.crop?.phase).toBe('confirmed');
+  });
+  const user = userEvent.setup();
+  for (const label of [
+    'Mapping route coverage',
+    'Interface coverage',
+    'Capture plan',
+    'Required images',
+    'Images requested but not found',
+    'Module naming catalogue',
+    'Grouped image library',
+  ]) {
+    await user.click(screen.getByText(label, { exact: true }));
+  }
+  const firstStep = scanPlan(s.current()?.plan).steps[0]?.title;
+  if (firstStep === undefined || firstStep === null) throw new Error('No plan title');
+  await user.click(screen.getByText(firstStep, { exact: true }));
+  await user.click(screen.getByText('Home', { exact: true }));
+  await user.click(screen.getByText('buttons', { exact: true }));
+  const container = s.mounted?.view.container;
+  if (container === undefined) throw new Error('Not mounted');
+  expect(textOutsideCatalogue(container)).toEqual([]);
+  const serverText = [...container.querySelectorAll('[data-server-text]')].map(
+    (el) => el.textContent,
+  );
+  expect(serverText).toContain('home');
+  expect(serverText).toContain('buttons/retry.png');
+  expect(serverText.every((value) => !value.startsWith('{') && !value.startsWith('['))).toBe(true);
+  expect(
+    Object.hasOwn(selectAdvanced(s.store.getSnapshot(), Date.now()).target ?? {}, 'launch'),
+  ).toBe(false);
+  expect(
+    Object.hasOwn(selectAdvanced(s.store.getSnapshot(), Date.now()).target ?? {}, 'crop'),
+  ).toBe(false);
 }, 15000);
 
 it('R9 only a later status naming the lost launch key settles it; a different key stays Unknown', async () => {

@@ -52,6 +52,10 @@ export const recognition = {
       'A scan without your menu consent is refused while taps are off. Capture and watch never tap.',
     ),
     tapsUnknown: entry('Taps setting not reported'),
+    stale: entry(
+      'The newest read did not answer: this is the last answered read',
+      'Scans wait until a read answers again; nothing shown here permits one.',
+    ),
     restorePending: entry(
       'Equipment must be restored',
       'The original modules were not put back. Nothing else starts until the restoration is done; stopping does not restore them.',
@@ -172,6 +176,10 @@ export const recognition = {
       'Verified means the calibrator matched the image on screen. A written file, a self score or a captured count is not verification.',
     ),
     none: entry('This report wrote no image entries'),
+    unavailable: entry(
+      "This operation's evidence could not be read",
+      "Nothing is shown in its place: another operation's report never stands in for it.",
+    ),
     columns: {
       image: entry('Image'),
       status: entry('Status'),
@@ -294,7 +302,7 @@ export const recognition = {
       'Records the equipped modules, unequips them to scan, then puts them back',
       'Needs the module inventory step first. If it cannot put them back, the page says so and nothing else starts until they are restored.',
     ),
-    overwrite: entry('Replace images that already exist'),
+    overwrite: entry('Replace module images that already exist'),
     start: entry('Scan equipped modules'),
     confirm: entry('Scan the equipped modules?'),
     effects: entry(
@@ -387,6 +395,11 @@ export const recognition = {
     readiness_other_context: entry('Check this run again for this emulator'),
     nothing_to_prepare: entry('No missing images to prepare'),
     readiness_checking: entry('Checking'),
+    safety_read_failed: entry(
+      'Not sent: a safety read did not answer just now',
+      'Each scan reads the emulator, its automation, any battle and the calibrator at the click; all must answer.',
+    ),
+    apply_checking: entry('Checking this emulator and account first'),
     watch_empty: entry('Enter a number of seconds'),
     watch_not_whole: entry('Use whole seconds'),
     watch_below_min: entry('At least 1 second'),

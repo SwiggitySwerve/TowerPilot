@@ -363,11 +363,19 @@ export type ApplyBlock =
   | 'drafts_open';
 
 /**
- * R4: an apply of an operation's discoveries writes the profile: only an operation awaiting
- * apply at a known revision, with no restoration pending, one apply at a time, never over
- * an apply whose outcome is unknown, and never while a saved-settings editor of this
- * context holds unsaved values (the apply would change what that editor was based on).
+ * R1, R4: an apply of an operation's discoveries writes the profile: only an operation the
+ * server accepts an apply for (awaiting apply, or a failed or interrupted capture whose
+ * completed discoveries are kept: frontend/dashboard.py api_calibrate_apply require_revision)
+ * that has not been applied yet, at a known revision, with no restoration pending, one apply
+ * at a time, never over an apply whose outcome is unknown, and never while a saved-settings
+ * editor of this context holds unsaved values (the apply would change what it was based on).
  */
+const APPLICABLE: readonly Stage[] = ['awaiting_apply', 'failed', 'interrupted'];
+
+/** The operation's discoveries may be applied (its capture outcome is kept either way). */
+export function applicable(operation: OperationView): boolean {
+  return APPLICABLE.includes(stageOf(operation)) && operation.apply.status !== 'succeeded';
+}
 export function applyBlock(facts: {
   readonly contextConfirmed: boolean;
   readonly operation: OperationView | null;
@@ -378,8 +386,7 @@ export function applyBlock(facts: {
 }): ApplyBlock | null {
   if (!facts.contextConfirmed) return 'context_unknown';
   if (facts.applySending) return 'apply_in_flight';
-  if (facts.operation === null || stageOf(facts.operation) !== 'awaiting_apply')
-    return 'not_awaiting_apply';
+  if (facts.operation === null || !applicable(facts.operation)) return 'not_awaiting_apply';
   if (facts.operation.revision === null) return 'revision_unknown';
   if (facts.restorePending) return 'restore_pending';
   if (facts.applyUnresolved) return 'apply_unresolved';

@@ -163,9 +163,35 @@ for (const width of widths) {
     });
     await analysis(page).getByLabel('Analysis operation ID').fill('another-operation');
     await expect(img).toHaveCount(0);
+    await analysis(page).getByRole('button', { name: 'Read analysis status' }).click();
+    await expect(analysis(page).getByText('Unavailable', { exact: true })).toBeVisible();
+    await expect(analysis(page).getByText('home', { exact: true })).toHaveCount(0);
+    await expect(analysis(page).getByText('212', { exact: true })).toHaveCount(0);
+    await expect(analysis(page).getByText('1799999900', { exact: true })).toHaveCount(0);
+    await expect(analysis(page).getByText('Candidate screens', { exact: true })).toHaveCount(0);
     expect(await posts(page)).toEqual([]);
   });
 }
+test('R9 F6R10-R1-02 a failed read after success withdraws the complete operation result', async ({
+  page,
+}) => {
+  await open(page, 'recognition_analysis');
+  await analysis(page).getByRole('button', { name: 'Read analysis status' }).click();
+  await expect(analysis(page).getByText('1799999900', { exact: true })).toBeVisible();
+  await expect(analysis(page).getByRole('img')).toHaveCount(1);
+  await page.route('**/api/screen-analysis/status*', (route) => route.abort('failed'));
+  await analysis(page).getByRole('button', { name: 'Read analysis status' }).click();
+  await expect(analysis(page).getByText('Unavailable', { exact: true })).toBeVisible();
+  await expect(analysis(page).getByRole('img')).toHaveCount(0);
+  await expect(analysis(page).getByText('home', { exact: true })).toHaveCount(0);
+  await expect(analysis(page).getByText('212', { exact: true })).toHaveCount(0);
+  await expect(analysis(page).getByText('1799999900', { exact: true })).toHaveCount(0);
+  await expect(analysis(page).getByText('Candidate screens', { exact: true })).toHaveCount(0);
+  await expect(analysis(page).getByLabel('Analysis operation ID')).toHaveValue(
+    '000000f8-0000-4000-8000-000000000000',
+  );
+  expect(await posts(page)).toEqual([]);
+});
 test('R11 native pointer drag scales the displayed still and full-size view does not recapture', async ({
   page,
 }) => {

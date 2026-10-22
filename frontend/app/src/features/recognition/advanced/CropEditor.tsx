@@ -1,8 +1,6 @@
 import { useRef, useState } from 'react';
 import { recognitionAdvanced as t } from '../../../copy/recognitionAdvanced.ts';
-import { dragRect, draftRectangle, type CropDraft } from '../../../core/recognitionImages.ts';
-import { own } from '../../../core/read.ts';
-import { templateWriteAnswer, unknownWords } from '../../../core/recognition.ts';
+import { dragRect, type CropDraft } from '../../../core/recognitionImages.ts';
 import type {
   RecognitionAdvancedState,
   RecognitionAdvancedStore,
@@ -10,7 +8,7 @@ import type {
 import { selectAdvanced } from '../../../store/selectors/recognitionAdvanced.ts';
 import { Button } from '../../../ui/Button.tsx';
 import { ConfirmDialog } from '../../../ui/ConfirmDialog.tsx';
-import { Data } from './Data.tsx';
+import { Data, Dimensions, Values } from './Data.tsx';
 const fields = ['x', 'y', 'w', 'h'] as const;
 export function CropEditor({
   store,
@@ -34,12 +32,8 @@ export function CropEditor({
     token: string;
     draft: CropDraft;
   } | null>(null);
-  const answer = target?.crop?.answer == null ? null : templateWriteAnswer(target.crop.answer);
-  const exists =
-    draft !== undefined &&
-    (vm.templates.have.includes(draft.name) ||
-      (own(target?.crop?.answer?.body, 'exists') === true &&
-        target?.crop?.meta.name === draft.name));
+  const answer = vm.crop;
+  const exists = vm.exists;
   const unavailable =
     state.context === null || !state.online || target?.checking === true || vm.cropPending;
   const reason =
@@ -56,7 +50,7 @@ export function CropEditor({
               : null;
   const takeBlocked = unavailable || target?.frameBusy === true;
   const validation = vm.cropCheck.kind === 'invalid' ? vm.cropCheck.reason : null;
-  const overlay = draft === undefined ? null : draftRectangle(draft);
+  const overlay = vm.overlay;
   return (
     <>
       <p>{t.still.short}</p>
@@ -77,7 +71,7 @@ export function CropEditor({
           <p>{t.frameAge(Math.max(0, Math.floor((now - frame.takenAt) / 1000)))}</p>
           <p>
             {t.native.short}
-            <Data value={frame.size} />
+            <Dimensions value={frame.size} />
           </p>
           <Button
             tier="quiet"
@@ -212,7 +206,7 @@ export function CropEditor({
         tier="secondary"
         label={exists ? t.replace.short : t.save.short}
         onClick={() => {
-          if (exists && frame !== null && state.key !== null)
+          if (exists && draft !== undefined && frame !== null && state.key !== null)
             setReplacement({
               key: state.key,
               epoch: state.epoch,
@@ -233,7 +227,7 @@ export function CropEditor({
         body={
           <>
             <p>{t.replaceBody.short}</p>
-            <Data value={replacement?.name} />
+            <p>{replacement === null ? null : t.replacementName(replacement.name)}</p>
           </>
         }
         confirmLabel={t.replaceConfirm.short}
@@ -249,34 +243,32 @@ export function CropEditor({
             void store.save(approved);
         }}
       />
-      {target?.crop != null ? (
+      {answer.kind !== 'none' ? (
         <div role="status">
           <p>
-            {answer?.kind === 'written'
+            {answer.kind === 'written'
               ? t.written.short
-              : answer?.kind === 'refused'
+              : answer.kind === 'refused'
                 ? t.refused.short
-                : target.crop.phase === 'sending'
+                : answer.kind === 'sending'
                   ? t.sending.short
                   : t.unknown.short}
           </p>
-          {answer?.kind === 'unknown' && target.crop.answer !== null ? (
-            <Data value={unknownWords(target.crop.answer)} />
-          ) : null}
-          {answer?.kind === 'refused' ? (
+          {answer.message !== null ? <Data value={answer.message} /> : null}
+          {answer.kind === 'refused' ? (
             <>
               <Data value={answer.code} />
               <Data value={answer.error} />
             </>
           ) : null}
-          {answer?.kind === 'written' ? (
+          {answer.kind === 'written' ? (
             <>
               <p>
                 <Data value={answer.rel} />
               </p>
               <p>
                 {t.size.short}
-                <Data value={[answer.width, answer.height]} />
+                <Values values={[answer.width, answer.height]} />
               </p>
               <p>
                 {t.secondBest.short}

@@ -297,3 +297,31 @@ test('R1 the Pages menu opens Recognition; opening it sends nothing', async ({ p
   await page.waitForTimeout(2_000);
   expect(await posts(page)).toEqual([]);
 });
+
+for (const width of WIDTHS) {
+  test(`R6 F6R10-R1-07 at ${String(width)}: scan choices by keyboard keep focus across polls and survive a reload`, async ({
+    page,
+  }) => {
+    await openRecognition(page, 'recognition', width);
+    const more = region(page, 'recognitionMore');
+    await more.getByText('Basic scan', { exact: true }).click();
+    const bots = more.getByRole('checkbox', { name: 'Bots' });
+    await bots.focus();
+    await page.keyboard.press('Space');
+    await expect(bots).toBeChecked();
+    await page.waitForTimeout(6_000);
+    await expect(bots).toBeFocused();
+    await expect(bots).toBeChecked();
+    await more.screenshot({ path: path.join(OUT, `recognition-basic-scan-${String(width)}.png`) });
+    await page.reload();
+    await expect(page.getByRole('heading', { level: 1, name: 'Recognition' })).toBeVisible();
+    await region(page, 'recognitionMore').getByText('Basic scan', { exact: true }).click();
+    await expect(
+      region(page, 'recognitionMore').getByRole('checkbox', { name: 'Bots' }),
+    ).toBeChecked();
+    await expect(
+      region(page, 'recognitionMore').getByRole('checkbox', { name: 'Global presets' }),
+    ).not.toBeChecked();
+    expect(await posts(page)).toEqual([]);
+  });
+}

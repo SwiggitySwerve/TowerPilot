@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import type { CopyNode } from '../../../copy/text.ts';
 import { recognitionAdvanced as t } from '../../../copy/recognitionAdvanced.ts';
-import { imagePath } from '../../../core/recognitionImages.ts';
 import type {
   RecognitionAdvancedState,
   RecognitionAdvancedStore,
 } from '../../../store/recognitionAdvanced.ts';
-import { selectAdvanced } from '../../../store/selectors/recognitionAdvanced.ts';
+import { selectAdvanced, type AdvancedView } from '../../../store/selectors/recognitionAdvanced.ts';
 import { Button } from '../../../ui/Button.tsx';
-import { Data } from './Data.tsx';
+import { Coordinates, Data, Dimensions, Values } from './Data.tsx';
 /** Closed diagnostic groups do not mount the full catalogue or its image elements. */
 function Disclosure({
   title,
@@ -44,15 +43,7 @@ function Thumbnail({ src }: { readonly src: string }) {
     />
   );
 }
-function Library({
-  folder,
-  images,
-  version,
-}: {
-  readonly folder: string;
-  readonly images: readonly string[];
-  readonly version: string;
-}) {
+function Library({ folder, images }: Pick<AdvancedView['library'][number], 'folder' | 'images'>) {
   const [open, setOpen] = useState(false);
   return (
     <details
@@ -65,20 +56,12 @@ function Library({
       </summary>
       {open ? (
         <ul className="tp-advanced__library">
-          {images.map((rel) => {
-            const src = imagePath(rel);
-            return (
-              <li key={rel}>
-                <Data value={rel} />
-                {src === null ? null : (
-                  <Thumbnail
-                    key={`${rel}:${version}`}
-                    src={`${src}?v=${encodeURIComponent(version)}`}
-                  />
-                )}
-              </li>
-            );
-          })}
+          {images.map((image) => (
+            <li key={image.key}>
+              <Data value={image.name} />
+              {image.src === null ? null : <Thumbnail key={image.src} src={image.src} />}
+            </li>
+          ))}
         </ul>
       ) : null}
     </details>
@@ -120,7 +103,22 @@ export function Coverage({
         <ul>
           {vm.plan.mapping.map((s) => (
             <li key={s.id}>
-              <Data value={s} />
+              <p>
+                {t.source.short}
+                <Data value={s.source} />
+              </p>
+              <p>
+                {t.destination.short}
+                <Data value={s.destination} />
+              </p>
+              <p>
+                {t.action.short}
+                <Data value={s.action} />
+              </p>
+              <p>
+                {t.status.short}
+                <Data value={s.status} />
+              </p>
             </li>
           ))}
         </ul>
@@ -131,16 +129,36 @@ export function Coverage({
             <li key={s.id}>
               <details>
                 <summary>
-                  <Data
-                    value={{
-                      screen: s.label,
-                      status: s.status,
-                      verified: s.verified,
-                      total: s.total,
-                    }}
-                  />
+                  <Data value={s.label} />
+                  {t.space}
+                  <Data value={s.status} />
                 </summary>
-                <Data value={s.controls} />
+                <p>
+                  {t.verified.short}
+                  <Data value={s.verified} />
+                </p>
+                <p>
+                  {t.total.short}
+                  <Data value={s.total} />
+                </p>
+                <ul>
+                  {s.controls.map((control) => (
+                    <li key={control.id}>
+                      <p>
+                        <Data value={control.label} />
+                      </p>
+                      <p>
+                        {t.status.short}
+                        <Data value={control.status} />
+                      </p>
+                      <p>
+                        {t.target.short}
+                        <Data value={control.template} />
+                      </p>
+                      {control.optional === true ? <p>{t.optional.short}</p> : null}
+                    </li>
+                  ))}
+                </ul>
               </details>
             </li>
           ))}
@@ -150,7 +168,7 @@ export function Coverage({
         <p>{t.optional.short}</p>
         <p>
           {t.native.short}
-          <Data value={vm.plan.native} />
+          <Dimensions value={vm.plan.native} />
         </p>
         {vm.plan.steps.map((s) => (
           <details key={s.id}>
@@ -165,7 +183,7 @@ export function Coverage({
             </p>
             <ul>
               {s.targets.map((target) => (
-                <li key={target.rel}>
+                <li key={target.key}>
                   <p>
                     <Data value={target.label} />
                     <Data value={target.rel} />
@@ -188,20 +206,20 @@ export function Coverage({
                   </p>
                   <p>
                     {t.reference.short}
-                    <Data value={target.reference} />
+                    <Dimensions value={target.reference} />
                   </p>
                   {target.learned !== null ? (
                     <p>
                       {t.learned.short}
-                      <Data value={target.learned} />
-                      <Data value={target.learnedSize} />
+                      <Coordinates value={target.learned} />
+                      <Dimensions value={target.learnedSize} />
                     </p>
                   ) : null}
                   <Button
                     tier="quiet"
                     label={t.repair.short}
                     onClick={() => {
-                      store.repair(target);
+                      store.repair(target.repair);
                       document.getElementById('recognition-crop-title')?.focus();
                     }}
                   />
@@ -213,23 +231,31 @@ export function Coverage({
       </Disclosure>
       <Disclosure title={t.requiredImages.short}>
         <ul>
-          {vm.required.rows.map((r) => (
-            <li key={r.rel}>
-              <Data value={r} />
+          {vm.required.map((r) => (
+            <li key={r.key}>
+              <p>
+                <Data value={r.rel} />
+              </p>
+              <p>
+                {t.feature.short}
+                <Data value={r.feature} />
+              </p>
+              <p>
+                {r.have === null ? t.unavailable.short : r.have ? t.have.short : t.missing.short}
+              </p>
+              <p>
+                {t.note.short}
+                <Data value={r.note} />
+              </p>
+              <p>
+                {t.usedBy.short}
+                <Values values={r.usedBy} />
+              </p>
               <Button
                 tier="quiet"
                 label={t.repair.short}
                 onClick={() => {
-                  store.repair({
-                    rel: r.rel,
-                    label: r.feature ?? r.rel,
-                    status: null,
-                    required: true,
-                    automatic: false,
-                    learned: null,
-                    learnedSize: null,
-                    reference: null,
-                  });
+                  store.repair(r.repair);
                   document.getElementById('recognition-crop-title')?.focus();
                 }}
               />
@@ -238,13 +264,24 @@ export function Coverage({
         </ul>
       </Disclosure>
       <Disclosure title={t.missingSeen.short}>
-        <Data value={vm.templates.missingSeen} />
+        <Values values={vm.missingSeen} />
       </Disclosure>
       <Disclosure title={t.catalogue.short}>
         <ul>
           {vm.catalogue.map((m) => (
-            <li key={m.slug}>
-              <Data value={{ name: m.name, slug: m.slug, abbrevs: m.abbrevs }} />
+            <li key={m.key}>
+              <p>
+                {t.name.short}
+                <Data value={m.name} />
+              </p>
+              <p>
+                {t.slug.short}
+                <Data value={m.slug} />
+              </p>
+              <p>
+                {t.abbrevs.short}
+                <Values values={m.abbrevs} />
+              </p>
               {m.learned === null
                 ? t.unavailable.short
                 : m.learned
@@ -255,12 +292,8 @@ export function Coverage({
         </ul>
       </Disclosure>
       <Disclosure title={t.library.short}>
-        {vm.templates.groups.map((g) => (
-          <Library
-            key={`${state.key}:${state.epoch}:${g.folder}`}
-            {...g}
-            version={`${state.key}:${state.epoch}:${target?.imageRevision ?? 0}:${target?.readAt ?? 0}`}
-          />
+        {vm.library.map((g) => (
+          <Library key={g.key} folder={g.folder} images={g.images} />
         ))}
       </Disclosure>
     </>

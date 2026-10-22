@@ -11,7 +11,12 @@ import {
   type PageContext,
 } from '../api/context.ts';
 import { createDiagnostics, type Diagnostics } from '../api/diagnostics.ts';
-import { createClickTimeContextRead } from '../api/clickContext.ts';
+import {
+  configRendering,
+  createClickTimeContextRead,
+  createClickTimeLaunchContextRead,
+  type LaunchContext,
+} from '../api/clickContext.ts';
 import { restoreDrafts, saveDrafts } from '../api/drafts.ts';
 import { sendClearFlag } from '../api/intents/clearFlag.ts';
 import { sendHandoff } from '../api/intents/handoff.ts';
@@ -363,13 +368,10 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
   const launchContext = () => {
     const current = tracker.current();
     if (current === null) return null;
-    const rendering: unknown =
-      ownPath(
-        answeredBody(store.getSnapshot(), 'config'),
-        'instances',
-        current.instance,
-        'rendering',
-      ) ?? null;
+    const rendering = configRendering(
+      answeredBody(store.getSnapshot(), 'config'),
+      current.instance,
+    );
     return { ...current, rendering };
   };
 
@@ -379,6 +381,12 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
    * or a body that does not name the emulator, its serial and the account and profile).
    */
   const readClickTimeContext = createClickTimeContextRead(
+    transport,
+    (options.endpoints ?? ENDPOINTS).config,
+    timers,
+  );
+  /** The same click-time read, with the rendering descriptor a calibrator launch is fenced by. */
+  const readClickTimeLaunchContext = createClickTimeLaunchContextRead(
     transport,
     (options.endpoints ?? ENDPOINTS).config,
     timers,
@@ -762,18 +770,35 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       // R1, CLAUDE hard rules 1, 3, 8: the click reads the context, the device's runners, any
       // tracked battle and the calibrator now, and judges the launch against those reads.
       recognitionChecking = true;
-      let named: PageContext | null;
+      let named: LaunchContext | null;
+      let safety: readonly (ReadArrival | null)[];
       try {
-        [named] = await Promise.all([
-          readClickTimeContext(),
+        const [context, status, calibrate, battle] = await Promise.all([
+          readClickTimeLaunchContext(),
           activePoller.readNow('status'),
-          activePoller.readNow('battlesActive'),
           activePoller.readNow('calibrate'),
+          activePoller.readNow('battlesActive'),
         ]);
+        named = context;
+        // A capture never taps: it does not wait on the battle read.
+        safety =
+          command.launch.kind === 'start' ? [status, calibrate, battle] : [status, calibrate];
       } finally {
         recognitionChecking = false;
       }
       if (!fenced(command)) return;
+      // F6R10-R1-01: every safety read of this click answered; an older answer never permits.
+      if (
+        safety.some(
+          (arrival) =>
+            arrival === null ||
+            arrival.outcome.kind !== 'answered' ||
+            arrival.outcome.status !== 200,
+        )
+      ) {
+        notice('command_not_sent', 'safety_read_failed');
+        return;
+      }
       if (
         named === null ||
         !sameContext(named, command.context) ||
@@ -787,11 +812,8 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
         notice('command_not_sent', reason);
         return;
       }
-      const expected = launchContext();
-      if (expected === null) {
-        notice('command_not_sent', 'context_unknown');
-        return;
-      }
+      // The expected context (rendering included) is the one this click's config read named.
+      const expected = named;
       const launch = command.launch;
       report(
         launch.kind === 'start'
@@ -805,11 +827,34 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
             ),
       );
     },
-    recognitionApply: (command) => {
-      if (!fenced(command)) return Promise.resolve();
+    recognitionApply: async (command) => {
+      if (!fenced(command)) return;
       if (!sameContext(tracker.current(), command.context)) {
         notice('command_not_sent', 'context_changed');
-        return Promise.resolve();
+        return;
+      }
+      if (recognitionChecking) {
+        notice('command_not_sent', 'apply_checking');
+        return;
+      }
+      // F6R10-R1-03: an apply writes the profile the server has active at that moment (the
+      // saved-observations path names no operation): a config read made for this click must
+      // still name the emulator, account and profile the page showed.
+      recognitionChecking = true;
+      let named: PageContext | null;
+      try {
+        named = await readClickTimeContext();
+      } finally {
+        recognitionChecking = false;
+      }
+      if (!fenced(command)) return;
+      if (
+        named === null ||
+        !sameContext(named, command.context) ||
+        !sameContext(tracker.current(), command.context)
+      ) {
+        notice('command_not_sent', 'context_changed');
+        return;
       }
       // The apply the page offers now, for the same operation and revision; else nothing.
       const page = selectRecognitionPage(store.getSnapshot());
@@ -826,10 +871,9 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
             now.expectedRevision === command.apply.expectedRevision);
       if (!same) {
         notice('command_not_sent', offered?.reason ?? 'not_awaiting_apply');
-        return Promise.resolve();
+        return;
       }
       report(sendCalibrateApply(machine, command.apply, command.context));
-      return Promise.resolve();
     },
     recognitionStop: (command) => {
       if (!fenced(command)) return Promise.resolve();

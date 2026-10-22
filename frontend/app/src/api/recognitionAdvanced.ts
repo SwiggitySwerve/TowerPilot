@@ -1,5 +1,5 @@
-import { contextKey, expectedContext, sameContext, type PageContext } from './context.ts';
-import { createClickTimeContextRead } from './clickContext.ts';
+import { contextKey, sameContext, type PageContext } from './context.ts';
+import { createClickTimeLaunchContextRead, type LaunchContext } from './clickContext.ts';
 import { readEndpoint } from './client.ts';
 import { createIntentMachine } from './intents/machine.ts';
 import { createSequence } from './sequence.ts';
@@ -78,17 +78,17 @@ export function createRecognitionAdvancedApi(
       );
     },
     newToken: randomId,
-    readClickContext: createClickTimeContextRead(transport, ENDPOINTS.config),
+    readClickContext: createClickTimeLaunchContextRead(transport, ENDPOINTS.config),
     read: (kind: keyof typeof reads, path: ApiPath, signal: AbortSignal) =>
       readEndpoint(transport, reads[kind], path, signal),
-    launch: (context: PageContext) => {
+    launch: (context: LaunchContext) => {
       const key = randomId();
       return machine.send({
         kind: 'analysis_start',
         target: `analysis:${contextKey(context)}`,
         endpoint: 'analysisStart',
         path: '/api/screen-analysis/start',
-        body: { expected_context: expectedContext(context), idempotency_key: key },
+        body: { expected_context: context, idempotency_key: key },
         context,
         key,
         meta: {},

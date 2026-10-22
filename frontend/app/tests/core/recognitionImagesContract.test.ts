@@ -43,6 +43,24 @@ describe('R9 R10 R11 recorded route contracts', () => {
           } else expect(view.frame).toBeNull();
           expect(analysisStatus(body, 'another-operation').frame).toBeNull();
           expect(analysisStatus(body, 'another-operation').matches).toEqual([]);
+          for (const view of [
+            analysisStatus(body, 'another-operation'),
+            analysisStatus(body, operation, false),
+          ]) {
+            expect(view.operation).toBeNull();
+            expect(view.status).toBeNull();
+            expect(view.available).toBe(false);
+            expect(view.noMatches).toBe(false);
+            expect(view.screen).toBeNull();
+            expect(view.candidates).toEqual([]);
+            expect(view.tested).toBeNull();
+            expect(view.total).toBeNull();
+            expect(view.completed).toBeNull();
+            expect(view.capturedAt).toBeNull();
+            expect(view.size).toBeNull();
+            expect(view.frame).toBeNull();
+            expect(view.matches).toEqual([]);
+          }
         }
         if (route === '/api/screen-analysis/start' && own(c, 'status') === 200)
           expect(launchAnswer({ status: 200, body }).kind).toBe('accepted');
