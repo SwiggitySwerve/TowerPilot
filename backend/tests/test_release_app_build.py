@@ -41,6 +41,7 @@ BUILD["frontend/webui/app/BUILD_INVENTORY.txt"] = _inventory(
 SOURCES = {
     "VERSION": b"9.9.9\n",
     "README.md": b"# test\n",
+    "docs/RELEASE_9.9.9.md": b"# Release\n\n## Environment limits\nSynthetic test only.\n",
     "frontend/dashboard.py": b"# dashboard\n",
     "frontend/webui/index.html": b"<p>legacy</p>",
     "frontend/app/package.json": b"{}\n",
@@ -75,7 +76,9 @@ def tools(monkeypatch: pytest.MonkeyPatch) -> tuple[ModuleType, ModuleType]:
     monkeypatch.syspath_prepend(str(REPO / "tools"))
     for name in ("build_release", "build_portable"):
         monkeypatch.delitem(sys.modules, name, raising=False)
-    return importlib.import_module("build_release"), importlib.import_module("build_portable")
+    release = importlib.import_module("build_release")
+    release.DOCS.add('RELEASE_9.9.9.md')
+    return release, importlib.import_module("build_portable")
 
 
 @pytest.fixture()
@@ -477,9 +480,8 @@ def _add_entry(path: Path, relative: str) -> None:
     _sidecar(path)
 
 
-# compliance L01 and R3-R2-06: the only exemption is a .png under runtime/Lib/site-packages/
-# (Werkzeug's debugger images) in the portable ZIP. Path segments and every other suffix
-# are checked everywhere, runtime/ included.
+# R10-03: even a known pinned image path fails with synthetic canary bytes.
+# Synthetic path/hash allowlist coverage lives in test_release_archive_gate.py.
 @pytest.mark.parametrize(('relative', 'expected'), [
     (PACKAGE_PNG, None),
     ('runtime/Lib/site-packages/werkzeug/debug/shared/CONSOLE.PNG', None),
@@ -504,10 +506,6 @@ def test_only_package_pngs_in_the_portable_runtime_are_exempt(
     capsys.readouterr()
     result = release_checker.main(['--dist', str(dist)])
     output = capsys.readouterr().out
-    if which == 2 and expected is None:
-        assert result == 0, output
-    else:
-        # the source ZIP has no runtime/: every image there is refused as well
-        assert result == 1, output
-        assert f'{path.name}: ' in output and relative in output
-        assert (expected or 'forbidden file suffix:') in output
+    assert result == 1, output
+    assert f'{path.name}: ' in output and relative in output
+    assert (expected or 'forbidden file suffix:') in output
