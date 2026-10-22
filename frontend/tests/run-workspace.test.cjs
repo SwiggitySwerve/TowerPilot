@@ -2,7 +2,9 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const UI=require('../webui/run-workspace.js');
 const base={routines:{ad_gems:{enabled:true,interval_sec:300,window_sec:10}}};
-const battle=(extra={})=>({id:'battle-1',operation_id:'op-1',generation:2,status:'active',control_revision:0,applied_revision:0,envelope:{controls:base},effective:base,overrides:{},capabilities:{controls:['routines.ad_gems.enabled','routines.ad_gems.interval_sec','routines.ad_gems.window_sec','shopping_plan'],actions:['ad_gems']},...extra});
+const battle=(extra={})=>({id:'battle-1',operation_id:'op-1',generation:2,status:'active',control_revision:0,applied_revision:0,envelope:{controls:base},effective:base,overrides:{},capabilities:{controls:['routines.ad_gems.enabled','routines.ad_gems.interval_sec','routines.ad_gems.window_sec','shopping_plan'],actions:['ad_gems']},
+  // The driver has just published a status report; tests of a missing or old report pass their own runtime.
+  runtime:{server_time:Date.now()/1000},...extra});
 const plan=()=>({version:2,enabled:true,interval_sec:5,cash_reserve:100,queue_mode:'round_robin',queue:[{id:'health',enabled:true,tap_limit:2,from_wave:1,until_wave:null},{id:'damage',enabled:true,tap_limit:null,from_wave:1,until_wave:null}],excluded_upgrades:['defense_absolute']});
 
 test('flat overrides retain immutable defaults and preserve false and zero',()=>{

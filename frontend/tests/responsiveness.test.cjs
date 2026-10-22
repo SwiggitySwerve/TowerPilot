@@ -103,9 +103,10 @@ test('a read timeout keeps the last status snapshot and releases single flight',
 
 function clockPage(active=true){
   let now=0;const reads={status:[],calibration:[],battle:[]};
-  const ctx=vm.createContext({S:{view:'home',tab:'overview',battleActive:active,status:{processes:active?[{pid:1}]:[]}},
+  const ctx=vm.createContext({S:{view:'home',tab:'overview',battleActive:active,status:{processes:active?[{pid:1}]:[]}},LearningStore,
     Date:{now:()=>now},document:{hidden:false},loadStatus:()=>reads.status.push(now),pollCalibrate:()=>reads.calibration.push(now),runWorkspace:{poll:()=>reads.battle.push(now)}});
   vm.runInContext(section('function pollDashboard(','/* Shared status reads'),ctx);
+  ctx.loadSchedule=()=>{};ctx.loadLastBattle=()=>{};   // the day plan and history reads have their own cadence tests (dashboard.test.cjs)
   return {ctx,reads,tick:time=>{now=time;ctx.pollDashboard();}};
 }
 
@@ -185,7 +186,7 @@ test('process discovery unknown and stale states cannot appear idle or authorize
 test('an overdue scheduler hold is visible beside the original revision-bound Stop control',()=>{
   const body={dataset:{},contains:()=>false};
   const ctx=vm.createContext({S:{config:config(),runs:{},status:{processes:[{pid:12,runner:'combo',operation:{id:'schedule',revision:7,step:'boundary_overdue',recovery_action:'Overdue; holding the current driver until a natural boundary.'}}]}},
-    LearningStore,WorkspaceStatus,LearningView:require('../webui/learning-view.js'),$:name=>name==='#runner-body'?body:null,document:{activeElement:null},esc:String,renderRunReady(){}});
+    LearningStore,WorkspaceStatus,LearningView:require('../webui/learning-view.js'),DashboardView:require('../webui/dashboard-view.js'),$:name=>name==='#runner-body'?body:null,document:{activeElement:null},esc:String,renderRunReady(){},previewStartRun(){}});
   vm.runInContext(section('function renderRunner(){','function renderRunReady('),ctx);ctx.renderRunner();
   assert.match(body.innerHTML,/Overdue; holding the current driver/);
   assert.match(body.innerHTML,/data-operation-id="schedule" data-operation-revision="7" onclick="killPid/);

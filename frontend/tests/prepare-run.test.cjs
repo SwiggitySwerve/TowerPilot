@@ -99,5 +99,5 @@ test('a ready run cannot launch or prepare again while automation is running',()
   vm.runInContext('renderRunReady()',ctx);
   assert.equal(controls['#start-run'].disabled,true);
   assert.equal(prepare.disabled,true);
-  assert.match(controls['#run-ready'].textContent,/Automation is running/);
+  assert.match(controls['#run-ready'].innerHTML,/Automation is running/);
 });

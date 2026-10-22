@@ -587,9 +587,13 @@ async function refreshStatus() {
     if (!res.ok) return;                      // ambiguous: leave the gate alone
     const st = await res.json();
     applyGate(st.setup_complete === true);    // unlocks live, no reload needed
+    // a runner is stopped by the identity this row was drawn with (pid and its
+    // start time, created); a row without a start time cannot be stopped that way
     const rows = st.processes.map(p =>
       `<tr><td>${p.runner}</td><td class="note">${p.pid}</td>
-       <td><button class="danger" onclick="kill(${p.pid})">kill</button></td></tr>`);
+       <td>${Number.isFinite(p.created)
+         ? `<button class="danger" data-pid="${p.pid}" data-created="${p.created}" onclick="kill(this)">kill</button>`
+         : `<button class="danger" disabled title="Its start time is not known, so it cannot be stopped by its identity. Turn game input off, or stop it where it was started.">kill</button>`}</td></tr>`);
     $("#procs").innerHTML =
       "<thead><tr><th>runner</th><th>pid</th><th></th></tr></thead><tbody>" +
       (rows.join("") || "<tr><td colspan=3 class=note>nothing running</td></tr>") +
@@ -623,13 +627,36 @@ async function post(body) {
   if (!r.ok || j.ok === false) alert(j.error || ("request failed: " + r.status));
   return j;
 }
-function kill(pid) {
+// The server stops only the runner it can prove is the one this row listed
+// (pid AND created). Its answers are restated, never promoted: gone means "no
+// longer running" (answered after a stop and when it was already gone), a
+// refusal stopped nothing, a lost answer is unknown. Never resent.
+async function kill(btn) {
+  const pid = Number(btn.dataset.pid), created = Number(btn.dataset.created);
+  if (!Number.isSafeInteger(pid) || btn.dataset.created === undefined || btn.dataset.created === "" || !Number.isFinite(created)) {
+    alert("This runner's start time is not known, so it cannot be stopped by its identity; nothing was sent.");
+    return;
+  }
   if (!confirm("Kill runner " + pid + "? (The game keeps running; the " +
       "current run's bookkeeping is dropped.)")) return;
-  // optimistic: grey the row out at once so the click visibly landed
-  const btn = document.querySelector(`button[onclick="kill(${pid})"]`);
-  if (btn) { btn.disabled = true; btn.textContent = "killing..."; }
-  post({action: "kill", pid}).then(refreshSoon);
+  // grey the button out at once so the click visibly landed
+  btn.disabled = true; btn.textContent = "stopping...";
+  let r, j = {};
+  try {
+    r = await fetch("/api/control", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({action: "kill", pid, created})});
+    try { j = await r.json(); } catch { /* non-JSON error body */ }
+  } catch (e) {
+    alert("The stop's answer did not arrive, so whether runner " + pid + " stopped is unknown; the list shows what the server reports now.");
+    refreshSoon(); return;
+  }
+  if (r.ok && j.ok !== false) {
+    if (j.gone === true) btn.textContent = "no longer running";
+    else alert("The server accepted the stop of runner " + pid + " but did not say whether it is gone; the list shows what it reports.");
+  } else if (j.code === "process_identity_unverified") alert(j.error);
+  else if (j.code === "not_a_runner") alert("Runner " + pid + " is no longer listed as a runner, so nothing was stopped.");
+  else alert((j.error || ("request failed: " + r.status)) + (r.status >= 500 ? " It may still be running." : ""));
+  refreshSoon();
 }
 function control(action) { post({action}).then(refreshSoon); }
 function startPreset() {

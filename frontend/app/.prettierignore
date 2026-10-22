@@ -1,0 +1,10 @@
+package-lock.json
+node_modules/
+test-results/
+playwright-report/
+coverage/
+# Generated and formatted by scripts/generate-contract.mjs, whose --check compares them byte for byte.
+src/contract/generated/
+# Markdown follows the repository's own format (.claude/skills/markdown-format), which
+# puts the metadata blockquote directly under the H1; Prettier would separate them.
+*.md

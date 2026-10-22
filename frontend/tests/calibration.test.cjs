@@ -133,7 +133,7 @@ function routerContext(){
   const panels = TAB_NAMES.map(name => ({id:'panel-' + name, hidden:true, innerHTML:''}));
   const tabs = TAB_NAMES.map(name => ({id:'tab-' + name, textContent:name+' icon', dataset:{title:name,description:name + ' description'}, attrs:{'aria-controls':'panel-' + name},
     setAttribute(key, value){ this.attrs[key] = value; }, getAttribute(key){ return this.attrs[key]; }, removeAttribute(key){ delete this.attrs[key]; }}));
-  const location = {hash:''}, renders = [], mounts = [], unmounts = [], diagnostics = [];
+  const location = {hash:''}, renders = [], mounts = [], unmounts = [], diagnostics = [], reads = [];
   const shell = Object.fromEntries(['page-title','page-description','navigation-toggle','app-sidebar','view', 'collection-settings','abilities-settings','runtime-settings','runtime-diagnostics'].map(id => ['#' + id, {id,attrs:{},classList:{toggle(){}},addEventListener(){},getAttribute(k){return this.attrs[k]},setAttribute(k,v){this.attrs[k]=v}}]));
   const ctx = vm.createContext({S:{status:{setup_complete:true,calibration:{ready:false}}},
     RunWorkspace:{create:()=>({poll(){},history(){}})},api(){},
@@ -144,10 +144,11 @@ function routerContext(){
     settingsWorkspace:{unmount(){unmounts.push(ctx.S.tab)},mountPage(host,options){mounts.push({host:host.id,options:JSON.parse(JSON.stringify(options))})}},
     window:{addEventListener:()=>{}}, syncConnectOverlay:()=>{}, renderStream:()=>{}, openWorkspaceSection:()=>{},
     renderCalibrate:async()=>{renders.push('calibrate')},renderSetup:async()=>{renders.push('setup')},renderHome:async()=>{renders.push('home')},renderWorkspaceStatus:()=>{},
-    renderControlBlockers:()=>{},renderGetStarted:()=>{},syncLiveScreen:()=>{},refreshWorkspaceStatus:()=>{}});
+    renderControlBlockers:()=>{},renderGetStarted:()=>{},syncLiveScreen:()=>{},refreshWorkspaceStatus:()=>{},
+    loadSchedule:()=>reads.push('schedule'),loadLastBattle:()=>reads.push('last-battle')});
   vm.runInContext(section('function calibOk(){','/* ------------------------------------------------- connect overlay'),ctx);
   const go = async hash => { location.hash = hash; await vm.runInContext('route()',ctx); };
-  return {ctx, panels, tabs, location, renders, mounts, unmounts, diagnostics, go};
+  return {ctx, panels, tabs, location, renders, mounts, unmounts, diagnostics, reads, go};
 }
 
 test('Dashboard is the landing page, old routes are aliases, and no page is gated on setup_complete', async () => {
@@ -198,6 +199,15 @@ test('switching between automation pages shows another panel without rendering a
   assert.equal(panels[1].innerHTML,'');
   await go('#schedule');
   assert.deepEqual(renders,['home','calibrate','home']);
+});
+
+test('entering Dashboard reads the day plan and the latest battle once; other pages read neither', async () => {
+  const {reads, go} = routerContext();
+  await go('#runs');
+  await go('#schedule');
+  assert.deepEqual(reads,[]);
+  await go('#overview');
+  assert.deepEqual(reads,['schedule','last-battle']);
 });
 
 test('Runtime diagnostic deep links retain exact filters and release the viewer on navigation',async()=>{

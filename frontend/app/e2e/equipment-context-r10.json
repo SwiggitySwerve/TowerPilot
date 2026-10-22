@@ -1,0 +1,1662 @@
+{
+  "version": 1,
+  "generated_by": "backend/tests/test_dashboard_contract_pages.py",
+  "source": {
+    "path": "backend/logs/reviews/ui-backend-profiles-context-r10/dashboard_contract_pages_v1.r10-candidate.json",
+    "sha256": "c3936b75c85ee44b8fcd06ccf5d2b30b281bafb2d3d24a1d809b27849b9e9c0c",
+    "aliases": {
+      "context_config": "context_fence.read_config_before_the_loadout_save",
+      "context_match_saved": "context_fence.loadout_with_the_matching_context_is_written",
+      "context_match_readback": "context_fence.read_config_after_the_matching_loadout_holds_it",
+      "context_malformed_null": "context_fence.loadout_expected_context_null_is_refused_not_read_as_absent",
+      "context_malformed_missing_fields": "context_fence.loadout_expected_context_missing_the_serial",
+      "context_malformed_extra_field": "context_fence.loadout_expected_context_with_an_unknown_key",
+      "context_malformed_wrong_value_type": "context_fence.loadout_expected_context_serial_not_text",
+      "context_malformed_not_an_object": "context_fence.loadout_expected_context_not_an_object",
+      "context_refusals_readback": "context_fence.read_config_after_the_malformed_loadout_requests_unchanged",
+      "context_changed_config": "context_fence.read_config_after_the_matching_loadout_holds_it",
+      "context_changed_refused": "context_fence.loadout_composed_for_alpha_is_refused_with_its_expected_revision",
+      "context_changed_readback": "context_fence.read_config_after_the_loadout_refusals_nothing_was_written",
+      "context_stale_and_changed": "context_fence.loadout_with_a_stale_context_and_a_stale_revision_is_told_the_context_changed",
+      "context_stale_revision": "context_fence.loadout_for_the_current_context_with_a_stale_revision_is_a_revision_conflict",
+      "context_legacy": "context_fence.loadout_without_the_field_is_not_fenced_the_legacy_page",
+      "context_profile": "ability_policies.read_before_the_first_save",
+      "context_match_profile": "ability_policies.read_before_the_first_save",
+      "context_changed_profile": "ability_policies.read_before_the_first_save",
+      "context_unknown_refused": "context_fence.tier_when_the_configuration_names_an_unknown_account_is_refused"
+    }
+  },
+  "cases": {
+    "equipment_context": {
+      "context_config": {
+        "body": {
+          "accounts": {
+            "alpha": {
+              "active_profile": "mine",
+              "label": "Alpha",
+              "loadouts": {
+                "later": {
+                  "defined": false
+                },
+                "plain": {},
+                "spare": {
+                  "cards": "no_card"
+                }
+              }
+            },
+            "beta": {
+              "active_profile": "theirs",
+              "label": "Beta",
+              "loadouts": {
+                "later": {
+                  "defined": false
+                },
+                "plain": {},
+                "spare": {
+                  "cards": "no_card"
+                }
+              }
+            }
+          },
+          "active_instance": "main",
+          "active_profile": "mine",
+          "config_revision": "00000000000000000000000000000000000000000000000000000000000000d0",
+          "instances": {
+            "main": {
+              "account": "alpha",
+              "allow_taps": true,
+              "serial": "fake:1"
+            },
+            "other": {
+              "serial": "fake:2"
+            }
+          },
+          "loadouts": {
+            "later": {
+              "defined": false
+            },
+            "plain": {},
+            "spare": {
+              "cards": "no_card"
+            }
+          },
+          "preset": "bp_farm",
+          "presets": {},
+          "tourney_card_tweaks": {}
+        },
+        "request": {
+          "method": "GET",
+          "path": "/api/config"
+        },
+        "status": 200
+      },
+      "context_match_saved": {
+        "body": {
+          "backup": "config.yaml.bak-20270115_080000",
+          "config_revision": "00000000000000000000000000000000000000000000000000000000000000d1",
+          "loadouts": {
+            "later": {
+              "defined": false
+            },
+            "plain": {
+              "global_preset": "Farm Run"
+            },
+            "spare": {
+              "cards": "no_card"
+            }
+          },
+          "ok": true,
+          "warnings": []
+        },
+        "request": {
+          "body": {
+            "body": {
+              "global_preset": "Farm Run"
+            },
+            "expected_context": {
+              "account": "alpha",
+              "instance": "main",
+              "profile": "mine",
+              "serial": "fake:1"
+            },
+            "expected_revision": "00000000000000000000000000000000000000000000000000000000000000d0",
+            "name": "plain"
+          },
+          "method": "POST",
+          "path": "/api/loadout-patch"
+        },
+        "status": 200
+      },
+      "context_match_readback": {
+        "body": {
+          "accounts": {
+            "alpha": {
+              "active_profile": "mine",
+              "label": "Alpha",
+              "loadouts": {
+                "later": {
+                  "defined": false
+                },
+                "plain": {
+                  "global_preset": "Farm Run"
+                },
+                "spare": {
+                  "cards": "no_card"
+                }
+              },
+              "profiles": ["mine"],
+              "tourney_card_tweaks": {}
+            },
+            "beta": {
+              "active_profile": "theirs",
+              "label": "Beta",
+              "loadouts": {
+                "later": {
+                  "defined": false
+                },
+                "plain": {},
+                "spare": {
+                  "cards": "no_card"
+                }
+              }
+            }
+          },
+          "active_instance": "main",
+          "active_profile": "mine",
+          "config_revision": "00000000000000000000000000000000000000000000000000000000000000d1",
+          "instances": {
+            "main": {
+              "account": "alpha",
+              "allow_taps": true,
+              "serial": "fake:1"
+            },
+            "other": {
+              "serial": "fake:2"
+            }
+          },
+          "loadouts": {
+            "later": {
+              "defined": false
+            },
+            "plain": {
+              "global_preset": "Farm Run"
+            },
+            "spare": {
+              "cards": "no_card"
+            }
+          },
+          "preset": "bp_farm",
+          "presets": {},
+          "tourney_card_tweaks": {}
+        },
+        "request": {
+          "method": "GET",
+          "path": "/api/config"
+        },
+        "status": 200
+      },
+      "context_malformed_null": {
+        "body": {
+          "code": "invalid_request",
+          "error": "expected_context must be an object naming exactly instance, account, profile, serial",
+          "ok": false
+        },
+        "request": {
+          "body": {
+            "body": {
+              "cards": "main_farm"
+            },
+            "expected_context": null,
+            "expected_revision": "00000000000000000000000000000000000000000000000000000000000000d1",
+            "name": "plain"
+          },
+          "method": "POST",
+          "path": "/api/loadout-patch"
+        },
+        "status": 400
+      },
+      "context_malformed_missing_fields": {
+        "body": {
+          "code": "invalid_request",
+          "error": "expected_context must be an object naming exactly instance, account, profile, serial",
+          "ok": false
+        },
+        "request": {
+          "body": {
+            "body": {
+              "cards": "main_farm"
+            },
+            "expected_context": {
+              "account": "alpha",
+              "instance": "main",
+              "profile": "mine"
+            },
+            "expected_revision": "00000000000000000000000000000000000000000000000000000000000000d1",
+            "name": "plain"
+          },
+          "method": "POST",
+          "path": "/api/loadout-patch"
+        },
+        "status": 400
+      },
+      "context_malformed_extra_field": {
+        "body": {
+          "code": "invalid_request",
+          "error": "expected_context must be an object naming exactly instance, account, profile, serial",
+          "ok": false
+        },
+        "request": {
+          "body": {
+            "body": {
+              "cards": "main_farm"
+            },
+            "expected_context": {
+              "account": "alpha",
+              "instance": "main",
+              "profile": "mine",
+              "rendering": null,
+              "serial": "fake:1"
+            },
+            "expected_revision": "00000000000000000000000000000000000000000000000000000000000000d1",
+            "name": "plain"
+          },
+          "method": "POST",
+          "path": "/api/loadout-patch"
+        },
+        "status": 400
+      },
+      "context_malformed_wrong_value_type": {
+        "body": {
+          "code": "invalid_request",
+          "error": "expected_context.serial must be text or null",
+          "ok": false
+        },
+        "request": {
+          "body": {
+            "body": {
+              "cards": "main_farm"
+            },
+            "expected_context": {
+              "account": "alpha",
+              "instance": "main",
+              "profile": "mine",
+              "serial": 5
+            },
+            "expected_revision": "00000000000000000000000000000000000000000000000000000000000000d1",
+            "name": "plain"
+          },
+          "method": "POST",
+          "path": "/api/loadout-patch"
+        },
+        "status": 400
+      },
+      "context_malformed_not_an_object": {
+        "body": {
+          "code": "invalid_request",
+          "error": "expected_context must be an object naming exactly instance, account, profile, serial",
+          "ok": false
+        },
+        "request": {
+          "body": {
+            "body": {
+              "cards": "main_farm"
+            },
+            "expected_context": "alpha",
+            "expected_revision": "00000000000000000000000000000000000000000000000000000000000000d1",
+            "name": "plain"
+          },
+          "method": "POST",
+          "path": "/api/loadout-patch"
+        },
+        "status": 400
+      },
+      "context_refusals_readback": {
+        "body": {
+          "accounts": {
+            "alpha": {
+              "active_profile": "mine",
+              "label": "Alpha",
+              "loadouts": {
+                "later": {
+                  "defined": false
+                },
+                "plain": {
+                  "global_preset": "Farm Run"
+                },
+                "spare": {
+                  "cards": "no_card"
+                }
+              },
+              "profiles": ["mine"],
+              "tourney_card_tweaks": {}
+            },
+            "beta": {
+              "active_profile": "theirs",
+              "label": "Beta",
+              "loadouts": {
+                "later": {
+                  "defined": false
+                },
+                "plain": {},
+                "spare": {
+                  "cards": "no_card"
+                }
+              }
+            }
+          },
+          "active_instance": "main",
+          "active_profile": "mine",
+          "config_revision": "00000000000000000000000000000000000000000000000000000000000000d1",
+          "instances": {
+            "main": {
+              "account": "alpha",
+              "allow_taps": true,
+              "serial": "fake:1"
+            },
+            "other": {
+              "serial": "fake:2"
+            }
+          },
+          "loadouts": {
+            "later": {
+              "defined": false
+            },
+            "plain": {
+              "global_preset": "Farm Run"
+            },
+            "spare": {
+              "cards": "no_card"
+            }
+          },
+          "preset": "bp_farm",
+          "presets": {},
+          "tourney_card_tweaks": {}
+        },
+        "request": {
+          "method": "GET",
+          "path": "/api/config"
+        },
+        "status": 200
+      },
+      "context_changed_config": {
+        "body": {
+          "accounts": {
+            "alpha": {
+              "active_profile": "mine",
+              "label": "Alpha",
+              "loadouts": {
+                "later": {
+                  "defined": false
+                },
+                "plain": {
+                  "global_preset": "Farm Run"
+                },
+                "spare": {
+                  "cards": "no_card"
+                }
+              },
+              "profiles": ["mine"],
+              "tourney_card_tweaks": {}
+            },
+            "beta": {
+              "active_profile": "theirs",
+              "label": "Beta",
+              "loadouts": {
+                "later": {
+                  "defined": false
+                },
+                "plain": {},
+                "spare": {
+                  "cards": "no_card"
+                }
+              }
+            }
+          },
+          "active_instance": "main",
+          "active_profile": "mine",
+          "config_revision": "00000000000000000000000000000000000000000000000000000000000000d1",
+          "instances": {
+            "main": {
+              "account": "alpha",
+              "allow_taps": true,
+              "serial": "fake:1"
+            },
+            "other": {
+              "serial": "fake:2"
+            }
+          },
+          "loadouts": {
+            "later": {
+              "defined": false
+            },
+            "plain": {
+              "global_preset": "Farm Run"
+            },
+            "spare": {
+              "cards": "no_card"
+            }
+          },
+          "preset": "bp_farm",
+          "presets": {},
+          "tourney_card_tweaks": {}
+        },
+        "request": {
+          "method": "GET",
+          "path": "/api/config"
+        },
+        "status": 200
+      },
+      "context_changed_refused": {
+        "body": {
+          "code": "context_changed",
+          "current_context": {
+            "account": "beta",
+            "instance": "main",
+            "profile": "theirs",
+            "serial": "fake:1"
+          },
+          "error": "The emulator, account or profile changed since this page was read; review the new context before saving again",
+          "ok": false
+        },
+        "request": {
+          "body": {
+            "body": {
+              "cards": "main_farm"
+            },
+            "expected_context": {
+              "account": "alpha",
+              "instance": "main",
+              "profile": "mine",
+              "serial": "fake:1"
+            },
+            "expected_revision": "00000000000000000000000000000000000000000000000000000000000000d1",
+            "name": "plain"
+          },
+          "method": "POST",
+          "path": "/api/loadout-patch"
+        },
+        "status": 409
+      },
+      "context_changed_readback": {
+        "body": {
+          "accounts": {
+            "alpha": {
+              "active_profile": "mine",
+              "label": "Alpha",
+              "loadouts": {
+                "later": {
+                  "defined": false
+                },
+                "plain": {
+                  "global_preset": "Farm Run"
+                },
+                "spare": {
+                  "cards": "no_card"
+                }
+              },
+              "profiles": ["mine"],
+              "tourney_card_tweaks": {}
+            },
+            "beta": {
+              "active_profile": "theirs",
+              "label": "Beta",
+              "loadouts": {
+                "later": {
+                  "defined": false
+                },
+                "plain": {},
+                "spare": {
+                  "cards": "no_card"
+                }
+              }
+            }
+          },
+          "active_instance": "main",
+          "active_profile": "theirs",
+          "config_revision": "00000000000000000000000000000000000000000000000000000000000000d2",
+          "instances": {
+            "main": {
+              "account": "beta",
+              "allow_taps": true,
+              "serial": "fake:1"
+            },
+            "other": {
+              "serial": "fake:2"
+            }
+          },
+          "loadouts": {
+            "later": {
+              "defined": false
+            },
+            "plain": {},
+            "spare": {
+              "cards": "no_card"
+            }
+          },
+          "preset": "bp_farm",
+          "presets": {},
+          "tourney_card_tweaks": {}
+        },
+        "request": {
+          "method": "GET",
+          "path": "/api/config"
+        },
+        "status": 200
+      },
+      "context_stale_and_changed": {
+        "body": {
+          "code": "context_changed",
+          "current_context": {
+            "account": "beta",
+            "instance": "main",
+            "profile": "theirs",
+            "serial": "fake:1"
+          },
+          "error": "The emulator, account or profile changed since this page was read; review the new context before saving again",
+          "ok": false
+        },
+        "request": {
+          "body": {
+            "body": {
+              "cards": "main_farm"
+            },
+            "expected_context": {
+              "account": "alpha",
+              "instance": "main",
+              "profile": "mine",
+              "serial": "fake:1"
+            },
+            "expected_revision": "00000000000000000000000000000000000000000000000000000000000000d3",
+            "name": "plain"
+          },
+          "method": "POST",
+          "path": "/api/loadout-patch"
+        },
+        "status": 409
+      },
+      "context_stale_revision": {
+        "body": {
+          "code": "revision_conflict",
+          "config_revision": "00000000000000000000000000000000000000000000000000000000000000d2",
+          "error": "Saved configuration changed. Reload and reconcile the pending edit before saving again.",
+          "ok": false
+        },
+        "request": {
+          "body": {
+            "body": {
+              "cards": "main_farm"
+            },
+            "expected_context": {
+              "account": "beta",
+              "instance": "main",
+              "profile": "theirs",
+              "serial": "fake:1"
+            },
+            "expected_revision": "00000000000000000000000000000000000000000000000000000000000000d3",
+            "name": "plain"
+          },
+          "method": "POST",
+          "path": "/api/loadout-patch"
+        },
+        "status": 409
+      },
+      "context_legacy": {
+        "body": {
+          "backup": "config.yaml.bak-20270115_080000_1",
+          "config_revision": "00000000000000000000000000000000000000000000000000000000000000d4",
+          "loadouts": {
+            "later": {
+              "defined": false
+            },
+            "plain": {
+              "cards": "main_farm"
+            },
+            "spare": {
+              "cards": "no_card"
+            }
+          },
+          "ok": true,
+          "warnings": []
+        },
+        "request": {
+          "body": {
+            "body": {
+              "cards": "main_farm"
+            },
+            "name": "plain"
+          },
+          "method": "POST",
+          "path": "/api/loadout-patch"
+        },
+        "status": 200
+      },
+      "context_profile": {
+        "body": {
+          "name": "mine",
+          "ok": true,
+          "problems": [],
+          "profile": {
+            "blueprints": {
+              "farm": {
+                "kind": "coin",
+                "loadout": "as_is",
+                "policies": {
+                  "gather": "all_on"
+                },
+                "shopping": "main_list",
+                "tier": 1
+              },
+              "farm_deep": {
+                "kind": "coin",
+                "loadout": "plain",
+                "policies": {
+                  "gather": "gems_only",
+                  "rescue": "wall_drain",
+                  "uw": "farm_cl"
+                },
+                "restart_via_home": true,
+                "shopping": "default_sweep",
+                "tier": 14
+              },
+              "shards": {
+                "count": 100,
+                "kind": "shard",
+                "loadout": "plain",
+                "policies": {
+                  "gather": "gems_only"
+                },
+                "tier": 18
+              },
+              "tourney": {
+                "gem_entry_max": 0,
+                "kind": "tournament",
+                "loadout": "plain",
+                "policies": {
+                  "gather": "hands_off",
+                  "rescue": "any_falling",
+                  "uw": "tourney_cl"
+                },
+                "tier": 14
+              }
+            },
+            "plan": {
+              "days": {
+                "farm_day": [
+                  {
+                    "after": "08:00",
+                    "block": "shards",
+                    "blueprint": "shards",
+                    "count": 100
+                  },
+                  {
+                    "block": "coin",
+                    "blueprint": "farm"
+                  }
+                ],
+                "tourney_day": [
+                  {
+                    "after": "19:00",
+                    "block": "tournament",
+                    "blueprint": "tourney",
+                    "count": 1
+                  },
+                  {
+                    "after": "08:00",
+                    "block": "shards",
+                    "blueprint": "shards",
+                    "count": 100
+                  },
+                  {
+                    "block": "coin",
+                    "blueprint": "farm"
+                  }
+                ]
+              },
+              "week": {
+                "default": "farm_day",
+                "saturday": "tourney_day"
+              }
+            },
+            "player": {
+              "abilities": {
+                "demon_mode": true,
+                "nuke": true
+              },
+              "abilities_verified": true,
+              "card_presets": ["main_farm", "no_card"],
+              "category_presets": {
+                "bots": ["Farm"],
+                "guardians": ["Farm"],
+                "modules": ["Farm", "Tourney"],
+                "workshop": ["Full Upgraded"]
+              },
+              "global_presets": ["Farm Run", "Tournament"],
+              "guardians": ["bounty", "fetch", "summon"],
+              "max_tier": 19,
+              "modules_equipped": ["amplifying_strike", "black_hole_digestor"],
+              "modules_in_grid": [],
+              "uws": {
+                "black_hole": true,
+                "chain_lightning": true,
+                "chronofield": true,
+                "death_wave": true,
+                "golden_tower": true,
+                "inner_land_mines": false,
+                "poison_swamp": true,
+                "smart_missiles": false,
+                "spotlight": true
+              },
+              "wall": true
+            },
+            "policies": {
+              "chores": [
+                {
+                  "enabled": true,
+                  "name": "quest_scan"
+                }
+              ],
+              "gather": {
+                "all_on": {
+                  "ad_gems": true,
+                  "flying_gem": true,
+                  "gem_delay_sec": [3, 10],
+                  "guild": true,
+                  "quest_rewards": true,
+                  "quests_8h": true
+                },
+                "gems_only": {
+                  "ad_gems": false,
+                  "flying_gem": true,
+                  "gem_delay_sec": [3, 10],
+                  "guild": false,
+                  "quest_rewards": false,
+                  "quests_8h": false
+                },
+                "hands_off": {
+                  "ad_gems": false,
+                  "flying_gem": false,
+                  "gem_delay_sec": [3, 10],
+                  "guild": false,
+                  "quest_rewards": false,
+                  "quests_8h": false
+                }
+              },
+              "global_behaviors": {
+                "daily_missions": false,
+                "free_store_gems": true
+              },
+              "rescue_policies": {
+                "any_falling": {
+                  "arm": {
+                    "immunity_sec": 8,
+                    "on": "second_wind",
+                    "watch_sec": null
+                  },
+                  "end_sprint_after_sw": false,
+                  "rules": [
+                    {
+                      "do": {
+                        "burst": {
+                          "cancel_sprint": true,
+                          "fire": "demon_mode",
+                          "retaps": 3
+                        }
+                      },
+                      "when": {
+                        "bar": "wall",
+                        "below": 0.02,
+                        "deadband": 0.01,
+                        "falling_samples": 2
+                      }
+                    },
+                    {
+                      "do": {
+                        "burst": {
+                          "cancel_sprint": true,
+                          "fire": "demon_mode",
+                          "retaps": 3
+                        }
+                      },
+                      "when": {
+                        "wall_collapse": {
+                          "from_above": 0.3
+                        }
+                      }
+                    }
+                  ]
+                },
+                "wall_drain": {
+                  "arm": {
+                    "immunity_sec": null,
+                    "on": "second_wind",
+                    "watch_sec": 30
+                  },
+                  "end_sprint_after_sw": false,
+                  "label": "Wall drain",
+                  "rules": [
+                    {
+                      "do": {
+                        "burst": {
+                          "cancel_sprint": true,
+                          "fire": "demon_mode",
+                          "retaps": 3
+                        }
+                      },
+                      "when": {
+                        "bar": "wall",
+                        "below": 0.02,
+                        "deadband": 0.01,
+                        "falling_samples": 2
+                      }
+                    },
+                    {
+                      "do": {
+                        "burst": {
+                          "cancel_sprint": true,
+                          "fire": "demon_mode",
+                          "retaps": 3
+                        }
+                      },
+                      "when": {
+                        "wall_collapse": {
+                          "from_above": 0.3
+                        }
+                      }
+                    },
+                    {
+                      "do": {
+                        "fire": {
+                          "button": "nuke",
+                          "throttle_sec": 5
+                        }
+                      },
+                      "when": {
+                        "fleet_mark": {
+                          "after_waves": 3,
+                          "window_waves": 60
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "shopping_lists": {
+                "default_sweep": {
+                  "directives": [
+                    {
+                      "enabled": true,
+                      "mode": "best_cost",
+                      "stats": ["health", "health_regen"],
+                      "tab": "defense"
+                    },
+                    {
+                      "clicks": 3,
+                      "enabled": true,
+                      "mode": "clicks",
+                      "stats": ["damage"],
+                      "tab": "attack"
+                    }
+                  ],
+                  "enabled": true
+                },
+                "main_list": {
+                  "cash_reserve": 500,
+                  "enabled": true,
+                  "interval_sec": 30,
+                  "queue": [
+                    {
+                      "enabled": true,
+                      "id": "damage",
+                      "tap_limit": 3
+                    },
+                    {
+                      "enabled": true,
+                      "from_wave": 5,
+                      "id": "health",
+                      "tap_limit": 2
+                    }
+                  ],
+                  "version": 2
+                }
+              },
+              "uw_policies": {
+                "farm_cl": {
+                  "baseline": {
+                    "black_hole": true,
+                    "chronofield": true,
+                    "death_wave": true,
+                    "golden_tower": true,
+                    "poison_swamp": true,
+                    "spotlight": true
+                  },
+                  "chain_lightning": {
+                    "always_on_above": [6080, 6120],
+                    "mode": "fleet_marks",
+                    "off_after_waves": [53, 72],
+                    "pre_mark_waves": [5, 25]
+                  },
+                  "label": "Farm choreography"
+                },
+                "tourney_cl": {
+                  "baseline": {
+                    "black_hole": true,
+                    "chronofield": true,
+                    "death_wave": true,
+                    "golden_tower": true,
+                    "poison_swamp": true,
+                    "spotlight": true
+                  },
+                  "chain_lightning": {
+                    "mode": "off_until_wave",
+                    "on_above": [500, 550]
+                  },
+                  "label": "Tournament"
+                }
+              }
+            }
+          },
+          "revision": "0000000000000000000000000000000000000000000000000000000000000081",
+          "validator_error": null,
+          "warnings": []
+        },
+        "request": {
+          "method": "GET",
+          "path": "/api/profile-src/mine"
+        },
+        "status": 200
+      },
+      "context_match_profile": {
+        "body": {
+          "name": "mine",
+          "ok": true,
+          "problems": [],
+          "profile": {
+            "blueprints": {
+              "farm": {
+                "kind": "coin",
+                "loadout": "as_is",
+                "policies": {
+                  "gather": "all_on"
+                },
+                "shopping": "main_list",
+                "tier": 1
+              },
+              "farm_deep": {
+                "kind": "coin",
+                "loadout": "plain",
+                "policies": {
+                  "gather": "gems_only",
+                  "rescue": "wall_drain",
+                  "uw": "farm_cl"
+                },
+                "restart_via_home": true,
+                "shopping": "default_sweep",
+                "tier": 14
+              },
+              "shards": {
+                "count": 100,
+                "kind": "shard",
+                "loadout": "plain",
+                "policies": {
+                  "gather": "gems_only"
+                },
+                "tier": 18
+              },
+              "tourney": {
+                "gem_entry_max": 0,
+                "kind": "tournament",
+                "loadout": "plain",
+                "policies": {
+                  "gather": "hands_off",
+                  "rescue": "any_falling",
+                  "uw": "tourney_cl"
+                },
+                "tier": 14
+              }
+            },
+            "plan": {
+              "days": {
+                "farm_day": [
+                  {
+                    "after": "08:00",
+                    "block": "shards",
+                    "blueprint": "shards",
+                    "count": 100
+                  },
+                  {
+                    "block": "coin",
+                    "blueprint": "farm"
+                  }
+                ],
+                "tourney_day": [
+                  {
+                    "after": "19:00",
+                    "block": "tournament",
+                    "blueprint": "tourney",
+                    "count": 1
+                  },
+                  {
+                    "after": "08:00",
+                    "block": "shards",
+                    "blueprint": "shards",
+                    "count": 100
+                  },
+                  {
+                    "block": "coin",
+                    "blueprint": "farm"
+                  }
+                ]
+              },
+              "week": {
+                "default": "farm_day",
+                "saturday": "tourney_day"
+              }
+            },
+            "player": {
+              "abilities": {
+                "demon_mode": true,
+                "nuke": true
+              },
+              "abilities_verified": true,
+              "card_presets": ["main_farm", "no_card"],
+              "category_presets": {
+                "bots": ["Farm"],
+                "guardians": ["Farm"],
+                "modules": ["Farm", "Tourney"],
+                "workshop": ["Full Upgraded"]
+              },
+              "global_presets": ["Farm Run", "Tournament"],
+              "guardians": ["bounty", "fetch", "summon"],
+              "max_tier": 19,
+              "modules_equipped": ["amplifying_strike", "black_hole_digestor"],
+              "modules_in_grid": [],
+              "uws": {
+                "black_hole": true,
+                "chain_lightning": true,
+                "chronofield": true,
+                "death_wave": true,
+                "golden_tower": true,
+                "inner_land_mines": false,
+                "poison_swamp": true,
+                "smart_missiles": false,
+                "spotlight": true
+              },
+              "wall": true
+            },
+            "policies": {
+              "chores": [
+                {
+                  "enabled": true,
+                  "name": "quest_scan"
+                }
+              ],
+              "gather": {
+                "all_on": {
+                  "ad_gems": true,
+                  "flying_gem": true,
+                  "gem_delay_sec": [3, 10],
+                  "guild": true,
+                  "quest_rewards": true,
+                  "quests_8h": true
+                },
+                "gems_only": {
+                  "ad_gems": false,
+                  "flying_gem": true,
+                  "gem_delay_sec": [3, 10],
+                  "guild": false,
+                  "quest_rewards": false,
+                  "quests_8h": false
+                },
+                "hands_off": {
+                  "ad_gems": false,
+                  "flying_gem": false,
+                  "gem_delay_sec": [3, 10],
+                  "guild": false,
+                  "quest_rewards": false,
+                  "quests_8h": false
+                }
+              },
+              "global_behaviors": {
+                "daily_missions": false,
+                "free_store_gems": true
+              },
+              "rescue_policies": {
+                "any_falling": {
+                  "arm": {
+                    "immunity_sec": 8,
+                    "on": "second_wind",
+                    "watch_sec": null
+                  },
+                  "end_sprint_after_sw": false,
+                  "rules": [
+                    {
+                      "do": {
+                        "burst": {
+                          "cancel_sprint": true,
+                          "fire": "demon_mode",
+                          "retaps": 3
+                        }
+                      },
+                      "when": {
+                        "bar": "wall",
+                        "below": 0.02,
+                        "deadband": 0.01,
+                        "falling_samples": 2
+                      }
+                    },
+                    {
+                      "do": {
+                        "burst": {
+                          "cancel_sprint": true,
+                          "fire": "demon_mode",
+                          "retaps": 3
+                        }
+                      },
+                      "when": {
+                        "wall_collapse": {
+                          "from_above": 0.3
+                        }
+                      }
+                    }
+                  ]
+                },
+                "wall_drain": {
+                  "arm": {
+                    "immunity_sec": null,
+                    "on": "second_wind",
+                    "watch_sec": 30
+                  },
+                  "end_sprint_after_sw": false,
+                  "label": "Wall drain",
+                  "rules": [
+                    {
+                      "do": {
+                        "burst": {
+                          "cancel_sprint": true,
+                          "fire": "demon_mode",
+                          "retaps": 3
+                        }
+                      },
+                      "when": {
+                        "bar": "wall",
+                        "below": 0.02,
+                        "deadband": 0.01,
+                        "falling_samples": 2
+                      }
+                    },
+                    {
+                      "do": {
+                        "burst": {
+                          "cancel_sprint": true,
+                          "fire": "demon_mode",
+                          "retaps": 3
+                        }
+                      },
+                      "when": {
+                        "wall_collapse": {
+                          "from_above": 0.3
+                        }
+                      }
+                    },
+                    {
+                      "do": {
+                        "fire": {
+                          "button": "nuke",
+                          "throttle_sec": 5
+                        }
+                      },
+                      "when": {
+                        "fleet_mark": {
+                          "after_waves": 3,
+                          "window_waves": 60
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "shopping_lists": {
+                "default_sweep": {
+                  "directives": [
+                    {
+                      "enabled": true,
+                      "mode": "best_cost",
+                      "stats": ["health", "health_regen"],
+                      "tab": "defense"
+                    },
+                    {
+                      "clicks": 3,
+                      "enabled": true,
+                      "mode": "clicks",
+                      "stats": ["damage"],
+                      "tab": "attack"
+                    }
+                  ],
+                  "enabled": true
+                },
+                "main_list": {
+                  "cash_reserve": 500,
+                  "enabled": true,
+                  "interval_sec": 30,
+                  "queue": [
+                    {
+                      "enabled": true,
+                      "id": "damage",
+                      "tap_limit": 3
+                    },
+                    {
+                      "enabled": true,
+                      "from_wave": 5,
+                      "id": "health",
+                      "tap_limit": 2
+                    }
+                  ],
+                  "version": 2
+                }
+              },
+              "uw_policies": {
+                "farm_cl": {
+                  "baseline": {
+                    "black_hole": true,
+                    "chronofield": true,
+                    "death_wave": true,
+                    "golden_tower": true,
+                    "poison_swamp": true,
+                    "spotlight": true
+                  },
+                  "chain_lightning": {
+                    "always_on_above": [6080, 6120],
+                    "mode": "fleet_marks",
+                    "off_after_waves": [53, 72],
+                    "pre_mark_waves": [5, 25]
+                  },
+                  "label": "Farm choreography"
+                },
+                "tourney_cl": {
+                  "baseline": {
+                    "black_hole": true,
+                    "chronofield": true,
+                    "death_wave": true,
+                    "golden_tower": true,
+                    "poison_swamp": true,
+                    "spotlight": true
+                  },
+                  "chain_lightning": {
+                    "mode": "off_until_wave",
+                    "on_above": [500, 550]
+                  },
+                  "label": "Tournament"
+                }
+              }
+            }
+          },
+          "revision": "0000000000000000000000000000000000000000000000000000000000000081",
+          "validator_error": null,
+          "warnings": []
+        },
+        "request": {
+          "method": "GET",
+          "path": "/api/profile-src/mine"
+        },
+        "status": 200
+      },
+      "context_changed_profile": {
+        "body": {
+          "name": "mine",
+          "ok": true,
+          "problems": [],
+          "profile": {
+            "blueprints": {
+              "farm": {
+                "kind": "coin",
+                "loadout": "as_is",
+                "policies": {
+                  "gather": "all_on"
+                },
+                "shopping": "main_list",
+                "tier": 1
+              },
+              "farm_deep": {
+                "kind": "coin",
+                "loadout": "plain",
+                "policies": {
+                  "gather": "gems_only",
+                  "rescue": "wall_drain",
+                  "uw": "farm_cl"
+                },
+                "restart_via_home": true,
+                "shopping": "default_sweep",
+                "tier": 14
+              },
+              "shards": {
+                "count": 100,
+                "kind": "shard",
+                "loadout": "plain",
+                "policies": {
+                  "gather": "gems_only"
+                },
+                "tier": 18
+              },
+              "tourney": {
+                "gem_entry_max": 0,
+                "kind": "tournament",
+                "loadout": "plain",
+                "policies": {
+                  "gather": "hands_off",
+                  "rescue": "any_falling",
+                  "uw": "tourney_cl"
+                },
+                "tier": 14
+              }
+            },
+            "plan": {
+              "days": {
+                "farm_day": [
+                  {
+                    "after": "08:00",
+                    "block": "shards",
+                    "blueprint": "shards",
+                    "count": 100
+                  },
+                  {
+                    "block": "coin",
+                    "blueprint": "farm"
+                  }
+                ],
+                "tourney_day": [
+                  {
+                    "after": "19:00",
+                    "block": "tournament",
+                    "blueprint": "tourney",
+                    "count": 1
+                  },
+                  {
+                    "after": "08:00",
+                    "block": "shards",
+                    "blueprint": "shards",
+                    "count": 100
+                  },
+                  {
+                    "block": "coin",
+                    "blueprint": "farm"
+                  }
+                ]
+              },
+              "week": {
+                "default": "farm_day",
+                "saturday": "tourney_day"
+              }
+            },
+            "player": {
+              "abilities": {
+                "demon_mode": true,
+                "nuke": true
+              },
+              "abilities_verified": true,
+              "card_presets": ["main_farm", "no_card"],
+              "category_presets": {
+                "bots": ["Farm"],
+                "guardians": ["Farm"],
+                "modules": ["Farm", "Tourney"],
+                "workshop": ["Full Upgraded"]
+              },
+              "global_presets": ["Farm Run", "Tournament"],
+              "guardians": ["bounty", "fetch", "summon"],
+              "max_tier": 19,
+              "modules_equipped": ["amplifying_strike", "black_hole_digestor"],
+              "modules_in_grid": [],
+              "uws": {
+                "black_hole": true,
+                "chain_lightning": true,
+                "chronofield": true,
+                "death_wave": true,
+                "golden_tower": true,
+                "inner_land_mines": false,
+                "poison_swamp": true,
+                "smart_missiles": false,
+                "spotlight": true
+              },
+              "wall": true
+            },
+            "policies": {
+              "chores": [
+                {
+                  "enabled": true,
+                  "name": "quest_scan"
+                }
+              ],
+              "gather": {
+                "all_on": {
+                  "ad_gems": true,
+                  "flying_gem": true,
+                  "gem_delay_sec": [3, 10],
+                  "guild": true,
+                  "quest_rewards": true,
+                  "quests_8h": true
+                },
+                "gems_only": {
+                  "ad_gems": false,
+                  "flying_gem": true,
+                  "gem_delay_sec": [3, 10],
+                  "guild": false,
+                  "quest_rewards": false,
+                  "quests_8h": false
+                },
+                "hands_off": {
+                  "ad_gems": false,
+                  "flying_gem": false,
+                  "gem_delay_sec": [3, 10],
+                  "guild": false,
+                  "quest_rewards": false,
+                  "quests_8h": false
+                }
+              },
+              "global_behaviors": {
+                "daily_missions": false,
+                "free_store_gems": true
+              },
+              "rescue_policies": {
+                "any_falling": {
+                  "arm": {
+                    "immunity_sec": 8,
+                    "on": "second_wind",
+                    "watch_sec": null
+                  },
+                  "end_sprint_after_sw": false,
+                  "rules": [
+                    {
+                      "do": {
+                        "burst": {
+                          "cancel_sprint": true,
+                          "fire": "demon_mode",
+                          "retaps": 3
+                        }
+                      },
+                      "when": {
+                        "bar": "wall",
+                        "below": 0.02,
+                        "deadband": 0.01,
+                        "falling_samples": 2
+                      }
+                    },
+                    {
+                      "do": {
+                        "burst": {
+                          "cancel_sprint": true,
+                          "fire": "demon_mode",
+                          "retaps": 3
+                        }
+                      },
+                      "when": {
+                        "wall_collapse": {
+                          "from_above": 0.3
+                        }
+                      }
+                    }
+                  ]
+                },
+                "wall_drain": {
+                  "arm": {
+                    "immunity_sec": null,
+                    "on": "second_wind",
+                    "watch_sec": 30
+                  },
+                  "end_sprint_after_sw": false,
+                  "label": "Wall drain",
+                  "rules": [
+                    {
+                      "do": {
+                        "burst": {
+                          "cancel_sprint": true,
+                          "fire": "demon_mode",
+                          "retaps": 3
+                        }
+                      },
+                      "when": {
+                        "bar": "wall",
+                        "below": 0.02,
+                        "deadband": 0.01,
+                        "falling_samples": 2
+                      }
+                    },
+                    {
+                      "do": {
+                        "burst": {
+                          "cancel_sprint": true,
+                          "fire": "demon_mode",
+                          "retaps": 3
+                        }
+                      },
+                      "when": {
+                        "wall_collapse": {
+                          "from_above": 0.3
+                        }
+                      }
+                    },
+                    {
+                      "do": {
+                        "fire": {
+                          "button": "nuke",
+                          "throttle_sec": 5
+                        }
+                      },
+                      "when": {
+                        "fleet_mark": {
+                          "after_waves": 3,
+                          "window_waves": 60
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "shopping_lists": {
+                "default_sweep": {
+                  "directives": [
+                    {
+                      "enabled": true,
+                      "mode": "best_cost",
+                      "stats": ["health", "health_regen"],
+                      "tab": "defense"
+                    },
+                    {
+                      "clicks": 3,
+                      "enabled": true,
+                      "mode": "clicks",
+                      "stats": ["damage"],
+                      "tab": "attack"
+                    }
+                  ],
+                  "enabled": true
+                },
+                "main_list": {
+                  "cash_reserve": 500,
+                  "enabled": true,
+                  "interval_sec": 30,
+                  "queue": [
+                    {
+                      "enabled": true,
+                      "id": "damage",
+                      "tap_limit": 3
+                    },
+                    {
+                      "enabled": true,
+                      "from_wave": 5,
+                      "id": "health",
+                      "tap_limit": 2
+                    }
+                  ],
+                  "version": 2
+                }
+              },
+              "uw_policies": {
+                "farm_cl": {
+                  "baseline": {
+                    "black_hole": true,
+                    "chronofield": true,
+                    "death_wave": true,
+                    "golden_tower": true,
+                    "poison_swamp": true,
+                    "spotlight": true
+                  },
+                  "chain_lightning": {
+                    "always_on_above": [6080, 6120],
+                    "mode": "fleet_marks",
+                    "off_after_waves": [53, 72],
+                    "pre_mark_waves": [5, 25]
+                  },
+                  "label": "Farm choreography"
+                },
+                "tourney_cl": {
+                  "baseline": {
+                    "black_hole": true,
+                    "chronofield": true,
+                    "death_wave": true,
+                    "golden_tower": true,
+                    "poison_swamp": true,
+                    "spotlight": true
+                  },
+                  "chain_lightning": {
+                    "mode": "off_until_wave",
+                    "on_above": [500, 550]
+                  },
+                  "label": "Tournament"
+                }
+              }
+            }
+          },
+          "revision": "0000000000000000000000000000000000000000000000000000000000000081",
+          "validator_error": null,
+          "warnings": []
+        },
+        "request": {
+          "method": "GET",
+          "path": "/api/profile-src/mine"
+        },
+        "status": 200
+      },
+      "context_unknown_refused": {
+        "body": {
+          "code": "context_changed",
+          "current_context": null,
+          "error": "The emulator, account or profile changed since this page was read; review the new context before saving again",
+          "ok": false
+        },
+        "request": {
+          "body": {
+            "expected_context": {
+              "account": "alpha",
+              "instance": "main",
+              "profile": "mine",
+              "serial": "fake:1"
+            },
+            "max_tier": 7
+          },
+          "method": "POST",
+          "path": "/api/account-tier"
+        },
+        "status": 409
+      }
+    }
+  }
+}

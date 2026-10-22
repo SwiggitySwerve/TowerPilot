@@ -1,0 +1,201 @@
+/* The Collection page (collection brief section "Layout"). */
+.tp-collection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  max-width: 1100px;
+  min-width: 0;
+}
+
+.tp-collection__scope,
+.tp-collection__summary,
+.tp-collection__line,
+.tp-collection__not-sent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-1) var(--tp-space-2);
+  margin: var(--tp-space-1) 0;
+}
+
+.tp-collection__scope,
+.tp-collection__help {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+
+.tp-collection__help {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 var(--tp-space-2);
+}
+
+.tp-collection__policies,
+.tp-collection__chores {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-1);
+  margin: var(--tp-space-2) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tp-collection__policies li,
+.tp-collection__chores li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-1) var(--tp-space-3);
+  min-height: 24px;
+}
+
+.tp-collection__policies a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  min-width: 24px;
+}
+
+.tp-collection__policies a[aria-current='true'] {
+  font-weight: 600;
+}
+
+.tp-collection__editor {
+  margin: var(--tp-space-3) 0 0;
+  padding: var(--tp-space-2);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
+}
+
+.tp-collection__editor h3 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--tp-space-2);
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tp-collection__id {
+  color: var(--tp-color-text-muted);
+  font-weight: 400;
+}
+
+.tp-collection__summary a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+.tp-collection__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--tp-space-2) var(--tp-space-3);
+  margin: var(--tp-space-2) 0;
+}
+
+.tp-collection__action {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-1) var(--tp-space-2);
+}
+
+.tp-collection__field {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.tp-collection__field select,
+.tp-collection__input {
+  min-height: var(--tp-control-height);
+  max-width: 100%;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface-strong);
+  color: var(--tp-color-text);
+  font: inherit;
+}
+
+.tp-collection__input {
+  width: 14rem;
+}
+
+.tp-collection__input[aria-invalid='true'] {
+  border-color: var(--tp-color-bad);
+  border-width: 2px;
+}
+
+.tp-collection__invalid {
+  color: var(--tp-color-bad);
+  font-size: var(--tp-font-size-12);
+}
+
+.tp-collection__check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+}
+
+.tp-collection__check input {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--tp-color-busy);
+}
+
+.tp-collection__warn {
+  color: var(--tp-color-bad);
+  font-size: var(--tp-font-size-13);
+}
+
+.tp-collection__form {
+  margin: var(--tp-space-3) 0 0;
+  padding: var(--tp-space-2) 0 0;
+  border: 0;
+  border-top: 1px solid var(--tp-color-border);
+}
+
+.tp-collection__form legend {
+  padding: 0;
+  font-weight: 600;
+}
+
+.tp-collection__confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-2);
+  padding: var(--tp-space-2);
+  border: 1px dashed var(--tp-color-bad);
+  border-radius: var(--tp-radius-control);
+}
+
+.tp-collection__confirm p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.tp-collection__problems ul {
+  margin: var(--tp-space-1) 0;
+  padding-left: var(--tp-space-4);
+}
+
+@media (max-width: 700px) {
+  .tp-collection__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .tp-collection__field,
+  .tp-collection__input,
+  .tp-collection__field select {
+    width: 100%;
+  }
+  .tp-collection .tp-button {
+    min-height: var(--tp-control-height-touch);
+  }
+}

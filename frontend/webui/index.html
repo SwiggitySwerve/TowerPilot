@@ -267,6 +267,7 @@
 <link rel="stylesheet" href="app-shell.css">
 <link rel="stylesheet" href="run-workspace.css">
 <link rel="stylesheet" href="diagnostics-view.css">
+<link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
 
@@ -274,7 +275,8 @@
 <header class="topbar">
   <div class="topbar-row">
     <button id="navigation-toggle" class="small ghost" aria-controls="app-sidebar" aria-expanded="false" onclick="toggleNavigation()">Menu</button>
-    <span class="brand">🗼 Tower Pilot</span>
+    <span class="brand">Tower Pilot</span>
+    <h1 id="page-title">Dashboard</h1>
     <div id="header-status" class="header-status"><span class="muted">Checking connection…</span></div>
   </div>
 </header>
@@ -303,7 +305,8 @@
   <div class="sidebar-footer"><span class="local-dot" aria-hidden="true"></span>Local workspace</div>
 </aside>
 <main id="view" tabindex="-1">
-  <header class="page-heading"><h1 id="page-title">Dashboard</h1><p id="page-description">Your emulator, current automation and recent activity.</p></header>
+  <header class="page-heading"><p id="page-description">Your current automation, live emulator and recent activity.</p></header>
+  <div id="owner-refusal" class="owner-refusal" role="status" aria-live="polite" hidden></div>
   <section data-page-panel id="panel-overview" aria-labelledby="tab-overview"><article aria-busy="true">Loading...</article></section>
   <section data-page-panel id="panel-runs" aria-labelledby="tab-runs" hidden></section>
   <section data-page-panel id="panel-history" aria-labelledby="tab-history" hidden></section>
@@ -383,6 +386,7 @@
 <script src="learning-view.js"></script>
 <script src="run-workspace.js"></script>
 <script src="diagnostics-view.js"></script>
+<script src="dashboard-view.js"></script>
 <script>
 "use strict";
 /* Tower Pilot UI: one flat sidebar, with routes declared in TABS below.
@@ -434,7 +438,13 @@ async function api(path, opts){
       catch(error){if(r.ok)throw new Error('Server returned invalid JSON');}
       if (!r.ok || (j && j.ok === false)) {
         const m = j && (j.error || j.message || (j.problems || []).join("\n")) || `HTTP ${r.status}`;
-        throw Object.assign(new Error(m), {status:r.status});
+        // the server's machine-readable code (e.g. 'action_lock' for the global
+        // action lock) travels with the status for callers that classify outcomes
+        const error = Object.assign(new Error(m), {status:r.status, ...(typeof j?.code === 'string' && j.code ? {code:j.code} : {}),
+          ...(j && typeof j === 'object' ? {body:j} : {})});
+        // one shared handler for every route a harvesting collector refuses
+        if (!read && typeof noteOwnerRefusal === 'function') noteOwnerRefusal(path, error);
+        throw error;
       }
       return j;
     };
@@ -670,6 +680,21 @@ function rerenderEdits(){
 /* Status publishes independently of calibration and battle observations. */
 async function loadStatus(){
   if (S.statusLoading) return;
+  /* The status as the page draws it. A process list that is absent, not an
+     array, or holds anything but objects with a process id (a positive integer
+     pid, as frontend/dashboard.py lists them) can be neither drawn nor trusted:
+     the scan then reads unknown (process_refresh state 'unknown', with the
+     reason) and only its well-formed entries are kept to draw, so no row, Stop
+     button, Start gate or "stopped"/"free" claim reads a malformed list as
+     "nothing is running" or acts on a process without an id. Anything else
+     stays as the server sent it; the evidence gate validates operation
+     identities itself (DashboardView.ownershipRecords). */
+  const plain = value => !!value && typeof value === 'object' && !Array.isArray(value);
+  const entry = value => plain(value) && Number.isSafeInteger(value.pid) && value.pid > 0;
+  const readable = status => !plain(status) || (Array.isArray(status.processes) && status.processes.every(entry)) ? status
+    : {...status, processes:Array.isArray(status.processes) ? status.processes.filter(entry) : [],
+      process_refresh:{...(plain(status.process_refresh) ? status.process_refresh : {}), state:'unknown',
+        error:'The process list in this status was ' + (status.processes === undefined ? 'missing' : 'malformed') + '.'}};
   S.statusLoading=true;
   const request=(S.statusRequest || 0)+1; S.statusRequest=request;
   const context=LearningStore.context(S.config || {}).id;
@@ -678,7 +703,18 @@ async function loadStatus(){
   try {
     const status=await api('/api/status');
     if (!current()) return;
-    S.status=status; S.statusError=''; S.statusCheckedAt=Date.now(); S.statusFailures=0; S.statusRetryAt=0;
+    // statusSeq: the request number of the accepted snapshot, so an answer can
+    // demand evidence from a read started after it arrived (ownersGone)
+    S.status=readable(status); S.statusSeq=request; S.statusError=''; S.statusCheckedAt=Date.now(); S.statusFailures=0; S.statusRetryAt=0;
+    // the latest harvesting choice On this page has seen: Pause stays offered until a
+    // later current status reads a newer choice Off (harvestOffConfirmed)
+    const desired = S.status?.harvest?.version === 1 && S.status.harvest.desired && typeof S.status.harvest.desired === 'object' ? S.status.harvest.desired : null;
+    // (only an On in its contract shape: enabled true and an integer revision)
+    if (desired?.choice === 'on' && desired.enabled === true && Number.isSafeInteger(desired.revision) && desired.revision >= 0) {
+      const known = S.harvestOn?.context === context ? S.harvestOn : null;
+      const revisions = [known?.revision, desired.revision].filter(Number.isSafeInteger);
+      S.harvestOn = {context, revision:revisions.length ? Math.max(...revisions) : null, after:Math.max(known?.after || 0, request)};
+    }
   } catch(error) {
     if (!current()) return;
     S.statusError=error.message;
@@ -708,6 +744,51 @@ function pollDashboard(force=false){
   if(due('statusReadAt',hidden?10000:active?500:2500,S.statusRetryAt))loadStatus();
   if(due('calibrationReadAt',hidden?10000:(S.workspace?.calibration?.running || S.scanLaunchPending)?500:2500,S.calibrationRetryAt))pollCalibrate();
   if(!hidden && S.view==='home' && S.tab==='overview' && due('battleReadAt',(active || S.battleActive!==false)?500:2500,S.battleRetryAt))runWorkspace.poll();
+  if(!hidden && S.view==='home' && S.tab==='overview'){
+    const context=LearningStore.context(S.config || {}).id;
+    // The day plan's recorded decision: read on entry, then every 15 s only while
+    // a run driver is alive or the last read still reported a plan; never per tick.
+    const planRelevant=(S.status?.processes || []).some(process=>process.operation?.kind==='run') || ['available','stale'].includes(S.schedule?.data?.availability);
+    if((S.schedule?.context!==context || planRelevant) && due('scheduleReadAt',S.schedule?.context!==context?2500:15000,S.scheduleRetryAt))loadSchedule();
+    // The latest recorded battle: on entry, context change and when a tracked battle ends.
+    if((S.lastBattle?.context!==context || S.lastBattleDue) && due('lastBattleReadAt',2500,S.lastBattleRetryAt))loadLastBattle();
+  }
+}
+/* GET /api/schedule/status for the active emulator. Context fenced; a failed
+   read keeps the last answer for this context, marked as last known. */
+async function loadSchedule(){
+  if(S.scheduleLoading)return;
+  S.scheduleLoading=true;
+  const context=LearningStore.context(S.config || {}).id,instance=S.config?.active_instance || '';
+  const current=()=>context===LearningStore.context(S.config || {}).id;
+  try{
+    const data=await api('/api/schedule/status'+(instance?'?instance='+encodeURIComponent(instance):''));
+    if(!current())return;
+    S.schedule={context,data,error:'',checkedAt:Date.now()};S.scheduleFailures=0;S.scheduleRetryAt=0;
+  }catch(error){
+    if(!current())return;
+    const previous=S.schedule?.context===context?S.schedule:null;
+    S.schedule={context,data:previous?.data || null,error:error.message,checkedAt:previous?.checkedAt || Date.now()};
+    S.scheduleFailures=(S.scheduleFailures || 0)+1;S.scheduleRetryAt=Date.now()+Math.min(60000,1000*2**Math.min(6,S.scheduleFailures));
+  }finally{S.scheduleLoading=false;renderDashboardSummary();}
+}
+/* GET /api/battles (newest first) for the active emulator and account; the
+   Dashboard shows the newest battle that is no longer running. */
+async function loadLastBattle(){
+  if(S.lastBattleLoading)return;
+  S.lastBattleLoading=true;S.lastBattleDue=false;
+  const context=LearningStore.context(S.config || {}).id,instance=S.config?.active_instance || '';
+  const current=()=>context===LearningStore.context(S.config || {}).id;
+  try{
+    const response=await api('/api/battles?limit=3'+(instance?'&instance='+encodeURIComponent(instance):''));
+    if(!current())return;
+    S.lastBattle={context,battle:DashboardView.lastBattle(response.battles),loaded:true,error:''};S.lastBattleFailures=0;S.lastBattleRetryAt=0;
+  }catch(error){
+    if(!current())return;
+    const previous=S.lastBattle?.context===context?S.lastBattle:null;
+    S.lastBattle={context,battle:previous?.battle || null,loaded:!!previous?.loaded,error:error.message};
+    S.lastBattleFailures=(S.lastBattleFailures || 0)+1;S.lastBattleRetryAt=Date.now()+Math.min(60000,1000*2**Math.min(6,S.lastBattleFailures));
+  }finally{S.lastBattleLoading=false;renderDashboardSummary();}
 }
 
 /* Shared status reads never dispatch preparation, apply, or emulator actions. */
@@ -731,9 +812,9 @@ function renderWorkspaceStatus(){
   if (!S.workspace?.config && !S.workspaceError) return;   // wait for the first workspace read
   const data = S.workspace || {};
   updateWorkspaceRegion('#header-status', WorkspaceStatus.headerHTML({
-    ...data, status:S.status, error:S.workspaceError || S.statusError || '', reconnecting:S.reconnecting}));
-  updateWorkspaceRegion('#workspace-context', WorkspaceStatus.contextHTML({
-    ...data, status:S.status, emulators:S.emus?.instances || [], error:S.workspaceError || S.statusError || ''}));
+    ...data, status:S.status, error:S.workspaceError || S.statusError || '', reconnecting:S.reconnecting, emulators:S.emus?.instances}));
+  renderDashboardSummary();
+  renderOwnerRefusal();
   const operation = workspaceOperation();
   const operationRegion = $('#workspace-operation');
   if (operationRegion) operationRegion.hidden = S.view === 'setup' && !operation.saved && !operation.running;
@@ -745,6 +826,20 @@ function renderWorkspaceStatus(){
   const text = S.statusError ? 'Live status unavailable; showing the last snapshot and retrying.' : operation.unavailable ? 'Progress status unavailable; showing the last snapshot and retrying.'
     : operation.headline + '. ' + operation.message;
   if (announcement && announcement.textContent !== text) announcement.textContent = text;
+}
+/* The Dashboard's day plan / last battle line and its attention list, from the
+   reads above and the latest setup operation. Regions are rewritten only when
+   their markup changes. */
+function renderDashboardSummary(){
+  if (!$('#dashboard-next')) return;
+  const context = LearningStore.context(S.config || {}).id;
+  updateWorkspaceRegion('#dashboard-next', DashboardView.nextHTML({
+    schedule:S.schedule?.context === context ? S.schedule : null, last:S.lastBattle?.context === context ? S.lastBattle : null}));
+  updateWorkspaceRegion('#dashboard-attention', DashboardView.attentionHTML(DashboardView.attention({
+    status:S.status, statusError:S.statusError || '', operation:S.workspace?.calibration || S.workspaceError ? workspaceOperation() : null,
+    operationAt:S.workspace?.calibration?.operation?.updated_at, setupBattle:S.workspace?.calibration?.state?.setup_battle})));
+  renderActivity();
+  renderHarvest();
 }
 /* Slow-changing workspace data (config, profiles, runs, tools, saved screen
    check). Read at boot, on route entry, after every mutation and when a
@@ -767,6 +862,9 @@ async function refreshWorkspaceStatus(){
     S.readinessContext=LearningStore.context(config).id; S.readinessFresh=true;
     if (S.view === 'home') {
       renderRunner();
+      // renderRunner skips an unchanged card, but Start's state also follows
+      // readiness freshness, which a Start attempt clears meanwhile
+      renderRunReady();
       renderFlows();
       renderControlBlockers();
       renderGetStarted();
@@ -803,32 +901,114 @@ document.addEventListener('click', event => {
   event.preventDefault();
   openWorkspaceSection(link.getAttribute('href').slice(1), link.dataset.workspaceSection);
 });
+/* "Edit in Runs" in the saved preview opens Runs on the run it shows: Runs
+   names a run by its profile blueprint, the Start picker by its compiled
+   preset (bp_<name>). */
+function runsBlueprint(name){
+  const keys = Object.keys(S.profile?.blueprints || {});
+  const bare = String(name || '').replace(/^bp_/, '');
+  return keys.includes(name) ? name : keys.includes(bare) ? bare : '';
+}
+/* The active profile once a read in flight has published it, or whatever is
+   there when none is in flight; null after `timeoutMs` or a read that ended
+   without one. loadHomeData marks the read (S.profileLoading) and settles it. */
+function whenProfile(timeoutMs = 10000){
+  // a reload in flight is waited for even while the previous profile is still on screen
+  if (!S.profileLoading) return Promise.resolve(S.profile || null);
+  return new Promise(resolve => {
+    const waiter = () => { clearTimeout(timer); resolve(S.profile || null); };
+    const timer = setTimeout(() => { S.profileWaiters = (S.profileWaiters || []).filter(w => w !== waiter); resolve(S.profile || null); }, timeoutMs);
+    (S.profileWaiters ||= []).push(waiter);
+  });
+}
+function profileSettled(){
+  S.profileLoading = false;
+  const waiters = S.profileWaiters || []; S.profileWaiters = [];
+  waiters.forEach(waiter => waiter());
+}
+/* Edit in Runs opens exactly the run its link names (data-run; the picker's
+   last preview is the fallback). Runs names runs as the active profile's
+   blueprints, so while that profile is being re-read the name cannot be checked:
+   the click waits for the read (bounded) instead of resolving against nothing.
+   A name the profile does not have, or a profile that could not be read, opens
+   nothing and says so: Runs is never left on another run without a word. The
+   wait is cancelled by a later Edit click, by the person opening any page
+   meanwhile (route), and by an emulator, account or profile change. */
+async function openRunsFor(name){
+  const request = (S.runsLinkRequest || 0) + 1; S.runsLinkRequest = request;
+  const context = LearningStore.context(S.config || {}).id, routed = S.routeRequest || 0, hash = location.hash;
+  const label = S.runs?.[name]?.label || S.runs?.['bp_' + String(name || '').replace(/^bp_/, '')]?.label || name;
+  // a profile reload in flight (any phase, even while the previous profile is
+  // still on screen) is waited for before the name is resolved against it
+  if (name && S.profileLoading) {
+    await whenProfile();
+    if (request !== S.runsLinkRequest) return;                   // a later click owns Runs now
+    if ((S.routeRequest || 0) !== routed || location.hash !== hash) return;   // the person went elsewhere
+    if (context !== LearningStore.context(S.config || {}).id) { toast(`The emulator, account or profile changed, so ${label} was not opened in Runs.`, true); return; }
+    if (S.profileLoading) { toast(`The active profile is not loaded, so ${label} was not opened in Runs; try again.`, true); return; }
+  }
+  const blueprint = runsBlueprint(name);
+  if (!blueprint) {
+    toast(!name ? 'This link names no run to open in Runs.'
+      : S.profile ? `${label} is not a run in the active profile, so Runs was not opened.`
+      : `The active profile is not loaded, so ${label} was not opened in Runs; try again.`, true);
+    return;
+  }
+  location.hash = '#runs';
+  await selectRunControls(blueprint);
+  if (request === S.runsLinkRequest && runWorkspace.selected() !== blueprint)
+    toast(`Runs could not open ${label}; it still shows ${runWorkspace.selected() || 'no run'}.`, true);
+}
+document.addEventListener('click', event => {
+  const link = event.target?.closest?.('#live-run-controls .rw-edit-link, .dashboard-run-link');
+  if (!link) return;
+  event.preventDefault();
+  openRunsFor(link.dataset?.run || S.previewName).catch(error => toast(error.message, true));
+});
 
 async function loadHomeData(){
   const request=(S.homeDataRequest || 0)+1; S.homeDataRequest=request;
   const epoch=S.workspaceEpoch || 0;
-  const [vocab, flows, config, plist, templates] = await Promise.all([
-    api("/api/vocab"), api("/api/flows"), api("/api/config"),
-    api("/api/profiles"), api("/api/run-templates")]);
-  if (request !== S.homeDataRequest || epoch !== (S.workspaceEpoch || 0)) return;
+  // configRead: answers compare it with S.configSeq to tell a config read after them
+  const configRead=S.configReadStarted=(S.configReadStarted || 0)+1;
+  // from here until this read settles, Edit in Runs waits for the profile (whenProfile)
+  S.profileLoading=true;
+  let vocab, flows, config, plist, templates;
+  try {
+    [vocab, flows, config, plist, templates] = await Promise.all([
+      api("/api/vocab"), api("/api/flows"), api("/api/config"),
+      api("/api/profiles"), api("/api/run-templates")]);
+  } catch(e){
+    // the saved settings on screen are no longer known to be current (accessOffReason)
+    if (request === S.homeDataRequest) S.configReadError = e.message || 'read failed';
+    // the latest read failed before reading the profile: nothing more is coming
+    if (request === S.homeDataRequest && S.profileLoading) profileSettled();
+    throw e;
+  }
+  if (request !== S.homeDataRequest) return;                        // the newer read settles the wait
+  if (epoch !== (S.workspaceEpoch || 0)) { profileSettled(); return; }
   if (LearningStore.context(config).id !== LearningStore.context(S.config || {}).id) S.readinessFresh=false;
   S.runTemplates = templates.templates;
-  S.vocab = vocab.vocab; S.flows = flows.flows; S.config = config;
+  S.vocab = vocab.vocab; S.flows = flows.flows; S.config = config; S.configSeq = Math.max(S.configSeq || 0, configRead); S.configReadError = '';
   const rows = Array.isArray(plist) ? plist : (plist.profiles || []);
   S.profiles = {
     list: rows.map(r => ({ name:String(r.name || r).replace(/\.yaml$/, ""),
                            draft:!!r.draft })),
     active: config.active_profile || null,
   };
+  // while the profile is re-read, Edit in Runs waits for it (whenProfile); a
+  // newer read settles the wait, every other ending settles it here
   S.profile = null;
   if (S.profiles.active) {
     try {
       const source=await api('/api/profile-src/'+encodeURIComponent(S.profiles.active));
-      if (request !== S.homeDataRequest || epoch !== (S.workspaceEpoch || 0)) return;
+      if (request !== S.homeDataRequest) return;
+      if (epoch !== (S.workspaceEpoch || 0)) { profileSettled(); return; }
       S.profile=source.profile;S.profileRevision=source.revision;
     }
-    catch(e){ if (request !== S.homeDataRequest || epoch !== (S.workspaceEpoch || 0)) return; toast("active profile unreadable: " + e.message, true); }
+    catch(e){ if (request !== S.homeDataRequest) return; profileSettled(); if (epoch !== (S.workspaceEpoch || 0)) return; toast("active profile unreadable: " + e.message, true); }
   }
+  profileSettled();
   if (S.profile) {
     S.serverProfile = deep(S.profile);
     // navigating away and back must not lose staged, unsaved edits
@@ -868,16 +1048,50 @@ const runWorkspace = RunWorkspace.create({request:async(path,opts)=>{
   const current=()=>context===LearningStore.context(S.config || {}).id && epoch===(S.workspaceEpoch || 0);
   try{
     const response=await api(path,opts);
-    if(path==='/api/battles/active' && current()){S.battleActive=!!response.battle;S.battleFailures=0;S.battleRetryAt=0;}
+    if(path==='/api/battles/active' && current()){receiveBattle(response.battle || null);S.battleFailures=0;S.battleRetryAt=0;}
     return response;
   }catch(error){
     if(path==='/api/battles/active' && current()){
       S.battleFailures=(S.battleFailures || 0)+1;
       S.battleRetryAt=Date.now()+Math.min(30000,500*2**Math.min(6,S.battleFailures));
+      renderActivity();
     }
     throw error;
   }
-},onError:error=>toast(error.message,true)});
+},onError:error=>toast(error.message,true),onPreview:(snapshot,info)=>receivePreview(snapshot,info)});
+/* The tracked battle the controller just read (read-only copy). When it ends
+   or is replaced, the latest recorded battle is read again. */
+function receiveBattle(battle){
+  if(S.battle?.id && S.battle.id!==battle?.id)S.lastBattleDue=true;
+  S.battle=battle;S.battleActive=!!battle;
+  renderActivity();
+}
+/* Saved settings of the run selected in the Start picker, as the controller's
+   read-only preview resolved them (GET /api/run-controls, the resolver the
+   launch envelope freezes). Only a ready reply for the run still selected in
+   the current context may enable Collect diamonds only; any other reply, a new
+   selection or a context change clears it. */
+function receivePreview(snapshot,info={}){
+  S.startPreview={snapshot:info.status==='ready' && snapshot ? snapshot : null,status:info.status || (snapshot ? 'ready' : 'error'),
+    blueprint:info.blueprint ?? null,context:info.context ?? null,error:info.error || ''};
+  renderRunReady();
+}
+/* Ask the controller to show the saved settings of the run selected in the
+   Start picker. Called when the picker is built or changed and (forced) when
+   the Dashboard is rebuilt after saves or a context change; never per tick.
+   Combo has no single run's settings, so it clears the preview. */
+function previewStartRun(force=false){
+  const select=$('#start-preset');
+  if(!select)return;
+  const name=select.value==='combo'?'':select.value || '';
+  const key=JSON.stringify([LearningStore.context(S.config || {}).id,name]);
+  force=force || !!S.previewForce;
+  if(!force && S.previewKey===key)return;
+  if(S.previewKey!==key)S.startPreview=null;
+  S.previewKey=key;S.previewForce=false;S.previewName=name;
+  runWorkspace.preview(name,name?{force,label:S.runs?.[name]?.label || name}
+    :select.value==='combo'?{force,label:S.runs?.combo?.label || 'Combo (day plan)',message:'The day plan picks a run for each block; that run\'s saved settings apply when it starts.'}:{force});
+}
 const diagnosticsView = DiagnosticsView.create({request:api});
 function mountDiagnostics(){
   if(S.tab==='runtime')diagnosticsView.mount($('#runtime-diagnostics'),{instance:S.config?.active_instance || '',filters:DiagnosticsView.fromHash(location.hash)});
@@ -940,7 +1154,7 @@ async function route(){
   mountConfigurationPage();
   mountDiagnostics();
   if(tab==='history')runWorkspace.history(S.config?.active_instance || '');
-  if(tab==='overview')runWorkspace.poll();
+  if(tab==='overview'){runWorkspace.poll();loadSchedule();loadLastBattle();}
   renderStream();
   if (S.workspaceSection) {
     openWorkspaceSection(S.tab, S.workspaceSection);
@@ -1054,8 +1268,7 @@ function renderGetStarted(){
    Its region exists only once renderHome has loaded S.config, which this reads. */
 function renderControlBlockers(){
   if (!$("#control-blockers")) return;
-  updateWorkspaceRegion("#control-blockers", WorkspaceStatus.controlBlockersHTML({
-    status:S.status, config:S.config, runs:S.runs, readiness:S.runReadiness}));
+  updateWorkspaceRegion("#control-blockers", DashboardView.needsScreensHTML({runs:S.runs, readiness:S.runReadiness}));
 }
 /* The overlay's emulator list: every instance the managers know about,
    with a Start button for stopped MuMu VMs - starting from the web was
@@ -1448,10 +1661,11 @@ async function renderCalibrate(){
   const request=(S.calibrateRequest || 0)+1; S.calibrateRequest=request;
   const epoch=S.workspaceEpoch || 0;
   // Direct links must bind account-scoped preferences before rendering them.
+  const configRead=S.configReadStarted=(S.configReadStarted || 0)+1;
   const config=await api('/api/config');
   if (request !== S.calibrateRequest || epoch !== (S.workspaceEpoch || 0)) return;
   if (LearningStore.context(config).id !== LearningStore.context(S.config || {}).id) S.readinessFresh=false;
-  S.config=config;
+  S.config=config; S.configSeq=Math.max(S.configSeq || 0, configRead); S.configReadError='';
   const context=LearningStore.context(config).id;
   const pending = pendingPreparation();
   if (pending) S.calibrationPreset = pending.preset;
@@ -2025,7 +2239,10 @@ async function stopCalibrate(){
     const operation=S.workspace?.calibration?.operation;
     if (operation?.context && ['instance','account','serial','profile'].some(key=>(operation.context[key] ?? null) !== (context[key] ?? null))) throw new Error('This operation belongs to another selection.');
     if (!operation?.id) throw new Error('Refresh operation status before stopping this scan.');
-    await post("/api/calibrate/stop", {operation_id:operation.id,expected_revision:operation.revision}); toast("stop requested - it finishes the current step"); }
+    // the answer says how the stop stands (stopped, still stopping, its worker not verifiable...)
+    const answer = await post("/api/calibrate/stop", {operation_id:operation.id,expected_revision:operation.revision});
+    const view = DashboardView.stopResultView(answer, operation.id);
+    toast('Screen learning: ' + view.text, view.tone === 'warn' || view.tone === 'bad'); }
   catch(e){ toast(e.message, true); }
 }
 function screenAnalysisReference(context=LearningStore.context(S.config || {})){
@@ -2418,18 +2635,22 @@ async function renderHome(){
   stopStream();
   const stream = streamPreferences();
   $("#panel-overview").innerHTML = `
-  <article id="control-status" aria-label="Status and what blocks automation"><section id="workspace-context" aria-label="Current game and connection"></section><div id="control-blockers"></div><div id="control-connect" hidden></div></article>
   <div class="dashboard-grid">
     <div class="dashboard-controls">
-      <article id="card-runner"><header>Automation</header>${WorkspaceStatus.requirementHTML('control')}<div id="runner-body"></div></article>
-      <article class="activity-card"><header>Recent activity</header><div class="events" id="events" aria-label="Recent automation events"></div></article>
+      <section id="card-runner" class="dashboard-runner" aria-label="Automation"><div id="runner-body"></div><div id="control-blockers"></div><div id="control-connect" hidden></div></section>
+      <section id="current-battle-controls" class="dashboard-section" aria-label="Routines and shopping"><div id="live-run-controls"></div></section>
+      <section id="dashboard-next" class="dashboard-section dashboard-next" aria-label="Day plan and last battle"></section>
+      <section id="dashboard-attention" class="dashboard-section dashboard-attention" aria-label="Needs attention"></section>
       <article id="get-started" aria-label="Get started"></article>
     </div>
-    <div>
-      <article class="stream-box dashboard-screen"><header>Emulator screen
-        <label class="inline" style="float:right; font-weight:400">
-          <input type="checkbox" id="stream-toggle" checked onchange="renderStream()"> stream
-        </label></header>
+    <div class="dashboard-feed">
+      <section class="dashboard-screen" aria-labelledby="dashboard-screen-title"><div class="dashboard-feed-bar"><h2 id="dashboard-screen-title" class="dashboard-label">Emulator screen</h2>
+        <span id="stream-summary" class="dashboard-feed-summary" role="status" aria-live="polite"></span>
+        <label class="dashboard-stream-toggle"><input type="checkbox" id="stream-toggle" checked onchange="renderStream()"> Stream</label></div>
+        <div id="stream-slot"></div>
+        <p id="stream-alert" class="dashboard-feed-alert status-warning" role="status" hidden></p>
+        <details class="dashboard-stream-settings"><summary>Preview settings and delivery</summary>
+        <div class="dashboard-stream-fields">
         <label class="inline">Stream target FPS
           <select id="stream-fps" onchange="setStreamFps(this.value)" style="width:auto;margin:0">
             ${streamFpsOptions().map(fps=>`<option value="${fps}" ${fps===stream.fps?'selected':''}>${fps}</option>`).join('')}
@@ -2445,16 +2666,16 @@ async function renderHome(){
             ${streamPresets().map(preset=>`<option value="${preset.id}" ${preset.id===stream.preset.id?'selected':''}>${preset.label}</option>`).join('')}
           </select>
         </label>
+        </div>
         <small class="muted">Auto follows this emulator's Video preview settings. ADB screenshots are capped at 4 FPS. These controls affect the preview.</small>
         <button id="stream-reconnect" class="small ghost" onclick="reconnectPreview()">Reconnect preview</button>
         <p id="stream-availability" class="muted" role="status" aria-live="polite"></p>
-        <div id="stream-slot"></div>
         <small id="stream-stats" class="muted" aria-live="polite"></small>
         <small class="muted">Delivery and last-frame age describe frames sent by the server; browser decode/display latency is not measured. Preview availability does not grant automation input.</small>
-      </article>
+        </details>
+      </section>
     </div>
-  </div>
-  <article id="current-battle-controls" aria-label="Current battle controls"><div id="live-run-controls"></div></article>`;
+  </div>`;
   // Configuration pages share the game requirement and starter-profile notice.
   const configIntro = WorkspaceStatus.requirementHTML('configuration') + starterBanner();
   $("#panel-runs").innerHTML = `${configIntro}
@@ -2465,7 +2686,9 @@ async function renderHome(){
   </header><div id="flows-body"></div></article>
   <article id="card-behaviors"><header>Shopping policies</header><p class="muted">Shared upgrade plans assigned to runs. Collection and ability policies have their own pages.</p><div id="shopping-policies"></div></article></details>`;
   $("#panel-history").innerHTML='<div id="run-history"></div>';
-  runWorkspace.attach({live:$('#live-run-controls'),saved:$('#saved-run-controls'),history:$('#run-history'),context:LearningStore.context(S.config || {}).id});
+  runWorkspace.attach({live:$('#live-run-controls'),saved:$('#saved-run-controls'),history:$('#run-history'),context:LearningStore.context(S.config || {}).id,liveVariant:'dashboard'});
+  // the rebuilt Start picker asks for its run's saved settings once, re-read after saves or a context change
+  S.previewKey=null;S.previewForce=true;S.startPreview=null;S.harvestPickRead=null;
   const chosen=runWorkspace.selected();
   const chooser=$('#run-controls-blueprint');
   if(chooser && chooser.options.length){if([...chooser.options].some(option=>option.value===chosen))chooser.value=chosen;runWorkspace.choose(chooser.value);}
@@ -2824,6 +3047,40 @@ function renderStreamAvailability(){
   }else parts.push('Preview backend availability has not been checked.');
   output.textContent=parts.join(' ');
   const button=$('#stream-reconnect');if(button)button.disabled=!!S.streamReconnectBusy;
+  renderStreamSummary();
+}
+/* The feed header's one-line delivery verdict and its alert line. Both restate
+   the verdict refreshStreamStats already reached (S.streamRecovery); nothing
+   here decides on its own that a frame was delivered. */
+function streamSummary({on, online, checked=true, session, recovery, fps}){
+  if (!on) return {tone:'muted', text:'Preview off', alert:''};
+  // no status read yet (or only failed ones): the connection is unknown, not offline
+  if (!checked) return {tone:'warn', text:'Connection not confirmed', alert:''};
+  if (!online) return {tone:'bad', text:'Emulator offline', alert:''};
+  const rate = typeof fps === 'number' && Number.isFinite(fps) ? ` · ${fps.toFixed(1)} FPS` : '';
+  switch (recovery?.state) {
+    case 'delivering': return {tone:'ok', text:'Live' + rate, alert:''};
+    case 'fallback': return {tone:'warn', text:'Live via fallback' + rate, alert:recovery.message || ''};
+    case 'failed': return {tone:'bad', text:'Preview failed', alert:recovery.message || ''};
+    case 'unknown': return {tone:'warn', text:'Delivery unknown', alert:recovery.message || ''};
+    case 'unconfirmed': return {tone:'warn', text:'Delivery unconfirmed', alert:''};
+    case 'checking': case 'connecting': return {tone:'muted', text:'Connecting…', alert:''};
+  }
+  return session ? {tone:'muted', text:'Connecting…', alert:''} : {tone:'warn', text:'Delivery unconfirmed', alert:''};
+}
+function renderStreamSummary(){
+  const output = $('#stream-summary');
+  if (!output?.dataset) return;   // only the rendered Dashboard header carries it
+  const toggle = $('#stream-toggle'), current = S.streamRecovery;
+  const recovery = current?.target === streamTarget() && (!current.session || current.session === S.streamSession) ? current : null;
+  const snapshot = S.streamStatsSnapshot?.session === S.streamSession ? S.streamStatsSnapshot : null;
+  const summary = streamSummary({on:toggle ? toggle.checked !== false : true, online:WorkspaceStatus.connectionState(S.status).online, checked:!!S.status,
+    session:S.streamSession, recovery, fps:snapshot?.fps});
+  if (output.textContent !== summary.text) output.textContent = summary.text;
+  output.dataset.tone = summary.tone;
+  output.title = recovery?.message || '';
+  const alert = $('#stream-alert');
+  if (alert) { if (alert.textContent !== summary.alert) alert.textContent = summary.alert; alert.hidden = !summary.alert; }
 }
 async function refreshStreamBackends(force=false){
   const target=streamTarget();
@@ -2923,7 +3180,7 @@ async function refreshStreamStats(){
     output.textContent = `${source} · ${rate} / target ${stats.target_fps} FPS${cap}${quality}${timing}${age}${deliveryAge} · ${stats.errors} errors`+
       (fallback ? ` · fallback: ${fallback}` : '')+
       (stats.last_error ? ` · ${stats.last_error}` : '');
-    S.streamStatsSnapshot={session,text:output.textContent,checkedAt:Date.now()};
+    S.streamStatsSnapshot={session,text:output.textContent,checkedAt:Date.now(),fps:stats.actual_fps};
     const fresh=typeof stats.last_frame_age_s==='number' && stats.last_frame_age_s<=Math.max(3,2/stats.target_fps);
     const delivered=stats.frames>0 && fresh && !stats.last_error && stats.active!==false;
     const usingFallback=(stats.backend_failures || []).length>0;
@@ -2971,44 +3228,105 @@ function renderStream(){
     : visible ? `<img src="/api/stream.mjpg?fps=${fps}&scale=${preset.scale}&q=${preset.q}&ts=${Date.now()}&instance=${encodeURIComponent(instance)}&stream_id=${S.streamSession}${backend==='auto'?'':'&backend='+encodeURIComponent(backend)}" alt="live stream">` : "";
   const stats = $('#stream-stats');
   if (stats) stats.textContent = S.streamSession ? `Connecting · target ${fps} FPS` : '';
+  renderStreamSummary();
 }
 
 function renderHomeLive(){
-  if (S.view !== "home" || !S.status) return;
-  const ev = $("#events");
-  if (ev) updateWorkspaceRegion('#events',(S.status.events || []).slice(-14).map(r =>
-    `<div>${esc(new Date(r.t * 1000).toLocaleTimeString())}  ${esc(r.kind)}` +
-    `${r.wave ? " w" + esc(r.wave) : ""}${r.preset ? " " + esc(r.preset) : ""}</div>`
-  ).join("") || '<div class="muted">no events yet</div>');
+  // a failed first status read still draws the main row, as "unavailable"
+  if (S.view !== "home" || (!S.status && !S.statusError)) return;
   const rb = $("#runner-body");
   if (rb) renderRunner();
 }
 
 function renderRunner(){
   const body = $("#runner-body");
-  if (!body || !S.status) return;
-  // A blind innerHTML rewrite on every status poll slams
-  // the preset dropdown shut mid-choice, so: never rewrite while the user
-  // is inside a form control here, and only rewrite when the content that
-  // drives the card actually changed.
-  const ae = document.activeElement;
-  if (ae && body.contains(ae) && ae.matches("select, input, textarea")) return;
-  const procs = S.status.processes || [];
+  if (!body || (!S.status && !S.statusError) || !S.config) return;
+  // without any status read the processes are unknown, never "none"
+  const procs = S.status?.processes || [];
   const ready = S.runReadiness || {};
-  const processState=S.status.process_refresh?.state || 'fresh';
-  const key = JSON.stringify([S.readinessFresh,S.readinessContext,S.statusError,processState,procs.map(p => [p.pid,p.runner,p.operation?.id,p.operation?.revision,p.operation?.step,p.operation?.recovery_action,p.stop_flag]),
-                              !!S.status.stop_flag,
+  const processState=!S.status ? 'unknown' : S.status.process_refresh?.state || 'fresh';
+  const tapsAllowed = !!S.config.instances?.[S.config.active_instance]?.allow_taps;
+  const accessBusy = !!S.automationAccessBusy, accessPending = S.accessPending?.enabled ?? null;
+  // Two regions, each rewritten only when what drives it changed. The status
+  // region (warnings, the input switch, processes, Stop now) always follows the
+  // latest read. The start region holds a native select, which keeps focus after
+  // a choice: while the person is in it only the status region is replaced, so
+  // the picker stays open and Stop now never freezes behind it.
+  const processLabel = p => DashboardView.processLabel(p, S.runs);
+  const accessNote = accessFeedbackHTML();
+  // turning input off stays offered while input may be on although the switch reads
+  // off (accessOffReason); a feedback line that already offers it is not repeated
+  const offReason = /setAutomationAccess\(false\)|data-tone="busy"/.test(accessNote) ? '' : accessOffReason();
+  // operations harvesting records as holding the emulator that the process list
+  // does not show (a collector whose worker cannot be checked, one stuck
+  // stopping, an accepted operation): each gets its own Stop (unlistedHolders),
+  // and every Stop's answer is restated here (stopFeedbackHTML)
+  const unlisted = unlistedHolders(), stopNotes = stopFeedbackHTML();
+  const statusKey = JSON.stringify([S.statusError,processState,procs.map(p => [p.pid,p.created,p.runner,processLabel(p),p.operation?.id,p.operation?.revision,p.operation?.step,p.operation?.recovery_action,p.stop_flag]),
+    unlisted, stopNotes,
+                                    !!S.status?.stop_flag, tapsAllowed, accessBusy, accessPending, accessNote, offReason]);
+  // Turning game input off is always reachable (the server pauses harvesting,
+  // stops collector input and reports what stopped), also while a turn-on is in
+  // flight; turning it on needs a fresh status with nothing running and no
+  // request in flight. The switch shows the request in flight, else the saved setting.
+  const accessChecked = accessPending === null ? tapsAllowed : accessPending;
+  // (a holder harvesting records but the list does not show also keeps turning on waiting)
+  const accessLocked = accessPending === false || (accessPending === null && !tapsAllowed
+    && (procs.length || DashboardView.recordedOwners(S.status).length || processState!=='fresh' || !!S.statusError));
+  const startKey = JSON.stringify([S.readinessFresh,S.readinessContext,!!procs.length,
                               WorkspaceStatus.startBlockers({status:S.status, config:S.config}).map(b => b.text),
-                              Object.entries(ready).map(([n, r]) => [n, r.ready, (r.missing || []).length])]);
+                              WorkspaceStatus.startBlockers({status:S.status, config:S.config, scope:'collection'}).map(b => b.text),
+                              Object.entries(ready).map(([n, r]) => [n, r.ready, (r.missing || []).length]),
+                              Object.keys(S.runs || {}), !!S.runs?.combo]);
+  const key = statusKey + startKey;
   if (body.dataset.key === key) return;
-  body.dataset.key = key;
-  const chosen = ($("#start-preset") || {}).value;
-  const nextRunOpen = $(".next-run")?.open ?? !procs.length;
+  const ae = document.activeElement;
+  const inBody = !!ae && typeof body.contains === 'function' && body.contains(ae);
+  const openDetails = new Set(typeof body.querySelectorAll === 'function' ? [...body.querySelectorAll('details.process-details[open]')].map(d => d.dataset.pid) : []);
   const driver=procs.find(p=>p.operation?.context?.instance === S.config.active_instance && p.operation.kind === 'run') || procs.find(p=>p.operation?.kind === 'run');
   const finishRef=driver?.operation;
-  const finishFlag=driver?.stop_flag ?? S.status.stop_flag;
+  const finishFlag=driver?.stop_flag ?? S.status?.stop_flag;
   const finishAttrs=finishRef ? ` data-operation-id="${esc(finishRef.id)}" data-operation-revision="${finishRef.revision}"` : '';
   const finishArgs=finishRef ? ',this.dataset.operationId,Number(this.dataset.operationRevision)' : '';
+  // "Now": what automation is doing (renderActivity keeps #runner-activity
+  // current between rewrites) and the input switch; then one row per running
+  // process with Stop now. "Next start" below is only the run a Start would launch.
+  const statusHTML = `<div class="runner-row runner-now"><span class="runner-key">Now</span><div class="runner-line"><div id="runner-activity">${activityHTML()}</div>
+    <label class="runner-access"><input type="checkbox" id="automation-access" ${accessChecked ? "checked" : ""} ${accessLocked ? "disabled" : ""} onchange="setAutomationAccess(this.checked,this)"> Allow automation to tap this emulator</label></div></div>
+    <div class="runner-indent">${accessNote}${offReason ? `<p class="runner-access-unconfirmed" data-tone="warn">Input off is not confirmed: ${esc(offReason)}.
+      <button class="small" id="automation-access-off" onclick="setAutomationAccess(false)" title="Sends the turn-off: harvesting pauses, collector input stops and running automation is fenced where it supports it. The battle keeps playing.">Turn input off</button></p>` : ''}${stopNotes}${procs.map(p => `
+      <div class="flowcard runner-process"><div class="runner-process-name"><b>${esc(processLabel(p))}</b>
+        ${p.operation?.context?.instance ? `<span class="chip">${esc(p.operation.context.instance)}</span>` : ""}
+        ${p.operation?.step==='boundary_wait' || p.operation?.step==='boundary_overdue' ? `<p class="${p.operation.step==='boundary_overdue'?'status-warning':'muted'}">${esc(p.operation.recovery_action || 'Waiting for the current game run to end naturally.')}</p>` : ''}</div>
+        <details class="process-details" data-pid="${esc(p.pid)}" ${openDetails.has(String(p.pid)) ? "open" : ""}><summary>Process details</summary><p>PID ${esc(p.pid)}</p><code>${esc(p.cmdline || "")}</code></details>
+        ${p.operation ? `<button class="small danger" title="Stops the automation driver. The game battle keeps playing." data-operation-id="${esc(p.operation.id)}" data-operation-revision="${p.operation.revision}" onclick="killPid(${p.pid},this.dataset.operationId,Number(this.dataset.operationRevision))">Stop now</button>`
+          // an untracked runner is stopped by its identity: the PID and start time this row was drawn with
+          : Number.isFinite(p.created) ? `<button class="small danger" title="Stops this runner process if it is still the one listed here. The game battle keeps playing." data-pid="${esc(p.pid)}" data-created="${esc(p.created)}" onclick="killRunner(this)">Stop now</button>`
+          : `<button class="small danger" disabled title="Its start time is not known, so it cannot be stopped by its identity.">Stop now</button>
+        <p class="runner-process-note">Its start time is not known, so Stop now cannot be sure it stops this runner. <button class="small ghost" onclick="setAutomationAccess(false)">Turn game input off</button> or stop it where it was started.</p>`}
+      </div>`).join("")}${unlisted.map(holder => `
+      <div class="flowcard runner-process runner-recorded"><div class="runner-process-name"><b>${esc(holder.name)}</b> <span class="muted">· ${esc(holder.why)}</span></div>
+        <button class="small danger" title="Stops this operation. The game battle keeps playing." data-operation-id="${esc(holder.id)}" data-operation-revision="${holder.revision ?? ''}" data-operation-name="${esc(holder.name)}"
+          onclick="stopOperation(this.dataset.operationId,Number(this.dataset.operationRevision),{name:this.dataset.operationName,confirmText:'Stop this operation? Harvesting is paused too, so the collector is not started again. The game battle keeps playing.'})"
+          ${holder.revision === null ? 'disabled' : ''}>Stop</button>
+        ${holder.revision === null ? '<p class="runner-process-note">Its revision is not known here; the next status read brings it.</p>' : ''}
+      </div>`).join("")}
+    ${procs.length && finishFlag ? `<div class="action-row current-run-actions">
+        <button class="ghost" onclick="ctl('clear_flag'${finishArgs})"${finishAttrs}>Stopping after this run · Cancel</button></div>` : ""}
+    ${procs.length || unlisted.length ? `<p class="runner-note muted">Stop now stops automation. The game battle keeps playing.</p>` : ""}</div>
+    <div class="runner-row runner-harvest"><span class="runner-key">Gems</span><div id="dashboard-harvest">${harvestHTML()}</div></div>`;
+  const startRegion = inBody && typeof ae.closest === 'function' ? ae.closest('.next-run') : null;
+  const statusRegion = startRegion && typeof body.querySelector === 'function' ? body.querySelector('[data-runner-status]') : null;
+  if (statusRegion) {
+    if (body.dataset.statusKey !== statusKey) { statusRegion.innerHTML = statusHTML; body.dataset.statusKey = statusKey; }
+    // the start region catches up on the first tick after the person leaves it
+    if (body.dataset.startKey === startKey) body.dataset.key = key;
+    renderActivity();
+    renderHarvest();
+    renderRunReady();
+    return;
+  }
+  const chosen = ($("#start-preset") || {}).value;
   // Each run type needs its own images to click (its flow's templates, the
   // gather features, its presets, the shared recognition guards). A run whose
   // images exist can start; one that lacks some is greyed out with the list
@@ -3025,115 +3343,1143 @@ function renderRunner(){
       return { name:n, label:(b || {}).label || n, ok, miss, title:r?.setup_required ? "Review equipment and abilities" : title, setupRequired:r?.setup_required };
     });
   const firstReady = (presets.find(p => p.name === "bp_coin_default" && p.ok) || presets.find(p => p.ok) || presets[0] || {}).name;
-  const tapsAllowed = !!S.config.instances?.[S.config.active_instance]?.allow_taps;
-  body.innerHTML = `
-    ${S.statusError ? `<p class="status-warning" role="status">Live status unavailable; showing the last snapshot. ${esc(S.statusError)} <button class="small ghost" onclick="loadStatus()">Retry status</button></p>` : ''}
-    ${processState!=='fresh' ? `<p class="status-warning" role="status">${processState==='unknown'?'Automation process state is unknown.':'Automation process state is stale; showing the last discovery.'} <button class="small ghost" onclick="loadStatus()">Retry status</button></p>` : ''}
-    <label class="inline"><input type="checkbox" ${tapsAllowed ? "checked" : ""} ${procs.length || processState!=='fresh' || S.statusError ? "disabled" : ""} onchange="setAutomationAccess(this.checked)"> Allow automation to tap this emulator</label>
-    ${!tapsAllowed ? '<p class="muted">Read-only: the game will not be controlled until you enable taps.</p>' : ""}
-    ${procs.length ? procs.map(p => `
-      <div class="flowcard"><div><b>${p.runner === "gem_collector" ? "Diamond collector" : p.operation?.context?.selected_run ? esc(S.runs?.[p.operation.context.selected_run]?.label || p.operation.context.selected_run) : esc(p.runner)}</b>
-        ${p.operation?.context?.instance ? `<span class="chip">${esc(p.operation.context.instance)}</span>` : ""}
-        ${p.operation?.step==='boundary_wait' || p.operation?.step==='boundary_overdue' ? `<p class="${p.operation.step==='boundary_overdue'?'status-warning':'muted'}">${esc(p.operation.recovery_action || 'Waiting for the current game run to end naturally.')}</p>` : ''}
-        <details class="process-details"><summary>Process details</summary><p>PID ${esc(p.pid)}</p><code>${esc(p.cmdline || "")}</code></details></div>
-        <button class="small danger" ${p.operation ? `data-operation-id="${esc(p.operation.id)}" data-operation-revision="${p.operation.revision}" onclick="killPid(${p.pid},this.dataset.operationId,Number(this.dataset.operationRevision))"` : `onclick="killPid(${p.pid})"`}>Stop now</button>
-      </div>`).join("")
-      : processState!=='fresh' || S.statusError ? '<p class="muted">No running automation was confirmed by the latest read.</p>' : '<p class="muted">Nothing is running.</p>'}
-    ${procs.length && finishFlag ? `<div class="action-row current-run-actions">
-        <button class="ghost" onclick="ctl('clear_flag'${finishArgs})"${finishAttrs}>Stopping after this run · Cancel</button></div>` : ""}
-    ${procs.length ? `<p class="muted">Stop now stops automation. The game battle keeps playing.</p>` : ""}
-    <details class="next-run" ${nextRunOpen ? "open" : ""}><summary>${procs.length ? "Next run configuration" : "Start automation"}</summary>
+  const focus = inBody ? runnerFocus(body, ae) : null;
+  body.innerHTML = `<div class="runner-status" data-runner-status>${statusHTML}</div>
+    <div class="next-run">
+    <div class="runner-row"><label class="runner-key" for="start-preset">Next start</label>
     <div class="action-row">
-      <select id="start-preset" onchange="renderRunReady()">
+      <select id="start-preset" onchange="previewStartRun();renderRunReady()">
         ${presets.map(p => `<option value="${esc(p.name)}" title="${esc(p.title)}"
             ${p.name === firstReady ? "selected" : ""}>${esc(p.label)}</option>`).join("")}
       </select>
-      <button data-prepare-run onclick="prepareRun()">Prepare this run</button><button id="start-run" onclick="startPreset()">▶ Start playing</button>
-      <button id="start-gems" onclick="startGemsOnly()" ${procs.length ? "disabled" : ""}>Collect diamonds only</button>
-    </div>
-    <div id="run-ready" class="muted" style="margin-top:.4rem"></div>
-    <p id="run-collection-summary" class="muted"></p>
-    <p class="prepare-run-status" role="status" aria-live="polite">${esc(LearningView.text(S.learningFlow) || S.prepareMessage || '')}</p>
-    <p class="muted">A new Start cancels any pending stop for that emulator once the driver takes ownership. Prepare this run sets up equipment without starting a battle.</p>
-    <p class="muted" style="margin-top:.4rem">“Combo (day plan)” runs the whole
-      day plan in <a href="#schedule">Schedule</a>. <a href="#runs">Edit run policies</a> or <a href="#collection">adjust collection settings</a>.</p></details>`;
+      <button id="start-run" title="Starts automation for the selected run. Keep the emulator and The Tower running while the driver is active. A new Start cancels any pending stop once the driver takes ownership." onclick="startPreset()">▶ Start playing</button>
+      <button data-prepare-run class="ghost" title="Sets up equipment for the selected run without starting a battle." onclick="prepareRun()">Prepare this run</button>
+      <button id="start-gems" class="ghost" title="Collects diamonds in the battle already on screen with the selected run's saved collection settings. Starts no run." onclick="startGemsOnly()" ${procs.length ? "disabled" : ""}>Collect diamonds only</button>
+    </div></div>
+    <div class="runner-indent"><div id="run-ready" class="runner-ready muted"></div>
+    <p class="prepare-run-status" role="status" aria-live="polite">${esc(LearningView.text(S.learningFlow) || S.prepareMessage || '')}</p></div>
+    </div>`;
+  body.dataset.key = key; body.dataset.statusKey = statusKey; body.dataset.startKey = startKey;
   if (chosen) {
     const sel = $("#start-preset");
     if (sel && [...sel.options].some(o => o.value === chosen && !o.disabled)) sel.value = chosen;
   }
+  if (focus) restoreRunnerFocus(body, focus);
+  previewStartRun();
+  renderActivity();
+  renderHarvest();
   renderRunReady();
+}
+/* The "Now" statement: automation state, running drivers, the tracked battle
+   and a running setup step. Rewritten only when its text changes. */
+function activityHTML(){
+  const battleState = (S.battleFailures || 0) > 0 ? 'failed' : S.battleActive === true ? 'tracked' : S.battleActive === false ? 'none' : 'unchecked';
+  const st = S.workspace?.calibration;
+  return DashboardView.factHTML(DashboardView.activity({status:S.status, error:S.statusError, battle:S.battle, battleState, runs:S.runs,
+    operation:st?.running ? workspaceOperation() : null}));
+}
+function renderActivity(){
+  const el = $('#runner-activity');
+  if (!el) return;
+  const html = activityHTML();
+  if (el._activityHTML !== html) { el.innerHTML = html; el._activityHTML = html; }
+}
+/* ------------------------------------------------------- gem harvesting */
+/* The Gems row on Dashboard: the person's persisted harvesting choice and what
+   the backend observes (GET /api/status harvest, contract version 1), the run
+   whose saved gem settings it uses with an Edit link, Turn on / Pause, the
+   person-only collection handoff when an exact setup record holds collection,
+   and the outcome of the last harvesting request. Nothing here posts from a
+   render or a poll: every write is a person's click whose request is frozen
+   and never resent by itself.
+   Evidence rule: an answer that names a collector or owner still stopping is
+   confirmed stopped only by a status read STARTED after that answer arrived
+   (S.statusSeq > its `after`) that is complete and fresh (goneEvidence) and in
+   which no process, collector or owner names it any more (ownersGone). An
+   absent, null or inconsistent field is unknown, never gone. */
+function harvestRuns(){
+  return Object.entries(S.runs || {}).filter(([name, run]) => name !== 'combo' && (run || {}).defined !== false).map(([name]) => name);
+}
+/* The run a Turn on uses: the person's pick in the Gems row, else the stored
+   source, else the run selected in Next start. */
+function harvestSource(){
+  const runs = harvestRuns(), harvest = S.status?.harvest;
+  for (const name of [S.harvestPick, harvest?.desired?.preset, harvest?.source?.preset, $('#start-preset')?.value])
+    if (name && runs.includes(name)) return name;
+  return runs[0] || '';
+}
+function harvestContext(){
+  const context = LearningStore.context(S.config || {});
+  return {id:context.id, expected:{instance:context.instance ?? null, serial:context.serial ?? null, account:context.account ?? null, profile:context.profile ?? null}};
+}
+/* The saved gem settings of run `name` as the Gems row describes them: the
+   server's resolved source when it describes that very run, else the Next start
+   preview of that run, else this row's own read of it (readHarvestPick). Each
+   carries the exact Runs edit target. null while not known yet. */
+function harvestPickSettings(name){
+  if (!name) return null;
+  const harvest = S.status?.harvest, source = harvest?.source;
+  if (DashboardView.harvestReadable(harvest) && source?.preset === name)
+    return {policy:source.policy || null, valid:source.valid === true, problem:source.valid === true ? '' : source.message || 'These saved gem settings are not usable.',
+      edit:source.edit?.blueprint || name};
+  const context = LearningStore.context(S.config || {}).id;
+  const read = S.harvestPickRead?.context === context && S.harvestPickRead.name === name ? S.harvestPickRead : null;
+  const snapshot = selectedPreview(name) || read?.snapshot;
+  if (snapshot) return {policy:snapshot.settings?.routines || null, valid:null, problem:'', edit:snapshot.blueprint || name};
+  return read?.error ? {policy:null, valid:null, problem:'', error:read.error, edit:name} : null;
+}
+/* GET /api/run-controls for the run picked in the Gems row when neither the
+   harvesting source nor the Next start preview describes it: once per run and
+   context (a Dashboard rebuild clears it), fenced to the context it was asked
+   in. Read only. */
+async function readHarvestPick(name){
+  const context = LearningStore.context(S.config || {}).id;
+  if (!name || (S.harvestPickRead?.context === context && S.harvestPickRead.name === name)) return;
+  const read = S.harvestPickRead = {context, name, snapshot:null, error:'', loading:true};
+  try {
+    const snapshot = await api('/api/run-controls?blueprint=' + encodeURIComponent(name));
+    if (S.harvestPickRead === read && context === LearningStore.context(S.config || {}).id) read.snapshot = snapshot;
+  } catch(e){ if (S.harvestPickRead === read) read.error = e.message; }
+  finally { read.loading = false; if (S.harvestPickRead === read) renderHarvest(); }
+}
+/* Why Turn on is unavailable for `source`, or '' when it may be pressed. The
+   server checks everything again; this only keeps a click that would surely be
+   refused from looking possible. */
+function harvestOnReason(view, source){
+  if (!view.supported) return view.headline + '.';
+  if (S.statusError) return 'Status unavailable; retry status first.';
+  if (S.harvestIntent) return 'Resolve the harvesting request below first.';
+  if (!source) return 'No run with saved gem settings is available.';
+  const blocker = WorkspaceStatus.startBlockers({status:S.status, config:S.config || {}, scope:'collection'})[0];
+  if (blocker) return blocker.text;
+  const settings = harvestPickSettings(source);
+  if (settings?.valid === false) return settings.problem;
+  const policy = settings?.policy;
+  if (policy && policy.ad_gems?.enabled !== true && policy.floating_gems?.enabled !== true)
+    return "Ad gems and Floating gems are both off in this run's saved settings.";
+  return '';
+}
+/* The exact setup record a person may declare obsolete for collection only:
+   both guards blocked by the same unresolved setup battle, every id present. */
+function handoffBlocker(){
+  const run = S.status?.setup_battle_guard, collection = S.status?.collection_guard;
+  if (run?.blocks_launch !== true || collection?.blocks_launch !== true) return null;
+  if (run.code !== 'setup_battle_unresolved' || collection.code !== 'setup_battle_unresolved') return null;
+  if (!run.operation_id || !run.setup_battle_id || !run.evidence_revision || collection.operation_id !== run.operation_id) return null;
+  return run;
+}
+/* The PID of each operation in `ids` that the status on screen lists as a
+   well-formed process, so a later process that still holds that PID without
+   its operation link keeps the stop unconfirmed (ownersGone). */
+function stoppingPids(ids){
+  const pids = {};
+  for (const process of Array.isArray(S.status?.processes) ? S.status.processes : [])
+    if (process && typeof process === 'object' && Number.isSafeInteger(process.pid) && process.pid > 0 && typeof process.operation?.id === 'string' && ids.includes(process.operation.id))
+      pids[process.operation.id] = process.pid;
+  return pids;
+}
+/* Affirmative evidence (goneEvidence) that every owner in `owners`
+   ({operation_id, pid}) is gone: no process, collector or harvest owner names
+   its operation, and no process or harvest owner holds its PID unless that
+   entry is positively a different operation. A process with no operation link
+   could be the target with its link lost: it rules the target out only when
+   the target's own PID is known and differs. Targets and records are validated
+   by shape (DashboardView.ownerTarget / ownershipRecords): an owner with neither
+   id, or a malformed id, is never proven gone. */
+function ownersGone(owners, after){
+  const evidence = goneEvidence(after);
+  if (!evidence || !Array.isArray(owners) || !owners.length) return false;
+  const targets = owners.map(owner => DashboardView.ownerTarget(owner));
+  if (targets.some(target => !target)) return false;
+  return targets.every(({op, pid}) => evidence.records.entries.every(entry => {
+    if (op !== null && entry.op === op) return false;
+    if (entry.op === null && entry.pid !== null && pid === null) return false;
+    // the same PID is the same owner unless it now carries another operation
+    return !(pid !== null && entry.pid === pid && !(op !== null && entry.op !== null && entry.op !== op));
+  }));
+}
+/* The single gate for every "stopped", "free" and "input stopped" claim: the
+   latest status when it can prove that something is gone, else null. It needs a
+   read STARTED after `after` (S.statusRequest when the answer naming the owner
+   arrived), no read error, a readable harvest status, a fresh process scan whose
+   numbers agree (DashboardView.processScanFresh against the harvest server
+   clock), and complete well-formed ownership records
+   (DashboardView.ownershipRecords: a process list, harvest.operation and
+   harvest.owner, each null/empty or carrying a typed identity). Anything absent,
+   empty-but-not-null or mistyped is unknown. */
+function goneEvidence(after){
+  const status = S.status, harvest = status?.harvest;
+  if (!status || S.statusError || !((S.statusSeq || 0) > (after || 0))) return null;
+  if (!DashboardView.harvestReadable(harvest)) return null;
+  if (!DashboardView.processScanFresh(status.process_refresh, harvest.server_time)) return null;
+  const records = DashboardView.ownershipRecords(status);
+  return records ? {processes:status.processes, harvest, records} : null;
+}
+/* What an answer says it stopped, only in the contract shape the harvesting,
+   tap-off and start routes share: `stopped` and `stopping` lists of non-empty
+   operation ids, no id named twice (an id both stopped and stopping is a
+   contradiction). Else null: an answer that does not say what stopped is
+   unknown, never "nothing was running" or "stopped". */
+function stopLists(answer){
+  const ids = value => Array.isArray(value) && value.every(id => typeof id === 'string' && id.length > 0);
+  if (!answer || typeof answer !== 'object' || Array.isArray(answer) || !ids(answer.stopped) || !ids(answer.stopping)) return null;
+  const named = [...answer.stopped, ...answer.stopping];
+  return new Set(named).size === named.length ? {stopped:answer.stopped, stopping:answer.stopping, named} : null;
+}
+function harvestRequestHTML(intent, feedback, title, dismiss){
+  if (intent?.state === 'sending') return `<p class="harvest-feedback" data-tone="busy">${esc(title)}: sending…</p>`;
+  if (intent?.state === 'unknown') return `<p class="harvest-feedback" data-tone="warn">${esc(title)}: not confirmed (${esc(intent.error)}). Nothing is resent automatically.
+    <button class="small ghost" onclick="${intent.resend}">Resend the same request</button> <button class="small ghost" onclick="${intent.discard}">Discard</button></p>`;
+  if (feedback) return `<p class="harvest-feedback" data-tone="${feedback.tone}">${esc(feedback.text)} <button class="small ghost" onclick="${dismiss}">Dismiss</button></p>`;
+  return '';
+}
+function harvestIntentTitle(intent){
+  return intent?.enabled === false ? 'Pause harvesting' : 'Turn on harvesting' + (intent?.label ? ' with ' + intent.label : '');
+}
+/* The last harvesting answer, restated against the latest status. It is shown
+   only in its own context and only while no later choice (a higher revision)
+   replaced the one it recorded. A pause whose collector was still stopping is
+   reported as stopped only on affirmative evidence (ownersGone) from a status
+   that also reads the choice as Off. */
+function harvestFeedbackView(){
+  const f = S.harvestFeedback;
+  if (!f || f.context !== LearningStore.context(S.config || {}).id) return null;
+  if (f.refused) return {tone:'bad', text:f.refused};
+  if (f.note) return {tone:'warn', text:f.note};
+  const harvest = S.status?.harvest, readable = DashboardView.harvestReadable(harvest);
+  if (readable && Number.isFinite(f.revision) && Number.isFinite(harvest.desired.revision) && harvest.desired.revision > f.revision) return null;
+  const overlay = f.overlay ? ' ' + DashboardView.overlayView(f.overlay).text + '.' : '';
+  const replay = f.replayed ? ' The server had already recorded this exact request.' : '';
+  if (f.enabled) return {tone:'ok', text:`Turned on with ${f.label}.${replay}${overlay}`};
+  // the stop answer says what stopped only in its contract shape (harvest.py
+  // set_choice / stop_operations): stopped and stopping lists of distinct
+  // operation ids, errors a list, `requested` (whether a stop ran at all) a
+  // boolean, and the answer's own choice, when it names one, Off. Anything
+  // malformed or contradictory (an id both stopped and stopping, ids although
+  // no stop ran, a choice other than Off) is unknown, never "nothing was
+  // running"; so are empty lists that do not say whether a stop ran.
+  const stop = f.stop, lists = stopLists(stop);
+  if (!lists || !Array.isArray(stop.errors) || (stop.requested !== undefined && typeof stop.requested !== 'boolean')
+      || (stop.requested === false && lists.named.length) || (f.choice !== undefined && f.choice !== null && f.choice !== 'off'))
+    return {tone:'warn', text:`Paused, but the answer did not say what stopped, so collector input is not confirmed stopped.${replay}`};
+  const errors = stop.errors.map(error => typeof error === 'string' ? error : error?.message || JSON.stringify(error));
+  if (errors.length) return {tone:'warn', text:`Paused, but stopping the collector reported: ${errors.join('; ')}.${replay}`};
+  // the server runs the stop only while this pause is still the current choice
+  if (stop.requested === false) return {tone:'warn', text:`Paused, but the server ran no stop for this pause (it was no longer the current choice), so collector input is not confirmed stopped.${replay}`};
+  if (stop.requested !== true && !lists.named.length)
+    return {tone:'warn', text:`Paused, but the answer did not say whether a stop ran, so collector input is not confirmed stopped.${replay}`};
+  const stopping = stop.stopping;
+  if (stopping.length) {
+    const confirmed = ownersGone(stopping.map(id => ({operation_id:id, pid:f.pids?.[id] ?? null})), f.after) && harvest.desired.choice === 'off';
+    return confirmed ? {tone:'ok', text:`Paused; collector input stopped.${replay}${overlay}`}
+      : {tone:'warn', text:`Paused; collector input is still stopping and not confirmed stopped yet.${replay}`};
+  }
+  if (stop.stopped.length) return {tone:'ok', text:`Paused; collector input stopped.${replay}${overlay}`};
+  return {tone:'ok', text:`Paused; no collector was running.${replay}${overlay}`};
+}
+/* The Gems row in four parts: the fact (choice and observed state), the
+   actions (Pause, Turn on again), the run picker with Turn on, and the rest
+   (source, notes, handoff, request outcomes). renderHarvest rewrites each part
+   on its own, so a focused picker is kept while every other part follows the
+   status. */
+/* True only when harvesting is positively not on: a valid, current contract-1
+   status (read without error, records readable, its desired record in contract
+   shape: DashboardView.desiredValid) reads the choice Off or not turned on, no
+   Turn on is sending or unconfirmed, and every On this page knows of (an
+   acknowledged Turn on, a status that read On: S.harvestOn) is older than that
+   choice: the status was read after it and carries a newer integer revision. A
+   missing, null, failed, unsupported, malformed or stale status, a revision
+   that does not move past the known On, or a known On whose revision is not
+   known, is not "off": Pause (a revocation) is then offered. */
+function harvestOffConfirmed(){
+  const context = LearningStore.context(S.config || {}).id;
+  if (S.harvestIntent?.context === context && S.harvestIntent.enabled === true) return false;
+  const harvest = S.status?.harvest;
+  if (!S.status || S.statusError || !DashboardView.harvestReadable(harvest) || !['off', 'unset'].includes(harvest.desired.choice)) return false;
+  const on = S.harvestOn?.context === context ? S.harvestOn : null;
+  if (!on) return true;
+  if (!((S.statusSeq || 0) > (on.after || 0))) return false;
+  return Number.isSafeInteger(on.revision) && harvest.desired.revision > on.revision;
+}
+/* Records an On this page learned from a Turn on answer (harvestOffConfirmed). */
+function noteHarvestOn(context, revision){
+  const known = S.harvestOn?.context === context ? S.harvestOn : null;
+  const revisions = [known?.revision, revision].filter(Number.isSafeInteger);
+  S.harvestOn = {context, revision:revisions.length ? Math.max(...revisions) : null, after:Math.max(known?.after || 0, S.statusRequest || 0)};
+}
+function harvestParts(){
+  const context = LearningStore.context(S.config || {}).id;
+  const view = DashboardView.harvestView({harvest:S.status?.harvest, statusError:S.statusError, runs:S.runs});
+  const intent = S.harvestIntent?.context === context ? S.harvestIntent : null;
+  const pauseSending = intent?.enabled === false && intent.state === 'sending';
+  // a Turn on that is sending or unconfirmed may already be recorded
+  const onPending = intent?.enabled === true;
+  const pick = harvestSource();
+  const onReason = view.on ? '' : harvestOnReason(view, pick);
+  // Pause is a revocation: offered whenever harvesting may be on or its state is
+  // unknown, hidden only when a current status positively reads it off
+  // (harvestOffConfirmed). The run picker with Turn on takes its place then.
+  const offConfirmed = harvestOffConfirmed();
+  const pickerShown = offConfirmed && view.supported;
+  let actions = '', picker = '', pickerKey = '', onDisabled = true;
+  if (!offConfirmed) {
+    actions = `<button class="small" id="harvest-pause" onclick="setHarvest(false)" ${pauseSending ? 'disabled' : ''} title="${onPending
+      ? 'Pauses harvesting whatever the unconfirmed Turn on did; that Turn on is never resent. Stops collector input; the battle keeps playing.'
+      : view.on && !S.statusError ? 'Stops collector input and pauses gem routines in a running automation. The battle keeps playing.'
+      : 'No current status confirms that harvesting is off, so it may be on. Pausing stops collector input and pauses gem routines in a running automation; the battle keeps playing.'}">Pause harvesting</button>`;
+    if (view.circuitOpen && view.on) actions += ` <button class="small ghost" id="harvest-retry" onclick="setHarvest(true)" ${intent || harvestOnReason(view, view.source?.preset || '') ? 'disabled' : ''} title="The collector kept failing, so automatic starts stopped. Turning harvesting on again resets that.">Turn on again</button>`;
+  } else if (pickerShown) {
+    const runs = harvestRuns();
+    const options = runs.map(name => `<option value="${esc(name)}" ${name === pick ? 'selected' : ''}>${esc(S.runs?.[name]?.label || name)}</option>`).join('');
+    const pickerOff = !!intent || !options;
+    pickerKey = JSON.stringify([runs.map(name => [name, S.runs?.[name]?.label || name]), pick, pickerOff]);
+    onDisabled = !!onReason || !!intent;
+    // leaving the picker brings the part around it up to date (renderHarvest)
+    picker = `<span class="harvest-controls"><label class="harvest-pick" for="harvest-source">Run</label><select id="harvest-source" onchange="pickHarvestSource(this.value)" onblur="setTimeout(renderHarvest)" ${pickerOff ? 'disabled' : ''}>${options}</select>
+      <button class="small" id="harvest-on" onclick="setHarvest(true)" ${onDisabled ? 'disabled' : ''} title="Collect gems whenever a battle is on screen, using the chosen run's saved gem settings. Under a running automation only its gem routines are switched.">Turn on</button></span>`;
+  }
+  const link = name => ` <a class="dashboard-run-link" data-run="${esc(name)}" href="#runs">Edit in Runs</a>`;
+  let meta = '';
+  if (view.on && view.source) {
+    const s = view.source;
+    meta = `<span class="harvest-source">Uses ${esc(s.label)}'s saved gem settings${s.settings ? ': ' + esc(s.settings) : ''}</span>${link(s.edit || s.preset)}`;
+  } else if (!view.on && (onPending || pickerShown)) {
+    // the run a Turn on would use, or the one a pending Turn on was sent with; a
+    // choice no current status confirms names no source
+    const name = onPending ? intent.body.preset : pick;
+    const settings = name ? harvestPickSettings(name) : null, text = settings ? DashboardView.gemSettingsText(settings.policy) : '';
+    if (name && !settings) readHarvestPick(name);
+    if (name) meta = `<span class="harvest-source">${onPending ? 'The pending Turn on uses' : 'Turn on uses'} ${esc(S.runs?.[name]?.label || name)}'s saved gem settings${text ? ': ' + esc(text)
+      : settings?.error ? ' (not readable here: ' + esc(settings.error) + ')' : !settings ? ' (reading…)' : ''}</span>${link(settings?.edit || name)}`;
+  }
+  // the setup-battle guard's long sentence is stated once: in the Turn on
+  // reason, or by the handoff offer below when that applies
+  const guard = S.status?.collection_guard?.blocks_launch === true ? S.status.collection_guard.message : null;
+  const blocker = handoffBlocker();
+  const handoffShown = !!blocker && !(S.status?.processes || []).length;
+  const detail = guard && view.detail === guard ? 'held by the setup test battle record' : view.detail;
+  const notes = [];
+  if (pickerShown && onReason && !S.harvestIntent && !(handoffShown && onReason === guard)) notes.push(['muted', 'Turn on: ' + onReason]);
+  if (view.on && view.source?.valid === false) notes.push(['warn', 'Saved gem settings unusable: ' + view.source.problem]);
+  if (view.on && view.source?.changed) notes.push(['muted', 'These saved gem settings changed after harvesting was turned on.']);
+  if (view.inputRevoked && view.code !== 'input_revoked') notes.push(['warn', 'Game input is off for this emulator, so no collector input runs until you allow it again.']);
+  if (view.overlay) notes.push([view.overlay.tone, view.overlay.text + '.']);
+  if (view.on && view.state === 'owned_by_driver' && !/timing stays/.test(view.overlay?.text || ''))
+    notes.push(['muted', 'The saved intervals apply to the standalone collector; a running automation keeps its own gem timing.']);
+  if (view.host) notes.push(['warn', view.host]);
+  // a collector still recorded after harvesting was turned off: its own Stop is in the Now row above
+  const retained = view.readable && !view.on && unlistedHolders().find(holder => holder.collector);
+  if (retained) notes.push(['warn', `Its collector is still recorded (${retained.why}); use its Stop in the Now row above.`]);
+  const handoff = handoffShown ? `<p class="harvest-handoff">Collection is held by the unconfirmed setup test battle from operation ${esc(String(blocker.operation_id).slice(0, 8))}.
+    If the battle on screen is one you started yourself, you can allow diamond collection only.
+    <button class="small ghost" id="handoff-confirm" onclick="confirmCollectionHandoff()" ${S.handoffIntent?.state === 'sending' ? 'disabled' : ''}>Confirm a new manual battle…</button></p>` : '';
+  // a request left from another emulator, account or profile is never resent here
+  const foreign = S.harvestIntent && !intent ? `<p class="harvest-feedback" data-tone="warn">An unconfirmed harvesting request for another emulator, account or profile is not resent here.
+    <button class="small ghost" onclick="discardHarvest()">Discard</button></p>` : '';
+  const handoffFeedback = S.handoffFeedback && S.handoffFeedback.context === context ? S.handoffFeedback : null;
+  // a readable Off that does not move past an On this page recorded is stale or
+  // contradictory: it is not stated as the current choice
+  const knownOn = S.harvestOn?.context === context ? S.harvestOn : null;
+  const staleOff = !offConfirmed && !!knownOn && view.readable && ['off', 'unset'].includes(view.choice) && !onPending;
+  // (the observed state is still stated; only the choice is qualified)
+  const fact = staleOff ? {text:(S.statusError ? 'Last known · ' : '') + 'Choice not confirmed (this status reads '
+      + (view.choice === 'off' ? 'Off' : 'not turned on') + ', but a later On was recorded here)' + (view.observed ? ' · ' + view.observed : ''), tone:'warn', detail}
+    : {text:view.headline, tone:view.tone, detail};
+  return {fact:DashboardView.factHTML(fact), actions, picker, pickerKey, onDisabled,
+    rest:`${meta ? `<p class="harvest-meta">${meta}</p>` : ''}${notes.map(([tone, text]) => `<p class="harvest-note" data-tone="${tone}">${esc(text)}</p>`).join('')}${handoff}
+    ${harvestRequestHTML(intent, harvestFeedbackView(), harvestIntentTitle(intent), 'dismissHarvestFeedback()')}${foreign}${harvestRequestHTML(S.handoffIntent, handoffFeedback, 'Collection-only confirmation', 'dismissHandoffFeedback()')}`};
+}
+const HARVEST_PARTS = ['fact', 'actions', 'picker', 'rest'];
+function harvestHTML(parts = harvestParts()){
+  return `<div class="harvest-line"><div data-harvest-part="fact">${parts.fact}</div><span data-harvest-part="actions">${parts.actions}</span>`
+    + `<span data-harvest-part="picker">${parts.picker}</span></div><div data-harvest-part="rest">${parts.rest}</div>`;
+}
+/* Rewrites each part of the Gems row only when its own markup changed, so a
+   control in an unchanged part (Pause, Turn on, the Edit link) is never replaced
+   under a click, and keeps a focused control focused. A focused run picker (it
+   may be open) is never replaced: the fact, Pause and the other actions, and the
+   rest still follow every status change; Turn on follows in place while the
+   picker still offers the same runs with the same choice, and is hidden and
+   disabled while it does not (no Turn on is offered now, or the runs changed).
+   That part is brought up to date when the picker is left. */
+/* Focus roles: the controls that take each other's place when the status
+   changes (the Gems row's Pause / run picker / Turn on, and the input switch /
+   Turn input off). Focus on one that disappears moves to the one that replaced it. */
+const FOCUS_ROLES = [['harvest-pause', 'harvest-source', 'harvest-on', 'harvest-retry'], ['automation-access-off', 'automation-access']];
+function renderHarvest(){
+  const el = $('#dashboard-harvest');
+  if (!el) return;
+  const parts = harvestParts(), html = harvestHTML(parts);
+  if (el._harvestHTML === html) return;
+  const active = document.activeElement;
+  const inside = !!active && typeof el.contains === 'function' && el.contains(active);
+  const regions = typeof el.querySelector === 'function' ? HARVEST_PARTS.map(name => el.querySelector(`[data-harvest-part="${name}"]`)) : [];
+  if (!regions.length || regions.some(region => !region)) {
+    el.innerHTML = html; el._harvestHTML = html;
+    HARVEST_PARTS.forEach(name => { const region = el.querySelector?.(`[data-harvest-part="${name}"]`); if (region) region._html = parts[name]; });
+  } else {
+    const picker = inside && active.id === 'harvest-source' ? active : null;
+    let pending = false;
+    HARVEST_PARTS.forEach((name, index) => {
+      const region = regions[index];
+      if (name === 'picker' && picker) {
+        // Turn on always follows in place (it may have been hidden by an earlier
+        // status); the picker part counts as current only while the picker on the
+        // page offers these runs with this choice
+        const live = JSON.stringify([[...picker.options].map(option => [option.value, option.textContent]), picker.value, picker.disabled]);
+        const same = !!parts.picker && live === parts.pickerKey;
+        const on = el.querySelector('#harvest-on');
+        if (on) { on.disabled = !same || parts.onDisabled; on.hidden = !parts.picker; }
+        if (same) region._html = parts.picker; else pending = true;
+        return;
+      }
+      if (region._html === parts[name]) return;
+      region.innerHTML = parts[name]; region._html = parts[name];
+    });
+    el._harvestHTML = pending ? null : html;
+  }
+  if (inside && active.id) {
+    // the same control, or the one that took its place in the same role (Pause <-> run picker)
+    const role = FOCUS_ROLES.find(ids => ids.includes(active.id)) || [];
+    const again = [active.id, ...role].map(id => document.getElementById(id)).find(control => control && !control.disabled);
+    if (again && again !== active) again.focus({preventScroll:true});
+  }
+}
+function pickHarvestSource(name){ S.harvestPick = name; renderHarvest(); renderRunReady(); }
+/* A harvesting or game-input write is a status-plane request: what it did is
+   rendered from its own answer and from /api/status, so status reads stay
+   accepted while it is in flight (post() holds them back for workspace edits,
+   which a held reply would freeze). Its answer is awaited at most
+   WRITE_OBSERVE_MS; then the outcome is unknown, and a later answer is handed to
+   `late(error, result)` so a request that is still current can settle. Nothing
+   is ever resent from here. */
+const WRITE_OBSERVE_MS = 15000;
+function observedPost(path, body, late, {workspace = false} = {}){
+  // a write that also changes saved settings fences workspace reads as post() does,
+  // without holding status reads back
+  if (workspace) { S.readinessFresh = false; S.workspaceEpoch = (S.workspaceEpoch || 0) + 1; }
+  const request = api(path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body || {})});
+  if (workspace) { const done = () => { S.workspaceEpoch++; refreshWorkspaceStatus(); }; request.then(done, done); }
+  let timer;
+  const bound = new Promise((_, reject) => { timer = setTimeout(() => {
+    request.then(result => late?.(null, result), error => late?.(error));
+    reject(Object.assign(new Error(`No answer within ${WRITE_OBSERVE_MS / 1000} s; the outcome is unknown`), {name:'TimeoutError'}));
+  }, WRITE_OBSERVE_MS); });
+  return Promise.race([request, bound]).finally(() => clearTimeout(timer));
+}
+/* Turn harvesting on (with the chosen run) or pause it. Pause always applies:
+   it is revisionless and supersedes a Turn on that is sending or unconfirmed
+   (that Turn on is never resent and its late answer is ignored; on the server a
+   later Off wins either way, since Turn on is a compare-and-set on the choice
+   revision the person saw). A lost reply, a server error or the global action
+   lock leaves an outcome unconfirmed: only an explicit Resend sends the
+   identical request again. */
+function setHarvest(enabled){
+  const harvest = S.status?.harvest;
+  // turning on is a compare-and-set on a readable contract-1 status; Pause is a
+  // revocation and never depends on what the status contains
+  if (enabled && harvest?.version !== 1) return;
+  const context = harvestContext();
+  const current = S.harvestIntent?.context === context.id ? S.harvestIntent : null;
+  if (!enabled && current?.enabled === false) return current.state === 'unknown' ? resendHarvest() : undefined;
+  if (enabled && S.harvestIntent) return;
+  const view = DashboardView.harvestView({harvest, statusError:S.statusError, runs:S.runs});
+  if (enabled && view.revision === null) return;   // a compare-and-set needs the choice revision the person saw
+  const preset = enabled ? (view.on ? view.source?.preset || '' : harvestSource()) : null;
+  if (enabled && (!preset || harvestOnReason(view, preset))) return;
+  const body = enabled
+    ? {enabled:true, preset, expected_revision:view.revision, expected_context:context.expected, idempotency_key:crypto.randomUUID()}
+    : {enabled:false, expected_context:context.expected, idempotency_key:crypto.randomUUID()};
+  S.harvestIntent = {enabled, label:enabled ? S.runs?.[preset]?.label || preset : '', context:context.id, body, state:'new', resend:'resendHarvest()', discard:'discardHarvest()'};
+  S.harvestFeedback = null;
+  return sendHarvest(S.harvestIntent);
+}
+const HARVEST_REFUSALS = {harvest_revision_changed:'Harvesting was changed elsewhere; review its state before trying again.',
+  context_changed:'The emulator, account or profile changed; review the state before trying again.',
+  policy_invalid:"The run's saved gem settings are not usable.", idempotency_key_reused:'The request identity was reused with different content.',
+  invalid_request:'The request was not valid.'};
+/* Settles `intent` with its answer, only while it is still the current
+   request: a superseded request (a later Pause, game input turned off, a
+   discard) never writes feedback or state. */
+function settleHarvest(intent, error, result){
+  if (S.harvestIntent !== intent) return;
+  if (!error) {
+    S.harvestIntent = null;
+    // an acknowledged Turn on keeps Pause offered until a later current status reads a newer Off
+    if (intent.enabled) noteHarvestOn(intent.context, result?.desired?.revision);
+    S.harvestFeedback = {context:intent.context, enabled:intent.enabled, label:intent.label, replayed:result?.replayed === true,
+      stop:result?.stop ?? null, overlay:result?.overlay || null, revision:Number.isFinite(result?.desired?.revision) ? result.desired.revision : null,
+      choice:result?.desired?.choice === undefined || result?.desired?.choice === null ? null : result.desired.choice,
+      after:S.statusRequest || 0, pids:stoppingPids(Array.isArray(result?.stop?.stopping) ? result.stop.stopping : [])};
+    loadStatus();
+  } else if (definiteRefusal(error)) {
+    S.harvestIntent = null;
+    S.harvestFeedback = {context:intent.context, refused:`${intent.enabled ? 'Turn on' : 'Pause'} refused: ${HARVEST_REFUSALS[error.code] ? HARVEST_REFUSALS[error.code] + ' ' : ''}${error.message}`};
+  } else { intent.state = 'unknown'; intent.error = error.message; }
+  renderHarvest(); renderRunReady(); renderOwnerRefusal();
+}
+async function sendHarvest(intent){
+  intent.state = 'sending'; intent.error = ''; renderHarvest();
+  let result;
+  try { result = await observedPost('/api/harvest', intent.body, (error, late) => {
+    // a late answer settles the request only while it still waits on that answer
+    if (S.harvestIntent === intent && intent.state === 'unknown') settleHarvest(intent, error, late);
+  }); }
+  catch(e) { return settleHarvest(intent, e); }
+  settleHarvest(intent, null, result);
+}
+function resendHarvest(){
+  const intent = S.harvestIntent;
+  if (!intent || intent.state !== 'unknown') return;
+  if (intent.context === LearningStore.context(S.config || {}).id) return sendHarvest(intent);
+  S.harvestIntent = null;
+  S.harvestFeedback = {context:LearningStore.context(S.config || {}).id, refused:'The emulator or account changed, so the unconfirmed harvesting request was not resent. Check the state above.'};
+  renderHarvest();
+}
+/* Game input turned off supersedes a Turn on that is sending or unconfirmed:
+   the person's newer choice is no input, so that Turn on is neither resent nor
+   reported when its answer arrives; the state above shows what the server holds. */
+function supersedeHarvestOn(){
+  const intent = S.harvestIntent;
+  if (intent?.enabled !== true) return;
+  S.harvestIntent = null;
+  S.harvestFeedback = {context:intent.context, note:'Turning game input off replaced the unconfirmed Turn on; it is not resent. The state above is what the server holds.'};
+  renderHarvest();
+}
+function discardHarvest(){ S.harvestIntent = null; renderHarvest(); renderRunReady(); renderOwnerRefusal(); }
+function dismissHarvestFeedback(){ S.harvestFeedback = null; renderHarvest(); }
+function dismissHandoffFeedback(){ S.handoffFeedback = null; renderHarvest(); }
+/* The person's statement that the battle on screen is a new manual run, bound
+   to the exact setup record and emulator/account. Allows collection only; it
+   is asked every time it is needed and never sent on anyone's behalf. */
+async function confirmCollectionHandoff(){
+  const blocker = handoffBlocker();
+  if (!blocker || S.handoffIntent?.state === 'sending') return;
+  const context = harvestContext();
+  const scope = JSON.stringify([context.id, blocker.operation_id, blocker.setup_battle_id, blocker.evidence_revision]);
+  let intent = S.handoffIntent?.scope === scope ? S.handoffIntent : null;
+  if (!intent) {
+    if (!confirm(`Is the battle on screen a NEW run you started yourself, not the setup test battle from operation ${String(blocker.operation_id).slice(0, 8)}?\n\n`
+      + 'Confirming allows diamond collection only on this emulator and account. Start playing stays blocked, and the failed setup record is kept unchanged.')) return;
+    intent = S.handoffIntent = {scope, context:context.id, state:'new', resend:'confirmCollectionHandoff()', discard:'discardHandoff()',
+      body:{operation_id:blocker.operation_id, setup_battle_id:blocker.setup_battle_id, evidence_revision:blocker.evidence_revision,
+        expected_context:{instance:context.expected.instance, account:context.expected.account, serial:context.expected.serial}, attestation:'new_manual_battle'}};
+  }
+  S.handoffFeedback = null; intent.state = 'sending'; renderHarvest();
+  // settles only the request still current; a late answer only one still unconfirmed
+  const settle = (error) => {
+    if (S.handoffIntent !== intent) return;
+    if (!error) {
+      S.handoffIntent = null;
+      S.handoffFeedback = {context:intent.context, tone:'ok', text:'Collection-only confirmation recorded. Start playing stays blocked by the setup record.'};
+      loadStatus();
+    } else if (definiteRefusal(error)) { S.handoffIntent = null; S.handoffFeedback = {context:intent.context, tone:'bad', text:'Collection-only confirmation refused: ' + error.message}; }
+    else { intent.state = 'unknown'; intent.error = error.message; }
+    renderHarvest(); renderRunReady();
+  };
+  try { await observedPost('/api/setup-battle/collection-handoff', intent.body, error => { if (S.handoffIntent === intent && intent.state === 'unknown') settle(error); }); }
+  catch(e) { return settle(e); }
+  settle(null);
+}
+function discardHandoff(){ S.handoffIntent = null; renderHarvest(); }
+/* One shared recovery for every route refused because a collector or another
+   driver owns the emulator (409 device_owned / collector_running /
+   collector_stopping with owner, recovery and retry 'after_confirmed_stop'), or
+   because the server could not read who owns it (device_owner_unreadable, no
+   owner): a notice above every page names the refused action and offers the
+   recovery the server named (Pause harvesting, Stop that operation, or none).
+   The person retries the original action; nothing is retried here. */
+const OWNER_CODES = ['device_owned', 'collector_running', 'collector_stopping', 'device_owner_unreadable'];
+const OWNER_ROUTES = [['/api/clicker/step','The clicker step'], ['/api/account-tier','Changing the account tier'], ['/api/accounts','Changing accounts'],
+  ['/api/automation-access','Turning game input on'], ['/api/control','Starting automation'], ['/api/calibrate/apply','Applying discoveries'],
+  ['/api/profile-activate','Switching profile'], ['/api/profile-promote','Promoting the scan draft'], ['/api/wizard/tools/install','Installing connection tools'],
+  ['/api/wizard/launch','Launching the emulator'], ['/api/wizard/reconnect','Reconnect'], ['/api/wizard/adopt','Adopting the emulator'],
+  ['/api/scan/start','The profile scan'], ['/api/calibrate/start','Screen learning'], ['/api/calibrate/observe','Observing the screen']];
+function noteOwnerRefusal(path, error){
+  const body = error?.body;
+  if (!body || typeof body !== 'object' || (body.retry !== 'after_confirmed_stop' && !OWNER_CODES.includes(error.code))) return;
+  const route = String(path).split('?')[0];
+  const action = error.code === 'collector_running' ? 'Collect diamonds only' : (OWNER_ROUTES.find(([prefix]) => route.startsWith(prefix)) || [, 'That action'])[1];
+  S.ownerRefusal = {action, message:error.message, code:error.code || null, owner:body.owner && typeof body.owner === 'object' ? body.owner : null,
+    recovery:body.recovery && typeof body.recovery === 'object' ? body.recovery : null, context:LearningStore.context(S.config || {}).id,
+    after:S.statusRequest || 0};
+  renderOwnerRefusal();
+}
+/* Whatever holds the emulator in a complete fresh status (goneEvidence), with the
+   recovery for it, or null when nothing does: the owner harvesting reports (with
+   its server-named recovery), else its standalone collector, else a listed process. */
+function currentOwner(evidence){
+  const {processes, harvest} = evidence;
+  if (harvest.owner) return {owner:harvest.owner, recovery:harvest.owner.recovery || null};
+  const op = harvest.operation;
+  if (op) return {owner:{kind:'operation', operation_id:op.id, operation_kind:op.kind || 'gems', status:op.status, harvest_managed:op.harvest_managed},
+    recovery:harvest.desired.choice === 'on' && op.harvest_managed !== false ? {action:'pause_harvesting'}
+      : op.id && Number.isInteger(op.revision) ? {action:'stop_operation', operation_id:op.id, expected_revision:op.revision} : null};
+  const process = processes[0];
+  if (!process) return null;
+  const tracked = process.operation?.id;
+  return {owner:tracked ? {kind:'operation', operation_id:tracked, operation_kind:process.operation.kind, status:process.operation.status,
+      selected_run:process.operation.context?.selected_run, pid:process.pid}
+      : {kind:'process', pid:process.pid, script:process.runner},
+    recovery:tracked && Number.isInteger(process.operation.revision) ? {action:'stop_operation', operation_id:tracked, expected_revision:process.operation.revision} : null};
+}
+/* The owner a refusal named is gone only on affirmative evidence (ownersGone)
+   for its exact operation and process; for a collector whose recovery is Pause
+   harvesting, the same status must also read the choice as Off with no
+   collector. An owner named by neither id is never proven gone. This says
+   nothing about other owners: currentOwner does. */
+function ownerGone(refusal){
+  const owner = refusal.owner || {};
+  if (!ownersGone([{operation_id:owner.operation_id, pid:owner.pid}], refusal.after)) return false;
+  return refusal.recovery?.action !== 'pause_harvesting' || (S.status.harvest.desired.choice === 'off' && S.status.harvest.operation === null);
+}
+/* The way out for `owner` with the server-named `recovery`. */
+function ownerStepHTML(owner, recovery){
+  const harvest = S.status?.harvest, name = DashboardView.ownerName(owner, S.runs);
+  const paused = harvestOffConfirmed() && harvest.desired.choice === 'off';
+  const pausing = S.harvestIntent?.enabled === false && S.harvestIntent.state === 'sending';
+  const stopButton = (id, revision) => `<button class="small danger" data-operation-id="${esc(id)}" data-operation-revision="${revision}" data-operation-name="${esc(name)}" onclick="stopOwnerOperation(this.dataset.operationId,Number(this.dataset.operationRevision),this.dataset.operationName)">Stop ${esc(name.replace(/^(The|A) /, word => word.toLowerCase()))}</button>`;
+  if (recovery?.action === 'pause_harvesting') {
+    if (!paused) return `<button class="small" onclick="setHarvest(false)" ${pausing ? 'disabled' : ''}>Pause harvesting</button> then try it again once the collector has stopped.`;
+    // paused, but the collector is still recorded (stuck stopping, or its worker cannot be checked): its own Stop
+    const id = recovery.operation_id || owner?.operation_id, held = id ? unlistedHolders().find(holder => holder.id === id) || (operationRevision(id) !== null ? {revision:operationRevision(id)} : null) : null;
+    return held && Number.isSafeInteger(held.revision) ? `Harvesting is paused, but the collector is still recorded. ${stopButton(id, held.revision)} then try it again once it has stopped.`
+      : 'Harvesting is paused; try it again once the collector has stopped.';
+  }
+  if (recovery?.action === 'stop_operation' && recovery.operation_id && Number.isInteger(recovery.expected_revision))
+    return `${stopButton(recovery.operation_id, operationRevision(recovery.operation_id) ?? recovery.expected_revision)} then try it again once it has stopped.`;
+  if (owner?.foreign) return `${esc(name)} belongs to another installation; stop it there, then try it again.`;
+  return `${esc(name)} holds the emulator; try it again once it has stopped.`;
+}
+function renderOwnerRefusal(){
+  const el = $('#owner-refusal');
+  if (!el) return;
+  const refusal = S.ownerRefusal;
+  let html = '';
+  if (refusal && refusal.context === LearningStore.context(S.config || {}).id) {
+    let tone = 'warn', step;
+    if (refusal.code === 'device_owner_unreadable' && !refusal.owner) {
+      // who holds the emulator was not known: no recovery to offer and no claim about it
+      step = 'Who holds the emulator is not known here, so there is nothing to stop; try the action again.';
+    } else if (!ownerGone(refusal)) {
+      step = refusal.owner ? ownerStepHTML(refusal.owner, refusal.recovery) : 'Try it again once the emulator is free.';
+    } else {
+      // the owner it named is gone; the emulator is free only if nothing else holds it now
+      const now = currentOwner(goneEvidence(refusal.after));
+      const old = DashboardView.ownerName(refusal.owner, S.runs);
+      if (!now) { tone = 'ok'; step = 'The emulator is free now; you can try it again.'; }
+      else step = `${esc(old)} has stopped, but ${esc(DashboardView.ownerName(now.owner, S.runs).replace(/^(The|A) /, word => word.toLowerCase()))} now holds the emulator. ${ownerStepHTML(now.owner, now.recovery)}`;
+    }
+    const intent = S.harvestIntent?.context === refusal.context ? S.harvestIntent : null;
+    const pending = (S.tab !== 'overview' ? harvestRequestHTML(intent, harvestFeedbackView(), harvestIntentTitle(intent), 'dismissHarvestFeedback();renderOwnerRefusal()') : '')
+      // the answer to a Stop sent from this notice, also off the Dashboard
+      + (S.tab !== 'overview' ? stopFeedbackHTML() : '');
+    html = `<p data-tone="${tone}"><b>${esc(refusal.action)} was refused:</b> ${esc(refusal.message)} ${step}
+      <button class="small ghost" onclick="S.ownerRefusal=null;renderOwnerRefusal()">Dismiss</button></p>${pending}`;
+  }
+  if (el._ownerHTML !== html) { el.innerHTML = html; el._ownerHTML = html; }
+  el.hidden = !html;
+}
+/* Stop the operation a refusal named (its recorded revision); stopping a run
+   or collector also pauses harvesting so it is not started again. */
+async function stopOwnerOperation(operationId, expectedRevision, name){
+  if (!operationId || !Number.isInteger(expectedRevision)) return;
+  return stopOperation(operationId, expectedRevision, {name:name || 'Operation ' + String(operationId).slice(0, 8),
+    confirmText:'Stop this automation? Harvesting is paused too, so the collector is not started again. The game battle keeps playing.'});
+}
+/* Game input switch outcome. Turning input off is always reachable; the
+   server answers what it did (revocation) and this restates it without
+   promoting anything. The saved setting (config_persisted) and enforcement on
+   running automation are separate facts. Green only when the answer itself
+   proves input stopped (fenced and latched, no errors, nothing stopping, every
+   surviving owner's input refused), or when a stopping answer is followed by
+   affirmative evidence (ownersGone) that what it named is gone while harvesting
+   reads Off or not turned on. A refused turn-off (for example HTTP 500
+   input_revocation_failed, state 'failed') shows the server's own message and
+   what its revocation says it did, never "input stopped"; an owner whose input
+   is not fenced, a revocation the server did not enforce and a lost answer stay
+   visible, with the way out. "Harvesting is paused" belongs to the choice
+   revision this answer recorded: a later readable read with a newer choice
+   retires it, one that disagrees qualifies it. Once a config read started after
+   the answer shows taps allowed again, the whole outcome is history: it says
+   so instead. An answer whose lists are not in the contract shape is incomplete
+   and never green. */
+function accessFeedbackHTML(){
+  const f = S.accessFeedback;
+  if (!f || f.context !== LearningStore.context(S.config || {}).id) return '';
+  const dismiss = ' <button class="small ghost" onclick="dismissAccessFeedback()">Dismiss</button>';
+  const retry = ' <button class="small ghost" onclick="setAutomationAccess(false)">Try again</button>';
+  if (f.sending) return '<p class="runner-access-note" data-tone="busy">Turning game input off…</p>';
+  const r = f.revocation && typeof f.revocation === 'object' ? f.revocation : null;
+  if (f.failed && !r) return `<p class="runner-access-note" data-tone="bad">Turning game input off was not confirmed: ${esc(f.failed)}${retry}${dismiss}</p>`;
+  // the saved setting now, from a config read started after this answer
+  const config = S.config, allowedNow = (S.configSeq || 0) > (f.configAfter || 0) ? config?.instances?.[config?.active_instance]?.allow_taps : undefined;
+  if (allowedNow === true) return `<p class="runner-access-note" data-tone="warn">Game input is allowed now: the saved setting allows taps again, so this earlier turn-off is no longer in effect. Turn it off again if that was not intended.${dismiss}</p>`;
+  // a newer turn-on request (sending, unconfirmed or answered) makes this outcome history at once
+  if (f.retired) return `<p class="runner-access-note" data-tone="warn">An earlier turn-off of game input is no longer current: a turn-on was requested after it. The switch shows the saved setting.${dismiss}</p>`;
+  // a turn-on sent BEFORE this turn-off whose answer never arrived, or that was
+  // answered only after this turn-off was sent, can still have allowed taps after it
+  const earlier = (S.accessEnables || []).some(entry => entry.context === f.context && !entry.answered && entry.seq < f.seq) ? 'has no answer and may still reach the server and allow taps again'
+    : S.accessOnAck?.context === f.context && S.accessOnAck.seq < f.seq && S.accessOnAck.answeredAfter >= f.seq && !((S.configSeq || 0) > (S.accessOnAck.configAfter || 0))
+      ? 'was applied while this turn-off was on its way and may have allowed taps again' : '';
+  if (!r) return `<p class="runner-access-note" data-tone="warn">Game input off was accepted, but the server did not say what stopped.${dismiss}</p>`;
+  const list = value => Array.isArray(value) ? value : [];
+  // every owner it names must carry an identity by the same rules as any other
+  // owner record (DashboardView.ownerRecord) and an input fact the contract knows
+  const shaped = !!stopLists(r) && Array.isArray(r.errors) && Array.isArray(r.still_owned)
+    && r.still_owned.every(owner => !!DashboardView.ownerRecord(owner) && [undefined, 'refused', 'unfenced'].includes(owner.input)) && typeof r.state === 'string';
+  const errors = list(r.errors).map(error => typeof error === 'string' ? error
+    : [error?.step ? String(error.step).replace(/_/g, ' ') : '', error?.message || ''].filter(Boolean).join(': ') || JSON.stringify(error));
+  const stopping = list(r.stopping), owners = list(r.still_owned), stopped = list(r.stopped);
+  const unfenced = owners.filter(owner => owner?.input !== 'refused'), refused = owners.filter(owner => owner?.input === 'refused');
+  // "the running automation" mid-sentence; run labels and process names keep their case
+  const names = items => [...new Set(items.map(owner => DashboardView.ownerName(owner, S.runs).replace(/^(The|A) /, word => word.toLowerCase())))].join(', ');
+  // a readable status read after this answer, for its choice
+  const harvest = S.status?.harvest;
+  const later = (S.statusSeq || 0) > (f.after || 0) && !S.statusError && DashboardView.harvestReadable(harvest);
+  const choiceText = choice => choice === 'on' ? 'On' : choice === 'unset' ? 'not turned on' : choice === 'off' ? 'Off' : 'unknown';
+  const paused = r.harvest?.paused !== true ? '' : !later || harvest.desired.choice === 'off' ? ' Harvesting is paused.'
+    : Number.isFinite(harvest.desired.revision) && Number.isFinite(r.harvest.revision) && harvest.desired.revision > r.harvest.revision
+      ? ` Harvesting was paused by this answer; a newer choice (${choiceText(harvest.desired.choice)}) has been made since.`
+    : ` This answer paused harvesting, but the latest status reads it as ${choiceText(harvest.desired.choice)}.`;
+  const setting = r.config_persisted === true ? ' The setting is saved.'
+    : r.config_persisted === false ? ' The setting was not saved, so automation started later could still tap.' : '';
+  const failedSteps = errors.length ? ` Failed steps: ${errors.join('; ')}.` : '';
+  if (f.failed) {
+    // refused: the server's message, then what its revocation says it did
+    const input = r.state === 'failed' || r.fenced !== true ? ' Running automation input is not revoked.' : '';
+    const ended = stopped.length ? ` ${stopped.length === 1 ? 'One collector was' : stopped.length + ' collectors were'} stopped.` : '';
+    return `<p class="runner-access-note" data-tone="bad">${esc('Turning game input off failed: ' + f.failed + input + setting + paused + ended + failedSteps)}${retry}${dismiss}</p>`;
+  }
+  const kept = refused.length ? ` ${names(refused).replace(/^./, c => c.toUpperCase())} keeps running without input; Stop now ends it.` : '';
+  // an unfenced owner the server is not stopping (a running automation) can still tap
+  const tapping = unfenced.filter(owner => !(owner?.operation_id && stopping.includes(owner.operation_id)));
+  let tone, text, again = '';
+  if (!shaped) { tone = 'warn'; text = 'Game input off: the answer was incomplete, so stopped input is not confirmed.'; again = retry; }
+  else if (r.state === 'failed') { tone = 'bad'; text = 'Game input was not revoked, so a running automation may still send input.' + failedSteps; again = retry; }
+  else if (errors.length) { tone = 'warn'; text = 'Game input off is not confirmed.' + failedSteps; again = retry; }
+  else if (r.state === 'not_enforced' || tapping.length) {
+    const left = tapping.length ? tapping : unfenced;
+    // the way out the server named: Stop now for a tracked operation, else where it was started
+    const how = left.length && left.every(owner => owner?.recovery?.action === 'stop_operation') ? 'Use Stop now on it to end its input'
+      : left.some(owner => owner?.foreign) ? 'It belongs to another installation; stop it there to end its input' : 'Stop it to end its input';
+    tone = 'warn';
+    text = `Game input off was not enforced on ${names(left) || 'running automation'}, so it may still tap. ${how}; the battle keeps playing.`;
+  } else if (r.fenced !== true) { tone = 'warn'; text = 'The server did not confirm that running input was fenced.'; again = retry; }
+  else if (r.latched !== true) { tone = 'warn'; text = 'The server did not confirm that game input off is latched.'; again = retry; }
+  else if (r.state === 'nothing_running' && !stopping.length && !stopped.length && !owners.length) { tone = 'ok'; text = 'Game input is off; nothing was running.'; }
+  else if (r.state === 'input_stopped' && !stopping.length && !unfenced.length) { tone = 'ok'; text = 'Game input is off and automation input stopped.' + kept; }
+  else if (r.state === 'stopping' || stopping.length) {
+    // what it named must be gone, and the same read must not report harvesting On or unknown
+    const gone = ownersGone([...stopping.map(id => ({operation_id:id, pid:f.pids?.[id] ?? null})), ...unfenced.map(owner => ({operation_id:owner?.operation_id, pid:owner?.pid}))], f.after)
+      && ['off', 'unset'].includes(harvest.desired.choice);
+    [tone, text] = gone ? ['ok', 'Game input is off and the collector has stopped.' + kept]
+      : ['warn', 'Game input off: collector input is still stopping and not confirmed stopped yet.'];
+  } else { tone = 'warn'; text = `The server reported "${r.state}" for game input off.`; }
+  if (tone === 'ok' && r.config_persisted === false) tone = 'warn';
+  // never green while an earlier turn-on can still allow taps: the turn-off stays offered
+  if (tone === 'ok' && earlier) return `<p class="runner-access-note" data-tone="warn">${esc('Game input off was applied, but an earlier turn-on ' + earlier + ', so input off is not fully confirmed.' + setting)}${retry}${dismiss}</p>`;
+  // a current status read after the answer that contradicts it makes it history:
+  // input not reported revoked for this emulator, or the collector confirmed collecting
+  if (tone === 'ok' && (S.statusSeq || 0) > (f.after || 0) && !S.statusError && harvest && typeof harvest === 'object' && harvest.version === 1) {
+    const contradiction = harvest.input_revoked === false ? 'the latest status does not report game input revoked for this emulator'
+      : DashboardView.collectionConfirmed(harvest) ? 'the latest status shows the collector collecting' : '';
+    if (contradiction) return `<p class="runner-access-note" data-tone="warn">${esc('An earlier turn-off of game input is no longer confirmed in effect: ' + contradiction + '.')}${retry}${dismiss}</p>`;
+  }
+  return `<p class="runner-access-note" data-tone="${tone}">${esc(text + setting + paused)}${again}${dismiss}</p>`;
+}
+/* Why game input may still be on although the switch reads off, or '' when the
+   switch itself can turn it off (it reads on, or a request is in flight) or a
+   current saved setting reads off and nothing could still send input. Turning
+   input off is a revocation like Pause: it stays offered whenever input may be
+   in effect or its state is unknown, never hidden by missing data: no saved
+   setting for this emulator, a failed settings read, a turn-on whose outcome is
+   unknown or whose effect has not been read back, or automation that is running
+   (or may be: no fresh process scan) without the server reporting input revoked
+   for this emulator (status.harvest.input_revoked). */
+function accessOffReason(){
+  if (S.accessPending) return '';
+  const config = S.config, instance = config?.instances?.[config?.active_instance];
+  if (!instance || typeof instance !== 'object') return 'the saved input setting for this emulator was not read';
+  if (instance.allow_taps === true) return '';
+  const context = LearningStore.context(config).id;
+  if (S.configReadError) return 'the latest read of the saved settings failed (' + S.configReadError + ')';
+  if (typeof instance.allow_taps !== 'boolean') return 'the saved settings do not say whether taps are allowed for this emulator';
+  // an earlier turn-on with no answer can still reach the server (a turn-off never cancels it)
+  if (unresolvedEnables(context).length) return 'an earlier turn-on was sent and has no answer, so it may still allow taps';
+  if (S.accessOnAck?.context === context && !((S.configSeq || 0) > (S.accessOnAck.configAfter || 0)))
+    return 'a turn-on was accepted and the saved setting has not been read since';
+  // automation that may be running: what the status lists, records or cannot rule out
+  const status = S.status, harvest = status?.harvest;
+  if (!status || S.statusError) return 'whether automation is running is not known, and input is not reported revoked';
+  if (harvest === undefined || harvest === null) return "this server doesn't report whether automation input is revoked";
+  if (typeof harvest !== 'object' || harvest.version !== 1) return "this page can't read whether this server has automation input revoked";
+  if (harvest.input_revoked === true) return '';
+  if ((status.processes || []).length) return 'running automation is not reported cut off from input';
+  const recorded = DashboardView.recordedOwners(status);
+  if (recorded.length) return (recorded[0] === harvest.operation ? 'a diamond collector is recorded but its process is not listed'
+    : 'another driver is recorded as holding the emulator') + ', and input is not reported revoked';
+  const unknown = DashboardView.holdersUnknownReason(status);
+  return unknown ? unknown + ', and input is not reported revoked' : '';
+}
+/* Turn-ons sent in this context whose answer never arrived (lost, or not yet
+   received after the observation window): any of them can still reach the
+   server and allow taps, whatever was sent after it. Only its own answer
+   resolves one (setAutomationAccess); the backend publishes nothing that
+   fences an earlier turn-on. */
+function unresolvedEnables(context){
+  return (S.accessEnables || []).filter(entry => entry.context === context && !entry.answered);
+}
+/* Operations harvesting records as holding the emulator that the process list
+   does not show, each with what a person's Stop needs: the collector
+   (harvest.operation) while accepted, running or cancelling, and another
+   driver's operation (harvest.owner of kind operation, its revision from the
+   server-named recovery). A worker that cannot be checked or is stuck stopping
+   never leaves the person without a Stop. */
+function unlistedHolders(){
+  const status = S.status, harvest = status?.harvest;
+  if (!harvest || typeof harvest !== 'object' || harvest.version !== 1) return [];
+  const listed = new Set((Array.isArray(status.processes) ? status.processes : []).map(process => process?.operation?.id).filter(Boolean));
+  const out = [], op = harvest.operation, owner = harvest.owner;
+  const id = value => typeof value === 'string' && value.length > 0;
+  if (op && typeof op === 'object' && id(op.id) && !listed.has(op.id) && ['accepted', 'running', 'cancelling'].includes(op.status))
+    out.push({id:op.id, revision:Number.isSafeInteger(op.revision) ? op.revision : null, collector:true, name:'Diamond collector',
+      why:op.status === 'cancelling' ? 'stopping; its worker is not confirmed gone' : op.status === 'accepted' ? 'accepted; its worker has not started'
+        : op.worker_alive === true ? 'its process is not listed' : op.worker_alive === false ? 'its worker is not running' : 'its worker cannot be checked from here'});
+  if (owner && typeof owner === 'object' && owner.kind === 'operation' && id(owner.operation_id) && !listed.has(owner.operation_id) && owner.operation_id !== op?.id) {
+    const recovery = owner.recovery;
+    const revision = recovery?.action === 'stop_operation' && recovery.operation_id === owner.operation_id && Number.isSafeInteger(recovery.expected_revision) ? recovery.expected_revision : null;
+    out.push({id:owner.operation_id, revision, collector:owner.operation_kind === 'gems', name:DashboardView.ownerName(owner, S.runs), why:'its process is not listed'});
+  }
+  return out;
+}
+/* The revision the latest status shows for operation `id` (process list,
+   collector record or another driver's recovery), or null. */
+function operationRevision(id){
+  const harvest = S.status?.harvest;
+  if (harvest?.operation?.id === id && Number.isSafeInteger(harvest.operation.revision)) return harvest.operation.revision;
+  const row = (Array.isArray(S.status?.processes) ? S.status.processes : []).find(process => process?.operation?.id === id);
+  if (row && Number.isSafeInteger(row.operation.revision)) return row.operation.revision;
+  const recovery = harvest?.owner?.operation_id === id ? harvest.owner.recovery : null;
+  return recovery?.operation_id === id && Number.isSafeInteger(recovery.expected_revision) ? recovery.expected_revision : null;
+}
+/* Every person's Stop answer in this context, restated (DashboardView.stopResultView)
+   with the way out it names: Stop again (with the newest revision known) and
+   turning game input off. Kept until dismissed or replaced by the next Stop of
+   the same operation. */
+function stopFeedbackHTML(){
+  const context = LearningStore.context(S.config || {}).id;
+  return Object.entries(S.stopFeedback || {}).filter(([, f]) => f.context === context).map(([id, f]) => {
+    const name = `<b>${esc(f.name || 'Operation ' + id.slice(0, 8))}:</b> `;
+    if (f.sending) return `<p class="runner-stop-note" data-tone="busy">${name}Stopping…</p>`;
+    const currentRevision = operationRevision(id);
+    const revision = Number.isSafeInteger(currentRevision) && Number.isSafeInteger(f.revision) ? Math.max(currentRevision, f.revision) : currentRevision ?? f.revision;
+    const again = f.again ? ` <button class="small ghost" data-stop-again="${esc(id)}" data-operation-revision="${Number.isSafeInteger(revision) ? revision : ''}" data-operation-name="${esc(f.name || '')}"
+      onclick="stopOperation(this.dataset.stopAgain,Number(this.dataset.operationRevision),{name:this.dataset.operationName})" ${Number.isSafeInteger(revision) ? '' : 'disabled'}>Stop again</button>` : '';
+    const inputOff = f.inputOff ? ' <button class="small ghost" onclick="setAutomationAccess(false)">Turn game input off</button>' : '';
+    return `<p class="runner-stop-note" data-tone="${esc(f.tone)}">${name}${esc(f.text)}${again}${inputOff} <button class="small ghost" data-stop-dismiss="${esc(id)}" onclick="dismissStopFeedback(this.dataset.stopDismiss)">Dismiss</button></p>`;
+  }).join('');
+}
+function dismissStopFeedback(id){
+  if (S.stopFeedback) delete S.stopFeedback[id];
+  const body = $('#runner-body'); if (body) { body.dataset.key = ''; body.dataset.statusKey = ''; }
+  renderRunner(); renderOwnerRefusal();
+}
+function dismissAccessFeedback(){ S.accessFeedback = null; const body = $('#runner-body'); if (body) { body.dataset.key = ''; body.dataset.statusKey = ''; } renderRunner(); }
+/* The control that had focus in the Automation card, described so it can be
+   found again after a rewrite: its id, else its tag, text and position. */
+function runnerFocus(body, element){
+  if (typeof body.querySelectorAll !== 'function') return null;
+  const controls = [...body.querySelectorAll('button, input, select, summary, a[href]')];
+  const index = controls.indexOf(element);
+  return index < 0 ? null : {id:element.id || '', tag:element.tagName, text:(element.textContent || '').trim(), index};
+}
+/* A control with an id is found again by that id, else by the control that
+   took its place in the same role (FOCUS_ROLES); it never moves to an
+   unrelated control that merely looks alike (the Gems run picker and the Next
+   start picker list the same runs). Controls without an id are found by
+   position and text. */
+function restoreRunnerFocus(body, focus){
+  const controls = [...body.querySelectorAll('button, input, select, summary, a[href]')];
+  const usable = control => !!control && !control.disabled && typeof control.focus === 'function';
+  let target = null;
+  if (focus.id) {
+    const role = FOCUS_ROLES.find(ids => ids.includes(focus.id)) || [focus.id];
+    target = [focus.id, ...role].map(id => controls.find(control => control.id === id)).find(usable) || null;
+  } else {
+    const same = control => !control.id && control.tagName === focus.tag && (control.textContent || '').trim() === focus.text;
+    target = (controls[focus.index] && same(controls[focus.index]) ? controls[focus.index] : null) || controls.find(same);
+  }
+  if (usable(target)) target.focus({preventScroll:true});
 }
 function renderRunReady(){
   // The chosen run's own calibration state, next to the Start button: what it
   // still needs to click is listed here and in the option's tooltip. Start is
   // disabled while automation runs, while any start blocker holds (mapping
   // incomplete, emulator not online, game input disabled) and until the run's
-  // images exist; Collect diamonds only follows the same blockers. Every Prepare
+  // images exist; Collect diamonds only follows the same blockers and needs the
+  // selected run's saved collection settings (collectState). Every Prepare
   // button (this one and each run type's on Runs) follows prepareBlocked. Stop
-  // controls are never touched here.
+  // controls are never touched here. Every disabled reason is written out.
   const sel = $("#start-preset"), out = $("#run-ready"), btn = $("#start-run");
   if (!sel || !out) return;
-  const running = !!S.status?.processes?.length;
-  const gather = (S.runs?.[sel.value] || {}).gather || {};
-  const adsEnabled = gather.ad_gems !== false;
-  const orbitEnabled = !!gather.gem_orbit?.enabled;
-  const summary = $("#run-collection-summary");
-  if (summary) summary.textContent = `Selected run configuration — Ad gems: ${adsEnabled ? "on" : "off"}. Floating gems: ${orbitEnabled ? "on (timed clicks)" : "off"}. These settings apply when you start this run. Collect diamonds only watches an existing battle without starting another run.`;
+  const write = html => { if (out._readyHTML !== html) { out.innerHTML = html; out._readyHTML = html; } };
+  const procs = S.status?.processes || [];
+  // A standalone gem collector hands the emulator over to a started run (the
+  // server prechecks the run, stops collector input, waits for its release);
+  // any other running automation holds both actions. Holders harvesting records
+  // but the process list does not show count too: its collector (worker not
+  // verified) as a collector, another driver (an accepted operation, a foreign
+  // process) as running automation.
+  const harvest = S.status?.harvest && typeof S.status.harvest === 'object' && S.status.harvest.version === 1 ? S.status.harvest : null;
+  const recordedCollector = !!harvest?.operation, recordedOwner = !!harvest?.owner;
+  const handover = (procs.length > 0 || recordedCollector) && !recordedOwner && procs.every(process => process.runner === 'gem_collector' || process.operation?.kind === 'gems');
+  const running = (procs.length > 0 || recordedOwner) && !handover;
   const gems = $("#start-gems");
   document.querySelectorAll('[data-prepare-run]').forEach(el => { el.disabled = prepareBlocked(); });
+  const collectorText = procs.length ? 'A gem collector is running' : 'A gem collector is recorded as holding the emulator (its process is not confirmed)';
+  const unknown = startUncertaintyHTML(sel.value) + (handover ? `<p class="runner-collect-note">${collectorText}. Start playing hands the emulator over: the collector stops first and the battle keeps playing${S.status?.harvest?.desired?.choice === 'on' ? '; harvesting stays on and resumes after the run ends' : ''}.</p>` : '');
   if (running) {
     if (btn) btn.disabled = true;
     if (gems) gems.disabled = true;
-    out.textContent = 'Automation is running. Use the current battle controls to finish at a run boundary, or Stop now to stop the driver.';
+    write(unknown + (procs.length ? '<p>Automation is running; Start and Collect wait until it stops.</p>'
+      : '<p>Another driver is recorded as holding the emulator; Start and Collect wait until it stops.</p>'));
     return;
   }
+  // Start follows the run-scope setup guard, Collect the collection-scope guard;
+  // every other blocker applies to both.
   const blockers = WorkspaceStatus.startBlockers({status:S.status, config:S.config});
-  if (gems) gems.disabled = !!S.statusError || blockers.length > 0 || !(adsEnabled || orbitEnabled);
-  const blocked = blockers.length ? `<p><b>Start is disabled:</b></p><ul class="control-blockers">${blockers.map(b =>
-    `<li>${esc(b.text)} <a href="${b.href}" data-workspace-section="${b.section}">${esc(b.link)}</a></li>`).join("")}</ul>` : "";
+  const collectBlockers = WorkspaceStatus.startBlockers({status:S.status, config:S.config, scope:'collection'});
+  const collect = collectState(sel.value);
+  if (gems) gems.disabled = handover || !!S.statusError || collectBlockers.length > 0 || !collect.enabled;
+  const blocked = launchBlockersHTML(blockers, collectBlockers);
+  const collectNote = handover ? `<p class="runner-collect-note">Collect diamonds only: a collector ${procs.length ? 'is already running' : 'is recorded as holding the emulator'}.</p>`
+    : !collectBlockers.length && !S.statusError && !collect.enabled ? `<p class="runner-collect-note">Collect diamonds only: ${esc(collect.reason)}</p>` : '';
   const r = (S.runReadiness || {})[sel.value];
   const confirmed=!S.workspaceError && !S.statusError && S.readinessFresh === true && S.readinessContext === LearningStore.context(S.config || {}).id;
   if (!r || !confirmed || typeof r.ready !== 'boolean') {
-    out.innerHTML=blocked+'<p>Run readiness is unconfirmed. Refresh requirements before starting.</p>';
+    write(unknown+blocked+'<p>Run readiness is unconfirmed. Refresh requirements before starting.</p>'+collectNote);
     if (btn) btn.disabled=true;
     return;
   }
   const miss = r.missing || [], adv = r.advisory || [];
   if (btn) btn.disabled = blockers.length > 0 || r.ready !== true;
   if (r.setup_required) {
-    out.innerHTML = blocked + `<p>${esc(r.message || 'This run needs preparation. Click Prepare this run above.')}</p>`;
+    write(unknown + blocked + `<p>${esc(r.message || 'This run needs preparation. Click Prepare this run above.')}</p>` + collectNote);
     return;
   }
   if (r.ready) {
-    out.innerHTML = blocked || `<span class="ok">Ready to start.</span>`;
+    write(unknown + (blocked || `<span class="ok">Ready to start.</span>`) + collectNote);
   } else {
     const details = r.details || miss.map(m => ({alternatives:[m], reasons:[], docs:[]}));
-    out.innerHTML = blocked + `<p>Click <b>Prepare this run</b> above to finish ${miss.length} remaining recognition checks. Your completed scan will be reused.</p>` +
-      `<details><summary>Recognition details</summary>${details.map(d => outstandingCard(d, "control", sel.value)).join("")}</details>`;
+    write(unknown + blocked + `<p>Click <b>Prepare this run</b> above to finish ${miss.length} remaining recognition checks. Your completed scan will be reused.</p>` +
+      `<details><summary>Recognition details</summary>${details.map(d => outstandingCard(d, "control", sel.value)).join("")}</details>` + collectNote);
   }
+}
+/* Every reason Start or Collect is disabled, grouped by the actions it holds:
+   shared blockers once, then a guard that holds only one of them. A collection
+   released by a person's handoff says so while Start stays blocked. */
+function launchBlockersHTML(runBlockers, collectBlockers){
+  const item = b => `<li>${esc(b.text)} <a href="${b.href}" data-workspace-section="${b.section}">${esc(b.link)}</a></li>`;
+  const runGuard = runBlockers.find(b => b.id === 'setup_battle'), collectGuard = collectBlockers.find(b => b.id === 'collection_guard');
+  const common = runBlockers.filter(b => b !== runGuard);
+  const both = runGuard && collectGuard && runGuard.text === collectGuard.text;
+  const groups = [[[...common, ...(both ? [runGuard] : [])], 'Start and Collect are disabled:'],
+    [!both && runGuard ? [runGuard] : [], 'Start playing is disabled:'], [!both && collectGuard ? [collectGuard] : [], 'Collect diamonds only is disabled:']];
+  const handoff = S.status?.collection_guard;
+  const released = runGuard && !collectGuard && handoff?.evidence === 'collection_handoff'
+    ? '<p class="runner-collect-note">Collection only is allowed: you confirmed the battle on screen is a new manual run. Start playing stays blocked by the setup record.</p>' : '';
+  return groups.filter(([list]) => list.length).map(([list, title]) => `<p><b>${title}</b></p><ul class="control-blockers">${list.map(item).join('')}</ul>`).join('') + released;
+}
+/* The preview snapshot when it answers for `name` in the current context. */
+function selectedPreview(name){
+  const preview=S.startPreview,context=LearningStore.context(S.config || {}).id;
+  return preview?.snapshot && preview.blueprint===name && preview.context===context ? preview.snapshot : null;
+}
+/* Collect diamonds only collects with the selected run's saved Ad gems and
+   Floating gems settings, so it is enabled only by a context-valid preview of
+   that run (selectedPreview) that has at least one of them on. */
+function collectState(name){
+  if (name === 'combo') return {enabled:false, reason:'choose a single run; the day plan has no collection settings of its own.'};
+  const snapshot = selectedPreview(name);
+  if (!snapshot) {
+    const preview = S.startPreview;
+    const failed = preview?.status === 'error' && preview.blueprint === name;
+    return {enabled:false, reason:failed ? 'this run\'s saved settings could not be read' + (preview.error ? ': ' + preview.error : '.') : 'waiting for this run\'s saved collection settings.'};
+  }
+  const routines = snapshot.settings?.routines || {};
+  return routines.ad_gems?.enabled === true || routines.floating_gems?.enabled === true ? {enabled:true, reason:''}
+    : {enabled:false, reason:'Ad gems and Floating gems are both off in this run\'s saved settings.'};
+}
+/* A Start or Collect request whose reply was lost (or met the global action
+   lock) keeps its idempotency key; say so next to the buttons until a
+   definitive answer arrives, whatever re-renders in between. */
+function startUncertaintyHTML(name){
+  const scope = JSON.stringify([LearningStore.context(S.config || {}).id, name]);
+  return [[S.startIntent,'Start playing'],[S.gemsStartIntent,'Collect diamonds only']]
+    .filter(([intent]) => intent?.scope === scope && intent.error)
+    .map(([intent, action]) => `<p class="runner-uncertain" data-tone="warn">${action}: outcome unknown (${esc(intent.error)}). Pressing it again resends the same request.</p>`).join('');
 }
 /* Prepare is refused while automation runs or the emulator is not online. */
 function prepareBlocked(){
   return !!S.statusError || !!S.status?.processes?.length
     || WorkspaceStatus.startBlockers({status:S.status, config:S.config}).some(b => b.id === "connection" || b.id === "processes");
 }
+/* "Stop now" on a tracked runner: its operation is cancelled by the id and
+   revision the row was drawn with (stopOperation). Untracked runners are
+   stopped through killRunner, by their exact row identity. */
 async function killPid(pid,operationId,expectedRevision){
-  if (!confirm("Stop this runner process? The game itself is never touched.")) return;
-  try {
-    if (operationId) {
-      if (!Number.isInteger(expectedRevision)) throw new Error('Refresh this operation before stopping it.');
-      await post('/api/operations/'+encodeURIComponent(operationId)+'/cancel',{expected_revision:expectedRevision});
-    } else {
-      if ((S.status?.processes || []).some(p=>p.pid === pid && p.operation?.id)) throw new Error('Refresh this tracked operation before stopping it.');
-      await post('/api/control',{action:'kill',pid});
-    }
-    toast('Stop requested; the game battle continues.'); loadStatus();
+  if (operationId) {
+    if (!confirm(S.status?.harvest?.desired?.choice === 'on'
+      ? "Stop this runner process? Harvesting is paused too, so the collector is not started again. The game itself is never touched."
+      : "Stop this runner process? The game itself is never touched.")) return;
+    if (!Number.isInteger(expectedRevision)) { toast('Refresh this operation before stopping it.', true); return; }
+    const row = (S.status?.processes || []).find(p => p.operation?.id === operationId);
+    return stopOperation(operationId, expectedRevision, {name:row ? DashboardView.processLabel(row, S.runs) : 'Operation ' + String(operationId).slice(0, 8)});
   }
-  catch(e){ toast(e.message, true); }
+  // an untracked runner is stopped through its row (killRunner), never by PID alone
+  toast((S.status?.processes || []).some(p => p.pid === pid && p.operation?.id) ? 'Refresh this tracked operation before stopping it.'
+    : 'Refresh the runner list before stopping it.', true);
 }
-async function setAutomationAccess(enabled){
-  try { await post("/api/automation-access", {enabled}); await loadHomeData(); const rb=$("#runner-body"); if(rb) rb.dataset.key=""; renderRunner(); }
-  catch(e){ toast(e.message,true); }
+/* One sender for a person's Stop of a tracked operation (process rows, the
+   recorded-operation rows, the shared owner notice, Stop again): POST
+   /api/operations/<id>/cancel with the revision the person saw, one request per
+   operation at a time and never resent automatically. The answer is restated
+   until dismissed (stopFeedbackHTML, DashboardView.stopResultView); a lost
+   answer is unknown, a coded refusal or partial stop is restated. The status is read
+   again either way. */
+async function stopOperation(operationId, expectedRevision, {name = '', confirmText = ''} = {}){
+  if (!operationId) return;
+  const context = LearningStore.context(S.config || {}).id, pending = S.stopPending ||= {};
+  if (pending[operationId]) return;
+  const redraw = () => { const body = $('#runner-body'); if (body) { body.dataset.key = ''; body.dataset.statusKey = ''; } renderRunner(); renderOwnerRefusal(); };
+  S.stopFeedback ||= {};
+  if (!Number.isSafeInteger(expectedRevision)) {
+    S.stopFeedback[operationId] = {context, name, tone:'warn', text:'Its revision is not known here, so no stop was sent; the status is read again.', again:false, inputOff:false, revision:null};
+    redraw(); loadStatus(); return;
+  }
+  if (confirmText && !confirm(confirmText)) return;
+  pending[operationId] = true;
+  S.stopFeedback[operationId] = {context, name, sending:true};
+  redraw();
+  try {
+    const answer = await post('/api/operations/' + encodeURIComponent(operationId) + '/cancel', {expected_revision:expectedRevision});
+    S.stopFeedback[operationId] = {context, name, ...DashboardView.stopResultView(answer, operationId, S.runs)};
+  } catch(e) {
+    const view = DashboardView.stopResultView(e.status === 409 ? e.body : null, operationId, S.runs);
+    if (!Number.isFinite(e.status)) view.text = `The stop's answer did not arrive (${e.message}), so whether it stopped is unknown.`;
+    S.stopFeedback[operationId] = {context, name, ...view};
+  } finally {
+    delete pending[operationId];
+    loadStatus(); redraw();
+  }
+}
+/* "Stop now" on an untracked runner: POST /api/control kill with the PID and
+   start time (created) of the exact row the person saw; the server acts only on
+   that verified process. Its answers are restated, never promoted: gone is "no
+   longer running" (it is answered both after a stop and when the runner was
+   already gone), an identity it cannot prove or a PID no longer listed stopped
+   nothing, a lost answer is unknown. Never resent. */
+async function killRunner(button){
+  const pid = Number(button?.dataset?.pid), created = Number(button?.dataset?.created);
+  if (!Number.isSafeInteger(pid) || button?.dataset?.created === undefined || button.dataset.created === '' || !Number.isFinite(created)) {
+    toast("This runner's start time is not known, so it cannot be stopped by its identity; nothing was sent.", true); return;
+  }
+  if (!confirm('Stop this runner process? The game itself is never touched.')) return;
+  button.disabled = true;
+  try {
+    const answer = await post('/api/control', {action:'kill', pid, created});
+    if (answer?.gone === true) toast(`That runner (PID ${pid}) is no longer running.`);
+    else toast(`The server accepted the stop of PID ${pid} but did not say whether it is gone; the list shows what it reports.`, true);
+  } catch(e) {
+    toast(e.code === 'process_identity_unverified' ? e.message
+      : e.code === 'not_a_runner' ? `PID ${pid} is no longer listed as a runner, so nothing was stopped.`
+      : !Number.isFinite(e.status) ? `The stop's answer did not arrive (${e.message}), so whether PID ${pid} stopped is unknown; the list shows what the server reports now.`
+      : e.status >= 500 ? `${e.message} It may still be running.` : e.message, true);
+  }
+  loadStatus();
+}
+/* The game-input switch. Turning input off is never blocked: it is sent at
+   once even while a turn-on is still in flight, and it supersedes that turn-on
+   (S.accessPending names the current request; an older request's late answer
+   writes no feedback and no toast). One turn-on at a time, never over a
+   turn-off. Either way the saved setting is re-read afterwards and the switch
+   is drawn from it; a turn-on that the server applied after this turn-off shows
+   in the feedback as input allowed again (accessFeedbackHTML). */
+async function setAutomationAccess(enabled, input){
+  const pending = S.accessPending;
+  if (enabled && pending) return;
+  if (!enabled && pending?.enabled === false) return;              // that turn-off is already on its way
+  // every request is numbered in send order (S.accessSeq): what an answer
+  // confirms is judged against the requests sent before and after it
+  const seq = S.accessSeq = (S.accessSeq || 0) + 1;
+  const context = LearningStore.context(S.config || {}).id, token = {enabled, context, seq};
+  S.accessPending = token; S.automationAccessBusy = true;
+  // a turn-on stays unresolved until its own answer arrives (unresolvedEnables)
+  const entry = enabled ? {seq, context, token, answered:false} : null;
+  if (entry) S.accessEnables = [...(S.accessEnables || []), entry];
+  const settle = answered => { if (entry && answered) entry.answered = true; };
+  // an applied turn-on: in effect until a settings read started after it; `answeredAfter`
+  // is the newest request sent when its answer came (a turn-off sent before that
+  // answer may have been overtaken by it)
+  const applied = () => { S.accessOnAck = {context, seq, answeredAfter:S.accessSeq, configAfter:S.configReadStarted || 0}; };
+  // a turn-on request makes an earlier turn-off outcome history immediately (accessFeedbackHTML)
+  if (enabled && S.accessFeedback && !S.accessFeedback.sending) S.accessFeedback = {...S.accessFeedback, retired:true};
+  if (!enabled && input) input.disabled = true;
+  let refused = false;
+  const current = () => S.accessPending === token;
+  const redraw = () => { const rb = $("#runner-body"); if (rb) { rb.dataset.key = ""; rb.dataset.statusKey = ""; } renderRunner(); };
+  // turning input off is the person's newest choice: a Turn on still waiting is superseded
+  if (!enabled) { supersedeHarvestOn(); S.accessFeedback = {context, sending:true}; }
+  // the request in flight shows at once (the switch's pending value, "Turning game input off…")
+  redraw();
+  // `after` / `configAfter`: what this answer names is confirmed (or contradicted) only by later reads.
+  // A refused turn-off keeps the server's message and, when sent, what it did (revocation).
+  const answered = (error, result) => enabled ? null : !error
+    ? {context, seq, revocation:result?.revocation ?? null, after:S.statusRequest || 0, configAfter:S.configReadStarted || 0,
+      pids:stoppingPids(Array.isArray(result?.revocation?.stopping) ? result.revocation.stopping : [])}
+    : {context, seq, failed:error.message, revocation:error.body?.revocation && typeof error.body.revocation === 'object' ? error.body.revocation : null,
+      after:S.statusRequest || 0, configAfter:S.configReadStarted || 0, token:error.name === 'TimeoutError' ? token : null};
+  try {
+    const result = await observedPost("/api/automation-access", {enabled}, (error, late) => {
+      // a late turn-on answer: whatever it says, the saved setting is read again
+      // and the switch follows it (an applied turn-on reads on, so it can be turned off)
+      if (enabled) {
+        // its own answer resolves it: applied, or refused (an HTTP status); a lost one stays unresolved
+        settle(!error || Number.isFinite(error.status));
+        if (!error) applied();
+        loadHomeData().catch(() => {}).finally(redraw);
+        return;
+      }
+      // a late answer replaces only this request's unconfirmed outcome
+      if (S.accessFeedback?.token !== token) return;
+      S.accessFeedback = answered(error, late);
+      loadHomeData().catch(() => {}).finally(redraw);
+    }, {workspace:true});
+    // an accepted turn-on (even one a turn-off superseded) is in effect until a
+    // settings read started after it says otherwise (accessOffReason). A
+    // turn-off clears it only when that turn-on was answered before this
+    // turn-off was sent; it never resolves a turn-on whose answer is missing.
+    if (enabled) { settle(true); applied(); }
+    else if (S.accessOnAck?.context === context && S.accessOnAck.answeredAfter < seq) S.accessOnAck = null;
+    if (current()) S.accessFeedback = answered(null, result);
+  }
+  catch(e){
+    refused = true;
+    // a refusal (an HTTP status) resolves a turn-on; a lost or unanswered one stays unresolved
+    settle(Number.isFinite(e.status));
+    // a superseded turn-on's refusal is not this person's latest choice
+    if (current()) { toast(e.message,true); S.accessFeedback = answered(e); }
+  }
+  if (current()) S.accessPending = null;
+  // Re-read the saved setting either way and redraw from it: a refused change
+  // must not leave the switch showing a state the server did not store.
+  try { await loadHomeData(); }
+  catch(e){ if (!refused && !S.accessPending) toast(e.message,true); }
+  finally {
+    S.automationAccessBusy = !!S.accessPending;
+    redraw();
+  }
 }
 async function checkRun(){
   S.calibrationPreset = $("#start-preset").value;
@@ -3153,12 +4499,19 @@ async function startGemsOnly(){
   try {
     await post('/api/control',intent.body);
     if (S.gemsStartIntent === intent) S.gemsStartIntent=null;
-    if (scope.id === LearningStore.context(S.config || {}).id) toast('Diamond collector running; the current battle and equipment are unchanged.');
+    if (scope.id === LearningStore.context(S.config || {}).id) toast('Diamond collector accepted; the Gems row shows when it collects. The current battle and equipment are unchanged.');
     await loadStatus();
   } catch(e){
-    if (e.status >= 400 && e.status < 500 && S.gemsStartIntent === intent) S.gemsStartIntent=null;
+    if (S.gemsStartIntent === intent) { if (definiteRefusal(e)) S.gemsStartIntent=null; else intent.error=e.message; }
     toast(e.message,true);
-  } finally { S.runStarting=false; }
+  } finally { S.runStarting=false; renderRunReady(); }
+}
+/* A 4xx answer to a launch request is definite (nothing was recorded) except
+   the global action lock (code 'action_lock'), which is transient and refused
+   before this request was looked at: a retried key may still have been
+   recorded by its first attempt, so the intent and its key are kept. */
+function definiteRefusal(error){
+  return error?.status >= 400 && error.status < 500 && error.code !== 'action_lock';
 }
 async function startPreset(){
   if (S.runStarting) return;
@@ -3171,10 +4524,33 @@ async function startPreset(){
     const sameTarget=!checked?.context || ['instance','account','serial','rendering','profile'].every(key=>JSON.stringify(checked.context[key] ?? null) === JSON.stringify(scope[key] ?? null));
     if (context !== LearningStore.context(S.config || {}).id || !sameTarget || checked?.ready !== true)
       throw new Error(checked?.message || 'Run readiness was not confirmed. Prepare this run before starting.');
-    const expected_context=Object.fromEntries(['instance','account','serial','rendering','profile'].map(key=>[key,scope[key] ?? null]));
-    const r = await post("/api/control", { action:"start", preset, expected_context, idempotency_key:crypto.randomUUID() });
-    toast("started (pid " + r.pid + ")"); loadStatus();
-  } catch(e){ toast(e.message, true); } finally { S.runStarting=false; }
+    // One start intent per target and run until it is answered: retrying after a
+    // lost reply replays the same request instead of being refused as a second
+    // owner (Collect diamonds only keeps its intent the same way).
+    const requestScope=JSON.stringify([context,preset]);
+    let intent=S.startIntent;
+    if (intent?.scope !== requestScope) {
+      const expected_context=Object.fromEntries(['instance','account','serial','rendering','profile'].map(key=>[key,scope[key] ?? null]));
+      intent={scope:requestScope,body:{action:"start",preset,expected_context,idempotency_key:crypto.randomUUID()}};
+      S.startIntent=intent;
+    }
+    let r;
+    try { r = await post("/api/control", intent.body); }
+    catch(e){ if (S.startIntent === intent) { if (definiteRefusal(e)) S.startIntent=null; else intent.error=e.message; } throw e; }
+    if (S.startIntent === intent) S.startIntent=null;
+    // the collector handover is restated from its own lists (stopLists): stopped
+    // only when the answer names what stopped and nothing still stopping
+    // (the lists are what the cancellation reported at handover; an accepted start
+    // means the server saw the collector release the emulator, else it refuses
+    // with collector_stopping)
+    const transfer = r.transfer === undefined || r.transfer === null ? null : stopLists(r.transfer);
+    const waited = Number.isFinite(r.transfer?.waited_sec) ? Math.round(r.transfer.waited_sec) : null;
+    toast("Start accepted · operation " + String(r.operation_id || r.operation?.id || 'recorded').slice(0, 8)
+      + (r.transfer === undefined || r.transfer === null ? ''
+        : !transfer || !transfer.named.length ? ' · the answer did not say whether the gem collector stopped'
+        : transfer.stopping.length ? ` · the gem collector was still stopping at handover; the server waited${waited === null ? '' : ` ${waited} s`} for it to release the emulator`
+        : ` · the gem collector stopped first${waited === null ? '' : ` (${waited} s)`}`)); loadStatus();
+  } catch(e){ toast(e.message, true); } finally { S.runStarting=false; renderRunReady(); }
 }
 async function ctl(action,operationId,expectedRevision){
   const body={action};

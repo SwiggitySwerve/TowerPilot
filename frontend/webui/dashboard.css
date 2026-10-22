@@ -1,0 +1,284 @@
+/* Dashboard (#overview) only. Every rule is scoped to the Dashboard panel (or to
+   #view while that panel is the visible page), so the sidebar, the shared shell
+   and every other page keep their own layout.
+
+   A plain desktop screen in two columns. Left, top to bottom: the main row
+   (automation state, input switch, running processes with Stop now), the start
+   row, the routines and shopping priority (the shared controller's compact
+   "dashboard" variant: the current battle when one is tracked, else the saved
+   settings of the run in the Start picker), the day plan / last battle line and
+   at most three attention items. Right: the emulator feed in a sticky column
+   whose width follows the height it can use. The Tower renders portrait
+   1080 x 2560 (0.421875 width per unit of height); another aspect still fits
+   because the image keeps both max limits and its own ratio. Sections are
+   separated by spacing and thin rules, never nested cards; colour is reserved
+   for what blocks, fails or is uncertain. */
+#panel-overview {
+  --dashboard-gap: .8rem;
+  --dashboard-rule: 1px solid var(--glass-border);
+  --dashboard-quiet: var(--pico-muted-color);
+  --dashboard-bad: #ff8f86;
+  --dashboard-warn: #f3cf5c;
+  --dashboard-ok: #3ccf6a;
+  --dashboard-busy: #7cbaff;
+  --dashboard-feed-height: calc(100dvh - 7.5rem);
+  --dashboard-feed-width: calc(var(--dashboard-feed-height) * .421875 + .5rem);
+  font-size: .9rem;
+}
+/* The header names the page; the Dashboard starts with its main row. */
+#view:has(> #panel-overview:not([hidden])) { padding-top: .8rem; }
+#view:has(> #panel-overview:not([hidden])) > .page-heading { display: none; }
+
+#panel-overview .dashboard-grid { grid-template-columns: minmax(0, 1fr) clamp(14rem, var(--dashboard-feed-width), 40%); gap: 1.4rem; align-items: start; }
+#panel-overview .dashboard-grid > * { min-width: 0; }
+#panel-overview .dashboard-controls { display: flex; flex-direction: column; gap: var(--dashboard-gap); }
+#panel-overview .dashboard-controls > section { margin: 0; padding: 0; }
+#panel-overview .dashboard-controls > section + section { padding-top: var(--dashboard-gap); border-top: var(--dashboard-rule); }
+#panel-overview .dashboard-label { margin: 0; font-size: .8rem; font-weight: 600; line-height: 1.3; color: var(--dashboard-quiet); letter-spacing: 0; }
+#panel-overview .dashboard-quiet { color: var(--dashboard-quiet); }
+#panel-overview p { margin: 0; }
+#panel-overview [data-tone="bad"] { color: var(--dashboard-bad); }
+#panel-overview [data-tone="warn"] { color: var(--dashboard-warn); }
+#panel-overview button { margin: 0; }
+
+/* "Now" and "Next start": two keyed rows on one track, so what automation is
+   doing and the run a Start would launch never read as one statement. Process
+   rows, Start reasons and notes sit under the value column. */
+#panel-overview .dashboard-runner { --runner-key: 5.2rem; }
+#panel-overview .runner-status { display: grid; gap: .45rem; }
+#panel-overview .runner-row { display: grid; grid-template-columns: var(--runner-key) minmax(0, 1fr); align-items: center; gap: .3rem .8rem; }
+#panel-overview .runner-key { display: block; width: auto; margin: 0; font-size: .8rem; font-weight: 600; line-height: 1.3; color: var(--dashboard-quiet); }
+#panel-overview .runner-indent { display: grid; gap: .4rem; margin-left: calc(var(--runner-key) + .8rem); }
+#panel-overview .runner-indent:empty { display: none; }
+#panel-overview .runner-line { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .3rem 1.2rem; }
+#panel-overview .dashboard-fact-detail { font-weight: 400; color: var(--pico-color, #e5e7eb); }
+/* Gems: harvesting choice and observed state, its source run, the On/Pause
+   control and the outcome of the last harvesting request. */
+#panel-overview .runner-harvest { align-items: start; padding-top: .45rem; border-top: 1px solid rgba(255,255,255,.05); }
+#panel-overview .runner-harvest > .runner-key { padding-top: .15rem; }
+#panel-overview #dashboard-harvest { display: grid; gap: .25rem; min-width: 0; }
+#panel-overview .harvest-line { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .3rem 1rem; }
+#panel-overview [data-harvest-part] { display: contents; }
+#panel-overview .harvest-line .dashboard-fact { font-size: .92rem; }
+#panel-overview .harvest-line button { height: 1.9rem; padding: .1rem .75rem; font-size: .82rem; white-space: nowrap; }
+#panel-overview .harvest-controls { display: inline-flex; align-items: center; flex-wrap: wrap; gap: .4rem; }
+#panel-overview .harvest-pick { display: inline; width: auto; margin: 0; font-size: .8rem; font-weight: 600; color: var(--dashboard-quiet); }
+#panel-overview .harvest-controls select { width: auto; min-width: 7rem; height: 1.9rem; margin: 0; padding: .1rem 1.8rem .1rem .5rem; font-size: .82rem; }
+#panel-overview .harvest-meta { font-size: .8rem; color: var(--dashboard-quiet); }
+#panel-overview .harvest-meta a { margin-left: .3rem; white-space: nowrap; }
+#panel-overview .harvest-note { font-size: .8rem; color: var(--dashboard-quiet); overflow-wrap: anywhere; }
+#panel-overview .harvest-note[data-tone="warn"] { color: var(--dashboard-warn); }
+#panel-overview .harvest-note[data-tone="ok"] { color: var(--dashboard-quiet); }
+#panel-overview .harvest-feedback[data-tone="warn"] { color: var(--dashboard-warn); }
+#panel-overview .runner-access-note { font-size: .82rem; overflow-wrap: anywhere; }
+#panel-overview .runner-access-note[data-tone="ok"] { color: var(--dashboard-ok); }
+#panel-overview .runner-access-note[data-tone="bad"] { color: var(--dashboard-bad); }
+#panel-overview .runner-access-note button { height: 1.7rem; margin-left: .3rem; padding: .05rem .55rem; font-size: .78rem; }
+#panel-overview .runner-access-unconfirmed { font-size: .82rem; color: var(--dashboard-warn); overflow-wrap: anywhere; }
+#panel-overview .runner-access-unconfirmed button { height: 1.7rem; margin-left: .3rem; padding: .05rem .55rem; font-size: .78rem; }
+/* a person's Stop, restated with its way out (Stop again, turn game input off) */
+#panel-overview .runner-stop-note { font-size: .82rem; overflow-wrap: anywhere; }
+#panel-overview .runner-stop-note[data-tone="ok"] { color: var(--dashboard-ok); }
+#panel-overview .runner-stop-note[data-tone="warn"] { color: var(--dashboard-warn); }
+#panel-overview .runner-stop-note[data-tone="bad"] { color: var(--dashboard-bad); }
+#panel-overview .runner-stop-note[data-tone="idle"] { color: var(--dashboard-quiet); }
+#panel-overview .runner-stop-note button, #panel-overview .runner-process-note button { height: 1.7rem; margin-left: .3rem; padding: .05rem .55rem; font-size: .78rem; }
+#panel-overview .runner-process-note { grid-column: 1 / -1; margin: 0; font-size: .8rem; color: var(--dashboard-quiet); overflow-wrap: anywhere; }
+#panel-overview .harvest-handoff { font-size: .82rem; color: var(--dashboard-warn); }
+#panel-overview .harvest-feedback { font-size: .82rem; overflow-wrap: anywhere; }
+#panel-overview .harvest-feedback[data-tone="ok"] { color: var(--dashboard-ok); }
+#panel-overview .harvest-feedback[data-tone="bad"] { color: var(--dashboard-bad); }
+#panel-overview .harvest-handoff button, #panel-overview .harvest-feedback button { height: 1.7rem; margin-left: .3rem; padding: .05rem .55rem; font-size: .78rem; }
+#panel-overview .dashboard-fact[data-tone="warn"] .dashboard-fact-detail { color: var(--dashboard-warn); }
+#panel-overview .dashboard-fact { display: block; font-size: 1rem; font-weight: 600; line-height: 1.4; color: inherit; }
+#panel-overview .dashboard-fact[data-tone="warn"] { color: var(--dashboard-warn); }
+#panel-overview .dashboard-dot { display: inline-block; width: .55rem; height: .55rem; margin-right: .5rem; border-radius: 50%; background: var(--dashboard-quiet); vertical-align: .08rem; }
+#panel-overview [data-tone="ok"] > .dashboard-dot { background: var(--dashboard-ok); }
+#panel-overview [data-tone="busy"] > .dashboard-dot { background: var(--dashboard-busy); }
+#panel-overview [data-tone="warn"] > .dashboard-dot { background: var(--dashboard-warn); }
+#panel-overview .runner-access { display: inline-flex; align-items: center; gap: .5rem; margin: 0; width: fit-content; font-size: .84rem; color: var(--dashboard-quiet); }
+#panel-overview .runner-access input { margin: 0; }
+#panel-overview .runner-process { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .3rem .8rem; margin: 0; padding: .4rem .6rem; }
+#panel-overview .runner-process-name p { margin-top: .2rem; font-size: .82rem; }
+#panel-overview .runner-process .chip { margin-left: .4rem; }
+#panel-overview .runner-process .process-details { margin: 0; font-size: .8rem; }
+#panel-overview .runner-process .process-details[open] { grid-column: 1 / -1; grid-row: 2; }
+#panel-overview .runner-process .process-details code { display: block; margin-top: .2rem; overflow-wrap: anywhere; font-size: .75rem; }
+#panel-overview .runner-note { font-size: .8rem; }
+#panel-overview .current-run-actions { margin: 0; }
+
+/* Start row: run picker and its three actions, then every reason an action
+   is disabled. */
+#panel-overview .next-run { margin: .7rem 0 0; padding: .7rem 0 0; border: 0; border-top: 1px solid rgba(255,255,255,.05); }
+#panel-overview .next-run .action-row { display: flex; align-items: center; flex-wrap: wrap; gap: .45rem; margin: 0; }
+#panel-overview .next-run select { width: auto; min-width: 8rem; max-width: 100%; height: 2.25rem; margin: 0; padding: .25rem 2rem .25rem .6rem; font-size: .88rem; }
+#panel-overview .next-run .action-row button { height: 2.25rem; padding: .25rem .7rem; font-size: .86rem; white-space: nowrap; }
+#panel-overview .runner-ready { margin-top: .4rem; font-size: .84rem; opacity: 1; color: var(--dashboard-quiet); }
+#panel-overview .runner-ready:empty { display: none; }
+#panel-overview .runner-ready p, #panel-overview .runner-ready ul { margin: .12rem 0; }
+#panel-overview .runner-ready ul.control-blockers { color: var(--dashboard-warn); padding-left: 1.1rem; }
+#panel-overview .runner-ready ul.control-blockers li { margin: .1rem 0; overflow-wrap: anywhere; }
+#panel-overview .runner-ready .runner-uncertain { color: var(--dashboard-warn); font-weight: 600; }
+#panel-overview .prepare-run-status { margin-top: .3rem; font-size: .84rem; }
+#panel-overview .prepare-run-status:empty { display: none; }
+#panel-overview .dashboard-note { margin: .35rem 0 0 calc(var(--runner-key) + .8rem); font-size: .84rem; color: var(--dashboard-quiet); }
+#panel-overview .dashboard-note a { margin-left: .2rem; }
+
+/* Routines and shopping priority: the shared controller's "dashboard" variant
+   in #live-run-controls. One row per primary routine on a shared track so the
+   columns line up; the full editor stays inside its closed disclosure. */
+#panel-overview #live-run-controls { container: dashlive / inline-size; }
+#panel-overview .rw-dashboard { font-size: .86rem; }
+#panel-overview .rw-dashboard .rw-toolbar { margin: 0 0 .5rem; gap: .3rem .8rem; }
+#panel-overview .rw-dashboard-title { display: flex; align-items: baseline; flex-wrap: wrap; gap: .1rem .7rem; min-width: 0; }
+#panel-overview .rw-dashboard-title strong { font-size: .95rem; }
+#panel-overview .rw-dashboard-title small { display: inline; font-size: .8rem; }
+#panel-overview .rw-dashboard .rw-status { font-size: .8rem; overflow-wrap: anywhere; }
+#panel-overview .rw-dashboard .rw-status:empty { display: none; }
+#panel-overview .rw-dashboard-notice { margin: 0 0 .45rem; font-size: .82rem; color: var(--dashboard-warn); }
+#panel-overview .rw-preview-message { font-size: .84rem; color: var(--dashboard-quiet); }
+#panel-overview .rw-preview-message.warn { color: var(--dashboard-warn); }
+
+#panel-overview .rw-summary-routines { display: grid; gap: 0; }
+/* Controls on the first line (switch, interval, countdown, Run now), the
+   latest outcome and any disabled reason beneath them. */
+#panel-overview .rw-summary-routine {
+  display: grid; align-items: center; gap: .05rem .7rem; padding: .35rem 0; min-height: 2.4rem;
+  grid-template-columns: 7rem 2.8rem 12.5rem 6.6rem minmax(0, 1fr) auto;
+  grid-template-areas: "name toggle interval clock . action" ". outcome outcome outcome outcome action" ". reason reason reason reason reason";
+}
+/* Saved preview rows: planned state, interval, then a disabled Run now with its reason. */
+#panel-overview .rw-dashboard-idle .rw-summary-routine { padding: .2rem 0; min-height: 0;
+  grid-template-columns: 7rem 8.5rem minmax(0, 1fr) auto auto; grid-template-areas: "name toggle interval reason action"; }
+#panel-overview .rw-dashboard-idle .rw-action-reason { justify-self: end; }
+#panel-overview .rw-summary-routine + .rw-summary-routine { border-top: 1px solid rgba(255,255,255,.05); }
+#panel-overview .rw-summary-name { grid-area: name; font-weight: 600; font-size: .88rem; }
+#panel-overview .rw-summary-toggle, #panel-overview .rw-summary-state { grid-area: toggle; }
+#panel-overview .rw-summary-interval { grid-area: interval; }
+#panel-overview .rw-summary-clock { grid-area: clock; font-size: .86rem; font-weight: 650; }
+#panel-overview .rw-summary-outcome { grid-area: outcome; min-width: 0; font-size: .78rem; color: var(--dashboard-quiet); overflow-wrap: anywhere; }
+#panel-overview .rw-summary-outcome:empty { display: none; }
+/* The switch column needs no visible "On": the label text stays for assistive technology. */
+#panel-overview .rw-summary-toggle > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* Plain default markers are hidden in the compact rows; an override or a pending edit stays visible. */
+#panel-overview .rw-summary-routine small[data-pending-state="default"] { display: none; }
+#panel-overview .rw-summary-routine small[data-pending-state="override"], #panel-overview .rw-summary-routine small[data-pending-state="pending"] { color: var(--dashboard-warn); }
+#panel-overview .rw-summary-routine > .rw-action { grid-area: action; justify-self: end; }
+#panel-overview .rw-action-reason { grid-area: reason; font-size: .74rem; color: var(--dashboard-quiet); }
+#panel-overview .rw-action-reason:empty, #panel-overview .rw-action-reason[hidden] { display: none; }
+#panel-overview .rw-summary-routine .rw-field { display: flex; align-items: center; flex-wrap: wrap; gap: .1rem .4rem; flex: none; min-width: 0; max-width: none; margin: 0; font-size: .8rem; }
+#panel-overview .rw-summary-routine .rw-field > span { display: inline; margin: 0; color: var(--dashboard-quiet); }
+#panel-overview .rw-summary-routine .rw-field input[type=checkbox] { margin: 0; }
+#panel-overview .rw-summary-routine .rw-field input[type=number] { flex: none; width: 4.4rem; height: 1.75rem; padding: .1rem .35rem; font-size: .86rem; }
+#panel-overview .rw-summary-routine .rw-field small { flex: 1 0 100%; width: auto; min-height: 0; margin: 0; font-size: .74rem; line-height: 1.25; }
+#panel-overview .rw-summary-routine .rw-field small:empty { display: none; }
+#panel-overview .rw-summary-routine .rw-field .rw-duration-hint { flex: 0 0 auto; margin: 0; font-size: .78rem; }
+#panel-overview .rw-summary-routine .rw-action > button { height: 1.85rem; padding: .1rem .65rem; font-size: .8rem; white-space: nowrap; }
+#panel-overview .rw-summary-routine .rw-action .rw-command { max-width: 9rem; }
+#panel-overview .rw-summary-state { font-size: .82rem; }
+#panel-overview .rw-summary-state[data-state="off"] { color: var(--dashboard-quiet); }
+#panel-overview span.rw-summary-interval { font-size: .82rem; color: var(--dashboard-quiet); font-variant-numeric: tabular-nums; }
+#panel-overview .rw-summary-other { margin: .3rem 0 0; font-size: .78rem; color: var(--dashboard-quiet); }
+
+#panel-overview .rw-summary-shopping { margin-top: .55rem; padding-top: .5rem; border-top: 1px solid rgba(255,255,255,.05); font-size: .84rem; }
+#panel-overview .rw-summary-shopping > header { display: flex; align-items: baseline; gap: .6rem; margin: 0 0 .2rem; }
+#panel-overview .rw-summary-shopping > header strong { font-size: .88rem; }
+#panel-overview .rw-summary-scope { font-size: .76rem; color: var(--dashboard-quiet); }
+#panel-overview .rw-summary-marker { font-size: .74rem; color: var(--dashboard-warn); }
+#panel-overview .rw-summary-marker:empty { display: none; }
+#panel-overview .rw-summary-plan { display: flex; flex-wrap: wrap; gap: .1rem .9rem; color: var(--dashboard-quiet); font-size: .8rem; }
+#panel-overview .rw-summary-queue { display: flex; flex-wrap: wrap; gap: .2rem .45rem; margin: .3rem 0 0; padding: 0; list-style: none; counter-reset: dashboard-queue; }
+#panel-overview .rw-summary-queue > li { counter-increment: dashboard-queue; margin: 0; padding: .1rem .5rem; border: 1px solid var(--glass-border); border-radius: 999px; font-size: .8rem; line-height: 1.4; white-space: nowrap; }
+#panel-overview .rw-summary-queue > li::before { content: counter(dashboard-queue) "  "; color: var(--dashboard-quiet); font-variant-numeric: tabular-nums; }
+#panel-overview .rw-summary-more { font-size: .78rem; color: var(--dashboard-quiet); }
+#panel-overview .rw-summary-queue-all { margin: .3rem 0 0; }
+#panel-overview .rw-summary-queue-all > summary { font-size: .78rem; color: var(--pico-primary, #7cbaff); }
+#panel-overview .rw-summary-queue-full { margin: .3rem 0 0; padding-left: 1.6rem; columns: 2 16rem; column-gap: 1.4rem; font-size: .8rem; }
+#panel-overview .rw-summary-queue-full > li { margin: 0 0 .15rem; break-inside: avoid; }
+#panel-overview .rw-queue-limit { margin-left: .3rem; font-size: .72rem; color: var(--dashboard-quiet); }
+#panel-overview .rw-summary-decision, #panel-overview .rw-summary-confirmation { margin-top: .25rem; font-size: .78rem; color: var(--dashboard-quiet); overflow-wrap: anywhere; }
+#panel-overview .rw-summary-unsupported { font-size: .8rem; color: var(--dashboard-quiet); }
+
+#panel-overview .rw-advanced { margin: .55rem 0 0; }
+#panel-overview .rw-advanced > summary { font-size: .8rem; color: var(--dashboard-quiet); }
+#panel-overview .rw-advanced[open] > summary { margin-bottom: .5rem; }
+#panel-overview .rw-advanced-toolbar { display: flex; justify-content: flex-end; margin-bottom: .5rem; }
+#panel-overview .rw-advanced .rw-routines { grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); gap: .45rem; }
+#panel-overview .rw-advanced .rw-routine { padding: .5rem .6rem; }
+#panel-overview .rw-advanced .rw-shopping { max-height: min(38rem, calc(100dvh - 8rem)); overflow: auto; overscroll-behavior: contain; padding-right: .3rem; }
+@container rw-shopping (480px <= width < 640px) {
+  #panel-overview .rw-advanced .rw-queue-layout { --rw-track-count: 2; --rw-selector-gaps: 0;
+    --rw-chip-width: calc((100cqw - 4 * var(--rw-panel-padding) - 4px - var(--rw-pane-gap) - var(--rw-selector-gaps) * var(--rw-chip-gap)) / var(--rw-track-count));
+    grid-template-columns: calc(var(--rw-chip-width) + 2 * var(--rw-panel-padding) + 2px) minmax(0, 1fr); }
+}
+/* A narrow left column (about 1054px windows, tablets, phones): two lines per
+   routine - name, switch, countdown and Run now; then interval and outcome. */
+@container dashlive (width < 600px) {
+  #panel-overview .rw-summary-routine {
+    grid-template-columns: 7rem 2.8rem 5.6rem minmax(0, 1fr) auto;
+    grid-template-areas: "name toggle clock . action" "interval interval interval interval interval" "outcome outcome outcome outcome outcome" "reason reason reason reason reason";
+  }
+  #panel-overview .rw-dashboard-idle .rw-summary-routine { grid-template-columns: 7rem minmax(0, 1fr) auto; grid-template-areas: "name toggle action" "interval reason reason"; }
+  #panel-overview .rw-dashboard-idle .rw-action-reason { justify-self: start; }
+}
+
+/* Day plan and last battle: key, value, link. */
+#panel-overview .dashboard-next { display: grid; gap: .25rem; font-size: .84rem; }
+#panel-overview .dashboard-next-row { display: grid; grid-template-columns: 6rem minmax(0, 1fr) auto; gap: .6rem; align-items: baseline; }
+#panel-overview .dashboard-next-key { font-size: .8rem; font-weight: 600; color: var(--dashboard-quiet); }
+#panel-overview .dashboard-next-value { min-width: 0; overflow-wrap: anywhere; }
+#panel-overview .dashboard-next-detail { color: var(--dashboard-quiet); }
+#panel-overview .dashboard-next-row > a { font-size: .8rem; white-space: nowrap; }
+
+/* Needs attention: at most three items from canonical records; the raw event
+   tail stays on Runtime. */
+#panel-overview .dashboard-attention-head { display: flex; align-items: baseline; justify-content: space-between; gap: .6rem; font-size: .84rem; }
+#panel-overview .dashboard-attention-head > a { font-size: .8rem; white-space: nowrap; }
+#panel-overview .dashboard-attention-list { margin: .3rem 0 0; padding: 0; list-style: none; font-size: .84rem; }
+#panel-overview .dashboard-attention-list > li { margin: 0; padding: .2rem 0 .2rem .9rem; position: relative; overflow-wrap: anywhere; list-style: none; }
+#panel-overview .dashboard-attention-list > li::before { content: ""; position: absolute; left: 0; top: .62rem; width: .4rem; height: .4rem; border-radius: 50%; background: currentColor; }
+#panel-overview .dashboard-attention-list > li[data-tone] .dashboard-attention-text { color: inherit; }
+#panel-overview .dashboard-attention-list a, #panel-overview .dashboard-attention-list button { margin-left: .35rem; font-size: .8rem; }
+#panel-overview .dashboard-attention-detail { display: block; margin-top: .1rem; font-size: .78rem; color: var(--dashboard-quiet); }
+#panel-overview .dashboard-attention-list > li[data-tone="bad"] .dashboard-attention-text { color: #f1d0cd; }
+#panel-overview .dashboard-attention-list > li[data-tone="bad"]::before { color: var(--dashboard-bad); }
+#panel-overview .dashboard-attention-list button { height: 1.7rem; padding: .05rem .55rem; }
+
+/* Feed: label, a plain freshness readout and the stream switch in one line,
+   the image directly below, tuning and transport detail on demand. */
+#panel-overview .dashboard-feed { position: sticky; top: 0; }
+#panel-overview .dashboard-feed-bar { display: flex; align-items: center; flex-wrap: wrap; gap: .2rem .7rem; margin-bottom: .4rem; }
+#panel-overview .dashboard-feed-bar .dashboard-label { margin: 0; }
+#panel-overview .dashboard-feed-summary { font-size: .8rem; color: var(--dashboard-quiet); }
+#panel-overview .dashboard-feed-summary[data-tone="bad"] { color: var(--dashboard-bad); font-weight: 600; }
+#panel-overview .dashboard-feed-summary[data-tone="warn"] { color: var(--dashboard-warn); font-weight: 600; }
+#panel-overview .dashboard-stream-toggle { display: inline-flex; align-items: center; gap: .4rem; margin: 0 0 0 auto; font-size: .82rem; }
+#panel-overview .dashboard-screen #stream-slot { text-align: center; }
+#panel-overview .dashboard-screen #stream-slot img { display: block; width: auto; height: auto; max-width: 100%; max-height: var(--dashboard-feed-height); margin: 0 auto; border: 1px solid var(--glass-border); border-radius: 6px; object-fit: contain; box-shadow: none; }
+#panel-overview .dashboard-feed-alert { margin-top: .4rem; font-size: .84rem; }
+#panel-overview .dashboard-stream-settings { margin: .45rem 0 0; }
+#panel-overview .dashboard-stream-settings > summary { font-size: .8rem; color: var(--dashboard-quiet); }
+#panel-overview .dashboard-stream-fields { display: grid; gap: .4rem; margin: .5rem 0; }
+#panel-overview .dashboard-stream-fields label { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin: 0; font-size: .84rem; }
+#panel-overview .dashboard-stream-settings small, #panel-overview .dashboard-stream-settings p { display: block; margin: .4rem 0 0; font-size: .8rem; }
+
+/* Narrow: one column - main row and start, routines, the feed, then the day
+   plan, last battle and attention. */
+@media (max-width: 900px) {
+  #panel-overview .dashboard-grid { grid-template-columns: minmax(0, 1fr); gap: var(--dashboard-gap); }
+  #panel-overview .dashboard-controls { display: contents; }
+  #panel-overview .dashboard-controls > * { order: 4; }
+  #panel-overview .dashboard-controls > #card-runner { order: 0; }
+  #panel-overview .dashboard-controls > #current-battle-controls { order: 1; padding-top: var(--dashboard-gap); border-top: var(--dashboard-rule); }
+  #panel-overview .dashboard-feed { order: 2; position: static; padding-top: var(--dashboard-gap); border-top: var(--dashboard-rule); }
+  #panel-overview .dashboard-controls > #dashboard-next { order: 3; }
+  #panel-overview .dashboard-screen #stream-slot img { max-height: 70dvh; }
+}
+@media (max-width: 520px) {
+  #panel-overview .runner-row { grid-template-columns: minmax(0, 1fr); }
+  #panel-overview .runner-indent, #panel-overview .dashboard-note { margin-left: 0; }
+  #panel-overview .dashboard-next-row { grid-template-columns: minmax(0, 1fr) auto; }
+  #panel-overview .dashboard-next-key { grid-column: 1 / -1; }
+  #panel-overview .runner-process { grid-template-columns: minmax(0, 1fr) auto; }
+  #panel-overview .runner-process .process-details { grid-column: 1 / -1; grid-row: 2; }
+}

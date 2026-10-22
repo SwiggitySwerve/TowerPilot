@@ -1,0 +1,163 @@
+import { entry, made } from './entry.ts';
+import { durationText } from './format.ts';
+
+function number(value: number): string {
+  return String(value);
+}
+
+/** Catalogue entries of the Runs page (brief backend/logs/reviews/ui-pages/runs-brief.md). */
+export const runs = {
+  pageName: entry('Runs'),
+  live: {
+    title: entry('This battle'),
+    scope: entry(
+      'Changes this battle only; the saved run stays as it is',
+      'A change here goes to the running battle and applies to it alone. Battles started later use the saved settings below.',
+    ),
+    none: entry('No tracked battle - live settings appear here while automation watches a battle'),
+    unavailable: entry("The tracked battle can't be read"),
+    prepared: entry('The battle has not started yet; live settings open when it is active'),
+    save: entry('Save changes to this battle'),
+    check: entry('Check this battle'),
+    boundsUnknown: entry(
+      'Allowed ranges not read yet',
+      'The ranges come from the saved settings of this battle run; the server checks every value either way.',
+    ),
+    marks: {
+      changed: entry('Changed for this battle'),
+      waiting: entry(
+        'Waiting to apply',
+        'The battle accepted this change; the automation has not taken it yet.',
+      ),
+    },
+  },
+  saved: {
+    title: entry('Saved settings'),
+    scope: entry(
+      'Changes the saved run: battles started later use it',
+      'Saving writes the run in your profile. A battle that is already running keeps its own settings; change those above.',
+    ),
+    picker: entry('Run'),
+    unnamedRun: entry('Run without a name'),
+    noRuns: entry('No runs to show yet'),
+    combo: entry('Day plans choose a run for each block; edit them on Schedule'),
+    notListed: entry(
+      'This run is not in the list of runs of the active profile',
+      'The link named this run. The page shows its saved settings only if the server knows it; it never opens another run instead.',
+    ),
+    reading: entry('Reading the saved settings'),
+    unavailable: entry("The saved settings can't be read"),
+    save: entry('Save run settings'),
+    check: entry('Check saved values'),
+    previousPage: entry('Shopping queue, entry and equipment settings: previous Runs page'),
+    prepare: entry('Prepare runs on the Recognition page'),
+  },
+  discard: entry('Discard'),
+  readAge: (seconds: number) => made(`read ${durationText(seconds)} ago`),
+  routines: {
+    ad_gems: entry('Ad gems'),
+    floating_gems: entry('Floating gems'),
+    shopping: entry('Shopping'),
+    rewards: entry('Rewards'),
+    abilities: entry('Abilities'),
+    rescue: entry('Rescue'),
+    repeat: entry('Repeat'),
+  },
+  otherRoutine: entry('Other routine'),
+  fields: {
+    enabled: entry('On'),
+    interval_sec: entry('Every'),
+    window_sec: entry('Window', 'How long one attempt may take.'),
+    tap_interval_sec: entry('Tap every', 'Time between taps on a floating gem.'),
+  },
+  otherField: entry('Setting'),
+  seconds: entry('s'),
+  notReported: entry('Not reported'),
+  range: (min: number | null, max: number | null) =>
+    made(
+      min !== null && max !== null
+        ? `${number(min)} to ${number(max)} s`
+        : min !== null
+          ? `at least ${number(min)} s`
+          : max !== null
+            ? `at most ${number(max)} s`
+            : 'range not reported',
+    ),
+  duration: (seconds: number) => made(`= ${durationText(seconds)}`),
+  edited: entry('Edited, not saved'),
+  invalid: {
+    empty: entry('Enter a number'),
+    not_a_number: entry('Use digits only, like 30 or 2.5'),
+    below_min: entry('Below the allowed range'),
+    above_max: entry('Above the allowed range'),
+    not_editable: entry("This setting can't be changed here"),
+  },
+  changes: (count: number) =>
+    made(count === 1 ? '1 change not saved' : `${String(count)} changes not saved`),
+  reasons: {
+    run_not_read: entry("The run's saved settings have not been read yet"),
+    read_other_context: entry('These settings were read for another emulator or profile'),
+    revision_unknown: entry('The version of these settings is not known; check them again'),
+    save_in_flight: entry('Saving'),
+    save_unresolved: entry('An earlier save has no answer yet; check the values first'),
+    refreshing: entry('Reading the values the last save left'),
+    invalid_value: entry('Fix the values marked above'),
+    no_changes: entry('No changes to save'),
+    no_battle: entry('No battle is tracked'),
+    battle_not_active: entry('The battle has not started yet'),
+    report_stale: entry('Waiting for a fresh battle report'),
+    change_pending: entry('Waiting for the last change to apply'),
+  },
+  outcomes: {
+    lead: entry('Last request:'),
+    sending: entry('Sending'),
+    saved: entry('Saved'),
+    savedPartly: entry(
+      'Saved - not every value was kept',
+      'The server saved the run with other values for the fields still marked "Edited, not saved"; those fields keep what you typed.',
+    ),
+    notSaved: entry('Not saved'),
+    unknownSave: entry(
+      'No reply - it may or may not have saved',
+      'Nothing is sent again. Check saved values reads the run: a read showing your changes confirms the save; a read without them cannot prove it failed, because it may still be written. You may then continue from the saved values as read.',
+    ),
+    unconfirmedSave: entry(
+      "The reply didn't confirm the save - it may or may not have saved",
+      'Nothing is sent again. Check saved values reads the run: a read showing your changes confirms the save; a read without them cannot prove it failed, because it may still be written. You may then continue from the saved values as read.',
+    ),
+    applied: entry('The saved settings now have your changes'),
+    acceptCurrent: entry(
+      'Continue from the saved values as read',
+      'The last read does not show your changes, but that does not prove the save failed: it may still be written. Continuing lets you save again from the values the read shows; this line stays unknown and nothing is sent again.',
+    ),
+    accepted: entry(
+      'You continued from the saved values as read; this save is still not confirmed',
+    ),
+    notApplied: entry('Not all of your changes are in the saved settings'),
+    liveRecorded: entry('Sent to this battle - waiting to apply'),
+    liveNotRecorded: entry('Not sent - nothing was recorded'),
+    liveUnknown: entry(
+      'No reply - it may have been recorded',
+      'Send same request again sends exactly the same change with the same key; the battle answers with what it recorded.',
+    ),
+    liveUnconfirmed: entry(
+      "The reply didn't confirm the change - it may have been recorded",
+      'Send same request again sends exactly the same change with the same key; the battle answers with what it recorded. Check this battle reads it.',
+    ),
+    liveSettled: entry('A later read lists this change'),
+    notSavedChanged: entry(
+      'Not saved - the saved run changed since you read it',
+      'Someone else saved this run first. Your values stay in the fields, compared with the newest saved values; Save sends them again only when you click it.',
+    ),
+    earlier: entry('Change to another battle:'),
+    earlierRecorded: entry('That battle recorded the change'),
+    checkEarlier: entry('Check that battle'),
+    attemptRefused: entry(
+      'Sending it again was refused - this does not show whether the first request was recorded',
+      'The server refused the repeated request before looking for the first one (for example, while another action was in progress). The first request may still have been recorded: send the same request again, or check the battle.',
+    ),
+    resend: entry('Send same request again'),
+    dismiss: entry('Dismiss'),
+    answeredAgo: (seconds: number) => made(`${durationText(seconds)} ago`),
+  },
+} as const;

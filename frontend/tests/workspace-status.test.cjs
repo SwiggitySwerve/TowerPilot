@@ -4,6 +4,7 @@ const vm = require('node:vm');
 const WorkspaceStatus = require('../webui/workspace-status.js');
 const LearningView = require('../webui/learning-view.js');
 const LearningStore = require('../webui/learning-store.js');
+const DashboardView = require('../webui/dashboard-view.js');
 const {html, section} = require('./helpers.cjs');
 
 test('running mapping exposes the real current and next step without treating attention as success', () => {
@@ -112,6 +113,19 @@ test('workspace refresh performs only status reads and never applies or launches
   assert.equal(ctx.S.workspaceLoading,false);
 });
 
+test('a workspace refresh on Dashboard redraws the start state even when the Automation card is unchanged', async () => {
+  // a Start attempt marks readiness stale and disables Start; the refresh after its
+  // answer restores freshness, which renderRunner's unchanged-card check cannot see
+  const calls=[];
+  const ctx=vm.createContext({S:{view:'home',readinessFresh:false},Date,LearningStore,
+    api:async path=>path==='/api/runs'?{runs:{},readiness:{}}:path==='/api/config'?{active_instance:'main'}:{},
+    renderWorkspaceStatus:()=>{},renderRunner:()=>calls.push('runner'),renderRunReady:()=>calls.push('ready:'+ctx.S.readinessFresh),
+    renderFlows:()=>{},renderControlBlockers:()=>{},renderGetStarted:()=>{}});
+  vm.runInContext(section('async function refreshWorkspaceStatus(){','function openWorkspaceSection('),ctx);
+  await vm.runInContext('refreshWorkspaceStatus()',ctx);
+  assert.deepEqual(calls,['runner','ready:true']);
+});
+
 test('a workspace refresh failure keeps the last snapshot instead of declaring an idle operation', async () => {
   const snapshot={calibration:{running:true},checkedAt:100};
   const ctx=vm.createContext({S:{view:'setup',workspace:snapshot},Date,
@@ -158,7 +172,11 @@ test('game requirements distinguish configuration, connection and screen learnin
 });
 
 const instConfig = (extra={}) => ({active_instance:'main',instances:{main:{serial:'127.0.0.1:16384',label:'My Tower',...extra}}});
-const statusWith = (device_state, extra={}) => ({device_state, port_open:true, connected:device_state === 'device', processes:[], ...extra});
+// A current server reports launch admission for setup test battles; the default here allows launches.
+const statusWith = (device_state, extra={}) => ({device_state, port_open:true, connected:device_state === 'device', processes:[],
+  setup_battle_guard:{blocks_launch:false, code:null, message:null, scope:'run'},
+  collection_guard:{blocks_launch:false, code:null, message:null, scope:'collection'}, ...extra});
+const headerLabel = status => WorkspaceStatus.connectionState(status).key === 'device' ? 'adb connected' : WorkspaceStatus.connectionState(status).label;
 
 test('the banner reports what adb sees for every device_state, never port reachability', () => {
   const expected = {
@@ -169,7 +187,7 @@ test('the banner reports what adb sees for every device_state, never port reacha
     const output = WorkspaceStatus.contextHTML({config:instConfig(), status:statusWith(state)});
     const header = WorkspaceStatus.headerHTML({config:instConfig(), status:statusWith(state)});
     assert.match(output, label, state);
-    assert.match(header, new RegExp(`<span>${WorkspaceStatus.connectionState(statusWith(state)).label}</span>`), state);
+    assert.match(header, new RegExp(`<span class="header-connection">${headerLabel(statusWith(state))}</span>`), state);
     assert.doesNotMatch(output + header, /Port reachable/, state);
     // the header pill offers Reconnect unless adb reports the device or no emulator is configured;
     // the summary never repeats it
@@ -182,7 +200,27 @@ test('the banner reports what adb sees for every device_state, never port reacha
   // an unrecognised state is not promoted to Online
   assert.match(WorkspaceStatus.contextHTML({config:instConfig(), status:statusWith('sideways')}), /Not confirmed/);
   assert.match(WorkspaceStatus.headerHTML({config:instConfig(), status:statusWith('sideways')}), /dot bad[\s\S]*Not confirmed/);
-  assert.match(WorkspaceStatus.headerHTML({config:instConfig(), status:statusWith('device')}), /dot ok[\s\S]*Online/);
+  // the header names what adb proves, never a bare "Online"
+  assert.match(WorkspaceStatus.headerHTML({config:instConfig(), status:statusWith('device')}), /dot ok[\s\S]*<span class="header-connection">adb connected<\/span>/);
+  assert.doesNotMatch(WorkspaceStatus.headerHTML({config:instConfig(), status:statusWith('device')}), /Online/);
+});
+
+test('the header labels the account (linked to Profiles) and the emulator; a failed read is last known, never green', () => {
+  const accounts = {active:'one', accounts:[{id:'one', label:'My <Tower>'}]};
+  const emulators = [{emulator:'MuMu', name:'Player 0', adb_port:16384}];
+  const header = WorkspaceStatus.headerHTML({config:instConfig(), accounts, status:statusWith('device'), emulators});
+  assert.match(header, /^<a class="header-account" href="#profiles"[^>]*><span class="header-key">Account<\/span> <span class="header-profile">My &lt;Tower&gt;<\/span><\/a>/);
+  assert.match(header, /<span class="header-key">Emulator<\/span> <span class="header-emulator">MuMu Player 0<\/span> <span class="dot ok"/);
+  // the serial and what adb does not prove are in the tooltip, not the bar
+  assert.match(header, /title="MuMu Player 0 · 127\.0\.0\.1:16384 · adb reports the emulator ready\. · This does not show whether the game or automation is running\."/);
+  assert.equal(header.replace(/title="[^"]*"/g, '').includes('127.0.0.1'), false);
+  // without an emulator inventory the configured instance names it
+  assert.match(WorkspaceStatus.headerHTML({config:instConfig(), status:statusWith('device')}), /<span class="header-emulator">main<\/span>/);
+  const stale = WorkspaceStatus.headerHTML({config:instConfig(), accounts, status:statusWith('device'), error:'Status read timed out', emulators});
+  assert.match(stale, /<span class="dot warn" aria-hidden="true"><\/span><span class="header-connection">Last known: adb connected<\/span>/);
+  assert.match(stale, /Last known status: Status read timed out/);
+  assert.doesNotMatch(stale, /dot ok/);
+  assert.match(WorkspaceStatus.headerHTML({config:instConfig()}), /dot unknown[\s\S]*Not checked/);
 });
 
 test('a status without device_state falls back to connected but is never labelled Online', () => {
@@ -199,7 +237,7 @@ test('an automatic reconnect in progress replaces the adb wording; gave_up, idle
   const reconnect = (state, extra={}) => ({reconnect:{state, attempts:0, next_try_in:null, last_error:'', ...extra}});
   const trying = statusWith('missing', reconnect('trying', {attempts:3, next_try_in:4.2, last_error:'<cannot connect>'}));
   const header = WorkspaceStatus.headerHTML({config:instConfig(), status:trying});
-  assert.match(header, /dot bad[\s\S]*<span>Reconnecting to the emulator\.\.\. \(attempt 3\)<\/span>/);
+  assert.match(header, /dot bad[\s\S]*<span class="header-connection">Reconnecting to the emulator\.\.\. \(attempt 3\)<\/span>/);
   assert.doesNotMatch(header, /Not found by adb/);
   assert.match(header, /onclick="reconnect\(this\)"/);   // an immediate manual attempt stays available
   const context = WorkspaceStatus.contextHTML({config:instConfig(), status:trying});
@@ -286,7 +324,7 @@ function reconnectPage(status) {
   const header = {_html:'', set innerHTML(v) { this._html = v; this.button = {disabled:/<button[^>]* disabled/.test(v), textContent:'Reconnect', isConnected:true}; if (this.old) this.old.isConnected = false; this.old = this.button; },
     get innerHTML() { return this._html; }};
   const page = {header, posts:0, release:null};
-  const ctx = vm.createContext({WorkspaceStatus, $:key => key === '#header-status' ? header : null, toast() {}, document:{},
+  const ctx = vm.createContext({WorkspaceStatus, $:key => key === '#header-status' ? header : null, toast() {}, document:{}, renderOwnerRefusal() {},
     post:() => { page.posts++; return new Promise((resolve, reject) => { page.release = resolve; page.fail = reject; }); },
     loadStatus:async () => vm.runInContext('renderWorkspaceStatus()', ctx),   // the real one ends by rendering the workspace status
     workspaceOperation:() => WorkspaceStatus.operation({record:null}),
@@ -397,29 +435,116 @@ test('start blockers name connection and game input only, and clear when both ho
   assert.match(clear, /Nothing blocks automation/);
 });
 
-function runReadyContext(status, config, readiness, runs={}){
-  const controls = {'#start-preset':{value:'bp_farm'},'#run-ready':{},'#start-run':{},'#start-gems':{},'#run-collection-summary':{}};
+test('an unresolved setup test battle blocks Start and Collect with the server message; only an explicit release allows them', () => {
+  const config = instConfig({allow_taps:true});
+  const blockers = guard => WorkspaceStatus.startBlockers({status:statusWith('device', {setup_battle_guard:guard}), config});
+  const message = 'The setup test battle from 11:38 was not confirmed finished; automation will not take it over.';
+  const blocked = blockers({blocks_launch:true, code:'setup_battle_unresolved', message});
+  assert.deepEqual(JSON.parse(JSON.stringify(blocked)), [{id:'setup_battle', scope:'run', code:'setup_battle_unresolved', text:message, href:'#screens', section:'workspace-operation', link:'Setup details'}]);
+  // an older server without the field, or a malformed answer, is never read as permission
+  assert.match(blockers(undefined)[0].text, /does not report setup_battle_guard\. Restart the dashboard server; start stays disabled/);
+  assert.equal(blockers({blocks_launch:'no'})[0].id, 'setup_battle');
+  assert.equal(blockers({blocks_launch:null, message:''})[0].id, 'setup_battle');
+  assert.deepEqual(blockers({blocks_launch:false, code:null, message:null}), []);
+  // before the first status read the connection already holds Start; no extra guess is added
+  assert.deepEqual(WorkspaceStatus.startBlockers({status:null, config}).map(b => b.id), ['connection']);
+  // Prepare is not gated by it (prepareBlocked filters connection and processes only)
+  assert.equal(WorkspaceStatus.setupBattleBlocker(statusWith('device')), null);
+});
+
+/* A context-valid controller preview of bp_farm's saved settings (what onPreview reports). */
+const farmPreview = (config, routines={ad_gems:{enabled:true}, floating_gems:{enabled:true}}, extra={}) =>
+  ({snapshot:{settings:{routines}}, status:'ready', blueprint:'bp_farm', context:LearningStore.context(config).id, ...extra});
+function runReadyContext(status, config, readiness, runs={}, preview=farmPreview(config)){
+  const controls = {'#start-preset':{value:'bp_farm'},'#run-ready':{},'#start-run':{},'#start-gems':{}};
   const prepare = {}, runTypePrepare = {};   // Live control's Prepare and a run type's on Runs
-  const ctx = vm.createContext({LearningStore,S:{status,config,runReadiness:readiness,runs,readinessFresh:true,readinessContext:LearningStore.context(config).id},WorkspaceStatus,
+  const ctx = vm.createContext({LearningStore,S:{status,config,runReadiness:readiness,runs,readinessFresh:true,readinessContext:LearningStore.context(config).id,startPreview:preview},WorkspaceStatus,
     $:key=>controls[key],document:{querySelectorAll:()=>[prepare, runTypePrepare]},esc:String,outstandingCard:()=>''});
   vm.runInContext(section('function renderRunReady(){', 'async function killPid('), ctx);
   vm.runInContext('renderRunReady()', ctx);
   assert.equal(runTypePrepare.disabled, prepare.disabled);   // every Prepare follows one rule
-  return {controls, prepare};
+  return {ctx, controls, prepare};
 }
 
-test('collection summary follows the selected policy and prevents a disabled or duplicate collector', () => {
+test('Collect diamonds only follows the selected run saved settings from a context-valid preview, never the gather fields', () => {
   const status = statusWith('device', {calibration:{ready:true}});
   const config = instConfig({allow_taps:true});
   const ready = {bp_farm:{ready:true}};
-  let {controls} = runReadyContext(status, config, ready, {bp_farm:{gather:{ad_gems:false,gem_orbit:{enabled:false}}}});
+  const gems = (preview, runs={}) => runReadyContext(status, config, ready, runs, preview).controls;
+  // both routines off in the saved settings: disabled with the reason, whatever the gather fields say
+  let controls = gems(farmPreview(config, {ad_gems:{enabled:false}, floating_gems:{enabled:false}}), {bp_farm:{gather:{ad_gems:true,gem_orbit:{enabled:true}}}});
   assert.equal(controls['#start-gems'].disabled, true);
-  assert.match(controls['#run-collection-summary'].textContent, /Ad gems: off. Floating gems: off/);
-  ({controls} = runReadyContext(status, config, ready, {bp_farm:{gather:{ad_gems:true,gem_orbit:{enabled:true}}}}));
+  assert.match(controls['#run-ready'].innerHTML, /Collect diamonds only: Ad gems and Floating gems are both off in this run's saved settings\./);
+  assert.doesNotMatch(controls['#run-ready'].innerHTML, /Collection for this run/);
+  // one routine on enables it
+  controls = gems(farmPreview(config, {ad_gems:{enabled:false}, floating_gems:{enabled:true}}), {bp_farm:{gather:{ad_gems:false}}});
   assert.equal(controls['#start-gems'].disabled, false);
-  assert.match(controls['#run-collection-summary'].textContent, /Ad gems: on. Floating gems: on \(timed clicks\)/);
+  assert.match(controls['#run-ready'].innerHTML, /Ready to start/);
+  // no preview yet, a preview of another run, of another context, still loading or failed: disabled with a reason
+  for (const [preview, reason] of [[null, /waiting for this run's saved collection settings/], [farmPreview(config, undefined, {blueprint:'bp_shard'}), /waiting/],
+    [farmPreview(config, undefined, {context:'another-context'}), /waiting/], [{snapshot:null, status:'loading', blueprint:'bp_farm', context:LearningStore.context(config).id}, /waiting/],
+    [{snapshot:null, status:'error', blueprint:'bp_farm', context:LearningStore.context(config).id, error:'HTTP 502'}, /saved settings could not be read: HTTP 502/]]) {
+    controls = gems(preview);
+    assert.equal(controls['#start-gems'].disabled, true, JSON.stringify(preview));
+    assert.match(controls['#run-ready'].innerHTML, reason);
+  }
+  // a running collector holds it whatever the preview says
   ({controls} = runReadyContext({...status, processes:[{runner:'gem_collector'}]}, config, ready));
   assert.equal(controls['#start-gems'].disabled, true);
+});
+
+test('an unresolved setup battle disables Start and Collect with its reason and never shows Ready to start', () => {
+  const config = instConfig({allow_taps:true});
+  const guard = {blocks_launch:true, code:'setup_battle_unresolved', message:'Setup test battle <unconfirmed>.'};
+  const status = statusWith('device', {setup_battle_guard:{...guard, scope:'run'}, collection_guard:{...guard, scope:'collection'}});
+  const {controls, prepare} = runReadyContext(status, config, {bp_farm:{ready:true}});
+  assert.equal(controls['#start-run'].disabled, true);
+  assert.equal(controls['#start-gems'].disabled, true);
+  assert.equal(prepare.disabled, false);
+  assert.match(controls['#run-ready'].innerHTML, /Start and Collect are disabled[\s\S]*Setup test battle <unconfirmed>\.[\s\S]*href="#screens" data-workspace-section="workspace-operation">Setup details/);
+  assert.doesNotMatch(controls['#run-ready'].innerHTML, /Ready to start/);
+  const {controls:legacy} = runReadyContext(statusWith('device', {setup_battle_guard:undefined, collection_guard:undefined}), config, {bp_farm:{ready:true}});
+  assert.equal(legacy['#start-run'].disabled, true);
+  assert.equal(legacy['#start-gems'].disabled, true);
+  assert.doesNotMatch(legacy['#run-ready'].innerHTML, /Ready to start/);
+});
+
+test('Start follows only the run guard and Collect only the collection guard; a missing field holds its own action', () => {
+  const config = instConfig({allow_taps:true});
+  const run = {blocks_launch:true, code:'setup_battle_unresolved', scope:'run', message:'Run guard <blocks>.', operation_id:'op-1'};
+  const released = {blocks_launch:false, code:null, scope:'collection', evidence:'collection_handoff', handoff_id:'h-1', operation_id:'op-1', message:'Collection allowed.'};
+  // the person's collection-only handoff: Collect enabled, Start still blocked, both stated
+  let p = runReadyContext(statusWith('device', {setup_battle_guard:run, collection_guard:released}), config, {bp_farm:{ready:true}});
+  assert.equal(p.controls['#start-run'].disabled, true);
+  assert.equal(p.controls['#start-gems'].disabled, false);
+  assert.match(p.controls['#run-ready'].innerHTML, /<b>Start playing is disabled:<\/b>[\s\S]*Run guard <blocks>\./);
+  assert.doesNotMatch(p.controls['#run-ready'].innerHTML, /Collect diamonds only is disabled/);
+  assert.match(p.controls['#run-ready'].innerHTML, /Collection only is allowed: you confirmed the battle on screen is a new manual run\. Start playing stays blocked/);
+  // the collection guard missing (older server) holds Collect only
+  p = runReadyContext(statusWith('device', {collection_guard:undefined}), config, {bp_farm:{ready:true}});
+  assert.equal(p.controls['#start-run'].disabled, false);
+  assert.equal(p.controls['#start-gems'].disabled, true);
+  assert.match(p.controls['#run-ready'].innerHTML, /Collect diamonds only is disabled:[\s\S]*does not report collection_guard/);
+  // a run guard released while collection is blocked never enables Collect
+  p = runReadyContext(statusWith('device', {collection_guard:{blocks_launch:true, code:'setup_operation_active', message:'Setup is running.'}}), config, {bp_farm:{ready:true}});
+  assert.equal(p.controls['#start-run'].disabled, false);
+  assert.equal(p.controls['#start-gems'].disabled, true);
+  // the same record blocking both is listed once for both actions
+  p = runReadyContext(statusWith('device', {setup_battle_guard:{...run, scope:'run'}, collection_guard:{...run, scope:'collection'}}), config, {bp_farm:{ready:true}});
+  assert.equal((p.controls['#run-ready'].innerHTML.match(/Run guard &lt;blocks&gt;|Run guard <blocks>/g) || []).length, 1);
+  assert.deepEqual(WorkspaceStatus.startBlockers({status:statusWith('device', {collection_guard:{blocks_launch:'false'}}), config, scope:'collection'}).map(b => b.id), ['collection_guard']);
+});
+
+test('a Start whose outcome is unknown stays stated beside the buttons across re-renders until answered', () => {
+  const config = instConfig({allow_taps:true});
+  const p = runReadyContext(statusWith('device'), config, {bp_farm:{ready:true}});
+  const scope = JSON.stringify([LearningStore.context(config).id, 'bp_farm']);
+  p.ctx.S.startIntent = {scope, body:{}, error:'Another action is in progress; wait for its result'};
+  p.ctx.renderRunReady(); p.ctx.renderRunReady();
+  assert.match(p.controls['#run-ready'].innerHTML, /^<p class="runner-uncertain" data-tone="warn">Start playing: outcome unknown \(Another action is in progress; wait for its result\)\. Pressing it again resends the same request\.<\/p>/);
+  p.ctx.S.startIntent = {scope:JSON.stringify([LearningStore.context(config).id, 'bp_other']), body:{}, error:'offline'};
+  p.ctx.renderRunReady();
+  assert.doesNotMatch(p.controls['#run-ready'].innerHTML, /outcome unknown/);
 });
 
 test('Start and Collect diamonds stay disabled with visible reasons until the run, emulator and input all allow it', () => {
@@ -428,7 +553,7 @@ test('Start and Collect diamonds stay disabled with visible reasons until the ru
   assert.equal(controls['#start-run'].disabled, true);
   assert.equal(controls['#start-gems'].disabled, true);
   assert.equal(prepare.disabled, true);
-  assert.match(controls['#run-ready'].innerHTML, /Start is disabled[\s\S]*Emulator offline/);
+  assert.match(controls['#run-ready'].innerHTML, /Start and Collect are disabled[\s\S]*Emulator offline/);
   assert.doesNotMatch(controls['#run-ready'].innerHTML, /Ready to start/);
   ({controls, prepare} = runReadyContext(statusWith('device',{calibration:{ready:true}}), instConfig(), ready));
   assert.equal(controls['#start-run'].disabled, true);
@@ -446,12 +571,12 @@ test('Start and Collect diamonds stay disabled with visible reasons until the ru
 test('Stop now stays enabled while the emulator is offline without offering a legacy stop flag', () => {
   const body = {dataset:{},contains:()=>false};
   let readyCalls = 0;
-  const ctx = vm.createContext({S:{status:statusWith('offline',{processes:[{pid:42,runner:'orchestrator'}],stop_flag:false,calibration:{ready:false}}),
-    config:instConfig(), runs:{bp_farm:{}}, runReadiness:{}}, WorkspaceStatus, LearningView, document:{activeElement:null},
-    $:key=>key === '#runner-body' ? body : undefined, esc:String, renderRunReady:()=>readyCalls++});
+  const ctx = vm.createContext({S:{status:statusWith('offline',{processes:[{pid:42,runner:'orchestrator',created:1790000000.5}],stop_flag:false,calibration:{ready:false}}),
+    config:instConfig(), runs:{bp_farm:{}}, runReadiness:{}}, WorkspaceStatus, LearningView, DashboardView, LearningStore, document:{activeElement:null},
+    $:key=>key === '#runner-body' ? body : undefined, esc:String, renderRunReady:()=>readyCalls++, previewStartRun:()=>{}});
   vm.runInContext(section('function renderRunner(){', 'function renderRunReady(){'), ctx);
   vm.runInContext('renderRunner()', ctx);
-  assert.match(body.innerHTML, /<button class="small danger" onclick="killPid\(42\)">Stop now<\/button>/);
+  assert.match(body.innerHTML, /<button class="small danger" title="Stops this runner process if it is still the one listed here\. The game battle keeps playing\." data-pid="42" data-created="1790000000\.5" onclick="killRunner\(this\)">Stop now<\/button>/);
   assert.doesNotMatch(body.innerHTML, /ctl\('stop_after_run'/);
   assert.equal(readyCalls, 1);
 });
@@ -560,7 +685,7 @@ test("Overview's card reuses the existing profile form, suggestion and Learn scr
 async function renderHomePanels(S, emulatorInventory={instances:[]}, lifecycle=[]){
   const panels = {}, requests = [];
   const ctx = vm.createContext({LearningStore,S:{view:'home', tab:'overview', profiles:{active:'p'}, ...S}, WorkspaceStatus,
-    runWorkspace:{attach(){},selected(){return '';},choose(){}},
+    runWorkspace:{attach(hosts){this.hosts=hosts;},selected(){return '';},choose(){}},
     $:selector => (panels[selector] ||= {options:[],_html:'',get innerHTML(){return this._html;},set innerHTML(value){lifecycle.push(selector);this._html=value;}}),
     api:async url => { requests.push(url); return url === '/api/runs' ? {runs:{}, readiness:{}} : emulatorInventory; },
     loadHomeData:async()=>{}, toast:()=>{}, starterBanner:()=>'',
@@ -581,10 +706,16 @@ test('rebuilding Dashboard releases its existing stream before replacing any pan
   assert.equal(lifecycle.filter(event=>event === 'stopStream').length,1);
 });
 
-test('Dashboard separates current controls, activity and screen from configuration pages', async () => {
-  const {panel} = await renderHomePanels({config:instConfig()});
+test('Dashboard separates current controls, routines, attention and screen from configuration pages', async () => {
+  const {ctx, panel} = await renderHomePanels({config:instConfig()});
+  // one live host in the compact Dashboard variant; the Start picker's preview is re-read once
+  assert.equal(ctx.runWorkspace.hosts.liveVariant, 'dashboard');
+  assert.equal(ctx.S.previewForce, true);
+  assert.equal(ctx.S.startPreview, null);
+  assert.doesNotMatch(panel('overview'), /id="current-battle-controls"[^>]*hidden/);
   // renderRunner fills #runner-body with Stop now / Finish current run (see the offline test above)
-  assert.match(panel('overview'), /id="control-status"[\s\S]*id="workspace-context"[\s\S]*id="control-blockers"[\s\S]*id="card-runner"[\s\S]*id="runner-body"[\s\S]*id="events"[\s\S]*id="get-started"[\s\S]*id="stream-slot"/);
+  assert.match(panel('overview'), /id="card-runner"[\s\S]*id="runner-body"[\s\S]*id="control-blockers"[\s\S]*id="live-run-controls"[\s\S]*id="dashboard-next"[\s\S]*id="dashboard-attention"[\s\S]*id="get-started"[\s\S]*id="stream-slot"/);
+  assert.doesNotMatch(panel('overview'), /id="events"|Recent activity|role="log"/);   // the raw event tail lives on Runtime
   for (const [tab, card] of [['runs','card-flows'],['runs','card-behaviors'],['schedule','card-day'],['equipment','card-loadouts'],['collection','card-global']])
     assert.match(panel(tab), new RegExp(`id="${card}"`), tab);
   for (const tab of ['runs','schedule','equipment','collection','abilities']) {
@@ -741,8 +872,8 @@ test('status ticks of one automatic reconnect that differ only in the countdown 
   const writes = {}, slots = {};
   const $ = key => (slots[key] ||= {dataset:{}, contains:() => false, set innerHTML(v) { writes[key] = (writes[key] || 0) + 1; }, set textContent(v) {}});
   const config = {active_instance:'main', instances:{main:{serial:'127.0.0.1:16384', allow_taps:true}}};
-  const ctx = vm.createContext({WorkspaceStatus, LearningView, $, document:{activeElement:null, querySelectorAll:() => []}, esc:String,
-    outstandingCard:() => '', workspaceOperation:() => WorkspaceStatus.operation({record:null}),
+  const ctx = vm.createContext({WorkspaceStatus, LearningView, DashboardView, LearningStore, $, document:{activeElement:null, querySelectorAll:() => []}, esc:String,
+    outstandingCard:() => '', workspaceOperation:() => WorkspaceStatus.operation({record:null}), previewStartRun:() => {},
     S:{tab:'overview', view:'home', config, runs:{bp_coin_default:{label:'Coin'}}, runReadiness:{bp_coin_default:{ready:true}},
       workspace:{config, accounts:{active:'a', accounts:[{id:'a', label:'A'}]}}, workspaceError:'', statusError:''}});
   vm.runInContext(section('function renderRunner(){', 'async function killPid('), ctx);
@@ -755,7 +886,7 @@ test('status ticks of one automatic reconnect that differ only in the countdown 
       reconnect:{state:'trying', attempts:4, next_try_in:wait, last_error:'device missing after recovery'}};
     vm.runInContext('renderRunner(); renderStream(); syncLiveScreen(); renderWorkspaceStatus();', ctx);
   }
-  for (const key of ['#runner-body', '#stream-slot', '#live-screen', '#header-status', '#workspace-context'])
+  for (const key of ['#runner-body', '#stream-slot', '#live-screen', '#header-status', '#dashboard-next', '#dashboard-attention'])
     assert.equal(writes[key], 1, key);
 });
 

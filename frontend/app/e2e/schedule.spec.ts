@@ -1,0 +1,519 @@
+import { createRequire } from 'node:module';
+import { mkdirSync } from 'node:fs';
+import path from 'node:path';
+import { expect, test, type Page } from '@playwright/test';
+import { bodiesTo, posts } from './helpers.ts';
+import { dashboardPagesCase as pagesCase } from '../tests/support/dashboardFixture.ts';
+import { own } from '../src/core/read.ts';
+import { scheduleRace } from './schedule-race.ts';
+
+function gate() {
+  let release: (() => void) | undefined;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  return { pending, release: () => release?.() };
+}
+
+const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
+const OUT =
+  process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('playwright-report/f6-schedule-screens');
+mkdirSync(OUT, { recursive: true });
+const widths = [1360, 1054, 390];
+
+async function open(page: Page, width = 1360, options: Record<string, string> = {}) {
+  await page.setViewportSize({ width, height: 900 });
+  await page.request.get('/__fake/use?scenario=runs_saved');
+  await page.request.get(`/__fake/schedule?${new URLSearchParams(options)}`);
+  await page.goto(`/ui/app/?schedule-test=${encodeURIComponent(JSON.stringify(options))}#schedule`);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Schedule', exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Read saved plan and status' })).toBeEnabled();
+}
+const counts = (page: Page) => page.getByRole('textbox', { name: 'Runs/day (blank = unlimited)' });
+const blocks = (page: Page) => page.getByRole('group', { name: /^Block / });
+const save = (page: Page) => page.getByRole('button', { name: 'Save schedule', exact: true });
+async function mapSunday(page: Page) {
+  await page.getByText('Weekday mapping', { exact: true }).click();
+  await page.getByLabel('Sunday', { exact: true }).fill('tourney_day');
+}
+async function screenshot(page: Page, name: string, width: number) {
+  await page.screenshot({ path: path.join(OUT, `schedule-${name}-${width}.png`), fullPage: true });
+}
+interface AxeResult {
+  readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
+}
+async function axe(page: Page) {
+  await page.addScriptTag({ path: AXE });
+  return page.evaluate(async () => {
+    const scope = window as unknown as {
+      axe: { run: (root: Document, options: unknown) => Promise<AxeResult> };
+    };
+    const result = await scope.axe.run(document, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
+    });
+    return result.violations.map((v) => `${v.id} (${v.nodes.length})`);
+  });
+}
+
+for (const width of widths) {
+  test(`S1 S2 S5 keyboard editing, day drafts and Runs/Profiles return at ${width}`, async ({
+    page,
+  }) => {
+    await open(page, width);
+    await expect(counts(page).first()).toHaveValue('100');
+    await counts(page).first().fill('1.00');
+    await page.getByRole('button', { name: 'tourney_day', exact: true }).click();
+    await expect(counts(page).first()).toHaveValue('1');
+    await page.getByRole('button', { name: 'farm_day', exact: true }).click();
+    await expect(counts(page).first()).toHaveValue('1.00');
+    const up = blocks(page).nth(1).getByRole('button', { name: 'Move up', exact: true });
+    await up.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('combobox', { name: 'Saved run' }).first()).toHaveValue('farm');
+    await expect(page.getByRole('combobox', { name: 'Saved run' }).first()).toBeFocused();
+    const remove = blocks(page).first().getByRole('button', { name: 'Delete block' });
+    await remove.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('combobox', { name: 'Saved run' }).first()).toBeFocused();
+    await expect(counts(page).first()).toHaveValue('1.00');
+    await blocks(page).first().getByRole('link', { name: 'Edit run in Runs' }).click();
+    await expect(page).toHaveURL(/#runs\/saved\/shards$/u);
+    await page.goBack();
+    await expect(counts(page).first()).toHaveValue('1.00');
+    await expect(
+      blocks(page).first().getByRole('link', { name: 'Edit run in Runs' }),
+    ).toBeFocused();
+    await page.getByRole('link', { name: 'Open Profiles', exact: true }).click();
+    await page.goBack();
+    await expect(counts(page).first()).toHaveValue('1.00');
+    await expect(page.getByRole('link', { name: 'Open Profiles', exact: true })).toBeFocused();
+    expect(await posts(page)).toEqual([]);
+    await screenshot(page, 'keyboard-draft', width);
+  });
+  test(`S2 S3 S4 invalid raw count and week mapping remain visible after refusal at ${width}`, async ({
+    page,
+  }) => {
+    await open(page, width, { save: 'profile_patch.count_fraction' });
+    await counts(page).first().fill('1.9999999999999999999');
+    await page.getByText('Weekday mapping', { exact: true }).click();
+    await page.getByLabel('Monday', { exact: true }).fill('unknown_day');
+    await save(page).click();
+    await expect(
+      page.getByText('Schedule save refused. Your draft is kept.', { exact: true }),
+    ).toBeVisible();
+    await expect(counts(page).first()).toHaveValue('1.9999999999999999999');
+    await expect(counts(page).first()).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByLabel('Monday', { exact: true })).toHaveValue('unknown_day');
+    const sent = await bodiesTo(page, '/api/profile-patch');
+    expect(sent).toHaveLength(1);
+    expect(sent[0]).toMatchObject({
+      name: 'mine',
+      path: ['plan'],
+      value: {
+        days: { farm_day: [{ count: '1.9999999999999999999' }, {}] },
+        week: { monday: 'unknown_day' },
+      },
+    });
+    expect(await axe(page)).toEqual([]);
+    await screenshot(page, 'refused', width);
+  });
+  test(`S3 unknown weekday mapping has an associated server error at ${width}`, async ({
+    page,
+  }) => {
+    await open(page, width, { save: 'profile_patch.week_names_an_unknown_day_plan' });
+    await page.getByText('Weekday mapping', { exact: true }).click();
+    const sunday = page.getByLabel('Sunday', { exact: true });
+    await sunday.fill('no_such_day');
+    await save(page).click();
+    await expect(sunday).toHaveValue('no_such_day');
+    await expect(sunday).toHaveAttribute('aria-invalid', 'true');
+    await expect(sunday).toHaveAccessibleDescription(/plan.week.sunday: unknown day plan/);
+    await expect(page.getByLabel('Monday', { exact: true })).not.toHaveAttribute('aria-invalid');
+    expect(await axe(page)).toEqual([]);
+    await screenshot(page, 'week-refused', width);
+  });
+  test(`S3 S4 coherent week save, readback, duplicate protection and newer typing at ${width}`, async ({
+    page,
+  }) => {
+    await open(page, width, {
+      delay: '700',
+      readback: 'profile_patch.read_after_the_stale_refusal_holds_the_other_clients_save',
+    });
+    await mapSunday(page);
+    await save(page).dblclick();
+    await expect(page.getByText(/Saving schedule/)).toBeVisible();
+    await counts(page).first().fill('601');
+    await expect(page.getByText(/Saved schedule\. This is not confirmation/)).toBeVisible();
+    await expect(counts(page).first()).toHaveValue('601');
+    await expect(page.getByText('Unsaved schedule draft', { exact: true })).toBeVisible();
+    expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
+    await page.getByRole('button', { name: 'Read saved plan and status' }).click();
+    await expect(page.getByRole('button', { name: 'Read saved plan and status' })).toBeEnabled();
+    await expect(page.getByLabel('Sunday', { exact: true })).toHaveValue('tourney_day');
+    await expect(counts(page).first()).toHaveValue('601');
+    await screenshot(page, 'saved-newer-draft', width);
+  });
+  test(`S3 S4 F6-SCHEDULE-01 delayed pre-save read cannot undo an accepted save at ${width}`, async ({
+    page,
+  }) => {
+    const startupEntered = gate();
+    const releaseStartup = gate();
+    await page.route('**/api/config', async (route) => {
+      startupEntered.release();
+      await releaseStartup.pending;
+      await route.continue();
+    });
+    await open(page, width, {
+      readback: 'profile_patch.read_after_the_stale_refusal_holds_the_other_clients_save',
+    });
+    await startupEntered.pending;
+    // The shell's Read button is enabled before the initial context/profile read.
+    // Exercise that cold start, then wait for the plan before arming the save/read gates.
+    await expect(page.getByText('Weekday mapping', { exact: true })).toHaveCount(0);
+    releaseStartup.release();
+    await mapSunday(page);
+    await expect(page.getByRole('button', { name: 'Read saved plan and status' })).toBeEnabled();
+    const saveEntered = gate();
+    const releaseSave = gate();
+    const readCaptured = gate();
+    const releaseRead = gate();
+    const readDelivered = gate();
+    let captureNextRead = false;
+    await page.route('**/api/profile-patch', async (route) => {
+      saveEntered.release();
+      await releaseSave.pending;
+      await route.continue();
+    });
+    await page.route('**/api/profile-src/mine', async (route) => {
+      if (!captureNextRead) {
+        await route.continue();
+        return;
+      }
+      captureNextRead = false;
+      const captured = await route.fetch();
+      const body: unknown = await captured.json();
+      expect(body).toEqual(pagesCase('profile_patch.read_before_the_first_save').body);
+      readCaptured.release();
+      await releaseRead.pending;
+      await route.fulfill({ response: captured });
+      readDelivered.release();
+    });
+    await save(page).click();
+    await saveEntered.pending;
+    const read = page.getByRole('button', { name: 'Read saved plan and status' });
+    captureNextRead = true;
+    await read.click();
+    await readCaptured.pending;
+    await expect(read).toBeDisabled();
+    releaseSave.release();
+    await expect(page.getByText('No unsaved changes', { exact: true })).toBeVisible();
+    const revision = String(
+      own(pagesCase('profile_patch.multi_save_first_request_saved').body, 'revision'),
+    );
+    await expect(page.locator('.tp-schedule__revisions')).toContainText(revision);
+    releaseRead.release();
+    await readDelivered.pending;
+    await expect(read).toBeEnabled();
+    await expect(page.getByLabel('Sunday', { exact: true })).toHaveValue('tourney_day');
+    await expect(page.locator('.tp-schedule__revisions')).toHaveText(
+      new RegExp(`${revision}.*${revision}`),
+    );
+    await expect(page.getByText('No unsaved changes', { exact: true })).toBeVisible();
+    await expect(page.getByText(/Saved schedule\. This is not confirmation/)).toBeVisible();
+    const stored = await page.request.get('/api/profile-src/mine');
+    expect(await stored.json()).toEqual(
+      pagesCase('profile_patch.read_after_the_stale_refusal_holds_the_other_clients_save').body,
+    );
+    expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
+    await screenshot(page, 'accepted-save-read-fence', width);
+  });
+  test(`S4 F6-SCHEDULE-02 accepted save clears an earlier validator error at ${width}`, async ({
+    page,
+  }) => {
+    await open(page, width, {
+      profile: 'profile_reads.profile_src_validator_unavailable_is_reported_not_hidden',
+    });
+    await expect(
+      page.getByText('RuntimeError: the validator could not be loaded', { exact: true }),
+    ).toBeVisible();
+    await mapSunday(page);
+    await save(page).click();
+    await expect(page.getByText(/Saved schedule\. This is not confirmation/)).toBeVisible();
+    await expect(
+      page.getByText('RuntimeError: the validator could not be loaded', { exact: true }),
+    ).toHaveCount(0);
+    await expect(page.getByText('No unsaved changes', { exact: true })).toBeVisible();
+    expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
+    expect(await axe(page)).toEqual([]);
+    await screenshot(page, 'recovered-validation', width);
+  });
+  test(`S6 observation, no fabricated quota, axe and no overflow at ${width}`, async ({ page }) => {
+    await open(page, width);
+    await expect(page.getByText('Farm', { exact: true })).toBeVisible();
+    await expect(page.getByText('UTC', { exact: true })).toBeVisible();
+    await expect(page.getByText('2027-01-16T00:00:00+00:00', { exact: true })).toBeVisible();
+    await expect(page.getByText('Remaining quota: not reported', { exact: true })).toHaveCount(2);
+    await expect(page.getByText('Next start: not reported', { exact: true })).toHaveCount(2);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+    const short = await page
+      .locator(
+        '.tp-schedule button, .tp-schedule input, .tp-schedule select, .tp-schedule__actions a',
+      )
+      .evaluateAll((nodes) =>
+        nodes
+          .filter(
+            (n) => n.getBoundingClientRect().height > 0 && n.getBoundingClientRect().height < 43.5,
+          )
+          .map((n) => n.textContent),
+      );
+    expect(short).toEqual([]);
+    expect(await axe(page)).toEqual([]);
+    expect(await posts(page)).toEqual([]);
+    await screenshot(page, 'observed', width);
+  });
+}
+
+test('S1 missing plan has no fake hours; unreadable profile has an explicit read retry', async ({
+  page,
+}) => {
+  await open(page, 390, {
+    profile: 'schedule_plan.profile_without_a_plan_has_no_plan_member',
+    status: 'schedule_plan.schedule_status_without_a_plan',
+  });
+  await expect(page.getByText(/This saved profile has no plan/)).toBeVisible();
+  await expect(save(page)).toHaveCount(0);
+  await screenshot(page, 'missing-plan', 390);
+  await open(page, 390, { profile: 'profile_reads.profile_src_unreadable_yaml_400' });
+  await expect(page.getByText(/Saved plan could not be read/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Read saved plan and status' })).toBeEnabled();
+});
+test('S2 deleting the last block stays an invalid empty day and restores focus to Add', async ({
+  page,
+}) => {
+  await open(page, 390, { save: 'profile_patch.day_emptied' });
+  while (await blocks(page).count())
+    await blocks(page).first().getByRole('button', { name: 'Delete block' }).click();
+  await expect(page.getByRole('button', { name: 'Add block' })).toBeFocused();
+  await expect(page.getByText(/This day has no blocks/)).toBeVisible();
+  await save(page).click();
+  await expect(page.getByText(/Schedule save refused/)).toBeVisible();
+  expect((await bodiesTo(page, '/api/profile-patch'))[0]).toMatchObject({
+    value: { days: { farm_day: [] } },
+  });
+  await page.getByRole('button', { name: 'Add block' }).click();
+  await expect(blocks(page)).toHaveCount(1);
+});
+test('S4 a lost answer settles by readback and preserves newer raw typing through reload', async ({
+  page,
+}) => {
+  await open(page, 1054, {
+    mode: 'drop',
+    delay: '700',
+    readback: 'profile_patch.read_after_the_stale_refusal_holds_the_other_clients_save',
+  });
+  await mapSunday(page);
+  await save(page).click();
+  await counts(page).first().fill('100.00');
+  await expect(page.getByText(/Schedule save outcome unknown/)).toBeVisible();
+  await page.reload();
+  await expect(page.getByText(/Readback confirms the submitted plan is saved/)).toBeVisible();
+  await expect(page.getByLabel('Sunday', { exact: true })).toHaveValue('tourney_day');
+  await expect(counts(page).first()).toHaveValue('100.00');
+  await expect(page.getByText('Unsaved schedule draft', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(counts(page).first()).toHaveValue('100.00');
+  expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
+  await screenshot(page, 'lost-answer-readback', 1054);
+});
+test('S4 stale profile revision requires read, explicit reconcile and a new Save click', async ({
+  page,
+}) => {
+  await open(page, 1360, {
+    save: 'profile_patch.stale_revision_409',
+    readback: 'profile_patch.read_after_a_partial_batch_holds_the_first_two',
+  });
+  await counts(page).first().fill('77');
+  await save(page).click();
+  await expect(page.getByText(/Schedule save refused/)).toBeVisible();
+  await expect(save(page)).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: 'Use read revision; keep my draft' }),
+  ).toBeDisabled();
+  await page.getByRole('button', { name: 'Read saved plan and status' }).click();
+  await expect(
+    page.getByRole('button', { name: 'Use read revision; keep my draft' }),
+  ).toBeEnabled();
+  await page.getByRole('button', { name: 'Use read revision; keep my draft' }).click();
+  await expect(counts(page).first()).toHaveValue('77');
+  await expect(save(page)).toBeEnabled();
+  expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
+  await screenshot(page, 'revision-reconciled', 1360);
+});
+// The two recorded families have different revision identities. These scenarios prove
+// concurrent refusal recovery only; a coherent shared-revision fixture is still needed.
+test('S4 concurrent Schedule/Runs refusal recovery keeps the losing Runs draft', async ({
+  page,
+  context,
+}) => {
+  await open(page, 1360, { race: 'true', delay: '800' });
+  const runs = await context.newPage();
+  await runs.goto('/ui/app/#runs/saved/bp_farm');
+  const saved = runs.locator('[data-region="runsSaved"]');
+  await expect(saved.getByRole('checkbox', { name: 'Ad gems On' })).toBeVisible();
+  await saved.getByRole('checkbox', { name: 'Ad gems On' }).uncheck();
+  await mapSunday(page);
+  await save(page).click();
+  await expect.poll(async () => (await bodiesTo(page, '/api/profile-patch')).length).toBe(1);
+  const refusal = runs.waitForResponse(
+    (response) =>
+      response.url().endsWith('/api/run-controls') && response.request().method() === 'POST',
+  );
+  await saved.getByRole('button', { name: 'Save run settings' }).click();
+  expect((await refusal).status()).toBe(409);
+  await expect(saved.getByText('Not saved', { exact: true })).toBeVisible();
+  await expect(saved.getByRole('checkbox', { name: 'Ad gems On' })).not.toBeChecked();
+  expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
+  expect(await bodiesTo(page, '/api/run-controls')).toHaveLength(1);
+  await expect(page.getByText(/Saved schedule\. This is not confirmation/)).toBeVisible();
+  await runs.close();
+});
+test('S4 concurrent Runs/Schedule refusal recovery keeps the Schedule draft', async ({
+  page,
+  context,
+}) => {
+  await open(page, 1054, {
+    race: 'true',
+    delay: '700',
+    readback: 'profile_patch.read_after_a_partial_batch_holds_the_first_two',
+  });
+  await counts(page).first().fill('77');
+  const runs = await context.newPage();
+  await runs.goto('/ui/app/#runs/saved/bp_farm');
+  const saved = runs.locator('[data-region="runsSaved"]');
+  await saved.getByRole('checkbox', { name: 'Ad gems On' }).uncheck();
+  await saved.getByRole('button', { name: 'Save run settings' }).click();
+  await expect.poll(async () => (await bodiesTo(page, '/api/run-controls')).length).toBe(1);
+  const response = page.waitForResponse(
+    (answer) => answer.url().endsWith('/api/profile-patch') && answer.request().method() === 'POST',
+  );
+  await save(page).click();
+  expect((await response).status()).toBe(409);
+  await expect(
+    page.getByText('Schedule save refused. Your draft is kept.', { exact: true }),
+  ).toBeVisible();
+  await expect(counts(page).first()).toHaveValue('77');
+  await expect(save(page)).toBeDisabled();
+  await page.getByRole('button', { name: 'Read saved plan and status' }).click();
+  await page.getByRole('button', { name: 'Use read revision; keep my draft' }).click();
+  await expect(save(page)).toBeEnabled();
+  await expect(counts(page).first()).toHaveValue('77');
+  expect(await bodiesTo(page, '/api/run-controls')).toHaveLength(1);
+  expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
+  await screenshot(page, 'runs-race-reconciled', 1054);
+  await runs.close();
+});
+for (const first of ['schedule', 'runs'] as const) {
+  test(`S4 shared profile revision race: ${first} saves first; explicit retry preserves both edits`, async ({
+    page,
+    context,
+  }) => {
+    const race = await scheduleRace(context, first);
+    await open(page);
+    await counts(page).first().fill('60');
+    const runs = await context.newPage();
+    await runs.goto('/ui/app/#runs/saved/bp_farm');
+    const saved = runs.locator('[data-region="runsSaved"]');
+    const adGems = saved.getByRole('checkbox', { name: 'Ad gems On' });
+    await adGems.uncheck();
+    const runSave = saved.getByRole('button', { name: 'Save run settings' });
+    await (first === 'schedule' ? save(page) : runSave).click();
+    await race.started;
+    await (first === 'schedule' ? runSave : save(page)).click();
+    await expect.poll(() => race.writes.length).toBe(2);
+    expect(race.writes.map((write) => write.status)).toEqual([200, 409]);
+    expect(own(race.writes[0]?.body, 'expected_revision')).toBe(
+      own(race.writes[1]?.body, 'expected_revision'),
+    );
+    race.releaseFirst();
+    if (first === 'schedule') {
+      await expect(page.getByText('No unsaved changes', { exact: true })).toBeVisible();
+      await expect(saved.getByText(/Not saved/)).toBeVisible();
+      await saved.getByRole('button', { name: 'Check saved values' }).click();
+      await expect(runSave).toBeEnabled();
+      await expect(adGems).not.toBeChecked();
+      expect(race.writes).toHaveLength(2);
+      await runSave.click();
+    } else {
+      await expect(saved.getByText('Saved', { exact: true })).toBeVisible();
+      await expect(page.getByText(/Schedule save refused/)).toBeVisible();
+      await page.getByRole('button', { name: 'Read saved plan and status' }).click();
+      await page.getByRole('button', { name: 'Use read revision; keep my draft' }).click();
+      await expect(counts(page).first()).toHaveValue('60');
+      await expect(save(page)).toBeEnabled();
+      expect(race.writes).toHaveLength(2);
+      await save(page).click();
+    }
+    await expect.poll(() => race.writes.length).toBe(3);
+    expect(race.writes[2]?.status).toBe(200);
+    expect(own(race.writes[2]?.body, 'expected_revision')).not.toBe(
+      own(race.writes[0]?.body, 'expected_revision'),
+    );
+    const profile: unknown = await page.evaluate(async (): Promise<unknown> => {
+      const body: unknown = await (await fetch('/api/profile-src/mine')).json();
+      return body;
+    });
+    const run: unknown = await runs.evaluate(async (): Promise<unknown> => {
+      const body: unknown = await (await fetch('/api/run-controls?blueprint=bp_farm')).json();
+      return body;
+    });
+    expect(profile).toEqual(race.finalProfile);
+    expect(run).toEqual(race.finalRun);
+    await expect(counts(page).first()).toHaveValue('60');
+    await expect(adGems).not.toBeChecked();
+    expect(race.writes).toHaveLength(3);
+    await runs.close();
+  });
+}
+test('S6 a fresh observation expires in the browser without a fabricated next start', async ({
+  page,
+}) => {
+  await page.clock.install();
+  await open(page);
+  await expect(page.getByText('Farm', { exact: true })).toBeVisible();
+  await page.clock.fastForward(91000);
+  const observation = page.getByRole('region', { name: 'Observed scheduler choice' });
+  await expect(observation.getByText(/Last observation is stale/)).toBeVisible();
+  await expect(
+    observation.getByText('No next clock check reported', { exact: true }),
+  ).toBeVisible();
+  await expect(observation.getByText('Previously observed choice', { exact: false })).toBeVisible();
+  expect(await posts(page)).toEqual([]);
+});
+for (const status of [
+  'available_no_winner',
+  'scheduler_not_observed',
+  'scheduler_not_running',
+  'scheduler_observation_stale',
+  'unknown_emulator',
+]) {
+  test(`S6 ${status} exposes a truthful observation state without sending game actions`, async ({
+    page,
+  }) => {
+    await open(page, 390, { status: `schedule_status.${status}` });
+    const observation = page.getByRole('region', { name: 'Observed scheduler choice' });
+    await expect(observation.getByText('2027-01-16T00:00:00+00:00', { exact: true })).toHaveCount(
+      0,
+    );
+    await expect(
+      observation.getByText(
+        /No eligible block reported|not reported running|Last observation is stale|unknown to this schedule report/,
+      ),
+    ).toBeVisible();
+    expect(await posts(page)).toEqual([]);
+    await screenshot(page, status, 390);
+  });
+}

@@ -1,0 +1,298 @@
+import { useEffect } from 'react';
+import type { PageTarget } from '../../ui/routes.ts';
+import { copy } from '../../copy/catalogue.ts';
+import type { CopyNode } from '../../copy/text.ts';
+import { selectRunsPage } from '../../store/selectors/runs.ts';
+import { Button } from '../../ui/Button.tsx';
+import { RegionBoundary } from '../../ui/RegionBoundary.tsx';
+import { Region, RegionBody, RegionEnd, RegionInline } from '../../ui/Region.tsx';
+import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
+import { Why } from '../../ui/Why.tsx';
+import {
+  FaultPoint,
+  useDashboard,
+  useEpochKey,
+  usePartError,
+  useView,
+} from '../dashboard/context.ts';
+import { RevocationFallback } from '../dashboard/shared/RevocationFallback.tsx';
+import { TopBar } from '../dashboard/topBar/TopBar.tsx';
+import { RunEditor } from './RunEditor.tsx';
+import { RunOutcome } from './RunOutcome.tsx';
+import './runs.css';
+
+const t = copy.runs;
+
+/** The previous Runs page keeps the shopping queue and the entry settings (brief RUN-14, RUN-17). */
+const PREVIOUS_RUNS = '/ui/index.html#runs';
+const RECOGNITION = '/ui/index.html#screens';
+
+function LiveSection() {
+  const vm = useView(selectRunsPage);
+  const { commands } = useDashboard();
+  const live = vm.live;
+  const line = live.outcome;
+  if (live.state !== 'tracked' || live.editor === null || !live.active) {
+    const entry =
+      live.state === 'tracked'
+        ? t.live.prepared
+        : live.state === 'none'
+          ? t.live.none
+          : t.live.unavailable;
+    const check = (
+      <Button
+        tier="quiet"
+        label={t.live.check.short}
+        focusKey="runs:check-battle"
+        onClick={commands.checkBattle}
+      />
+    );
+    // F6R-04: the lines of a battle no longer shown stay, each naming its battle.
+    return line === null && live.earlier.length === 0 ? (
+      <RegionInline>
+        <span>{entry.short}</span>
+        {check}
+      </RegionInline>
+    ) : (
+      <RegionBody>
+        <p className="tp-runs__note">
+          <span>{entry.short}</span>
+          {check}
+        </p>
+        {live.earlier.map((earlier) => (
+          <RunOutcome key={earlier.line.id} outcome={earlier} />
+        ))}
+        {line === null ? null : <RunOutcome outcome={line} />}
+      </RegionBody>
+    );
+  }
+  return (
+    <>
+      <RegionEnd>
+        <span className="tp-runs__battle">
+          {live.label === null ? null : <ServerValue kind="name" value={live.label} />}
+          {live.wave === null ? null : <span>{copy.dashboard.thisBattle.wave(live.wave)}</span>}
+        </span>
+      </RegionEnd>
+      <RegionBody>
+        <div className="tp-runs__scope">
+          <span>{t.live.scope.short}</span>
+          <Why why={t.live.scope.why} />
+        </div>
+        {live.boundsKnown ? null : (
+          <div className="tp-runs__note">
+            <span>{t.live.boundsUnknown.short}</span>
+            <Why why={t.live.boundsUnknown.why} />
+          </div>
+        )}
+        <RunEditor
+          editor={live.editor}
+          live
+          saveLabel={t.live.save}
+          onSave={(command) => {
+            void commands.saveLive(command);
+          }}
+          extra={
+            <Button
+              tier="quiet"
+              label={t.live.check.short}
+              focusKey="runs:check-battle"
+              onClick={commands.checkBattle}
+            />
+          }
+        />
+        {line === null ? null : <RunOutcome outcome={line} />}
+        {live.earlier.map((earlier) => (
+          <RunOutcome key={earlier.line.id} outcome={earlier} />
+        ))}
+      </RegionBody>
+    </>
+  );
+}
+
+function SavedSection() {
+  const vm = useView(selectRunsPage);
+  const { commands } = useDashboard();
+  const saved = vm.saved;
+  const line = saved.outcome;
+  return (
+    <>
+      <RegionEnd>
+        {saved.readAgeSec === null ? null : <span>{t.readAge(saved.readAgeSec)}</span>}
+      </RegionEnd>
+      <RegionBody>
+        <div className="tp-runs__picker">
+          <label className="tp-runs__picker-label">
+            <span>{t.saved.picker.short}</span>
+            <select
+              value={saved.run ?? ''}
+              data-focus-key="runs:run"
+              onChange={(event) => {
+                commands.openRuns(true, event.currentTarget.value);
+              }}
+            >
+              {saved.runs.length === 0 && saved.run === null ? (
+                <option value="">{t.saved.noRuns.short}</option>
+              ) : null}
+              {saved.run !== null && !saved.runListed && saved.runName !== null ? (
+                <ServerOption value={saved.run} label={saved.runName} />
+              ) : null}
+              {saved.runs.map((run) =>
+                run.label === null ? (
+                  <option key={run.key} value={run.key}>
+                    {t.saved.unnamedRun.short}
+                  </option>
+                ) : (
+                  <ServerOption key={run.key} value={run.key} label={run.label} />
+                ),
+              )}
+            </select>
+          </label>
+          {saved.readiness === null ? null : (
+            <span className="tp-runs__readiness">
+              {
+                copy.dashboard.startNext.readiness[
+                  saved.readiness === 'images_missing' ? 'not_ready' : saved.readiness
+                ].short
+              }
+            </span>
+          )}
+          <a href={RECOGNITION}>{t.saved.prepare.short}</a>
+        </div>
+        {saved.run !== null && !saved.runListed ? (
+          <p className="tp-runs__note" data-run-unlisted="true">
+            {t.saved.notListed.short}
+          </p>
+        ) : null}
+        {saved.comboListed ? <p className="tp-runs__note">{t.saved.combo.short}</p> : null}
+        <div className="tp-runs__scope">
+          <span>{t.saved.scope.short}</span>
+          <Why why={t.saved.scope.why} />
+        </div>
+        {saved.notice === null ? null : (
+          <p className="tp-runs__note">
+            <ServerValue kind="message" value={saved.notice} />
+          </p>
+        )}
+        {saved.read === 'not_read' ? <p>{t.saved.reading.short}</p> : null}
+        {saved.read === 'unavailable' ? (
+          <p className="tp-runs__note">
+            <span>{t.saved.unavailable.short}</span>
+            {saved.readError === null ? null : (
+              <ServerValue kind="message" value={saved.readError} />
+            )}
+            {/* SR-8: reading the run again stays possible while its read fails. */}
+            <Button
+              tier="quiet"
+              label={t.saved.check.short}
+              focusKey="runs:check"
+              onClick={commands.checkRun}
+            />
+          </p>
+        ) : null}
+        {saved.editor === null ? null : (
+          <RunEditor
+            editor={saved.editor}
+            live={false}
+            saveLabel={t.saved.save}
+            onSave={(command) => {
+              void commands.saveRun(command);
+            }}
+            extra={
+              <Button
+                tier="quiet"
+                label={t.saved.check.short}
+                focusKey="runs:check"
+                onClick={commands.checkRun}
+              />
+            }
+          />
+        )}
+        {line === null ? null : <RunOutcome outcome={line} />}
+        <p className="tp-runs__links">
+          <a href={PREVIOUS_RUNS}>{t.saved.previousPage.short}</a>
+        </p>
+      </RegionBody>
+    </>
+  );
+}
+
+function RunsRegion({
+  id,
+  part,
+  title,
+  children,
+}: {
+  readonly id: string;
+  readonly part: 'runsLive' | 'runsSaved';
+  readonly title: typeof t.live.title;
+  readonly children: CopyNode;
+}) {
+  return (
+    <Region
+      id={id}
+      title={title.short}
+      fallback={<RevocationFallback part={part} />}
+      resetKey={useEpochKey()}
+      onError={usePartError(part)}
+    >
+      <FaultPoint part={part} />
+      {children}
+    </Region>
+  );
+}
+
+/**
+ * The Runs page (brief RUN-01 to RUN-13): this battle's live settings, then
+ * the saved settings of a run, each its own region with its own boundary
+ * (a fallback keeps Pause harvesting and Turn input off). Opening it tells
+ * the store which run to read; a route target focuses its section heading.
+ */
+export function RunsPage({
+  target,
+}: {
+  /** The route's target (app/router.ts `#runs/live`, `#runs/saved/<run>`); others open nothing. */
+  readonly target: PageTarget | null;
+}) {
+  const { commands } = useDashboard();
+  const run = target?.kind === 'saved' ? target.run : null;
+  const focus = target?.kind === 'live' || target?.kind === 'saved' ? target.kind : null;
+  useEffect(() => {
+    commands.openRuns(true, run);
+  }, [commands, run]);
+  useEffect(
+    () => () => {
+      commands.openRuns(false, null);
+    },
+    [commands],
+  );
+  useEffect(() => {
+    if (focus === null) return;
+    document.getElementById(focus === 'live' ? 'runsLive-title' : 'runsSaved-title')?.focus();
+  }, [focus, run]);
+  return (
+    <>
+      <header className="tp-topbar">
+        <RegionBoundary
+          fallback={<RevocationFallback part="topBar" />}
+          resetKey={useEpochKey()}
+          onError={usePartError('topBar')}
+        >
+          <FaultPoint part="topBar" />
+          <TopBar title={t.pageName.short} />
+        </RegionBoundary>
+      </header>
+      <main id="main" className="tp-main" tabIndex={-1}>
+        <FaultPoint part="page" />
+        <div className="tp-runs">
+          <RunsRegion id="runsLive" part="runsLive" title={t.live.title}>
+            <LiveSection />
+          </RunsRegion>
+          <RunsRegion id="runsSaved" part="runsSaved" title={t.saved.title}>
+            <SavedSection />
+          </RunsRegion>
+        </div>
+      </main>
+    </>
+  );
+}

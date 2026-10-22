@@ -1,0 +1,117 @@
+.tp-advanced {
+  display: grid;
+  gap: var(--tp-space-4, 1rem);
+  min-width: 0;
+}
+.tp-advanced * {
+  min-width: 0;
+}
+.tp-advanced p,
+.tp-advanced li,
+.tp-advanced summary {
+  overflow-wrap: anywhere;
+}
+.tp-advanced details {
+  margin-block: 0.65rem;
+}
+.tp-advanced summary {
+  cursor: pointer;
+  min-height: 24px;
+  padding-block: 0.35rem;
+}
+.tp-advanced__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.tp-advanced__field {
+  display: grid;
+  gap: 0.35rem;
+  margin-block: 0.7rem;
+}
+.tp-advanced__field input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0.5rem;
+  color: var(--tp-color-text);
+  background: var(--tp-color-surface-inner);
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: var(--tp-radius-control, 4px);
+}
+.tp-advanced__coordinates {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+.tp-advanced__snapshot,
+.tp-advanced__crop-frame {
+  position: relative;
+  width: min(100%, 340px);
+  margin-block: 0.75rem;
+}
+.tp-advanced__crop-frame {
+  touch-action: none;
+  cursor: crosshair;
+}
+.tp-advanced__snapshot img,
+.tp-advanced__crop-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.tp-advanced svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.tp-advanced svg rect {
+  fill: none;
+  stroke: var(--tp-color-warn);
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+}
+.tp-advanced__library {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+.tp-advanced__library img {
+  display: block;
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  margin-block: 0.5rem;
+}
+@media (max-width: 500px) {
+  .tp-advanced__coordinates {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tp-advanced button {
+    min-height: 44px;
+  }
+}
+
+.tp-advanced__frame-scroll {
+  max-width: 100%;
+  max-height: 80vh;
+  overflow: auto;
+}
+.tp-advanced__crop-frame[data-full-size='true'] {
+  width: max-content;
+}
+.tp-advanced__crop-frame[data-full-size='true'] img {
+  width: auto;
+  max-width: none;
+}
+
+.tp-advanced p > .tp-server {
+  margin-inline-start: 0.35em;
+}
+.tp-advanced [role='status'] > .tp-server {
+  display: block;
+}

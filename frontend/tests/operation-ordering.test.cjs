@@ -126,7 +126,9 @@ test('Stop names the observed operation and revision without fetching a new targ
 });
 
 function runnerCommands(processes=[]){
-  const calls=[],messages=[],ctx=vm.createContext({S:{status:{processes}},confirm:()=>true,post:async(path,body)=>calls.push({path,body}),toast:(message)=>messages.push(message),loadStatus:()=>{},setTimeout:()=>{},renderRunner:()=>{},encodeURIComponent});
+  // (the shared stop sender restates each answer per context: it reads the selection and the stop-result reader)
+  const calls=[],messages=[],ctx=vm.createContext({S:{config:config(),status:{processes}},confirm:()=>true,post:async(path,body)=>calls.push({path,body}),toast:(message)=>messages.push(message),loadStatus:()=>{},setTimeout:()=>{},renderRunner:()=>{},encodeURIComponent,
+    LearningStore,DashboardView:require('../webui/dashboard-view.js'),$:()=>null,renderOwnerRefusal:()=>{}});
   vm.runInContext(section('async function killPid(','async function setAutomationAccess('),ctx);
   vm.runInContext(section('async function ctl(','/* ------------------------------------------------------------- day plan'),ctx);
   return {ctx,calls,messages};
@@ -138,8 +140,11 @@ test('tracked Stop cancels the rendered operation instead of the currently reuse
   assert.equal(p.calls.length,1);
 });
 test('only an untracked legacy worker can use PID cancellation',async()=>{
-  const p=runnerCommands([{pid:42,runner:'orchestrator'}]);await p.ctx.killPid(42);
-  assert.equal(p.calls[0].path,'/api/control');assert.equal(p.calls[0].body.action,'kill');assert.equal(p.calls[0].body.pid,42);
+  // the kill names the exact row the person saw: its PID and start time (created); a PID alone is never sent
+  const p=runnerCommands([{pid:42,runner:'orchestrator',created:1790000000.123456}]);await p.ctx.killPid(42);
+  assert.deepEqual(p.calls,[]);
+  await p.ctx.killRunner({dataset:{pid:'42',created:'1790000000.123456'}});
+  assert.equal(p.calls[0].path,'/api/control');assert.deepEqual(JSON.parse(JSON.stringify(p.calls[0].body)),{action:'kill',pid:42,created:1790000000.123456});
 });
 test('a missing operation reference never falls back to PID cancellation for a tracked worker',async()=>{
   const p=runnerCommands([{pid:42,operation:{id:'tracked',revision:4}}]);await p.ctx.killPid(42);
@@ -156,7 +161,7 @@ test('clear_flag carries the rendered original operation target',async()=>{
 test('rendered tracked controls retain operation revision and original instance after selection changes',()=>{
   const body={dataset:{},contains:()=>false},conf=config();conf.active_instance='new-selection';
   const ctx=vm.createContext({S:{config:conf,status:{processes:[{pid:42,runner:'orchestrator',operation:{id:'run-old',revision:6,kind:'run',context:{instance:'original'}}}]},runs:{}},
-    LearningStore,WorkspaceStatus,LearningView:require('../webui/learning-view.js'),$:key=>key === '#runner-body'?body:null,document:{activeElement:null},esc:String,renderRunReady:()=>{}});
+    LearningStore,WorkspaceStatus,LearningView:require('../webui/learning-view.js'),DashboardView:require('../webui/dashboard-view.js'),$:key=>key === '#runner-body'?body:null,document:{activeElement:null},esc:String,renderRunReady:()=>{},previewStartRun:()=>{}});
   vm.runInContext(section('function renderRunner(){','function renderRunReady('),ctx);ctx.renderRunner();
   assert.match(body.innerHTML,/data-operation-id="run-old" data-operation-revision="6" onclick="killPid/);
   assert.doesNotMatch(body.innerHTML,/ctl\('stop_after_run'/);
@@ -166,7 +171,7 @@ test('rendered tracked controls retain operation revision and original instance 
 
 function gemsPage(post){
   const messages=[],ctx=vm.createContext({S:{config:config()},LearningStore,crypto:{randomUUID:(()=>{let n=0;return ()=> 'gems-key-'+(++n);})()},
-    $:()=>({value:'bp_farm'}),post,toast:message=>messages.push(message),loadStatus:async()=>{}});
+    $:()=>({value:'bp_farm'}),post,toast:message=>messages.push(message),loadStatus:async()=>{},renderRunReady:()=>{}});
   vm.runInContext(section('async function startGemsOnly(){','async function startPreset('),ctx);
   return {ctx,messages};
 }

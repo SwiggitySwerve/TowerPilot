@@ -2,8 +2,25 @@
 :root { --sidebar-width: 14rem; --glass: #1b1d22; --glass-strong: #26292f; --glass-border: #34373e; --glass-inner: #1e2026; --pico-muted-color: #a0a5af; --pico-border-radius: 7px; --pico-card-background-color: #1b1d22; --pico-muted-border-color: #34373e; }
 html { background: #17191e; }
 body { height: 100dvh; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); overflow: hidden; background: #17191e; color: #e5e7eb; }
-body > header.topbar { min-height: 3.6rem; padding: .6rem 1rem; display: flex; align-items: center; position: static; background: #1b1d22; backdrop-filter: none; }
-.topbar-row { width: 100%; }
+body > header.topbar { min-height: 2.75rem; padding: 0 1rem 0 0; display: flex; align-items: center; position: static; background: #1b1d22; backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 1px solid var(--glass-border); }
+/* Header: app name over the sidebar column, the page title aligned with the
+   content, then "Account" (linked to Profiles) and "Emulator" with its adb
+   connection state and Reconnect. Labels are quiet; values carry the weight. */
+.topbar-row { width: 100%; min-width: 0; display: flex; align-items: center; flex-wrap: nowrap; gap: .9rem; }
+body > header.topbar .brand { flex: 0 0 var(--sidebar-width); align-self: stretch; display: flex; align-items: center; padding: 0 1rem; border-right: 1px solid var(--glass-border); font-size: .85rem; font-weight: 600; letter-spacing: 0; color: var(--pico-muted-color); }
+body > header.topbar #page-title { margin: 0 0 0 clamp(.1rem, calc(2.5vw - .9rem), 2.1rem); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1rem; font-weight: 650; line-height: 1.3; letter-spacing: 0; }
+body > header.topbar .header-status { flex: 0 1 auto; margin-left: auto; justify-content: flex-end; gap: .2rem 1.4rem; font-size: .84rem; }
+body > header.topbar .header-key { margin-right: .35rem; font-size: .76rem; color: var(--pico-muted-color); }
+body > header.topbar .header-account { color: inherit; text-decoration: none; white-space: nowrap; }
+body > header.topbar .header-account:hover .header-profile, body > header.topbar .header-account:focus-visible .header-profile { text-decoration: underline; }
+body > header.topbar .header-profile { font-weight: 600; opacity: 1; }
+body > header.topbar .header-emulator { color: #e5e7eb; overflow-wrap: anywhere; }
+body > header.topbar .connection-pill { margin: 0; padding: 0; min-height: 0; gap: .4rem; background: none; border: 0; border-radius: 0; font-size: inherit; white-space: normal; }
+body > header.topbar .connection-pill .dot { width: .5rem; height: .5rem; margin: 0 0 0 .2rem; }
+body > header.topbar .connection-pill .dot.warn { background: #f3cf5c; }
+body > header.topbar .header-connection { color: var(--pico-muted-color); white-space: nowrap; }
+body > header.topbar .connection-pill:has(.dot.bad) .header-connection { color: #ff8f86; font-weight: 600; }
+body > header.topbar .connection-pill:has(.dot.warn) .header-connection { color: #f3cf5c; font-weight: 600; }
 .app-shell { display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); min-height: 0; }
 .app-sidebar { min-height: 0; overflow-y: auto; padding: 1rem .65rem .7rem; background: #1b1d22; border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; }
 .app-sidebar nav { display: block; }
@@ -20,8 +37,15 @@ body > header.topbar { min-height: 3.6rem; padding: .6rem 1rem; display: flex; a
 #navigation-empty { padding: .6rem; }
 .app-sidebar a:focus-visible, .app-sidebar button:focus-visible { outline: 2px solid #7cbaff; outline-offset: 2px; }
 #view { width: 100%; min-width: 0; min-height: 0; max-width: none; overflow: auto; padding: 1.6rem clamp(1rem, 2.5vw, 3rem) 5rem; }
-.page-heading { margin-bottom: 1.5rem; }
-.page-heading h1 { font-size: 1.7rem; margin: 0 0 .4rem; letter-spacing: -.035em; }
+.page-heading { margin-bottom: 1rem; }
+/* Shared recovery notice for an action refused because a collector or another
+   driver owns the emulator; shown above every page until dismissed. */
+.owner-refusal { margin: 0 0 .9rem; padding: .55rem .75rem; border: 1px solid var(--glass-border); border-left: 3px solid #f3cf5c; border-radius: 6px; background: var(--glass); font-size: .86rem; }
+.owner-refusal p { margin: 0; overflow-wrap: anywhere; }
+.owner-refusal p + p { margin-top: .35rem; }
+.owner-refusal [data-tone="ok"] { color: #3ccf6a; }
+.owner-refusal [data-tone="bad"] { color: #ff8f86; }
+.owner-refusal button { height: 1.75rem; margin: 0 0 0 .35rem; padding: .05rem .6rem; font-size: .8rem; }
 .page-heading p { color: var(--pico-muted-color); margin: 0; font-size: .9rem; }
 [data-page-panel] { min-width: 0; }
 [hidden] { display: none !important; }
@@ -71,7 +95,10 @@ dialog article { background: #202329; border-radius: 10px; }
   .app-sidebar.is-open { display: block; }
   #view { grid-row: 2; padding: 1rem .8rem 5rem; }
   .settings-page .settings-field { display: block; }
-  .page-heading h1 { font-size: 1.5rem; }
-  .header-status { flex-basis: 100%; }
+  body > header.topbar { padding: .35rem .8rem; }
+  .topbar-row { flex-wrap: wrap; gap: .35rem .7rem; }
+  body > header.topbar .brand { display: none; }
+  body > header.topbar #page-title { margin-left: 0; }
+  body > header.topbar .header-status { flex-basis: 100%; margin-left: 0; justify-content: flex-start; }
   #savebar { width: calc(100% - 1rem); border-radius: 12px; flex-wrap: wrap; justify-content: center; }
 }

@@ -145,7 +145,7 @@
       reviewDiscoveries:!running && (incompleteCapture || attempt?.status === 'awaiting_apply'),
       workerAge:finite(lastAt) ? duration(now - lastAt) + ' ago' : 'Not recorded',
       checkedAge:finite(checkedAt) ? duration(now - checkedAt) + ' ago' : 'Not checked',
-      unavailable, running, saved:!!record || !!attempt, starting,targetText,returnEvidence,resetEvidence};
+      unavailable, running, saved:!!record || !!attempt, starting,targetText,returnEvidence,resetEvidence,restorePending};
   }
   function operationHTML(model) {
     const m = model, state = stepStates[m.state];
@@ -211,18 +211,44 @@
   /* The sentence naming why the emulator is not online, for Start blockers and the
      get-started card; no second full stop after a label that already ends in one. */
   const connectionReason = conn => `Emulator: ${conn.label}${conn.label.endsWith('.') ? '' : '.'} ${conn.hint}`;
-  /* Reasons every Start action is refused: emulator not online, game input
-     disabled. Per-run readiness (which already lists missing navigation screens)
-     is checked by the caller. Stop actions never consult this list. */
-  function startBlockers({status, config={}}) {
+  /* Reasons a launch is refused: emulator not online, game input disabled,
+     process discovery unconfirmed, and the setup-battle admission of its scope
+     (scope 'run' gates Start playing, scope 'collection' gates Collect diamonds
+     only and harvesting; the two guards are never combined). Per-run readiness
+     (which already lists missing navigation screens) is checked by the caller.
+     Stop actions never consult this list. */
+  function startBlockers({status, config={}, scope='run'}) {
     const inst = config.instances?.[config.active_instance] || {};
     const conn = connectionState(status);
     const out = [];
     if (!conn.online) out.push({id:'connection', text:connectionReason(conn), href:'#emulators', section:'setup-connection', link:'Check the connection'});
     if (!inst.allow_taps) out.push({id:'taps', text:'Game input is disabled. Tick “Allow automation to tap this emulator” in Live control.', href:'#overview', section:'card-runner', link:'Live control'});
     if(status?.process_refresh && status.process_refresh.state!=='fresh')out.push({id:'processes',text:'Automation process state is unconfirmed. Retry status before starting automation.',href:'#overview',section:'card-runner',link:'Live control'});
+    const setup = guardBlocker(status, scope);
+    if (setup) out.push(setup);
     return out;
   }
+  /* Setup-battle launch admission, computed by the server from the same device
+     key POST /api/control admits on: GET /api/status setup_battle_guard (scope
+     'run', Start playing) or collection_guard (scope 'collection', Collect
+     diamonds only and harvesting). Only an explicit blocks_launch === false
+     releases its actions, so a missing field (older server) is reported, never
+     read as permission. Before the first status read the connection blocker
+     already holds every launch. */
+  const GUARD_FIELDS = {run:'setup_battle_guard', collection:'collection_guard'};
+  function guardBlocker(status, scope='run') {
+    if (!status) return null;
+    const field = GUARD_FIELDS[scope] || GUARD_FIELDS.run;
+    const guard = status[field];
+    if (guard && guard.blocks_launch === false) return null;
+    const actions = scope === 'collection' ? 'Collect and harvesting stay' : 'Start stays';
+    const text = guard && typeof guard.message === 'string' && guard.message ? guard.message
+      : guard ? `The setup test battle has not been confirmed finished. ${actions} disabled.`
+      : `This server does not report ${field}. Restart the dashboard server; ${actions.toLowerCase()} disabled until it does.`;
+    return {id:scope === 'collection' ? 'collection_guard' : 'setup_battle', scope, code:guard?.code || null, text,
+      href:'#screens', section:'workspace-operation', link:'Setup details'};
+  }
+  const setupBattleBlocker = status => guardBlocker(status, 'run');
   const reasonHTML = reason => `<li>${escape(reason.text)} <a href="${reason.href}" data-workspace-section="${reason.section}">${escape(reason.link)}</a></li>`;
   /* The panel at the top of Control: the Start blockers plus runs whose readiness
      check reported not ready. Runs without a readiness entry are not listed. */
@@ -250,8 +276,7 @@
     const ready = checked.filter(name => readiness[name].ready === true);
     const conn = connectionState(status);
     // wizard/emulators rows (loaded on Setup) name the emulator behind the configured serial
-    const detected = emulators.find(row => row.adb_port && `127.0.0.1:${row.adb_port}` === inst.serial);
-    const emulatorName = detected ? [detected.emulator, detected.name].filter(Boolean).join(' ') : config.active_instance;
+    const emulatorName = emulatorNameOf(config, emulators);
     const blockedReconnect = status?.processes?.length && !['device','unconfigured'].includes(conn.key);
     return `<dl class="workspace-context-grid"><div><dt>Emulator</dt><dd>${escape(emulatorName || 'Not selected')}</dd><small>${escape(inst.serial || 'No connection selected')}</small></div>
       <div><dt>Connection</dt><dd class="${conn.verified ? 'ok' : status ? 'warn' : ''}">${escape(conn.label)}</dd><small>${escape(error ? 'Last known status. ' + conn.hint : conn.hint)}</small>${blockedReconnect ? '<small>Reconnect waits until automation stops; reconnecting can drop its connection.</small>' : ''}${conn.key === 'unconfigured' ? '<a href="#emulators" data-workspace-section="setup-connection">Choose emulator</a>' : ''}</div>
@@ -259,26 +284,43 @@
       <div><dt>Individual runs</dt><dd>${checked.length ? `${ready.length} of ${eligible.length} ready` : 'Not checked'}</dd><small>${checked.length < eligible.length ? 'Some readiness checks unavailable' : 'Saved-image checks; game can be closed'}</small></div></dl>
       ${error ? `<p class="status-warning" role="status">Live status unavailable; showing the last snapshot. ${escape(error)} <button class="small ghost" onclick="pollDashboard(true)">Retry status</button></p>` : ''}`;
   }
-  /* The header: the active profile's name and a compact connection pill with
-     the Reconnect action (adb's view of the configured serial, as contextHTML).
+  /* The emulator the header's connection state describes: its detected name when
+     the emulator inventory has been read, else the configured instance name. */
+  function emulatorNameOf(config={}, emulators=[]) {
+    const inst = config.instances?.[config.active_instance] || {};
+    const detected = (Array.isArray(emulators) ? emulators : []).find(row => row.adb_port && `127.0.0.1:${row.adb_port}` === inst.serial);
+    return detected ? [detected.emulator, detected.name].filter(Boolean).join(' ') : config.active_instance || '';
+  }
+  /* The header: "Account" (the active profile, linked to Profiles) and
+     "Emulator" (its name and adb's view of the configured serial, with the
+     Reconnect action). The adb state does not show whether the game or
+     automation is running, so the ready state reads "adb connected", never a
+     bare "Online". A failed status read keeps the last snapshot, labelled
+     "Last known" in the warning tone. The serial is in the tooltip only.
      While `reconnecting` (a POST /api/wizard/reconnect is in flight) the action is a
      disabled button, however the label changed since the click. */
-  function headerHTML({config={}, accounts={}, status, error='', reconnecting=false}) {
+  function headerHTML({config={}, accounts={}, status, error='', reconnecting=false, emulators=[]}) {
     const profile = (accounts.accounts || []).find(account => account.id === accounts.active);
     const conn = connectionState(status);
+    const inst = config.instances?.[config.active_instance] || {};
+    const name = emulatorNameOf(config, emulators);
     // /api/wizard/reconnect answers 409 while any runner (calibration included) is alive
     const action = conn.key === 'unconfigured' ? '<a href="#emulators" data-workspace-section="setup-connection">Choose emulator</a>'
       : !status || conn.key === 'device' ? ''
       : status.processes?.length ? '<button class="small ghost" disabled title="Stop running automation first; reconnecting can drop its connection.">Reconnect</button>'
       : reconnecting ? '<button class="small ghost" disabled>connecting…</button>'
       : '<button class="small ghost" onclick="reconnect(this)">Reconnect</button>';
-    const tone = conn.verified ? 'ok' : status ? 'bad' : 'unknown';
-    return `<span class="header-profile">${escape(profile?.label || 'No profile yet')}</span>
-      <span class="connection-pill" title="${escape(error ? 'Last known status. ' + conn.hint : conn.hint)}"><span class="dot ${tone}" aria-hidden="true"></span><span class="visually-hidden">Emulator: </span><span>${escape(conn.label)}</span>${action}</span>`;
+    const label = !status && error ? 'Status unavailable' : conn.key === 'device' ? 'adb connected' : conn.label;
+    const tone = error ? 'warn' : !status ? 'unknown' : conn.verified ? 'ok' : 'bad';
+    const title = [name, inst.serial, error ? 'Last known status: ' + error : '', conn.hint,
+      conn.key === 'device' ? 'This does not show whether the game or automation is running.' : ''].filter(Boolean).join(' · ');
+    return `<a class="header-account" href="#profiles" title="Profile whose settings and learned screens automation uses"><span class="header-key">Account</span> <span class="header-profile">${escape(profile?.label || 'No profile yet')}</span></a>
+      <span class="connection-pill" title="${escape(title)}"><span class="header-key">Emulator</span>${name ? ` <span class="header-emulator">${escape(name)}</span>` : ''} <span class="dot ${tone}" aria-hidden="true"></span><span class="header-connection">${escape(status && error ? 'Last known: ' + label : label)}</span>${action}</span>`;
   }
   /* The live-screen placeholder shown instead of any frame or stream request
      while the emulator is not online (Screens' live screen, Overview's stream). */
   function screenPlaceholderHTML(status) {
+    if (!status) return '<p class="screen-placeholder" role="status">Live screen waits for the first status read.\n        <small>The emulator connection has not been confirmed yet.</small></p>';
     const conn = connectionState(status);
     return `<p class="screen-placeholder" role="status">Live screen unavailable — emulator offline.
         <small>${escape(conn.label)}: ${escape(conn.hint)}</small></p>`;
@@ -331,5 +373,5 @@
         ${b.total ? `<p>${b.ready} of ${b.total} runs ready.</p>` : ''}${learnHTML}</section>` : ''}`;
   }
   return {stepStates, duration, describeSteps, phaseGroups, operation, operationHTML, contextHTML, headerHTML, screenPlaceholderHTML, stagesHTML,requirementHTML,selectOperation,
-    connectionState, connectionReason, startBlockers, controlBlockersHTML, getStarted, getStartedHTML};
+    connectionState, connectionReason, startBlockers, setupBattleBlocker, guardBlocker, emulatorName:emulatorNameOf, controlBlockersHTML, getStarted, getStartedHTML};
 });
