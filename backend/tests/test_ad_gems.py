@@ -17,11 +17,11 @@ def test_missing_offer_image_requires_both_claim_and_six(monkeypatch,tmp_path):
     monkeypatch.setattr(ad_gems.settings,'template_path',lambda _:tmp_path/'missing.png')
     frame=np.zeros((2560,1080,3),np.uint8)
     cv2.rectangle(frame,(15,400),(195,500),(255,255,0),4)
-    monkeypatch.setattr(textocr,'read_lines',lambda *a, **kwargs:[(20,20,'BUY 6')])
+    monkeypatch.setattr(textocr,'read_texts',lambda crops, **kwargs:['BUY 6']*len(crops))
     assert ad_gems.find_claim(frame) is None
-    monkeypatch.setattr(textocr,'read_lines',lambda *a, **kwargs:[(20,20,'CLAIM 20')])
+    monkeypatch.setattr(textocr,'read_texts',lambda crops, **kwargs:['CLAIM 20']*len(crops))
     assert ad_gems.find_claim(frame) is None
-    monkeypatch.setattr(textocr,'read_lines',lambda *a, **kwargs:[(20,20,'6 CLAIM')])
+    monkeypatch.setattr(textocr,'read_texts',lambda crops, **kwargs:['6 CLAIM']*len(crops))
     assert ad_gems.find_claim(frame) is not None
 
 def test_disabled_and_nonbattle_never_tap(monkeypatch):
@@ -210,7 +210,7 @@ def test_native_wide_offer_uses_amount_glyph_when_ocr_omits_six(monkeypatch,tmp_
     monkeypatch.setattr(ad_gems.settings,'template_path',lambda _:tmp_path/'missing.png')
     frame=np.zeros((2560,1080,3),np.uint8)
     cv2.rectangle(frame,(20,1270),(268,1418),(255,255,0),4)
-    monkeypatch.setattr(textocr,'read_lines',lambda *a, **kwargs:[(30,80,'CLAIM')])
+    monkeypatch.setattr(textocr,'read_texts',lambda crops, **kwargs:['CLAIM']*len(crops))
     observed=[]
     monkeypatch.setattr(ad_gems,'_six_amount',lambda p:observed.append(p.shape) or True)
     assert ad_gems.find_claim(frame)==(144,1344)
@@ -224,7 +224,7 @@ def test_offer_moves_with_effect_rows_and_closed_upgrade_panel(monkeypatch,tmp_p
     import numpy as np
     from vision import textocr
     monkeypatch.setattr(ad_gems.settings,'template_path',lambda _:tmp_path/'missing.png')
-    monkeypatch.setattr(textocr,'read_lines',lambda *a, **kwargs:[(20,30,'CLAIM 6')])
+    monkeypatch.setattr(textocr,'read_texts',lambda crops, **kwargs:['CLAIM 6']*len(crops))
     for top in (1120,1270,1390,2069):
         frame=np.zeros((2560,1080,3),np.uint8)
         cv2.rectangle(frame,(20,top),(268,top+148),(255,255,0),4)
@@ -752,19 +752,69 @@ def fallback_frame(monkeypatch, tmp_path):
     return frame
 
 
-def test_fallback_shares_remaining_time_and_limits_candidates(monkeypatch, observation_clock, fallback_frame):
+def test_fallback_batches_all_candidates_with_one_shared_budget(monkeypatch, observation_clock, fallback_frame):
     from vision import textocr
     now = observation_clock
     timeouts = []
-    def read_lines(patch, scale, *, timeout, raise_on_error):
+    def read_texts(crops, *, scales, timeout, raise_on_error):
         assert raise_on_error is True
+        assert scales == (2,)
+        assert len(crops) == 3
         timeouts.append(timeout)
         now[0] += .5
-        return []
-    monkeypatch.setattr(textocr, 'read_lines', read_lines)
-    with pytest.raises(ad_gems.RecognitionIncomplete, match='ocr_candidate_limit'):
-        ad_gems.find_claim_rect(fallback_frame)
-    assert timeouts == [2, 1.5]
+        return ['', '', 'CLAIM 6']
+    monkeypatch.setattr(textocr, 'read_texts', read_texts)
+    assert ad_gems.find_claim_rect(fallback_frame) == (18, 998, 185, 105)
+    assert timeouts == [2]
+
+
+def test_batch_never_combines_claim_and_amount_from_different_regions(monkeypatch, fallback_frame):
+    from vision import textocr
+    monkeypatch.setattr(textocr, 'read_texts', lambda crops, **kwargs: ['CLAIM', '6', 'BUY 6'])
+    monkeypatch.setattr(ad_gems, '_six_amount', lambda patch: False)
+    assert ad_gems.find_claim_rect(fallback_frame) is None
+
+
+def test_complete_batch_with_only_distractors_proves_absence(monkeypatch, fallback_frame):
+    from vision import textocr
+    monkeypatch.setattr(textocr, 'read_texts', lambda crops, **kwargs: ['', 'Health', '187.83T /'])
+    assert ad_gems.find_claim_rect(fallback_frame) is None
+
+
+def test_neutral_claim_time_border_still_requires_claim_and_six(monkeypatch, tmp_path):
+    import cv2
+    import numpy as np
+    from vision import textocr
+    monkeypatch.setattr(ad_gems.settings, 'template_path', lambda _: tmp_path/'missing.png')
+    frame = np.zeros((2560, 1080, 3), np.uint8)
+    cv2.rectangle(frame, (20, 1200), (268, 1348), (208,208,208), 4)
+    monkeypatch.setattr(textocr, 'read_texts', lambda crops, **kwargs: ['CLAIM 6']*len(crops))
+    assert ad_gems.find_claim_rect(frame) == (18, 1198, 253, 153)
+    monkeypatch.setattr(textocr, 'read_texts', lambda crops, **kwargs: ['Health 6']*len(crops))
+    assert ad_gems.find_claim_rect(frame) is None
+
+
+def test_neutral_visible_offer_after_input_does_not_confirm_reward(monkeypatch, tmp_path):
+    import cv2
+    import numpy as np
+    from vision import textocr
+    initial = np.zeros((2560, 1080, 3), np.uint8)
+    after = initial.copy()
+    cv2.rectangle(initial, (20, 1200), (268, 1348), (255,255,0), 4)
+    cv2.rectangle(after, (20, 1200), (268, 1348), (208,208,208), 4)
+    monkeypatch.setattr(ad_gems.settings, 'template_path', lambda _: tmp_path/'missing.png')
+    monkeypatch.setattr(textocr, 'read_texts', lambda crops, **kwargs: ['CLAIM 6']*len(crops))
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', lambda frame: 100)
+    frames = iter([initial, after])
+    monkeypatch.setattr(ad_gems.capture, 'grab', lambda: next(frames))
+    monkeypatch.setattr(ad_gems.time, 'sleep', lambda seconds: None)
+    taps = []
+    monkeypatch.setattr(ad_gems.act, 'tap', lambda *args, **kwargs: taps.append(args) or {})
+    collector = ad_gems.AdGemCollector(delay=(0, 0))
+    assert collector.poll(initial) is after
+    assert len(taps) == 1
+    assert collector.last_outcome['reason'] == 'offer_still_visible'
+    assert collector.counters['confirmed'] == 0
 
 
 @pytest.mark.parametrize('expired', [False, True])
@@ -772,41 +822,43 @@ def test_fallback_rejects_results_at_deadline_and_starts_no_work_after_it(monkey
     from vision import textocr
     now = observation_clock
     calls = []
-    def read_lines(patch, scale, *, timeout, **kwargs):
+    def read_texts(crops, *, timeout, **kwargs):
         calls.append(timeout)
         now[0] += timeout
-        return [(20, 20, 'CLAIM 6')]
-    monkeypatch.setattr(textocr, 'read_lines', read_lines)
+        return ['CLAIM 6']*len(crops)
+    monkeypatch.setattr(textocr, 'read_texts', read_texts)
     with pytest.raises(ad_gems.RecognitionIncomplete, match='recognition_deadline'):
         ad_gems.find_claim_rect(fallback_frame, deadline=100 if expired else 100.25)
     assert calls == ([] if expired else [.25])
 
 
 @pytest.mark.parametrize('stage', ['initial', 'fresh', 'confirmation'])
-@pytest.mark.parametrize('failure', ['timeout', 'candidates', 'engine_error'])
+@pytest.mark.parametrize('failure', ['timeout', 'truncated', 'engine_error', 'invalid_index'])
 def test_incomplete_recognition_never_authorizes_input_or_confirms_reward(monkeypatch, observation_clock, fallback_frame, stage, failure):
     import subprocess
     from vision import textocr
     observations = {'initial': 1, 'fresh': 2, 'confirmation': 3}
     target = observations[stage]
     reads, captures, taps = [], [], []
-    def read_lines(patch, scale, **kwargs):
+    def read_texts(crops, **kwargs):
         reads.append(kwargs)
         if len(reads) >= target:
             if failure == 'engine_error':
                 raise OSError('Windows OCR unavailable')
             if failure == 'timeout':
                 raise subprocess.TimeoutExpired('test OCR', kwargs['timeout'])
+            if failure == 'invalid_index':
+                raise ValueError('Windows OCR returned an invalid image index')
             return []
-        return [(20, 20, 'CLAIM 6')]
-    monkeypatch.setattr(textocr, 'read_lines', read_lines)
+        return ['CLAIM 6']*len(crops)
+    monkeypatch.setattr(textocr, 'read_texts', read_texts)
     monkeypatch.setattr(ad_gems.capture, 'grab', lambda: captures.append(True) or fallback_frame)
     monkeypatch.setattr(ad_gems.act, 'tap', lambda *args, **kwargs: taps.append(kwargs) or {})
     collector = ad_gems.AdGemCollector(delay=(0, 0))
     collector.poll(fallback_frame)
     status = collector.status()
     assert status['visibility'] == 'unknown'
-    assert status['visibility_reason'] == {'timeout': 'ocr_timeout', 'candidates': 'ocr_candidate_limit', 'engine_error': 'ocr_error'}[failure]
+    assert status['visibility_reason'] == ('ocr_timeout' if failure == 'timeout' else 'ocr_error')
     assert status['last_absent_at'] is None
     assert status['counters']['confirmed'] == 0
     assert len(taps) == (1 if stage == 'confirmation' else 0)
@@ -820,12 +872,12 @@ def test_initial_recognition_uses_remaining_window_and_closes_without_capture(mo
     from vision import textocr
     now = observation_clock
     timeouts = []
-    def read_lines(patch, scale, *, timeout, **kwargs):
+    def read_texts(crops, *, timeout, **kwargs):
         timeouts.append(timeout)
         if now[0] > 100:
             now[0] += timeout
-        return [(20, 20, 'CLAIM 6')]
-    monkeypatch.setattr(textocr, 'read_lines', read_lines)
+        return ['CLAIM 6']*len(crops)
+    monkeypatch.setattr(textocr, 'read_texts', read_texts)
     collector = ad_gems.AdGemCollector(delay=(1, 1))
     collector.poll(fallback_frame)
     now[0] = 159.5

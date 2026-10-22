@@ -17,7 +17,6 @@ import settings
 TEMPLATE = 'buttons/ad_gems_claim.png'
 EDGE_INSET_PX = AD_GEM_FIELDS['edge_inset_px']['default']
 OBSERVATION_TIMEOUT_SEC = 2.0
-MAX_OCR_CANDIDATES = 2
 
 
 class RecognitionIncomplete(Exception):
@@ -72,26 +71,42 @@ def find_claim_rect(frame, *, deadline=None):
         # verify its label. Both frames in poll must independently pass.
         from vision import textocr
         hsv=cv2.cvtColor(rail,cv2.COLOR_BGR2HSV)
-        mask=cv2.inRange(hsv,(75,60,150),(110,255,255))
-        contours,_=cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        candidates = sorted((cv2.boundingRect(contour) for contour in contours),
-                            key=lambda rect: (rect[1], rect[0]))
-        checked = 0
-        for x,y,w,h in candidates:
+        # At claim time the border can turn neutral gray while CLAIM and 6
+        # remain visible. Keep the masks separate: merging them connects
+        # unrelated bright battle art to otherwise usable cyan borders.
+        masks = (cv2.inRange(hsv,(75,60,150),(110,255,255)),
+                 cv2.inRange(rail,(180,180,180),(255,255,255)))
+        candidates = set()
+        for index, mask in enumerate(masks):
+            contours,_ = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+            for contour in contours:
+                x,y,w,h = cv2.boundingRect(contour)
+                if not (100 <= w <= 300 and 55 <= h <= 180):
+                    continue
+                # Neutral HUD bars often extend beyond the search rail.
+                # Only a closed rectangular border is a neutral candidate;
+                # its enclosed area, rather than stroke pixels, fills the box.
+                if index == 1 and cv2.contourArea(contour) < .85*w*h:
+                    continue
+                candidates.add((x,y,w,h))
+        candidates = sorted(candidates, key=lambda rect: (rect[1], rect[0]))
+        # Battle effects and health bars can precede the offer. OCR every
+        # eligible crop independently in one process, sharing the original
+        # deadline; a top-to-bottom count cap starves lower HUD offers.
+        crops = [rail[y:y+h,x:x+w] for x,y,w,h in candidates]
+        try:
+            texts = textocr.read_texts(crops, scales=(2,),
+                                       timeout=_remaining(deadline), raise_on_error=True)
+        except subprocess.TimeoutExpired as exc:
+            raise RecognitionIncomplete('ocr_timeout') from exc
+        except (OSError, ValueError, subprocess.SubprocessError) as exc:
+            raise RecognitionIncomplete('ocr_error') from exc
+        _remaining(deadline)
+        if len(texts) != len(candidates):
+            raise RecognitionIncomplete('ocr_error')
+        for (x,y,w,h), text in zip(candidates, texts):
             _remaining(deadline)
-            if not (100<=w<=300 and 55<=h<=180): continue
-            if checked >= MAX_OCR_CANDIDATES:
-                raise RecognitionIncomplete('ocr_candidate_limit')
-            checked += 1
-            try:
-                rows = textocr.read_lines(rail[y:y+h,x:x+w], 2,
-                                          timeout=_remaining(deadline), raise_on_error=True)
-            except subprocess.TimeoutExpired as exc:
-                raise RecognitionIncomplete('ocr_timeout') from exc
-            except (OSError, subprocess.SubprocessError) as exc:
-                raise RecognitionIncomplete('ocr_error') from exc
-            _remaining(deadline)
-            text=' '.join(t for _,_,t in rows).upper()
+            text = text.upper()
             matched = (re.search(r'\bCLAIM\b',text)
                        and (re.search(r'\b6\b',text) or _six_amount(rail[y:y+h,x:x+w])))
             _remaining(deadline)
