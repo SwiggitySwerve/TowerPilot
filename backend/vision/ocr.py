@@ -26,6 +26,14 @@ _glyph_cache: dict[str, dict[str, np.ndarray]] = {}
 GEM_BALANCE_REGION = (90, 190, 240, 60)
 
 
+def gem_balance_crop(frame: np.ndarray) -> np.ndarray | None:
+    """The exact counter pixels used by the reader and failure diagnostics."""
+    if getattr(frame, 'shape', None) != (2560, 1080, 3):
+        return None
+    x, y, w, h = GEM_BALANCE_REGION
+    return frame[y:y+h, x:x+w]
+
+
 def read_gem_balance(frame: np.ndarray) -> int | None:
     """Strict integer-only HUD read; unknown/cropped glyphs fail closed.
 
@@ -35,10 +43,10 @@ def read_gem_balance(frame: np.ndarray) -> int | None:
     battle art clipped at the lower crop edge may follow a clear gutter;
     overlapping components must also be too wide for a digit in this font.
     """
-    x, y, w, h = GEM_BALANCE_REGION
-    if frame.shape[:2] != (2560, 1080):
+    crop = gem_balance_crop(frame)
+    if crop is None:
         return None
-    crop = frame[y:y+h, x:x+w]
+    h, w = crop.shape[:2]
     glyphs = {ch: tpl for ch, tpl in _load().items() if len(ch) == 1 and ch.isdigit()}
     if len(glyphs) != 10:
         return None

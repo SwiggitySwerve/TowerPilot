@@ -183,6 +183,122 @@ def test_unreadable_baseline_does_not_tap(cycle):
     assert state.events[-1] == ('gem_orbit_skip', {'reason': 'balance_unreadable'})
 
 
+@pytest.mark.parametrize('stage', ['prior', 'fresh', 'between_taps'])
+def test_unreadable_observation_retains_dispatched_attempt_for_later_stable_confirmation(cycle, monkeypatch, stage):
+    state, tapper = cycle
+    tapper.poll(200)
+    dispatched = len(state.taps)
+    state.now = 105
+    if stage == 'prior':
+        tapper.poll(None)
+    elif stage == 'fresh':
+        state.balance = None
+        tapper.poll(200)
+    else:
+        frames = iter([200, None])
+        monkeypatch.setattr(shard.capture, 'grab', lambda: next(frames))
+        tapper.poll(200)
+        monkeypatch.setattr(shard.capture, 'grab', lambda: state.balance)
+    assert len(state.taps) == dispatched
+    assert tapper.balance_before == 200 and tapper.sent_tap
+    assert tapper.window_ends_at == 160
+    assert not any(k == 'gem_orbit_claim' for k, _ in state.events)
+    state.balance = 202
+    state.now = tapper.next_at
+    tapper.poll(202)
+    assert len(state.taps) == dispatched
+    assert next(data for kind, data in state.events if kind == 'gem_orbit_claim')['confirmed'] is True
+
+
+@pytest.mark.parametrize('final_balance', [None, 206, 199])
+def test_paused_attempt_never_guesses_or_confirms_other_rewards(cycle, final_balance):
+    state, tapper = cycle
+    tapper.poll(200)
+    state.balance = None
+    state.now = 105
+    tapper.poll(None)
+    state.balance = final_balance
+    state.now = 120
+    tapper.poll(final_balance)
+    assert len(state.taps) == 3
+    assert not any(k == 'gem_orbit_claim' and data['confirmed'] for k, data in state.events)
+
+
+@pytest.mark.parametrize('prior,fresh', [(None, 206), (206, None), (None, 199),
+                                       (199, None), (206, 202), (199, 202)])
+def test_partial_or_unstable_pair_cannot_hide_a_conflicting_read(cycle, prior, fresh):
+    state, tapper = cycle
+    tapper.poll(200)
+    state.now, state.balance = 105, fresh
+    tapper.poll(prior)
+    assert tapper.balance_before is None and not tapper.sent_tap
+    state.now, state.balance = tapper.next_at, 202
+    tapper.poll(202)
+    assert not any(kind == 'gem_orbit_claim' and data['confirmed'] for kind, data in state.events)
+
+
+@pytest.mark.parametrize('prior,fresh', [(None, 202), (202, None)])
+def test_partial_expected_reward_still_needs_later_stable_pair(cycle, prior, fresh):
+    state, tapper = cycle
+    tapper.poll(200)
+    state.now, state.balance = 105, fresh
+    tapper.poll(prior)
+    assert tapper.balance_before == 200 and tapper.sent_tap
+    assert not any(kind == 'gem_orbit_claim' for kind, _ in state.events)
+    state.now, state.balance = tapper.next_at, 202
+    tapper.poll(202)
+    assert next(data for kind, data in state.events if kind == 'gem_orbit_claim')['confirmed'] is True
+    assert len(state.taps) == 3
+
+
+def test_paused_attempt_expires_without_reusing_its_baseline_next_window(cycle):
+    state, tapper = cycle
+    tapper.poll(200)
+    state.balance = None
+    state.now = 105
+    tapper.poll(None)
+    state.now = 160
+    tapper.poll(None)
+    assert ('gem_orbit_claim', dict(confirmed=False, reason='attempt_timeout', before=200, after=None)) in state.events
+    assert tapper.balance_before is None and not tapper.sent_tap
+    state.balance = 202
+    state.now = 1060
+    tapper.poll(202)
+    assert len(state.taps) == 6
+    assert not any(k == 'gem_orbit_claim' and data['confirmed'] for k, data in state.events)
+
+
+def test_unknown_counter_diagnostic_saves_only_supplied_crop_once_per_window(cycle, monkeypatch):
+    import cv2
+    import numpy as np
+
+    from vision.ocr import GEM_BALANCE_REGION
+
+    state, tapper = cycle
+    frame = np.zeros((2560, 1080, 3), np.uint8)
+    x, y, w, h = GEM_BALANCE_REGION
+    frame[y:y+h, x:x+w] = (30, 40, 50)
+    monkeypatch.setattr(shard, 'read_gem_balance', lambda _: None)
+    monkeypatch.setitem(shard.CONFIG['logging'], 'screenshot_on_trigger', True)
+    tapper.poll(frame)
+    [diagnostic] = [data for kind, data in state.events if kind == 'gem_orbit_balance_unreadable']
+    assert diagnostic['stage'] == 'prior'
+    assert diagnostic['before'] is None and diagnostic['tap_sent'] is False
+    path = shard.logger.run_file().parent / diagnostic['counter_frame']
+    saved = cv2.imread(str(path))
+    assert saved.shape == (h, w, 3)
+    assert np.array_equal(saved, frame[y:y+h, x:x+w])
+    state.now = 115
+    tapper.poll(frame)
+    assert len(list(path.parent.glob('*gem_balance_unreadable*.png'))) == 1
+    state.now = 160
+    tapper.poll(frame)
+    state.now = 1060
+    tapper.poll(frame)
+    assert len(list(path.parent.glob('*gem_balance_unreadable*.png'))) == 2
+    assert state.taps == []
+
+
 def test_dry_run_cannot_confirm_a_collection(cycle):
     state, tapper = cycle
     state.dry = True

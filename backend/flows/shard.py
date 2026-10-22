@@ -56,7 +56,7 @@ from runtime import logger
 from scheduling import runflag
 from vision import screen
 from vision import wave_reader
-from vision.ocr import read_gem_balance
+from vision.ocr import gem_balance_crop, read_gem_balance
 from player.gather_settings import ORBIT_TIMING_FIELDS, validate_orbit_timing
 import settings
 from settings import CONFIG
@@ -380,6 +380,23 @@ class GemOrbitTapper:
         self.attempt_started = None
         self.sent_tap = False
         self.manual_active = False
+        self._balance_diagnostic_written = False
+
+    def _balance_unreadable(self, frame, stage):
+        # Keep the exact supplied pixels, once per window; never capture again
+        # here or turn an unknown reading into evidence of a reward.
+        if not self._balance_diagnostic_written:
+            self._balance_diagnostic_written = True
+            crop = gem_balance_crop(frame)
+            filename = logger.shot(crop, 'gem_balance_unreadable') if crop is not None else None
+            logger.event('gem_orbit_balance_unreadable', stage=stage,
+                         counter_frame=filename, before=self.balance_before,
+                         tap_sent=self.sent_tap)
+        self._backoff('balance_unreadable')
+
+    def _is_collection_balance(self, value: int | None) -> bool:
+        return (self.balance_before is not None and self.sent_tap
+                and value == self.balance_before + 2)
 
     def _backoff(self, reason):
         self.last_refusal = dict(reason=reason, observed_at=time.time(),
@@ -387,8 +404,12 @@ class GemOrbitTapper:
         if reason != self._last_skip:
             logger.event("gem_orbit_skip", reason=reason)
             self._last_skip = reason
-        self.balance_before = None
-        self.sent_tap = False
+        if reason != 'balance_unreadable':
+            self.balance_before = None
+            self.sent_tap = False
+        # A temporary unknown is not a changed balance. Retain the verified
+        # before/tap evidence, send no input, and await another stable pair
+        # within this same bounded window. Expiry still clears the attempt.
         self.next_at = min(time.monotonic() + self.retry_backoff, self.window_ends_at)
 
     def points(self):
@@ -444,6 +465,7 @@ class GemOrbitTapper:
         if wave_reader.read_wave(frame) is None:
             self._backoff("no_wave")
             return frame
+        prior_frame = frame
         prior_balance = read_gem_balance(frame)
         frame = capture.grab()
         if self.guard is not None:
@@ -454,11 +476,21 @@ class GemOrbitTapper:
         balance = read_gem_balance(frame)
         if self._expire_attempt(balance):
             return frame
+        # Unknown or not-yet-stable pairs must not hide a readable conflicting
+        # amount. Only the baseline and a dispatched tap's expected reward are
+        # compatible; confirming that reward still requires both fresh reads.
+        if self.balance_before is not None and any(
+                value is not None and value != self.balance_before
+                and not self._is_collection_balance(value)
+                for value in (prior_balance, balance)):
+            self._backoff('balance_changed_without_confirmation')
+            return frame
         if balance is None or prior_balance is None:
-            self._backoff("balance_unreadable")
+            self._balance_unreadable(prior_frame if prior_balance is None else frame,
+                                     'prior' if prior_balance is None else 'fresh')
             return frame
         if self.balance_before is not None and balance != self.balance_before:
-            if self.sent_tap and balance == self.balance_before + 2:
+            if self._is_collection_balance(balance):
                 if prior_balance == balance:
                     pause = max(0.0, self.next_window_at - time.monotonic())
                     logger.event("gem_orbit_claim", confirmed=True,
@@ -500,10 +532,12 @@ class GemOrbitTapper:
             if self._expire_attempt(balance):
                 return frame
             if balance != self.balance_before:
-                if self.sent_tap and balance == self.balance_before + 2:
+                if self._is_collection_balance(balance):
                     self.next_at = time.monotonic() + self.retry_interval
+                elif balance is None:
+                    self._balance_unreadable(frame, 'pre_tap')
                 else:
-                    self._backoff("balance_unreadable" if balance is None else "balance_changed_without_confirmation")
+                    self._backoff("balance_changed_without_confirmation")
                 return frame
             if _in_ability_row((x, y)):
                 self._backoff("ability_row")
