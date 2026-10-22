@@ -683,7 +683,10 @@ describe('Runs page: review fixes (F6R-02 to F6R-07)', () => {
     battle = () => withKeyedCommand(key);
     await page.user.click(within(liveRegion()).getByRole('button', { name: 'Check this battle' }));
     await page.advance(1_000);
-    expect(within(liveRegion()).getByText('A later read lists this change')).toBeVisible();
+    // The keyed command copies the recorded controls command, which the battle applied, so the
+    // settled line says so (F6-11-IR-01); a listed command still waiting reads "A later read
+    // lists this change" (tests/features/runs/runsLeftovers.test.tsx).
+    expect(within(liveRegion()).getByText('Applied to this battle')).toBeVisible();
     expect(
       within(liveRegion()).queryByRole('button', { name: 'Send same request again' }),
     ).toBeNull();

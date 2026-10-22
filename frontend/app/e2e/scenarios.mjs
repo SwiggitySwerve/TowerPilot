@@ -878,6 +878,18 @@ export const SCENARIOS = Object.freeze({
       },
     },
   },
+  runs_live_applied_after_change: {
+    description:
+      'Runs page (F6-11-IR-01): an active battle before its first live change; the change is recorded (200) and the next read lists its command applied.',
+    harvest: 'off',
+    get: { battlesActive: 'run_controls_live.read_before_the_first_change' },
+    writes: {
+      liveControls: {
+        case: 'run_controls_live.accepted_switch_off',
+        reads: { battlesActive: 'run_controls_live.read_after_the_driver_applied_the_change' },
+      },
+    },
+  },
   runs_live_unknown: {
     description:
       'Runs page: a live change is recorded but its read-back fails (500 command_outcome_unknown).',

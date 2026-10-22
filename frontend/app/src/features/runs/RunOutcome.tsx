@@ -27,6 +27,8 @@ const WORDS: Readonly<Record<RunOutcomeCode, CopyEntry>> = {
   live_unknown: t.liveUnknown,
   live_unconfirmed: t.liveUnconfirmed,
   live_settled: t.liveSettled,
+  live_applied: t.liveApplied,
+  live_not_applied: t.liveNotApplied,
 };
 
 /**
@@ -46,7 +48,7 @@ export function RunOutcome({ outcome }: { readonly outcome: RunOutcomeVM }) {
   return (
     <div ref={box} className="tp-run-outcome" data-outcome={outcome.code} data-intent={line.id}>
       <Notice
-        state={line.word}
+        state={outcome.word}
         lead={
           <>
             {outcome.earlier === null ? (

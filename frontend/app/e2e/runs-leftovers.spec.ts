@@ -109,6 +109,20 @@ for (const width of WIDTHS) {
     const resets = live(page).getByRole('button', { name: "Use the battle's starting value" });
     await expect(resets.first()).toBeVisible();
     const path0 = await live(page).locator('[data-path]').first().getAttribute('data-path');
+    if (width === 390) {
+      // Review F6-11-R1-05: at 390 each reset is a full-width button under its row's name.
+      const row = live(page).locator('[data-path]').first();
+      const rowBox = await row.boundingBox();
+      const nameBox = await row.locator('.tp-run-reset__name').boundingBox();
+      const buttonBox = await row
+        .getByRole('button', { name: "Use the battle's starting value" })
+        .boundingBox();
+      expect(buttonBox?.y ?? 0).toBeGreaterThanOrEqual(
+        (nameBox?.y ?? 0) + (nameBox?.height ?? 0) - 1,
+      );
+      expect(Math.abs((buttonBox?.width ?? 0) - (rowBox?.width ?? 0))).toBeLessThanOrEqual(1);
+      expect(buttonBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
     await resets.first().click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
@@ -131,6 +145,30 @@ for (const width of WIDTHS) {
     await page.waitForTimeout(2_000);
     expect((await posts(page)).filter((p) => p.path.endsWith('/live-controls'))).toHaveLength(1);
     expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+    expect(problems).toEqual([]);
+  });
+
+  test(`IR-01 a recorded live change reads "Applied to this battle" once its battle's read lists it applied, at ${String(width)}`, async ({
+    page,
+  }) => {
+    const problems = await openRunsLive(page, 'runs_live_applied_after_change', width);
+    await live(page).getByRole('checkbox', { name: 'Ad gems On' }).uncheck();
+    await live(page).getByRole('button', { name: 'Save changes to this battle' }).click();
+    await expect
+      .poll(async () => (await posts(page)).filter((p) => p.path.endsWith('/live-controls')).length)
+      .toBe(1);
+    // The recorded answer (200) is followed by the recorded read listing the command applied.
+    await live(page).getByRole('button', { name: 'Check this battle' }).click();
+    await expect(live(page).getByText('Applied to this battle', { exact: true })).toBeVisible();
+    await expect(live(page).getByText('Sent to this battle - waiting to apply')).toHaveCount(0);
+    await expect(live(page).getByRole('checkbox', { name: 'Ad gems On' })).not.toBeChecked();
+    expect(await axeViolations(page)).toEqual([]);
+    expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+    await live(page).screenshot({
+      path: path.join(OUT, `runs-leftovers-applied-${String(width)}.png`),
+    });
+    await page.waitForTimeout(2_000);
+    expect((await posts(page)).filter((p) => p.path.endsWith('/live-controls'))).toHaveLength(1);
     expect(problems).toEqual([]);
   });
 

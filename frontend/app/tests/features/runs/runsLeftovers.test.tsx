@@ -1,6 +1,7 @@
 import { within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { serverDateText } from '../../../src/copy/format.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import { e0Config } from '../../support/dataLayer.ts';
 import {
@@ -35,6 +36,49 @@ function battleBeforeReset(): DashboardCase {
   battle['applied_overrides'] = structuredClone(battle['overrides']);
   const body = { ...(read.body as Record<string, unknown>), battle };
   return { ...read, body };
+}
+
+/**
+ * The battle read right after the recorded reset, before the driver applied it. Modified
+ * recorded case: the reset's own answer battle (control revision 3, command with key live-5
+ * still requested) in the shape of a battle read; no read after the reset was recorded.
+ */
+function battleAfterResetListed(): DashboardCase {
+  const read = live('read_after_the_driver_applied_the_change');
+  const battle = structuredClone((RESET.body as { battle: Record<string, unknown> }).battle);
+  return { ...read, body: { ...(read.body as Record<string, unknown>), battle } };
+}
+
+/**
+ * The battle after the driver applied the recorded reset. Modified recorded case: the reset's
+ * own answer (control revision 3, override of interval_sec removed, key live-5 listed) gets the
+ * driver's application of it, as read_after_the_driver_applied_the_change records one: applied
+ * revision 3, applied overrides = overrides, applied and effective controls = requested
+ * controls (interval_sec is the starting 720), and the reset's command applied with its path.
+ */
+function battleAfterResetApplied(): DashboardCase {
+  const read = battleAfterResetListed();
+  const battle = (read.body as { battle: Record<string, unknown> }).battle;
+  battle['applied_revision'] = battle['control_revision'];
+  battle['applied_overrides'] = structuredClone(battle['overrides']);
+  battle['applied_controls'] = structuredClone(battle['requested_controls']);
+  battle['effective'] = structuredClone(battle['requested_controls']);
+  const commands = battle['commands'] as Record<string, unknown>[];
+  Object.assign(commands.at(-1) ?? {}, {
+    state: 'applied',
+    applied_paths: ['routines.ad_gems.interval_sec'],
+  });
+  return read;
+}
+
+async function confirmReset(page: Awaited<ReturnType<typeof renderPage>>) {
+  const row = liveRegion().querySelector<HTMLElement>(
+    '[data-path="routines.ad_gems.interval_sec"]',
+  );
+  if (row === null) throw new Error('no reset row');
+  await page.user.click(within(row).getByRole('button', { name: /starting value/u }));
+  await page.user.click(within(dialog()).getByRole('button', { name: 'Use starting value' }));
+  await page.advance(100);
 }
 
 async function openLive(read: () => DashboardCase, options: PageOptions = {}) {
@@ -159,6 +203,81 @@ describe('F6-11 RL1 reset one live override', () => {
     expect(writes[1]?.body).toBe(writes[0]?.body);
   });
 
+  it('RL1 a confirmed reset reads back: the override and its reset are gone and the field holds the starting value', async () => {
+    let read = battleBeforeReset;
+    const page = await openLive(() => read(), { newKey: () => RESET_KEY });
+    page.fake.route('POST', /live-controls$/u, () => ({ status: RESET.status, body: RESET.body }));
+    await confirmReset(page);
+    expect(page.fake.writes()).toHaveLength(1);
+    read = battleAfterResetApplied;
+    await page.advance(5_000);
+    expect(liveRegion().querySelector('[data-path="routines.ad_gems.interval_sec"]')).toBeNull();
+    const field = within(liveRegion()).getByRole('textbox', { name: /Ad gems Every/u });
+    expect(field).toHaveValue('720');
+    // Only the battle's other overrides are still listed.
+    expect(resetRows().map((row) => row.dataset['path'])).toEqual([
+      'routines.ad_gems.enabled',
+      'routines.ad_gems.window_sec',
+    ]);
+    // F6-11-IR-01: the reset's own line follows the read: applied, no longer waiting.
+    expect(within(liveRegion()).getByText('Applied to this battle')).toBeVisible();
+    expect(within(liveRegion()).queryByText('Sent to this battle - waiting to apply')).toBeNull();
+    await page.advance(30_000);
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it('RL1 a lost reset stays unknown on an unchanged read and settles only on a read of its battle listing its key', async () => {
+    let read = battleBeforeReset;
+    const page = await openLive(() => read(), { newKey: () => RESET_KEY });
+    page.fake.route('POST', /live-controls$/u, () => 'hold');
+    await confirmReset(page);
+    page.fake.next(/live-controls$/u, 'POST').lose();
+    // Unchanged reads of the same battle cannot prove the reset failed.
+    await page.advance(10_000);
+    expect(within(liveRegion()).getByText('No reply - it may have been recorded')).toBeVisible();
+    // A read of another battle does not settle it either.
+    read = () => live('read_after_the_unknown_lists_the_key');
+    await page.advance(5_000);
+    expect(within(liveRegion()).queryByText('A later read lists this change')).toBeNull();
+    // The battle it was sent to, listing its key, settles it as recorded; nothing was resent.
+    read = battleAfterResetListed;
+    await page.advance(5_000);
+    expect(within(liveRegion()).getByText('A later read lists this change')).toBeVisible();
+    // F6-11-IR-01: once that battle lists its command applied, the line says so.
+    read = battleAfterResetApplied;
+    await page.advance(5_000);
+    expect(within(liveRegion()).getByText('Applied to this battle')).toBeVisible();
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it.each([
+    ['another battle replaces it', { id: '000000ff-0000-4000-8000-000000000000' }],
+    ['its control revision changes', { control_revision: 9, applied_revision: 9 }],
+  ])(
+    'RL1 an open confirmation closes and sends nothing when %s',
+    async (_name, change: Record<string, unknown>) => {
+      let read = battleBeforeReset;
+      const page = await openLive(() => read(), { newKey: () => RESET_KEY });
+      const row = liveRegion().querySelector<HTMLElement>(
+        '[data-path="routines.ad_gems.interval_sec"]',
+      );
+      if (row === null) throw new Error('no reset row');
+      await page.user.click(within(row).getByRole('button', { name: /starting value/u }));
+      expect(dialog()).toBeVisible();
+      // Modified recorded case: the same battle read with another identity or revision
+      // (no recorded read replaces a battle while a reset is being confirmed).
+      read = () => {
+        const before = battleBeforeReset();
+        const body = before.body as { battle: Record<string, unknown> };
+        return { ...before, body: { ...body, battle: { ...body.battle, ...change } } };
+      };
+      await page.advance(5_000);
+      expect(document.querySelector('dialog[open]')).toBeNull();
+      await page.advance(30_000);
+      expect(page.fake.writes()).toEqual([]);
+    },
+  );
+
   it('RL1 the reset list uses catalogue words and passes axe', async () => {
     const page = await openLive(() =>
       live('read_after_several_changes_overrides_and_applied_values'),
@@ -169,7 +288,87 @@ describe('F6-11 RL1 reset one live override', () => {
   });
 });
 
+describe('F6-11-IR-01 a live change follows later reads of its own battle', () => {
+  const SWITCH_OFF = live('accepted_switch_off');
+  const outcomeText = () =>
+    liveRegion().querySelector<HTMLElement>('[data-outcome]')?.dataset['outcome'] ?? null;
+
+  async function switchOff(read: { current: () => DashboardCase }) {
+    const page = await openLive(() => read.current(), { newKey: () => 'live-1' });
+    page.fake.route('POST', /live-controls$/u, () => ({
+      status: SWITCH_OFF.status,
+      body: SWITCH_OFF.body,
+    }));
+    await page.user.click(within(liveRegion()).getByRole('checkbox', { name: 'Ad gems On' }));
+    await page.user.click(
+      within(liveRegion()).getByRole('button', { name: 'Save changes to this battle' }),
+    );
+    await page.advance(100);
+    expect(JSON.parse(page.fake.writes()[0]?.body ?? 'null')).toEqual(SWITCH_OFF.request.body);
+    return page;
+  }
+
+  it('IR-01 waiting while its battle lists the command requested; "Applied to this battle" once a read lists it applied (recorded reads)', async () => {
+    const read = { current: () => live('read_before_the_first_change') };
+    const page = await switchOff(read);
+    expect(within(liveRegion()).getByText('Sent to this battle - waiting to apply')).toBeVisible();
+    read.current = () => live('read_after_the_change_lists_the_command_and_its_key');
+    await page.advance(5_000);
+    expect(outcomeText()).toBe('live_recorded');
+    expect(within(liveRegion()).getByText('Sent to this battle - waiting to apply')).toBeVisible();
+    read.current = () => live('read_after_the_driver_applied_the_change');
+    await page.advance(5_000);
+    expect(outcomeText()).toBe('live_applied');
+    expect(within(liveRegion()).getByText('Applied to this battle')).toBeVisible();
+    expect(within(liveRegion()).queryByText('Sent to this battle - waiting to apply')).toBeNull();
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it('IR-01 a read of the same battle id in another generation listing an applied command does not settle it', async () => {
+    const read = { current: () => live('read_before_the_first_change') };
+    const page = await switchOff(read);
+    // Modified recorded case: the applied read with another generation on the battle and
+    // its command (no recorded read replaces the generation after this change).
+    read.current = () => {
+      const applied = live('read_after_the_driver_applied_the_change');
+      const body = applied.body as {
+        battle: Record<string, unknown> & { commands: Record<string, unknown>[] };
+      };
+      const generation = '000000ff-0000-4000-8000-000000000000';
+      body.battle['generation'] = generation;
+      for (const command of body.battle.commands) command['generation'] = generation;
+      return applied;
+    };
+    await page.advance(5_000);
+    expect(within(liveRegion()).queryByText('Applied to this battle')).toBeNull();
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it('IR-01 a command its battle rejected reads Not applied with a Failed word (never "waiting")', async () => {
+    const read = { current: () => live('read_before_the_first_change') };
+    const page = await switchOff(read);
+    // Modified recorded case: the read listing the command, with the state and reason the
+    // recorded battles_active.commands_controls_rejected_action_rejected gives a rejected
+    // controls command (no run_controls_live read records a rejection).
+    read.current = () => {
+      const listed = live('read_after_the_change_lists_the_command_and_its_key');
+      const body = listed.body as { battle: { commands: Record<string, unknown>[] } };
+      Object.assign(body.battle.commands[0] ?? {}, { state: 'rejected', reason: 'driver_refused' });
+      return listed;
+    };
+    await page.advance(5_000);
+    expect(outcomeText()).toBe('live_not_applied');
+    expect(
+      within(liveRegion()).getByText('Not applied - this battle rejected the change or it expired'),
+    ).toBeVisible();
+    expect(liveRegion().querySelector('[data-outcome] [data-state="failed"]')).not.toBeNull();
+    expect(within(liveRegion()).queryByText('Sent to this battle - waiting to apply')).toBeNull();
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+});
+
 const recordedBattle = (name: string) => () => dashboardCase(`battles_active.${name}`);
+const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 const detailsOf = (routine: string): HTMLDetailsElement => {
   const body = liveRegion().querySelector(`[data-routine-details="${routine}"]`);
   const found = body?.closest('details');
@@ -264,6 +463,63 @@ describe('F6-11 RL7 battle details in the live section', () => {
     page.view.unmount();
     await openLive(recordedBattle('null_no_driver'));
     expect(liveRegion().querySelector('[data-part="runsDetails"]')).toBeNull();
+  });
+
+  it('RL7 a newest battle read that fails marks the retained details last known at once', async () => {
+    let failing = false;
+    const recorded = dashboardCase('battles_active.runtime_ad_orbit_shopping');
+    const page = await openLive(() =>
+      failing ? { ...recorded, status: 502, body: 'upstream unavailable' } : recorded,
+    );
+    expect(within(liveRegion()).queryByText('Last known values')).toBeNull();
+    failing = true;
+    await page.advance(5_000);
+    // The retained report is only seconds old, yet the newest read failed.
+    expect(within(liveRegion()).getByText('Last known values')).toBeVisible();
+    expect(detailsOf('ad_gems')).toBeInstanceOf(HTMLDetailsElement);
+    failing = false;
+    await page.advance(5_000);
+    expect(within(liveRegion()).queryByText('Last known values')).toBeNull();
+  });
+
+  it('RL7 a seen offer shows server dates with ages, the appearance interval to a tenth of a second, its failure and a refusal', async () => {
+    const NOW = 1_800_000_002;
+    // Modified recorded case: no recorded read has a seen offer, a failed attempt or a
+    // refusal yet (requested as battles_active.ad_gems_offer_seen_and_failed_attempt and
+    // floating_gems_refusal_recorded); the recorded routines get them in their own field names.
+    const seen = dashboardCase('battles_active.runtime_ad_orbit_shopping');
+    const routines = (
+      seen.body as { battle: { runtime: { routines: Record<string, Record<string, unknown>> } } }
+    ).battle.runtime.routines;
+    Object.assign(routines['ad_gems'] ?? {}, {
+      visibility: 'visible',
+      visibility_reason: null,
+      last_observed_at: NOW - 3,
+      first_seen_at: NOW - 10,
+      appearance_after_at: NOW - 12.5,
+      last_failed_attempt: { reason: 'claim_not_confirmed', observed_at: NOW - 4 },
+    });
+    Object.assign(routines['floating_gems'] ?? {}, {
+      last_refusal: { reason: 'human_owner', observed_at: NOW - 30 },
+    });
+    await openLive(() => seen);
+    const rows = rowsOf('ad_gems');
+    const age = (date: string) => new RegExp(`^${escape(date)} \\(\\d+ s ago\\)$`, 'u');
+    expect(rows['Offer']).toBe('Seen on the last battle screen');
+    expect(rows['First seen']).toMatch(age(serverDateText(NOW - 10)));
+    expect(rows['Last look at the battle']).toMatch(age(serverDateText(NOW - 3)));
+    expect(rows['Appeared']).toMatch(
+      new RegExp(
+        `^After ${escape(serverDateText(NOW - 12.5))} \\(\\d+ s ago\\), seen by ${escape(serverDateText(NOW - 10))} \\(\\d+ s ago\\); 2\\.5 s between looks$`,
+        'u',
+      ),
+    );
+    expect(rows['Latest failed attempt']).toMatch(
+      new RegExp(`^claim_not_confirmed${escape(serverDateText(NOW - 4))} \\(\\d+ s ago\\)$`, 'u'),
+    );
+    expect(rowsOf('floating_gems')['Latest refusal']).toMatch(
+      new RegExp(`^human_owner${escape(serverDateText(NOW - 30))} \\(3\\d s ago\\)$`, 'u'),
+    );
   });
 
   it('RL7 the opened details use catalogue words and pass axe', async () => {

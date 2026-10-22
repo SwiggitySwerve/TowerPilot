@@ -274,10 +274,14 @@ function LiveResets({ resets }: { readonly resets: readonly LiveResetVM[] }) {
   const { commands } = useDashboard();
   const [asking, setAsking] = useState<LiveResetVM | null>(null);
   const titleId = useId();
-  // A confirmation whose reset is no longer offered closes and sends nothing.
+  // A confirmation applies only to the target it was opened for (review F6-11-R1-01): when the
+  // reset is no longer offered, or would now go to another battle, generation or revision, it
+  // closes and sends nothing.
   const current =
-    asking === null ? null : (resets.find((item) => item.path === asking.path) ?? null);
-  if (asking !== null && current?.reset.enabled !== true) setAsking(null);
+    asking === null || asking.target === null
+      ? null
+      : (resets.find((item) => item.target === asking.target && item.reset.enabled) ?? null);
+  if (asking !== null && current === null) setAsking(null);
   if (resets.length === 0) return null;
   const o = t.live.overrides;
   return (
@@ -314,7 +318,12 @@ function LiveResets({ resets }: { readonly resets: readonly LiveResetVM[] }) {
         onConfirm={() => {
           setAsking(null);
           const command = current?.reset.command;
-          if (current?.reset.enabled === true && command != null) void commands.resetLive(command);
+          if (
+            current?.target === asking?.target &&
+            current?.reset.enabled === true &&
+            command != null
+          )
+            void commands.resetLive(command);
         }}
       />
     </section>

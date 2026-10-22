@@ -1,4 +1,5 @@
 import { entry, made } from './entry.ts';
+import { serverDateText } from './format.ts';
 import { ageAgo } from './dashboard/shell.ts';
 
 function plural(n: number, one: string, many: string): string {
@@ -118,7 +119,7 @@ export const profiles = {
       own: entry('Your profile'),
     },
     activeMark: entry('Active'),
-    modified: (seconds: number) => made(new Date(seconds * 1000).toLocaleString('en-US')),
+    modified: (seconds: number) => made(serverDateText(seconds)),
     modifiedUnknown: entry('not reported'),
   },
   activate: {

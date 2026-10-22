@@ -1,4 +1,5 @@
 import { entry, made } from './entry.ts';
+import { serverDateText } from './format.ts';
 
 function age(seconds: number): string {
   return seconds < 60
@@ -8,10 +9,7 @@ function age(seconds: number): string {
       : `${String(Math.floor(seconds / 3600))} h ago`;
 }
 
-/** A server time (seconds) shown as the date and time it names; never compared with this browser's clock. */
-function at(seconds: number): string {
-  return new Date(seconds * 1000).toLocaleString('en-US');
-}
+const at = serverDateText;
 
 /**
  * The Recognition page (backend/logs/reviews/ui-pages/screens-brief.md, R1 to R8, roadmap

@@ -174,7 +174,10 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
           type="button"
           className="tp-button"
           id="schedule:read"
-          disabled={entry?.busy === true}
+          // Nothing can be read before the target is known: the button says why instead of
+          // doing nothing (an enabled button here also told tests the plan had been read).
+          disabled={state.context === null || entry?.busy === true}
+          aria-describedby={state.context === null ? 'schedule:unknown-target' : undefined}
           onClick={() => {
             void schedule.refresh();
           }}
@@ -182,7 +185,7 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
           {t.refresh.short}
         </button>
         {state.context === null ? (
-          <p>{t.unknownTarget.short}</p>
+          <p id="schedule:unknown-target">{t.unknownTarget.short}</p>
         ) : vm.noProfile ? (
           <p>{t.noProfile.short}</p>
         ) : null}

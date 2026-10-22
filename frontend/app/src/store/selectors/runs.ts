@@ -6,6 +6,7 @@ import {
   controlGroups,
   liveMark,
   liveResetGate,
+  liveResetKey,
   liveSaveGate,
   reviewDraft,
   savedSaveGate,
@@ -18,11 +19,15 @@ import {
 import {
   adGemsDetails,
   floatingRefusal,
+  liveChangeProgress,
   routineEventsQuery,
+  type LiveChangeProgress,
   type AdCollection,
   type AdGemsDetails,
 } from '../../core/routines.ts';
 import { runtimeHash } from '../../core/runtime.ts';
+import { opaqueToken } from '../../core/tokens.ts';
+import type { StateWord } from '../../core/vocabulary.ts';
 import { fromServer, type ServerText } from '../../copy/server.ts';
 import type { ResetLiveCommand, SaveLiveCommand, SaveRunCommand } from '../commands.ts';
 import { refusedSaveReadback, settledByRead } from '../fences.ts';
@@ -86,6 +91,8 @@ export interface LiveResetVM {
   readonly routine: string;
   readonly field: string;
   readonly reset: CommandVM<ResetLiveCommand>;
+  /** The target the reset would be sent to (core liveResetKey), or null while it is not offered. */
+  readonly target: string | null;
 }
 
 /**
@@ -107,12 +114,16 @@ export type RunOutcomeCode =
   | 'live_not_recorded'
   | 'live_unknown'
   | 'live_unconfirmed'
-  | 'live_settled';
+  | 'live_settled'
+  | 'live_applied'
+  | 'live_not_applied';
 
 export interface RunOutcomeVM {
   /** The write record's line (id, status word, answer age, the server's message). */
   readonly line: OutcomeLineVM;
   readonly code: RunOutcomeCode;
+  /** The line's status word: the record's, except Failed for a change its battle did not apply. */
+  readonly word: StateWord | null;
   /**
    * SR-8: a saved-run save whose outcome is unknown keeps its line (the
    * editor's Check saved values is its way out); any other answered line may
@@ -292,6 +303,26 @@ function requestOn(
   return latest.answerSeq !== null && latest.answerSeq >= readStartedSeq ? 'refreshing' : 'none';
 }
 
+/** F6-11-IR-01: the newest answered battle read made after the change was sent, about its battle. */
+function liveProgress(state: DashboardState, record: IntentView): LiveChangeProgress {
+  const read = state.reads.battlesActive.lastAnswered;
+  const { battleId, generation, operationId } = record.meta;
+  if (
+    read === null ||
+    read.startedSeq <= record.sentSeq ||
+    battleId === undefined ||
+    generation === undefined ||
+    operationId === undefined
+  )
+    return 'not_listed';
+  return liveChangeProgress(
+    contextReadOf(read),
+    { id: battleId, generation, operationId },
+    record.answer?.body,
+    opaqueToken(record.key),
+  );
+}
+
 function outcomeCode(
   state: DashboardState,
   record: IntentView,
@@ -299,6 +330,16 @@ function outcomeCode(
   earlier: boolean,
 ): RunOutcomeCode {
   if (line.phase === 'sending') return 'sending';
+  // F6-11-IR-01: a recorded live change (its answer, or a later read listing its key) follows
+  // what a later read of its own battle says its command did.
+  if (
+    line.kind === 'live_controls' &&
+    (line.outcome === 'recorded' || line.settledByRead === 'recorded')
+  ) {
+    const progress = liveProgress(state, record);
+    if (progress === 'applied') return 'live_applied';
+    if (progress === 'not_applied') return 'live_not_applied';
+  }
   if (line.settledByRead === 'applied') return 'applied';
   if (line.settledByRead === 'not_applied') return 'not_applied';
   if (line.settledByRead === 'recorded') return 'live_settled';
@@ -366,6 +407,7 @@ function outcomeVM(
   return {
     line,
     code,
+    word: code === 'live_not_applied' ? 'failed' : line.word,
     dismissOffered: code !== 'sending' && (!unknownSave || accepted),
     acceptOffered: unknownSave && !accepted && record.kind === 'run_save' && readSince,
     accepted: unknownSave && accepted,
@@ -652,7 +694,14 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
   });
   const detailsFresh =
     freshBattleReport(contextReadOf(last), shown, elapsedDetails).kind === 'known';
-  const withDetails = { ...base, details, detailsLastKnown: details.length > 0 && !detailsFresh };
+  // Review F6-11-R1-02: a newest battle read that failed makes every retained value last known,
+  // however young the retained report is.
+  const newestFailed = read.outcome.kind === 'failed';
+  const withDetails = {
+    ...base,
+    details,
+    detailsLastKnown: details.length > 0 && (newestFailed || !detailsFresh),
+  };
   if (shown === null)
     return { ...withDetails, boundsKnown: boundsBody !== undefined, editor: null };
   const groups = controlGroups(
@@ -696,6 +745,7 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
               path: field.path,
               routine: field.routine,
               field: field.field,
+              target: reset.enabled ? liveResetKey(reset.command) : null,
               reset: reset.enabled
                 ? commandVM<ResetLiveCommand>(true, true, null, false, {
                     epoch: state.epoch,

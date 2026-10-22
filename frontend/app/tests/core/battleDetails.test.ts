@@ -138,6 +138,8 @@ describe('F6-11 RL7 Floating gems refusal and the Runtime link', () => {
     });
   });
 
+  // Modified recorded case: no recorded read has a sighted offer (first_seen_at) yet; the
+  // recorded Ad gems report gets one, and a bare report checks the clamp at zero.
   it('RL7 a sighted offer starts the Runtime filter a minute before its first sighting', () => {
     const raw = { ...routine(RECORDED, 'ad_gems'), first_seen_at: NOW - 10 };
     expect(routineEventsQuery(battleOf(RECORDED), raw)['since']).toBe(String(NOW - 70));

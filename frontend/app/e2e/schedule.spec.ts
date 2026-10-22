@@ -21,7 +21,16 @@ const OUT =
 mkdirSync(OUT, { recursive: true });
 const widths = [1360, 1054, 390];
 
-async function open(page: Page, width = 1360, options: Record<string, string> = {}) {
+/**
+ * Open Schedule; unless `coldStart`, wait until the plan is read (Read saved plan is enabled
+ * only once the target is known and its read finished).
+ */
+async function open(
+  page: Page,
+  width = 1360,
+  options: Record<string, string> = {},
+  coldStart = false,
+) {
   await page.setViewportSize({ width, height: 900 });
   await page.request.get('/__fake/use?scenario=runs_saved');
   await page.request.get(`/__fake/schedule?${new URLSearchParams(options)}`);
@@ -29,7 +38,8 @@ async function open(page: Page, width = 1360, options: Record<string, string> = 
   await expect(
     page.getByRole('heading', { level: 1, name: 'Schedule', exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Read saved plan and status' })).toBeEnabled();
+  if (!coldStart)
+    await expect(page.getByRole('button', { name: 'Read saved plan and status' })).toBeEnabled();
 }
 const counts = (page: Page) => page.getByRole('textbox', { name: 'Runs/day (blank = unlimited)' });
 const blocks = (page: Page) => page.getByRole('group', { name: /^Block / });
@@ -165,13 +175,17 @@ for (const width of widths) {
       await releaseStartup.pending;
       await route.continue();
     });
-    await open(page, width, {
-      readback: 'profile_patch.read_after_the_stale_refusal_holds_the_other_clients_save',
-    });
+    await open(
+      page,
+      width,
+      { readback: 'profile_patch.read_after_the_stale_refusal_holds_the_other_clients_save' },
+      true,
+    );
     await startupEntered.pending;
-    // The shell's Read button is enabled before the initial context/profile read.
-    // Exercise that cold start, then wait for the plan before arming the save/read gates.
+    // Cold start: before the initial context/profile read the Read button is disabled
+    // (nothing to read yet). Exercise that, then wait for the plan before arming the gates.
     await expect(page.getByText('Weekday mapping', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Read saved plan and status' })).toBeDisabled();
     releaseStartup.release();
     await mapSunday(page);
     await expect(page.getByRole('button', { name: 'Read saved plan and status' })).toBeEnabled();
@@ -291,10 +305,35 @@ test('S1 missing plan has no fake hours; unreadable profile has an explicit read
   await expect(page.getByText(/Saved plan could not be read/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Read saved plan and status' })).toBeEnabled();
 });
+test('S1 with a slow context read, Read saved plan stays disabled with its reason until the plan is read', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.request.get('/__fake/use?scenario=runs_saved');
+  await page.request.get('/__fake/schedule');
+  const released = gate();
+  await page.route('**/api/config', async (route) => {
+    await released.pending;
+    await route.continue();
+  });
+  await page.goto('/ui/app/?slow-context=1#schedule');
+  const read = page.getByRole('button', { name: 'Read saved plan and status' });
+  await expect(read).toBeDisabled();
+  await expect(read).toHaveAccessibleDescription(
+    'Select an emulator and profile before editing a schedule.',
+  );
+  await expect(blocks(page)).toHaveCount(0);
+  released.release();
+  await expect(read).toBeEnabled();
+  // Enabled means read: the plan's blocks are there, so the S2 loop never starts empty.
+  await expect(blocks(page)).toHaveCount(2);
+});
 test('S2 deleting the last block stays an invalid empty day and restores focus to Add', async ({
   page,
 }) => {
   await open(page, 390, { save: 'profile_patch.day_emptied' });
+  // The loop below must start from the read plan: with no blocks shown it would pass vacuously.
+  await expect(blocks(page)).toHaveCount(2);
   while (await blocks(page).count())
     await blocks(page).first().getByRole('button', { name: 'Delete block' }).click();
   await expect(page.getByRole('button', { name: 'Add block' })).toBeFocused();

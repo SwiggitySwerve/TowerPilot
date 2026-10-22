@@ -227,6 +227,42 @@ export function settleRunNow(
   return settleCommand(read, shown, requestKey, 'action');
 }
 
+/**
+ * The first command of `kind` that a read of exactly `shown` (same context, battle,
+ * generation and operation) lists and `matches` accepts; undefined when there is none.
+ */
+function listedCommand(
+  read: ContextRead,
+  shown: BattleIdentity,
+  kind: 'action' | 'controls',
+  matches: (command: unknown) => boolean,
+): unknown {
+  if (read?.kind !== 'answered' || !read.sameContext) return undefined;
+  const battle = own(read.body, 'battle');
+  if (
+    own(battle, 'id') !== shown.id ||
+    own(battle, 'generation') !== shown.generation ||
+    own(battle, 'operation_id') !== shown.operationId
+  )
+    return undefined;
+  return (list(own(battle, 'commands')) ?? []).find(
+    (command) =>
+      own(command, 'kind') === kind &&
+      own(command, 'battle_id') === shown.id &&
+      own(command, 'generation') === shown.generation &&
+      own(command, 'operation_id') === shown.operationId &&
+      id(own(command, 'id')) !== undefined &&
+      revision(own(command, 'revision')) !== undefined &&
+      matches(command),
+  );
+}
+
+function keyListed(command: unknown, requestKey: OpaqueToken): boolean {
+  return (list(own(command, 'request_keys')) ?? []).some((key) =>
+    sameToken(requestKey, opaqueToken(key)),
+  );
+}
+
 /** A later read settles a battle command only by a command of its kind carrying its key. */
 export function settleCommand(
   read: ContextRead,
@@ -234,33 +270,43 @@ export function settleCommand(
   requestKey: OpaqueToken,
   kind: 'action' | 'controls',
 ): RunNowSettlement {
-  if (read?.kind === 'answered' && read.sameContext) {
-    const battle = own(read.body, 'battle');
-    const identityMatches =
-      own(battle, 'id') === shown.id &&
-      own(battle, 'generation') === shown.generation &&
-      own(battle, 'operation_id') === shown.operationId;
-    if (identityMatches) {
-      for (const command of list(own(battle, 'commands')) ?? []) {
-        if (
-          own(command, 'kind') !== kind ||
-          own(command, 'battle_id') !== shown.id ||
-          own(command, 'generation') !== shown.generation ||
-          own(command, 'operation_id') !== shown.operationId ||
-          id(own(command, 'id')) === undefined ||
-          revision(own(command, 'revision')) === undefined
-        )
-          continue;
-        if (
-          (list(own(command, 'request_keys')) ?? []).some((key) =>
-            sameToken(requestKey, opaqueToken(key)),
-          )
-        )
-          return { kind: 'recorded', command: commandView(command) };
-      }
-    }
-  }
-  return { kind: 'unknown', decision: decide('F-059', 'unknown', 'may_have_been_recorded', null) };
+  const command = listedCommand(read, shown, kind, (found) => keyListed(found, requestKey));
+  return command === undefined
+    ? { kind: 'unknown', decision: decide('F-059', 'unknown', 'may_have_been_recorded', null) }
+    : { kind: 'recorded', command: commandView(command) };
+}
+
+/** F6-11-IR-01: what a later read of the change's own battle says its command did. */
+export type LiveChangeProgress = 'applied' | 'not_applied' | 'waiting' | 'not_listed';
+
+/**
+ * F6-11-IR-01: a recorded live change (live settings or a reset) is applied only when a read
+ * of the battle it was sent to (same battle, generation and operation) lists its command as
+ * applied; rejected or expired is not applied; requested or pending is still waiting. The
+ * command is the one the change's answer named (its id), else the one carrying its request
+ * key. A read of another battle, or one not listing the command, proves nothing.
+ */
+export function liveChangeProgress(
+  read: ContextRead,
+  shown: BattleIdentity,
+  answer: unknown,
+  requestKey: OpaqueToken | null,
+): LiveChangeProgress {
+  const commandId = id(ownPath(answer, 'command', 'id'));
+  const command = listedCommand(read, shown, 'controls', (found) =>
+    commandId !== undefined
+      ? own(found, 'id') === commandId
+      : requestKey !== null && keyListed(found, requestKey),
+  );
+  if (command === undefined) return 'not_listed';
+  const row = commandView(command).decision.row;
+  return row === 'K4'
+    ? 'applied'
+    : row === 'K5' || row === 'K6'
+      ? 'not_applied'
+      : row === 'K7'
+        ? 'not_listed'
+        : 'waiting';
 }
 
 export interface ShoppingView {

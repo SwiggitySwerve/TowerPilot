@@ -263,6 +263,21 @@ export function liveResetGate(
   return { enabled: true, command: { ...target.command, paths: [...paths] } };
 }
 
+/**
+ * F6-11 RL1 (review F6-11-R1-01): what a reset confirmation was shown for. A confirmation
+ * applies only while the offered reset still has this key: the same operation, battle,
+ * generation, control revision and paths.
+ */
+export function liveResetKey(reset: LiveReset): string {
+  return JSON.stringify([
+    reset.operationId,
+    reset.battleId,
+    reset.generation,
+    reset.expectedRevision,
+    reset.paths,
+  ]);
+}
+
 function liveTarget(
   battle: unknown,
   reportFresh: boolean,

@@ -1,4 +1,5 @@
 import { entry, made } from './entry.ts';
+import { serverDateText } from './format.ts';
 
 function age(seconds: number): string {
   return seconds < 60
@@ -63,8 +64,7 @@ export const emulators = {
     unreadable: entry("The screen size answer couldn't be read"),
     status: (status: number) => made(`HTTP ${String(status)}`),
     checkedAgo: (seconds: number) => made(`checked ${age(seconds)}`),
-    savedAt: (seconds: number) =>
-      made(`saved by an earlier check, ${new Date(seconds * 1000).toLocaleString('en-US')}`),
+    savedAt: (seconds: number) => made(`saved by an earlier check, ${serverDateText(seconds)}`),
     note: entry(
       'A size is not recognition',
       'The size says how the screen is laid out. Recognition checks that the game screen itself is recognized; a reconnect or a size check never does.',

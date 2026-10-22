@@ -1,5 +1,5 @@
 import { entry, made } from './entry.ts';
-import { durationText } from './format.ts';
+import { durationText, serverDateText } from './format.ts';
 
 function number(value: number): string {
   return String(value);
@@ -13,6 +13,13 @@ function when(since: number | null): string {
 function dueText(since: number | null): string {
   if (since === null) return 'at a time not known';
   return since < 0 ? `in ${durationText(-since)}` : 'due now, waiting for the automation';
+}
+function stamp(at: number, since: number | null): string {
+  return `${serverDateText(at)} (${when(since)})`;
+}
+/** The appearance interval as reported, to a tenth of a second (legacy run-workspace.js:264). */
+function gapText(seconds: number): string {
+  return Number.isInteger(seconds) ? durationText(seconds) : `${seconds.toFixed(1)} s`;
 }
 function capital(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
@@ -85,8 +92,16 @@ export const runs = {
         'The offer appeared after the earlier look and was seen at the later one; the first sighting is not the moment it appeared.',
       ),
       appearedUnknown: entry('Not known; the first sighting is not when it appeared'),
-      appearedBetween: (after: number | null, by: number | null, gapSec: number) =>
-        made(`After ${when(after)}, seen ${when(by)} (${durationText(gapSec)} between looks)`),
+      appearedBetween: (
+        afterAt: number,
+        afterSince: number | null,
+        byAt: number,
+        bySince: number | null,
+        gapSec: number,
+      ) =>
+        made(
+          `After ${stamp(afterAt, afterSince)}, seen by ${stamp(byAt, bySince)}; ${gapText(gapSec)} between looks`,
+        ),
       lastLook: entry('Last look at the battle'),
       noLook: entry('No look recorded'),
       collection: entry('Collection'),
@@ -98,7 +113,8 @@ export const runs = {
       nextWindowUnknown: entry('Next window not reported'),
       nextLook: entry('Next look'),
       due: (due: number | null) => made(capital(dueText(due))),
-      ago: (since: number | null) => made(capital(when(since))),
+      /** A reported time: the server's date and how long ago (review F6-11-R1-03). */
+      at: (at: number, since: number | null) => made(stamp(at, since)),
       notReported: entry('Not reported'),
       failedAttempt: entry('Latest failed attempt'),
       refusal: entry('Latest refusal'),
@@ -234,6 +250,11 @@ export const runs = {
       'Send same request again sends exactly the same change with the same key; the battle answers with what it recorded. Check this battle reads it.',
     ),
     liveSettled: entry('A later read lists this change'),
+    liveApplied: entry('Applied to this battle'),
+    liveNotApplied: entry(
+      'Not applied - this battle rejected the change or it expired',
+      'The battle recorded the change, then reported that it did not apply it, for example because the battle ended first. Nothing is sent again.',
+    ),
     notSavedChanged: entry(
       'Not saved - the saved run changed since you read it',
       'Someone else saved this run first. Your values stay in the fields, compared with the newest saved values; Save sends them again only when you click it.',

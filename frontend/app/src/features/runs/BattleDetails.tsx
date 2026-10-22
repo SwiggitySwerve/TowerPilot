@@ -42,7 +42,7 @@ function Recorded({
   return (
     <span className="tp-run-details__pair">
       {value.reason === null ? null : <ServerValue kind="id" value={value.reason} />}
-      <span>{value.at === null ? d.notReported.short : d.ago(since(value.at))}</span>
+      <span>{value.at === null ? d.notReported.short : d.at(value.at.at, since(value.at))}</span>
     </span>
   );
 }
@@ -70,21 +70,29 @@ function AdRows({ ad }: { readonly ad: AdDetailsVM }) {
         </span>
       </Row>
       <Row label={d.firstSeen}>
-        <span>{ad.firstSeen === null ? d.notSeen.short : d.ago(since(ad.firstSeen))}</span>
+        <span>
+          {ad.firstSeen === null ? d.notSeen.short : d.at(ad.firstSeen.at, since(ad.firstSeen))}
+        </span>
       </Row>
       <Row label={d.appeared}>
         <span>
           {ad.appearance === null
             ? d.appearedUnknown.short
             : d.appearedBetween(
+                ad.appearance.after.at,
                 since(ad.appearance.after),
+                ad.appearance.by.at,
                 since(ad.appearance.by),
                 ad.appearance.gapSec,
               )}
         </span>
       </Row>
       <Row label={d.lastLook}>
-        <span>{ad.lastObserved === null ? d.noLook.short : d.ago(since(ad.lastObserved))}</span>
+        <span>
+          {ad.lastObserved === null
+            ? d.noLook.short
+            : d.at(ad.lastObserved.at, since(ad.lastObserved))}
+        </span>
       </Row>
       <Row label={d.collection}>
         <span>{collectionText(ad)}</span>
