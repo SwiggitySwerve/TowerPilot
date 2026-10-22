@@ -1,4 +1,4 @@
-"""Check both finished release archives against their inventories and app build."""
+"""Check release archives, or one standalone artifact, for integrity and local state."""
 import argparse
 import hashlib
 import re
@@ -10,15 +10,13 @@ from collections.abc import Mapping
 from pathlib import Path, PurePosixPath
 
 from build_release import APP_BUILD, ROOT, app_build_problems, release_files
+from release_archive_policy import content_problems, dependency_images, metadata_problems, state_path
 
 FORBIDDEN_SEGMENTS = {'node_modules', 'test-results', 'playwright-report', 'coverage'}
 FORBIDDEN_SUFFIXES = {'.map', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.ico',
                       '.svg', '.woff', '.woff2'}
-# The portable ZIP's pip packages, written by build_portable. Werkzeug ships its debugger's
-# PNGs there; a .png in this one folder of the portable ZIP is the only exemption from the
-# rules below. Path segments and every other suffix are checked everywhere (R3-R2-06).
-RUNTIME_PACKAGES = 'runtime/Lib/site-packages/'
-RUNTIME_PACKAGE_SUFFIX = '.png'
+# Only the pinned dependency images listed in dependency_images.json are exempt.
+# Both exact path and uncompressed bytes must match trusted, pinned-wheel evidence.
 
 
 def _inventory_problems(entries: Mapping[str, bytes]) -> list[str]:
@@ -47,8 +45,10 @@ def _inventory_problems(entries: Mapping[str, bytes]) -> list[str]:
     return problems
 
 
-def _check_archive(path: Path, prefix: str, disk_build: Mapping[str, bytes],
-                   app_sources: set[str], *, portable: bool = False) -> tuple[list[str], int]:
+def _check_archive(path: Path, prefix: str, disk_build: Mapping[str, bytes] | None = None,
+                   app_sources: set[str] | None = None, *, portable: bool = False,
+                   images: Mapping[str, str] | None = None, forbidden: tuple[str, ...] = (),
+                   require_identity: bool = False) -> tuple[list[str], int]:
     problems = []
     sidecar = path.with_suffix('.zip.sha256')
     if not sidecar.is_file():
@@ -81,38 +81,45 @@ def _check_archive(path: Path, prefix: str, disk_build: Mapping[str, bytes],
                 name = info.filename
                 parts = name.replace('\\', '/').split('/')
                 suffix = PurePosixPath(name).suffix.lower()
-                package_image = (portable and name.startswith(f'{prefix}/{RUNTIME_PACKAGES}')
-                                 and suffix == RUNTIME_PACKAGE_SUFFIX)
                 if FORBIDDEN_SEGMENTS.intersection(part.lower() for part in parts):
                     problems.append(f'forbidden path segment: {name}')
-                if suffix in FORBIDDEN_SUFFIXES and not package_image:
-                    problems.append(f'forbidden file suffix: {name}')
                 if not name.startswith(prefix + '/'):
                     problems.append(f'entry outside expected prefix {prefix}/: {name}')
                     continue
                 relative = name[len(prefix) + 1:]
-                if '\\' in name or any(part in {'', '.', '..'} for part in relative.split('/')):
+                if state_path(relative):
+                    problems.append(f'forbidden state path: {name}')
+                if '\\' in name or any(part in {'', '.', '..'} or part.endswith(('.', ' '))
+                                       for part in relative.split('/')):
                     problems.append(f'invalid ZIP entry path: {name}')
                     continue
                 if info.is_dir():
                     problems.append(f'unexpected directory entry: {name}')
                     continue
-                entries[relative] = archive.read(info)
+                data = archive.read(info)
+                package_image = (portable and images is not None and relative in images
+                                 and hashlib.sha256(data).hexdigest() == images[relative])
+                if suffix in FORBIDDEN_SUFFIXES and not package_image:
+                    problems.append(f'forbidden file suffix: {name}')
+                entries[relative] = data
     except (OSError, zipfile.BadZipFile, RuntimeError, NotImplementedError) as error:
         return problems + [f'cannot read archive: {error}'], count
     problems.extend(_inventory_problems(entries))
+    problems.extend(content_problems(entries, forbidden))
+    problems.extend(metadata_problems(entries, prefix, portable=portable,
+                                      require_identity=require_identity))
     app_prefix = APP_BUILD + '/'
     app = {name[len(app_prefix):]: data for name, data in entries.items()
            if name.startswith(app_prefix)}
     problems.extend(f'{APP_BUILD}: {problem}' for problem in app_build_problems(app))
-    for name in sorted(disk_build.keys() | app.keys()):
+    for name in sorted(disk_build.keys() | app.keys()) if disk_build is not None else ():
         if name not in app:
             problems.append(f'app build file missing from archive: {name}')
         elif name not in disk_build:
             problems.append(f'app build file absent from on-disk build: {name}')
         elif app[name] != disk_build[name]:
             problems.append(f'app build bytes differ from on-disk build: {name}')
-    for name in sorted(app_sources - entries.keys()):
+    for name in sorted((app_sources or set()) - entries.keys()):
         problems.append(f'missing frontend/app source: {name}')
     return problems, count
 
@@ -121,7 +128,37 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dist', type=Path, default=Path('dist'))
     parser.add_argument('--build-dir', type=Path, default=Path(APP_BUILD))
+    parser.add_argument('--archive', type=Path, help='validate one ZIP without a checkout or build')
+    parser.add_argument('--kind', choices=('portable', 'source'))
+    parser.add_argument('--forbid-file', type=Path, help='local UTF-8 list; never ship this file')
+    parser.add_argument('--require-identity', action='store_true',
+                        help='require p10a identity (off until p10a lands)')
     args = parser.parse_args(argv)
+    if bool(args.archive) != bool(args.kind):
+        parser.error('--archive and --kind must be used together')
+    try:
+        images = dependency_images(Path(__file__).resolve().parent)
+        forbidden = tuple(line.strip() for line in args.forbid_file.read_text(encoding='utf-8-sig').splitlines()
+                          if line.strip() and not line.lstrip().startswith('#')) if args.forbid_file else ()
+    except (OSError, UnicodeError, ValueError, KeyError, TypeError) as error:
+        # No values from the private forbid list are included in diagnostics.
+        print(f'cannot load archive gate policy: {type(error).__name__}')
+        return 1
+    if args.archive:
+        suffix = '-windows-x64.zip' if args.kind == 'portable' else '-source.zip'
+        if not args.archive.name.startswith('TowerPilot-') or not args.archive.name.endswith(suffix):
+            print('archive filename does not match --kind')
+            return 1
+        prefix = args.archive.name[:-4] if args.kind == 'portable' else args.archive.name[:-len('-source.zip')]
+        problems, count = _check_archive(args.archive, prefix, portable=args.kind == 'portable',
+                                         images=images, forbidden=forbidden,
+                                         require_identity=args.require_identity)
+        for problem in problems:
+            print(f'{args.archive.name}: {problem}')
+        if problems:
+            return 1
+        print(f'OK: {args.archive.name}: {count} entries')
+        return 0
     dist = ROOT / args.dist
     build_dir = ROOT / args.build_dir
     problems = []
@@ -148,7 +185,8 @@ def main(argv: list[str]) -> int:
             (f'TowerPilot-{version}-source.zip', f'TowerPilot-{version}', False),
             (f'TowerPilot-{version}-windows-x64.zip', f'TowerPilot-{version}-windows-x64', True)):
         archive_problems, count = _check_archive(dist / filename, prefix, disk_build, app_sources,
-                                                 portable=portable)
+                                                 portable=portable, images=images, forbidden=forbidden,
+                                                 require_identity=args.require_identity)
         problems.extend(f'{filename}: {problem}' for problem in archive_problems)
         summaries.append(f'{filename}: {count} entries')
     if problems:
