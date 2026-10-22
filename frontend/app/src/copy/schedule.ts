@@ -13,6 +13,14 @@ export const schedule = {
   missing: entry(
     'This saved profile has no plan. The scheduler uses its legacy rules; no schedule hours are reported here.',
   ),
+  /** F6-11 RL8 (classic Plan tab "add a plan"). */
+  startPlan: entry(
+    'Start a day plan',
+    'Drafts one day plan used every day of the week, holding one block that runs the run you choose. Choose its block kind, then Save schedule. A saved plan replaces the legacy rules.',
+  ),
+  startRun: entry('Run for the first block'),
+  startNoRun: entry('Add a run in Runs first: every plan block names a run.'),
+  started: entry('Day plan started in your draft. Choose the block kind, then save.'),
   empty: entry(
     'This plan has no blocks. It is invalid; an empty plan does not enable fallback scheduling.',
   ),

@@ -29,6 +29,9 @@ export interface FreshBattleReport {
   readonly ageSec: number;
 }
 
+/** A battle report (or a routine observation without its own limit) older than this is stale. */
+export const BATTLE_REPORT_MAX_AGE_SEC = 15;
+
 /** EV-9 and F-055: elapsed is monotonic time since arrival, never wall time. */
 export function freshBattleReport(
   read: ContextRead,
@@ -51,9 +54,25 @@ export function freshBattleReport(
   if (serverTime === undefined || runtimeTime === undefined || elapsed === undefined || elapsed < 0)
     return unknownFact('battle_time_invalid');
   const ageSec = serverTime - runtimeTime + elapsed;
-  if (serverTime < runtimeTime || !Number.isFinite(ageSec) || ageSec < 0 || ageSec > 15)
+  if (
+    serverTime < runtimeTime ||
+    !Number.isFinite(ageSec) ||
+    ageSec < 0 ||
+    ageSec > BATTLE_REPORT_MAX_AGE_SEC
+  )
     return unknownFact('battle_report_old');
   return knownFact({ battle, serverTime, runtimeTime, ageSec }, serverTime);
+}
+
+/**
+ * F6-11 RL7: the server's clock now, in seconds: the battle read's `server_time` plus the
+ * monotonic time since it arrived (null when the read names no time).
+ */
+export function battleServerNow(body: unknown, elapsedSec: number): number | null {
+  const serverTime = finite(own(body, 'server_time'));
+  return serverTime === undefined || !Number.isFinite(elapsedSec) || elapsedSec < 0
+    ? null
+    : serverTime + elapsedSec;
 }
 
 /**

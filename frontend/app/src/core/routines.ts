@@ -1,4 +1,5 @@
 import {
+  BATTLE_REPORT_MAX_AGE_SEC,
   battleView,
   freshBattleReport,
   recordDecision,
@@ -8,6 +9,7 @@ import {
 import { commandTerminal, commandView, type CommandView } from './commands.ts';
 import type { ContextRead } from './connection.ts';
 import { finite, hasOwn, id, list, own, ownPath, record, revision, stringList } from './read.ts';
+import type { DiagnosticQuery } from './runtime.ts';
 import { opaqueToken, sameToken, type OpaqueToken } from './tokens.ts';
 import { decide, type ChipDecision } from './vocabulary.ts';
 
@@ -305,4 +307,147 @@ export function shoppingView(body: unknown): ShoppingView {
     reportedAt: finite(ownPath(battle, 'runtime', 'routines', 'shopping', 'server_time')) ?? null,
     warnings,
   };
+}
+
+/** F6-11 RL7 (spec F-062): the Ad gems collector's own bookkeeping, as reported. */
+export interface AdGemsDetails {
+  /** `visible`/`absent` only from an observation still fresh at `now`; else `unknown`. */
+  readonly visibility: 'visible' | 'absent' | 'unknown';
+  /** Why the visibility is unknown: the server's reason, or a stale observation. */
+  readonly visibilityReason: string | null;
+  readonly observationStale: boolean;
+  readonly firstSeenAt: number | null;
+  /**
+   * When the offer appeared: after `afterAt`, by its first sighting `byAt`, `gapSec` apart
+   * (the observation interval). Null when either end is not reported: the first sighting is
+   * not the spawn time.
+   */
+  readonly appearance: {
+    readonly afterAt: number;
+    readonly byAt: number;
+    readonly gapSec: number;
+  } | null;
+  readonly lastObservedAt: number | null;
+  /** Collection timing as the legacy page showed it (run-workspace.js observationValues). */
+  readonly collection: AdCollection;
+  readonly nextCheckAt: number | null;
+  readonly failedAttempt: {
+    readonly reason: string | null;
+    readonly observedAt: number | null;
+  } | null;
+  readonly counters: {
+    readonly attempts: number | null;
+    readonly confirmed: number | null;
+    readonly skips: number | null;
+    readonly windowsMissed: number | null;
+  };
+  readonly durations: {
+    readonly schedulingWaitSec: number | null;
+    readonly responseDelaySec: number | null;
+    readonly verificationSec: number | null;
+  };
+}
+
+export type AdCollection =
+  | { readonly kind: 'off' }
+  | {
+      readonly kind: 'window';
+      readonly responseDueAt: number | null;
+      readonly windowEndsAt: number;
+    }
+  | { readonly kind: 'scheduled'; readonly nextDueAt: number | null };
+
+/**
+ * RL7: the Ad gems details of `battle.runtime.routines.ad_gems` at `now` (server seconds:
+ * the report's runtime time plus the time since it arrived). An observation counts as
+ * fresh within the collector's own `stale_after_sec`, else the battle report's limit.
+ */
+export function adGemsDetails(raw: unknown, now: number | null): AdGemsDetails {
+  const at = (key: string) => finite(own(raw, key)) ?? null;
+  const lastObservedAt = at('last_observed_at');
+  const staleAfter = finite(own(raw, 'stale_after_sec')) ?? BATTLE_REPORT_MAX_AGE_SEC;
+  const fresh = lastObservedAt !== null && now !== null && now - lastObservedAt <= staleAfter;
+  const reported = own(raw, 'visibility');
+  const visibility =
+    fresh && (reported === 'visible' || reported === 'absent') ? reported : 'unknown';
+  const failed = own(raw, 'last_failed_attempt');
+  const count = (key: string) => finite(ownPath(raw, 'counters', key)) ?? null;
+  const seconds = (key: string) => finite(ownPath(raw, 'durations', key)) ?? null;
+  const firstSeenAt = at('first_seen_at');
+  const appearanceAfterAt = at('appearance_after_at');
+  return {
+    visibility,
+    visibilityReason: visibility !== 'unknown' ? null : (id(own(raw, 'visibility_reason')) ?? null),
+    observationStale: lastObservedAt !== null && !fresh,
+    firstSeenAt,
+    appearance:
+      firstSeenAt === null || appearanceAfterAt === null
+        ? null
+        : {
+            afterAt: appearanceAfterAt,
+            byAt: firstSeenAt,
+            gapSec: Math.max(0, firstSeenAt - appearanceAfterAt),
+          },
+    lastObservedAt,
+    collection: adCollection(raw),
+    nextCheckAt: at('next_check_at'),
+    failedAttempt:
+      record(failed) === undefined
+        ? null
+        : {
+            reason: id(own(failed, 'reason')) ?? id(own(failed, 'outcome')) ?? null,
+            observedAt: finite(own(failed, 'observed_at')) ?? null,
+          },
+    counters: {
+      attempts: count('attempts'),
+      confirmed: count('confirmed'),
+      skips: count('skips'),
+      windowsMissed: count('windows_missed'),
+    },
+    durations: {
+      schedulingWaitSec: seconds('scheduling_wait_sec'),
+      responseDelaySec: seconds('response_delay_sec'),
+      verificationSec: seconds('verification_sec'),
+    },
+  };
+}
+
+function adCollection(raw: unknown): AdCollection {
+  const manual = own(raw, 'manual_active') === true || own(raw, 'manual_pending') === true;
+  if (own(raw, 'enabled') === false && !manual) return { kind: 'off' };
+  const windowEndsAt = finite(own(raw, 'window_ends_at'));
+  return windowEndsAt === undefined
+    ? { kind: 'scheduled', nextDueAt: finite(own(raw, 'next_due_at')) ?? null }
+    : {
+        kind: 'window',
+        responseDueAt: finite(own(raw, 'response_due_at')) ?? null,
+        windowEndsAt,
+      };
+}
+
+/** RL7: Runtime events of this battle (and this routine's offer), from a minute before its first sighting. */
+export function routineEventsQuery(battle: unknown, routine: unknown): DiagnosticQuery {
+  const query: Record<string, string> = {};
+  const battleId = id(own(battle, 'id'));
+  const operationId = id(own(battle, 'operation_id'));
+  const offerId = id(own(routine, 'offer_id'));
+  const firstSeen = finite(own(routine, 'first_seen_at'));
+  if (battleId !== undefined) query['battle_id'] = battleId;
+  if (operationId !== undefined) query['operation_id'] = operationId;
+  if (offerId !== undefined) query['offer_id'] = offerId;
+  if (firstSeen !== undefined) query['since'] = String(Math.max(0, firstSeen - 60));
+  return query;
+}
+
+/** RL7 (spec F-063): Floating gems' latest refusal, as reported (null: none recorded). */
+export function floatingRefusal(
+  raw: unknown,
+): { readonly reason: string | null; readonly observedAt: number | null } | null {
+  const refusal = own(raw, 'last_refusal');
+  return record(refusal) === undefined
+    ? null
+    : {
+        reason: id(own(refusal, 'reason')) ?? null,
+        observedAt: finite(own(refusal, 'observed_at')) ?? null,
+      };
 }

@@ -26,7 +26,7 @@ import { sendKill } from '../api/intents/kill.ts';
 import { createIntentMachine, type IntentMachine } from '../api/intents/machine.ts';
 import { sendReconnect } from '../api/intents/reconnect.ts';
 import { sendRunNow } from '../api/intents/routineAction.ts';
-import { sendLiveSave, sendSavedSave } from '../api/intents/runs.ts';
+import { sendLiveReset, sendLiveSave, sendSavedSave } from '../api/intents/runs.ts';
 import type { SendResult } from '../api/intents/send.ts';
 import { sendCollect, startClick } from '../api/intents/start.ts';
 import { sendStop } from '../api/intents/stop.ts';
@@ -696,6 +696,25 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
         newKey,
       );
       report(result);
+      return Promise.resolve();
+    },
+    resetLive: (command) => {
+      if (!fenced(command)) return Promise.resolve();
+      report(
+        sendLiveReset(
+          machine,
+          {
+            operationId: command.operationId,
+            battleId: command.battleId,
+            generation: command.generation,
+            expectedRevision: command.expectedRevision,
+            paths: command.paths,
+            battleLabel: command.battleLabel,
+          },
+          tracker.current(),
+          newKey,
+        ),
+      );
       return Promise.resolve();
     },
     checkRun: () => {

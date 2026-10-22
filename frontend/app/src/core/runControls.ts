@@ -225,6 +225,49 @@ export function liveSaveGate(
   review: DraftReview,
   request: SaveRequest,
 ): SaveGate<LiveSave> {
+  const target = liveTarget(battle, reportFresh, request);
+  if (!target.enabled) return target;
+  if (Object.keys(review.invalid).length > 0) return { enabled: false, reason: 'invalid_value' };
+  if (Object.keys(review.changes).length === 0) return { enabled: false, reason: 'no_changes' };
+  return { enabled: true, command: { ...target.command, changes: review.changes } };
+}
+
+/** The battle a live change acts on, and its compare-and-set revision. */
+interface LiveTarget {
+  readonly operationId: string;
+  readonly battleId: string;
+  readonly generation: string;
+  readonly expectedRevision: number;
+}
+
+/** F6-11 RL1, RL2: a reset of live overrides; each path is sent as `null`. */
+export interface LiveReset extends LiveTarget {
+  readonly paths: readonly string[];
+}
+
+/**
+ * RL1, RL2 (spec F-060, Runs RUN-15): removing this battle's overrides of `paths` (the
+ * battle's starting value applies again, `backend/towerpilot_workflows/battles.py`
+ * `_set_overrides`). The same gate as a live save (RUN-09), and only paths this battle
+ * overrides with that override applied (a `waiting` one is still in flight).
+ */
+export function liveResetGate(
+  battle: unknown,
+  reportFresh: boolean,
+  paths: readonly string[],
+  request: SaveRequest,
+): SaveGate<LiveReset> {
+  const target = liveTarget(battle, reportFresh, request);
+  if (!target.enabled) return target;
+  if (paths.length === 0) return { enabled: false, reason: 'no_changes' };
+  return { enabled: true, command: { ...target.command, paths: [...paths] } };
+}
+
+function liveTarget(
+  battle: unknown,
+  reportFresh: boolean,
+  request: SaveRequest,
+): SaveGate<LiveTarget> {
   if (battle === null || battle === undefined) return { enabled: false, reason: 'no_battle' };
   if (own(battle, 'status') !== 'active') return { enabled: false, reason: 'battle_not_active' };
   const operationId = id(own(battle, 'operation_id'));
@@ -246,17 +289,9 @@ export function liveSaveGate(
   const application = controlApplication(battle);
   if (application === 'pending') return { enabled: false, reason: 'change_pending' };
   if (application === 'unknown') return { enabled: false, reason: 'revision_unknown' };
-  if (Object.keys(review.invalid).length > 0) return { enabled: false, reason: 'invalid_value' };
-  if (Object.keys(review.changes).length === 0) return { enabled: false, reason: 'no_changes' };
   return {
     enabled: true,
-    command: {
-      operationId,
-      battleId,
-      generation,
-      expectedRevision: control,
-      changes: review.changes,
-    },
+    command: { operationId, battleId, generation, expectedRevision: control },
   };
 }
 

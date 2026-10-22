@@ -5,6 +5,25 @@ function number(value: number): string {
   return String(value);
 }
 
+/** RL7 times are seconds since a server time (negative: still to come); null: no server clock. */
+function when(since: number | null): string {
+  if (since === null) return 'at a time not known';
+  return since < 0 ? `in ${durationText(-since)}` : `${durationText(since)} ago`;
+}
+function dueText(since: number | null): string {
+  if (since === null) return 'at a time not known';
+  return since < 0 ? `in ${durationText(-since)}` : 'due now, waiting for the automation';
+}
+function capital(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+function count(value: number | null): string {
+  return value === null ? 'not reported' : String(value);
+}
+function seconds(value: number | null): string {
+  return value === null ? 'not reported' : `${String(value)} s`;
+}
+
 /** Catalogue entries of the Runs page (brief backend/logs/reviews/ui-pages/runs-brief.md). */
 export const runs = {
   pageName: entry('Runs'),
@@ -23,12 +42,82 @@ export const runs = {
       'Allowed ranges not read yet',
       'The ranges come from the saved settings of this battle run; the server checks every value either way.',
     ),
+    overrides: {
+      title: entry(
+        'Changed for this battle',
+        'These values differ from what the battle started with. Using the starting value again removes the change for this battle only.',
+      ),
+      reset: entry("Use the battle's starting value"),
+      confirm: entry("Use the battle's starting value?"),
+      effect: entry(
+        'This battle goes back to the value it started with. That can differ from the saved settings below if they changed since the battle started. Nothing else changes.',
+      ),
+      send: entry('Use starting value'),
+      cancel: entry('Cancel'),
+    },
     marks: {
       changed: entry('Changed for this battle'),
       waiting: entry(
         'Waiting to apply',
         'The battle accepted this change; the automation has not taken it yet.',
       ),
+    },
+    /** F6-11 RL7 (spec F-062, F-063): what each routine reported in this battle. */
+    details: {
+      title: (routine: string) => made(`${routine}: battle details`),
+      lastKnown: entry(
+        'Last known values',
+        'The battle report is not fresh, so these values may have changed since.',
+      ),
+      inspect: entry('Events of this battle on Runtime'),
+      raw: entry('Reported values', 'What the battle reported for this routine, exactly as sent.'),
+      offer: entry('Offer'),
+      visibility: {
+        visible: entry('Seen on the last battle screen'),
+        absent: entry('Not on the last battle screen'),
+        unknown: entry('Not known'),
+      },
+      oldObservation: entry('the last look at the screen is too old'),
+      firstSeen: entry('First seen'),
+      notSeen: entry('Not seen yet'),
+      appeared: entry(
+        'Appeared',
+        'The offer appeared after the earlier look and was seen at the later one; the first sighting is not the moment it appeared.',
+      ),
+      appearedUnknown: entry('Not known; the first sighting is not when it appeared'),
+      appearedBetween: (after: number | null, by: number | null, gapSec: number) =>
+        made(`After ${when(after)}, seen ${when(by)} (${durationText(gapSec)} between looks)`),
+      lastLook: entry('Last look at the battle'),
+      noLook: entry('No look recorded'),
+      collection: entry('Collection'),
+      collectionOff: entry('Collection off'),
+      responseWindow: (due: number | null, closes: number | null) =>
+        made(`Response ${dueText(due)}; window closes ${dueText(closes)}`),
+      windowCloses: (closes: number | null) => made(`Window closes ${dueText(closes)}`),
+      nextWindow: (due: number | null) => made(`Next window ${dueText(due)}`),
+      nextWindowUnknown: entry('Next window not reported'),
+      nextLook: entry('Next look'),
+      due: (due: number | null) => made(capital(dueText(due))),
+      ago: (since: number | null) => made(capital(when(since))),
+      notReported: entry('Not reported'),
+      failedAttempt: entry('Latest failed attempt'),
+      refusal: entry('Latest refusal'),
+      noneRecorded: entry('None recorded'),
+      counts: entry('Counts'),
+      countsLine: (
+        attempts: number | null,
+        confirmed: number | null,
+        skips: number | null,
+        missed: number | null,
+      ) =>
+        made(
+          `Attempts ${count(attempts)}, confirmed ${count(confirmed)}, skipped ${count(skips)}, windows missed ${count(missed)}`,
+        ),
+      timing: entry('Last timing'),
+      timingLine: (wait: number | null, delay: number | null, verify: number | null) =>
+        made(
+          `Schedule wait ${seconds(wait)}, response delay ${seconds(delay)}, verification ${seconds(verify)}`,
+        ),
     },
   },
   saved: {

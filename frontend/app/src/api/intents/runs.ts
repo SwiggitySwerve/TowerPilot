@@ -64,6 +64,56 @@ export interface LiveSaveInput {
   readonly battleLabel: string | null;
 }
 
+export interface LiveResetInput {
+  readonly operationId: string;
+  readonly battleId: string;
+  readonly generation: string;
+  readonly expectedRevision: number;
+  readonly paths: readonly string[];
+  readonly battleLabel: string | null;
+}
+
+/**
+ * F6-11 RL1, RL2: remove this battle's overrides of `paths` (each sent as `null`, so the
+ * battle's starting value applies again). The same route, target and resend rule as a
+ * live save: one live change of a battle at a time, resent only by a person's click.
+ */
+export function sendLiveReset(
+  machine: IntentMachine,
+  input: LiveResetInput,
+  context: PageContext | null,
+  newKey: () => string,
+): SendResult {
+  const target = `live:${input.battleId}`;
+  return sendOnce(machine, target, context, () => {
+    const key = newKey();
+    return machine.send({
+      kind: 'live_controls',
+      target,
+      endpoint: 'liveControls',
+      path: `/api/operations/${encodeURIComponent(input.operationId)}/live-controls`,
+      body: {
+        battle_id: input.battleId,
+        generation: input.generation,
+        expected_revision: input.expectedRevision,
+        idempotency_key: key,
+        changes: Object.fromEntries(input.paths.map((path) => [path, null])),
+      },
+      key,
+      meta: {
+        operationId: input.operationId,
+        battleId: input.battleId,
+        generation: input.generation,
+        expectedRevision: input.expectedRevision,
+        resetPaths: input.paths,
+        ...(input.battleLabel === null ? {} : { battleLabel: input.battleLabel }),
+      },
+      context,
+      supersedes: [],
+    });
+  });
+}
+
 export function sendLiveSave(
   machine: IntentMachine,
   input: LiveSaveInput,

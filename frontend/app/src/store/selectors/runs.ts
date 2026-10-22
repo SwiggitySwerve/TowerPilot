@@ -1,10 +1,11 @@
-import { battleIdentity, freshBattleReport } from '../../core/battle.ts';
+import { battleIdentity, battleServerNow, freshBattleReport } from '../../core/battle.ts';
 import { blueprintOf } from '../../core/gemSource.ts';
 import { entries, finite, own, ownPath, text } from '../../core/read.ts';
 import { readiness, runDefined, type ReadinessView } from '../../core/readiness.ts';
 import {
   controlGroups,
   liveMark,
+  liveResetGate,
   liveSaveGate,
   reviewDraft,
   savedSaveGate,
@@ -14,8 +15,16 @@ import {
   type LiveMark,
   type SaveRequest,
 } from '../../core/runControls.ts';
+import {
+  adGemsDetails,
+  floatingRefusal,
+  routineEventsQuery,
+  type AdCollection,
+  type AdGemsDetails,
+} from '../../core/routines.ts';
+import { runtimeHash } from '../../core/runtime.ts';
 import { fromServer, type ServerText } from '../../copy/server.ts';
-import type { SaveLiveCommand, SaveRunCommand } from '../commands.ts';
+import type { ResetLiveCommand, SaveLiveCommand, SaveRunCommand } from '../commands.ts';
 import { refusedSaveReadback, settledByRead } from '../fences.ts';
 import { contextIntents, contextScopeKey, unresolvedIntent } from '../intents.ts';
 import { answeredBody, contextReadOf, latestRead, readAgeSec } from '../reads.ts';
@@ -65,6 +74,18 @@ export interface EditorVM<C> {
   /** How many fields the save would change, and how many are invalid. */
   readonly changeCount: number;
   readonly invalidCount: number;
+  /**
+   * F6-11 RL1: the live editor's overrides of this battle, each with its reset to the
+   * battle's starting value (empty for the saved editor and for a battle with none).
+   */
+  readonly resets: readonly LiveResetVM[];
+}
+
+export interface LiveResetVM {
+  readonly path: string;
+  readonly routine: string;
+  readonly field: string;
+  readonly reset: CommandVM<ResetLiveCommand>;
 }
 
 /**
@@ -166,6 +187,56 @@ export interface LiveSectionVM {
   readonly earlier: readonly RunOutcomeVM[];
   /** The newest live change of exactly this battle and generation (F6R-03), or null. */
   readonly outcome: RunOutcomeVM | null;
+  /** F6-11 RL7: each reported routine's details (empty without a tracked battle). */
+  readonly details: readonly RoutineDetailsVM[];
+  /** The battle report is not fresh: the details are the last known ones. */
+  readonly detailsLastKnown: boolean;
+}
+
+/** An Ad gems time: the server's date (seconds) and how long ago or how soon, from the server clock. */
+export interface TimeVM {
+  readonly at: number;
+  /** Seconds since `at` (negative: still to come), or null without a server clock. */
+  readonly sinceSec: number | null;
+}
+
+export interface AdDetailsVM {
+  readonly visibility: 'visible' | 'absent' | 'unknown';
+  readonly visibilityReason: ServerText<'id'> | null;
+  readonly observationStale: boolean;
+  readonly firstSeen: TimeVM | null;
+  readonly appearance: {
+    readonly after: TimeVM;
+    readonly by: TimeVM;
+    readonly gapSec: number;
+  } | null;
+  readonly lastObserved: TimeVM | null;
+  readonly collection:
+    | { readonly kind: 'off' }
+    | { readonly kind: 'window'; readonly responseDue: TimeVM | null; readonly windowEnds: TimeVM }
+    | { readonly kind: 'scheduled'; readonly nextDue: TimeVM | null };
+  readonly nextCheck: TimeVM | null;
+  readonly failedAttempt: {
+    readonly reason: ServerText<'id'> | null;
+    readonly at: TimeVM | null;
+  } | null;
+  readonly counters: AdGemsDetails['counters'];
+  readonly durations: AdGemsDetails['durations'];
+}
+
+/** F6-11 RL7: one routine's details in the live section (spec F-062, F-063). */
+export interface RoutineDetailsVM {
+  readonly routine: string;
+  /** The routine's name as sent, shown beside "Other routine" when the page has no word for it. */
+  readonly code: ServerText<'id'> | null;
+  /** The server's own `runtime.routines.<routine>` object, as sent (diagnostic body). */
+  readonly raw: ServerText<'detail'> | null;
+  readonly ad: AdDetailsVM | null;
+  /** Floating gems only: its latest refusal, or null when none is recorded. */
+  readonly refusal:
+    { readonly reason: ServerText<'id'> | null; readonly at: TimeVM | null } | null | undefined;
+  /** Runtime page events of this battle (and offer), `#runtime?...`. */
+  readonly inspectHash: string;
 }
 
 export interface RunsPageVM {
@@ -463,6 +534,7 @@ function savedSection(state: DashboardState, lines: readonly OutcomeLineVM[]): S
       discard: Object.keys(draft).length > 0,
       changeCount: Object.keys(review.changes).length,
       invalidCount: Object.keys(review.invalid).length,
+      resets: [],
     },
   };
 }
@@ -482,6 +554,8 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
       editor: null,
       outcome: null,
       earlier: earlierOutcomes(state, lines, null),
+      details: [],
+      detailsLastKnown: false,
     };
   if (battle === null || battle === undefined)
     return {
@@ -493,6 +567,8 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
       editor: null,
       outcome: null,
       earlier: earlierOutcomes(state, lines, null),
+      details: [],
+      detailsLastKnown: false,
     };
   const identity = battleIdentity(battle, last === null ? NaN : last.arrivedAtMs / 1000);
   const shown = identity.kind === 'known' ? identity.value : null;
@@ -515,7 +591,70 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
     contextReadOf(boundsRead)?.kind === 'answered'
       ? boundsRead.outcome.body
       : undefined;
-  if (shown === null) return { ...base, boundsKnown: boundsBody !== undefined, editor: null };
+  const elapsedDetails = last === null ? 0 : readAgeSec(state, last);
+  const now = battleServerNow(body, elapsedDetails);
+  const timeAt = (at: number): TimeVM => ({
+    at,
+    sinceSec: now === null ? null : Math.floor(now - at),
+  });
+  const time = (at: number | null): TimeVM | null => (at === null ? null : timeAt(at));
+  const collection = (c: AdCollection): AdDetailsVM['collection'] =>
+    c.kind === 'off'
+      ? c
+      : c.kind === 'window'
+        ? { kind: 'window', responseDue: time(c.responseDueAt), windowEnds: timeAt(c.windowEndsAt) }
+        : { kind: 'scheduled', nextDue: time(c.nextDueAt) };
+  const routines = ownPath(battle, 'runtime', 'routines');
+  const details: RoutineDetailsVM[] = entries(routines).map(([routine, raw]) => {
+    const ad = routine === 'ad_gems' ? adGemsDetails(raw, now) : null;
+    const refusal = routine === 'floating_gems' ? floatingRefusal(raw) : undefined;
+    return {
+      routine,
+      code: fromServer('id', routine),
+      raw: fromServer('detail', JSON.stringify(raw, null, 2)),
+      ad:
+        ad === null
+          ? null
+          : {
+              visibility: ad.visibility,
+              visibilityReason: fromServer('id', ad.visibilityReason),
+              observationStale: ad.observationStale,
+              firstSeen: time(ad.firstSeenAt),
+              appearance:
+                ad.appearance === null
+                  ? null
+                  : {
+                      after: timeAt(ad.appearance.afterAt),
+                      by: timeAt(ad.appearance.byAt),
+                      gapSec: ad.appearance.gapSec,
+                    },
+              lastObserved: time(ad.lastObservedAt),
+              collection: collection(ad.collection),
+              nextCheck: time(ad.nextCheckAt),
+              failedAttempt:
+                ad.failedAttempt === null
+                  ? null
+                  : {
+                      reason: fromServer('id', ad.failedAttempt.reason),
+                      at: time(ad.failedAttempt.observedAt),
+                    },
+              counters: ad.counters,
+              durations: ad.durations,
+            },
+      refusal:
+        refusal === undefined
+          ? undefined
+          : refusal === null
+            ? null
+            : { reason: fromServer('id', refusal.reason), at: time(refusal.observedAt) },
+      inspectHash: runtimeHash(routineEventsQuery(battle, raw)),
+    };
+  });
+  const detailsFresh =
+    freshBattleReport(contextReadOf(last), shown, elapsedDetails).kind === 'known';
+  const withDetails = { ...base, details, detailsLastKnown: details.length > 0 && !detailsFresh };
+  if (shown === null)
+    return { ...withDetails, boundsKnown: boundsBody !== undefined, editor: null };
   const groups = controlGroups(
     ownPath(battle, 'capabilities', 'controls'),
     own(battle, 'effective'),
@@ -529,7 +668,7 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
   const request = requestOn(state, records, last?.startedSeq ?? 0);
   const gate = liveSaveGate(battle, fresh, review, request);
   return {
-    ...base,
+    ...withDetails,
     boundsKnown: boundsBody !== undefined,
     editor: {
       scope,
@@ -548,6 +687,32 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
       discard: Object.keys(draft).length > 0,
       changeCount: Object.keys(review.changes).length,
       invalidCount: Object.keys(review.invalid).length,
+      resets: groups.flatMap((group) =>
+        group.fields.flatMap((field): LiveResetVM[] => {
+          if (liveMark(battle, field) !== 'changed') return [];
+          const reset = liveResetGate(battle, fresh, [field.path], request);
+          return [
+            {
+              path: field.path,
+              routine: field.routine,
+              field: field.field,
+              reset: reset.enabled
+                ? commandVM<ResetLiveCommand>(true, true, null, false, {
+                    epoch: state.epoch,
+                    ...reset.command,
+                    battleLabel: text(own(battle, 'label')) ?? null,
+                  })
+                : commandVM<ResetLiveCommand>(
+                    true,
+                    false,
+                    reset.reason,
+                    request === 'sending',
+                    null,
+                  ),
+            },
+          ];
+        }),
+      ),
     },
   };
 }

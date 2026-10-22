@@ -1,8 +1,9 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { copy } from '../../copy/catalogue.ts';
 import type { CopyEntry, CopyNode } from '../../copy/text.ts';
-import type { EditorVM, RunFieldVM, RunGroupVM } from '../../store/selectors/runs.ts';
+import type { EditorVM, LiveResetVM, RunFieldVM, RunGroupVM } from '../../store/selectors/runs.ts';
 import { Button } from '../../ui/Button.tsx';
+import { ConfirmDialog } from '../../ui/ConfirmDialog.tsx';
 import { Why } from '../../ui/Why.tsx';
 import { useDashboard } from '../dashboard/context.ts';
 
@@ -218,6 +219,108 @@ function SwitchRow({
   );
 }
 
+function ResetRow({
+  item,
+  onAsk,
+}: {
+  readonly item: LiveResetVM;
+  readonly onAsk: (item: LiveResetVM) => void;
+}) {
+  const own = useId();
+  const reasons: Readonly<Record<string, CopyEntry>> = t.reasons;
+  const reset = item.reset;
+  return (
+    <li className="tp-run-reset" data-path={item.path}>
+      <span id={`${own}-name`} className="tp-run-reset__name">
+        <span>{entryOf(t.routines, item.routine, t.otherRoutine).short}</span>
+        <span>{entryOf(t.fields, item.field, t.otherField).short}</span>
+      </span>
+      {reset.enabled ? (
+        <Button
+          tier="quiet"
+          label={t.live.overrides.reset.short}
+          focusKey={`reset:${item.path}`}
+          targetId={`${own}-name`}
+          onClick={() => {
+            onAsk(item);
+          }}
+        />
+      ) : (
+        <>
+          <Button
+            tier="quiet"
+            label={t.live.overrides.reset.short}
+            focusKey={`reset:${item.path}`}
+            targetId={`${own}-name`}
+            busy={reset.sending}
+            disabled
+            reasonId={`${own}-reason`}
+            onClick={() => undefined}
+          />
+          <span id={`${own}-reason`} className="tp-reason">
+            {entryOf(reasons, reset.reason ?? 'no_changes', t.reasons.no_changes).short}
+          </span>
+        </>
+      )}
+    </li>
+  );
+}
+
+/**
+ * F6-11 RL1 (spec F-060, RUN-15): this battle's overrides, each with "Use the battle's
+ * starting value" behind a confirmation that says what that value is relative to.
+ */
+function LiveResets({ resets }: { readonly resets: readonly LiveResetVM[] }) {
+  const { commands } = useDashboard();
+  const [asking, setAsking] = useState<LiveResetVM | null>(null);
+  const titleId = useId();
+  // A confirmation whose reset is no longer offered closes and sends nothing.
+  const current =
+    asking === null ? null : (resets.find((item) => item.path === asking.path) ?? null);
+  if (asking !== null && current?.reset.enabled !== true) setAsking(null);
+  if (resets.length === 0) return null;
+  const o = t.live.overrides;
+  return (
+    <section className="tp-run-resets" aria-labelledby={titleId}>
+      <h3 id={titleId} className="tp-run-resets__title">
+        <span>{o.title.short}</span>
+        {o.title.why === undefined ? null : <Why why={o.title.why} />}
+      </h3>
+      <ul className="tp-run-resets__list">
+        {resets.map((item) => (
+          <ResetRow key={item.path} item={item} onAsk={setAsking} />
+        ))}
+      </ul>
+      <ConfirmDialog
+        open={asking !== null}
+        tier="primary"
+        title={o.confirm.short}
+        body={
+          <>
+            {current === null ? null : (
+              <p className="tp-run-reset__name">
+                <span>{entryOf(t.routines, current.routine, t.otherRoutine).short}</span>
+                <span>{entryOf(t.fields, current.field, t.otherField).short}</span>
+              </p>
+            )}
+            <p>{o.effect.short}</p>
+          </>
+        }
+        confirmLabel={o.send.short}
+        cancelLabel={o.cancel.short}
+        onCancel={() => {
+          setAsking(null);
+        }}
+        onConfirm={() => {
+          setAsking(null);
+          const command = current?.reset.command;
+          if (current?.reset.enabled === true && command != null) void commands.resetLive(command);
+        }}
+      />
+    </section>
+  );
+}
+
 /**
  * One editor (RUN-02 to RUN-05, RUN-08): the routine rows of a scope, then its
  * Save and Discard. Save is enabled only when core's gate allows it; a
@@ -261,6 +364,7 @@ export function RunEditor<C>({
           <SwitchRow groups={editor.groups.filter(switchOnly)} scope={editor.scope} live={live} />
         ) : null}
       </ul>
+      {live ? <LiveResets resets={editor.resets} /> : null}
       <div className="tp-run-editor__actions">
         {save.enabled && command !== null ? (
           <Button

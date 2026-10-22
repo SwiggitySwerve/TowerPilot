@@ -225,6 +225,12 @@ function readMeta(value: unknown): IntentMeta | null {
     if (valid === undefined) return null;
     meta['patchPath'] = Object.freeze([...valid]);
   }
+  const resetPaths = own(value, 'resetPaths');
+  if (resetPaths !== undefined) {
+    const valid = stringList(resetPaths);
+    if (valid === undefined) return null;
+    meta['resetPaths'] = Object.freeze([...valid]);
+  }
   const patchRemove = own(value, 'patchRemove');
   if (patchRemove !== undefined) {
     if (typeof patchRemove !== 'boolean') return null;

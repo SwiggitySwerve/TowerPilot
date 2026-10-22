@@ -131,6 +131,7 @@ export function recordingCommands(): RecordingCommands {
     discardDraft: vi.fn(() => undefined),
     saveRun: vi.fn(done),
     saveLive: vi.fn(done),
+    resetLive: vi.fn(done),
     checkRun: vi.fn(() => undefined),
     checkBattle: vi.fn(() => undefined),
     checkEarlierBattle: vi.fn(done),

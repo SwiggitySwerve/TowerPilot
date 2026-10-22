@@ -167,3 +167,12 @@
     min-width: 0;
   }
 }
+
+/* F6-11 RL8: start a day plan when the profile has none. */
+.tp-schedule__start {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--tp-space-2);
+  min-width: 0;
+}

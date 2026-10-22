@@ -279,3 +279,106 @@
     font-size: var(--tp-font-size-13);
   }
 }
+
+.tp-run-resets {
+  margin: var(--tp-space-2) 0;
+  min-width: 0;
+}
+
+.tp-run-resets__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-1) var(--tp-space-2);
+  margin: 0 0 var(--tp-space-1);
+  font-size: var(--tp-font-size-13);
+}
+
+.tp-run-resets__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tp-run-reset {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-1) var(--tp-space-2);
+  min-width: 0;
+}
+
+.tp-run-reset__name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 var(--tp-space-1);
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .tp-run-reset .tp-button {
+    min-height: var(--tp-control-height-touch);
+  }
+}
+
+/* F6-11 RL7: battle details per routine, read-only. */
+.tp-run-details-all {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-1);
+  min-width: 0;
+}
+
+.tp-run-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  min-width: 0;
+}
+
+.tp-run-details__list {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: var(--tp-space-1) var(--tp-space-3);
+  margin: 0;
+}
+
+.tp-run-details__row {
+  display: contents;
+}
+
+.tp-run-details__row dt {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--tp-space-1);
+  font-weight: 600;
+}
+
+.tp-run-details__row dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.tp-run-details__pair {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 var(--tp-space-1);
+}
+
+.tp-run-details__inspect {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  align-self: flex-start;
+}
+
+@media (max-width: 700px) {
+  .tp-run-details__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

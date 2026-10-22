@@ -140,6 +140,8 @@ export interface IntentMeta {
   readonly draft?: Readonly<Record<string, string | boolean>>;
   /** A live save: the battle's label as the read named it, to identify an earlier battle's line. */
   readonly battleLabel?: string;
+  /** F6-11 RL1, RL2: a live reset: the paths sent as `null` (the battle's starting value). */
+  readonly resetPaths?: readonly string[];
   /**
    * A Profiles write (profiles brief P1 to P5): the account id, profile name or destination
    * it names, the tier it sets, and whether the destination was already listed at the click.

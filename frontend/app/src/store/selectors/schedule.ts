@@ -186,6 +186,13 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
     ],
     warnings: messages(own(e?.source, 'warnings')),
     hasDraftPlan: draft !== null,
+    /** F6-11 RL8: the read profile has no plan and no draft started one. */
+    planMissing:
+      draft === null &&
+      e !== null &&
+      !e.busy &&
+      own(e.source, 'ok') === true &&
+      own(own(e.source, 'profile'), 'plan') === undefined,
     submittedDiffers:
       draft !== null && !viewEqual(schedulePlan(draft), ownPath(e?.source, 'profile', 'plan')),
     observationState,

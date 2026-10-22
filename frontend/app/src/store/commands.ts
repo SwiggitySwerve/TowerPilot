@@ -105,6 +105,16 @@ export interface SaveLiveCommand extends Fenced {
   readonly battleLabel: string | null;
 }
 
+/** F6-11 RL1, RL2: a reset of this battle's overrides, as the live editor offered it. */
+export interface ResetLiveCommand extends Fenced {
+  readonly operationId: string;
+  readonly battleId: string;
+  readonly generation: string;
+  readonly expectedRevision: number;
+  readonly paths: readonly string[];
+  readonly battleLabel: string | null;
+}
+
 export interface DashboardCommands {
   /** INV-1: one Pause click (context per OD-13; nothing new while one is in flight; the same request again while unknown). */
   readonly pause: () => Promise<void>;
@@ -148,6 +158,8 @@ export interface DashboardCommands {
   readonly discardDraft: (scope: string) => void;
   readonly saveRun: (command: SaveRunCommand) => Promise<void>;
   readonly saveLive: (command: SaveLiveCommand) => Promise<void>;
+  /** F6-11 RL1: send the reset the live editor offered (one POST, never resent on its own). */
+  readonly resetLive: (command: ResetLiveCommand) => Promise<void>;
   /** RUN-06, RUN-07: "Check saved values" reads the shown run again (a GET, never a write). */
   readonly checkRun: () => void;
   /** RUN-10: read the tracked battle again (a GET, never a write). */

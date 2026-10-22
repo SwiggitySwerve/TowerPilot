@@ -1,18 +1,63 @@
 import { useEffect, useLayoutEffect, useState, useSyncExternalStore } from 'react';
 import { schedule as t } from '../../copy/schedule.ts';
 import { currentSchedule, type ScheduleStore } from '../../store/schedule.ts';
-import { WEEK_SLOTS, type BlockField } from '../../store/scheduleDraft.ts';
+import type { ServerText } from '../../copy/server.ts';
+import { FIRST_DAY, WEEK_SLOTS, type BlockField } from '../../store/scheduleDraft.ts';
 import { selectSchedule } from '../../store/selectors/schedule.ts';
 import { ConfirmDialog } from '../../ui/ConfirmDialog.tsx';
 import { Button } from '../../ui/Button.tsx';
 import { useAnnounce } from '../../ui/LiveRegion.tsx';
 import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
 import { pageHref } from '../../ui/routes.ts';
+import { Why } from '../../ui/Why.tsx';
 import { TopBar } from '../dashboard/topBar/TopBar.tsx';
 import './schedule.css';
 
 function fieldId(key: string, field: string): string {
   return `schedule:${encodeURIComponent(key)}:${field}`;
+}
+
+/** F6-11 RL8: draft a first plan for a profile without one; Save schedule sends it. */
+function StartPlan({
+  runs,
+  onStart,
+}: {
+  readonly runs: readonly { readonly key: string; readonly label: ServerText<'name'> | null }[];
+  readonly onStart: (run: string) => void;
+}) {
+  const [picked, setPicked] = useState('');
+  const named = runs.filter((run) => run.label !== null);
+  const run = named.some((item) => item.key === picked) ? picked : (named[0]?.key ?? '');
+  if (named.length === 0) return <p>{t.startNoRun.short}</p>;
+  return (
+    <div className="tp-schedule__start">
+      <label className="tp-schedule__run">
+        <span>{t.startRun.short}</span>
+        <select
+          id="schedule:start-run"
+          value={run}
+          onChange={(event) => {
+            setPicked(event.currentTarget.value);
+          }}
+        >
+          {named.map((item) =>
+            item.label === null ? null : (
+              <ServerOption key={item.key} value={item.key} label={item.label} />
+            ),
+          )}
+        </select>
+      </label>
+      <Button
+        tier="primary"
+        id="schedule:start"
+        label={t.startPlan.short}
+        onClick={() => {
+          onStart(run);
+        }}
+      />
+      <Why why={t.startPlan.why} />
+    </div>
+  );
 }
 export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore }) {
   const state = useSyncExternalStore(schedule.subscribe, schedule.getSnapshot);
@@ -144,6 +189,16 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
         {entry?.busy === true ? <p role="status">{t.reading.short}</p> : null}
         {entry?.readError === true ? <p role="alert">{t.readError.short}</p> : null}
         {entry?.source !== undefined && !vm.hasDraftPlan ? <p>{t.missing.short}</p> : null}
+        {vm.planMissing ? (
+          <StartPlan
+            runs={vm.runs}
+            onStart={(run) => {
+              if (!schedule.start(run)) return;
+              announce(t.started.short);
+              focus(fieldId(`${FIRST_DAY}:0`, 'block'));
+            }}
+          />
+        ) : null}
         {vm.empty ? <p role="alert">{t.empty.short}</p> : null}
         <p>
           <a id="schedule:profiles" href="/ui/index.html#profiles">

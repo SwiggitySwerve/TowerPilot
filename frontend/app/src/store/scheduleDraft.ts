@@ -52,6 +52,34 @@ export function scheduleDraft(profile: unknown): ScheduleDraft | null {
   };
 }
 
+/** F6-11 RL8: the day plan "Start a day plan" drafts (classic.html addPlan: one day, used every day). */
+export const FIRST_DAY = 'every_day';
+
+/**
+ * F6-11 RL8: a first plan for a profile without one: one day plan used for the whole week,
+ * holding one block that runs `run`. Its kind is left blank for the person to choose; the
+ * server checks it against the run's kind on save.
+ */
+export function firstPlanDraft(run: string): ScheduleDraft {
+  return {
+    original: undefined,
+    days: {
+      [FIRST_DAY]: [
+        {
+          key: `${FIRST_DAY}:0`,
+          original: undefined,
+          block: '',
+          blueprint: run,
+          after: '',
+          until: '',
+          count: '',
+        },
+      ],
+    },
+    week: { default: FIRST_DAY },
+  };
+}
+
 /** Session data is untrusted; keep raw strings without re-parsing numeric inputs. */
 export function restoreScheduleDraft(value: unknown): ScheduleDraft | null {
   const days: Record<string, readonly ScheduleBlock[]> = {};

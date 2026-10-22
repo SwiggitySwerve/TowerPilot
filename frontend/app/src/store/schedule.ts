@@ -4,6 +4,8 @@ import type { ScheduleApi } from '../api/schedule.ts';
 import { own, text } from '../core/read.ts';
 import { createStore, viewEqual, type Store } from './store.ts';
 import {
+  FIRST_DAY,
+  firstPlanDraft,
   planOf,
   profileRevision,
   restoreScheduleDraft,
@@ -46,6 +48,8 @@ export interface ScheduleStore extends Store<ScheduleState> {
   readonly edit: (key: string, field: BlockField, value: string) => void;
   readonly mapWeek: (slot: string, value: string) => void;
   readonly add: () => string | null;
+  /** F6-11 RL8: draft a first plan for a profile that has none (nothing is sent). */
+  readonly start: (run: string) => boolean;
   readonly move: (key: string, direction: -1 | 1) => number | null;
   readonly remove: (key: string) => string | null;
   readonly save: () => void;
@@ -302,6 +306,21 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
         days: { ...draft.days, [day]: [...(draft.days[day] ?? []), { ...seed, key }] },
       }));
       return key;
+    },
+    start: (run) => {
+      let started = false;
+      activeChange((e) => {
+        if (e.draft !== null || e.source === undefined || own(e.source, 'ok') !== true) return e;
+        started = true;
+        return {
+          ...e,
+          draft: firstPlanDraft(run),
+          day: FIRST_DAY,
+          dirty: true,
+          version: e.version + 1,
+        };
+      });
+      return started;
     },
     move: (key, direction) => {
       let position: number | null = null;

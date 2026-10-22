@@ -17,6 +17,7 @@ import {
 } from '../dashboard/context.ts';
 import { RevocationFallback } from '../dashboard/shared/RevocationFallback.tsx';
 import { TopBar } from '../dashboard/topBar/TopBar.tsx';
+import { BattleDetails } from './BattleDetails.tsx';
 import { RunEditor } from './RunEditor.tsx';
 import { RunOutcome } from './RunOutcome.tsx';
 import './runs.css';
@@ -48,7 +49,7 @@ function LiveSection() {
       />
     );
     // F6R-04: the lines of a battle no longer shown stay, each naming its battle.
-    return line === null && live.earlier.length === 0 ? (
+    return line === null && live.earlier.length === 0 && live.details.length === 0 ? (
       <RegionInline>
         <span>{entry.short}</span>
         {check}
@@ -63,6 +64,7 @@ function LiveSection() {
           <RunOutcome key={earlier.line.id} outcome={earlier} />
         ))}
         {line === null ? null : <RunOutcome outcome={line} />}
+        <BattleDetails details={live.details} lastKnown={live.detailsLastKnown} />
       </RegionBody>
     );
   }
@@ -105,6 +107,7 @@ function LiveSection() {
         {live.earlier.map((earlier) => (
           <RunOutcome key={earlier.line.id} outcome={earlier} />
         ))}
+        <BattleDetails details={live.details} lastKnown={live.detailsLastKnown} />
       </RegionBody>
     </>
   );

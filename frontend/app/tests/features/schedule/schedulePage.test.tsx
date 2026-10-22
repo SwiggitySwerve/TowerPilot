@@ -666,3 +666,147 @@ describe('Schedule Wanted rows', () => {
     }
   });
 });
+
+describe('F6-11 RL8 start a day plan (backend/logs/reviews/ui-pages/f6-11-runs-leftovers-brief.md)', () => {
+  const NO_PLAN = 'schedule_plan.profile_without_a_plan_has_no_plan_member';
+  const CREATED = 'profile_patch.a_plan_added_to_a_profile_that_has_none';
+  const FIRST_PLAN = {
+    days: { every_day: [{ block: 'coin', blueprint: 'farm' }] },
+    week: { default: 'every_day' },
+  };
+  async function startPlan(s: Awaited<ReturnType<typeof setup>>) {
+    await change(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Start a day plan' }));
+    });
+    expect(s.entry()?.draft).not.toBeNull();
+  }
+  async function saveFirstPlan() {
+    const kind = screen.getByRole('textbox', { name: 'Block kind' });
+    fireEvent.change(kind, { target: { value: 'coin' } });
+    await change(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save schedule' }));
+    });
+  }
+
+  it('RL8 a profile without a plan offers Start a day plan with its runs; starting sends nothing', async () => {
+    const s = await setup({ profile: NO_PLAN });
+    const run = screen.getByRole('combobox', { name: 'Run for the first block' });
+    expect(
+      within(run)
+        .getAllByRole('option')
+        .map((option) => option.textContent),
+    ).toEqual(['farm', 'farm_deep', 'shards', 'tourney']);
+    await startPlan(s);
+    expect(s.fake.writes()).toHaveLength(0);
+    expect(s.entry()?.dirty).toBe(true);
+    expect(s.entry()?.draft?.week).toEqual({ default: 'every_day' });
+    expect(s.block()).toMatchObject({ blueprint: 'farm', block: '', after: '', count: '' });
+    expect(screen.queryByRole('button', { name: 'Start a day plan' })).toBeNull();
+    await waitFor(() => {
+      expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Block kind' }));
+    });
+  });
+
+  it('RL8 the chosen run is the first block; Save sends the whole plan once with the read revision', async () => {
+    const s = await setup({ profile: NO_PLAN, save: CREATED });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Run for the first block' }), {
+      target: { value: 'shards' },
+    });
+    await startPlan(s);
+    expect(s.block()?.blueprint).toBe('shards');
+    fireEvent.change(screen.getByRole('combobox', { name: 'Saved run' }), {
+      target: { value: 'farm' },
+    });
+    await saveFirstPlan();
+    const writes = s.fake.writes();
+    expect(writes).toHaveLength(1);
+    const recorded = fixture(CREATED).request.body as Record<string, unknown>;
+    const sent = JSON.parse(writes[0]?.body ?? '{}') as Record<string, unknown>;
+    // The recorded creation was sent from this same read (revision ...4e): same target,
+    // revision and path; the value is the plan this page drafted.
+    expect(Object.keys(sent).sort()).toEqual(Object.keys(recorded).sort());
+    expect(sent).toEqual({ ...recorded, value: FIRST_PLAN });
+  });
+
+  it('RL8 the recorded creation answer holds another plan: the draft is kept for reconciling', async () => {
+    const s = await setup({ profile: NO_PLAN, save: CREATED });
+    await startPlan(s);
+    await saveFirstPlan();
+    expect(s.fake.writes()).toHaveLength(1);
+    expect(
+      screen.getByText(
+        'The saved answer differs from the submitted plan. Your draft is kept; read the saved profile before reconciling.',
+      ),
+    ).toBeVisible();
+    expect(s.block()?.block).toBe('coin');
+  });
+
+  it('RL8 an answer holding the sent plan saves it; the start offer is gone', async () => {
+    const s = await setup({ profile: NO_PLAN });
+    // Modified recorded case: the recorded creation answer holds the generator's own plan;
+    // here its profile holds the plan this page sent (no recorded case sends this plan).
+    const answer = fixture(CREATED);
+    const body = answer.body as { profile: Record<string, unknown> };
+    body.profile['plan'] = FIRST_PLAN;
+    s.fake.route('POST', '/api/profile-patch', () => answer);
+    await startPlan(s);
+    await saveFirstPlan();
+    expect(
+      screen.getByText('Saved schedule. This is not confirmation of scheduler reload.'),
+    ).toBeVisible();
+    expect(s.entry()?.dirty).toBe(false);
+    expect(screen.queryByRole('button', { name: 'Start a day plan' })).toBeNull();
+  });
+
+  it('RL8 a refused first plan keeps the draft and its typing', async () => {
+    const s = await setup({ profile: NO_PLAN, save: 'profile_patch.plan_emptied' });
+    await startPlan(s);
+    await saveFirstPlan();
+    expect(screen.getByText('Schedule save refused. Your draft is kept.')).toBeVisible();
+    expect(s.block()?.block).toBe('coin');
+    expect(s.fake.writes()).toHaveLength(1);
+  });
+
+  it('RL8 a reload keeps the started draft instead of offering a new start', async () => {
+    const storage = memoryStorage();
+    const first = await setup({ profile: NO_PLAN, storage });
+    await startPlan(first);
+    fireEvent.change(screen.getByRole('textbox', { name: 'Block kind' }), {
+      target: { value: 'coin' },
+    });
+    for (const cleanup of cleanups.splice(0)) cleanup();
+    document.body.innerHTML = '';
+    const second = await setup({ profile: NO_PLAN, storage });
+    expect(second.block()).toMatchObject({ blueprint: 'farm', block: 'coin' });
+    expect(screen.queryByRole('button', { name: 'Start a day plan' })).toBeNull();
+    expect(second.fake.writes()).toHaveLength(0);
+  });
+
+  it('RL8 a profile with no runs explains that a block needs a run', async () => {
+    const s = await setup({ profile: NO_PLAN, mount: false });
+    // Modified recorded case: no recorded profile without a plan also has no runs.
+    s.schedule.update((state) => ({
+      ...state,
+      entries: Object.fromEntries(
+        Object.entries(state.entries).map(([key, entry]) => {
+          const body = structuredClone(fixture(NO_PLAN).body) as {
+            profile: Record<string, unknown>;
+          };
+          body.profile['blueprints'] = {};
+          return [key, { ...entry, source: body }];
+        }),
+      ),
+    }));
+    renderRegion(initialDashboardState(), <SchedulePage schedule={s.schedule} />);
+    expect(
+      screen.getByText('Add a run in Runs first: every plan block names a run.'),
+    ).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Start a day plan' })).toBeNull();
+  });
+
+  it('RL8 the start offer uses catalogue words and passes axe', async () => {
+    await setup({ profile: NO_PLAN });
+    expect(textOutsideCatalogue(document.body)).toEqual([]);
+    expect(await axe(document.body)).toHaveNoViolations();
+  });
+});

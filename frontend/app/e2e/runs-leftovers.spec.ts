@@ -1,0 +1,183 @@
+import { mkdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import { expect, test, type Page } from '@playwright/test';
+import { bodiesTo, posts } from './helpers.ts';
+
+/**
+ * F6-11 Runs leftovers in a real browser on the fake backend
+ * (backend/logs/reviews/ui-pages/f6-11-runs-leftovers-brief.md): RL1 reset one live
+ * override, RL7 battle details and RL8 start a day plan, with axe, reflow, target sizes
+ * and screenshots at 1360, 1054 and 390 (TP_F6_SCREENS_DIR, else test-results/f6-screens).
+ */
+const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
+const WIDTHS = [1360, 1054, 390] as const;
+const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
+mkdirSync(OUT, { recursive: true });
+
+interface AxeResult {
+  readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
+}
+
+async function axeViolations(page: Page): Promise<string[]> {
+  await page.addScriptTag({ path: AXE });
+  const result = await page.evaluate(async () => {
+    const scope = window as unknown as {
+      axe: { run: (root: Document, options: unknown) => Promise<AxeResult> };
+    };
+    return scope.axe.run(document, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
+    });
+  });
+  return result.violations.map((v) => `${v.id} (${String(v.nodes.length)})`);
+}
+
+/** No horizontal scroll and every visible control in main at least 24 px (WCAG 2.5.8). */
+async function layoutProblems(page: Page): Promise<{ overflow: number; small: string[] }> {
+  return page.evaluate(() => ({
+    overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    small: [
+      ...document.querySelectorAll<HTMLElement>(
+        'main button, main input, main select, main summary, main a',
+      ),
+    ]
+      .filter((element) => element.getClientRects().length > 0)
+      .filter((element) => {
+        const box = element.getBoundingClientRect();
+        return box.height < 24 || box.width < 24;
+      })
+      .map((element) => element.outerHTML.slice(0, 80)),
+  }));
+}
+
+async function openRunsLive(page: Page, scenario: string, width: number) {
+  const problems: string[] = [];
+  page.on('pageerror', (error) => {
+    problems.push(error.message);
+  });
+  await page.setViewportSize({ width, height: 900 });
+  await page.goto(`/__fake/use?scenario=${scenario}`);
+  await page.evaluate(() => {
+    window.location.hash = '#runs/live';
+  });
+  await expect(page.getByRole('heading', { level: 1, name: 'Runs' })).toBeVisible();
+  return problems;
+}
+
+const live = (page: Page) => page.locator('[data-region="runsLive"]');
+
+for (const width of WIDTHS) {
+  test(`RL7 battle details at ${String(width)}: read-only, axe, reflow, targets and screenshot`, async ({
+    page,
+  }) => {
+    const problems = await openRunsLive(page, 'active_battle_routines', width);
+    const summary = live(page).getByText('Ad gems: battle details', { exact: true });
+    await expect(summary).toBeVisible();
+    await summary.click();
+    const details = live(page).locator('[data-routine-details="ad_gems"]');
+    await expect(details.getByText('Not seen yet', { exact: true })).toBeVisible();
+    await expect(details.getByText(/^Window closes in \d+ s$/u)).toBeVisible();
+    await expect(
+      details.getByRole('link', { name: 'Events of this battle on Runtime' }),
+    ).toHaveAttribute(
+      'href',
+      /^#runtime\?battle_id=.+&operation_id=.+&offer_id=battles_runtime-offer$/u,
+    );
+    await details.getByText('Reported values', { exact: true }).click();
+    await expect(details.locator('[data-server-text="detail"]')).toContainText('"offer_id"');
+    await live(page).getByText('Floating gems: battle details', { exact: true }).click();
+    await expect(
+      live(page).locator('[data-routine-details="floating_gems"]').getByText('None recorded'),
+    ).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+    await live(page).screenshot({
+      path: path.join(OUT, `runs-leftovers-details-${String(width)}.png`),
+    });
+    // The Runtime link opens the Runtime page filtered to this battle; nothing is sent.
+    await details.getByRole('link', { name: 'Events of this battle on Runtime' }).click();
+    await expect(page).toHaveURL(/#runtime\?battle_id=/u);
+    await expect(page.getByRole('heading', { level: 1, name: 'Runtime' })).toBeVisible();
+    expect(await posts(page)).toEqual([]);
+    expect(problems).toEqual([]);
+  });
+
+  test(`RL1 reset one live override at ${String(width)}: Cancel sends nothing, a confirmed reset sends null once`, async ({
+    page,
+  }) => {
+    const problems = await openRunsLive(page, 'runs_live_applied', width);
+    const resets = live(page).getByRole('button', { name: "Use the battle's starting value" });
+    await expect(resets.first()).toBeVisible();
+    const path0 = await live(page).locator('[data-path]').first().getAttribute('data-path');
+    await resets.first().click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    await page.screenshot({
+      path: path.join(OUT, `runs-leftovers-reset-${String(width)}.png`),
+      fullPage: false,
+    });
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).toHaveCount(0);
+    expect(await posts(page)).toEqual([]);
+    await resets.first().click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Use starting value' }).dblclick();
+    await expect
+      .poll(async () => (await posts(page)).filter((p) => p.path.endsWith('/live-controls')).length)
+      .toBe(1);
+    const [sent] = (await posts(page)).filter((p) => p.path.endsWith('/live-controls'));
+    const body = JSON.parse(sent?.body ?? '{}') as { changes?: Record<string, unknown> };
+    expect(body.changes).toEqual({ [path0 ?? '']: null });
+    await page.waitForTimeout(2_000);
+    expect((await posts(page)).filter((p) => p.path.endsWith('/live-controls'))).toHaveLength(1);
+    expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+    expect(problems).toEqual([]);
+  });
+
+  test(`RL8 start a day plan at ${String(width)}: drafting sends nothing, Save sends the whole plan once`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.request.get('/__fake/use?scenario=runs_saved');
+    await page.request.get(
+      `/__fake/schedule?${new URLSearchParams({
+        profile: 'schedule_plan.profile_without_a_plan_has_no_plan_member',
+        save: 'profile_patch.a_plan_added_to_a_profile_that_has_none',
+      })}`,
+    );
+    await page.goto(`/ui/app/?rl8=${String(width)}#schedule`);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Schedule', exact: true }),
+    ).toBeVisible();
+    const start = page.getByRole('button', { name: 'Start a day plan' });
+    await expect(start).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+    if (width === 390) expect((await start.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await page.screenshot({
+      path: path.join(OUT, `runs-leftovers-schedule-start-${String(width)}.png`),
+      fullPage: true,
+    });
+    await page.getByRole('combobox', { name: 'Run for the first block' }).selectOption('farm');
+    await start.click();
+    const kind = page.getByRole('textbox', { name: 'Block kind' });
+    await expect(kind).toBeFocused();
+    expect(await bodiesTo(page, '/api/profile-patch')).toEqual([]);
+    await kind.fill('coin');
+    await page.getByRole('button', { name: 'Save schedule', exact: true }).dblclick();
+    await expect.poll(async () => (await bodiesTo(page, '/api/profile-patch')).length).toBe(1);
+    expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
+      {
+        name: 'mine',
+        expected_revision: '000000000000000000000000000000000000000000000000000000000000004e',
+        path: ['plan'],
+        value: {
+          days: { every_day: [{ block: 'coin', blueprint: 'farm' }] },
+          week: { default: 'every_day' },
+        },
+      },
+    ]);
+    await page.waitForTimeout(2_000);
+    expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
+  });
+}
