@@ -14,7 +14,7 @@ ORBIT_TIMING_FIELDS = {
         "description": "Maximum active time per window; confirmation stops it early. Misses and safety refusals do not extend the window."},
     "retry_backoff_sec": {"default": 15, "min": 1, "max": 300,
         "label": "Backoff within the active window",
-        "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window."},
+        "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window."},
 }
 
 

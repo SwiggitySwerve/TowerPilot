@@ -382,6 +382,7 @@ class GemOrbitTapper:
         self.manual_active = False
         self._balance_diagnostic_written = False
         self._gem_observation_states = set()
+        self._input_ready_at = 0.0
 
     def _balance_unreadable(self, frame, stage):
         # Keep the exact supplied pixels, once per window; never capture again
@@ -399,19 +400,27 @@ class GemOrbitTapper:
         return (self.balance_before is not None and self.sent_tap
                 and value == self.balance_before + 2)
 
+    def _wait_to_retry(self) -> None:
+        self.next_at = time.monotonic() + self.retry_interval
+        self._input_ready_at = self.next_at
+
     def _backoff(self, reason):
         self.last_refusal = dict(reason=reason, observed_at=time.time(),
                                  window_id=self.window_id, attempt_id=self.attempt_id)
         if reason != self._last_skip:
             logger.event("gem_orbit_skip", reason=reason)
             self._last_skip = reason
-        if reason not in ('balance_unreadable', 'gem_not_detected'):
+        now = time.monotonic()
+        if reason in ('balance_unreadable', 'gem_not_detected'):
+            # A refused observation dispatched no input. Retry sensing on the
+            # next supplied frame once actual input pacing permits another set.
+            # Preserve pending proof; never invent a counter or gem reading.
+            self.next_at = min(max(now, self._input_ready_at), self.window_ends_at)
+        else:
             self.balance_before = None
             self.sent_tap = False
-        # A temporary unknown is not a changed balance. Retain the verified
-        # before/tap evidence, send no input, and await another stable pair
-        # within this same bounded window. Expiry still clears the attempt.
-        self.next_at = min(time.monotonic() + self.retry_backoff, self.window_ends_at)
+            self.next_at = min(now + self.retry_backoff, self.window_ends_at)
+            self._input_ready_at = self.next_at
 
     def _orbit_geometry(self) -> tuple[tuple[float, float], float]:
         center, radius = reference_geometry()
@@ -535,7 +544,7 @@ class GemOrbitTapper:
                     self.next_at = self.next_window_at
                 else:
                     # Let the HUD settle, without sending another tap.
-                    self.next_at = time.monotonic() + self.retry_interval
+                    self._wait_to_retry()
                 return frame
             self._backoff("balance_changed_without_confirmation")
             return frame
@@ -577,7 +586,7 @@ class GemOrbitTapper:
                 return frame
             if balance != self.balance_before:
                 if self._is_collection_balance(balance):
-                    self.next_at = time.monotonic() + self.retry_interval
+                    self._wait_to_retry()
                 elif balance is None:
                     self._balance_unreadable(frame, 'pre_tap')
                 else:
@@ -600,11 +609,15 @@ class GemOrbitTapper:
                 logger.event("gem_orbit_tap", gem_center=gem.center,
                              measured_radius=current_radius, **event)
                 self.sent_tap = self.sent_tap or not event.get('dry_run', False)
+                # Interrupted sets must retain pacing from their last input,
+                # while the remaining taps inside this guarded set stay paced
+                # by the shared input boundary as before.
+                self._wait_to_retry()
             except act.TapRefused as exc:
                 logger.event("tap_refused", button="gem_orbit", error=str(exc))
                 self._backoff("tap_refused")
                 return frame
-        self.next_at = time.monotonic() + self.retry_interval
+        self._wait_to_retry()
         frame = capture.grab()  # no caller acts on a frame from before the last tap
         return self.guard(frame, "battle") if self.guard is not None else frame
 

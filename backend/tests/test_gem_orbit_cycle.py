@@ -174,7 +174,7 @@ def test_unreadable_or_unrelated_rewards_never_confirm(cycle, balance):
     tapper.poll(balance)
     assert len(state.taps) == 3
     assert not any(k == 'gem_orbit_claim' and e['confirmed'] for k, e in state.events)
-    assert tapper.next_at == 120
+    assert tapper.next_at == (105 if balance is None else 120)
 
 
 def test_unreadable_baseline_does_not_tap(cycle):
@@ -183,6 +183,69 @@ def test_unreadable_baseline_does_not_tap(cycle):
     tapper.poll(None)
     assert state.taps == []
     assert state.events[-1] == ('gem_orbit_skip', {'reason': 'balance_unreadable'})
+
+
+@pytest.mark.parametrize('unknown', ['balance', 'gem'])
+def test_transient_unknown_retries_the_next_supplied_frame(cycle, monkeypatch, unknown):
+    state, tapper = cycle
+    detector = shard.find_orbit_gem
+    if unknown == 'balance':
+        state.balance = None
+    else:
+        monkeypatch.setattr(shard, 'find_orbit_gem', lambda *a, **kw: None)
+    tapper.poll(state.balance)
+    assert state.taps == []
+    state.now, state.balance = 101, 200
+    monkeypatch.setattr(shard, 'find_orbit_gem', detector)
+    tapper.poll(200)
+    assert len(state.taps) == 3
+    assert tapper.window_ends_at == 160
+
+
+def test_partial_set_unknown_preserves_actual_input_pacing(cycle, monkeypatch):
+    state, tapper = cycle
+    frames = iter([200, 200, None])
+    monkeypatch.setattr(shard.capture, 'grab', lambda: next(frames))
+    tapper.poll(200)
+    assert len(state.taps) == 1
+    monkeypatch.setattr(shard.capture, 'grab', lambda: state.balance)
+    state.now = 101
+    tapper.poll(200)
+    assert len(state.taps) == 1
+    state.now = 105
+    tapper.poll(200)
+    assert len(state.taps) == 4
+
+
+@pytest.mark.parametrize('reason', ['static', 'screen:home', 'windows_unreadable:OSError'])
+def test_hard_safety_backoff_still_blocks_early_input(cycle, monkeypatch, reason):
+    state, tapper = cycle
+    monkeypatch.setattr(shard, 'battlefield_live', lambda *a: (False, reason))
+    tapper.poll(200)
+    assert tapper.next_at == 115 and state.taps == []
+    monkeypatch.setattr(shard, 'battlefield_live', lambda *a: (True, 'live'))
+    state.now = 101
+    tapper.poll(200)
+    assert state.taps == []
+    state.now = 115
+    tapper.poll(200)
+    assert len(state.taps) == 3
+
+
+def test_consecutive_windows_after_unknowns_still_confirm_only_stable_plus_two(cycle):
+    state, tapper = cycle
+    for start, before in [(100, 200), (1060, 202)]:
+        state.now, state.balance = start, None
+        tapper.poll(None)
+        state.now, state.balance = start+1, before
+        tapper.poll(before)
+        assert tapper.balance_before == before and tapper.sent_tap
+        state.now, state.balance = start+2, before+2
+        tapper.poll(before+2)
+        assert tapper.last_outcome['confirmed']
+    claims = [data for kind, data in state.events if kind == 'gem_orbit_claim']
+    assert [(data['before'], data['after']) for data in claims] == [(200, 202), (202, 204)]
+    assert len(state.taps) == 6
 
 
 def test_taps_follow_measured_radius_instead_of_reference(cycle, monkeypatch):
@@ -310,7 +373,7 @@ def test_pending_reward_is_confirmed_during_input_backoff(cycle, monkeypatch, un
     else:
         monkeypatch.setattr(shard, 'find_orbit_gem', lambda *a, **kw: None)
         tapper.poll(200)
-    assert tapper.next_at == 120
+    assert tapper.next_at == 105
     state.now, state.balance = 106, 202
     tapper.poll(202)
     assert len(state.taps) == dispatched
@@ -319,18 +382,18 @@ def test_pending_reward_is_confirmed_during_input_backoff(cycle, monkeypatch, un
 
 
 @pytest.mark.parametrize('balance', [None, 200])
-def test_backoff_without_a_changed_balance_never_captures_or_taps(cycle, monkeypatch, balance):
+def test_input_pacing_without_a_changed_balance_never_captures_or_taps(cycle, monkeypatch, balance):
     state, tapper = cycle
     tapper.poll(200)
-    state.now, state.balance = 105, None
+    state.now, state.balance = 101, None
     tapper.poll(None)
     dispatched = len(state.taps)
     monkeypatch.setattr(shard.capture, 'grab', lambda: pytest.fail('unchanged backoff must not capture'))
-    state.now, state.balance = 106, balance
+    state.now, state.balance = 102, balance
     tapper.poll(balance)
     assert len(state.taps) == dispatched
     assert tapper.balance_before == 200 and tapper.sent_tap
-    assert tapper.next_at == 120
+    assert tapper.next_at == 105
     assert not any(kind == 'gem_orbit_claim' for kind, _ in state.events)
 
 
@@ -364,11 +427,11 @@ def test_backoff_without_dispatched_input_cannot_confirm_or_capture(cycle, monke
     state, tapper = cycle
     state.dry = True
     tapper.poll(200)
-    state.now, state.balance = 105, None
+    state.now, state.balance = 101, None
     tapper.poll(None)
     assert not tapper.sent_tap
     monkeypatch.setattr(shard.capture, 'grab', lambda: pytest.fail('no dispatched attempt'))
-    state.now, state.balance = 106, 202
+    state.now, state.balance = 102, 202
     tapper.poll(202)
     assert not any(kind == 'gem_orbit_claim' for kind, _ in state.events)
 
@@ -403,7 +466,7 @@ def test_local_backoff_frame_replay(cycle, monkeypatch):
     assert tapper.balance_before == 1989 and tapper.sent_tap
     state.now, state.balance = 105, frames['001584.png']
     tapper.poll(state.balance)
-    assert tapper.next_at == 120
+    assert tapper.next_at == 105
     state.now, state.balance = 106, frames['001587.png']
     tapper.poll(frames['001586.png'])
     claim = next(data for kind, data in state.events if kind == 'gem_orbit_claim')
