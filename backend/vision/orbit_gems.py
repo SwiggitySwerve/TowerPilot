@@ -56,6 +56,30 @@ def _hud_glyph(frame: np.ndarray, rect: list[int]) -> np.ndarray | None:
     return mask[gy:gy+gh, gx:gx+gw]
 
 
+def _glyph_scores(inner: np.ndarray, glyph: np.ndarray) -> list[float] | None:
+    """Fit the validated glyph inside the square without resizing battle art.
+
+    Taking the bounding box of every bright pixel stretches unrelated debris
+    into the glyph. Search position and scale within the bounded interior;
+    retain the caller's score and orientation-margin requirements.
+    """
+    if min(inner.shape) < 35 or not np.any(inner):
+        return None
+    scores = []
+    for rotation in range(4):
+        template = np.rot90(glyph, rotation).copy()
+        best = -1.
+        for width in range(35, inner.shape[1]+1, 2):
+            height = round(width*template.shape[0]/template.shape[1])
+            if not 35 <= height <= inner.shape[0]:
+                continue
+            scaled = cv2.resize(template, (width, height))
+            score = float(cv2.matchTemplate(inner, scaled, cv2.TM_CCOEFF_NORMED).max())
+            best = max(best, score)
+        scores.append(best)
+    return sorted(scores, reverse=True)
+
+
 def find_orbit_gem(frame: np.ndarray, *, layout_offset: int = 0) -> OrbitGem | None:
     """Return one verified visible gem; None means not established, not absent.
 
@@ -100,25 +124,13 @@ def find_orbit_gem(frame: np.ndarray, *, layout_offset: int = 0) -> OrbitGem | N
         color = cv2.warpPerspective(field, transform, (100, 100)).astype(np.int16)
         b, g, r = cv2.split(color)
         pink = (b-g > 15) & (r-g > 15) & (r > 180) & (b > 180)
+        interior = slice(8, 92)
         border = np.ones((100, 100), bool)
-        border[8:92, 8:92] = False
+        border[interior, interior] = False
         if np.count_nonzero(pink & border) < 40:
             continue
-        inner = warped[15:85, 15:85]
-        pixels = cv2.findNonZero(inner)
-        if pixels is None:
-            continue
-        ix, iy, iw, ih = cv2.boundingRect(pixels)
-        if iw < 35 or ih < 35:
-            continue
-        patch = inner[iy:iy+ih, ix:ix+iw]
-        scores = []
-        for rotation in range(4):
-            template = np.rot90(glyph, rotation).copy()
-            normalized = cv2.resize(patch, (template.shape[1], template.shape[0]))
-            scores.append(float(cv2.matchTemplate(normalized, template, cv2.TM_CCOEFF_NORMED)[0, 0]))
-        scores.sort(reverse=True)
-        if scores[0] < .8 or scores[0]-scores[1] < .1:
+        scores = _glyph_scores(warped[interior, interior], glyph)
+        if scores is None or scores[0] < .8 or scores[0]-scores[1] < .1:
             continue
         center = points.mean(axis=0)+np.array([fx, fy])
         gem = OrbitGem((float(center[0]), float(center[1])), (x+fx, y+fy, w, h), scores[0])
