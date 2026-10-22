@@ -142,8 +142,24 @@ class Clock:
     strftime = staticmethod(STRFTIME)
 
 
+WRITER_PID = 44242      # five digits, as the committed byte offsets were measured; the contract publishes it as 4242 (pin_process_identity)
+
+
+class _FixedPid:
+    """`os` as runtime.diagnostics sees it, with ONE process id. The writer puts os.getpid() into every record and every file name, and
+    this contract publishes byte offsets into those files, so a pid with another number of digits moved every offset after it: the family
+    only matched when the process that ran the test had a pid as long as the one that generated the fixture (a regeneration under a
+    4-digit pid shifted each offset by one byte per record against the committed 5-digit run). The contract rewrites the pid to 4242 afterwards
+    (dashboard.pin_processes); this pins it while the records are WRITTEN, which is what the offsets measure."""
+    getpid = staticmethod(lambda: WRITER_PID)
+
+    def __getattr__(self, name):
+        return getattr(os, name)
+
+
 def pin_writer(w):
     counter = [0]
+    w.mp.setattr(diagnostics, 'os', _FixedPid())
 
     def uuid4():
         counter[0] += 1

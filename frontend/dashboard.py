@@ -1120,7 +1120,8 @@ def _serialize_config(fn):
 
 def _fenced_by_page_context(fn):
     """The optional context fence of a write whose effect depends on which emulator, account and profile is in force
-    (accounts, tier, profile files, a profile or loadout patch). A page that composed its request for one context sends it as
+    (accounts, tier, profile files, a profile or loadout patch, the Recognition page's apply of saved observations). A page that
+    composed its request for one context sends it as
     `expected_context` {instance, account, profile, serial}; the request is refused 409 context_changed, writing nothing,
     when the configuration now names another. The check is the first thing after the body is read - before the owner refusal,
     the validators and the revision checks - and is made under _CONFIG_WRITE_LOCK, the lock every account or profile switch
@@ -3078,9 +3079,17 @@ class ApplyRefused(ValueError):
 
 
 @app.post("/api/calibrate/apply")
+@_fenced_by_page_context
 @_serialize_config
 def api_calibrate_apply():
-    """Apply only successfully completed observations to the current profile."""
+    """Apply only successfully completed observations to the current profile.
+
+    It writes the PROFILE IN FORCE (and, for a wall region, the configuration), so a switch of account or profile between the
+    page's read and this write would put the observations on the wrong profile. A request that carries `expected_context`
+    {instance, account, profile, serial} is therefore fenced like every context-dependent write (see _fenced_by_page_context):
+    refused 409 context_changed, writing nothing and recording no operation, before the owner refusal, the replay of an
+    applied operation and every other check. An apply by `operation_id` is also judged against the context of that operation
+    (below); the fence adds the page's own context to that, it does not replace it. No `expected_context`: exactly as before."""
     import copy
     body = _request_object()
     operation = None
@@ -3312,7 +3321,19 @@ def api_run_templates():
 
 
 @app.post("/api/run-templates/add")
+@_fenced_by_page_context
 def api_run_template_add():
+    """Add a run from a shipped recipe: {profile, template, run_id, options}.
+
+    Two optional guards, both ABSENT = the request as it always was (the legacy page): `expected_revision` (the profile revision the page
+    read, as /api/profile-src and /api/profile-patch publish it) is judged under the profile lock BEFORE the recipe and its choices are
+    looked at, and a stale one is 409 revision_conflict with the current revision, writing nothing; `expected_context` {instance, account,
+    profile, serial} is the page fence of the other context-dependent writes (see _fenced_by_page_context: 409 context_changed,
+    judged first, writing nothing). A request that names `expected_revision` and succeeds also gets the new `revision` back, so a page can
+    chain the next add without a read; the answer to a request without it is unchanged (no `revision`). The resend of a committed add that
+    carried `expected_revision` meets a changed profile and is refused 409 revision_conflict (a page settles it by reading the profile); one
+    without it is refused by the run identifier that now exists (400), as before.
+    """
     from player.run_templates import instantiate
     body=request.get_json(force=True) or {}
     if not isinstance(body,dict):
@@ -3325,6 +3346,11 @@ def api_run_template_add():
         return jsonify(ok=False,error='Create a personal profile in Setup before adding run templates.'),409
     with _profile_lock(path):
         try:
+            if 'expected_revision' in body:
+                current=hashlib.sha256(Path(path).read_bytes()).hexdigest()
+                if body['expected_revision']!=current:
+                    return jsonify(ok=False,code='revision_conflict',revision=current,
+                                   error='Saved profile changed. Reload and reconcile the pending edit before saving again.'),409
             with open(path,encoding='utf-8') as fh:
                 original=yaml.safe_load(fh)
             updated=instantiate(original,body.get('template'),body.get('run_id'),body.get('options'))
@@ -3332,8 +3358,11 @@ def api_run_template_add():
             if problems:
                 return jsonify(ok=False,error=problems[0],problems=problems),400
             backup=_save_yaml_backup(path,updated)
+            stored=hashlib.sha256(Path(path).read_bytes()).hexdigest() if 'expected_revision' in body else None
         except (OSError,ValueError,yaml.YAMLError) as e:
             return jsonify(ok=False,error=str(e)),400
+    if stored is not None:
+        return jsonify(ok=True,profile=updated,backup=backup,revision=stored)
     return jsonify(ok=True,profile=updated,backup=backup)
 
 

@@ -38,10 +38,18 @@ from dashboard_contract_cases_editors import run_abilities_cases, run_collection
 from dashboard_contract_cases_emulators import run_emulator_cases
 from dashboard_contract_cases_calibrate import run_calibrate_cases
 from dashboard_contract_cases_context import context_fence_cases
+from dashboard_contract_cases_profile_target import PT as PTG, profile_target_cases
+from dashboard_contract_cases_recognition_fence import RF, recognition_context_fence_cases
+from dashboard_contract_cases_shopping import SHOP as SQ, shopping_queue_cases
+from dashboard_contract_cases_run_leftovers import (ADD_REFUSALS, ADD_STEPS, DETAILS, ENTRY, ENTRY_DELETE_REFUSALS, ENTRY_DELETES, ENTRY_REFUSALS, ENTRY_SAVES,
+                                                    PLAN_DELETE, RESET, TEMPLATES, TEMPLATES_FENCED as TF, run_battle_details_cases, run_controls_live_reset_all_cases,
+                                                    run_entry_patch_cases, run_plan_section_delete_cases, run_templates_add_cases, run_templates_add_fenced_cases)
+from dashboard_contract_cases_bluestacks import emulator_bluestacks_inventory_cases
+from dashboard_contract_cases_first_policy import collection_first_policy_cases
 from dashboard_contract_cases_history import run_history_cases
 from dashboard_contract_cases_recognition import run_recognition_cases
 from dashboard_contract_cases_screens import run_later_cases, run_screens_cases
-from dashboard_contract_cases_runtime import run_runtime_cases
+from dashboard_contract_cases_runtime import WRITER_PID, run_runtime_cases
 from dashboard_contract_cases_profile import run_profile_cases, run_schedule_cases
 from dashboard_contract_cases_settings import run_settings_cases
 from dashboard_contract_cases_runs import run_controls_live_cases, run_controls_save_cases
@@ -57,7 +65,9 @@ FAMILIES = [run_controls_save_cases, run_controls_live_cases, run_history_cases,
             run_settings_cases, run_equipment_cases, run_collection_cases, run_abilities_cases,
             run_accounts_cases, run_profile_files_cases, run_emulator_cases,
             run_runtime_cases, run_recognition_cases, run_calibrate_cases, run_screens_cases, run_later_cases,
-            context_fence_cases]
+            context_fence_cases, emulator_bluestacks_inventory_cases, collection_first_policy_cases,
+            recognition_context_fence_cases, run_controls_live_reset_all_cases, run_entry_patch_cases, run_templates_add_cases,
+            run_battle_details_cases, run_plan_section_delete_cases, run_templates_add_fenced_cases, shopping_queue_cases, profile_target_cases]
 UNNAMED_ALLOWED = 49      # cases no row names (the settling reads of one scenario); report.json lists them
 
 NOTES = dict(
@@ -184,6 +194,8 @@ def pin_process_identity(value):
         pinned = {k: pin_process_identity(v) for k, v in value.items()}
         if pinned.get('pid') == 4242 and type(pinned.get('creation_time')) is float:
             pinned['creation_time'] = PINNED_PROCESS_CREATED
+        if pinned.get('pid') == WRITER_PID:
+            pinned['pid'] = 4242       # the diagnostics writer's pinned pid (dashboard_contract_cases_runtime.WRITER_PID)
         return pinned
     if isinstance(value, list):
         return [pin_process_identity(v) for v in value]
@@ -227,6 +239,44 @@ EI, EA, ET = 'emulator_inventory', 'emulator_actions', 'emulator_tools'
 RS, RD = 'runtime_state', 'runtime_diagnostics'
 RR, CW, RI, SA, RL = 'recognition_reads', 'calibrate_writes', 'recognition_images', 'screen_analysis', 'recognition_later'
 CF = 'context_fence'
+EBI, CFP = 'emulator_bluestacks_inventory', 'collection_first_policy'
+NOTES.update(
+    run_templates_add_fenced=('POST /api/run-templates/add gained two OPTIONAL guards (root-approved behaviour change; absent = the legacy request, answered as before, see run_templates_add): '
+                              '`expected_revision` (the profile revision as GET /api/profile-src publishes it) is judged under the profile lock BEFORE the recipe: stale, null, empty or not text is 409 revision_conflict with the current revision, nothing written; '
+                              'a request that carries it also gets the new `revision` back in the 200 answer. `expected_context` {instance, account, profile, serial} is the fence of the other context-dependent writes (409 context_changed + current_context, '
+                              'judged first; malformed or null 400 invalid_request). The resend of a committed add carrying the old revision is 409; without it the run identifier refuses it (400).'),
+    shopping_queue=('F6-12: every case of the brief under the brief\'s own names. The saved queue is POST /api/run-controls changes.shopping_plan, the live queue POST /api/operations/{id}/live-controls, manual shopping POST '
+                    '/api/operations/{id}/actions, the shared library POST /api/profile-patch on policies.shopping_lists.<id>. The legacy conversion preview is GET /api/run-controls on a run whose policy is a legacy list/mapping '
+                    '(`legacy_conversion` {plan, warnings, requires_review}), a write only when the page saves a reviewed plan. A live plan command keeps the plan\'s own enabled/interval; routine overrides sit in effective.routines. '
+                    'The saved-only comment and the unsupported-plan case of run_controls_save are not edited (they would change that family\'s hash): the repaired case is shopping_queue.refused_the_shopping_plan_the_run_does_not_support.'),
+    profile_target=('F6-14: unbinding is POST /api/profile-activate {name: null} with the optional expected_context (device_owned first only after the context is judged); an inactive target of the same account is edited with '
+                    'POST /api/profile-patch naming that profile with expected_context of the ACTIVE context: the route has no idle check and no foreign-profile check; a context fence refuses after an active-profile, instance or serial change.'),
+    recognition_context_fence=('POST /api/calibrate/apply takes the optional `expected_context` {instance, account, profile, serial} (the same fence as the Profiles writes): '
+                               'a mismatch is 409 context_changed + current_context and writes nothing, judged FIRST under the config write lock - before the owner refusal, the replay of an applied '
+                               'operation and the operation checks; a malformed field (null included) is 400 invalid_request; an absent field is the legacy request. An apply by operation_id is '
+                               'judged by the fence and then by the operation\'s own context check (409 context_changed without current_context). calibrate start / observe and screen-analysis start '
+                               'are refused by the operation\'s frozen five-field expected_context (no current_context); Stop is a revocation and is never refused for a context.'),
+    run_controls_live_reset_all=('POST /api/operations/{id}/live-controls with null for several paths in one request resets them together (a null for a path with no override is accepted). After a reset '
+                                 '`overrides` keeps the (empty) routine mappings: no override means no LEAF, not an empty object.'),
+    run_entry_patch=('POST /api/profile-patch on [blueprints, <run>, <field>] for a coin, a tournament, a shard and a dissonance coin run. The 500 answers here are the route\'s own JSON '
+                     '{ok:false, error} (validator unavailable / write failed), not the default error page. A stale revision is judged before the values.'),
+    run_templates_add=('POST /api/run-templates/add has no expected_revision and no idempotency key: an identical resend after a committed add is 400 "That run already exists"; a lost answer is settled '
+                       'only by reading the profile. Every refusal and failure is 400 except a starter/draft profile (409); a write that fails after the file changed is also 400.'),
+    battle_details_runtime=('GET /api/battles/active with a Floating gems last_refusal recorded by the tapper\'s own refusal path and an Ad gems offer that was seen and whose attempt failed '
+                            '(visibility visible, first_seen_at, appearance_after_at, last_observed_at, response_due_at, last_failed_attempt, counters, durations).'),
+    plan_section_delete=('POST /api/profile-patch {path:[plan], op:delete}: 200 and the profile without `plan`; deleting an absent plan section is also 200 (a new backup); a stale revision is 409.'),
+)
+NOTES.update(
+    emulator_bluestacks_inventory=('GET /api/wizard/emulators over a bluestacks.conf with two instances (one stopped, one running) and POST /api/wizard/bluestacks/prepare for each. '
+                                   'Appended as its own family because emulator_inventory (MuMu world) has no BlueStacks row. `running` is an HD-Player.exe with `--instance <key>`; '
+                                   '`adb_enabled` is the GLOBAL switch (every instance of one file carries the same value); `display_ok` is the instance own framebuffer at 2560x1080@360. '
+                                   'Prepare is refused 409 while ANY HD-Player.exe runs, whichever instance is named (the stopped instance too); with nothing running it writes the ADB switch and the '
+                                   'named instance framebuffer, and an instance already prepared answers 200 with nothing changed and no backup.'),
+    collection_first_policy=('Finding F6C-R1-04. A profile with no gathering policies takes its first one through the supported path that needs no backend change: GET /api/run-templates publishes the shipped '
+                             'defaults at templates[i].policies.gather[<reference>] (farm/tournament/dissonance `all_on`, shard `gems_only`), and POST /api/profile-patch '
+                             '{name, path:[policies, gather, <new name>], value, expected_revision} creates it (a missing mapping step is created, so an empty gather map or no gather key both work). '
+                             'A name already taken is REPLACED, not refused: the page must not offer a taken name. The empty policy is refused (gem_delay_sec is required); text, an unknown key and a stale revision are refused.'),
+)
 COVERAGE = {
     'RUN-05 saved save: success (switches, numbers, null reset, several paths, run as preset id, shared policy, shopping plan, run with fewer controls)': (
         keys(SAVE, 'read_before_the_first_save', 'saved_switch_off', 'read_after_the_save_holds_the_new_values',
@@ -845,7 +895,130 @@ COVERAGE.update({
         'current_tier_while_a_runner_owns_the_device_is_refused_by_the_owner', 'account_switch_composed_for_alpha_is_committed',
         'the_same_request_resent_after_a_lost_answer_is_refused', 'read_after_the_retry_beta_is_active'),
 })
-FAMILY_ROWS = {CF: 'F6PE-P02', SAVE: 'RUN-04..07', LIVE: 'RUN-08..11', HL: 'H-01', HD: 'H-01, H-02', CFG: 'G-01', PR: 'G-02', PP: 'G-03', SP: 'S-01', ST: 'G-04', LO: 'E-01', CO: 'C-01', AB: 'A-01', AC: 'P-01', PF: 'P-02', EI: 'M-01', EA: 'M-02', ET: 'M-03', RS: 'T-01', RD: 'T-02', RR: 'R-01, R-02, R-06', CW: 'R-02', RI: 'R-03', SA: 'R-04', RL: 'R-05'}
+COVERAGE.update({
+    'M-02 BlueStacks inventory with one stopped and one running instance, and the Prepare answers for both (page-author request)': (
+        keys(EBI, 'one_stopped_one_running_instance_adb_off_and_a_display_that_is_not_ok', 'prepare_the_running_instance_is_refused',
+             'prepare_the_stopped_instance_is_refused_too_while_another_instance_runs', 'read_after_the_refusals_nothing_changed',
+             'prepare_the_stopped_instance_once_nothing_runs', 'read_after_the_prepare_display_ok_and_adb_on', 'prepare_the_other_instance_is_already_prepared')),
+    'F6C-R1-04 the first gathering policy of a profile with none (supported path: the run-template catalogue and profile-patch)': (
+        keys(CFP, 'read_a_profile_with_no_gathering_policies', 'read_the_run_templates_that_carry_the_default_gathering_policies',
+             'first_policy_with_a_stale_revision_is_refused', 'first_policy_that_is_empty_is_refused', 'first_policy_as_text_is_refused',
+             'first_policy_with_an_unknown_key_is_refused', 'first_policy_without_its_gem_delay_is_refused', 'read_after_the_refusals_nothing_changed',
+             'first_policy_created_from_the_farm_template_default', 'read_after_the_first_policy_holds_it_unbound', 'the_first_policy_bound_to_a_run',
+             'a_second_policy_from_another_template', 'a_name_that_is_taken_is_replaced_not_refused', 'read_after_the_replacement',
+             'read_a_profile_with_no_gather_key_at_all', 'first_policy_creates_the_missing_gather_map', 'read_after_the_gather_map_was_created')),
+})
+COVERAGE.update({
+    'R12-01 Recognition apply of saved observations: a matching expected_context is applied; after a switch it is refused 409 context_changed with current_context and nothing is written; the legacy request still applies to the current profile': keys(
+        RF, 'read_config_the_page_context_comes_from', 'apply_saved_with_the_matching_context_is_applied', 'read_the_profile_after_the_matching_apply',
+        'read_config_after_another_client_switched_the_account', 'apply_saved_composed_for_alpha_is_refused_after_the_switch',
+        'read_the_profile_the_refused_apply_would_have_changed', 'apply_saved_without_the_field_lands_on_the_current_profile_the_legacy_page',
+        'read_the_profile_after_the_legacy_apply'),
+    'R12-02 a malformed expected_context (null included) is 400 invalid_request and nothing is applied': keys(
+        RF, 'apply_expected_context_null_is_refused_not_read_as_absent', 'apply_expected_context_not_an_object', 'apply_expected_context_missing_the_serial',
+        'apply_expected_context_with_an_unknown_key_the_five_field_launch_shape', 'apply_expected_context_serial_not_text',
+        'read_the_profile_after_the_malformed_requests_nothing_was_applied'),
+    'R12-03 the fence is judged before the owner refusal; a resend after the switch is refused, not applied twice; a missing or unreadable configuration names no context': keys(
+        RF, 'apply_saved_composed_for_alpha_is_applied_and_the_answer_is_lost', 'the_same_request_resent_after_the_switch_is_refused_not_applied_twice',
+        'stale_apply_while_a_runner_owns_the_device_is_told_the_context_changed', 'current_apply_while_a_runner_owns_the_device_is_refused_by_the_owner',
+        'apply_saved_when_config_yaml_is_missing_is_refused_and_creates_nothing', 'apply_saved_when_the_configuration_names_an_unknown_account_is_refused'),
+    'R12-04 apply by operation: the fence adds to the operation\'s own context check; an applied operation resent after a switch is refused by the fence': keys(
+        RF, 'apply_by_operation_with_the_matching_context_is_applied', 'apply_by_operation_composed_for_alpha_is_refused_by_the_fence_after_the_switch',
+        'read_the_calibration_after_the_fence_refusal_it_still_awaits_apply', 'apply_by_operation_without_the_field_after_the_switch_is_refused_by_the_operation_check',
+        'apply_by_operation_is_applied_and_the_answer_is_lost', 'the_resend_of_an_applied_operation_after_the_switch_is_refused_by_the_fence',
+        'read_the_calibration_whose_apply_the_page_must_settle_by_reading'),
+    'R12-05 the other Recognition writes: start, observe and screen-analysis start are refused by the frozen five-field context; Stop is a revocation, never refused for a context': keys(
+        RF, 'calibrate_start_composed_for_alpha_is_refused_after_the_switch', 'calibrate_observe_composed_for_alpha_is_refused_after_the_switch',
+        'screen_analysis_start_composed_for_alpha_is_refused_after_the_switch', 'stop_composed_for_alpha_after_the_switch_is_not_refused_a_stop_is_a_revocation'),
+    'RL2 reset every live override of the battle at once (null for several paths in one request); the reads before and after; the identical resend; a partial reset': keys(
+        RESET, 'two_overrides_set_before_the_reset', 'read_before_the_reset_two_overrides_are_in_force', 'accepted_null_for_every_override_resets_them_together',
+        'read_after_every_override_was_reset', 'identical_resend_of_the_reset_answered_from_the_record', 'reset_of_paths_that_no_longer_hold_an_override',
+        'read_after_the_second_reset_nothing_to_remove', 'three_overrides_set', 'reset_two_of_the_three_keeps_the_third', 'read_after_the_partial_reset_one_override_remains'),
+    'RL2 refused resets: stale control revision, an unknown path refuses the whole request, no path; the overrides remain': keys(
+        RESET, 'overrides_set', 'reset_all_with_a_stale_control_revision_refused', 'reset_all_with_one_unknown_path_refuses_the_whole_request',
+        'read_after_the_refusals_both_overrides_remain', 'reset_with_no_path_refused'),
+    'RL3 saved entry settings: every field kind of a coin, dissonance, tournament and shard run is accepted, one field per request': keys(
+        ENTRY, 'read_before_the_first_save', *[case for _, case, _, _ in ENTRY_SAVES], *[case for _, case, _ in ENTRY_DELETES], 'read_after_the_saves_holds_every_change'),
+    'RL3 refused entry values: the validator text, nothing written': keys(
+        ENTRY, *[case for _, case, _, _ in ENTRY_REFUSALS], *[case for _, case, _ in ENTRY_DELETE_REFUSALS], 'read_after_the_refusals_nothing_changed'),
+    'RL3 stale revision (judged before the values), starter, scan draft, unknown profile and unknown run': keys(
+        ENTRY, 'stale_revision_409', 'stale_revision_is_judged_before_the_values', 'read_after_the_stale_refusals_holds_the_other_clients_save',
+        'starter_profile_refused_with_a_flag', 'scan_draft_refused', 'unknown_profile_404', 'unknown_run_is_a_validator_problem'),
+    'RL3 write failures: validator unavailable, write failed, written then the answer failed; the reads that settle them; the identical resend is stale': keys(
+        ENTRY, 'validator_unavailable_nothing_written_500', 'read_after_the_validator_failure_the_revision_is_unchanged', 'write_failed_nothing_saved_500',
+        'read_after_the_failed_write_the_revision_is_unchanged', 'written_then_the_answer_failed_500', 'read_after_an_error_that_followed_the_write_holds_the_change',
+        'identical_resend_after_a_committed_write_is_refused_as_stale'),
+    'RL3 malformed patch paths': keys(
+        ENTRY, 'path_to_a_run_that_is_not_a_mapping_step_400', 'path_of_one_step_into_the_blueprints_only_400', 'read_after_the_malformed_paths_nothing_changed'),
+    'RL4 add a run from every shipped recipe, with its choices and both optional policies; the reads before and after': keys(
+        TEMPLATES, 'read_before_the_first_add', 'read_the_recipes_the_page_offers', *[case for _, case, _, _ in ADD_STEPS],
+        'read_after_the_adds_holds_every_new_run_and_its_copied_policies'),
+    'RL4 refused adds: identifier, recipe, choices and the validator; nothing written': keys(
+        TEMPLATES, *[case for case, _, _, _, _ in ADD_REFUSALS], 'read_after_the_refusals_nothing_changed', 'a_copied_policy_id_already_present_is_refused',
+        'read_after_the_policy_clash_nothing_changed'),
+    'RL4 malformed requests, starter and draft profiles, an unknown or unreadable profile': keys(
+        TEMPLATES, 'body_a_list_400', 'profile_missing_400', 'profile_name_with_a_path_400', 'profile_not_text_400', 'template_missing_400', 'run_id_missing_400',
+        'body_not_json_400', 'read_after_the_malformed_requests_nothing_changed', 'starter_profile_refused', 'scan_draft_refused',
+        'unknown_profile_is_refused_with_the_operating_system_error', 'profile_file_unreadable_400', 'profile_file_not_a_mapping_400'),
+    'RL4 a lost answer is settled by reading the profile; the identical resend is refused (the run exists); write failures': keys(
+        TEMPLATES, 'added_a_run_and_the_answer_is_lost', 'identical_resend_after_a_committed_add_is_refused_the_run_exists', 'read_after_the_resend_holds_the_one_run',
+        'write_failed_nothing_saved', 'read_after_the_failed_write_the_revision_is_unchanged', 'written_then_the_answer_failed',
+        'read_after_an_error_that_followed_the_write_holds_the_run', 'identical_resend_after_the_error_is_refused_the_run_exists'),
+    'RL7 battle details: a Floating gems refusal recorded by the tapper and an Ad gems offer that was seen and failed': keys(
+        DETAILS, 'floating_gems_refusal_recorded', 'ad_gems_offer_seen_and_failed_attempt'),
+    'RL8 remove the whole plan section: saved, the reads, an absent section, a stale revision, no expected revision': keys(
+        PLAN_DELETE, 'read_before_the_plan_section_was_deleted', 'saved_the_whole_plan_section_deleted', 'read_after_the_plan_section_was_deleted',
+        'plan_section_delete_when_absent', 'read_after_the_delete_of_an_absent_plan_section', 'plan_section_delete_stale_revision_409',
+        'read_after_the_stale_refusal_the_plan_section_remains', 'plan_section_delete_without_an_expected_revision_is_accepted'),
+})
+COVERAGE.update({
+    'RTF-01 run-templates/add with the optional expected_revision and expected_context: accepted, the answer carries the new revision (only with the revision), chained adds, one guard alone, the resend after the commit is stale': keys(
+        TF, 'read_before_the_first_add', 'read_config_the_page_context_comes_from', 'added_with_the_matching_revision_and_context', 'added_again_with_the_revision_the_answer_returned', 'read_after_the_chained_adds_the_revision_is_the_last_answers', 'added_with_only_the_revision_no_context', 'added_with_only_the_context_answers_without_a_revision', 'resend_of_the_first_request_after_it_committed_is_refused_stale', 'read_after_the_resend_the_profile_holds_each_run_once'),
+    'RTF-02 a stale expected_revision (null, not text and empty included) is 409 revision_conflict with the current revision, judged before the recipe and its choices, nothing written': keys(
+        TF, 'stale_revision_409_nothing_written', 'stale_revision_is_judged_before_the_recipe_and_its_choices', 'current_revision_with_the_same_bad_recipe_is_refused_by_the_recipe', 'expected_revision_null_is_a_stale_revision', 'expected_revision_not_text_is_a_stale_revision', 'expected_revision_empty_is_a_stale_revision', 'read_after_the_refusals_holds_the_other_clients_save'),
+    'RTF-03 expected_context: a switch is 409 context_changed + current_context, judged before the revision; malformed or null is 400 invalid_request; absent is the legacy request; a missing configuration names no context': keys(
+        TF, 'read_config_after_another_client_switched_the_account', 'composed_for_alpha_is_refused_after_the_switch', 'the_context_is_judged_before_the_revision', 'the_current_context_with_a_stale_revision_is_a_revision_conflict', 'read_the_profile_the_refused_add_would_have_changed', 'expected_context_null_is_refused_not_read_as_absent', 'expected_context_not_an_object', 'expected_context_missing_the_serial', 'expected_context_serial_not_text', 'without_the_fields_the_legacy_request_adds_to_the_named_profile', 'context_when_config_yaml_is_missing_is_refused_and_creates_nothing'),
+    'RTF-04 a lost answer is settled by reading the profile; the resend is stale (or refused by the run identifier without the revision); write failures': keys(
+        TF, 'added_and_the_answer_is_lost', 'the_identical_resend_is_refused_stale_not_applied_twice', 'read_settles_the_lost_answer_the_run_is_there_once', 'the_resend_without_the_revision_is_refused_by_the_run_identifier', 'write_failed_nothing_saved', 'read_after_the_failed_write_the_revision_is_unchanged', 'written_then_the_answer_failed', 'read_after_an_error_that_followed_the_write_holds_the_run', 'identical_resend_after_the_error_is_refused_stale'),
+    'RTF-05 starter, scan draft and unknown profile with the guards': keys(
+        TF, 'starter_profile_refused_with_the_guards', 'scan_draft_refused_with_the_guards', 'unknown_profile_with_the_guards'),
+    'F6-12 saved queue (run-controls): empty, weighted/cadence/order, round robin saved; the reads after; another run keeps its own plan': keys(
+        SQ, 'shopping_read_before_any_save', 'shopping_weighted_cadence_order_saved', 'shopping_read_after_save', 'shopping_other_run_after_private_save', 'shopping_empty_queue_saved', 'shopping_round_robin_saved'),
+    'F6-12 legacy conversion previews (list, mapping, best cost) and the reviewed conversion saved': keys(
+        SQ, 'shopping_legacy_list_preview', 'shopping_reviewed_conversion_saved', 'shopping_read_after_the_reviewed_conversion', 'shopping_legacy_mapping_preview', 'shopping_legacy_best_cost_preview'),
+    'F6-12 saved queue refused: invalid weight, a run that does not support the plan': keys(
+        SQ, 'shopping_invalid_weight_refused', 'shopping_read_after_the_refusal_nothing_changed', 'refused_the_shopping_plan_the_run_does_not_support'),
+    'F6-12 saved queue: the reply failed after the write, the read that settles it, the stale resend': keys(
+        SQ, 'shopping_read_before_the_unanswered_save', 'shopping_save_reply_failed', 'shopping_read_after_unknown_save', 'shopping_identical_resend_after_the_unknown_save_is_refused_stale'),
+    'F6-12 live queue command: accepted, requested and applied reads, routine overrides preserved, reply unknown, identical replay, key conflict': keys(
+        SQ, 'shopping_plan_accepted', 'shopping_plan_read_requested', 'shopping_plan_read_applied', 'shopping_routine_overrides_set', 'shopping_plan_preserves_routine_overrides', 'shopping_plan_requested_over_routine_overrides_read', 'shopping_plan_routine_overrides_applied', 'shopping_plan_reply_unknown', 'shopping_plan_unknown_read', 'shopping_plan_identical_replay', 'shopping_plan_key_conflict'),
+    'F6-12 manual shopping actions: whole, attack, defense, utility and one upgrade accepted; requested, started and completed-without-purchase reads': keys(
+        SQ, 'shopping_whole_accepted', 'shopping_attack_accepted', 'shopping_defense_accepted', 'shopping_utility_accepted', 'shopping_upgrade_accepted', 'shopping_upgrade_requested', 'shopping_upgrade_started', 'shopping_upgrade_completed_without_purchase'),
+    'F6-12 manual shopping on a legacy driver is refused; the upgrade reply unknown and its identical replay': keys(
+        SQ, 'shopping_legacy_refused', 'shopping_upgrade_reply_unknown', 'shopping_upgrade_identical_replay'),
+    'F6-12 shared policy library (profile-patch on policies.shopping_lists): created, copied, v2 updated, legacy list and mapping, invalid clicks, deleted unused, delete of a used list refused': keys(
+        SQ, 'shopping_library_read_before_any_edit', 'shopping_policy_created', 'shopping_policy_copied', 'shopping_shared_v2_updated', 'shopping_legacy_list_updated', 'shopping_legacy_mapping_updated', 'shopping_legacy_clicks_invalid', 'shopping_library_read_after_the_edits', 'shopping_policy_deleted_unused', 'shopping_policy_delete_used_refused'),
+    'F6-12 shared policy library: revision conflict, context changed, reply failed and the read that settles it': keys(
+        SQ, 'shopping_shared_revision_conflict', 'shopping_shared_context_changed', 'shopping_shared_reply_failed', 'shopping_shared_read_after_unknown'),
+    'F6-14 unbind the profile (profile-activate name null) with a matching legacy or account context; the config reads after': keys(
+        PTG, 'unbind_with_matching_legacy_context', 'read_after_unbind_legacy_context', 'unbind_with_matching_account_context', 'read_after_unbind_account_context'),
+    'F6-14 unbind refused: a runner is listed, after an account switch, after an active-profile switch (the context is judged first)': keys(
+        PTG, 'unbind_refused_while_runner_listed', 'read_after_unbind_runner_refusal', 'unbind_refused_after_account_switch', 'unbind_refused_after_active_profile_switch'),
+    'F6-14 unbind: the save failed before the write, written then the answer failed; the config reads that settle them': keys(
+        PTG, 'unbind_failed_before_write', 'read_after_unbind_failed_before_write', 'unbind_written_then_answer_failed', 'read_after_unbind_written_then_answer_failed'),
+    'F6-14 an inactive target of the same account: the config, the list and the source it reads': keys(
+        PTG, 'inactive_editor_context_before_save', 'same_account_inactive_target_listed', 'same_account_inactive_target_source'),
+    'F6-14 inactive target saves (plan, gathering policies, chores, UW and rescue policies, run entry label and equipment) while a runner is listed; the reads after': keys(
+        PTG, 'inactive_plan_saved_while_runner_listed', 'inactive_gather_label_saved', 'inactive_gather_copy_saved', 'inactive_gather_template_created', 'inactive_unused_gather_deleted', 'inactive_chores_saved', 'inactive_uw_policy_saved', 'inactive_rescue_policy_saved', 'inactive_run_entry_label_saved', 'inactive_run_entry_loadout_saved', 'inactive_target_read_after_save', 'inactive_editor_context_after_save'),
+    'F6-14 inactive target: stale revision, deleted target (read, list, patch), starter and scan draft refused': keys(
+        PTG, 'inactive_target_stale_revision', 'inactive_target_after_deletion', 'inactive_target_list_after_deletion', 'inactive_target_deleted_before_patch', 'inactive_target_starter_refused', 'inactive_target_draft_refused'),
+    'F6-14 context fences of the inactive target: refused after an active-profile or account switch; the config reads after an active-profile, instance and serial change': keys(
+        PTG, 'read_config_after_editor_active_profile_switch', 'inactive_target_patch_refused_after_active_switch', 'inactive_target_patch_refused_after_account_switch', 'read_config_after_editor_instance_switch', 'read_config_after_editor_serial_change'),
+    'F6-14 inactive target: write failed, written then the answer failed, the reads that settle them': keys(
+        PTG, 'inactive_target_write_failed', 'inactive_target_after_write_failed', 'inactive_target_written_then_answer_failed', 'inactive_target_after_written_then_answer_failed'),
+})
+FAMILY_ROWS = {CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
+               RESET: 'F6-11 RL2 (6.1)', TF: 'F6-11 RL4 guarded (root decision: run-templates/add gains expected_revision and expected_context)', SQ: 'F6-12 (brief section 8)', PTG: 'F6-14 (brief section 6)', ENTRY: 'F6-11 RL3 (6.2)', TEMPLATES: 'F6-11 RL4 (6.3)', DETAILS: 'F6-11 RL7 (6.4)', PLAN_DELETE: 'F6-11 RL8 (6.5)', SAVE: 'RUN-04..07', LIVE: 'RUN-08..11', HL: 'H-01', HD: 'H-01, H-02', CFG: 'G-01', PR: 'G-02', PP: 'G-03', SP: 'S-01', ST: 'G-04', LO: 'E-01', CO: 'C-01', AB: 'A-01', AC: 'P-01', PF: 'P-02', EI: 'M-01', EA: 'M-02', ET: 'M-03', RS: 'T-01', RD: 'T-02', RR: 'R-01, R-02, R-06', CW: 'R-02', RI: 'R-03', SA: 'R-04', RL: 'R-05'}
 
 
 def fixture_document():
@@ -881,7 +1054,10 @@ def test_the_rows_that_live_in_the_dashboard_contract_are_there():
 PUBLISHED_ORDER = ['run_controls_save_cases', 'run_controls_live_cases', 'run_history_cases', 'run_profile_cases', 'run_schedule_cases', 'run_settings_cases',
                    'run_equipment_cases', 'run_collection_cases', 'run_abilities_cases',
                    'run_accounts_cases', 'run_profile_files_cases', 'run_emulator_cases', 'run_runtime_cases',
-                   'run_recognition_cases', 'run_calibrate_cases', 'run_screens_cases', 'run_later_cases', 'context_fence_cases']
+                   'run_recognition_cases', 'run_calibrate_cases', 'run_screens_cases', 'run_later_cases', 'context_fence_cases',
+                   'emulator_bluestacks_inventory_cases', 'collection_first_policy_cases', 'recognition_context_fence_cases',
+                   'run_controls_live_reset_all_cases', 'run_entry_patch_cases', 'run_templates_add_cases', 'run_battle_details_cases',
+                   'run_plan_section_delete_cases', 'run_templates_add_fenced_cases', 'shopping_queue_cases', 'profile_target_cases']
 
 
 CODED_PATHS = frozenset({'/api/calibrate/start', '/api/calibrate/observe', '/api/calibrate/apply', '/api/calibrate/stop', '/api/calibrate/status',
@@ -895,6 +1071,19 @@ def test_every_refusal_of_the_recognition_routes_carries_a_code():
     missing = [f'{family}.{name}' for family, cases in fixture_document()['cases'].items() for name, case in cases.items()
                if case['request']['path'].split('?')[0] in CODED_PATHS and case['status'] >= 400 and 'text' not in case['body'] and 'code' not in case['body']]
     assert not missing, missing
+
+
+def test_the_diagnostics_writer_is_pinned_to_one_pid_while_the_family_is_generated(dash, tmp_path, monkeypatch):
+    """runtime_diagnostics publishes byte offsets into log files whose records carry the writer's pid. A pid with another number of digits moved
+    every offset, so the committed family only matched when the process that regenerated it had a pid as long as the one that made it. The
+    writer's pid is therefore pinned while the records are written (a record under the real pid would differ in length from one under this)."""
+    from dashboard_contract_cases_runtime import WRITER_PID, emit, pin_writer
+    gen = PagesGenerator(dash, tmp_path / 'pid', monkeypatch)
+    with gen.world('pid') as w:
+        pin_writer(w)
+        emit(w, 'main', 'probe')
+        written = [json.loads(line) for line in (w.root / 'logs' / 'main' / 'events_20270115_080000_4242_pppppppp.jsonl').read_text(encoding='utf-8').splitlines()]
+    assert [record['pid'] for record in written] == [WRITER_PID]
 
 
 def test_the_families_are_generated_in_a_fixed_order():
