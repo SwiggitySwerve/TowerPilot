@@ -37,6 +37,7 @@ find/wait_for/require/tap_at/ensure_home/end_round machinery was built and
 debugged for the tournament routine and the screens are the same.
 """
 import random
+import math
 import sys
 import time
 import uuid
@@ -57,6 +58,7 @@ from scheduling import runflag
 from vision import screen
 from vision import wave_reader
 from vision.ocr import gem_balance_crop, read_gem_balance
+from vision.orbit_gems import OrbitGem, field_region, find_orbit_gem, reference_geometry
 from player.gather_settings import ORBIT_TIMING_FIELDS, validate_orbit_timing
 import settings
 from settings import CONFIG
@@ -143,16 +145,14 @@ WAVE_TIMEOUT = 240.0            # generous: the sprint to wave 100 took ~77s
 
 
 
-# Orbiting-gem BLIND HARVEST (measured live 2026-09-07 on BlueStacks Pie64):
+# Orbiting-gem arc harvest (initial reference measured 2026-09-07):
 # the collectible gem (a magenta square + pink diamond) circles the tower CORE
-# on a fixed path. Template matching on it is flaky under heavy effects (1/4 hit,
-# a false positive at that), so instead bounded attempts tap the 135deg (top-left)
-# arc - clear of the ability row. A stable +2 HUD balance confirms collection;
+# on a fixed path. The current frame's HUD diamond verifies the visible gem,
+# whose measured radius places bounded taps on the 135deg (top-left) arc,
+# clear of the ability row. A stable +2 HUD balance confirms collection;
 # attempts without confirmation use a separate retry backoff. Centre is the tower core, NOT the field-ROI
 # centre (which sits ~160px lower). Camera zoom shifts these per install, so all
 # are overridable via gather.gem_orbit in a blueprint.
-GEM_ORBIT_CENTER = (510, 805)   # tower core with upgrade panel OPEN, native px
-GEM_ORBIT_RADIUS = 170          # orbit radius (gem square ~70px wide forgives the band)
 GEM_ORBIT_ANGLE = 135.0         # degrees above +x, the safe top-left quadrant
 GEM_ORBIT_INTERVAL = ORBIT_TIMING_FIELDS["interval_sec"]["default"]
 GEM_ORBIT_TAPS = 3              # points per set, spread over the arc
@@ -298,12 +298,12 @@ def battlefield_live(points, frame=None, *, guard=None) -> tuple[bool, str]:
 class GemOrbitTapper:
     """Scheduled arc windows; a stable +2 HUD balance stops the window early.
 
-    No gem-image matching is required. Each set retains the battlefield, window,
+    Gem recognition never proves a reward. Each set retains the battlefield, window,
     motion, layout and ability-row guards. The observe loop runs between sets.
     """
 
-    def __init__(self, enabled=False, center=GEM_ORBIT_CENTER,
-                 radius=GEM_ORBIT_RADIUS, angle=GEM_ORBIT_ANGLE,
+    def __init__(self, enabled=False, center=None,
+                 radius=None, angle=GEM_ORBIT_ANGLE,
                  interval=GEM_ORBIT_INTERVAL, taps=GEM_ORBIT_TAPS,
                  jitter=GEM_ORBIT_JITTER, spread=GEM_ORBIT_SPREAD,
                  retry_interval_sec=None, attempt_timeout_sec=None,
@@ -317,8 +317,8 @@ class GemOrbitTapper:
         if errors:
             raise ValueError('; '.join(errors))
         self.enabled = bool(enabled)
-        self.center = tuple(center)
-        self.radius = float(radius)
+        self.center = tuple(center) if center is not None else None
+        self.radius = float(radius) if radius is not None else None
         self.angle = float(angle)
         self.interval = float(timing['interval_sec'])
         self.retry_interval = float(timing['retry_interval_sec'])
@@ -381,6 +381,7 @@ class GemOrbitTapper:
         self.sent_tap = False
         self.manual_active = False
         self._balance_diagnostic_written = False
+        self._gem_observation_states = set()
 
     def _balance_unreadable(self, frame, stage):
         # Keep the exact supplied pixels, once per window; never capture again
@@ -404,7 +405,7 @@ class GemOrbitTapper:
         if reason != self._last_skip:
             logger.event("gem_orbit_skip", reason=reason)
             self._last_skip = reason
-        if reason != 'balance_unreadable':
+        if reason not in ('balance_unreadable', 'gem_not_detected'):
             self.balance_before = None
             self.sent_tap = False
         # A temporary unknown is not a changed balance. Retain the verified
@@ -412,10 +413,36 @@ class GemOrbitTapper:
         # within this same bounded window. Expiry still clears the attempt.
         self.next_at = min(time.monotonic() + self.retry_backoff, self.window_ends_at)
 
-    def points(self):
-        center = (self.center[0], self.center[1] + capture.layout_offset / 2)
-        return _orbit_points(center, self.radius, self.angle, self.taps,
+    def _orbit_geometry(self) -> tuple[tuple[float, float], float]:
+        center, radius = reference_geometry()
+        center = center if self.center is None else self.center
+        radius = radius if self.radius is None else self.radius
+        return (center[0], center[1] + capture.layout_offset / 2), radius
+
+    def points(self, radius: float | None = None) -> list[tuple[int, int]]:
+        center, configured_radius = self._orbit_geometry()
+        radius = configured_radius if radius is None else radius
+        return _orbit_points(center, radius, self.angle, self.taps,
                              self.jitter, self.spread)
+
+    def _gem_geometry(self, frame, stage: str) -> tuple[OrbitGem, float] | None:
+        gem = find_orbit_gem(frame, layout_offset=capture.layout_offset)
+        visible = gem is not None
+        center, configured_radius = self._orbit_geometry()
+        radius = math.dist(gem.center, center) if visible else None
+        if visible not in self._gem_observation_states:
+            self._gem_observation_states.add(visible)
+            logger.event('gem_orbit_geometry', stage=stage,
+                         recognition='visible' if visible else 'not_detected',
+                         orbit_center=center, configured_radius=configured_radius,
+                         measured_radius=radius,
+                         gem_center=gem.center if visible else None,
+                         gem_rect=gem.rect if visible else None,
+                         score=gem.score if visible else None)
+        if not visible:
+            self._backoff('gem_not_detected')
+            return None
+        return gem, radius
 
     def _expire_attempt(self, balance: int | None) -> bool:
         if self.attempt_started is None or time.monotonic() < self.window_ends_at:
@@ -443,7 +470,9 @@ class GemOrbitTapper:
         manual = self.manual_requested
         if not manual and not self.manual_active and not self.enabled:
             return frame
-        if not manual and time.monotonic() < self.next_at:
+        confirmation_only = not manual and time.monotonic() < self.next_at
+        if confirmation_only and not (self.attempt_started is not None
+                                      and self.balance_before is not None and self.sent_tap):
             return frame
         if self.attempt_started is None:
             now = time.monotonic()
@@ -467,6 +496,11 @@ class GemOrbitTapper:
             return frame
         prior_frame = frame
         prior_balance = read_gem_balance(frame)
+        # Backoff paces input, not proof of an already dispatched tap. Inspect
+        # supplied frames without more I/O until a readable change warrants
+        # the same fresh-pair validation used on a normal collection poll.
+        if confirmation_only and (prior_balance is None or prior_balance == self.balance_before):
+            return frame
         frame = capture.grab()
         if self.guard is not None:
             frame = self.guard(frame, "battle")
@@ -508,8 +542,18 @@ class GemOrbitTapper:
         if balance != prior_balance:
             self._backoff("balance_unstable")
             return frame
+        if confirmation_only:
+            return frame
         layout_offset = capture.layout_offset
-        points = self.points()
+        geometry = self._gem_geometry(frame, 'fresh')
+        if geometry is None:
+            return frame
+        _, measured_radius = geometry
+        points = self.points(measured_radius)
+        fx, fy, fw, fh = field_region(layout_offset)
+        if any(not (fx <= x < fx+fw and fy <= y < fy+fh) for x, y in points):
+            self._backoff('invalid_orbit_arc')
+            return frame
         ok, why = battlefield_live(points, frame,
                                     **({"guard": self.guard} if self.guard is not None else {}))
         if not ok:
@@ -542,9 +586,19 @@ class GemOrbitTapper:
             if _in_ability_row((x, y)):
                 self._backoff("ability_row")
                 return frame
+            geometry = self._gem_geometry(frame, 'pre_tap')
+            if geometry is None:
+                return frame
+            gem, current_radius = geometry
+            # Camera/layout changes cannot turn an old arc into a new target.
+            # Keep radius error well inside the recognized square's half-width.
+            if abs(current_radius-measured_radius) > .15*min(gem.rect[2:]):
+                self._backoff('gem_geometry_changed')
+                return frame
             try:
                 event = act.tap(x, y, reason="gem_orbit", deadline=self.window_ends_at)
-                logger.event("gem_orbit_tap", **event)
+                logger.event("gem_orbit_tap", gem_center=gem.center,
+                             measured_radius=current_radius, **event)
                 self.sent_tap = self.sent_tap or not event.get('dry_run', False)
             except act.TapRefused as exc:
                 logger.event("tap_refused", button="gem_orbit", error=str(exc))

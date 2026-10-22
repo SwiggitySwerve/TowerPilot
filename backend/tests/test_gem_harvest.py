@@ -1,4 +1,4 @@
-"""The detection-free orbiting-gem blind harvest (flows/shard.GemOrbitTapper).
+"""The guarded orbiting-gem arc harvest (flows/shard.GemOrbitTapper).
 
 Its taps fire live during bot-owned farming, so these lock the SAFETY decisions
 a wrong reading could get wrong: off unless explicitly enabled, never off a
@@ -17,6 +17,8 @@ import pytest
 @pytest.fixture(autouse=True)
 def device_frames(monkeypatch):
     monkeypatch.setattr(shard, 'read_gem_balance', lambda frame: 100)
+    monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw:
+                        SimpleNamespace(center=(680., 805.), rect=(640, 765, 80, 80), score=.99))
     monkeypatch.setattr(shard.capture, 'grab', lambda: object())
     monkeypatch.setattr(shard.screen, 'identify', lambda frame: SimpleNamespace(name='battle'))
     monkeypatch.setattr(shard, 'battlefield_live', lambda points, frame=None: (True, 'live'))
@@ -65,14 +67,14 @@ def test_orbit_does_not_capture_when_not_due(monkeypatch):
 
 
 def test_orbit_points_land_on_the_top_left_arc():
-    cx, cy = shard.GEM_ORBIT_CENTER
-    pts = shard._orbit_points(shard.GEM_ORBIT_CENTER, shard.GEM_ORBIT_RADIUS,
+    (cx, cy), radius = shard.reference_geometry()
+    pts = shard._orbit_points((cx, cy), radius,
                               135.0, 3, 0.03, 6.0)
     assert len(pts) == 3
     for x, y in pts:
         assert x < cx and y < cy                       # up AND left of the tower core
         r = math.hypot(x - cx, y - cy)
-        assert abs(r - shard.GEM_ORBIT_RADIUS) < shard.GEM_ORBIT_RADIUS * 0.12
+        assert abs(r - radius) < radius * 0.12
         assert not shard._in_ability_row((x, y))       # clear of Nuke / Demon Mode
 
 
@@ -120,6 +122,8 @@ def test_tapper_never_taps_the_ability_row(monkeypatch):
                         lambda points, frame=None: (True, "live"))
     monkeypatch.setattr(shard.logger, "event", lambda *a, **k: None)
     ax, ay, aw, ah = shard.CONFIG["rois"]["ability_row"]
+    monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw:
+                        SimpleNamespace(center=(ax+aw//2+6, ay-3), rect=(0, 0, 80, 80), score=.99))
     # aim the whole set straight into the ability row (270deg = down in screen y)
     t = shard.GemOrbitTapper(enabled=True, center=(ax + aw // 2, ay - 3),
                              radius=6, angle=270, taps=3)

@@ -44,6 +44,8 @@ def world(monkeypatch):
         taps=[], events=[], slept=[])
     monkeypatch.setattr(shard.capture, "layout_offset", 0)
     monkeypatch.setattr(shard, 'read_gem_balance', lambda frame: 100)
+    monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw:
+                        types.SimpleNamespace(center=(680., 805.), rect=(640, 765, 80, 80), score=.99))
     monkeypatch.setattr(shard.capture, "grab", lambda *a, **k: state.frames.pop(0)
                         if state.frames else _frame(9))
     monkeypatch.setattr(shard.wave_reader, "read_wave", lambda f: state.wave)
@@ -238,7 +240,7 @@ def test_the_set_is_tapped_when_the_guard_passes(world, monkeypatch):
     monkeypatch.setattr(shard, "battlefield_live", lambda pts, frame=None: (True, "live"))
     t.poll(_frame(1))
     assert len(world.taps) == 3
-    assert [k for k, _ in world.events] == ["gem_orbit_window"] + ["gem_orbit_tap"] * 3
+    assert [k for k, _ in world.events] == ["gem_orbit_window", "gem_orbit_geometry"] + ["gem_orbit_tap"] * 3
 
 
 def test_a_refused_guard_taps_nothing_and_says_why_once(world, monkeypatch):

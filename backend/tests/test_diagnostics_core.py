@@ -248,6 +248,8 @@ def test_orbit_raw_events_and_status_retain_window_and_attempt_identity(monkeypa
     monkeypatch.setattr(shard.wave_reader, 'read_wave', lambda frame: 123)
     monkeypatch.setattr(shard.screen, 'identify', lambda frame: SimpleNamespace(name='battle'))
     monkeypatch.setattr(shard, 'read_gem_balance', lambda frame: frame)
+    monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw:
+                        SimpleNamespace(center=(680., 805.), rect=(640, 765, 80, 80), score=.99))
     monkeypatch.setattr(shard, 'battlefield_live', lambda *args: (True, 'live'))
     monkeypatch.setattr(shard, '_in_ability_row', lambda point: False)
     monkeypatch.setattr(shard.act, 'tap', lambda *args, **kwargs: {'dry_run': False})
@@ -256,7 +258,8 @@ def test_orbit_raw_events_and_status_retain_window_and_attempt_identity(monkeypa
     active = collector.status()
     state.now, state.balance = 105., 202
     collector.poll(202)
-    window, tap, claim = records(logger._LOG_DIR)
+    window, geometry, tap, claim = records(logger._LOG_DIR)
+    assert geometry['kind'] == 'gem_orbit_geometry'
     assert window['kind'] == 'gem_orbit_window' and claim['kind'] == 'gem_orbit_claim'
     assert {row['window_id'] for row in (window, tap, claim)} == {active['window_id']}
     assert window['attempt_id'] == tap['attempt_id'] == active['attempt_id']
