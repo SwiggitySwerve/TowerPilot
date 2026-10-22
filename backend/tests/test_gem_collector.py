@@ -64,6 +64,11 @@ def test_collection_accepts_verified_text_fallback_without_offer_template(monkey
     monkeypatch.setattr(time,'sleep',lambda t:None)
     client=d.app.test_client()
     assert client.post('/api/control',json={'action':'start_gems','preset':'bp_farm'}).status_code==200
+    # That collector is an accepted operation and owns the emulator until it is retired; this test is about the
+    # digit precheck, so end it the way a vanished worker ends (the owner refusal has its own tests).
+    store=d.operation_api.ledger(d.ROOT)
+    [accepted]=store.active()
+    store.transition(accepted['id'], accepted['revision'], 'interrupted')
     (tmp_path / '9.png').unlink()
     result=client.post('/api/control',json={'action':'start_gems','preset':'bp_farm'})
     assert result.status_code==409

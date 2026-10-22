@@ -37,10 +37,40 @@ jobs:
         run: python -m pytest backend/tests/test_release_clean.py backend/tests/test_release_bootstrap.py
       - name: Check dashboard
         run: node --test frontend/tests/*.test.cjs
-      - name: Build both distributions
-        run: |
-          python tools/build_release.py
-          python tools/build_portable.py
+      # The dashboard app (frontend/app, ADR-001), built before the ZIPs. One
+      # step per command so any failure stops the release. The steps run when
+      # the checked-out release has the app; a tag from before it has none,
+      # and from it on tools/build_release.py refuses a release without the build.
+      - name: Check dashboard app release boundary
+        if: hashFiles('frontend/app/package-lock.json') != ''
+        run: python -m pytest backend/tests/test_release_app_build.py backend/tests/test_ui_app_serving.py
+      - name: Install dashboard app dependencies
+        if: hashFiles('frontend/app/package-lock.json') != ''
+        working-directory: frontend/app
+        run: npm ci
+      - name: Typecheck dashboard app
+        if: hashFiles('frontend/app/package-lock.json') != ''
+        working-directory: frontend/app
+        run: npm run typecheck
+      - name: Lint dashboard app
+        if: hashFiles('frontend/app/package-lock.json') != ''
+        working-directory: frontend/app
+        run: npm run lint
+      - name: Test dashboard app
+        if: hashFiles('frontend/app/package-lock.json') != ''
+        working-directory: frontend/app
+        run: npm test
+      - name: Build dashboard app
+        if: hashFiles('frontend/app/package-lock.json') != ''
+        working-directory: frontend/app
+        run: npm run build
+      - name: Build source distribution
+        run: python tools/build_release.py
+      - name: Build portable distribution
+        run: python tools/build_portable.py
+      - name: Check release archives
+        if: hashFiles('frontend/app/package-lock.json') != ''
+        run: python tools/check_release_zips.py
       - name: Publish prerelease
         shell: pwsh
         env:

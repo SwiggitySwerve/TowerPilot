@@ -2366,6 +2366,10 @@ def main():
     _battle_session = None
     from runtime.device_lease import ensure_current
     ensure_current()
+    # Before the first frame and any adoption: an unresolved setup battle is
+    # never adopted, whoever started this process. Read-only, no device I/O.
+    from control.battles import require_runner_entry
+    require_runner_entry(settings.ROOT, CONFIG, event=logger.event)
     from player import readiness
     from runtime.battle_session import BattleSession
     initial = capture.grab()

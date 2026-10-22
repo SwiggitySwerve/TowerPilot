@@ -16,6 +16,7 @@ from runtime.battle_session import BattleSession
 from scheduling import combo
 from towerpilot_workflows.battles import Battles
 from towerpilot_workflows.operations import Conflict, Operations
+from harvest_support import fake_inspect
 
 
 class Child:
@@ -365,15 +366,21 @@ def test_explicit_stop_now_can_cancel_an_overdue_boundary(delegation, tmp_path):
     flag = tmp_path / 'stop_after_run'
     d.monkeypatch.setattr(combo.runflag, '_path', lambda: str(flag))
     d.monkeypatch.setattr(operations, 'ledger', lambda root: d.operations)
-    d.monkeypatch.setattr(operations, 'worker_alive', lambda worker: True)
+    d.monkeypatch.setattr(operations, 'inspect_worker', fake_inspect(lambda worker: True))
     stopped = []
-    def terminate_child():
-        stopped.append('child')
-        child.returncode = -15
-    child.terminate = terminate_child
-    parent = SimpleNamespace(children=lambda recursive: [child], terminate=lambda: stopped.append('parent'))
-    d.monkeypatch.setattr(psutil, 'Process', lambda pid: parent)
-    d.monkeypatch.setattr(psutil, 'wait_procs', lambda family, timeout: (family, []))
+    from runtime import process_handle
+    kernel_os = process_handle.kernel().os
+    kernel_os.start(900, 1, ppid=100)           # the recorded worker (the delegation fixture's) ...
+    kernel_os.start(901, 2, ppid=900)           # ... and the driver child it delegated to
+
+    def signalled(event, pid):                  # stopped through kernel handles: the child first, then the worker
+        if event == 'terminate':
+            stopped.append('child' if pid == 901 else 'parent')
+            if pid == 901:
+                child.returncode = -15
+            else:
+                device_lease.release_current()    # this test process stands in for the worker: its lease dies with it
+    kernel_os.watch(signalled)
     def wait(timeout):
         assert flag.exists() and child.poll() is None
         op = d.operations.get(d.op['id'])
@@ -396,6 +403,7 @@ def test_adopted_driver_uses_same_overdue_hold_and_wait_contract(monkeypatch, tm
     monkeypatch.setattr(combo.runflag, '_path', lambda: str(flag))
     process = SimpleNamespace(pid=919, alive=True)
     process.is_running = lambda: process.alive
+    process.create_time = lambda: 100.0         # cached by the walk that matched this runner
     waits = []
     def wait(timeout):
         waits.append(timeout)

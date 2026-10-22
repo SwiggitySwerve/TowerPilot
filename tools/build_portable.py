@@ -7,18 +7,49 @@ import sys
 import tempfile
 import urllib.request
 import zipfile
+from collections.abc import Iterable
 from pathlib import Path
 
-from build_release import ROOT, allowed
+from build_release import APP_BUILD, APP_NOTICES, ROOT, release_files
 
 PYTHON = '3.12.10'
 URL = f'https://www.python.org/ftp/python/{PYTHON}/python-{PYTHON}-embed-amd64.zip'
 SHA256 = '4acbed6dd1c744b0376e3b1cf57ce906f9dc9e95e68824584c8099a63025a3c3'
+SOURCE_LAUNCHERS = {'Start-TowerPilot.ps1', 'Start Tower Pilot.cmd'}
+
+
+def stage_tree(stage: Path, root: Path = ROOT, files: Iterable[str] | None = None) -> None:
+    """Copy the release files - full source, tests, agent rules, skills and the
+    dashboard app build - into the portable tree, so the extracted folder is
+    also a working checkout. Only the source launchers are left out; build()
+    writes the portable ones."""
+    for name in release_files(root) if files is None else files:
+        if name in SOURCE_LAUNCHERS:
+            continue
+        dest = stage / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(root / name, dest)
+
+
+def write_zip(stage: Path, output: Path, prefix: str) -> Path:
+    """ZIP the staged tree under `prefix/` with a SHA256SUMS.txt inventory."""
+    inventory = []
+    with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
+        for path in sorted(stage.rglob('*')):
+            if not path.is_file() or '__pycache__' in path.parts:
+                continue
+            name = path.relative_to(stage).as_posix()
+            data = path.read_bytes()
+            archive.writestr(prefix + '/' + name, data)
+            inventory.append(hashlib.sha256(data).hexdigest() + '  ' + name)
+        archive.writestr(prefix + '/SHA256SUMS.txt', '\n'.join(inventory)+'\n')
+    return output
 
 
 def build():
     if sys.platform != 'win32' or sys.version_info[:2] != (3, 12) or platform.architecture()[0] != '64bit':
         raise RuntimeError('Build with 64-bit Python 3.12 on Windows')
+    files = release_files(ROOT)          # refuses early when the dashboard app is not built
     version = (ROOT / 'VERSION').read_text().strip()
     dist = ROOT / 'dist'
     cache = dist / 'downloads'
@@ -33,18 +64,7 @@ def build():
     with tempfile.TemporaryDirectory(prefix='portable-build-', dir=dist) as work:
         stage = Path(work) / prefix
         stage.mkdir()
-        names = subprocess.check_output(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard'], cwd=ROOT).decode().split('\0')
-        # The portable tree carries the full source, tests, agent rules and
-        # skills included (0.2-beta), so the extracted folder is also a
-        # working checkout. Only the source launchers are replaced below.
-        for name in sorted(set(names)):
-            if not name or not allowed(name) or not (ROOT / name).is_file():
-                continue
-            if name in {'Start-TowerPilot.ps1', 'Start Tower Pilot.cmd'}:
-                continue
-            dest = stage / name
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(ROOT / name, dest)
+        stage_tree(stage, ROOT, files)
         runtime = stage / 'runtime'
         with zipfile.ZipFile(runtime_zip) as archive:
             archive.extractall(runtime)
@@ -81,18 +101,9 @@ def build():
             'Python '+PYTHON+' from '+URL+'\nSHA256: '+SHA256+'\n'
             'Python license: runtime/LICENSE.txt\n'
             'Package versions: requirements-portable.lock\n'
-            'Dependency licenses/notices: runtime/Lib/site-packages/*.dist-info/\n')
-        output = dist / (prefix + '.zip')
-        inventory = []
-        with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
-            for path in sorted(stage.rglob('*')):
-                if not path.is_file() or '__pycache__' in path.parts:
-                    continue
-                name = path.relative_to(stage).as_posix()
-                data = path.read_bytes()
-                archive.writestr(prefix + '/' + name, data)
-                inventory.append(hashlib.sha256(data).hexdigest() + '  ' + name)
-            archive.writestr(prefix + '/SHA256SUMS.txt', '\n'.join(inventory)+'\n')
+            'Dependency licenses/notices: runtime/Lib/site-packages/*.dist-info/\n'
+            'Dashboard app npm packages and their licenses: '+APP_BUILD+'/'+APP_NOTICES+'\n')
+        output = write_zip(stage, dist / (prefix + '.zip'), prefix)
         output.with_suffix('.zip.sha256').write_text(hashlib.sha256(output.read_bytes()).hexdigest()+'  '+output.name+'\n')
         print(output)
         return output

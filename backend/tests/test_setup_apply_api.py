@@ -8,6 +8,7 @@ import pytest
 import yaml
 
 from control import operations
+from harvest_support import fake_inspect
 
 
 @pytest.fixture(scope='module')
@@ -303,7 +304,7 @@ def test_active_status_reads_current_state_with_operation_identity(bound, monkey
     store = operations.ledger(dash.ROOT)
     op, _ = store.accept('calibrate', context, {'phases': 'c'})
     op = store.transition(op['id'], op['revision'], 'running')
-    monkeypatch.setattr(operations, 'worker_alive', lambda worker: True)
+    monkeypatch.setattr(operations, 'inspect_worker', fake_inspect(lambda worker: True))
     directory = Path(context['artifact_dir'])
     directory.mkdir(parents=True)
     (directory / 'calibrate_state.json').write_text(json.dumps({'operation_id': op['id'], 'marker': 'live'}))

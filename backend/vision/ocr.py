@@ -31,6 +31,9 @@ def read_gem_balance(frame: np.ndarray) -> int | None:
 
     Uses existing account-local digit templates, never captures new templates.
     Callers must independently establish that this is a battle screen.
+    Only a contiguous, baseline-aligned number belongs to the HUD. Detached
+    battle art clipped at the lower crop edge may follow a clear gutter;
+    overlapping components must also be too wide for a digit in this font.
     """
     x, y, w, h = GEM_BALANCE_REGION
     if frame.shape[:2] != (2560, 1080):
@@ -42,12 +45,33 @@ def read_gem_balance(frame: np.ndarray) -> int | None:
     bw = cv2.inRange(crop, (180, 180, 180), (255, 255, 255))
     contours, _ = cv2.findContours(bw, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     boxes = sorted((cv2.boundingRect(c) for c in contours), key=lambda b: b[0])
-    boxes = [b for b in boxes if b[3] >= 20]
     if not boxes or not 0 < boxes[0][0] <= 25:
         return None
+    _, top, _, height = boxes[0]
+    bottom = top + height
+    baseline_tolerance = 3
+    max_digit_width = (height+baseline_tolerance)*max(
+        tpl.shape[1]/tpl.shape[0] for tpl in glyphs.values())+2*baseline_tolerance
     digits = []
-    for gx, gy, gw, gh in boxes:
+    right = None
+    for index, (gx, gy, gw, gh) in enumerate(boxes):
+        if right is not None and gx-right >= height/2:
+            # Prove a full blank gutter, rather than merely a gap between
+            # bounding boxes that might contain smaller glyph fragments.
+            if np.any(bw[:, right:gx]):
+                return None
+            # Do not silently truncate a separated digit or an unknown mark
+            # on the counter line. Every remaining component must reach the
+            # bottom edge. Anything overlapping the digit band must exceed
+            # the widest glyph in the loaded font, including alignment slack.
+            if any(sy <= top+baseline_tolerance or sy+sh != h
+                   or (sy < bottom-baseline_tolerance and sw <= max_digit_width)
+                   for _, sy, sw, sh in boxes[index:]):
+                return None
+            break
         if gx <= 0 or gy <= 0 or gx+gw >= w-1 or gy+gh >= h-1 or not 28 <= gh <= 48:
+            return None
+        if abs(gy-top) > baseline_tolerance or abs(gy+gh-bottom) > baseline_tolerance:
             return None
         patch = bw[gy:gy+gh, gx:gx+gw]
         scores = sorted((float(cv2.matchTemplate(
@@ -57,6 +81,7 @@ def read_gem_balance(frame: np.ndarray) -> int | None:
         if score < .8 or score-scores[-2][0] < .1:
             return None
         digits.append(ch)
+        right = gx+gw
     return int(''.join(digits))
 
 

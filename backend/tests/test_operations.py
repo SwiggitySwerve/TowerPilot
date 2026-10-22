@@ -11,6 +11,7 @@ import pytest
 
 from runtime.operations import Conflict, Operations, file_revision, worker_operation
 from control import operations as service
+from harvest_support import fake_inspect
 
 
 @pytest.mark.parametrize('module_name', ['calibrate', 'scan'])
@@ -125,8 +126,61 @@ def test_reconciliation_never_infers_success_and_checks_creation_time(tmp_path, 
     assert not service.worker_alive(op['worker'])
 
 
+def test_reconcile_judges_the_snapshot_it_read_and_retires_only_that_revision(tmp_path):
+    """H2R7-02. policy(op) is handed the operation THIS call read (status, worker, revision); a judgement made
+    on an earlier read of the caller's own is exactly the stale-status defect, so the API gives it no other way."""
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('calibrate', ctx, {})
+    op = store.transition(op['id'], op['revision'], 'running', worker={'pid': 999, 'creation_time': 10})
+    seen = []
+
+    def gone(snapshot):
+        seen.append((snapshot['status'], snapshot['revision'], snapshot['worker']))
+        return False
+    retired = store.reconcile(op['id'], policy=gone)
+    assert seen == [('running', op['revision'], {'pid': 999, 'creation_time': 10})]
+    assert retired['status'] == 'interrupted' and retired['revision'] == op['revision'] + 1
+
+
+def test_reconcile_policy_that_cannot_prove_the_worker_gone_keeps_the_operation(tmp_path):
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('calibrate', ctx, {})
+    op = store.transition(op['id'], op['revision'], 'running', worker={'pid': 999, 'creation_time': 10})
+    for answer in (True, None, 0, ''):                    # only an explicit False retires: unknown and falsy values do not
+        assert store.reconcile(op['id'], policy=lambda snapshot, answer=answer: answer) == op
+
+
+def test_a_policy_that_judged_an_older_state_loses_the_compare_and_set_to_a_newer_one(tmp_path):
+    """The operation moves between the policy's snapshot and the write: the write is refused by the revision and
+    the newer state is the answer. (Before, a caller-side judgement of an earlier read could retire it.)"""
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('calibrate', ctx, {})
+    op = store.transition(op['id'], op['revision'], 'running', worker={'pid': 999, 'creation_time': 10})
+
+    def gone_and_the_operation_moves(snapshot):
+        store.transition(op['id'], op['revision'], 'cancelling', step='stop_requested')
+        return False
+    answer = store.reconcile(op['id'], policy=gone_and_the_operation_moves)
+    assert answer['status'] == 'cancelling' and answer['revision'] == op['revision'] + 1 and answer['error'] is None
+
+
+@pytest.mark.parametrize('arguments', [(), ('both',)], ids=['neither', 'both'])
+def test_reconcile_needs_exactly_one_way_to_judge(tmp_path, arguments):
+    _, ctx = target(tmp_path)
+    store = Operations(tmp_path / 'ops.db')
+    op, _ = store.accept('calibrate', ctx, {})
+    with pytest.raises(TypeError):
+        if arguments:
+            store.reconcile(op['id'], lambda worker: False, policy=lambda snapshot: False)
+        else:
+            store.reconcile(op['id'])
+
+
 def test_cancel_old_operation_cannot_cancel_new_worker(tmp_path, monkeypatch):
-    monkeypatch.setattr(service, 'worker_alive', lambda worker: True)
+    monkeypatch.setattr(service, 'inspect_worker', fake_inspect(lambda worker: True))
     _, ctx = target(tmp_path)
     store = service.ledger(tmp_path)
     a, _ = store.accept('calibrate', ctx, {})
@@ -344,7 +398,7 @@ def test_basic_progress_roundtrips_from_worker_state_to_status_api(dashboard, mo
     op = store.transition(op['id'], op['revision'], 'running')
     monkeypatch.setenv('TOWER_OPERATION_ID', op['id'])
     monkeypatch.setenv('TOWER_OPERATION_DB', store.path)
-    monkeypatch.setattr(service, 'worker_alive', lambda worker: True)
+    monkeypatch.setattr(service, 'inspect_worker', fake_inspect(lambda worker: True))
     monkeypatch.setattr(dash, '_newest_events', lambda *args, **kwargs: pytest.fail('No event-log scan'))
     directory = Path(ctx['artifact_dir'])
     directory.mkdir(parents=True)
@@ -639,9 +693,9 @@ def test_process_projection_requires_creation_identity(tmp_path, monkeypatch):
     store = service.ledger(tmp_path)
     op, _ = store.accept('run', ctx, {})
     op = store.transition(op['id'], op['revision'], 'running', worker={'pid': 123, 'creation_time': 10})
-    fake = types.SimpleNamespace(Process=lambda pid: types.SimpleNamespace(pid=123, create_time=lambda: 10, is_running=lambda: True, parents=lambda: [types.SimpleNamespace(pid=99)]), NoSuchProcess=ProcessLookupError, AccessDenied=PermissionError)
+    fake = types.SimpleNamespace(Process=lambda pid: types.SimpleNamespace(pid=123, create_time=lambda: 10, is_running=lambda: True, parents=lambda: [types.SimpleNamespace(pid=99, create_time=lambda: 5, is_running=lambda: True)]), NoSuchProcess=ProcessLookupError, AccessDenied=PermissionError)
     monkeypatch.setitem(sys.modules, 'psutil', fake)
-    rows = service.project_processes(tmp_path, [{'pid': 99, 'runner': 'orchestrator', 'cmdline': 'fake'}])
+    rows = service.project_processes(tmp_path, [{'pid': 99, 'runner': 'orchestrator', 'cmdline': 'fake', 'created': 5}])   # the launcher the scan pinned
     assert rows[0]['operation']['id'] == op['id']
     assert rows[0]['operation']['revision'] == op['revision']
     fake.Process = lambda pid: types.SimpleNamespace(create_time=lambda: 11, is_running=lambda: True)

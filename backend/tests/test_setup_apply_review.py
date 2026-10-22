@@ -4,12 +4,14 @@ import json
 from pathlib import Path
 import threading
 
+import psutil
 import pytest
 import yaml
 
 from control import operations
 from towerpilot_workflows.operations import Conflict, Operations
 from test_setup_apply_api import apply, bound, captured, dashboard_module
+from harvest_support import fake_inspect
 
 
 def test_apply_refuses_new_admission_after_empty_process_snapshot(bound, monkeypatch):
@@ -19,7 +21,11 @@ def test_apply_refuses_new_admission_after_empty_process_snapshot(bound, monkeyp
     def empty_snapshot_then_admit():
         other = Operations(operations.ledger(dash.ROOT).path)
         op, _ = other.accept('calibrate', context, {'phases': 'm'})
-        admitted.append(other.transition(op['id'], op['revision'], 'running'))
+        # A capture that owns the device has a live worker (this process stands in for it); a 'running'
+        # operation without one is a vanished worker and is retired, not honoured.
+        me = psutil.Process()
+        admitted.append(other.transition(op['id'], op['revision'], 'running',
+                                         worker={'pid': me.pid, 'creation_time': me.create_time()}))
         return []
     monkeypatch.setattr(dash, '_procs', empty_snapshot_then_admit)
     monkeypatch.setattr(dash, '_save_yaml_backup', lambda *args: pytest.fail('No write while another capture owns the device'))
@@ -181,7 +187,7 @@ def test_promotion_recovers_interrupted_write_from_durable_intent(bound, monkeyp
         writes.append(True)
         original_writer(path, text)
     monkeypatch.setattr(files, 'atomic_text', completed)
-    monkeypatch.setattr(operations, 'worker_alive', lambda worker: False)
+    monkeypatch.setattr(operations, 'inspect_worker', fake_inspect(lambda worker: False))
     with dash.app.test_client() as client:
         result = client.post('/api/profile-promote', json=body)
     assert result.status_code == 200, result.json
@@ -205,7 +211,7 @@ def test_promotion_interrupted_write_never_overwrites_newer_destination(bound, m
     target = Path(dash.ROOT) / 'profiles/promoted.yaml'
     target.write_text('player: {wall: true}\n')
     before = target.read_bytes()
-    monkeypatch.setattr(operations, 'worker_alive', lambda worker: False)
+    monkeypatch.setattr(operations, 'inspect_worker', fake_inspect(lambda worker: False))
     monkeypatch.setattr(files, 'atomic_text', lambda *args: pytest.fail('No overwrite after external changes'))
     with dash.app.test_client() as client:
         response = client.post('/api/profile-promote', json=body)

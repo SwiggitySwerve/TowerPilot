@@ -41,6 +41,15 @@ build/
 *.egg-info/
 venv/
 
+# --- dashboard app (frontend/app, ADR-001) ------------------------------
+# The build is produced by CI, the release scripts and `npm run build`; npm
+# and Playwright state never ship.
+frontend/webui/app/
+frontend/app/node_modules/
+frontend/app/test-results/
+frontend/app/playwright-report/
+frontend/app/coverage/
+
 # --- editors / os ------------------------------------------------------
 .vscode/
 .idea/

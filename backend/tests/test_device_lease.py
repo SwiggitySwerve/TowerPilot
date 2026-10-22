@@ -193,3 +193,79 @@ def test_discovery_keeps_same_device_owner_for_loopback_alias(tmp_path, monkeypa
         assert not device_lease.owns_different_device(runner.pid)
     finally:
         stop(runner)
+
+
+# ----------------------------------------------------------------- H2R7-01: absence is ONE observation of both locks
+def test_a_device_kept_owned_by_a_promotion_is_never_observed_free(monkeypatch):
+    """child_environment() promotes a delegated child by taking the primary lock BEFORE letting go of the
+    activity lock, so the device is owned at every instant. A reader that probed the primary lock, let it go,
+    and only then probed the activity lock saw the primary free (before the promotion) and the activity free
+    (after it): an owned device read as free, and a Stop was confirmed over a live owner. The promotion is
+    run by the real child_environment(), on real lock files, at exactly that moment."""
+    from harvest_support import delegated_lease, promote_after_the_primary_probe
+    lease = delegated_lease(monkeypatch, "synthetic-device")
+    try:
+        fired = promote_after_the_primary_probe(monkeypatch, lease)
+        state = device_lease.lease_state("synthetic-device")
+        assert state["owned"] is True and state["delegated"] is True and fired == [True]
+        after = device_lease.lease_state("synthetic-device")  # the hook fired once and is a plain pass-through now
+        assert after["owned"] is True and after["delegated"] is False and not lease.delegated
+        with pytest.raises(device_lease.DeviceBusy):         # and the primary lock really is held, by the promoted owner
+            device_lease._lock(lease.path)
+    finally:
+        lease.release()
+
+
+def test_control_without_a_promotion_the_same_reader_sees_exactly_what_is_held(monkeypatch):
+    from harvest_support import delegated_lease
+    lease = delegated_lease(monkeypatch, "synthetic-device")
+    try:
+        state = device_lease.lease_state("synthetic-device")
+        assert (state["owned"], state["delegated"], state["input_gate"]) == (True, True, "enforced")
+        assert [holder["role"] for holder in state["holders"]] == ["delegated"]
+    finally:
+        lease.release()
+    assert device_lease.lease_state("synthetic-device") == {"owned": False, "delegated": False, "input_gate": None, "holders": []}
+
+
+def test_a_promotion_that_arrives_while_the_device_is_being_read_waits_for_the_reader_and_is_not_lost(monkeypatch):
+    """The other order: the promotion is already asking for the primary lock while the reader holds its free
+    probe. It is made to wait (child_environment retries), the reader answers that the device is owned, and
+    the promotion then completes."""
+    import threading
+    from harvest_support import delegated_lease
+    lease = delegated_lease(monkeypatch, "synthetic-device")
+    try:
+        real_lock, blocked, outcome = device_lease._lock, threading.Event(), []
+
+        def lock(path):
+            try:
+                return real_lock(path)
+            except device_lease.DeviceBusy:
+                if threading.current_thread().name == "promoter":
+                    blocked.set()
+                raise
+
+        def promote():
+            try:
+                device_lease.child_environment()
+                outcome.append("promoted")
+            except BaseException as exc:   # noqa: BLE001
+                outcome.append(repr(exc))
+        promoter = threading.Thread(target=promote, name="promoter")
+        state = []
+
+        def lock_then_start_the_promoter(path):
+            handle = lock(path)
+            if device_lease.Path(path) == lease.path and not promoter.is_alive() and not outcome and threading.current_thread() is threading.main_thread():
+                promoter.start()
+                assert blocked.wait(10), "the promotion never asked for the primary lock"
+            return handle
+        monkeypatch.setattr(device_lease, "_lock", lock_then_start_the_promoter)
+        state.append(device_lease.lease_state("synthetic-device"))
+        promoter.join(15)
+        assert outcome == ["promoted"] and state[0]["owned"] is True and state[0]["delegated"] is True
+        monkeypatch.setattr(device_lease, "_lock", real_lock)
+        assert device_lease.lease_state("synthetic-device")["delegated"] is False
+    finally:
+        lease.release()

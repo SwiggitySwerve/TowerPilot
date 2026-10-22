@@ -185,7 +185,8 @@ time.sleep(30)
 
 
 @pytest.fixture
-def helper(monkeypatch):
+def helper(monkeypatch, real_kernel):
+    """Helper processes this test starts for itself, stopped through the REAL kernel (runtime.process_handle)."""
     original = subprocess.Popen
     processes = []
 
@@ -292,32 +293,31 @@ def _unstarted_preview():
     return preview
 
 
-def test_close_reports_surviving_owned_helpers_and_allows_cleanup_retry(monkeypatch):
+def test_close_reports_surviving_owned_helpers_and_allows_cleanup_retry():
+    from runtime import process_handle
+    kernel_os = process_handle.kernel().os
+    kernel_os.start(123, 1.0)
     preview = _unstarted_preview()
     launcher = SimpleNamespace(pid=123, wait=Mock(return_value=0), kill=Mock())
-    member = SimpleNamespace(pid=123, children=Mock(return_value=[]), terminate=Mock(), kill=Mock())
     preview._process = launcher
-    monkeypatch.setattr(mumu.psutil, "Process", lambda pid: member)
-    monkeypatch.setattr(mumu.psutil, "wait_procs", lambda family, timeout: ([], family))
-    with pytest.raises(PreviewError, match="cleanup failed.*did not exit after kill"):
+    kernel_os.lingering = True                       # the helper does not exit when terminated
+    with pytest.raises(PreviewError, match=r"cleanup failed.*did not exit after kill: \[123\]"):
         preview.close()
-    assert member.terminate.call_count == 1
-    assert member.kill.call_count == 1
-    assert preview._process is launcher
-    monkeypatch.setattr(mumu.psutil, "wait_procs", lambda family, timeout: (family, []))
-    preview.close()
-    assert preview._process is None
+    assert kernel_os.kills == [(123, 1.0)] and preview._process is launcher
+    kernel_os.lingering = False
+    preview.close()                                  # the retry signals it again, through a fresh handle
+    assert preview._process is None and kernel_os.kills == [(123, 1.0)] * 2
+    assert process_handle.kernel().open_handles() == 0
 
 
-def test_close_reports_unverifiable_cleanup_after_best_effort_kill(monkeypatch):
+def test_close_reports_unverifiable_cleanup_after_best_effort_kill():
+    from runtime import process_handle
+    kernel_os = process_handle.kernel().os
+    kernel_os.start(123, 1.0)
+    kernel_os.denied.add(123)                        # the kernel will not say who owns the helper
     preview = _unstarted_preview()
     launcher = SimpleNamespace(pid=123, wait=Mock(return_value=0), kill=Mock())
     preview._process = launcher
-
-    def denied(pid):
-        raise psutil.AccessDenied(pid)
-
-    monkeypatch.setattr(mumu.psutil, "Process", denied)
     with pytest.raises(PreviewError, match="cannot verify helper process cleanup"):
         preview.close()
     launcher.kill.assert_called_once_with()

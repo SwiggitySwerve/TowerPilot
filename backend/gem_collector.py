@@ -10,13 +10,49 @@ from scheduling import runflag
 from flows.shard import GemWatch
 
 
+FENCE_RECHECK_SEC = 5
+
+
+def automatic_fence():
+    """For a collector the lifecycle host launched (request.harvest), a check
+    that the person's choice still names exactly this launch; None for a
+    collector a person started. Reads the operation ledger the worker was
+    accepted into, never the environment's say-so."""
+    from runtime.operations import environment_operation
+    ledger, operation_id = environment_operation()
+    if ledger is None:
+        return None
+    operation = ledger.get(operation_id)
+    if operation['request'].get('harvest') is not True:
+        return None
+    from towerpilot_workflows.harvest import CollectorRefused, automatic_launch_valid
+
+    def check():
+        ok, code = automatic_launch_valid(ledger.path, operation)
+        if not ok:
+            logger.event('gem_collector_refused', reason=code)
+            raise CollectorRefused(f'Harvesting no longer asks for this collector ({code}); no input was sent')
+    return check
+
+
 def main(instance, preset):
     from runtime.device_lease import prepare_instance
     prepare_instance(instance)
     settings.select_instance(instance,preset)
+    # The collector always adopts the battle on screen. Before any runner
+    # check, session or frame: the collection-scope setup guard for the bound
+    # (accepted workers: restored) device and account, logged under this
+    # instance. A person's collection-only handoff is read from the ledger,
+    # never from the environment.
+    from control.battles import require_runner_entry
+    require_runner_entry(settings.ROOT, settings.CONFIG, instance, scope='collection', event=logger.event)
     from runtime.runners import other_runners
     if next(other_runners(), None) is not None:
         raise RuntimeError('Another runner owns the emulator; stop it before collecting gems')
+    fence = automatic_fence()
+    if fence is not None:
+        fence()   # the person's Off, a new revision or a context change since acceptance: before any input
+    fence_checked = time.monotonic()
     from runtime.battle_session import BattleSession
     from orchestrator import preset as resolved_preset
     session = BattleSession.from_environment(resolved_preset(), settings.CONFIG, origin='adopted')
@@ -28,6 +64,9 @@ def main(instance, preset):
     last_status=None
     saw_battle=False
     while True:
+        if fence is not None and time.monotonic() - fence_checked >= FENCE_RECHECK_SEC:
+            fence()
+            fence_checked = time.monotonic()
         frame=capture.grab()
         sc=screen.identify(frame)
         live=sc.name == 'battle' and wave_reader.read_wave(frame) is not None

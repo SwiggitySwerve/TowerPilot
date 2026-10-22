@@ -389,3 +389,16 @@ def test_scanner_never_begins_battle_or_recovers_after_menu_interruption(setup_f
         scanner._run_flows()
     assert flow.s.inputs == []
     assert json.loads(open(flow.cal.p['state'], encoding='utf-8').read())['final_screen']['verified'] is False
+
+
+def test_operationless_flow_never_starts_a_setup_battle(setup_flow, monkeypatch):
+    """A setup battle outside an accepted operation would never be sealed in the
+    ledger, so the setup guard could not see it if it were interrupted."""
+    monkeypatch.setattr(operations, 'environment_operation', lambda: (None, None))
+    flow = fc._Flow(setup_flow.s)
+    reads = []
+    monkeypatch.setattr(flow.s, 'grab', lambda **kwargs: reads.append('frame'))
+    with pytest.raises(RuntimeError, match='dashboard-accepted operation'):
+        fc._start_setup_run(flow, 'start lifecycle test')
+    assert reads == [] and flow.s.inputs == []
+    assert 'setup_battle' not in flow.s.state and flow._owned_battle_id is None

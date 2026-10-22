@@ -31,7 +31,9 @@ REAL = "C:\\uv\\python\\cpython-3.12\\python.exe"
 
 
 def _proc(pid, cmdline, name="python.exe"):
-    return types.SimpleNamespace(pid=pid, info={"pid": pid, "name": name, "cmdline": cmdline})
+    """What the scans read of a psutil.Process: pid, the cmdline from process_iter, and the creation time combo's _Adopted caches
+    from the walked object (it stops the adopted runner through a handle verified against that time)."""
+    return types.SimpleNamespace(pid=pid, info={"pid": pid, "name": name, "cmdline": cmdline}, create_time=lambda: 1_000_000.0 + pid)
 
 
 def _fake_psutil(procs):
@@ -75,6 +77,7 @@ def test_combo_adopts_one_half_of_a_stub_launched_runner(monkeypatch, legacy, fi
                                                              *_pair(7000, COIN_ARGS)]))
     found = find()
     assert found is not None and found._p.pid in (7000, 7001)
+    assert found._created == 1_000_000.0 + found.pid, "the adopted runner keeps the creation time of the process the walk matched"
 
 
 # -------------------------------------------------------------------- tray

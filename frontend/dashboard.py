@@ -37,7 +37,7 @@ import traceback
 from contextlib import ExitStack
 
 import yaml
-from flask import Flask, Response, jsonify, redirect, request, send_file, g
+from flask import Flask, Response, jsonify, redirect, request, send_file, g, has_request_context
 
 # The FRONTEND lives here (dashboard.py + webui/); everything it serves and
 # controls - config.yaml, logs, profiles, templates, the runner scripts -
@@ -72,16 +72,20 @@ def _run(args, **kw):
 app = Flask(__name__, static_folder="webui", static_url_path="/ui")
 
 from control import operations as operation_api
+from control import battles as battle_api
+from control import harvest as harvest_api
 from runtime import build_info
+from towerpilot_workflows.harvest import gem_policy_revision
 
 _BUILD = build_info.snapshot(Path(ROOT).parent, 'dashboard')
 _CAPABILITIES = ['battle_controls', 'run_history', 'stream_backends', 'runtime_identity',
-                 'process_refresh_status', 'schedule_status', 'revisioned_editor_saves']
+                 'process_refresh_status', 'schedule_status', 'revisioned_editor_saves',
+                 'setup_battle_guard', 'collection_handoff', 'gem_harvesting']
 
 
 @app.get('/api/runtime')
 def api_runtime():
-    active = operation_api.ledger(ROOT).active()
+    active = operation_api.Operations.active_readonly(operation_api.ledger_path(ROOT))
     workers = [dict(operation_id=op['id'], kind=op['kind'], status=op['status'],
                     instance=op['context'].get('instance'), worker=op.get('worker'),
                     alive=operation_api.worker_alive(op.get('worker')))
@@ -92,9 +96,404 @@ def api_runtime():
                    workers=workers, persistence_operations=persistence, process_refresh=_procs_status())
 
 
+# The routes of the Recognition page answer every refusal with a stable `code` to branch on (and, when the refusal names one, the
+# operation as it is now), the way a person's Stop does. Every other route keeps {ok, error} until its consumer moves to codes:
+# dashboard_contract_v1.json is bound to that shape.
+CODED_REFUSAL_ENDPOINTS = frozenset({
+    'api_calibrate_start', 'api_calibrate_observe', 'api_calibrate_apply', 'api_calibrate_status',
+    'api_screen_analysis_start', 'api_screen_analysis_status', 'api_screen_analysis_frame'})
+
+
 @app.errorhandler(operation_api.Conflict)
 def operation_conflict(error):
-    return jsonify(ok=False, error=str(error)), 409
+    if request.endpoint not in CODED_REFUSAL_ENDPOINTS:
+        return jsonify(ok=False, error=str(error)), 409
+    body = dict(ok=False, code=error.code or 'conflict', error=str(error))
+    if getattr(error, 'operation', None) is not None:
+        body['operation'] = operation_api.public(error.operation)
+    return jsonify(body), 409
+
+
+@app.errorhandler(operation_api.ContextChanged)
+def page_context_changed(error):
+    """A write fenced by `expected_context` (see _fenced_by_page_context): nothing was written. `current_context` is what the
+    configuration names now, so the page can show it; the page never resends by itself."""
+    return jsonify(ok=False, code='context_changed', error=str(error), current_context=error.current), 409
+
+
+class InvalidRequest(Exception):
+    """A request the route cannot act on (400). Nothing was done. `code` is the stable word a client branches on."""
+
+    def __init__(self, message, code='invalid_request'):
+        super().__init__(message)
+        self.code = code
+
+
+@app.errorhandler(InvalidRequest)
+def invalid_request(error):
+    return jsonify(ok=False, code=error.code, error=str(error)), 400
+
+
+def _request_object(*, required=False):
+    """The JSON object a write route was sent.
+
+    required: the route reads nothing else, so an empty, mangled or non-object body is refused. Otherwise a body that is empty or
+    does not claim to be JSON is an empty command, as it always was, but a body that claims to be JSON must be an object: a
+    mangled or array body would otherwise start a default operation the client did not ask for."""
+    raw = request.get_data()
+    if not required and (not raw.strip() or not request.is_json):
+        return {}
+    try:
+        body = json.loads(raw)
+    except ValueError:                                  # includes UnicodeDecodeError
+        raise InvalidRequest('The request body is not valid JSON') from None
+    if not isinstance(body, dict):
+        raise InvalidRequest('The request body must be a JSON object')
+    return body
+
+
+MAX_OBSERVE_WATCH_SEC = 600
+
+
+def _watch_seconds(value):
+    """How long an observation may wait for the screen it is to read: a whole number of seconds from 0 to 600 (absent or 0: the
+    two frames only). Anything else is refused, never clamped."""
+    if value is None:
+        return 0
+    if type(value) is int and 0 <= value <= MAX_OBSERVE_WATCH_SEC:
+        return value
+    raise InvalidRequest(f'watch must be a whole number of seconds from 0 to {MAX_OBSERVE_WATCH_SEC}', 'invalid_watch')
+
+
+def _refuse_while_calibrating():
+    if any(pr["runner"] == "calibrate" for pr in _procs()):
+        raise operation_api.OperationRefused('calibration_running', 'a calibration is already running')
+
+
+@app.errorhandler(battle_api.SetupBattleUnresolved)
+def setup_battle_unresolved(error):
+    """A launch refused before acceptance, with the guard /api/status publishes."""
+    return jsonify(ok=False, code=error.guard['code'], error=str(error),
+                   setup_battle_guard=error.guard), 409
+
+
+def _setup_battle_guard(cfg):
+    """The setup-battle guard for cfg's emulator: the rule control.operations
+    admission applies to run launches (read-only)."""
+    return battle_api.guard_for(ROOT, cfg, scope='run')
+
+
+def _collection_guard(cfg):
+    """The same rule for the gem collector's admission and entry (read-only):
+    additionally honours a recorded collection-only handoff."""
+    return battle_api.guard_for(ROOT, cfg, scope='collection')
+
+
+@app.errorhandler(battle_api.HandoffRefused)
+def collection_handoff_refused(error):
+    return jsonify(ok=False, code=error.code, error=str(error),
+                   **({'setup_battle_guard': error.guard} if error.guard is not None else {})), 409
+
+
+def _device_owners(identity):
+    """Everything that holds this emulator now: active ledger operations
+    (dead workers reconciled first) and runner processes from any checkout."""
+    from runtime import runners
+    owners = []
+    for op in operation_api.ledger(ROOT).active(identity['device_key']):
+        op = operation_api.resolve(ROOT, op['id'])
+        if op['status'] in ('accepted', 'running', 'cancelling', 'applying'):
+            owners.append(f"operation {op['id'][:8]} ({op['kind']})")
+    target = (identity['adb_host'], identity['adb_port'], identity['serial'])
+    owners += [f'process {pid} ({script})' for pid, script, _ in runners.other_runners(target=target)]
+    if not owners and harvest_api.lease_holder(identity) is not None:
+        owners.append('a process that holds the emulator lock')   # the device lease is the final owner
+    return owners
+
+
+@app.post('/api/setup-battle/collection-handoff')
+def api_collection_handoff():
+    """Record a person's explicit statement that the battle on screen is a new
+    manually started run, for the one exact unresolved setup record. Grants gem
+    collection only; general runs stay refused and the failed setup's history
+    is unchanged. Refusals record nothing."""
+    cfg = load_config()
+    try:
+        record, created, _ = battle_api.record_collection_handoff(
+            ROOT, cfg, request.get_json(silent=True), owners=_device_owners)
+    except (battle_api.HandoffRefused, harvest_api.OwnersUnreadable):
+        raise
+    except ValueError as exc:
+        return jsonify(ok=False, error=str(exc)), 400
+    _diagnostic_event('collection_handoff_recorded', handoff_id=record['id'], created=created,
+                      setup_operation_id=record['blocker']['operation_id'],
+                      setup_battle_id=record['blocker']['setup_battle_id'], outcome='recorded')
+    return jsonify(ok=True, created=created, handoff=record,
+                   collection_guard=_collection_guard(cfg), setup_battle_guard=_setup_battle_guard(cfg))
+
+
+# ------------------------------------------------------- persistent harvesting
+class DeviceOwned(operation_api.Conflict):
+    """An action refused because automation holds the emulator. One body for
+    every route that needs an idle emulator: who holds it, and how to release it."""
+
+    def __init__(self, body):
+        super().__init__(body['error'])
+        self.body = body
+
+
+@app.errorhandler(DeviceOwned)
+def device_owned(error):
+    return jsonify(error.body), 409
+
+
+@app.errorhandler(harvest_api.OwnersUnreadable)
+def owners_unreadable(error):
+    return jsonify(ok=False, code='device_owner_unreadable', error=str(error)), 409
+
+
+@app.errorhandler(harvest_api.ChoiceRefused)
+def harvest_choice_refused(error):
+    return jsonify(ok=False, code=error.code, error=str(error), **error.extra), 409
+
+
+def _owners_now(cfg, rows):
+    """Every owner of the emulator: the runner processes in rows AND every
+    accepted ledger operation, whether or not its worker has spawned yet. This
+    is only called on a POST path, so workers that died without an outcome are
+    retired first (project_processes reconciles)."""
+    return harvest_api.device_owners(ROOT, cfg, rows)
+
+
+def _device_owned_body(message, found, rows, *, code, collector_code=None):
+    if not found:
+        found = [harvest_api.owner_view(None, None, rows[0], time.time(), 0)]
+    owner = found[0]
+    if collector_code and owner.get('operation_kind') == 'gems':
+        code = collector_code
+    return dict(ok=False, code=code, error=message, owner=owner, recovery=owner['recovery'],
+                retry='after_confirmed_stop')
+
+
+def _require_idle(message, rows=None, *, code='device_owned', collector_code=None, allow_kinds=()):
+    """Refuse (409, shared body) while anything holds the emulator: a runner
+    process (rows defaults to a fresh scan of this tree's runners) or an accepted
+    ledger operation that has no process yet. allow_kinds names operation kinds
+    the calling route owns and judges itself (a second scan, a second calibration)."""
+    rows = _procs() if rows is None else rows
+    cfg = load_config()
+    everyone = _owners_now(cfg, rows)
+    found = [owner for owner in everyone if owner.get('operation_kind') not in allow_kinds]
+    if rows or found:
+        raise DeviceOwned(_device_owned_body(message, found, rows, code=code, collector_code=collector_code))
+    if not everyone:
+        _require_lease_free(cfg, message, code=code)
+
+
+def _require_lease_free(cfg, message, *, code='device_owned'):
+    """The device lease is the final owner: refuse while any process holds it even
+    when the ledger and the process table read empty (another checkout's worker, an
+    operation retired in error). Only asked when nothing else explains the lock, so
+    a route that judges its own scan or calibration is never refused by its own worker."""
+    holder = harvest_api.lease_owner(cfg)
+    if holder is not None:
+        raise DeviceOwned(_device_owned_body(message, [holder], [], code=code))
+
+
+_TRANSFER_WAIT_SEC = harvest_api.TRANSFER_WAIT_SEC
+_HARVEST_SOURCES = {}
+_HARVEST_SOURCES_LOCK = threading.Lock()
+_HARVEST_SOURCE_TTL = 30.0
+_HARVEST_HOST = {'last_tick_at': None, 'last_error': None}
+
+
+def _harvest_source(cfg, preset):
+    """The gem settings harvesting would use from one saved run, or why it cannot.
+    Never raises. Recompiles only when the profile, the config file or the run
+    changed (or after 30 s), because /api/status asks on every poll."""
+    profile = cfg.get('active_profile')
+    try:
+        revision = operation_api.file_revision(_profile_path(profile)) if profile else None
+        stat = os.stat(CONFIG_PATH)
+        key = (profile, revision, stat.st_mtime_ns, stat.st_size, preset)
+    except OSError:
+        key = None
+    now = time.monotonic()
+    with _HARVEST_SOURCES_LOCK:
+        hit = _HARVEST_SOURCES.get(key) if key else None
+    if hit is not None and now - hit[0] < _HARVEST_SOURCE_TTL:
+        import copy
+        return copy.deepcopy(hit[1])
+    value = _compute_harvest_source(cfg, preset, profile)
+    if key:
+        with _HARVEST_SOURCES_LOCK:
+            if len(_HARVEST_SOURCES) > 32:
+                _HARVEST_SOURCES.clear()
+            _HARVEST_SOURCES[key] = (now, value)
+    import copy
+    return copy.deepcopy(value)
+
+
+def _compute_harvest_source(cfg, preset, profile):
+    from player.run_controls import effective_preset, resolve
+    source = dict(preset=preset, label=None, profile=profile, valid=False, code='source_unavailable',
+                  message='The selected run could not be read.', policy_revision=None, policy=None,
+                  edit=dict(page='runs', blueprint=preset[3:] if preset.startswith('bp_') else None))
+    try:
+        runs = _compiled_runs(dict(cfg))
+    except ValueError as exc:
+        return dict(source, code='profile_invalid', message=f'The saved profile is not valid: {exc}')
+    except Exception as exc:                            # noqa: BLE001 - reported, never raised from a status read
+        return dict(source, message=f'The selected run could not be read: {type(exc).__name__}: {exc}')
+    body = runs.get(preset)
+    if not preset.startswith('bp_') or not isinstance(body, dict):
+        return dict(source, code='preset_missing', message="Choose a saved run's diamond settings. That run no longer exists.")
+    source.update(label=body.get('label'),
+                  edit=dict(page='runs', blueprint=(body.get('_source') or {}).get('blueprint') or preset[3:]))
+    effective = effective_preset(dict(cfg, presets=runs), preset)   # what a launch would freeze
+    gather = effective.get('gather') or {}
+    if not (gather.get('ad_gems', True) or (gather.get('gem_orbit') or {}).get('enabled')):
+        return dict(source, code='gathering_disabled',
+                    message="Enable Ad Gems or timed orbit clicks in this run's gathering settings.")
+    try:
+        routines = resolve(effective, dict(cfg))['routines']
+    except Exception as exc:                            # noqa: BLE001
+        return dict(source, message=f'The run\'s gem settings could not be resolved: {exc}')
+    policy = dict(ad_gems={key: routines['ad_gems'][key] for key in ('enabled', 'interval_sec', 'window_sec')},
+                  floating_gems={key: routines['floating_gems'][key]
+                                 for key in ('enabled', 'interval_sec', 'window_sec', 'tap_interval_sec')})
+    return dict(source, valid=True, code=None, message=None, policy=policy,
+                policy_revision=gem_policy_revision(preset, gather))
+
+
+_REFUSAL_STATUS = {'preset_missing': 400}
+
+
+def _gems_launch_plan(cfg, name):
+    """Everything a diamond collector needs before it may start (a person's Collect
+    and the lifecycle host share it). Returns harvest_api.Prepared(command,
+    policy_revision): the worker command and the revision of the gem settings of
+    the ONE compiled run this launch freezes into its envelope. Raises
+    harvest_api.Refused(code, message) with nothing started."""
+    from player.run_controls import effective_preset
+    inst = cfg.get('active_instance', 'main')
+    if not cfg.get('instances', {}).get(inst, {}).get('allow_taps'):
+        raise harvest_api.Refused('taps_disabled', 'Enable automation taps first.')
+    try:
+        runs = _compiled_runs(cfg)
+    except ValueError as exc:
+        raise harvest_api.Refused('profile_invalid', str(exc)) from exc
+    cfg['presets'] = runs
+    if name not in runs:
+        raise harvest_api.Refused('preset_missing', "Choose a run's diamond settings.")
+    effective = effective_preset(cfg, name)   # exactly what _launch_operation freezes
+    gather = effective.get('gather') or {}
+    if not (gather.get('ad_gems', True) or (gather.get('gem_orbit') or {}).get('enabled')):
+        raise harvest_api.Refused('gathering_disabled',
+                                  "Enable Ad Gems or timed orbit clicks in this run's gathering settings.")
+    # The HUD collector can verify CLAIM + 6 without a saved offer image.
+    # Its battle proof still requires the account's complete digit font.
+    from player import accounts
+    import cv2
+    for digit in range(10):
+        path = accounts.template_path(ROOT, cfg, f'digits/{digit}.png')
+        if not path.exists() or cv2.imread(str(path), cv2.IMREAD_GRAYSCALE) is None:
+            raise harvest_api.Refused('digits_missing', 'Learn the wave digits before collecting gems.')
+    command = [sys.executable.replace('python.exe', 'pythonw.exe'), os.path.join(ROOT, 'gem_collector.py'),
+               '--instance', inst, '--preset', name]
+    return harvest_api.Prepared(command, gem_policy_revision(name, gather))
+
+
+def _harvest_host():
+    """This server's own reconciler, not the ledger's: another dashboard has its own."""
+    thread, last = _PROCS_THREAD, _HARVEST_HOST['last_tick_at']
+    fresh = last is None or time.time() - last <= 30
+    return dict(reconciler='active' if thread is not None and thread.is_alive() and fresh else 'inactive',
+                last_tick_at=last, last_error=_HARVEST_HOST['last_error'])
+
+
+def _harvest_status(cfg=None, rows=None):
+    """status.harvest: one read-only snapshot. A failure is reported as an
+    unavailable harvest, never as a failed /api/status."""
+    cfg = load_config() if cfg is None else cfg
+    try:
+        rows = operation_api.project_processes(ROOT, _procs_cached(), reconcile=False) if rows is None else rows
+        return harvest_api.status(ROOT, cfg, processes=rows, resolve_source=_harvest_source, host=_harvest_host())
+    except Exception as exc:                            # noqa: BLE001
+        app.logger.exception('Harvest status failed')
+        return dict(version=harvest_api.VERSION, server_time=time.time(), state='unavailable', code='status_failed',
+                    message=f'Harvesting status could not be read ({type(exc).__name__}).', host=_harvest_host(),
+                    desired=None, source=None, operation=None, owner=None, overlay=None, collection_guard=None)
+
+
+def _harvest_tick():
+    """One reconciliation step on the process-refresher thread. Never from a GET
+    or a browser tab. Skipped while a person's action holds the action lock.
+
+    This is the one place that moves recorded lifecycle state without a person's
+    request: project_processes retires operations whose worker died, then the
+    battles of operations that ended are finished. Every GET only reads."""
+    if not _ACTION_LOCK.acquire(blocking=False):
+        return
+    try:
+        cfg = load_config()
+        rows = operation_api.project_processes(ROOT, _procs_cached())
+        battle_api.reconcile_existing(ROOT)
+        harvest_api.tick(
+            ROOT, cfg, processes=rows,
+            resolve_source=_harvest_source, prepare=_gems_launch_plan,
+            launch=lambda cfg_, body, cmd: _launch_operation(cfg_, 'gems', body, cmd),
+            device_state=lambda identity: _device_state(cfg)['device_state'],
+            event=lambda kind, **fields: _diagnostic_event(kind, **fields))
+        _HARVEST_HOST.update(last_tick_at=time.time(), last_error=None)
+    except Exception as exc:                            # noqa: BLE001 - the refresher must survive
+        app.logger.exception('Harvest reconciliation failed')
+        _HARVEST_HOST.update(last_tick_at=time.time(),
+                             last_error=dict(type=type(exc).__name__, message=str(exc), at=time.time()))
+    finally:
+        _ACTION_LOCK.release()
+
+
+def _collector_takeover(message, cfg):
+    """None when the emulator is idle. The standalone harvest collector(s) when
+    they are its only owners (a requested run may take over). Anything else is
+    refused with the shared owner body."""
+    rows = _procs()
+    found = _owners_now(cfg, rows)
+    if not rows and not found:
+        _require_lease_free(cfg, message)
+        return None
+    if harvest_api.only_collectors(found) and all(owner['kind'] == 'operation' for owner in found):
+        return found
+    raise DeviceOwned(_device_owned_body(message, found, rows, code='device_owned'))
+
+
+def _transfer_from_collector(cfg, body, owners):
+    """Hand the emulator from the standalone collector to the requested run.
+
+    Called only after the run's readiness and settings are proven. The run's own
+    pre-acceptance checks (selected context, setup-battle guard) are repeated
+    here, BEFORE the collector's input stops, so a refusal leaves it untouched.
+    The choice is preserved; the battle is never ended. If the collector does
+    not release the emulator in time the run is refused (409 collector_stopping)
+    and nothing was launched."""
+    from runtime import device_lease
+    battle_api.refuse_if_blocked(_setup_battle_guard(cfg))
+    command = {key: value for key, value in body.items() if key != 'idempotency_key'}
+    operation_api.verify_expected(operation_api.context(ROOT, cfg, command, _profile_path(cfg.get('active_profile'))), command)
+    identity = harvest_api.identity_for(cfg)
+    harvest_api.begin_transfer(ROOT, identity, 'run_start')
+    stop = harvest_api.stop_collectors(ROOT, identity, select=lambda op: op['request'].get('harvest') is True)
+    released, waited = harvest_api.wait_for_release(
+        ROOT, identity, timeout=_TRANSFER_WAIT_SEC, lease_free=lambda: device_lease.lease_free(
+            identity['serial'], identity['adb_host'], identity['adb_port']))
+    if not released:
+        owner = owners[0]   # the hold expires on its own, so a lagging collector is not relaunched under the run
+        raise DeviceOwned(dict(ok=False, code='collector_stopping',
+                               error='The diamond collector is still stopping. Wait for it to release the emulator, then start the run again.',
+                               owner=owner, recovery=owner['recovery'], retry='after_confirmed_stop',
+                               stop=stop, waited_sec=waited))
+    return dict(stopped=stop['stopped'], stopping=stop['stopping'], waited_sec=waited)
 
 
 def _launch_operation(cfg, kind, body, cmd, **kwargs):
@@ -125,16 +524,149 @@ def _launch_operation(cfg, kind, body, cmd, **kwargs):
 @app.get('/api/operations/<operation_id>')
 def api_operation_status(operation_id):
     try:
-        return jsonify(operation=operation_api.public(operation_api.resolve(ROOT, operation_id)))
+        return jsonify(operation=operation_api.public(operation_api.stored(ROOT, operation_id)))
     except KeyError:
         return jsonify(ok=False, error='Unknown operation'), 404
 
 
+def _kill_action(body):
+    """POST /api/control action=kill: stop the runner THIS person was shown, and only that one.
+
+    The request names the runner the way the list drew it: its pid AND the creation time (`created`)
+    the row carried. A pid alone names nothing, the operating system reuses it. A fresh scan must
+    still list that pid with that same creation time (a pid that passed to another runner after the
+    page drew the row is refused), and the stop acts on the one psutil.Process that was verified
+    against it (_kill_runner). No process with the pid at all is `gone`; a missing or different
+    creation time is refused 409 process_identity_unverified; a pid that is no listed runner is
+    refused 400 not_a_runner. Nothing is signalled on any refusal."""
+    from runtime import process_identity
+    pid = body.get("pid")
+    if not process_identity.usable_pid(pid):
+        return jsonify(ok=False, code='invalid_request', error='pid must be the integer process id of a listed runner'), 400
+    row = next((p for p in operation_api.project_processes(ROOT, _procs()) if p["pid"] == pid), None)
+    if row is None:
+        if pid not in operation_api.inline_owner_pids(ROOT) and process_identity.pid_absent(pid):
+            _procs_refresh()
+            return jsonify({"ok": True, "gone": True})          # no process has this pid: the runner that was listed is gone
+        return jsonify(ok=False, code='not_a_runner', error="not a runner pid"), 400
+    if row.get('operation'):
+        raise operation_api.Conflict('Cancel the tracked operation by its ID and revision')
+    return _kill_runner(row, body.get("created"))
+
+
+def _kill_runner(row, seen):
+    """Stop the listed runner `row` if it is the one whose creation time the person saw (`seen`).
+
+    The scan row and the request must agree on the creation time. The pid is then opened ONCE and
+    judged against it, and the process is terminated through that same kernel handle
+    (runtime.process_handle): a pid that passes to another process at any moment is never
+    signalled. A runner that exited since the scan answers gone and signals nothing; one whose
+    identity cannot be proven is refused (409) and signals nothing. Only this process is stopped
+    (its descendants are not touched), as before."""
+    from runtime import process_handle, process_identity
+    pid = row["pid"]
+    if not process_identity.same_created(row.get("created"), seen):
+        return _kill_unverified(pid)
+    # terminate, WAIT for it: the reply must not go out while the process is still in the table - the
+    # UI refreshes on reply and would show the row it just "killed" (user, 2026-08-18).
+    stop = process_handle.terminate_tree(pid, seen, descendants=False, timeout=5.0)
+    if stop.state == 'unverified':
+        return _kill_unverified(pid)
+    if not stop.confirmed:
+        if any(error.get('code') == process_handle.ERROR_ACCESS_DENIED for error in stop.errors):
+            return jsonify(ok=False, code='process_access_denied', error=f"pid {pid} could not be stopped (access denied)"), 500
+        return jsonify({"ok": False, "error": f"pid {pid} would not die"}), 500
+    _procs_refresh()
+    return jsonify({"ok": True, "gone": True})     # stopped now, or already gone (its pid may belong to another process)
+
+
+def _kill_unverified(pid):
+    return jsonify(ok=False, code='process_identity_unverified',
+                   error=f"pid {pid} could not be proven to be the runner you were shown, so nothing was stopped; "
+                         "refresh the list and try again"), 409
+
+
 @app.post('/api/operations/<operation_id>/cancel')
 def api_operation_cancel(operation_id):
-    body = request.get_json(silent=True) or {}
+    body = request.get_json(silent=True)
+    body = dict(body) if isinstance(body, dict) else {}
     body['operation_id'] = operation_id
-    return jsonify(ok=True, operation=operation_api.public(operation_api.cancel(ROOT, body)))
+    return _person_stop(body)
+
+
+HOLDER_REASONS = ('worker_not_verifiable_lease_held', 'lease_held_after_stop')
+
+
+def _person_stop(body):
+    """A person's Stop - the one implementation behind POST /api/operations/<id>/cancel, /api/scan/stop and
+    /api/calibrate/stop. It runs WITHOUT the global action lock (see _is_revocation), so every step is a
+    compare-and-set in the ledger or a handle-bound kernel call, and what it did is tracked in `effects`:
+
+      * a refusal that happened before anything was done (a stale revision, an unknown or uncancellable
+        operation) is 409 with a stable `code` and the current operation;
+      * once anything was done (harvesting paused, the stop recorded, a process signalled, a worker
+        released) a conflict is NEVER a plain refusal: the stop is finished from the operation's current
+        state when it can be (operation_api.stop_driver does), otherwise 409 `stop_outcome_partial` lists
+        what this request did;
+      * every answer says what THIS request did (`stop.by_this_request`), so an operation that another
+        writer settled a moment after this request stopped its worker is not reported as one nobody stopped."""
+    effects = operation_api.stop_effects()
+    try:
+        operation = operation_api.require_revision(ROOT, body, ('accepted', 'running', 'cancelling'))
+        if operation['kind'] in ('run', 'gems'):
+            # A person's Stop is final for the automatic collector too: pause the
+            # choice before cancelling, or the lifecycle host would undo the Stop.
+            context = operation['context']
+            harvest_api.pause(ROOT, {key: context.get(key) for key in ('device_key', 'instance', 'account', 'serial', 'profile')},
+                              'stopped_by_person', f"stop-{operation['id']}", effects=effects)
+        stopped = operation_api.cancel(ROOT, body, release_unverified=True, effects=effects)
+    except operation_api.Conflict as exc:
+        return _stop_conflict(exc, effects, body.get('operation_id'))
+    return jsonify(ok=True, **_stop_view(stopped, effects))
+
+
+def _stop_view(operation, effects):
+    """{operation, stop} for a Stop's answer: the operation and how the stop stands (operation_api.stop_state)
+    plus what this request did. A worker that can never be verified is released here, but only while
+    nothing holds the device lease; while some process does, `stop.holder` names it with the same owner body
+    the shared device_owned refusal uses (owner pid/script stay null: the lease is not a process row;
+    lease.holders lists the live processes its lock files name), otherwise it is null. The same body is given
+    when the worker is gone or was stopped but the lease is still held (reason lease_held_after_stop): the
+    stop is then not confirmed."""
+    stop = operation_api.stop_state(operation)
+    holder = None
+    if stop['reason'] in HOLDER_REASONS:
+        context = operation.get('context') or {}
+        try:
+            holder = harvest_api.lease_holder(dict(serial=context.get('serial'), adb_host=context.get('adb_host', '127.0.0.1'),
+                                                   adb_port=context.get('adb_port', 5037)))
+        except harvest_api.OwnersUnreadable:
+            holder = None   # the lease cannot be read now; the reason will say unreadable on the next ask
+    return dict(operation=operation_api.public(operation),
+                stop=dict(stop, holder=holder, by_this_request=dict(effects, signalled=list(effects['signalled']))))
+
+
+def _stop_conflict(exc, effects, operation_id):
+    """The 409 for a Stop that hit a Conflict. Nothing done yet: a coded refusal (OperationRefused.code, else
+    stop_refused) with the operation as it stands. Something done: stop_outcome_partial with the current
+    operation, how the stop stands now and what this request did - it never reads as 'nothing happened'."""
+    current = getattr(exc, 'operation', None)
+    try:
+        current = operation_api.stored(ROOT, operation_id) if operation_id else current
+    except Exception:   # noqa: BLE001 - best effort: the refusal is reported with whatever the conflict itself carried
+        pass
+    if not operation_api.effects_taken(effects):
+        return jsonify(ok=False, code=getattr(exc, 'code', 'stop_refused'), error=str(exc),
+                       operation=None if current is None else operation_api.public(current)), 409
+    done = [text for taken, text in ((effects['paused'], 'harvesting was paused'),
+                                     (effects['requested'], 'the stop was recorded'),
+                                     (effects['signalled'], f"{len(effects['signalled'])} process(es) were signalled"),
+                                     (effects['released'], 'the worker was released')) if taken]
+    body = dict(ok=False, code='stop_outcome_partial', conflict=str(exc),
+                error=f"The stop was only partly carried out ({', '.join(done)}) and then the operation changed: {exc}. "
+                      'Read its current state before stopping again.')
+    body.update(_stop_view(current, effects) if current is not None else dict(operation=None, stop=None))
+    return jsonify(body), 409
 
 
 def _battle_device(cfg):
@@ -183,7 +715,6 @@ def api_battle_history():
     try:
         context = _battle_history_context()
         device = context['device_key']
-        battles.reconcile(ROOT, store, device)
         limit, offset = int(request.args.get('limit', 50)), int(request.args.get('offset', 0))
         rows = store.list(limit=limit, offset=offset, device=device,
                           status=request.args.get('status') or None, context=context)
@@ -212,22 +743,40 @@ def api_battle_detail(battle_id):
 @app.post('/api/operations/<operation_id>/live-controls')
 @app.post('/api/operations/<operation_id>/actions')
 def api_battle_command(operation_id):
+    # Contract of this route:
+    #  * 400/404/409 mean "refused, nothing recorded". Only pre-admission
+    #    failures may answer them, including an unknown key reused for another
+    #    request and a driver that is no longer active for a NEW key.
+    #  * an identical request that was already recorded is answered from its
+    #    receipt (200) even after the driver or battle ended, so a client that
+    #    lost the first reply learns the outcome; the same key with any other
+    #    request stays a 409 conflict.
+    #  * once a command is recorded, any failure to read it back is a 5xx
+    #    command_outcome_unknown, never a refusal. The client's retry rule is
+    #    unchanged: resend the SAME request to read the outcome back.
     from control import battles
     try:
         result = battles.command(ROOT, operation_id, request.get_json(silent=True),
                                  action=request.path.endswith('/actions'))
-        command = result['command']
-        _diagnostic_event('battle_command_accepted', operation_id=operation_id,
-                          battle_id=result['battle']['id'], command_id=command['id'],
-                          command_kind=command['kind'], action=command['payload'].get('action'),
-                          control_revision=result['control_revision'], outcome='accepted')
-        return jsonify(result)
+    except battles.CommandOutcomeUnknown as exc:
+        cause = exc.__cause__
+        _diagnostic_event('battle_command_outcome_unknown', operation_id=operation_id,
+                          command_id=exc.command_id, outcome='unknown',
+                          exception_type=type(cause).__name__, exception_message=str(cause))
+        return jsonify(ok=False, code='command_outcome_unknown', outcome='unknown',
+                       command_id=exc.command_id, error=str(exc)), 500
     except KeyError:
         return jsonify(ok=False, error='Unknown battle or operation'), 404
     except operation_api.Conflict:
         raise
     except ValueError as exc:
         return jsonify(ok=False, error=str(exc)), 400
+    command = result['command']
+    _diagnostic_event('battle_command_accepted', operation_id=operation_id,
+                      battle_id=result['battle']['id'], command_id=command['id'],
+                      command_kind=command['kind'], action=command['payload'].get('action'),
+                      control_revision=result['control_revision'], outcome='accepted')
+    return jsonify(result)
 
 
 @app.route('/api/run-controls', methods=['GET', 'POST'])
@@ -278,20 +827,27 @@ def api_run_controls():
             pp.CONFIG = previous
 
 
-def _requested_operation(cfg, kind):
+def _requested_operation(cfg, kind, *, reconcile=True):
+    """The operation a request names, or the latest of this kind for the selected
+    emulator and account. reconcile=False (every GET) returns it as recorded and
+    changes nothing; a POST retires a worker that died, as the refresher does."""
+    read = operation_api.resolve if reconcile else operation_api.stored
     operation_id = request.args.get('operation_id')
     if operation_id:
         try:
-            op = operation_api.resolve(ROOT, operation_id)
+            op = read(ROOT, operation_id)
         except KeyError:
-            raise operation_api.Conflict('Unknown operation') from None
+            raise operation_api.OperationRefused('operation_unknown', 'Unknown operation') from None
         if op['kind'] not in kind:
-            raise operation_api.Conflict('Operation belongs to another workflow')
+            raise operation_api.OperationRefused('operation_kind_mismatch', 'Operation belongs to another workflow')
         return op
     ctx = operation_api.context(ROOT, cfg, {}, _profile_path(cfg.get('active_profile')))
-    op = operation_api.ledger(ROOT).latest(ctx, kind)
+    if reconcile:
+        op = operation_api.ledger(ROOT).latest(ctx, kind)
+    else:
+        op = operation_api.Operations.latest_read_only(operation_api.ledger_path(ROOT), ctx, kind)
     if op and op['kind'] in kind:
-        return operation_api.resolve(ROOT, op['id'])
+        return read(ROOT, op['id'])
     return None
 
 # Serialize dashboard mutations, including the short clicker worker. A config
@@ -387,13 +943,43 @@ def deny_framing(response):
     return response
 
 
+PERSON_STOP_RULES = frozenset({'/api/operations/<operation_id>/cancel', '/api/scan/stop', '/api/calibrate/stop'})
+
+
+def _is_revocation():
+    """Turning harvesting off, tap permission off, or a person's Stop. They stay reachable while
+    another action runs; each is a durable, fenced change of its own, so it needs
+    no help from the global lock. Everything else stays serialized.
+
+    A Stop is safe without the lock because every step of it is its own atomic act: the stop is recorded
+    by a compare-and-set on the operation's revision (a stale revision is a coded 409 and nothing is
+    done), the processes are signalled through kernel handles verified against the recorded identity
+    (runtime.process_handle), the final settlement is a compare-and-set that a concurrent writer - the
+    refresher retiring a worker it saw die, a second Stop - can win without the Stop being lost, and an
+    unverifiable worker is released only while the device lease is free at the moment of the write.
+    The refresher tick no longer waits for a Stop, and neither does the Stop for it."""
+    rule = request.url_rule
+    if rule is not None and request.method == 'POST' and rule.rule in PERSON_STOP_RULES:
+        return True
+    if request.path not in ('/api/harvest', '/api/automation-access'):
+        return False
+    body = request.get_json(silent=True)
+    return isinstance(body, dict) and body.get('enabled') is False
+
+
 @app.before_request
 def serialize_actions():
     if request.path == '/api/diagnostics/client':
         return
     if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        if _is_revocation():
+            return
         if not _ACTION_LOCK.acquire(blocking=False):
-            return jsonify({"ok": False, "error": "Another action is in progress; wait for its result"}), 409
+            # Transient and pre-admission: this request evaluated and recorded
+            # nothing. The code tells a retry apart from a definite refusal;
+            # status and message stay (learning-controller matches the prefix).
+            return jsonify({"ok": False, "code": "action_lock",
+                            "error": "Another action is in progress; wait for its result"}), 409
         g.action_lock = True
 
 
@@ -443,19 +1029,22 @@ def api_clicker_actions():
 @app.post("/api/clicker/step")
 def api_clicker_step():
     from player.clicker import ACTIONS
-    body = request.get_json(silent=True) or {}
+    body = _request_object()
     action = body.get("action")
     cfg = load_config()
     inst = cfg.get("active_instance", "main")
-    if action not in ACTIONS or body.get("instance") != inst or body.get("account") != cfg.get("instances", {}).get(inst, {}).get("account"):
-        return jsonify({"ok": False, "error": "Invalid action or the active emulator changed"}), 400
-    if _procs():
-        return jsonify({"ok": False, "error": "Stop automation or calibration before using the clicker"}), 409
-    if body.get("execute") and not _taps_allowed(cfg):
-        return jsonify({"ok": False, "error": "Allow automation taps in Control first"}), 409
+    if (not isinstance(action, str) or action not in ACTIONS or body.get("instance") != inst
+            or body.get("account") != cfg.get("instances", {}).get(inst, {}).get("account")):
+        raise InvalidRequest("Invalid action or the active emulator changed")
+    execute = body.get("execute", False)
+    if type(execute) is not bool:
+        raise InvalidRequest("execute must be true or false", 'invalid_execute')
+    _require_idle("Stop automation or calibration before using the clicker")
+    if execute and not _taps_allowed(cfg):
+        return jsonify({"ok": False, "code": "taps_disabled", "error": "Allow automation taps in Control first"}), 409
     args = [sys.executable.replace("pythonw.exe", "python.exe"),
             os.path.join(ROOT, "player", "clicker.py"), "--instance", inst, "--action", action]
-    if body.get("execute") is True:
+    if execute:
         args.append("--execute")
     try:
         result = _run(args, cwd=ROOT, capture_output=True, text=True, timeout=45)
@@ -468,7 +1057,10 @@ def api_clicker_step():
 
 @app.get("/api/clicker/frame")
 def api_clicker_frame():
-    return send_file(os.path.join(_calibration_dir(load_config()), "clicker_preview.png"), mimetype="image/png", max_age=0)
+    path = os.path.join(_calibration_dir(load_config()), "clicker_preview.png")
+    if not os.path.isfile(path):
+        return jsonify(ok=False, code='no_preview', error='The clicker has not written a preview yet'), 404
+    return send_file(path, mimetype="image/png", max_age=0)
 
 
 @app.get("/api/manifest/contribution")
@@ -480,7 +1072,7 @@ def api_manifest_contribution():
             report = json.load(fh)
     except (OSError, ValueError):
         report = {}
-    payload = export(manifest(), report)
+    payload = export(manifest(), report if isinstance(report, dict) else {})
     try:
         directory = _calibration_dir(load_config())
         with open(os.path.join(directory, 'screen_analysis.json'), encoding='utf-8') as fh:
@@ -522,6 +1114,36 @@ def _serialize_config(fn):
     @wraps(fn)
     def wrapped(*args, **kwargs):
         with _CONFIG_WRITE_LOCK:
+            return fn(*args, **kwargs)
+    return wrapped
+
+
+def _fenced_by_page_context(fn):
+    """The optional context fence of a write whose effect depends on which emulator, account and profile is in force
+    (accounts, tier, profile files, a profile or loadout patch). A page that composed its request for one context sends it as
+    `expected_context` {instance, account, profile, serial}; the request is refused 409 context_changed, writing nothing,
+    when the configuration now names another. The check is the first thing after the body is read - before the owner refusal,
+    the validators and the revision checks - and is made under _CONFIG_WRITE_LOCK, the lock every account or profile switch
+    holds, against the saved configuration read under that lock. The fence only READS it: a missing file is not seeded from the
+    example (a refusal writes nothing), and a configuration that cannot be resolved - missing, unreadable, or a stored shape the
+    accounts layer cannot interpret - names no context, so it is refused the same way, `current_context` null. The lock is held until the handler has written or refused, so a
+    switch cannot land between the check and the write (within this process every other non-revocation write also holds
+    _ACTION_LOCK; another process editing config.yaml is excluded by no lock, as before). No `expected_context`: the request
+    runs exactly as it always did."""
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+        try:
+            expected = operation_api.expected_page_context(request.get_json(force=True, silent=True))
+        except ValueError as exc:
+            raise InvalidRequest(str(exc)) from None
+        if expected is None:
+            return fn(*args, **kwargs)
+        with _CONFIG_WRITE_LOCK:
+            try:
+                current = operation_api.page_context(_read_saved_config())
+            except (OSError, ValueError, TypeError, AttributeError, yaml.YAMLError) as exc:   # missing file, unknown account, a stored shape that is not a configuration
+                raise operation_api.ContextChanged(None) from exc
+            operation_api.require_page_context(expected, current)
             return fn(*args, **kwargs)
     return wrapped
 
@@ -741,11 +1363,16 @@ def seed_config() -> bool:
     return True
 
 
-def load_config() -> dict:
-    seed_config()
+def _read_saved_config() -> dict:
+    """The saved configuration as the accounts layer resolves it. Reads only: a missing file is an OSError here, never seeded."""
     with open(CONFIG_PATH, encoding="utf-8") as fh:
         from player import accounts
         return accounts.effective(yaml.safe_load(fh))
+
+
+def load_config() -> dict:
+    seed_config()
+    return _read_saved_config()
 
 
 def save_config(data: dict) -> str:
@@ -897,14 +1524,14 @@ def api_accounts():
 
 
 @app.post("/api/accounts")
+@_fenced_by_page_context
 @_serialize_config
 def api_account_select():
     """Create/bind an account only while automation is idle. Never moves files."""
     import copy
     from pathlib import Path
     from player import accounts
-    if _procs():
-        return jsonify({"ok": False, "error": "Stop automation before changing accounts."}), 409
+    _require_idle("Stop automation before changing accounts.")
     body = request.get_json(force=True) or {}
     try:
         name = accounts.valid_id(body.get("id")).lower()
@@ -978,22 +1605,154 @@ def api_account_select():
 
 @app.post("/api/automation-access")
 def api_automation_access():
-    if _procs():
-        return jsonify({"ok": False, "error": "Stop automation before changing its tap permission."}), 409
+    """Allow or revoke automation input. Enabling keeps the no-runner rule.
+    Revoking is always accepted and is a fenced sequence: refuse all later input
+    at the shared input boundary (reaching accepted workers and delegated
+    children whatever config they froze), pause harvesting, stop collector
+    input, latch allow_taps false, then prove no input call is still in flight.
+    A running full driver keeps observing; only its input is refused."""
     body = request.get_json(force=True) or {}
     if type(body.get("enabled")) is not bool:
         return jsonify({"ok": False, "error": "Choose whether to allow automation to tap."}), 400
+    if not body["enabled"]:
+        revocation = _revoke_taps()
+        if revocation['state'] == 'failed':
+            # The durable refusal could not be published: input is NOT revoked. Say so;
+            # a retry of this request runs the whole sequence again.
+            return jsonify(ok=False, code='input_revocation_failed', revocation=revocation,
+                           error='Game input could not be revoked, so a running automation may still send input. '
+                                 'The revocation field says what was stopped; send the request again to retry.'), 500
+        return jsonify(ok=True, enabled=False, revocation=revocation)
+    _require_idle("Stop automation before changing its tap permission.")
     with _CONFIG_WRITE_LOCK:
         cfg = load_config()
-        cfg["instances"][cfg["active_instance"]]["allow_taps"] = body["enabled"]
+        device = operation_api.device_identity(cfg)
+        if device['serial']:
+            from runtime import device_lease
+            device_lease.clear_revocation(device['serial'], device['adb_host'], device['adb_port'])
+        cfg["instances"][cfg["active_instance"]]["allow_taps"] = True
         save_config(cfg)
-    return jsonify({"ok": True, "enabled": body["enabled"]})
+    return jsonify({"ok": True, "enabled": True})
+
+
+def _revoke_taps():
+    """Revoke game input. Every step runs and reports; one failing never skips the rest.
+
+    Enforcement and configuration are different facts. The durable refusal (the
+    marker every accepted worker and delegated child reads at the input boundary)
+    is what stops a running automation; allow_taps=false in the config only
+    reaches processes started afterwards. Nothing is reported as revoked, fenced,
+    latched or refused unless the marker was published and read back, and fenced /
+    latched are claims about EVERY holder of the emulator: while the scan of who holds
+    it (the ledger and process owners, the device lease) failed, who is covered is
+    unknown, so state is `stopping` and both are false.
+
+    state: nothing_running | input_stopped | stopping | not_enforced | failed
+    (failed: the marker could not be published, so input is NOT revoked)."""
+    from runtime import device_lease
+    cfg = load_config()
+    identity = harvest_api.identity_for(cfg)
+    errors = []
+    serial, host, port = identity['serial'], identity['adb_host'], identity['adb_port']
+
+    def attempt(name, fn):
+        try:
+            return fn()
+        except Exception as exc:                        # noqa: BLE001 - reported per step
+            app.logger.exception('Tap revocation step %s failed', name)
+            errors.append(dict(step=name, message=f'{type(exc).__name__}: {exc}'))
+            return None
+
+    def publish_marker():
+        last = None
+        for _ in range(3):   # a transient replace failure (antivirus, an open reader) is retried
+            try:
+                return device_lease.revoke_input(serial, host, port)
+            except OSError as exc:
+                last = exc
+                time.sleep(0.05)
+        raise last
+    record = attempt('revoke_input', publish_marker) if serial else None
+    enforced = record is not None or not serial   # without an ADB serial no worker can hold the device
+    paused = attempt('pause_harvesting', lambda: harvest_api.pause(
+        ROOT, identity, 'taps_revoked', f"taps-{(record or {}).get('token') or uuid.uuid4().hex}"))
+    stop = attempt('stop_collectors', lambda: harvest_api.stop_collectors(ROOT, identity)) or dict(stopped=[], stopping=[], errors=[])
+
+    def persist():
+        with _CONFIG_WRITE_LOCK:
+            fresh = load_config()
+            fresh["instances"][fresh["active_instance"]]["allow_taps"] = False
+            save_config(fresh)
+        return True
+    persisted = attempt('persist_allow_taps', persist) is True
+    fenced = bool(record) and attempt('fence_input', lambda: device_lease.fence_input(serial, host, port)) is True
+    lease = attempt('lease_state', lambda: device_lease.lease_state(serial, host, port)) if serial else None
+    scanned = attempt('owners', lambda: _owners_now(cfg, _procs_cached()))
+    owners = scanned or []
+    holders_unknown = scanned is None or (bool(serial) and lease is None)   # a failed scan is never an empty one
+    if holders_unknown:
+        fenced = False
+    for owner in owners:
+        owner['input'] = ('refused' if fenced and lease and lease.get('input_gate') == 'enforced' else 'unfenced')
+    held = bool(lease and lease.get('owned'))
+    if not enforced:
+        state = 'failed'                                # no durable refusal exists: nothing below is true
+    elif holders_unknown:
+        state = 'stopping'                              # who still holds the emulator is unknown: nothing is confirmed
+    elif not (stop['stopped'] or stop['stopping'] or owners or held):
+        state = 'nothing_running'
+    elif stop['stopping'] or not fenced:
+        state = 'stopping'                              # a worker is still exiting or an input call is in flight
+    elif any(owner['input'] == 'unfenced' for owner in owners) or (held and lease.get('input_gate') != 'enforced'):
+        state = 'not_enforced'                          # a holder that does not advertise the gate cannot be fenced
+    else:
+        state = 'input_stopped'
+    return dict(state=state, fenced=fenced, latched=enforced and persisted and not holders_unknown,
+                config_persisted=persisted,
+                revoked_at=(record or {}).get('revoked_at'),
+                harvest=dict(paused=bool(paused) and not paused.get('enabled'),
+                             revision=(paused or {}).get('revision')),
+                stopped=stop['stopped'], stopping=stop['stopping'], errors=errors + stop['errors'],
+                still_owned=[owner for owner in owners])
+
+
+@app.get('/api/harvest')
+def api_harvest():
+    return jsonify(ok=True, harvest=_harvest_status())
+
+
+@app.post('/api/harvest')
+def api_harvest_set():
+    """Turn persistent gem harvesting on or off (see control/harvest.py).
+
+    Pre-commit refusals (400 invalid_request, 409 context_changed, policy_invalid,
+    harvest_revision_changed, idempotency_key_reused, action_lock) recorded
+    nothing. Anything unexpected after a possible commit is 500
+    harvest_outcome_unknown carrying the request identity: send the SAME request
+    again to read the outcome back. The server never resends by itself."""
+    body = request.get_json(silent=True)
+    key = body.get('idempotency_key') if isinstance(body, dict) else None
+    cfg = load_config()
+    try:
+        result = harvest_api.apply_choice(ROOT, cfg, body, resolve_source=_harvest_source, event=_diagnostic_event)
+    except (harvest_api.ChoiceRefused, operation_api.Conflict):
+        raise
+    except ValueError as exc:
+        return jsonify(ok=False, code='invalid_request', error=str(exc)), 400
+    except Exception as exc:                            # noqa: BLE001 - may have happened after the commit
+        app.logger.exception('Harvest choice outcome unknown')
+        return jsonify(ok=False, code='harvest_outcome_unknown', outcome='unknown',
+                       request_key=key if isinstance(key, str) else None,
+                       error='The request may have been recorded. Send the same request again to read the outcome back.'), 500
+    harvest = _harvest_status(cfg)
+    return jsonify(ok=True, replayed=result['replayed'], desired=harvest_api.desired_view(result['choice']),
+                   stop=result['stop'], overlay=harvest.get('overlay'), harvest=harvest)
 
 
 @app.post("/api/account-tier")
+@_fenced_by_page_context
 def api_account_tier():
-    if _procs():
-        return jsonify({"ok": False, "error": "Stop automation before changing account capabilities."}), 409
+    _require_idle("Stop automation before changing account capabilities.")
     cfg = load_config()
     tier = (request.get_json(force=True) or {}).get("max_tier")
     if type(tier) is not int or not 1 <= tier <= 20:
@@ -1016,7 +1775,83 @@ def api_account_tier():
 
 @app.get("/")
 def index():
+    # The new Dashboard (frontend/app) is the default page once it is built; the
+    # previous dashboard stays at /ui/index.html (linked from the new app as
+    # "Previous Dashboard") until every capability it still hosts has a new home.
+    if os.path.isfile(os.path.join(app.static_folder, "app", "index.html")):
+        return redirect("/ui/app/")
     return redirect("/ui/index.html")
+
+
+# The new dashboard app (frontend/app, ADR-001) is a build product in
+# webui/app/, git-ignored, served by the static folder at /ui/app/. A source
+# checkout that has not built it gets a page saying how, not a bare 404.
+_APP_NOT_BUILT = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Tower Pilot - UI not built</title></head>
+<body style="background:#17191e;color:#e5e7eb;font-family:system-ui,sans-serif;margin:2rem">
+<h1>The new dashboard is not built yet</h1>
+<p>This checkout has no build of the new app (<code>frontend/webui/app/</code>).
+Build it once with Node.js 22.13+ (22.x), 24.x or 26+:</p>
+<pre>cd frontend/app; npm ci; npm run build</pre>
+<p>Then reload this page. The current dashboard works without it:
+<a href="/ui/index.html" style="color:#7cbaff">open the current dashboard</a>.</p>
+</body></html>
+"""
+
+
+def _inside(folder: str, path: str) -> bool:
+    """True when real path `path` is `folder` or lies in it; another drive or a UNC share is not."""
+    try:
+        return os.path.commonpath([os.path.normcase(folder), os.path.normcase(path)]) == os.path.normcase(folder)
+    except ValueError:
+        return False
+
+
+@app.get("/ui/app/")
+@app.get("/ui/app/<path:asset>")
+def ui_app(asset: str = "index.html") -> Response:
+    from flask import abort, send_file
+    from werkzeug.security import safe_join
+    build = os.path.join(app.static_folder, "app")
+    if not os.path.isfile(os.path.join(build, "index.html")):
+        return Response(_APP_NOT_BUILT, status=404, mimetype="text/html")
+    # Serve only regular files whose REAL path lies inside the real build folder:
+    # a junction or symlink (or a linked build folder) could point anywhere.
+    if os.path.islink(build) or os.path.isjunction(build):
+        abort(404)
+    root = os.path.realpath(build)
+    joined = safe_join(root, asset)
+    target = os.path.realpath(joined) if joined is not None else root
+    if not _inside(root, target) or os.path.normcase(target) == os.path.normcase(root) or not os.path.isfile(target):
+        abort(404)
+    return send_file(target)
+
+
+@app.before_request
+def ui_app_static_guard() -> Response | None:
+    """Flask's static route (/ui/<path>) reaches the same files under other
+    spellings: /ui/App/, /ui/./app/, /ui/app./, /ui/app%20/, or a junction to
+    webui/app or to a folder inside it. A static path whose real prefix lies in
+    the build folder is answered by ui_app() with the build-relative rest, so its
+    containment applies; any other static file is served only when its real
+    path lies inside the real webui/ folder."""
+    if request.endpoint != "static":
+        return None
+    from flask import abort
+    filename = (request.view_args or {}).get("filename", "")
+    parts = [part for part in filename.split("/") if part not in ("", ".")]
+    if not parts or "\\" in filename or any(part == ".." or ":" in part for part in parts):
+        abort(404)                          # no backslash, parent, drive or stream syntax
+    static = app.static_folder
+    build = os.path.realpath(os.path.join(static, "app"))
+    for depth in range(1, len(parts) + 1):
+        prefix = os.path.realpath(os.path.join(static, *parts[:depth]))
+        if _inside(build, prefix):
+            asset = os.path.relpath(os.path.join(prefix, *parts[depth:]), build).replace("\\", "/")
+            return ui_app("index.html" if asset == "." else asset)
+    if not _inside(os.path.realpath(static), os.path.realpath(os.path.join(static, *parts))):
+        abort(404)
+    return None
 
 
 @app.get("/api/config")
@@ -1091,12 +1926,23 @@ def _scan_procs(target=None):
     out = []
     for pid, (script, args) in found.items():
         try:
-            parent = psutil.Process(pid).ppid()
+            process = psutil.Process(pid)
+            parent = process.ppid()
         except Exception:                       # noqa: BLE001 - exited since the walk
-            parent = None
+            process, parent = None, None
         if parent in found and found[parent][1][1:] == args[1:]:
             continue
-        out.append({"pid": pid, "runner": Path(script).stem, "cmdline": " ".join(args)})
+        # Pin the row to the process the walk saw: only a process that still has that command line
+        # gives its creation time. Stopping a listed runner is judged by (pid, creation time), never
+        # by the pid alone, so a pid reused after this scan can never be stopped as this runner.
+        created = None
+        if process is not None:
+            try:
+                if process.cmdline() == args:
+                    created = process.create_time()
+            except Exception:                   # noqa: BLE001 - unreadable: the row simply has no identity
+                created = None
+        out.append({"pid": pid, "runner": Path(script).stem, "cmdline": " ".join(args), "created": created})
     return out
 
 
@@ -1143,15 +1989,35 @@ def _procs_snapshot(target=None, *, refresh=True):
     return cache, target
 
 
+def _procs_read(refresh=True):
+    """(cache, target, now) for one read of the process cache.
+
+    A reply that must pair process ROWS with the refresh EVIDENCE about them (api_status: `processes` and
+    `process_refresh`) pins its snapshot first (`g.procs_pin = {}`): the first read of that reply decides - the
+    same call, with the same refresh flag, it would have made on its own - and every later read of the same
+    reply gets the same published cache dict and the same instant. The refresher replaces the cache as a
+    whole, so without the pin the rows could come from an older scan than the age and timestamps next to
+    them, and "the emulator is free" would be judged on rows the metadata does not describe. Anything else
+    (an action handler that refreshes and reads again) reads the live cache every time."""
+    pin = g.get('procs_pin') if has_request_context() else None
+    if pin is None:
+        cache, target = _procs_snapshot(refresh=refresh)
+        return cache, target, time.time()
+    if 'read' not in pin:
+        cache, target = _procs_snapshot(refresh=refresh)
+        pin['read'] = (cache, target, time.time())
+    return pin['read']
+
+
 def _procs_cached():
-    cache, target = _procs_snapshot()
+    cache, target, _ = _procs_read()
     return cache['procs'] if cache.get('target') == target else []
 
 
 def _procs_status():
-    cache, target = _procs_snapshot(refresh=False)
+    cache, target, now = _procs_read(refresh=False)
     matches = cache.get('target') == target
-    age = max(0.0, time.time() - cache['at']) if matches and cache['at'] else None
+    age = max(0.0, now - cache['at']) if matches and cache['at'] else None
     return dict(state='unknown' if age is None else 'stale' if age > 6 or cache.get('error') else 'fresh',
                 age_sec=age, last_success_at=cache['at'] if matches and cache['at'] else None,
                 last_attempt_at=cache.get('attempted_at') if matches else None,
@@ -1175,6 +2041,7 @@ def _start_procs_refresher():
         while True:
             _PROCS_WAKE.clear()
             _procs_refresh()
+            _harvest_tick()
             _PROCS_WAKE.wait(2.0)
     _PROCS_THREAD = threading.Thread(target=loop, daemon=True, name="procs-refresher")
     _PROCS_THREAD.start()
@@ -1426,8 +2293,17 @@ def api_status():
     inst = cfg.get("active_instance", "main")
     flag = _stop_flag_path(inst)
     conn = _device_state(cfg)
+    g.procs_pin = {}   # `processes` and `process_refresh` below are built from ONE snapshot of the process cache
+    # A GET never creates the ledger or retires a worker: the refresher does that.
+    processes = operation_api.project_processes(ROOT, _procs_cached(), reconcile=False)
     return jsonify({
-        "processes": operation_api.project_processes(ROOT, _procs_cached()),
+        "processes": processes,
+        "harvest": _harvest_status(cfg, processes),
+        # after processes: that projection reconciles dead workers first. The
+        # same evaluations POST /api/control start (run scope) and start_gems
+        # (collection scope) admission apply.
+        "setup_battle_guard": _setup_battle_guard(cfg),
+        "collection_guard": _collection_guard(cfg),
         "process_refresh": _procs_status(),
         "runtime": dict(server=_BUILD, capabilities=_CAPABILITIES, api_contract=1, port=PORT),
         "daily_state": daily,
@@ -1550,8 +2426,9 @@ def api_frame():
     ts = request.args.get("ts")
     if ts:
         # THE CROPPER'S CONTRACT: a template is cut from the exact frame the
-        # user drew on, never from a fresh grab that may show another screen.
-        _remember_frame(ts, raw)
+        # user drew on, never from a fresh grab that may show another screen
+        # - and only for the page (emulator, account, profile) it was fetched for.
+        _remember_frame(ts, raw, _frame_context(cfg))
     return Response(raw, mimetype="image/png")
 
 
@@ -1805,6 +2682,9 @@ def api_control():
     cfg = load_config()
     inst = cfg.get("active_instance", "main")
     if action in ('start', 'start_gems'):
+        if 'harvest' in body or 'desire_revision' in body:
+            return jsonify(ok=False, code='invalid_request',
+                           error='Automatic harvesting fields are reserved for the lifecycle host'), 400
         retry = operation_api.retry(ROOT, cfg, 'run' if action == 'start' else 'gems', body, _profile_path(cfg.get('active_profile')))
         if retry:
             return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
@@ -1820,60 +2700,20 @@ def api_control():
             pass
         return jsonify({"ok": True})
     if action == "kill":
-        import psutil
-        pid = int(body["pid"])
-        for p in operation_api.project_processes(ROOT, _procs()):
-            if p["pid"] == pid:
-                if p.get('operation'):
-                    raise operation_api.Conflict('Cancel the tracked operation by its ID and revision')
-                proc = psutil.Process(pid)
-                # terminate, WAIT for it, escalate to kill: on Windows
-                # terminate() is TerminateProcess and usually enough, but
-                # the reply must not go out while the process is still in
-                # the table - the UI refreshes on reply and would show the
-                # row it just "killed" (user, 2026-08-18).
-                proc.terminate()
-                try:
-                    proc.wait(timeout=3)
-                except psutil.TimeoutExpired:
-                    proc.kill()
-                    try:
-                        proc.wait(timeout=2)
-                    except psutil.TimeoutExpired:
-                        return jsonify({"ok": False,
-                                        "error": f"pid {pid} would not die"}), 500
-                _procs_refresh()
-                return jsonify({"ok": True, "gone": True})
-        return jsonify({"ok": False, "error": "not a runner pid"}), 400
+        return _kill_action(body)
     if action == "start_gems":
-        if _procs():
-            return jsonify(ok=False,error="Automation is already running. Stop it before starting the diamond collector."),409
-        if not cfg.get("instances",{}).get(inst,{}).get("allow_taps"):
-            return jsonify(ok=False,error="Enable automation taps first."),409
-        name=body.get("preset")
-        runs=_compiled_runs(cfg)
-        cfg['presets'] = runs
-        if name not in runs:
-            return jsonify(ok=False,error="Choose a run's diamond settings."),400
-        gather=runs[name].get("gather") or {}
-        if not (gather.get("ad_gems",True) or (gather.get("gem_orbit") or {}).get("enabled")):
-            return jsonify(ok=False,error="Enable Ad Gems or timed orbit clicks in this run's gathering settings."),409
-        # The HUD collector can verify CLAIM + 6 without a saved offer image.
-        # Its battle proof still requires the account's complete digit font.
-        from player import accounts
-        import cv2
-        for digit in range(10):
-            path = accounts.template_path(ROOT, cfg, f"digits/{digit}.png")
-            if not path.exists() or cv2.imread(str(path), cv2.IMREAD_GRAYSCALE) is None:
-                return jsonify(ok=False,error="Learn the wave digits before collecting gems."),409
-        cmd=[sys.executable.replace("python.exe","pythonw.exe"),os.path.join(ROOT,"gem_collector.py"),"--instance",inst,"--preset",name]
+        _require_idle("Automation is already running. Stop it before starting the diamond collector.",
+                      collector_code='collector_running')
+        try:
+            cmd = _gems_launch_plan(cfg, body.get("preset")).command
+        except harvest_api.Refused as exc:
+            return jsonify(ok=False, code=exc.code, error=str(exc)), _REFUSAL_STATUS.get(exc.code, 409)
         operation = _launch_operation(cfg, "gems", body, cmd)
         _procs_refresh()
         return jsonify(ok=True, operation_id=operation['id'], operation=operation_api.public(operation))
     if action == "start":
         preset = body.get("preset")
-        if _procs():
-            return jsonify({"ok": False, "error": "Automation is already running. Finish or stop it before starting another run."}), 409
+        takeover = _collector_takeover("Automation is already running. Finish or stop it before starting another run.", cfg)
         try:
             from player import readiness
             cfg["presets"] = _compiled_runs(cfg)
@@ -1915,9 +2755,15 @@ def api_control():
                                 "error": f"flow registry unreadable: {e}"}), 500
         cmd = ([pyw, os.path.join(ROOT, runner), "--instance", inst]
                + preset_argv + [str(a) for a in args])
-        operation = _launch_operation(cfg, "run", body, cmd)
+        transfer = _transfer_from_collector(cfg, body, takeover) if takeover else None
+        try:
+            operation = _launch_operation(cfg, "run", body, cmd)
+        finally:
+            if takeover:
+                harvest_api.end_transfer(ROOT, harvest_api.identity_for(cfg))
         _procs_refresh()
-        return jsonify(ok=True, operation_id=operation['id'], operation=operation_api.public(operation))
+        return jsonify(ok=True, operation_id=operation['id'], operation=operation_api.public(operation),
+                       **({'transfer': transfer} if transfer else {}))
     return jsonify({"ok": False, "error": "unknown action"}), 400
 
 
@@ -1929,12 +2775,9 @@ def api_scan_start():
     if retry:
         return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
     others = [pr for pr in _procs() if pr["runner"] != "scan"]
-    if others:
-        return jsonify({"ok": False,
-                        "error": "runners alive: " +
-                                 ", ".join(pr["runner"] for pr in others) +
-                                 " - stop them first (scan.py would refuse "
-                                 "anyway; this check saves the spawn)"}), 409
+    _require_idle("runners alive: " + ", ".join(pr["runner"] for pr in others) +
+                  " - stop them first (scan.py would refuse anyway; this check saves the spawn)", rows=others,
+                  allow_kinds=('scan',))
     if any(pr["runner"] == "scan" for pr in _procs()):
         return jsonify({"ok": False, "error": "a scan is already running"}), 409
     cfg = load_config()
@@ -1959,19 +2802,19 @@ def _operation_artifact_bytes(operation, filename, *, allow_shared=False):
     ref = operation['result_refs'].get(filename)
     if ref is None:
         if not allow_shared:
-            raise operation_api.Conflict(f'No saved {filename} for this operation')
+            raise operation_api.OperationRefused('artifact_unavailable', f'No saved {filename} for this operation')
         path = Path(operation['context']['artifact_dir']) / filename
     elif not isinstance(ref, dict) or not ref.get('path') or not ref.get('revision'):
-        raise operation_api.Conflict(f'Invalid saved reference for {filename}')
+        raise operation_api.OperationRefused('artifact_invalid', f'Invalid saved reference for {filename}')
     else:
         path = Path(ref['path'])
     try:
         contents = path.read_bytes()
     except OSError as exc:
-        raise operation_api.Conflict(f'Saved {filename} is unavailable: {exc}') from exc
+        raise operation_api.OperationRefused('artifact_unavailable', f'Saved {filename} is unavailable: {exc}') from exc
     revision = hashlib.sha256(contents).hexdigest()
     if ref is not None and revision != ref['revision']:
-        raise operation_api.Conflict(f'Saved {filename} changed after this operation')
+        raise operation_api.OperationRefused('artifact_changed', f'Saved {filename} changed after this operation')
     return contents, {'path': str(path), 'revision': revision}
 
 
@@ -1980,9 +2823,9 @@ def _operation_artifact_json(operation, filename, *, allow_shared=False):
     try:
         result = json.loads(contents)
     except (ValueError, UnicodeError) as exc:
-        raise operation_api.Conflict(f'Saved {filename} is not valid JSON') from exc
+        raise operation_api.OperationRefused('artifact_invalid', f'Saved {filename} is not valid JSON') from exc
     if not isinstance(result, dict) or result.get('operation_id') != operation['id']:
-        raise operation_api.Conflict(f'Saved {filename} belongs to another operation')
+        raise operation_api.OperationRefused('artifact_invalid', f'Saved {filename} belongs to another operation')
     return result, ref
 
 
@@ -1994,7 +2837,7 @@ def _taps_allowed(cfg: dict) -> bool:
 @app.post("/api/screen-analysis/start")
 def api_screen_analysis_start():
     cfg = load_config()
-    body = request.get_json(silent=True) or {}
+    body = _request_object()
     retry = operation_api.retry(ROOT, cfg, 'screen_analysis', body, _profile_path(cfg.get('active_profile')))
     if retry:
         return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
@@ -2006,7 +2849,7 @@ def api_screen_analysis_start():
 @app.get("/api/screen-analysis/status")
 def api_screen_analysis_status():
     cfg = load_config()
-    operation = _requested_operation(cfg, ('screen_analysis',))
+    operation = _requested_operation(cfg, ('screen_analysis',), reconcile=False)
     if operation:
         cfg = operation['context']['config']
     try:
@@ -2031,14 +2874,17 @@ def api_screen_analysis_status():
 @app.get("/api/screen-analysis/frame.png")
 def api_screen_analysis_frame():
     cfg = load_config()
-    operation = _requested_operation(cfg, ('screen_analysis',))
+    operation = _requested_operation(cfg, ('screen_analysis',), reconcile=False)
     if operation:
         if operation['status'] != 'succeeded':
-            raise operation_api.Conflict('Wait for this screen analysis to complete')
+            raise operation_api.OperationRefused('analysis_not_finished', 'Wait for this screen analysis to complete', operation)
         from io import BytesIO
         contents, _ = _operation_artifact_bytes(operation, 'screen_analysis.png')
         return send_file(BytesIO(contents), mimetype='image/png', max_age=0)
-    return send_file(os.path.join(_calibration_dir(cfg), "screen_analysis.png"), mimetype="image/png", max_age=0)
+    path = os.path.join(_calibration_dir(cfg), "screen_analysis.png")
+    if not os.path.isfile(path):
+        return jsonify(ok=False, code='no_screenshot', error='No screen analysis screenshot has been saved yet'), 404
+    return send_file(path, mimetype="image/png", max_age=0)
 
 
 @app.post("/api/calibrate/start")
@@ -2047,31 +2893,27 @@ def api_calibrate_start():
     account's own templates (card tabs, preset rows, module icons) - the
     pictures the repo never ships. Same guards as the scan, plus taps: the
     calibrator navigates, so a read-only instance cannot run it."""
-    body = request.get_json(force=True) or {}
+    body = _request_object(required=True)
     routes = body.get('routes')
     if 'routes' in body:
         if (not isinstance(routes, list) or body.get('bootstrap') is not True
                 or any(body.get(key) for key in ('flows', 'battle_only', 'observe'))):
-            return jsonify(ok=False, error='Routes require bootstrap only, without flows, battle_only or observe'), 400
+            raise InvalidRequest('Routes require bootstrap only, without flows, battle_only or observe', 'invalid_routes')
         from player.bootstrap import validate_route_selection
         try:
             validate_route_selection(routes)
         except ValueError as exc:
-            return jsonify(ok=False, error=str(exc)), 400
+            raise InvalidRequest(str(exc), 'invalid_routes') from exc
     retry = operation_api.retry(ROOT, load_config(), "calibrate", body, _profile_path(load_config().get('active_profile')))
     if retry:
         return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
     others = [pr for pr in _procs() if pr["runner"] != "calibrate"]
-    if others:
-        return jsonify({"ok": False,
-                        "error": "runners alive: " +
-                                 ", ".join(pr["runner"] for pr in others) +
-                                 " - stop them first"}), 409
-    if any(pr["runner"] == "calibrate" for pr in _procs()):
-        return jsonify({"ok": False, "error": "a calibration is already running"}), 409
+    _require_idle("runners alive: " + ", ".join(pr["runner"] for pr in others) + " - stop them first", rows=others,
+                  allow_kinds=('calibrate', 'observe'))
+    _refuse_while_calibrating()
     cfg = load_config()
     if not _taps_allowed(cfg) and not body.get("allow_navigation"):
-        return jsonify({"ok": False,
+        return jsonify({"ok": False, "code": "taps_disabled",
                         "error": "allow_taps is off for this instance - the "
                                  "calibrator walks the game's menus; switch it "
                                  "on in Configuration first"}), 409
@@ -2080,11 +2922,12 @@ def api_calibrate_start():
     bootstrap = body.get("bootstrap") is True
     chosen = [p.strip() for p in phases.split(",") if p.strip()]
     if not chosen or any(p not in ("c", "g", "m", "u", "b", "w", "e") for p in chosen):
-        return jsonify({"ok": False, "error": "Choose valid calibration steps"}), 400
+        raise InvalidRequest("Choose valid calibration steps", 'invalid_phases')
     from player.scan_plan import missing_navigation
     missing = [] if bootstrap else missing_navigation(ROOT, cfg, chosen, include_wave=False)
     if missing:
-        return jsonify({"ok": False, "error": "Capture the navigation images in the Scan plan before automatic calibration.", "missing": missing}), 409
+        return jsonify({"ok": False, "code": "navigation_images_missing",
+                        "error": "Capture the navigation images in the Scan plan before automatic calibration.", "missing": missing}), 409
     if "e" in chosen and not bootstrap:
         try:
             with open(os.path.join(_calibration_dir(cfg), "calibrate_state.json"), encoding="utf-8") as fh:
@@ -2092,7 +2935,7 @@ def api_calibrate_start():
         except (OSError, ValueError):
             basic_done = False
         if not basic_done:
-            return jsonify({"ok": False, "error": "Finish phase 1 Modules first."}), 409
+            return jsonify({"ok": False, "code": "modules_not_done", "error": "Finish phase 1 Modules first."}), 409
     args = [os.path.join(ROOT, "player", "calibrate.py"), "--instance", inst,
             "--phases", phases]
     if bootstrap:
@@ -2127,23 +2970,18 @@ def api_calibrate_observe():
     buttons during a battle, the UW switches with the panel open). READ-ONLY:
     no taps, no navigation, so it needs no tap permission and may run over a
     battle the person is playing - the screen is what they chose to show."""
-    body = request.get_json(silent=True) or {}
+    body = _request_object()
     retry = operation_api.retry(ROOT, load_config(), "observe", body, _profile_path(load_config().get('active_profile')))
     if retry:
         return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
+    watch = _watch_seconds(body.get('watch'))
     others = [pr for pr in _procs() if pr["runner"] != "calibrate"]
-    if others:
-        return jsonify({"ok": False, "error": "runners alive: " + ", ".join(pr["runner"] for pr in others) + " - stop them first"}), 409
-    if any(pr["runner"] == "calibrate" for pr in _procs()):
-        return jsonify({"ok": False, "error": "a calibration is already running"}), 409
+    _require_idle("runners alive: " + ", ".join(pr["runner"] for pr in others) + " - stop them first", rows=others,
+                  allow_kinds=('calibrate', 'observe'))
+    _refuse_while_calibrating()
     cfg = load_config()
     inst = cfg.get("active_instance", "main")
     args = [os.path.join(ROOT, "player", "calibrate.py"), "--instance", inst, "--phases", "c", "--observe"]
-    body = request.get_json(silent=True) or {}
-    try:
-        watch = min(600, max(0, int(body.get("watch") or 0)))
-    except (TypeError, ValueError):
-        watch = 0
     if watch:
         args += ["--observe-watch", str(watch)]
     pyw = sys.executable.replace("python.exe", "pythonw.exe")
@@ -2153,15 +2991,14 @@ def api_calibrate_observe():
 
 @app.post("/api/calibrate/stop")
 def api_calibrate_stop():
-    body = request.get_json(silent=True) or {}
-    op = operation_api.cancel(ROOT, body)
-    return jsonify(ok=True, operation=operation_api.public(op))
+    body = request.get_json(silent=True)
+    return _person_stop(dict(body) if isinstance(body, dict) else {})
 
 
 @app.get("/api/calibrate/status")
 def api_calibrate_status():
     cfg = load_config()
-    operation = _requested_operation(cfg, ('calibrate', 'observe'))
+    operation = _requested_operation(cfg, ('calibrate', 'observe'), reconcile=False)
     if operation:
         cfg = operation['context']['config']
     inst = cfg.get("active_instance", "main")
@@ -2185,7 +3022,8 @@ def api_calibrate_status():
                     out[key], _ = _operation_artifact_json(operation, fname, allow_shared=True)
             else:
                 with open(os.path.join(_calibration_dir(cfg), fname), encoding="utf-8") as fh:
-                    out[key] = json.load(fh)
+                    value = json.load(fh)
+                out[key] = value if isinstance(value, dict) else {}
         except operation_api.Conflict as exc:
             out.setdefault('artifact_errors', {})[key] = str(exc)
         except (OSError, ValueError):
@@ -2231,50 +3069,58 @@ def api_calibrate_status():
                     "taps_allowed": _taps_allowed(cfg), **out})
 
 
+class ApplyRefused(ValueError):
+    """An apply refused before it changed anything: a 400 with a stable `code`."""
+
+    def __init__(self, code, message):
+        super().__init__(message)
+        self.code = code
+
+
 @app.post("/api/calibrate/apply")
 @_serialize_config
 def api_calibrate_apply():
     """Apply only successfully completed observations to the current profile."""
     import copy
-    body = request.get_json(silent=True) or {}
+    body = _request_object()
     operation = None
     legacy_write = None
     if body.get('operation_id'):
         try:
             prior = operation_api.resolve(ROOT, body['operation_id'])
         except KeyError:
-            raise operation_api.Conflict('Unknown operation') from None
+            raise operation_api.OperationRefused('operation_unknown', 'Unknown operation') from None
         if prior['kind'] not in ('calibrate', 'observe'):
-            raise operation_api.Conflict('Operation is not a calibration')
+            raise operation_api.OperationRefused('not_a_calibration', 'Operation is not a calibration', prior)
         applied = prior['status'] == 'succeeded' or prior['result_refs'].get('apply_status') == 'succeeded'
         if applied and body.get('expected_revision') in (prior['revision'], prior['result_refs'].get('apply_request_revision')):
             return jsonify(ok=True, applied=True, profile=prior['context']['profile'], operation=operation_api.public(prior), readiness=prior.get('readiness'))
-    if _procs():
-        return jsonify({"ok": False, "error": "Wait for calibration to stop before applying results."}), 409
+    _require_idle("Wait for calibration to stop before applying results.")
     cfg = load_config()
     if body.get('operation_id'):
         operation = operation_api.require_revision(ROOT, body, ('awaiting_apply', 'failed', 'interrupted'))
         if operation['kind'] not in ('calibrate', 'observe'):
-            raise operation_api.Conflict('Operation is not a calibration')
+            raise operation_api.OperationRefused('not_a_calibration', 'Operation is not a calibration', operation)
         original = operation['context']
         current = operation_api.context(ROOT, cfg, {}, _profile_path(cfg.get('active_profile')))
         allowed_config_revisions = (original['config_revision'], operation['result_refs'].get('apply_config_revision'))
         if (any(current.get(k) != original.get(k) for k in ('account', 'instance', 'serial', 'rendering', 'profile', 'device_key'))
                 or current['config_revision'] not in allowed_config_revisions):
-            raise operation_api.Conflict('Return to the original unchanged account, device and profile before applying')
+            raise operation_api.OperationRefused('context_changed', 'Return to the original unchanged account, device and profile before applying', operation)
         cfg = original['config']
     elif not body.get('saved_observations'):
-        raise operation_api.Conflict('Name the operation, or explicitly review saved_observations')
+        raise operation_api.OperationRefused('operation_required', 'Name the operation, or explicitly review saved_observations')
     else:
         tracked = _requested_operation(cfg, ('calibrate', 'observe'))
         if tracked:
-            raise operation_api.Conflict('These observations belong to an operation; apply its ID and revision')
+            raise operation_api.OperationRefused('observations_tracked', 'These observations belong to an operation; apply its ID and revision', tracked)
     name = cfg.get("active_profile")
     if _is_starter(name):
-        return jsonify({"ok": False, "error": "Create your account or copy the starter before applying calibration."}), 409
+        return jsonify({"ok": False, "code": "starter_profile",
+                        "error": "Create your account or copy the starter before applying calibration."}), 409
     path = _profile_path(name)
     if not path or not os.path.isfile(path):
-        return jsonify({"ok": False, "error": "Choose a profile first."}), 400
+        return jsonify({"ok": False, "code": "profile_missing", "error": "Choose a profile first."}), 400
     try:
         if operation:
             state, state_ref = _operation_artifact_json(
@@ -2283,11 +3129,11 @@ def api_calibrate_apply():
             with open(os.path.join(_calibration_dir(cfg), "calibrate_state.json"), encoding="utf-8") as fh:
                 state = json.load(fh)
             if state.get('operation_id'):
-                raise operation_api.Conflict('These observations belong to an operation; apply its ID and revision')
+                raise operation_api.OperationRefused('observations_tracked', 'These observations belong to an operation; apply its ID and revision')
         if not state.get("player"):
-            raise ValueError("No completed account observations yet")
+            raise ApplyRefused('no_observations', "No completed account observations yet")
         if os.path.exists(os.path.join(_calibration_dir(cfg), "module_restore.json")):
-            raise ValueError("Restore the saved module equipment before applying discoveries.")
+            raise ApplyRefused('restoration_pending', "Restore the saved module equipment before applying discoveries.")
         if operation is None:
             store = operation_api.ledger(ROOT)
             legacy_write, _ = store.accept('profile_write',
@@ -2300,7 +3146,7 @@ def api_calibrate_apply():
                     with open(path, encoding='utf-8') as current_profile:
                         persisted = yaml.safe_load(current_profile)
                     if operation_api.digest(persisted) != operation['result_refs'].get('apply_profile_digest'):
-                        raise operation_api.Conflict('Profile changed after preparation; discoveries remain saved for review')
+                        raise operation_api.OperationRefused('profile_changed', 'Profile changed after preparation; discoveries remain saved for review', operation)
                 refs = dict(operation['result_refs'])
                 refs['calibrate_state.json'] = state_ref
                 refs.setdefault('apply_capture_outcome', {
@@ -2412,20 +3258,19 @@ def api_calibrate_apply():
         if legacy_write:
             operation_api.ledger(ROOT).transition(legacy_write['id'], legacy_write['revision'], 'failed',
                 error={'code': 'apply_failed', 'message': str(e)})
-        return jsonify({"ok": False, "error": str(e)}), 400 if isinstance(e, (OSError, ValueError)) else 500
+        return jsonify({"ok": False, "code": e.code if isinstance(e, ApplyRefused) else 'apply_failed', "error": str(e)}), 400 if isinstance(e, (OSError, ValueError)) else 500
 
 
 @app.post("/api/scan/stop")
 def api_scan_stop():
-    body = request.get_json(silent=True) or {}
-    op = operation_api.cancel(ROOT, body)
-    return jsonify(ok=True, operation=operation_api.public(op))
+    body = request.get_json(silent=True)
+    return _person_stop(dict(body) if isinstance(body, dict) else {})
 
 
 @app.get("/api/scan/status")
 def api_scan_status():
     cfg = load_config()
-    operation = _requested_operation(cfg, ('scan',))
+    operation = _requested_operation(cfg, ('scan',), reconcile=False)
     if operation:
         cfg = operation['context']['config']
     inst = cfg.get("active_instance", "main")
@@ -2794,6 +3639,7 @@ def _apply_patch(root: dict, path: list, value, delete: bool) -> str | None:
 
 
 @app.post("/api/profile-patch")
+@_fenced_by_page_context
 def api_profile_patch():
     """One typed field, one request: {name, path: [...], value}.
 
@@ -2877,6 +3723,7 @@ def api_profile_patch():
 
 
 @app.post("/api/loadout-patch")
+@_fenced_by_page_context
 def api_loadout_patch():
     """One whole loadout body, one request: {name, body}.
 
@@ -2948,6 +3795,7 @@ def api_loadout_patch():
 
 
 @app.post("/api/profile-copy")
+@_fenced_by_page_context
 def api_profile_copy():
     """Copy a profile file VERBATIM to profiles/<name>.yaml: the way to get
     an editable profile of your own before any scan exists. The starter's
@@ -2971,6 +3819,7 @@ def api_profile_copy():
 
 
 @app.post("/api/profile-activate")
+@_fenced_by_page_context
 def api_profile_activate():
     """Bind config.yaml to a profile - {name} to set, {name: null} to remove
     the key and go back to the legacy constants.
@@ -2980,8 +3829,7 @@ def api_profile_activate():
     so moving it under a live run means the next restart runs a different
     thing than the one the operator is watching.
     """
-    if _procs():
-        return jsonify({"ok": False, "error": "runners alive - stop them first"}), 409
+    _require_idle("runners alive - stop them first")
     body = request.get_json(force=True) or {}
     name = body.get("name")
     if _foreign_profile(name, load_config()):
@@ -3488,8 +4336,7 @@ def api_wizard_tools():
 
 @app.post("/api/wizard/tools/install")
 def api_wizard_tools_install():
-    if _procs():
-        return jsonify(error="Stop automation before preparing connection tools"), 409
+    _require_idle("Stop automation before preparing connection tools")
     body = request.get_json(force=True) or {}
     if body.get("accept_license") is not True:
         return jsonify(error="Accept the Android SDK terms before downloading"), 400
@@ -3523,8 +4370,7 @@ def api_wizard_launch():
     instance drives gets the bare emulator launch, nothing more.
     Explicit user click only; refused while a runner (or an earlier
     boot pipeline) is live."""
-    if _procs():
-        return jsonify({"ok": False, "error": "runners alive - stop them first"}), 409
+    _require_idle("runners alive - stop them first")
     body = request.get_json(force=True) or {}
     if body.get("emulator") == "BlueStacks":
         return _launch_bluestacks(str(body.get("index") or ""))
@@ -3726,8 +4572,7 @@ def api_wizard_reconnect():
     while a runner is live (a reconnect can bounce the transport). `ok` is
     whether the adb server then lists the device as `device`; `device_state`
     is what it listed."""
-    if _procs():
-        return jsonify({"ok": False, "error": "runners alive - stop them first"}), 409
+    _require_idle("runners alive - stop them first")
     body = request.get_json(force=True) or {}
     cfg = load_config()
     configured = cfg["instances"][cfg.get("active_instance", "main")]["serial"]
@@ -3784,8 +4629,7 @@ def api_wizard_adopt():
     config.yaml, another tab adopted first, a second VM came up - is a 409,
     not an overwrite. Without this a stale scan could repoint a configured
     farm at the wrong account."""
-    if _procs():
-        return jsonify({"ok": False, "error": "runners alive - stop them first"}), 409
+    _require_idle("runners alive - stop them first")
     body = request.get_json(force=True) or {}
     raw = body.get("serial")
     serial = raw.strip() if isinstance(raw, str) else ""
@@ -4079,14 +4923,21 @@ def api_template(rel):
 # frame, name it, save. It is a HUMAN-driven write - no detector ever calls
 # it (CLAUDE.md #5: detectors never overwrite their own templates), and an
 # existing file is never replaced unless the request says `overwrite`.
-_FRAME_CACHE: "dict[str, bytes]" = {}
+_FRAME_CACHE: "dict[str, tuple[dict, bytes]]" = {}      # token -> (the page it was fetched for, the PNG)
 _FRAME_CACHE_KEEP = 8
 _FRAME_CACHE_LOCK = threading.Lock()
 
 
-def _remember_frame(ts: str, raw: bytes) -> None:
+def _frame_context(cfg=None) -> dict:
+    """The page a frame belongs to: the emulator, account, profile and serial a crop cut from it would be saved under."""
+    identity = harvest_api.identity_for(load_config() if cfg is None else cfg)
+    return {key: identity.get(key) for key in ('instance', 'account', 'profile', 'serial')}
+
+
+def _remember_frame(ts: str, raw: bytes, context: dict | None = None) -> None:
+    context = _frame_context() if context is None else context
     with _FRAME_CACHE_LOCK:
-        _FRAME_CACHE[str(ts)] = raw
+        _FRAME_CACHE[str(ts)] = (context, raw)
         while len(_FRAME_CACHE) > _FRAME_CACHE_KEEP:
             _FRAME_CACHE.pop(next(iter(_FRAME_CACHE)))
 
@@ -4234,10 +5085,15 @@ def api_template_save(rel):
     except (KeyError, TypeError, ValueError):
         return jsonify({"ok": False, "error": "x, y, w, h are required"}), 400
     with _FRAME_CACHE_LOCK:
-        raw = _FRAME_CACHE.get(str(body.get("ts")))
-    if raw is None:
-        return jsonify({"ok": False, "error": "that frame is no longer cached - "
+        cached = _FRAME_CACHE.get(str(body.get("ts")))
+    if cached is None:
+        return jsonify({"ok": False, "code": "frame_expired", "error": "that frame is no longer cached - "
                         "refresh the live screen and draw the box again"}), 409
+    frame_context, raw = cached
+    if frame_context != _frame_context():
+        # the token outlives an account, emulator or profile switch: a crop of ANOTHER page's screen must never become this account's template
+        return jsonify({"ok": False, "code": "frame_context_changed", "error": "that frame was captured for another account, "
+                        "emulator or profile - refresh the live screen and draw the box again"}), 409
     frame = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_COLOR)
     if frame is None:
         return jsonify({"ok": False, "error": "cached frame did not decode"}), 500
@@ -4279,7 +5135,7 @@ def api_template_save(rel):
         os.makedirs(cdir, exist_ok=True)
         calibrate.record_manual_cut({"state": os.path.join(cdir, "calibrate_state.json"),
                                      "report": os.path.join(cdir, "calibrate_report.json")},
-                                    rel.replace("\\", "/"), crop, frame, [x, y, w, h], screen=screen)
+                                    rel.replace("\\", "/"), crop, frame, [x, y, w, h], screen=screen, template=path)
     except Exception as e:                      # noqa: BLE001 - the file is written; provenance is best effort
         app.logger.warning("cropper provenance not recorded for %s: %s", rel, e)
     return jsonify({"ok": True, "rel": rel.replace("\\", "/"), "width": w,
@@ -4350,6 +5206,7 @@ def _persist_promotion(source, cfg, command, key, dest, text, result, promotion=
 
 
 @app.post("/api/profile-promote")
+@_fenced_by_page_context
 @_serialize_config
 def api_profile_promote():
     """Turn a scan draft (profiles/<inst>.draft.yaml, `player:` only) into a
@@ -4392,8 +5249,8 @@ def api_profile_promote():
             return _promotion_response(operation, promotion)
         if promotion['status'] in ('accepted', 'running', 'cancelling', 'applying'):
             raise operation_api.Conflict('Promotion is still running; refresh its receipt before retrying')
-    if operation and _procs():
-        raise operation_api.Conflict('Wait for scanning to stop before applying results')
+    if operation:
+        _require_idle('Wait for scanning to stop before applying results')
     cfg = load_config()
     if operation:
         current = operation_api.context(ROOT, cfg, {}, _profile_path(cfg.get('active_profile')))

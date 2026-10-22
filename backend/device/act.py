@@ -28,14 +28,20 @@ def _input(*parts, deadline: float | None = None) -> None:
     from device import adbclient
     from settings import instance
     inst = instance()
-    from runtime.device_lease import input_scope
+    from runtime.device_lease import InputRevoked, input_scope
     disp = inst.get("input_display")
     cmd = "input" + (f" -d {disp}" if disp is not None else "")
     cmd += " " + " ".join(str(p) for p in parts)
-    with input_scope():
-        if deadline is not None and time.monotonic() >= deadline:
-            raise TapRefused("input deadline expired before socket dispatch")
-        adbclient.shell(inst["serial"], cmd, timeout=8)
+    try:
+        # The one input boundary every accepted worker and delegated child
+        # shares: a person's revocation is read here, immediately before the
+        # socket write, whatever permission this process was started with.
+        with input_scope():
+            if deadline is not None and time.monotonic() >= deadline:
+                raise TapRefused("input deadline expired before socket dispatch")
+            adbclient.shell(inst["serial"], cmd, timeout=8)
+    except InputRevoked as exc:
+        raise TapRefused(str(exc)) from None
 
 
 def tap(x: int, y: int, reason: str = "", instant: bool = False,

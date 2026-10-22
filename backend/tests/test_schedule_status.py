@@ -10,6 +10,7 @@ import pytest
 from control import schedule_status
 from scheduling import combo, daystate
 from towerpilot_workflows.operations import Operations
+from harvest_support import fake_inspect
 
 
 NOW = datetime.datetime(2026, 10, 19, 7, 30, tzinfo=datetime.timezone.utc)
@@ -125,7 +126,7 @@ def test_recent_decision_requires_verified_live_worker_identity(scheduler, monke
     root, store, operation, cfg = scheduler
     combo.next_block(NOW)
     assert read(root)['available']  # actual current process/create-time evidence
-    monkeypatch.setattr(schedule_status.operations, 'worker_alive', lambda worker: False)
+    monkeypatch.setattr(schedule_status.operations, 'inspect_worker', fake_inspect(lambda worker: False))
     lost = read(root)
     assert lost['availability'] == 'unavailable' and not lost['available']
     assert lost['reason'] == 'scheduler_worker_unavailable'

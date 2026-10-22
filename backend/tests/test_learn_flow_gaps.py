@@ -291,6 +291,10 @@ def _surrender(monkeypatch, screens, have=(), sc=None):
         return fc._complete_setup_battle(flow)
     monkeypatch.setattr(fc, "capture_game_stats", reached_home)
     monkeypatch.setattr(fc, "_have_templates", lambda rels: {r for r in rels if r in have})
+    # Setup battles start only under an accepted operation (its identity seals
+    # the outcome in the ledger); this is that identity, as in the lifecycle tests.
+    from runtime import operations
+    monkeypatch.setattr(operations, "environment_operation", lambda: (None, "surrender-test-op"))
     flow = fc._Flow(sc)
     flow.in_tournament = lambda f: False
     flow.on_home = lambda f: sc.now == 'home'

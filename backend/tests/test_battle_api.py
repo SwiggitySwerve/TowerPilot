@@ -9,6 +9,7 @@ import yaml
 
 from control import battles, operations
 from player.run_controls import resolve
+from harvest_support import fake_inspect
 
 
 @pytest.fixture
@@ -29,7 +30,7 @@ def dash(tmp_path, monkeypatch):
     (tmp_path / 'profiles' / 'mine.yaml').write_text(yaml.safe_dump(profile))
     monkeypatch.setattr(module, 'ROOT', str(tmp_path))
     monkeypatch.setattr(module, 'CONFIG_PATH', str(tmp_path / 'config.yaml'))
-    monkeypatch.setattr(operations, 'worker_alive', lambda worker: True)
+    monkeypatch.setattr(operations, 'inspect_worker', fake_inspect(lambda worker: True))
     return module
 
 
@@ -134,7 +135,7 @@ def test_live_patch_does_not_edit_profile_or_claim_applied(dash):
     assert client.post(url, json=wrong).status_code == 409
 
 
-def test_actions_history_and_interrupted_observation(dash):
+def test_actions_history_and_interrupted_observation(dash, monkeypatch):
     store, operation, battle = live(dash)
     client = dash.app.test_client()
     body = dict(battle_id=battle['id'], generation='driver', expected_revision=0,
@@ -145,6 +146,9 @@ def test_actions_history_and_interrupted_observation(dash):
     store.acknowledge(battle['id'], 'driver', command['id'], state='started')
     assert client.get('/api/battles/active').get_json()['battle']['commands'][0]['state'] == 'started'
     operations.ledger(dash.ROOT).transition(operation['id'], operation['revision'], 'failed')
+    assert client.get('/api/battles/active').get_json()['battle']['id'] == battle['id']   # a GET only reads
+    monkeypatch.setattr(dash, '_procs_cached', lambda: [])
+    dash._harvest_tick()                                                                   # the refresher finishes it
     assert client.get('/api/battles/active').get_json()['battle'] is None
     history = client.get('/api/battles').get_json()['battles']
     assert history[0]['status'] == 'interrupted' and history[0]['result'] == 'unknown'

@@ -9,6 +9,7 @@ import pytest
 from control import operations
 from towerpilot_workflows.operations import Conflict, Operations
 from test_setup_apply_api import apply, bound, captured, dashboard_module
+from harvest_support import fake_inspect
 
 
 @pytest.mark.parametrize('kind', ['profile_write', 'profile_promote'])
@@ -43,7 +44,7 @@ def test_cancellation_during_inline_write_keeps_host_and_fence(bound, monkeypatc
         assert active['status'] == 'running'
         assert active['worker']['pid'] == os.getpid()
         with monkeypatch.context() as patch:
-            patch.setattr(operations, 'worker_alive', lambda worker: True)
+            patch.setattr(operations, 'inspect_worker', fake_inspect(lambda worker: True))
             patch.setattr(psutil, 'Process', forbidden_process)
             request = {'operation_id': active['id'], 'expected_revision': active['revision']}
             if entrypoint == 'service':
@@ -106,7 +107,7 @@ def test_runtime_separates_inline_persistence_from_workers(bound, monkeypatch, k
     op = store.transition(op['id'], op['revision'], 'running', worker={'pid': 1234, 'creation_time': 1})
     monkeypatch.setattr(dash.build_info, 'compare', lambda *args: {'pid': 1234})
     monkeypatch.setattr(dash, '_procs_status', lambda: {'state': 'fresh'})
-    monkeypatch.setattr(operations, 'worker_alive', lambda worker: pytest.fail('Inline owner is not a worker row'))
+    monkeypatch.setattr(operations, 'inspect_worker', fake_inspect(lambda worker: pytest.fail('Inline owner is not a worker row')))
     with dash.app.test_client() as client:
         response = client.get('/api/runtime')
     assert response.status_code == 200

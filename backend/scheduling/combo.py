@@ -281,8 +281,12 @@ class _Adopted:
     """
 
     def __init__(self, proc):
+        # proc is the psutil.Process the process walk matched by command line. A bare pid
+        # reopened afterwards could be a different process by then, and terminate()/kill()
+        # below would stop THAT; the walked object re-checks pid and creation time itself.
         self._p = proc
         self.pid = proc.pid
+        self._created = proc.create_time()   # cached when the walk built the object: the process the walk matched
         self.returncode = None
 
     def poll(self):
@@ -293,10 +297,15 @@ class _Adopted:
         return self.returncode
 
     def terminate(self):
-        self._p.terminate()
+        """Stop the adopted runner through a kernel handle verified against the creation time the walk saw
+        (runtime.process_handle), never by a bare pid. Only this process, as before; refuses when it
+        cannot be shown to be the one adopted."""
+        from runtime import process_handle
+        stop = process_handle.terminate_tree(self.pid, self._created, descendants=False)
+        if stop.state == 'unverified':
+            raise PermissionError(f"pid {self.pid} could not be verified as the adopted runner: {stop.errors}")
 
-    def kill(self):
-        self._p.kill()
+    kill = terminate   # TerminateProcess is already forceful; there is no gentler signal to escalate from
 
     def wait(self, timeout=None):
         import psutil
@@ -331,7 +340,7 @@ def _find_running(phase: str, instance: str):
         # orchestrator.py - and under a profile they are bp_ names instead.
         if not _matches_phase(cl, phase):
             continue
-        return _Adopted(psutil.Process(p.info["pid"]))
+        return _Adopted(p)   # the object process_iter matched by command line, never psutil.Process(pid) reopened after it
     return None
 
 
@@ -1012,7 +1021,7 @@ def _find_running_block(b, instance: str, others: list | None = None):
             continue
         if not _block_matches(cl, b, others):
             continue
-        return _Adopted(psutil.Process(p.info["pid"]))
+        return _Adopted(p)   # the object process_iter matched by command line, never psutil.Process(pid) reopened after it
     return None
 
 
@@ -1341,6 +1350,10 @@ def run(instance: str = "main") -> None:
     about the loop moved - the runflag contract, the observable boundary hold, the
     unknown-screen hold and the adopt-before-handoff order are all as they were.
     """
+    # Before adopting a runner, a handoff or any child: refuse while recorded
+    # setup evidence leaves a setup battle unresolved on this emulator.
+    from control.battles import require_runner_entry
+    require_runner_entry(settings.ROOT, CONFIG, instance, event=logger.event)
     cur: dict | None = None                 # the block we are running
     proc: subprocess.Popen | None = None
     base = 0                                # progress at (re)spawn time

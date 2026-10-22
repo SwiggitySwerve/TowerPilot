@@ -130,6 +130,9 @@ class _Flow:
         self.cal = scanner.cal
         from runtime.operations import environment_operation
         _, operation_id = environment_operation()
+        # Setup battles are recorded under an accepted ledger operation so the
+        # sealed outcome is what every later run/collector admission reads.
+        self.ledger_operation = operation_id is not None
         self.operation_id = operation_id or uuid.uuid4().hex
         # Persisted records are evidence, never authority to adopt an old run.
         self._owned_battle_id = None
@@ -872,6 +875,12 @@ def _setup_lifecycle(function):
 def _start_setup_run(flow, reason):
     """Own only the normal run this operation taps from freshly proven clean Home."""
     flow.s.check_stop()
+    if not getattr(flow, 'ledger_operation', False):
+        # Without an accepted operation the outcome would never be sealed in
+        # the ledger, so an interrupted battle would be invisible to the setup
+        # guard. Refuse before any frame or input.
+        raise RuntimeError('No setup battle started: setup battles run only as a dashboard-accepted '
+                           'operation (Full setup), so their outcome is recorded')
     frame = flow.grab()
     ok, why = _clean_home(flow, frame)
     if not ok:

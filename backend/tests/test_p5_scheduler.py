@@ -609,12 +609,15 @@ def test_per_block_counters_do_not_collide(combo, plan):
 
 def _fake_psutil(cmdlines):
     m = types.ModuleType("psutil")
-    procs = [types.SimpleNamespace(info={"pid": 1000 + i, "cmdline": cl})
+    def process(pid):
+        return types.SimpleNamespace(pid=pid, is_running=lambda: True, terminate=lambda: None,
+                                     kill=lambda: None, wait=lambda timeout=None: 0,
+                                     create_time=lambda: 1_790_000_000.0 + pid)   # cached by the walk, as psutil does
+    # process_iter yields the Process objects the walk matched: adoption keeps THESE, it never reopens a pid
+    procs = [types.SimpleNamespace(info={"pid": 1000 + i, "cmdline": cl}, **vars(process(1000 + i)))
              for i, cl in enumerate(cmdlines)]
     m.process_iter = lambda attrs=None: procs
-    m.Process = lambda pid: types.SimpleNamespace(
-        pid=pid, is_running=lambda: True, terminate=lambda: None,
-        kill=lambda: None, wait=lambda timeout=None: 0)
+    m.Process = lambda pid: pytest.fail("adoption must not reopen the pid it matched")
     return m
 
 

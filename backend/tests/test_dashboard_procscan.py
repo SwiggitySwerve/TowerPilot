@@ -21,8 +21,9 @@ ME, ME_LAUNCHER = 5000, 4000            # the dashboard process and its own laun
 
 
 class _Proc:
-    def __init__(self, pid, cmdline, ppid=1, cwd=None, name="pythonw.exe"):
+    def __init__(self, pid, cmdline, ppid=1, cwd=None, name="pythonw.exe", created=None):
         self.pid = pid
+        self._created = 1_790_000_000.0 + pid if created is None else created
         self.info = {"pid": pid, "name": name, "cmdline": cmdline}
         self._ppid, self._cwd = ppid, cwd
 
@@ -36,6 +37,9 @@ class _Proc:
 
     def cmdline(self):
         return self.info["cmdline"]
+
+    def create_time(self):
+        return self._created
 
     def parents(self):
         return [_Proc(ME_LAUNCHER, [])]
@@ -82,7 +86,7 @@ def test_a_launcher_and_its_child_are_one_runner_row(dash, table):
     procs += [_Proc(700, [VENV] + CAL, ppid=600, cwd=dash.ROOT),
               _Proc(701, [BASE] + CAL, ppid=700, cwd=dash.ROOT)]
     rows = dash._scan_procs()
-    assert rows == [{"pid": 700, "runner": "calibrate", "cmdline": " ".join([VENV] + CAL)}]
+    assert rows == [{"pid": 700, "runner": "calibrate", "cmdline": " ".join([VENV] + CAL), "created": 1_790_000_700.0}]
     assert spawned == []                                   # no powershell/WMI child
 
 
@@ -198,3 +202,31 @@ def test_runtime_endpoint_reports_source_at_start_and_capabilities(dash, monkeyp
     body = response.get_json()
     assert body['server']['source_changed'] is True
     assert 'battle_controls' in body['capabilities']
+
+
+def test_each_row_carries_the_creation_time_of_the_process_the_walk_saw(dash, table):
+    procs, _ = table
+    procs += [_Proc(700, [VENV] + CAL, cwd=dash.ROOT, created=1_790_000_123.5)]
+    [row] = dash._scan_procs()
+    assert (row["pid"], row["created"]) == (700, 1_790_000_123.5)   # what Stop-by-pid is judged against, never the pid alone
+
+
+def test_a_row_has_no_identity_when_the_pid_no_longer_belongs_to_the_walked_process(dash, table, monkeypatch):
+    procs, _ = table
+    walked = _Proc(700, [VENV] + CAL, cwd=dash.ROOT)
+    procs.append(walked)
+    reused = _Proc(700, [BASE, "something_else.py"], cwd=dash.ROOT)            # the pid changed hands after the walk
+    psutil = sys.modules["psutil"]
+    original = psutil.Process
+    psutil.Process = lambda pid=None: reused if pid == 700 else original(pid)
+    [row] = dash._scan_procs()
+    assert row["pid"] == 700 and row["created"] is None
+
+
+def test_a_row_without_a_readable_creation_time_has_no_identity(dash, table):
+    procs, _ = table
+    unreadable = _Proc(700, [VENV] + CAL, cwd=dash.ROOT)
+    unreadable.create_time = lambda: (_ for _ in ()).throw(PermissionError("access denied"))
+    procs.append(unreadable)
+    [row] = dash._scan_procs()
+    assert row["created"] is None
