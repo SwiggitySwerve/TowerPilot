@@ -62,6 +62,8 @@ from dashboard_contract_cases_ad_gems_poll import AP, ad_gems_failed_attempt_pol
 from dashboard_contract_cases_plan_removal import PRE, plan_removal_effects_cases
 from dashboard_contract_cases_profile_target_more import PM as PTM, REFUSED_RUN_FIELDS, profile_target_more_cases
 from dashboard_contract_cases_settings_modules_more import SMM, settings_modules_more_cases
+from dashboard_contract_cases_settings_modules_more_2 import MODULES_ONLY, PAGE_CONTEXT, SM2, settings_modules_more_2_cases
+from dashboard_contract_cases_profile_target_more_2 import PM2, STEPS as PM2_STEPS, case_names as pm2_names, profile_target_more_2_cases
 from dashboard_contract_cases_profile import run_profile_cases, run_schedule_cases
 from dashboard_contract_cases_settings import run_settings_cases
 from dashboard_contract_cases_runs import run_controls_live_cases, run_controls_save_cases
@@ -83,7 +85,7 @@ FAMILIES = [run_controls_save_cases, run_controls_live_cases, run_history_cases,
             runtime_environment_cases, run_preview_cases, settings_modules_cases, loadout_restore_eligibility_cases, settings_switch_records_cases,
             run_templates_add_coded_cases, run_controls_live_reset_all_mixed_cases, run_entry_patch_parity_cases, shopping_queue_bounds_cases,
             run_kind_guard_cases, profile_patch_fenced_cases, ad_gems_failed_attempt_poll_cases, plan_removal_effects_cases, profile_target_more_cases,
-            settings_modules_more_cases]
+            settings_modules_more_cases, settings_modules_more_2_cases, profile_target_more_2_cases]
 UNNAMED_ALLOWED = 49      # cases no row names (the settling reads of one scenario); report.json lists them
 
 NOTES = dict(
@@ -1382,7 +1384,40 @@ NOTES.update(
                            'Tournament lists: tournament-cards stores the lists as sent, [] included (saved_tournament_cards_empty_lists sets every string list of the module to []); with an account bound to the selected emulator they are the account\'s (the root block, the legacy default, and the other account are untouched), with none they are the root block; '
                            'a save that changes nothing is 200 with the same revision. The two GET /api/config reads are the configuration the loadout restore requests start from; the request that follows each is replayed unrecorded by the generator to prove the read admits it.'),
 )
-FAMILY_ROWS = {SMM: 'F6-15 open recordings (r12e: more of the settings modules)', PTM: 'F6-14 open recordings (r12e: more of an inactive profile)', AP: 'F6-11 6.4 (r12d: the failed Ad gems attempt through the collector own poll)', PRE: 'F6-11 6.5 (r12d: what removing the plan changes)', KG: 'F6-11 RL12 (r12d: a run kind is fixed)', PFD: 'F6-14b (brief section 7: fenced writes to the active profile)', TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
+COVERAGE.update({
+    'F6-15 r12f (1): POST /api/loadout-patch with a modules_restore and no `modules` for the loadout "plain" (request exactly {name, expected_revision, expected_context {account null, instance, profile, serial}, body}), saved from the state settings_modules_more.read_before_saved_modules_restore records, with the GET /api/config read after': keys(
+        SM2, 'saved_modules_restore_only', 'read_after_saved_modules_restore_only'),
+    'F6-15 r12f (2): GET /api/profile-src/mine for a profile with no `blueprints` mapping (absent, null, a list, an empty mapping) and the restore edit the server refuses for it (409 restore_loadout_unused); a non-restore loadout save is refused with the profile problems (400), nothing written': keys(
+        SM2, 'profile_src_without_blueprints', 'restore_refused_for_a_profile_without_blueprints', 'loadout_save_refused_for_a_profile_without_blueprints', 'read_config_after_the_refusals_nothing_changed',
+        'profile_src_with_blueprints_null', 'restore_refused_for_a_profile_with_blueprints_null', 'profile_src_with_blueprints_a_list', 'restore_refused_for_a_profile_with_blueprints_a_list',
+        'profile_src_with_an_empty_blueprints_mapping', 'restore_refused_for_a_profile_with_an_empty_blueprints_mapping'),
+    'F6-15 r12f (3): GET /api/settings where a tournament-cards list holds [false, 7, "keep"] (hand-edited YAML): the read, the save that sends it back (400, entry 1 must be a non-blank string), a save of the other list (200, the malformed list stays), the save that repairs it (200) and the reads': keys(
+        SM2, 'read_with_malformed_tournament_cards', 'tournament_cards_sent_back_with_the_malformed_entries_is_refused', 'read_after_the_refused_send_back_nothing_changed',
+        'saved_tournament_cards_add_list_only_the_malformed_drop_list_stays', 'read_after_the_add_list_was_saved_the_malformed_drop_list_remains', 'saved_tournament_cards_repairing_the_malformed_drop_list',
+        'read_after_the_malformed_drop_list_was_repaired', 'saved_the_repaired_lists_again_keeps_the_revision'),
+})
+NOTES.update(
+    settings_modules_more_2=('r12f (the follow-up of F6-15): three recordings the settings and equipment pages still needed. (1) saved_modules_restore_only is POST /api/loadout-patch {name:"plain", expected_revision, expected_context {account:null, instance:"main", profile:"mine", serial:"fake:1"}, body {cards:"main_farm", cards_restore:"no_card", modules_restore:[["black_hole_digestor","assist"]]}} from the state '
+                             'settings_modules_more.read_before_saved_modules_restore records (the cards restore is saved; the guard test compares the revision of that read with the request). The body has NO `modules`: the route judges and stores the whole body it is given (nothing is merged with the stored loadout), so the answer holds exactly those three keys, plus a warning that the loadout hand-equips modules without a modules preset; the other loadouts are untouched. '
+                             '(2) A profile with no `blueprints` mapping (the key absent, null, a list or {}): GET /api/profile-src/mine is 200 {ok:true, name, profile, problems, warnings, revision, validator_error}, `profile` as the file has it and problems naming the missing, wrong or empty section (and the plan blueprints that no longer exist). playerprofile.loadouts_in_use finds no loadout, so a body that sets or changes a restore key is refused before the validator runs: 409 {ok:false, code:"restore_loadout_unused", loadout, restore_keys, active_profile, error}; '
+                             'any other loadout save is judged by the profile validator and refused 400 {ok:false, error: the first problem, problems} (uncoded). Nothing is written (the configuration read afterwards has the same revision). (3) A tournament list holding [false, 7, "keep"] from hand-edited YAML is shown by GET /api/settings as stored (raw); saving it back is 400 "Cards to drop: entry 1 must be a non-blank string" (uncoded, nothing written); '
+                             'a save that names only the other list is 200 and the malformed list stays as stored (only the fields a request names are validated); a save that names the list with valid entries repairs it. The same lists saved again are 200 with the same revision.'),
+)
+COVERAGE.update({
+    f"F6-14 r12f ({number}): {'delete' if delete else 'save ' + repr(value)} {'.'.join(path)} of the INACTIVE profile `second` (expected_revision from the profile-src read before it, expected_context the page's), with the profile-src read before and after": keys(PM2, *pm2_names(stem, delete))
+    for number, (stem, path, value, delete) in enumerate(PM2_STEPS, 1)})
+COVERAGE.update({
+    'F6-14 r12f: the same delete of the rescue policy again, once the run has none (200, the same revision: the file is not rewritten)': keys(
+        PM2, 'read_before_the_farm_rescue_policy_is_deleted_again', 'inactive_farm_rescue_policy_deleted_again_when_the_run_has_none'),
+})
+NOTES.update(
+    profile_target_more_2=('r12f (the follow-up of F6-14): seven more run-entry edits of the INACTIVE profile `second` (the world of profile_target: alpha on main, `mine` in force), each POST /api/profile-patch {name:"second", path, value | op:"delete", expected_revision, expected_context {instance:"main", account:"alpha", profile:"mine", serial:"fake:1"}} with the revision of the GET /api/profile-src/second recorded just before it and one more GET just after. '
+                           'In the order requested, in one world, each from the state the one before left: delete blueprints.farm.label; delete blueprints.farm.policies.gather; delete blueprints.farm.policies.rescue; delete blueprints.dissonance.dissonant_tab; save 2 at blueprints.quest_sm.rides; save 2 at blueprints.quest_ilm.cycles; delete blueprints.quest_sm.rides. '
+                           'The world adds to the profile every copy starts from the dissonance coin run, the grant quest quest_sm (rides 1), the cycle quest quest_ilm (cycles 40) and a rescue policy on the coin run farm (the populated profile gives it none), so each edit changes something. All seven are 200 {ok, backup, profile, warnings, revision}: the answer\'s profile and revision are the next read\'s, the validator has no problem before or after, '
+                           'and the profile read afterwards is the one before with exactly that path changed. Deleting the gathering policy leaves `policies` as a mapping without it; deleting dissonant_tab leaves a plain coin run (its kind is not touched, so the kind guard does not apply). No refusal occurs for these seven in this world; the refusals of the same fields are in run_entry_patch and run_entry_patch_parity. '
+                           'A last request repeats the delete of the rescue policy once it is gone: 200 with the SAME revision (an absent key is popped, the file keeps its bytes). The active profile `mine` and config.yaml are byte-identical after the whole sequence (asserted).'),
+)
+FAMILY_ROWS = {PM2: 'F6-14 follow-up recordings (r12f: seven more run-entry edits of an inactive profile)', SM2: 'F6-15 follow-up recordings (r12f: a modules restore alone, a profile with no blueprints, a malformed tournament list)', SMM: 'F6-15 open recordings (r12e: more of the settings modules)', PTM: 'F6-14 open recordings (r12e: more of an inactive profile)', AP: 'F6-11 6.4 (r12d: the failed Ad gems attempt through the collector own poll)', PRE: 'F6-11 6.5 (r12d: what removing the plan changes)', KG: 'F6-11 RL12 (r12d: a run kind is fixed)', PFD: 'F6-14b (brief section 7: fenced writes to the active profile)', TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
                RESET: 'F6-11 RL2 (6.1)', TF: 'F6-11 RL4 guarded (root decision: run-templates/add gains expected_revision and expected_context)', SQ: 'F6-12 (brief section 8)', PTG: 'F6-14 (brief section 6)', ENTRY: 'F6-11 RL3 (6.2)', TEMPLATES: 'F6-11 RL4 (6.3)', DETAILS: 'F6-11 RL7 (6.4)', PLAN_DELETE: 'F6-11 RL8 (6.5)', SAVE: 'RUN-04..07', LIVE: 'RUN-08..11', HL: 'H-01', HD: 'H-01, H-02', CFG: 'G-01', PR: 'G-02', PP: 'G-03', SP: 'S-01', ST: 'G-04', LO: 'E-01', CO: 'C-01', AB: 'A-01', AC: 'P-01', PF: 'P-02', EI: 'M-01', EA: 'M-02', ET: 'M-03', RS: 'T-01', RD: 'T-02', RR: 'R-01, R-02, R-06', CW: 'R-02', RI: 'R-03', SA: 'R-04', RL: 'R-05'}
 
 
@@ -1426,7 +1461,7 @@ PUBLISHED_ORDER = ['run_controls_save_cases', 'run_controls_live_cases', 'run_hi
                    'runtime_environment_cases', 'run_preview_cases', 'settings_modules_cases', 'loadout_restore_eligibility_cases', 'settings_switch_records_cases',
                    'run_templates_add_coded_cases', 'run_controls_live_reset_all_mixed_cases', 'run_entry_patch_parity_cases', 'shopping_queue_bounds_cases',
                    'run_kind_guard_cases', 'profile_patch_fenced_cases', 'ad_gems_failed_attempt_poll_cases', 'plan_removal_effects_cases', 'profile_target_more_cases',
-                   'settings_modules_more_cases']
+                   'settings_modules_more_cases', 'settings_modules_more_2_cases', 'profile_target_more_2_cases']
 
 
 CODED_PATHS = frozenset({'/api/calibrate/start', '/api/calibrate/observe', '/api/calibrate/apply', '/api/calibrate/stop', '/api/calibrate/status',
@@ -1538,6 +1573,32 @@ def test_the_reads_of_settings_modules_more_are_the_states_the_published_saves_s
     assert more['read_before_saved_modules_restore']['body']['config_revision'] == restore['saved_modules_restore']['request']['body']['expected_revision']
     assert more['read_before_saved_modules_restore']['body']['loadouts']['plain'] == restore['saved_cards_restore']['request']['body']['body']
     assert more['read_before_the_clearing_refusal']['body']['config_revision'] == eligibility['refused_clearing_the_stored_restore_value_of_a_loadout_no_run_uses']['request']['body']['expected_revision']
+
+
+def test_the_r12f_family_is_made_by_the_real_routes_and_is_the_same_twice(dash, tmp_path, monkeypatch):
+    """The family r12f added (a modules restore alone, a profile with no blueprints, a malformed tournament list) on its own: every assertion of its generator runs, and two runs are byte-identical."""
+    first = render(build(dash, tmp_path / 'one', monkeypatch, [settings_modules_more_2_cases]))
+    assert render(build(dash, tmp_path / 'two', monkeypatch, [settings_modules_more_2_cases])) == first
+    families = json.loads(first)['cases']
+    assert {name: len(cases) for name, cases in families.items()} == {SM2: 20}
+
+
+def test_the_restore_only_save_starts_from_the_recorded_read(dash, tmp_path, monkeypatch):
+    """saved_modules_restore_only is saved "from that predecessor": its expected_revision is the revision of settings_modules_more.read_before_saved_modules_restore (compared on the generator's own
+    values, before the ids are aliased), and the request is exactly the one the page sends - the context with a null account, the body with a modules_restore and no `modules`."""
+    cases = generate(dash, tmp_path / 'guard', monkeypatch, [settings_modules_more_cases, settings_modules_more_2_cases])
+    read, save, after = cases[SMM]['read_before_saved_modules_restore'], cases[SM2]['saved_modules_restore_only'], cases[SM2]['read_after_saved_modules_restore_only']
+    assert save['request']['body'] == dict(name='plain', expected_revision=read['body']['config_revision'], expected_context=PAGE_CONTEXT, body=MODULES_ONLY)
+    assert set(save['request']['body']['body']) == {'cards', 'cards_restore', 'modules_restore'}
+    assert after['body']['loadouts']['plain'] == MODULES_ONLY and after['body']['config_revision'] == save['body']['config_revision'] != read['body']['config_revision']
+
+
+def test_the_r12f_profile_family_is_made_by_the_real_routes_and_is_the_same_twice(dash, tmp_path, monkeypatch):
+    """The second family r12f added (seven run-entry edits of an inactive profile) on its own: every assertion of its generator runs (an edit that changes more than its path, a read that is not the answer, a touched active profile fails here), and two runs are byte-identical."""
+    first = render(build(dash, tmp_path / 'one', monkeypatch, [profile_target_more_2_cases]))
+    assert render(build(dash, tmp_path / 'two', monkeypatch, [profile_target_more_2_cases])) == first
+    families = json.loads(first)['cases']
+    assert {name: len(cases) for name, cases in families.items()} == {PM2: 23}
 
 
 def test_the_families_are_generated_in_a_fixed_order():

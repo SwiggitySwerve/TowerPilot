@@ -83,17 +83,17 @@ def published_saves(w, through):
     return reply
 
 
-def refused(w, case, snap, module, values, message):
+def refused(w, case, snap, module, values, message, family=SMM):
     """One save the route refuses: 400 {ok:false, error}, config.yaml byte-identical."""
     before = config_bytes(w)
-    reply = submit(w, case, snap, module, values, expect=400, family=SMM).get_json()
+    reply = submit(w, case, snap, module, values, expect=400, family=family).get_json()
     assert reply == {'ok': False, 'error': message}, (case, reply)
     assert config_bytes(w) == before, (case, 'a refused save wrote config.yaml')
     return reply
 
 
-def read_after(w, case, reply):
-    read = snapshot(w, case, SMM)
+def read_after(w, case, reply, family=SMM):
+    read = snapshot(w, case, family)
     assert read == without_backup(reply), case
     return read
 

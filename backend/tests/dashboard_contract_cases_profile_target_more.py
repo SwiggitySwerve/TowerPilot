@@ -32,22 +32,22 @@ REFUSED_RUN_FIELDS = ('loadout_unknown_equipment', 'loadout_as_is_on_a_tournamen
                       'gem_cap_negative', 'count_on_a_coin_run_names_the_alternative', 'gathering_policy_unknown', 'field_not_legal_for_a_coin_run')
 
 
-def read(w, case, name='second'):
-    return w.get(PM, case, f'/api/profile-src/{name}').get_json()
+def read(w, case, name='second', family=PM):
+    return w.get(family, case, f'/api/profile-src/{name}').get_json()
 
 
 def revision_of(w, name='second'):
     return source(w, name).get_json()['revision']
 
 
-def send(w, case, path, *, value=None, delete=False, name='second', context=None, revision=None, expect):
+def send(w, case, path, *, value=None, delete=False, name='second', context=None, revision=None, expect, family=PM):
     """The patch the page sends for the profile it chose to edit: {name, path, value | op:'delete', expected_context, expected_revision}."""
     body = dict(name=name, path=path, expected_context=page_context(w) if context is None else context, expected_revision=revision_of(w, name) if revision is None else revision)
     if delete:
         body['op'] = 'delete'
     else:
         body['value'] = value
-    reply = w.post(PM, case, PATCH_URL, body)
+    reply = w.post(family, case, PATCH_URL, body)
     assert reply.status_code == expect, (case, reply.status_code, reply.get_json())
     return reply.get_json()
 
