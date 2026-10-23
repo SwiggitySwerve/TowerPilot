@@ -8,6 +8,7 @@ import {
   loadJsonWithIdentity,
 } from '../scripts/contract-fixture.mjs';
 import { bodiesTo, posts } from './helpers.ts';
+import { dashboardPagesCase, type DashboardCase } from '../tests/support/dashboardFixture.ts';
 
 const cases = own(loadJsonWithIdentity(DASHBOARD_PAGES_FIXTURE_PATH).fixture, 'cases');
 const body = (name: string) => ownPath(cases, 'profile_target', name, 'request', 'body');
@@ -22,11 +23,16 @@ async function route(page: Page, hash: string) {
     location.hash = hash;
   }, hash);
 }
-async function open(page: Page, width: number) {
+async function open(
+  page: Page,
+  width: number,
+  scenario = 'profile_target_abilities_uw',
+  ready = true,
+) {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.setViewportSize({ width, height: 900 });
-  await page.goto('/__fake/use?scenario=profile_target_abilities_uw');
+  await page.goto(`/__fake/use?scenario=${scenario}`);
   await route(page, '#abilities');
   await expect(page.getByRole('textbox', { name: 'Plan label', exact: true })).toBeVisible();
   await page.getByRole('textbox', { name: 'Plan label', exact: true }).fill('Mine retained draft');
@@ -38,6 +44,7 @@ async function open(page: Page, width: number) {
   await expect(picker).toContainText('Editing:second(not the active profile)');
   await route(page, '#abilities');
   await expect(page.locator('main [data-editing-target="second"]')).toBeVisible();
+  if (!ready) return errors;
   await expect(page.getByRole('textbox', { name: 'Plan label', exact: true })).toHaveValue(
     'Farm choreography',
   );
@@ -178,4 +185,228 @@ for (const width of [1360, 1054, 390]) {
     await proof(page, 'context-changed', width);
     expect(errors).toEqual([]);
   });
+}
+const pt = (name: string) => dashboardPagesCase(`profile_target.${name}`);
+const record = (value: unknown) => value as Record<string, unknown>;
+
+// Transport control holds real recorded answers; it never fabricates a loading response.
+async function targetRead(page: Page, initial = pt('same_account_inactive_target_source')) {
+  let answer: DashboardCase = initial;
+  let release = () => {};
+  let held = false;
+  let count = 0;
+  await page.route('**/api/profile-src/second', async (request) => {
+    count++;
+    if (held) await new Promise<void>((resolve) => (release = resolve));
+    await request.fulfill({ status: answer.status, json: answer.body });
+  });
+  return {
+    set: (next: DashboardCase) => (answer = next),
+    hold: () => (held = true),
+    release: () => {
+      held = false;
+      release();
+    },
+    count: () => count,
+  };
+}
+async function calmDraft(page: Page) {
+  await page.getByRole('textbox', { name: 'New plan ID', exact: true }).fill('calm');
+  await page.getByRole('button', { name: 'Create draft', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await page.getByRole('textbox', { name: 'Plan label', exact: true }).fill('Calm');
+  for (const [weapon, enabled] of Object.entries(
+    own(own(body('inactive_uw_policy_saved'), 'value'), 'baseline') as Record<string, boolean>,
+  )) {
+    await page
+      .getByRole('combobox', { name: weapon.replaceAll('_', ' '), exact: true })
+      .selectOption(String(enabled));
+  }
+}
+
+for (const width of [1360, 1054, 390]) {
+  test(`PE5 held inactive source loading then empty UW/rescue libraries, keyboard and axe at ${width}`, async ({
+    page,
+  }) => {
+    // Modified recorded case: remove only the target's two policy libraries and their
+    // run consumers to represent an empty, valid library; retain identity and revision.
+    const empty = pt('same_account_inactive_target_source');
+    const profile = record(own(empty.body, 'profile'));
+    const policies = record(own(profile, 'policies'));
+    policies['uw_policies'] = {};
+    policies['rescue_policies'] = {};
+    profile['blueprints'] = {};
+    const source = await targetRead(page, empty);
+    source.hold();
+    await open(page, width, 'profile_target_abilities_negative', false);
+    await expect.poll(source.count).toBeGreaterThan(0);
+    await expect(page.getByRole('status').filter({ hasText: 'Reading policies' })).toBeVisible();
+    await expect(save(page)).toHaveCount(0);
+    const family = page.getByRole('combobox', { name: 'Saved plans', exact: true });
+    await family.focus();
+    await expect(family).toBeFocused();
+    await proof(page, 'loading', width);
+    source.release();
+    await expect(page.getByRole('status').filter({ hasText: 'Reading policies' })).toHaveCount(0);
+    await expect(
+      page.getByText('No saved plans in this family. Enter a new plan ID to create one.', {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(family).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(family).toHaveValue('rescue_policies');
+    await expect(
+      page.getByText('No saved plans in this family. Enter a new plan ID to create one.', {
+        exact: true,
+      }),
+    ).toBeVisible();
+    expect(await posts(page)).toEqual([]);
+    await proof(page, 'empty', width);
+  });
+
+  for (const family of ['uw', 'rescue'] as const) {
+    test(`PE5 ${family} in-use delete refusal keeps draft, associates server text and restores keyboard focus at ${width}`, async ({
+      page,
+    }) => {
+      // Modified recorded case: remove locally observed consumers. The server's
+      // unchanged recorded in-use refusal models a consumer added after this read.
+      // Exact inactive deletes are absent: active delete path/op + inactive fence.
+      const before = pt('same_account_inactive_target_source');
+      record(own(before.body, 'profile'))['blueprints'] = {};
+      await targetRead(page, before);
+      await open(page, width, `profile_target_abilities_${family}_refused`);
+      if (family === 'rescue') {
+        await page
+          .getByRole('combobox', { name: 'Saved plans', exact: true })
+          .selectOption('rescue_policies');
+        await page.getByRole('button', { name: 'Wall drain', exact: true }).click();
+      }
+      const trigger = page.getByRole('button', { name: 'Delete unused plan', exact: true });
+      await trigger.focus();
+      await page.keyboard.press('Enter');
+      const dialog = page.getByRole('dialog');
+      await expect(dialog).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(trigger).toBeFocused();
+      expect(await posts(page)).toEqual([]);
+      await page.keyboard.press('Enter');
+      await dialog.getByRole('button', { name: 'Delete unused plan', exact: true }).focus();
+      await page.keyboard.press('Enter');
+      const refusal = dashboardPagesCase(
+        `ability_policies.${family === 'uw' ? 'uw' : 'rescue'}_policy_deleted_while_a_run_uses_it`,
+      );
+      const problem = String(own(refusal.body, 'error'));
+      const summary = page.locator('.tp-abilities__errors');
+      await expect(summary).toBeFocused();
+      const link = summary.getByRole('link', { name: problem, exact: true });
+      await expect(link).toBeVisible();
+      await expect(
+        page.getByRole('status').filter({ hasText: 'The backend refused this save.' }),
+      ).toContainText('second');
+      await link.focus();
+      await page.keyboard.press('Enter');
+      const destination = await link.getAttribute('href');
+      expect(destination).not.toBeNull();
+      if (destination === null) throw new Error('The refusal link has no target');
+      await expect(page.locator(destination)).toBeFocused();
+      const sent = await bodiesTo(page, '/api/profile-patch');
+      expect(sent).toEqual([
+        {
+          ...record(refusal.request.body),
+          name: 'second',
+          expected_revision: own(before.body, 'revision'),
+          expected_context: own(body('inactive_uw_policy_saved'), 'expected_context'),
+        },
+      ]);
+      await proof(page, `${family}-refused`, width);
+    });
+  }
+
+  test(`PE5 stale inactive revision retains whole-policy draft and keyboard focus at ${width}`, async ({
+    page,
+  }) => {
+    await open(page, width, 'profile_target_abilities_negative');
+    await calmDraft(page);
+    await save(page).focus();
+    await page.keyboard.press('Enter');
+    await expect(
+      page.getByRole('status').filter({ hasText: 'The saved revision changed' }),
+    ).toContainText('second');
+    await expect(page.getByRole('textbox', { name: 'Plan label', exact: true })).toHaveValue(
+      'Calm',
+    );
+    await expect(save(page)).toBeDisabled();
+    await read(page).focus();
+    await expect(read(page)).toBeFocused();
+    const sent = await bodiesTo(page, '/api/profile-patch');
+    expect(sent).toEqual([
+      {
+        ...record(body('inactive_uw_policy_saved')),
+        expected_revision: own(pt('same_account_inactive_target_source').body, 'revision'),
+      },
+    ]);
+    // Modified recorded case: the plan-path revision refusal is path-independent;
+    // apply its unchanged body to a whole-policy patch with the inactive envelope.
+    await expect(page.locator('main')).toContainText(
+      String(own(pt('inactive_target_stale_revision').body, 'error')),
+    );
+    await proof(page, 'stale', width);
+  });
+
+  for (const failure of ['failed', 'answer_failed', 'lost'] as const) {
+    test(`PE5 ${failure} reply stays Unknown on unchanged read and settles original target advanced read at ${width}`, async ({
+      page,
+    }) => {
+      const source = await targetRead(page, pt('inactive_target_after_write_failed'));
+      await open(page, width, `profile_target_abilities_${failure}`);
+      await calmDraft(page);
+      await save(page).focus();
+      await page.keyboard.press('Enter');
+      const unknown = page.getByRole('status').filter({ hasText: 'Save outcome unknown.' });
+      await expect(unknown).toContainText('second');
+      const count = source.count();
+      await read(page).focus();
+      await page.keyboard.press('Enter');
+      await expect.poll(source.count).toBeGreaterThan(count);
+      await expect(read(page)).toBeEnabled();
+      await expect(unknown).toBeVisible();
+      await expect(save(page)).toBeDisabled();
+      await test.info().attach('unknown-readback-focus', {
+        body: JSON.stringify(
+          await page.evaluate(() => ({
+            tag: document.activeElement?.tagName,
+            id: document.activeElement?.id,
+            text: document.activeElement?.textContent.slice(0, 160),
+          })),
+        ),
+        contentType: 'application/json',
+      });
+      await page.screenshot({
+        path: path.join(OUT, `profile-target-abilities-unknown-${failure}-${width}.png`),
+        fullPage: true,
+      });
+      await expect(read(page)).toBeFocused();
+      await proof(page, `unknown-${failure}`, width);
+      // Modified recorded case: failure recordings patch plan. Keep the recorded
+      // original/advanced read identity+revision, adding only the exact recorded
+      // calm policy, so this browser can prove whole-policy readback settlement.
+      const advanced = pt('inactive_target_after_written_then_answer_failed');
+      record(ownPath(advanced.body, 'profile', 'policies', 'uw_policies'))['calm'] = own(
+        body('inactive_uw_policy_saved'),
+        'value',
+      );
+      source.set(advanced);
+      await page.keyboard.press('Enter');
+      await expect(
+        page.getByRole('status').filter({ hasText: 'A later read holds the submitted value.' }),
+      ).toContainText('second');
+      await expect(read(page)).toBeFocused();
+      await expect(page.getByRole('textbox', { name: 'Plan label', exact: true })).toHaveValue(
+        'Calm',
+      );
+      expect(await posts(page)).toHaveLength(1);
+      await proof(page, `settled-${failure}`, width);
+    });
+  }
 }

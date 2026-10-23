@@ -230,6 +230,14 @@ export function selectCollectionTargetName(state: DashboardState) {
   return editingTargetVM(selectEditingTarget(state)).name;
 }
 
+/** The same save fence governs Collection's offered actions and its final send check. */
+export function collectionSavePending(state: DashboardState): boolean {
+  return settingsSavePending(
+    state,
+    selectEditingTarget(state).inactive ? ['targetSource'] : ['settings', 'profileSource'],
+  );
+}
+
 export function selectCollectionPage(
   state: DashboardState,
   selected: string | null,
@@ -245,10 +253,7 @@ export function selectCollectionPage(
   // Target-source reads never substitute the active profile's values while loading.
   const source: CollectionSource | null =
     read !== null && context !== null && read.profile === target.name ? read : null;
-  const pending = settingsSavePending(
-    state,
-    target.inactive ? ['targetSource'] : ['settings', 'profileSource'],
-  );
+  const pending = collectionSavePending(state);
   const sourceState = readState(state.reads[target.inactive ? 'targetSource' : 'profileSource']);
   const sourceRead = source !== null ? 'ready' : sourceState === 'ready' ? 'not_read' : sourceState;
   const settingsRead: ReadState =

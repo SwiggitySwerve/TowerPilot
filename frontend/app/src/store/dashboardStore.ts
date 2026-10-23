@@ -272,6 +272,9 @@ export function reduceDashboard(state: DashboardState, action: DashboardAction):
       return Object.freeze({
         ...state,
         editTargetGeneration: generation,
+        // A new selection must read its own source, even when it names the same file.
+        // Later arrivals stay available to the original journal; editorSource fences display.
+        reads: Object.freeze({ ...state.reads, targetSource: EMPTY_SLOT }),
         editTargets: Object.freeze(
           action.type === 'edit_target_pick'
             ? { ...remaining, [key]: { name: action.name, generation } }

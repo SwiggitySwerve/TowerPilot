@@ -9,6 +9,7 @@ import { selectRunsAdd } from '../store/selectors/runsAdd.ts';
 import { sendRunAdd } from '../api/intents/runAdd.ts';
 import { sendRunEntryPatch } from '../api/intents/runEntry.ts';
 import { selectEditingTarget } from '../store/selectors/editingTarget.ts';
+import { collectionSavePending } from '../store/selectors/collection.ts';
 import {
   contextKey,
   createContextTracker,
@@ -61,6 +62,7 @@ import {
   profileFilesView,
   profileSourceView,
   profileWriteKind,
+  unbindUnresolved,
   type ProfileSourceView,
 } from '../core/profiles.ts';
 import { sendProfileWrite } from '../api/intents/profiles.ts';
@@ -470,6 +472,21 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       .some((record) => CONNECTION_WRITES.includes(record.kind) && record.phase === 'sending');
   /** Emulators with a Profiles click whose click-time checks are still running. */
   const profileChecks = new Set<string>();
+  const unbindBlocked = (command: ProfileWriteCommand): boolean => {
+    if (command.action.kind !== 'profile_activate' || command.action.name !== null) return false;
+    const state = store.getSnapshot();
+    return machine
+      .snapshot()
+      .some(
+        (record) =>
+          record.context?.instance === command.context.instance &&
+          record.context.serial === command.context.serial &&
+          unbindUnresolved(
+            record,
+            state.readSettlements[record.id]?.settlement ?? record.readSettlement,
+          ),
+      );
+  };
   /**
    * The click-time checks of one Profiles write, then its one send. Defined below the
    * source check it uses; called only from `commands.profileWrite`.
@@ -511,6 +528,10 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
         notice('command_not_sent', 'profile_not_valid');
         return;
       }
+    }
+    if (unbindBlocked(command)) {
+      notice('command_not_sent', 'unbind_unresolved');
+      return;
     }
     const result = sendProfileWrite(machine, command.action, command.context, command.draft);
     if (result.kind === 'in_flight') notice('command_not_sent', 'profile_write_in_flight');
@@ -1274,6 +1295,9 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       const profile = command.profileName ?? command.context.profile;
       const inactive = profile !== command.context.profile;
       const collectionTarget = command.targetGeneration !== undefined;
+      const savePending = () =>
+        collectionWriteInFlight(command.context) ||
+        (collectionTarget && collectionSavePending(store.getSnapshot()));
       const targetStillCurrent = () => {
         const target = selectEditingTarget(store.getSnapshot());
         return (
@@ -1285,7 +1309,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
         notice('command_not_sent', 'target_changed');
         return;
       }
-      if (profile === null || collectionWriteInFlight(command.context)) {
+      if (profile === null || savePending()) {
         notice(
           'command_not_sent',
           profile === null ? 'context_unconfirmed' : 'collection_write_in_flight',
@@ -1335,7 +1359,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
           notice('command_not_sent', 'context_changed');
           return;
         }
-        if (collectionWriteInFlight(command.context)) {
+        if (savePending()) {
           notice('command_not_sent', 'collection_write_in_flight');
           return;
         }
@@ -1376,6 +1400,10 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       await checkProfileSource(name);
     },
     profileWrite: async (command) => {
+      if (unbindBlocked(command)) {
+        notice('command_not_sent', 'unbind_unresolved');
+        return;
+      }
       if (!fenced(command)) return;
       // One Profiles write in flight per emulator: the routes act on the server's binding.
       // A click whose click-time checks are still running counts as one in flight too.

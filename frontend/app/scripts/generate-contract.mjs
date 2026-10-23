@@ -616,6 +616,40 @@ export const CONTRACT_INPUTS = [
       })),
     },
   },
+  {
+    file: DASHBOARD_PAGES_FIXTURE_PATH,
+    descriptor: {
+      // F6-15 configuration fields on their owning pages (brief ui-pages/f6-15-config-fields-brief.md):
+      // the typed settings modules, the active-instance switch records and the loadout restore values.
+      name: 'dashboard_contract_pages_v1_config_fields',
+      boundTo: 'families',
+      families: /** @type {const} */ ([
+        ['settings_modules', 'GET', '/api/settings', 'ConfigFieldsSettingsReadAnswer'],
+        ['settings_modules', 'POST', '/api/settings', 'ConfigFieldsSettingsSaveAnswer'],
+        ['settings_modules', 'GET', '/api/config', 'ConfigFieldsConfigAnswer'],
+        ['settings_switch_records', 'GET', '/api/settings', 'SwitchSettingsReadAnswer'],
+        ['settings_switch_records', 'POST', '/api/settings', 'SwitchSettingsSaveAnswer'],
+        ['settings_switch_records', 'GET', '/api/config', 'SwitchConfigAnswer'],
+        ['loadout_restore', 'POST', '/api/loadout-patch', 'RestorePatchAnswer'],
+        ['loadout_restore', 'GET', '/api/config', 'RestoreConfigAnswer'],
+        [
+          'loadout_restore_eligibility',
+          'POST',
+          '/api/loadout-patch',
+          'RestoreEligibilityPatchAnswer',
+        ],
+        ['loadout_restore_eligibility', 'GET', '/api/config', 'RestoreEligibilityConfigAnswer'],
+      ]).map(([family, method, route, name]) => ({
+        key: `${family} ${method} ${route}`,
+        source: `cases.${family}`,
+        method,
+        pathPrefix: route,
+        name,
+        rawPath: 'answer',
+        pick: ['status', 'body'],
+      })),
+    },
+  },
 ];
 
 /** The fixture families a descriptor reads (`cases.<family>` names the family `<family>`). */

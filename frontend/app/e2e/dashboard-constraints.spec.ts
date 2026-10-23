@@ -167,6 +167,10 @@ test('S-091 X3: a warm page whose status read starts failing keeps Pause, Turn i
   page,
 }) => {
   await openScenario(page, 'e0_collecting');
+  // The premise is a warm page: the status read naming the collector (its Stop target) has
+  // arrived before reads start failing. openScenario waits for the first read only, which under
+  // load may be another resource's (this test failed intermittently in full runs).
+  await expect(slot(page, 'automation').getByRole('button', { name: /^Stop/u })).toHaveCount(1);
   await page.request.get('/__fake/set?scenario=cold_502');
   await expect(slot(page, 'gem').locator('.tp-chip').first()).toHaveAttribute(
     'data-state',

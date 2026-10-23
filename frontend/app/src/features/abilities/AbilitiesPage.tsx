@@ -76,6 +76,7 @@ export function AbilitiesPage({ abilities: store }: { readonly abilities: Abilit
   const secondWind = armMode === 'second_wind';
   const stale = target !== null && (target.readAt === null || now - target.readAt > 30_000);
   const readOnly = abilityReadOnly(s);
+  const readUnavailable = target?.busy === true || s.context === null;
   const consumers = e === null || target === null ? [] : abilityConsumers(target, e);
   const name = abilityName(e?.id),
     globalKey = abilityKey('global', 'demon_mode_always');
@@ -101,20 +102,35 @@ export function AbilitiesPage({ abilities: store }: { readonly abilities: Abilit
           })}
         </div>
         <p>{t.scope.short}</p>
+        {/* F6-14-C-05: unavailable while a read runs, but never natively disabled: a person who
+            pressed it keeps keyboard focus on it (a disabled button drops focus to the page). */}
         <button
           className="tp-button"
           type="button"
           onClick={() => {
-            void store.refresh();
+            if (!readUnavailable) void store.refresh();
           }}
-          disabled={target?.busy === true || s.context === null}
+          aria-disabled={readUnavailable || undefined}
+          aria-describedby={
+            target?.busy === true
+              ? 'abilities-read-reason'
+              : s.context === null
+                ? 'abilities-no-target'
+                : undefined
+          }
         >
           {t.read.short}
         </button>
-        {target?.busy === true ? <p role="status">{t.reading.short}</p> : null}
+        {target?.busy === true ? (
+          <p id="abilities-read-reason" role="status">
+            {t.reading.short}
+          </p>
+        ) : null}
         {target?.error === true ? <p role="alert">{t.readError.short}</p> : null}
         {stale ? <p role="status">{t.stale.short}</p> : null}
-        {s.editing.name === null ? <p>{t.noTarget.short}</p> : null}
+        {s.editing.name === null || s.context === null ? (
+          <p id="abilities-no-target">{t.noTarget.short}</p>
+        ) : null}
         {readOnly ? <p role="status">{t.readOnly.short}</p> : null}
         <section
           className="tp-abilities__card"

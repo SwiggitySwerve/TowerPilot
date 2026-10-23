@@ -264,10 +264,18 @@ export function backoffMs(backoff: Backoff, failures: number): number | null {
 export const GET_TIMEOUT_MS = 5000;
 export const CLOCK_MS = 1000;
 
+/** The editing selection carried only by targetSource reads. */
+export interface TargetSourceSelection {
+  readonly name: string;
+  readonly generation: number;
+}
+
 /** How a resource should be read now: its path (null: nothing to read) and its mode. */
 export interface ReadPlan {
   readonly path: ApiPath | null;
   readonly mode: 'active' | 'idle' | 'off';
+  /** Only targetSource: the editing selection asking for this read. */
+  readonly targetSelection?: TargetSourceSelection;
 }
 
 export interface Visibility {
@@ -292,6 +300,8 @@ export function documentVisibility(): Visibility {
 export interface ReadArrival {
   readonly resource: PolledResource;
   readonly path: ApiPath;
+  /** Only targetSource: captured at start, never inferred from the selection at arrival. */
+  readonly targetSelection?: TargetSourceSelection;
   /** The epoch the read was started (and answered) in. */
   readonly epoch: number;
   readonly startedSeq: number;
@@ -362,6 +372,7 @@ interface Flight {
   readonly startedSeq: number;
   readonly startedAtMs: number;
   readonly path: ApiPath;
+  readonly targetSelection?: TargetSourceSelection;
   timedOut: boolean;
   timeout: TimerHandle | null;
 }
@@ -458,6 +469,9 @@ export function createPoller(options: PollerOptions): Poller {
         delivered = {
           resource,
           path: flight.path,
+          ...(flight.targetSelection === undefined
+            ? {}
+            : { targetSelection: flight.targetSelection }),
           epoch: flight.epoch,
           startedSeq: flight.startedSeq,
           arrivedSeq,
@@ -509,6 +523,9 @@ export function createPoller(options: PollerOptions): Poller {
       startedSeq: options.sequence.next(),
       startedAtMs: timers.now(),
       path: plan.path,
+      ...(resource === 'targetSource' && plan.targetSelection !== undefined
+        ? { targetSelection: { ...plan.targetSelection } }
+        : {}),
       timedOut: false,
       timeout: null,
     };

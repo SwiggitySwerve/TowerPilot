@@ -16,6 +16,7 @@ import {
   profileWriteKind,
   settlementScope,
   settleProfileWrite,
+  unbindUnresolved,
   type ProfileWriteKind,
 } from '../core/profiles.ts';
 import { settleCommand, settleRunNow } from '../core/routines.ts';
@@ -227,7 +228,12 @@ export function candidateSettlement(
       // Profiles (P1 to P5): a later read under the write's settlement scope (F6P-03).
       // F6P-R2-01: accounts may report a fallback tier; only the original profile's
       // readable source can confirm an explicitly saved player.max_tier.
-      if (!unresolved(record) || !sameSettlementScope(state, record, record.kind)) return null;
+      const unbind = record.kind === 'profile_activate' && record.meta.unbind === true;
+      if (
+        (unbind ? record.phase === 'sending' || !unbindUnresolved(record) : !unresolved(record)) ||
+        !sameSettlementScope(state, record, record.kind)
+      )
+        return null;
       const resource =
         record.kind === 'profile_activate' && record.meta.unbind === true
           ? 'config'
@@ -239,7 +245,7 @@ export function candidateSettlement(
       const read = state.reads[resource].latest;
       if (
         read === null ||
-        read.startedSeq <= after ||
+        read.startedSeq <= (unbind ? Math.max(after, record.lostSeq ?? 0) : after) ||
         read.outcome.kind !== 'answered' ||
         read.outcome.status !== 200
       )

@@ -33,10 +33,12 @@ for (const width of [1360, 1054]) {
       .locator('[data-region="thisBattle"]')
       .getByRole('button', { name: /^Run now/u });
     await expect(runNow).toHaveCount(3);
+    // The settled page: a read still arriving under full-suite load can add a transient line
+    // above for a moment (this failed once in a full run at 724 px and never in isolation).
     for (let index = 0; index < 3; index += 1) {
-      expect(await bottomOf(runNow.nth(index)), `Run now ${String(index)}`).toBeLessThanOrEqual(
-        SHORT,
-      );
+      await expect
+        .poll(() => bottomOf(runNow.nth(index)), { message: `Run now ${String(index)}` })
+        .toBeLessThanOrEqual(SHORT);
     }
     for (const [slot, name] of [
       ['automation', /^Stop/u],

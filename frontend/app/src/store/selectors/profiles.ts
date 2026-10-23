@@ -8,6 +8,7 @@ import {
   profileSourceView,
   profileWriteAnswer,
   profileWriteKind,
+  unbindUnresolved,
   setupState,
   STARTER_PROFILE,
   type ActivationCheck,
@@ -45,7 +46,8 @@ export function profilesScope(
     : `profiles:${form}:${contextScopeKey(c)}`;
 }
 
-export type ProfileOutcomeCode = 'sending' | 'done' | 'refused' | 'unknown' | 'applied';
+export type ProfileOutcomeCode =
+  'sending' | 'accepted' | 'done' | 'refused' | 'unknown' | 'applied';
 
 export interface ProfileOutcomeVM {
   readonly id: string;
@@ -215,6 +217,7 @@ export interface ProfilesPageVM {
 
 const NOT_SENT_REASONS: readonly string[] = [
   'profile_write_in_flight',
+  'unbind_unresolved',
   'context_unconfirmed',
   'context_changed',
   'profile_not_valid',
@@ -261,13 +264,15 @@ function outcomeVM(state: DashboardState, record: IntentView | undefined): Profi
       ? 'sending'
       : settled === 'applied'
         ? 'applied'
-        : answer?.kind === 'done'
-          ? 'done'
-          : answer?.kind === 'refused'
-            ? 'refused'
-            : 'unknown';
+        : answer?.kind === 'accepted'
+          ? 'accepted'
+          : answer?.kind === 'done'
+            ? 'done'
+            : answer?.kind === 'refused'
+              ? 'refused'
+              : 'unknown';
   const word: StateWord | null =
-    code === 'sending'
+    code === 'sending' || code === 'accepted'
       ? 'waiting'
       : code === 'unknown'
         ? 'unknown'
@@ -574,11 +579,14 @@ export function selectProfilesPage(state: DashboardState): ProfilesPageVM {
       ? command(state, { kind: 'profile_activate', name: activatePick }, null)
       : null;
   // F6-14 PE1: use no profile, only while one is active.
-  const unbindReason =
-    context?.profile === null || context?.profile === undefined
-      ? ('none_active' as const)
+  const unbindReason = records.some((record) =>
+    unbindUnresolved(record, settledByRead(state, record)),
+  )
+    ? 'unbind_unresolved'
+    : context?.profile === null || context?.profile === undefined
+      ? 'none_active'
       : sending
-        ? ('write_in_flight' as const)
+        ? 'write_in_flight'
         : null;
   const unbindCommand =
     unbindReason === null ? command(state, { kind: 'profile_activate', name: null }, null) : null;
@@ -739,7 +747,8 @@ export function selectProfilesPage(state: DashboardState): ProfilesPageVM {
         outcome: newestOf(state, records, ['profile_activate']),
       },
       unbind:
-        files === null
+        files === null &&
+        !records.some((record) => record.kind === 'profile_activate' && record.meta.unbind === true)
           ? null
           : {
               account: fromServer('name', unbindCommand?.context.account),

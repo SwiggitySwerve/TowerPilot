@@ -186,10 +186,13 @@ export function settingsMatchContext(view: SettingsView | null, context: Context
  * True while a save of the settings or the profile is in flight, or answered (or its
  * answer lost) but not read back yet: both revisions move with either save, so another
  * save waits for a settings read and a profile read started after the newest answer.
- * A lost settings save additionally stays fenced until positive readback or explicit
- * acceptance of the values read; acceptance retains its Unknown record and never resends. A page
- * that shows no profile patch (Emulators' preview settings) waits for the settings read
- * only: it reads no profile source (review F6M-04).
+ * An Unknown settings save or profile patch stays fenced until positive readback or
+ * explicit acceptance where its editor permits it; acceptance retains its Unknown record
+ * and never resends. Profile patches require their own named source at an advanced
+ * revision holding the sent value (settledByRead). Pages without a profile-source read
+ * (Runtime and Emulators' preview settings) wait only for settings after known answers
+ * (review F6M-04), but an Unknown profile patch still needs its editor's source readback
+ * or an explicit reconciliation permitted there.
  */
 export function settingsSavePending(
   state: DashboardState,
@@ -215,7 +218,7 @@ export function settingsSavePending(
 
 function unresolvedSettingsSave(state: DashboardState, record: IntentView): boolean {
   return (
-    record.kind === 'settings_save' &&
+    (record.kind === 'settings_save' || record.kind === 'profile_patch') &&
     record.phase === 'unconfirmed' &&
     record.accepted !== true &&
     settledByRead(state, record) === null

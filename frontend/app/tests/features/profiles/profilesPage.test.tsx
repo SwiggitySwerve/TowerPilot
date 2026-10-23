@@ -5,6 +5,7 @@ import { within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { contextScopeKey } from '../../../src/store/intents.ts';
+import { selectProfilesPage } from '../../../src/store/selectors/profiles.ts';
 import { savedScope } from '../../../src/store/selectors/runs.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import { E0_CONTEXT, postBodies } from '../../support/dataLayer.ts';
@@ -1162,8 +1163,134 @@ describe('F6-14 PE1 use no profile (landed profile_target, brief f6-14-profiles-
     await page.advance(1_000);
   }
 
-  it('PE1 offered beside Activate while a profile is active; Cancel sends nothing; a confirmed unbind sends the recorded body once', async () => {
+  it.each(['hold', 'fail', 'contradict'] as const)(
+    'PE1 C-01 a 200 unbind is accepted while config reads %s; only D9 proof completes it',
+    async (mode) => {
+      const page = await openProfiles(world);
+      await confirmUnbind(page);
+      page.fake.route('GET', '/api/config', () =>
+        mode === 'contradict' ? answerOf(target('inactive_editor_context_before_save')) : 'hold',
+      );
+      await answer(page, 'unbind_with_matching_account_context');
+      if (mode === 'fail') {
+        page.fake.next('/api/config', 'GET').lose();
+        await page.advance(0);
+      }
+      expect(unbindForm()).toHaveTextContent('Accepted, waiting for the configuration to confirm');
+      expect(unbindForm()).not.toHaveTextContent('No profile is active -');
+      expect(page.data.machine.snapshot().at(-1)?.readSettlement).toBeNull();
+      const proof = target('read_after_unbind_account_context');
+      page.fake.route('GET', '/api/config', () => answerOf(proof));
+      if (mode === 'hold') page.fake.next('/api/config', 'GET').respond(proof.status, proof.body);
+      else page.data.poller.read('config');
+      await page.advance(1_000);
+      expect(unbindForm()).toHaveTextContent('No profile is active -');
+      expect(page.data.machine.snapshot().at(-1)?.readSettlement).toBe('applied');
+      expect(writesTo(page, '/api/profile-activate')).toHaveLength(1);
+    },
+  );
+
+  it.each(['unbind_failed_before_write', 'lost', 'unbind_with_matching_account_context'])(
+    'PE1 C-02 %s blocks a second confirmation and reload until D9 proof',
+    async (receipt) => {
+      const page = await openProfiles(world);
+      const command = selectProfilesPage(page.data.store.getSnapshot()).profiles.unbind?.command
+        .command;
+      if (command == null) throw new Error('no unbind command');
+      await confirmUnbind(page);
+      if (receipt === 'lost') {
+        page.fake.next('/api/profile-activate', 'POST').lose();
+        await page.advance(1_000);
+      } else await answer(page, receipt);
+      const reason = 'The previous unbind is unresolved; waiting for the configuration to confirm';
+      expect(useNone()).toHaveAttribute('aria-disabled', 'true');
+      expect(useNone()).toHaveAccessibleDescription(reason);
+      expect(within(unbindForm()).getByText(reason)).toBeVisible();
+      await page.user.click(useNone());
+      expect(document.querySelector('dialog[open]')).toBeNull();
+      // Reuse the reviewed confirm command to exercise the send boundary independently of the UI.
+      await page.data.commands.profileWrite(command);
+      await page.advance(0);
+      expect(writesTo(page, '/api/profile-activate')).toHaveLength(1);
+      page.view.unmount();
+      page.data.stop();
+      let config = () => target('inactive_editor_context_before_save');
+      const again = await openProfiles(
+        { ...world, config: () => config() },
+        { storage: page.storage },
+      );
+      const restored = selectProfilesPage(again.data.store.getSnapshot()).profiles.unbind?.outcome;
+      expect(restored?.restored).toBe(true);
+      expect(useNone()).toHaveAccessibleDescription(reason);
+      const current = again.data.store.getSnapshot();
+      if (current.context === null) throw new Error('no current context');
+      await again.data.commands.profileWrite({
+        ...command,
+        epoch: current.epoch,
+        context: current.context,
+      });
+      await again.advance(0);
+      expect(writesTo(again, '/api/profile-activate')).toHaveLength(0);
+      config = () => target('read_after_unbind_account_context');
+      again.data.poller.read('config');
+      await again.advance(1_000);
+      expect(useNone()).toHaveAccessibleDescription('No profile is active');
+      expect(unbindForm()).not.toHaveTextContent(reason);
+      expect(unbindForm()).toHaveTextContent('No profile is active -');
+      // A subsequent recorded active context offers the action again: the old journal no longer blocks it.
+      config = () => target('inactive_editor_context_before_save');
+      again.data.poller.read('config');
+      await again.advance(1_000);
+      expect(useNone()).not.toHaveAttribute('aria-disabled', 'true');
+      expect(
+        writesTo(page, '/api/profile-activate').length +
+          writesTo(again, '/api/profile-activate').length,
+      ).toBe(1);
+    },
+  );
+
+  it.each([undefined, null, '', 7])(
+    'PE1 C-01 accepted unbind rejects a config_revision of %s',
+    async (revision) => {
+      let config = () => target('inactive_editor_context_before_save');
+      const page = await openProfiles({ ...world, config: () => config() });
+      await confirmUnbind(page);
+      // Modified recorded case: only the config revision is malformed.
+      const proof = target('read_after_unbind_account_context');
+      config = () => ({ ...proof, body: { ...(proof.body as object), config_revision: revision } });
+      await answer(page, 'unbind_with_matching_account_context');
+      expect(unbindForm()).toHaveTextContent('Accepted, waiting for the configuration to confirm');
+      expect(page.data.machine.snapshot().at(-1)?.readSettlement).toBeNull();
+      config = () => proof;
+      page.data.poller.read('config');
+      await page.advance(1_000);
+      expect(unbindForm()).toHaveTextContent('No profile is active -');
+    },
+  );
+
+  it('PE1 C-01 a config read started before the receipt cannot verify an accepted unbind', async () => {
     const page = await openProfiles(world);
+    await confirmUnbind(page);
+    page.fake.route('GET', '/api/config', () => 'hold');
+    page.data.poller.read('config');
+    await page.advance(0);
+    const early = page.fake.next('/api/config', 'GET');
+    await answer(page, 'unbind_with_matching_account_context');
+    const proof = target('read_after_unbind_account_context');
+    early.respond(proof.status, proof.body);
+    await page.advance(0);
+    expect(unbindForm()).toHaveTextContent('Accepted, waiting for the configuration to confirm');
+    expect(page.data.machine.snapshot().at(-1)?.readSettlement).toBeNull();
+    page.fake.route('GET', '/api/config', () => answerOf(proof));
+    page.fake.last('/api/config', 'GET').respond(proof.status, proof.body);
+    page.data.poller.read('config');
+    await page.advance(1_000);
+    expect(unbindForm()).toHaveTextContent('No profile is active -');
+  });
+
+  it('PE1 offered beside Activate while a profile is active; Cancel sends nothing; a confirmed unbind sends the recorded body once', async () => {
+    let config = () => target('inactive_editor_context_before_save');
+    const page = await openProfiles({ ...world, config: () => config() });
     expect(unbindForm()).toHaveTextContent('Active profile:mine');
     await page.user.click(useNone());
     expect(within(openDialog()).getByText(/legacy rules/u)).toBeVisible();
@@ -1175,6 +1302,10 @@ describe('F6-14 PE1 use no profile (landed profile_target, brief f6-14-profiles-
       target('unbind_with_matching_account_context').request.body,
     ]);
     await answer(page, 'unbind_with_matching_account_context');
+    expect(unbindForm()).toHaveTextContent('Accepted, waiting for the configuration to confirm');
+    config = () => target('read_after_unbind_account_context');
+    page.data.poller.read('config');
+    await page.advance(1_000);
     expect(unbindForm()).toHaveTextContent(
       'No profile is active - the scheduler runs its legacy rules from its next start',
     );
@@ -1238,7 +1369,9 @@ describe('F6-14 PE1 use no profile (landed profile_target, brief f6-14-profiles-
       ).toBe(applied ? 'applied' : null);
       if (applied) {
         expect(
-          within(unbindForm()).getByText('A later read shows the requested result'),
+          within(unbindForm()).getByText(
+            'No profile is active - the scheduler runs its legacy rules from its next start',
+          ),
         ).toBeVisible();
         expect(useNone()).toHaveAccessibleDescription('No profile is active');
       } else expect(within(unbindForm()).getByText(/^No confirmed reply/u)).toBeVisible();
@@ -1274,7 +1407,9 @@ describe('F6-14 PE1 use no profile (landed profile_target, brief f6-14-profiles-
       page.fake.next('/api/profile-activate', 'POST').lose();
       await page.advance(1_000);
       expect(
-        within(unbindForm()).getByText('A later read shows the requested result'),
+        within(unbindForm()).getByText(
+          'No profile is active - the scheduler runs its legacy rules from its next start',
+        ),
       ).toBeVisible();
       await page.advance(30_000);
       expect(writesTo(page, '/api/profile-activate')).toHaveLength(1);

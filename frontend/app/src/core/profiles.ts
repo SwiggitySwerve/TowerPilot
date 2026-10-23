@@ -251,6 +251,8 @@ export interface SentProfileWrite {
 }
 
 export type ProfileWriteAnswer =
+  /** An unbind receipt accepts the request; only the later configuration proves it. */
+  | { readonly kind: 'accepted' }
   /** The server's receipt for exactly this request. */
   | {
       readonly kind: 'done';
@@ -312,6 +314,7 @@ export function profileWriteAnswer(
   sent: SentProfileWrite,
 ): ProfileWriteAnswer {
   if (answer.status === 200 && receipt(kind, answer.body, sent)) {
+    if (kind === 'profile_activate' && sent.unbind === true) return { kind: 'accepted' };
     const verified = own(answer.body, 'abilities_verified');
     return {
       kind: 'done',
@@ -328,6 +331,32 @@ export function profileWriteAnswer(
       problems: stringList(own(answer.body, 'problems')) ?? [],
     };
   return { kind: 'unknown' };
+}
+
+/**
+ * One lifecycle rule for repeat-unbind prevention, including restored records.
+ * A receipt accepts an unbind, but only D9's configuration proof resolves it.
+ * Dismissal and replacement of the outcome line never remove this fence.
+ */
+export function unbindUnresolved(
+  record: {
+    readonly kind: string;
+    readonly meta: SentProfileWrite;
+    readonly phase: string;
+    readonly answer: { readonly status: number; readonly body: unknown } | null;
+    readonly readSettlement: string | null;
+  },
+  settlement: string | null = record.readSettlement,
+): boolean {
+  return (
+    record.kind === 'profile_activate' &&
+    record.meta.unbind === true &&
+    settlement === null &&
+    (record.phase === 'sending' ||
+      record.phase === 'unconfirmed' ||
+      (record.answer !== null &&
+        profileWriteAnswer('profile_activate', record.answer, record.meta).kind === 'accepted'))
+  );
 }
 
 /**

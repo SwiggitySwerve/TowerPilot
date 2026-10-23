@@ -123,6 +123,16 @@ import {
   shoppingRunSaveAnswerSchema,
 } from '../contract/shopping.ts';
 import {
+  configFieldsConfigAnswerSchema,
+  configFieldsSettingsReadAnswerSchema,
+  configFieldsSettingsSaveAnswerSchema,
+  restoreConfigAnswerSchema,
+  restoreEligibilityConfigAnswerSchema,
+  switchConfigAnswerSchema,
+  switchSettingsReadAnswerSchema,
+  switchSettingsSaveAnswerSchema,
+} from '../contract/configFields.ts';
+import {
   stopCancelAnswerSchema,
   stopConflictAnswerSchema,
   stopKillAnswerSchema,
@@ -435,6 +445,11 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
   return Object.freeze({
     status: endpoint('status', 'GET', [status]),
     config: endpoint('config', 'GET', [
+      // F6-15: the config after an active-instance switch and after a loadout restore save.
+      configFieldsConfigAnswerSchema,
+      switchConfigAnswerSchema,
+      restoreConfigAnswerSchema,
+      restoreEligibilityConfigAnswerSchema,
       profileTargetConfigAnswerSchema,
       fencedAddConfigAnswerSchema,
       contract.config,
@@ -589,8 +604,17 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       shoppingPolicyPatchAnswerSchema,
     ]),
     // Collection (C1 to C4) and every typed settings module: the read and its save.
-    settings: endpoint('settings', 'GET', [settingsReadAnswerSchema]),
-    settingsSave: endpoint('settingsSave', 'POST', [settingsPostAnswerSchema]),
+    settings: endpoint('settings', 'GET', [
+      settingsReadAnswerSchema,
+      // F6-15: reads after the typed module saves and the active-instance switches.
+      configFieldsSettingsReadAnswerSchema,
+      switchSettingsReadAnswerSchema,
+    ]),
+    settingsSave: endpoint('settingsSave', 'POST', [
+      settingsPostAnswerSchema,
+      configFieldsSettingsSaveAnswerSchema,
+      switchSettingsSaveAnswerSchema,
+    ]),
     vocab: endpoint('vocab', 'GET', [vocabReadAnswerSchema]),
     // POST /api/operations/{id}/live-controls (RUN-08): pages fixture run_controls_live; the
     // Dashboard fixture's battle_actions records the same route's accepted change.

@@ -193,9 +193,15 @@ export const profiles = {
     ),
     no_draft: entry('No scan draft to save'),
     none_active: entry('No profile is active'),
+    unbind_unresolved: entry(
+      'The previous unbind is unresolved; waiting for the configuration to confirm',
+    ),
     context_unknown: entry('The emulator is not known yet'),
   },
   notSent: {
+    unbind_unresolved: entry(
+      'Not sent - the previous unbind is unresolved; waiting for the configuration to confirm',
+    ),
     profile_write_in_flight: entry(
       'Not sent - another account or profile request is still waiting for its reply',
     ),
@@ -216,6 +222,7 @@ export const profiles = {
     answeredAgo: (seconds: number) => made(ageAgo(seconds)),
     restored: entry('kept from before the page was reloaded'),
     sending: entry('Sending'),
+    accepted: entry('Accepted, waiting for the configuration to confirm'),
     done: {
       account_select: entry('This emulator now uses the account'),
       account_create: entry('Account created and in use'),
@@ -243,7 +250,7 @@ export const profiles = {
       'The original request may still finish. Nothing is sent again. The accounts and profiles are read again; an absent result keeps this request unresolved.',
     ),
     applied: entry('A later read shows the requested result'),
-    /** F6-14 PE1: the server's receipt of an unbind. */
+    /** F6-14 PE1: D9's later configuration confirms the unbind. */
     unbound: entry(
       'No profile is active - the scheduler runs its legacy rules from its next start',
     ),

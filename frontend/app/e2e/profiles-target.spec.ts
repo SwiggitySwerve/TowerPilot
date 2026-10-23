@@ -91,9 +91,32 @@ for (const width of [1360, 1054, 390]) {
     await expect(trigger).toBeFocused();
     expect(await posts(page)).toEqual([]);
     await page.keyboard.press('Enter');
+    // Keep the genuine recorded config read in flight after the recorded receipt.
+    let verifying = false;
+    let releaseConfig: () => void = () => undefined;
+    const configGate = new Promise<void>((resolve) => {
+      releaseConfig = resolve;
+    });
+    await page.route('**/api/profile-activate', async (route) => {
+      verifying = true;
+      await route.continue();
+    });
+    await page.route('**/api/config', async (route) => {
+      if (verifying) await configGate;
+      await route.continue();
+    });
     await dialog.getByRole('button', { name: 'Use no profile' }).click();
     await expect(trigger).toBeFocused();
     await expect(trigger).toHaveAttribute('aria-disabled', 'true');
+    const unbind = page.locator('[data-form="unbind"]');
+    await expect(unbind).toContainText('Accepted, waiting for the configuration to confirm');
+    await expect(unbind).not.toContainText('No profile is active -');
+    await expect(trigger).toHaveAccessibleDescription(
+      'The previous unbind is unresolved; waiting for the configuration to confirm',
+    );
+    await proof(page, 'accepted', width);
+    releaseConfig();
+    await expect(unbind).toContainText('No profile is active -');
     await expect(page.locator('[data-form="unbind"]')).toContainText('No profile is active');
     expect(await bodiesTo(page, '/api/profile-activate')).toEqual([
       {
@@ -117,7 +140,7 @@ for (const width of [1360, 1054, 390]) {
       await page.getByRole('dialog').getByRole('button', { name: 'Use no profile' }).click();
       const lost = scenario === 'profile_target_unbind_lost';
       await expect(page.locator('[data-form="unbind"]')).toContainText(
-        lost ? 'A later read shows the requested result' : 'runners alive - stop them first',
+        lost ? 'No profile is active -' : 'runners alive - stop them first',
       );
       if (!lost)
         await expect(page.locator('[data-form="unbind"]')).toContainText('Active profile:mine');

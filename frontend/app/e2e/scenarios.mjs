@@ -1355,6 +1355,185 @@ export const SCENARIOS = Object.freeze({
       },
     },
   },
+  profile_target_abilities_negative: {
+    description:
+      'C-05 abilities negative state: recorded profile_target.inactive_target_stale_revision; browser controls held/modified reads.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'ability_policies.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: { case: 'profile_target.inactive_target_stale_revision' },
+    },
+  },
+  profile_target_abilities_uw_refused: {
+    description:
+      'C-05 abilities negative state: recorded ability_policies.uw_policy_deleted_while_a_run_uses_it; browser controls held/modified reads.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'ability_policies.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: {
+        case: 'ability_policies.uw_policy_deleted_while_a_run_uses_it',
+      },
+    },
+  },
+  profile_target_abilities_rescue_refused: {
+    description:
+      'C-05 abilities negative state: recorded ability_policies.rescue_policy_deleted_while_a_run_uses_it; browser controls held/modified reads.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'ability_policies.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: {
+        case: 'ability_policies.rescue_policy_deleted_while_a_run_uses_it',
+      },
+    },
+  },
+  profile_target_abilities_failed: {
+    description:
+      'C-05 abilities negative state: recorded profile_target.inactive_target_write_failed; browser controls held/modified reads.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'ability_policies.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: { case: 'profile_target.inactive_target_write_failed' },
+    },
+  },
+  profile_target_abilities_answer_failed: {
+    description:
+      'C-05 abilities negative state: recorded profile_target.inactive_target_written_then_answer_failed; browser controls held/modified reads.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'ability_policies.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_target_written_then_answer_failed',
+      },
+    },
+  },
+  profile_target_abilities_lost: {
+    description:
+      'C-05 abilities negative state: recorded profile_target.inactive_target_written_then_answer_failed; browser controls held/modified reads.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'ability_policies.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: {
+        mode: 'drop',
+        case: 'profile_target.inactive_target_written_then_answer_failed',
+      },
+    },
+  },
+  profile_target_runs_negative: {
+    description:
+      'C-05 runs negative state: recorded profile_target.inactive_target_stale_revision; browser controls held/modified reads.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'run_entry_patch.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: { case: 'profile_target.inactive_target_stale_revision' },
+    },
+  },
+  profile_target_runs_refused: {
+    description:
+      'C-05 runs negative state: recorded run_entry_patch.loadout_unknown_equipment; browser controls held/modified reads.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'run_entry_patch.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: { case: 'run_entry_patch.loadout_unknown_equipment' },
+    },
+  },
+  profile_target_runs_failed: {
+    description:
+      'C-05 runs negative state: recorded profile_target.inactive_target_write_failed; browser controls held/modified reads.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'run_entry_patch.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: { case: 'profile_target.inactive_target_write_failed' },
+    },
+  },
+  profile_target_runs_answer_failed: {
+    description:
+      'C-05 runs negative state: recorded profile_target.inactive_target_written_then_answer_failed; browser controls held/modified reads.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'run_entry_patch.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_target_written_then_answer_failed',
+      },
+    },
+  },
+  profile_target_runs_lost: {
+    description:
+      'C-05 runs negative state: recorded profile_target.inactive_target_written_then_answer_failed; browser controls held/modified reads.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'run_entry_patch.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: {
+        mode: 'drop',
+        case: 'profile_target.inactive_target_written_then_answer_failed',
+      },
+    },
+  },
   profile_target_runs_saved: {
     description:
       'PE6: second entry fields, sequential recorded label/loadout patches; mine stays active.',

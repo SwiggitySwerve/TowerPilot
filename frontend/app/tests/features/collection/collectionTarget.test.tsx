@@ -34,6 +34,7 @@ async function openTarget(
   source = recorded('same_account_inactive_target_source'),
   hash = '#collection',
   options: PageOptions = {},
+  pick = true,
 ) {
   window.location.hash = hash;
   const page = await renderPage({
@@ -67,6 +68,7 @@ async function openTarget(
     },
   });
   await page.advance(1_000);
+  if (!pick) return page;
   act(() => {
     page.data.commands.pickEditingTarget({
       epoch: page.data.store.getSnapshot().epoch,
@@ -344,6 +346,121 @@ it('PE4 lost inactive label stays Unknown on unchanged second; matching later ta
   );
   expect(page.fake.writes()).toHaveLength(1);
 });
+
+for (const target of ['second', 'mine'] as const) {
+  for (const reply of ['lost', '500'] as const) {
+    it(`PE4 C-04 ${target} ${reply}: unchanged and wrong-name reads keep Save blocked across reload until positive settlement`, async () => {
+      const inactive = target === 'second';
+      const source = sourceAfter('inactive_plan_saved_while_runner_listed');
+      const open = (options: PageOptions = {}) =>
+        openTarget(source, '#collection', options, inactive);
+      let page = await open();
+      const save = () => page.view.getByRole('button', { name: /Save name/u });
+      const name = () => page.view.getByRole('textbox', { name: 'Name shown' });
+      await page.user.type(name(), 'Offline');
+      const drawn = required(
+        selectCollectionPage(page.data.store.getSnapshot(), null).editor?.saveLabel.command,
+      );
+      expect(drawn.profileName).toBe(target);
+      await page.user.click(save());
+      if (reply === 'lost') page.fake.next('/api/profile-patch', 'POST').lose();
+      else {
+        // Modified recorded response: this path-independent 500 records a plan patch;
+        // here the request changes all_on's label, for either the named or active profile.
+        const failed = recorded('inactive_target_written_then_answer_failed');
+        expect(failed.status).toBe(500);
+        page.fake.next('/api/profile-patch', 'POST').respond(failed.status, failed.body);
+      }
+      await page.advance(2_000);
+      const assertBlocked = async (writes: number) => {
+        expect(
+          selectCollectionPage(page.data.store.getSnapshot(), null).editor?.saveLabel,
+        ).toMatchObject({
+          enabled: false,
+          reason: 'save_pending',
+        });
+        expect(save()).toHaveAttribute('aria-disabled', 'true');
+        expect(save()).toHaveAccessibleDescription(/Waiting until the last save is read back/u);
+        expect(
+          page.view.getAllByText('Waiting until the last save is read back').length,
+        ).toBeGreaterThan(0);
+        expect(page.view.container.querySelector('[data-outcome]')).toHaveAttribute(
+          'data-outcome',
+          'unknown',
+        );
+        expect(
+          page.view.queryByRole('button', { name: 'Continue from the saved values as read' }),
+        ).toBeNull();
+        await page.user.click(save());
+        await page.advance();
+        expect(page.fake.writes()).toHaveLength(writes);
+      };
+      // The automatic source read after the loss/500 returns the unchanged recording.
+      await assertBlocked(1);
+      // A previously drawn command must also be rejected at the send boundary.
+      await act(async () => page.data.commands.patchProfile(drawn));
+      await page.advance();
+      expect(page.fake.writes()).toHaveLength(1);
+
+      const path = `/api/profile-src/${target}`;
+      // A read of the other recorded profile never settles this named patch.
+      page.fake.route('GET', path, () =>
+        inactive
+          ? dashboardPagesCase('collection_policies.read_before_the_first_save')
+          : sourceAfter('inactive_gather_label_saved'),
+      );
+      act(() => {
+        page.data.commands.checkCollection();
+      });
+      await page.advance(1_000);
+      expect(
+        page.data.store.getSnapshot().readSettlements[
+          required(page.data.machine.snapshot().find((record) => record.kind === 'profile_patch'))
+            .id
+        ],
+      ).toBeUndefined();
+      expect(
+        selectCollectionPage(page.data.store.getSnapshot(), null).editor?.saveLabel.enabled,
+      ).not.toBe(true);
+      await act(async () => page.data.commands.patchProfile(drawn));
+      expect(page.fake.writes()).toHaveLength(1);
+
+      const storage = page.storage;
+      page.view.unmount();
+      page.data.stop();
+      page = await open({ storage });
+      expect(name()).toHaveValue('Offline');
+      await assertBlocked(0);
+      expect(
+        page.data.machine.snapshot().find((record) => record.kind === 'profile_patch')?.restored,
+      ).toBe(true);
+      // Modified recorded GET for active mine: put the persisted label/revision from the
+      // recorded second receipt into mine's recorded source envelope; no active label
+      // receipt is recorded. Inactive second uses the existing receipt projection.
+      const applied = sourceAfter('inactive_gather_label_saved');
+      page.fake.route('GET', path, () =>
+        inactive
+          ? applied
+          : {
+              ...dashboardPagesCase('collection_policies.read_before_the_first_save'),
+              body: { ...applied.body, name: 'mine' },
+            },
+      );
+      act(() => {
+        page.data.commands.checkCollection();
+      });
+      await page.advance(2_000);
+      expect(page.view.container.querySelector('[data-outcome]')).toHaveAttribute(
+        'data-outcome',
+        'applied',
+      );
+      await page.user.clear(name());
+      await page.user.type(name(), 'Next label');
+      expect(save()).not.toHaveAttribute('aria-disabled', 'true');
+      expect(page.fake.writes()).toEqual([]);
+    });
+  }
+}
 
 for (const change of ['context', 'generation', 'deleted'] as const) {
   it(`PE4 click-time ${change} change sends nothing and retains the draft`, async () => {

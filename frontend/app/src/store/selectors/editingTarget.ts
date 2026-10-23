@@ -40,11 +40,17 @@ export function selectEditingChoices(state: DashboardState) {
   }));
 }
 
-/** Editors receive a full source read, only when its body names this exact usable target. */
+/** Editors use evidence for their selection; journal settlement independently uses the raw read. */
 export function editorSource(state: DashboardState): ReadRecord | null {
   const target = selectEditingTarget(state);
   if (target.blocked !== null || target.name === null) return null;
   const read = state.reads[target.inactive ? 'targetSource' : 'profileSource'].latest;
+  if (
+    target.inactive &&
+    (read?.targetSelection?.name !== target.name ||
+      read.targetSelection.generation !== target.generation)
+  )
+    return null;
   return read?.outcome.kind === 'answered' &&
     read.outcome.status === 200 &&
     own(read.outcome.body, 'name') === target.name

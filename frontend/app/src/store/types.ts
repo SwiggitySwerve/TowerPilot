@@ -18,7 +18,11 @@ import type { LastKnownStop } from './lastKnownStops.ts';
  */
 export type ResourceId = PolledResource;
 
-/** One finished read of the current epoch. */
+/**
+ * One finished read of the current epoch. targetSource also carries its start-time
+ * editing selection: editorSource fences display, while fences.ts can settle the
+ * original named patch from a read of an earlier selection.
+ */
 export type ReadRecord = ReadArrival;
 
 export type ReadSlot = {

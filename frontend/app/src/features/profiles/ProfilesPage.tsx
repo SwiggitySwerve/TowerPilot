@@ -303,31 +303,25 @@ function UnbindProfile({
             <ServerValue kind="name" value={unbind.active} />
           )}
         </p>
-        {unbind.command.enabled && command !== null ? (
+        <span className="tp-profiles__action">
           <Button
             tier="quiet"
             label={t.unbind.submit.short}
             focusKey="profiles:unbind:submit"
+            busy={unbind.command.sending}
+            {...(unbind.command.enabled
+              ? { disabled: false }
+              : { disabled: true, reasonId: `${own}-reason` })}
             onClick={() => {
-              setAsking(command);
+              if (unbind.command.enabled && command !== null) setAsking(command);
             }}
           />
-        ) : (
-          <span className="tp-profiles__action">
-            <Button
-              tier="quiet"
-              label={t.unbind.submit.short}
-              focusKey="profiles:unbind:submit"
-              busy={unbind.command.sending}
-              disabled
-              reasonId={`${own}-reason`}
-              onClick={() => undefined}
-            />
+          {unbind.command.enabled ? null : (
             <span id={`${own}-reason`} className="tp-reason">
               {reasonOf(unbind.command.reason).short}
             </span>
-          </span>
-        )}
+          )}
+        </span>
         {t.unbind.submit.why === undefined ? null : <Why why={t.unbind.submit.why} />}
       </div>
       {unbind.outcome === null ? null : <ProfileOutcome outcome={unbind.outcome} />}

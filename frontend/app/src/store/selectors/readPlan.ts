@@ -14,16 +14,14 @@ import {
   trackedOperationWorking,
 } from './recognitionOperation.ts';
 import type { DashboardState, IntentView, ResourceId } from '../types.ts';
+import type { ReadPlan } from '../../api/poller.ts';
 
 /**
  * The read plan of spec 7.2, decided from the store and handed to the poller
  * (app/wiring.ts): each resource's path and mode, and the reads an event asks
  * for ("Also read" column). Pure: the poller does the timing.
  */
-export interface ReadPlanVM {
-  readonly path: `/api/${string}` | null;
-  readonly mode: 'active' | 'idle' | 'off';
-}
+export type ReadPlanVM = ReadPlan;
 
 function anyProcessListed(state: DashboardState): boolean {
   return (list(own(answeredBody(state, 'status'), 'processes'))?.length ?? 0) > 0;
@@ -154,7 +152,11 @@ export function selectReadPlan(state: DashboardState, resource: ResourceId): Rea
         target.inactive &&
         target.name !== null &&
         target.blocked === null
-        ? { path: `/api/profile-src/${encodeURIComponent(target.name)}`, mode: 'off' }
+        ? {
+            path: `/api/profile-src/${encodeURIComponent(target.name)}`,
+            mode: 'off',
+            targetSelection: { name: target.name, generation: target.generation },
+          }
         : { path: null, mode: 'off' };
     }
     case 'profileSource': {
@@ -414,8 +416,13 @@ export function readTriggers(
   ) {
     wanted.add('runControls');
   }
-  const targetPath = selectReadPlan(next, 'targetSource').path;
-  if (targetPath !== null && targetPath !== selectReadPlan(previous, 'targetSource').path)
+  const targetPlan = selectReadPlan(next, 'targetSource');
+  const previousTargetPlan = selectReadPlan(previous, 'targetSource');
+  if (
+    targetPlan.path !== null &&
+    (targetPlan.path !== previousTargetPlan.path ||
+      targetPlan.targetSelection?.generation !== previousTargetPlan.targetSelection?.generation)
+  )
     wanted.add('targetSource');
   return [...wanted];
 }

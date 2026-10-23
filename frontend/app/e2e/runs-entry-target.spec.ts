@@ -3,16 +3,19 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { bodiesTo, posts } from './helpers.ts';
-import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
+import { own, ownPath } from '../src/core/read.ts';
+import { dashboardPagesCase, type DashboardCase } from '../tests/support/dashboardFixture.ts';
 
 const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
-const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results/f6-screens');
+const OUT =
+  process.env['TP_F6_SCREENS_DIR'] ??
+  path.resolve('../../backend/logs/reviews/frontend-f6-screens');
 mkdirSync(OUT, { recursive: true });
 const sample = (name: string) => dashboardPagesCase(`profile_target.${name}`);
 const editor = (page: Page) => page.locator('[data-run-entry]');
 const field = (page: Page, key: string) => editor(page).locator(`[data-entry-field="${key}"]`);
 
-async function open(page: Page, scenario: string, width: number) {
+async function open(page: Page, scenario: string, width: number, ready = true) {
   await page.setViewportSize({ width, height: 900 });
   await page.goto(`/__fake/use?scenario=${scenario}`);
   await page.evaluate(() => {
@@ -30,6 +33,7 @@ async function open(page: Page, scenario: string, width: number) {
   await page.evaluate(() => {
     window.location.hash = '#runs/saved/farm';
   });
+  if (!ready) return;
   await expect(field(page, 'label').getByLabel('Run label', { exact: true })).toHaveValue(
     'Second farm',
   );
@@ -155,4 +159,163 @@ for (const width of [1360, 1054, 390]) {
     expect(await posts(page)).toEqual([]);
     await proof(page, 'context-changed', width);
   });
+}
+const record = (value: unknown) => value as Record<string, unknown>;
+async function targetRead(page: Page, initial = sample('same_account_inactive_target_source')) {
+  let answer: DashboardCase = initial;
+  let held = false;
+  const releases: (() => void)[] = [];
+  let count = 0;
+  await page.route('**/api/profile-src/second', async (request) => {
+    count++;
+    if (held) await new Promise<void>((resolve) => releases.push(resolve));
+    await request.fulfill({ status: answer.status, json: answer.body });
+  });
+  return {
+    set: (next: DashboardCase) => (answer = next),
+    hold: () => (held = true),
+    release: () => {
+      held = false;
+      for (const release of releases.splice(0)) release();
+    },
+    count: () => count,
+  };
+}
+const check = (page: Page) =>
+  editor(page).getByRole('button', { name: 'Read entry settings', exact: true });
+const labelInput = (page: Page) => field(page, 'label').getByLabel('Run label', { exact: true });
+const saveField = (page: Page, key = 'label') =>
+  field(page, key).getByRole('button', { name: 'Save field', exact: true });
+
+for (const width of [1360, 1054, 390]) {
+  test(`PE6 held inactive source loading then empty run library, keyboard and axe at ${width}`, async ({
+    page,
+  }) => {
+    // Modified recorded case: remove only second's blueprints to exercise an
+    // empty library while preserving the recorded source identity and revision.
+    const empty = sample('same_account_inactive_target_source');
+    record(own(empty.body, 'profile'))['blueprints'] = {};
+    const source = await targetRead(page, empty);
+    source.hold();
+    await open(page, 'profile_target_runs_negative', width, false);
+    await expect.poll(source.count).toBeGreaterThan(0);
+    await expect(
+      editor(page).getByText('Read this profile and its field vocabulary to edit entry settings.', {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(editor(page).locator('[data-entry-field]')).toHaveCount(0);
+    await check(page).focus();
+    await expect(check(page)).toBeFocused();
+    expect(await posts(page)).toEqual([]);
+    await proof(page, 'loading', width);
+    source.release();
+    await expect(
+      editor(page).getByRole('combobox', { name: 'Entry run', exact: true }).locator('option'),
+    ).toHaveCount(1);
+    await expect(editor(page).locator('[data-entry-field]')).toHaveCount(0);
+    await expect(check(page)).toBeFocused();
+    // Explicit farm URL remains named/unlisted; it must never fall back to mine.
+    await expect(
+      editor(page).getByRole('combobox', { name: 'Entry run', exact: true }),
+    ).toHaveValue('farm');
+    await proof(page, 'empty', width);
+    expect(await posts(page)).toEqual([]);
+  });
+
+  test(`PE6 loadout refusal associates exact server text with field outcome and keeps keyboard focus at ${width}`, async ({
+    page,
+  }) => {
+    await open(page, 'profile_target_runs_refused', width);
+    const row = field(page, 'loadout');
+    await row.getByLabel('Run equipment', { exact: true }).selectOption('plain');
+    // Modified recorded refusal: equipment existed when drawn, then vanished.
+    // Replace only ghost with plain in error/problems and remove plain from the
+    // remaining choices; preserve recorded HTTP status and error shape.
+    const refusal = dashboardPagesCase('run_entry_patch.loadout_unknown_equipment');
+    const error = String(own(refusal.body, 'error'))
+      .replace("'ghost'", "'plain'")
+      .replace('later, plain, spare', 'later, spare');
+    record(refusal.body)['error'] = error;
+    record(refusal.body)['problems'] = [error];
+    await page.route('**/api/profile-patch', async (request) => {
+      // Record the real request on the fixture server before replacing its answer.
+      await request.fetch();
+      await request.fulfill({ status: refusal.status, json: refusal.body });
+    });
+    await saveField(page, 'loadout').focus();
+    await page.keyboard.press('Enter');
+    const outcome = row.locator('[data-outcome="refused"]');
+    await expect(outcome.locator('[data-refusal]')).toHaveText(error);
+    await expect(outcome.locator('[data-server-text]').first()).toBeVisible();
+    await expect(row.getByLabel('Run equipment', { exact: true })).toHaveValue('plain');
+    await expect(saveField(page, 'loadout')).toBeFocused();
+    expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
+      {
+        ...record(sample('inactive_run_entry_loadout_saved').request.body),
+        expected_revision: own(sample('same_account_inactive_target_source').body, 'revision'),
+      },
+    ]);
+    await proof(page, 'refused', width);
+  });
+
+  test(`PE6 stale inactive revision retains label draft and keyboard focus at ${width}`, async ({
+    page,
+  }) => {
+    await open(page, 'profile_target_runs_negative', width);
+    await labelInput(page).fill('Offline farm');
+    await saveField(page).focus();
+    await page.keyboard.press('Enter');
+    const outcome = field(page, 'label').locator('[data-outcome="refused"]');
+    // Modified recorded case: plan-path stale refusal is revision-level and
+    // returned unchanged for this inactive label patch.
+    await expect(outcome.locator('[data-refusal]')).toHaveText(
+      String(own(sample('inactive_target_stale_revision').body, 'error')),
+    );
+    await expect(labelInput(page)).toHaveValue('Offline farm');
+    await expect(saveField(page)).toBeDisabled();
+    await check(page).focus();
+    await expect(check(page)).toBeFocused();
+    expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
+      {
+        ...record(sample('inactive_run_entry_label_saved').request.body),
+        expected_revision: own(sample('same_account_inactive_target_source').body, 'revision'),
+      },
+    ]);
+    await proof(page, 'stale', width);
+  });
+
+  for (const failure of ['failed', 'answer_failed', 'lost'] as const) {
+    test(`PE6 ${failure} reply stays Unknown on unchanged read and settles original target advanced read at ${width}`, async ({
+      page,
+    }) => {
+      const source = await targetRead(page, sample('inactive_target_after_write_failed'));
+      await open(page, `profile_target_runs_${failure}`, width);
+      await labelInput(page).fill('Offline farm');
+      await saveField(page).focus();
+      await page.keyboard.press('Enter');
+      const unknown = field(page, 'label').locator('[data-outcome="unknown"]');
+      await expect(unknown).toBeVisible();
+      const count = source.count();
+      await check(page).focus();
+      await page.keyboard.press('Enter');
+      await expect.poll(source.count).toBeGreaterThan(count);
+      await expect(unknown).toBeVisible();
+      await expect(saveField(page)).toBeDisabled();
+      await expect(check(page)).toBeFocused();
+      await proof(page, `unknown-${failure}`, width);
+      // Modified recorded case: failure patches plan. Change only the advanced
+      // read's farm label to the recorded inactive label-save value; retain
+      // original target identity, advanced revision and remaining source data.
+      const advanced = sample('inactive_target_after_written_then_answer_failed');
+      record(ownPath(advanced.body, 'profile', 'blueprints', 'farm'))['label'] = 'Offline farm';
+      source.set(advanced);
+      await page.keyboard.press('Enter');
+      await expect(field(page, 'label').locator('[data-outcome="applied"]')).toBeVisible();
+      await expect(labelInput(page)).toHaveValue('Offline farm');
+      await expect(check(page)).toBeFocused();
+      expect(await posts(page)).toHaveLength(1);
+      await proof(page, `settled-${failure}`, width);
+    });
+  }
 }
