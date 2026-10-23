@@ -8,6 +8,10 @@ windows, observation polls, claims, re-anchors), every random draw in its origin
 collector state after each step. The explicit tests below name the behaviours the specification lists, so
 a reader can see what the traces pin.
 """
+import hashlib
+import json
+from pathlib import Path
+
 import pytest
 
 import action_golden as golden
@@ -17,7 +21,14 @@ FAMILIES = ('ad_gems', 'floating_gems')
 
 @pytest.fixture(scope='module')
 def captured():
-    return golden.load()
+    expected = golden.load()
+    # Keep the migration proof intact. Only R14i's intentional confirmation
+    # timing differences have separate, versioned expectations.
+    delta = json.loads((Path(__file__).parent / 'fixtures' / 'action_orbit_confirmation_v1.json').read_text(encoding='utf-8'))
+    assert hashlib.sha256(golden.GOLDEN_PATH.read_bytes()).hexdigest().upper() == delta['parent_fixture_sha256']
+    for group, traces in delta['floating_gems'].items():
+        expected['floating_gems'][group].update(traces)
+    return expected
 
 
 @pytest.fixture(scope='module')

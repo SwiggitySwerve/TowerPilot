@@ -439,6 +439,7 @@ class GemOrbitTapper:
         self._gem_observation_states = set()
         self._gem_diagnostic_stages = set()
         self._input_ready_at = 0.0
+        self._confirmation_ends_at = 0.0
 
     def _balance_unreadable(self, frame, stage):
         # Keep the exact supplied pixels, once per window; never capture again
@@ -452,9 +453,12 @@ class GemOrbitTapper:
                          tap_sent=self.sent_tap)
         self._backoff('balance_unreadable')
 
+    def _pending_balance(self) -> int | None:
+        return self.balance_before if self.sent_tap else None
+
     def _is_collection_balance(self, value: int | None) -> bool:
-        return (self.balance_before is not None and self.sent_tap
-                and value == self.balance_before + 2)
+        baseline = self._pending_balance()
+        return baseline is not None and value == baseline + 2
 
     def _wait_to_retry(self) -> None:
         self.next_at = time.monotonic() + self.retry_interval
@@ -521,8 +525,16 @@ class GemOrbitTapper:
             return None
         return gem, radius
 
+    def _input_window_closed(self) -> bool:
+        return self.attempt_started is not None and time.monotonic() >= self.window_ends_at
+
     def _expire_attempt(self, balance: int | None) -> bool:
-        if self.attempt_started is None or time.monotonic() < self.window_ends_at:
+        if not self._input_window_closed():
+            return False
+        # Input still ends at window_ends_at. A recently dispatched tap keeps
+        # only its existing retry period to supply stable reward evidence.
+        # This cutoff is frozen at dispatch; unreadable pixels cannot extend it.
+        if self._pending_balance() is not None and time.monotonic() < self._confirmation_ends_at:
             return False
         with logger.context(window_id=self.window_id, attempt_id=self.attempt_id):
             logger.event("gem_orbit_claim", confirmed=False, reason="attempt_timeout",
@@ -559,9 +571,9 @@ class GemOrbitTapper:
         manual = self.manual_requested
         if not manual and not self.manual_active and not self.enabled:
             return frame
-        confirmation_only = not manual and time.monotonic() < self.next_at
+        confirmation_only = self._input_window_closed() or (not manual and time.monotonic() < self.next_at)
         if confirmation_only and not (self.attempt_started is not None
-                                      and self.balance_before is not None and self.sent_tap):
+                                      and self._pending_balance() is not None):
             return frame
         if self.attempt_started is None:
             # UNKNOWN is not absence. It authorizes neither an attempt nor
@@ -651,7 +663,7 @@ class GemOrbitTapper:
         if balance != prior_balance:
             self._backoff("balance_unstable")
             return frame
-        if confirmation_only:
+        if confirmation_only or self._input_window_closed():
             return frame
         layout_offset = capture.layout_offset
         geometry = self._gem_geometry(frame, 'fresh')
@@ -709,6 +721,8 @@ class GemOrbitTapper:
                 else:
                     self._backoff("balance_changed_without_confirmation")
                 return frame
+            if self._input_window_closed():
+                return frame
             if _in_ability_row((x, y)):
                 self._backoff("ability_row")
                 return frame
@@ -733,6 +747,8 @@ class GemOrbitTapper:
                 # while the remaining taps inside this guarded set stay paced
                 # by the shared input boundary as before.
                 self._wait_to_retry()
+                if dispatched:
+                    self._confirmation_ends_at = self._input_ready_at
             except act.TapRefused as exc:
                 logger.event("tap_refused", button="gem_orbit", error=str(exc))
                 self._backoff("tap_refused")
