@@ -641,10 +641,22 @@ class Mission:
     def __init__(self):
         self._gen = None
         self._recovery = None
+        self.ended = None       # how the newest flow ended: 'completed', 'interrupted', 'crashed' or 'aborted'
+        self.on_end = None      # the host's hook, called once as on_end(how) when a flow ends (its history row); what it raises is logged and dropped
 
     @property
     def active(self) -> bool:
         return self._gen is not None
+
+    def _end(self, how):
+        self.ended = how
+        hook = self.on_end
+        if hook is None:
+            return
+        try:
+            hook(how)
+        except Exception as exc:                # noqa: BLE001 - bookkeeping beside a live flow must never end it
+            logger.event('mission_end_hook_failed', how=how, error=str(exc)[:150], error_type=type(exc).__name__)
 
     def start(self, flow):
         if self._gen is None:
@@ -665,9 +677,10 @@ class Mission:
             if self._recovery is not None and reward_screen(frame) in {'battle', 'battle_menu'}:
                 self._recovery.revoke()
                 self._recovery = None
+            self._end('completed')
         except FlowInterrupted as exc:
             logger.event('mission_interrupted', reason=str(exc))
-            self.abort()
+            self._stop('interrupted')
         except Exception:                       # noqa: BLE001
             name = getattr(self._gen, "__name__", "?")
             self._recovery = getattr(self._gen, 'guard', None)
@@ -675,6 +688,7 @@ class Mission:
             logger.event("mission_crash", flow=name, trace=traceback.format_exc(),
                          shot=logger.shot(frame, "mission_crash"))
             self.recover(frame)
+            self._end('crashed')
 
     @property
     def recovery_owned(self):
@@ -703,12 +717,18 @@ class Mission:
             return False
 
     def abort(self):
-        if self._gen is not None:
+        self._stop('aborted')
+
+    def _stop(self, how):
+        running = self._gen is not None
+        if running:
             self._gen.close()
         self._gen = None
         if self._recovery is not None:
             self._recovery.revoke()
         self._recovery = None
+        if running:
+            self._end(how)
 
 
 SKIP_AREA = (897, 375)          # SKIP button on the reward listing (fixed)

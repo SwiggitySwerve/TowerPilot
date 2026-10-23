@@ -80,6 +80,11 @@ class FakeDaystate(types.ModuleType):
     def set_today(self, key, value):
         self.store[key] = {"date": self.today, "value": value}
 
+    def increment_today(self, key, by=1):
+        value = self.get_today(key) + by
+        self.set_today(key, value)
+        return value
+
     def mark_today(self, key):
         self.store[key] = self.today
 

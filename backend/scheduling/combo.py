@@ -716,8 +716,7 @@ def _close_block(b, base: int) -> None:
         return
     # Every other kind counts ONE unit per runner exit, which is exactly what
     # the constant era did for the tournament (`mark_done` on exit, count 1).
-    done = _block_progress(b) + 1
-    daystate.set_today(_progress_key(b), done)
+    done = daystate.increment_today(_progress_key(b))       # one locked step (a get followed by a set would lose a unit another process counted)
     if done >= count:
         _mark_block_done(b)
     else:

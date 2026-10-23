@@ -14,6 +14,8 @@ import tempfile
 import threading
 import time
 
+from runtime import file_lock
+
 
 class DeviceBusy(RuntimeError):
     pass
@@ -33,29 +35,15 @@ _gate_depth = 0
 
 
 def _lock(path):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    handle = open(path, "a+b", buffering=0)
+    """The OS lock of runtime/file_lock.py, taken once and never waited for: a busy lock is another owner (policy of the lease: never wait, never steal)."""
     try:
-        handle.seek(0)
-        if os.name == "nt":
-            import msvcrt
-            # Windows permits locking a byte beyond EOF.
-            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
-        else:
-            import fcntl
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except OSError as exc:
-        handle.close()
+        return file_lock.try_lock(path)
+    except file_lock.LockBusy as exc:
         raise DeviceBusy("Another process owns this emulator") from exc
-    return handle
 
 
 def _unlock(handle):
-    if os.name == "nt":
-        import msvcrt
-        handle.seek(0)
-        msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
-    handle.close()
+    file_lock.unlock(handle)
 
 
 class Lease:

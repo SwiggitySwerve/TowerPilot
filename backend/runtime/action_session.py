@@ -102,14 +102,14 @@ class ActionSession:
             pass
 
     def _body(self, action, instance, *, trigger, occurrence_key, scheduled_for, command_id, request_key, refs, coverage=None,
-              config_revision=None, policy_revision=None):
+              config_revision=None, policy_revision=None, parent_execution=None):
         definition = self._catalog_in_force().find(action)
         if definition is None:
             raise ValueError(f'{action} is not in the action catalog')
         if self.driver not in definition.hosts:
             raise ValueError(f'{action} is not run by a {self.driver} host')
         battle_id, generation = self._identity() if self._identity else (None, None)
-        host = dict(driver=self.driver, operation_id=self.operation_id, battle_id=battle_id, generation=generation)
+        host = dict(driver=self.driver, operation_id=self.operation_id, battle_id=battle_id, generation=generation, parent_execution=parent_execution)
         context = dict(device_key=self.context.get('device_key'), account=self.context.get('account'),
                        instance_name=self.context.get('instance'), profile=self.context.get('profile'))
         return new_record(device=self.context['device_key'], action=action, instance=instance or action, trigger=trigger,
@@ -121,13 +121,14 @@ class ActionSession:
 
     @contained('begin')
     def begin(self, action, instance=None, *, trigger='automatic', occurrence_key=None, scheduled_for=None,
-              command_id=None, request_key=None, refs=None, config_revision=None, policy_revision=None):
-        """Open an execution; returns its id, or None when it could not be recorded."""
+              command_id=None, request_key=None, refs=None, config_revision=None, policy_revision=None, parent_execution=None):
+        """Open an execution; returns its id, or None when it could not be recorded. `parent_execution` is the id of the execution
+        this one follows (a dependent action, trigger `dependency`)."""
         try:
             row = self._actions().begin(self._body(action, instance, trigger=trigger, occurrence_key=occurrence_key,
                                                    scheduled_for=scheduled_for, command_id=command_id,
                                                    request_key=request_key, refs=refs, config_revision=config_revision,
-                                                   policy_revision=policy_revision))
+                                                   policy_revision=policy_revision, parent_execution=parent_execution))
         except ActiveExecution as exc:               # the one failure with a reason of its own: a live window of this instance is open
             self._failed('open_execution', exc)
             return None
@@ -252,11 +253,12 @@ class Recorder:
         self.session._failed(reason, exc)
 
     @contained('recorder')
-    def opened(self, *, trigger='automatic', occurrence_key=None, scheduled_for=None, command_id=None, refs=None):
+    def opened(self, *, trigger='automatic', occurrence_key=None, scheduled_for=None, command_id=None, refs=None, parent_execution=None):
         if self.execution_id is not None:      # a window that never reported its end: the new one must not hide it
             self.closed(result='failed', reason='superseded', effect='unknown')
         self.execution_id = self.session.begin(self.action, self.instance, trigger=trigger, occurrence_key=occurrence_key,
-                                               scheduled_for=scheduled_for, command_id=command_id, refs=refs)
+                                               scheduled_for=scheduled_for, command_id=command_id, refs=refs,
+                                               parent_execution=parent_execution)
         return self.execution_id
 
     @contained('recorder')

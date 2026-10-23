@@ -192,40 +192,6 @@ def test_tourney_setup_skips_card_tweaks_under_global_preset(monkeypatch):
     assert order == ["apply", "verify", "battle"]   # no "tweaks"
 
 
-# ------------------------------------------------------- daystate (UTC)
-def test_utc_counter_bumps_and_scopes(tmp_path, monkeypatch):
-    from scheduling import daystate
-    monkeypatch.setattr(daystate, "STATE", str(tmp_path / "day.json"))
-    assert daystate.get_utc_today("zz") == 0
-    assert daystate.bump_utc_today("zz") == 1
-    assert daystate.bump_utc_today("zz") == 2
-    assert daystate.get_utc_today("zz") == 2
-    # a stale (different-date) record reads as the default
-    daystate.set_raw("zz", {"date": "2001-01-01", "value": 99})
-    assert daystate.get_utc_today("zz") == 0
-    assert daystate.bump_utc_today("zz") == 1
-
-
-def test_ad_gems_cap_gates(monkeypatch, tmp_path):
-    from scheduling import daystate
-    monkeypatch.setattr(daystate, "STATE", str(tmp_path / "day.json"))
-    import orchestrator
-    events = []
-    monkeypatch.setattr(orchestrator.logger, "event",
-                        lambda kind, **kw: events.append((kind, kw)))
-    for _ in range(orchestrator.AD_GEMS_DAILY_CAP - 1):
-        daystate.bump_utc_today("ad_gems_claimed_utc")
-    assert orchestrator.free_gems_due() is True
-    orchestrator.free_gems_mark_claimed()        # claim #60
-    assert daystate.get_utc_today("ad_gems_claimed_utc") == 60
-    assert orchestrator.free_gems_due() is False
-    assert any(k == "ad_gems_cap_reached" for k, _ in events)
-    # the cap log fires once, not on every poll
-    n = len([1 for k, _ in events if k == "ad_gems_cap_reached"])
-    assert orchestrator.free_gems_due() is False
-    assert len([1 for k, _ in events if k == "ad_gems_cap_reached"]) == n
-
-
 # ------------------------------------------------------ /api/loadout-patch
 @pytest.fixture(scope="module")
 def dash(tmp_path_factory):
@@ -510,6 +476,7 @@ def test_shard_run_restores_cards_at_exit(monkeypatch):
     monkeypatch.setattr(shard.runflag, "requested", lambda: None)
     monkeypatch.setattr(shard.daystate, "set_today", lambda *a: None)
     monkeypatch.setattr(shard.daystate, "get_today", lambda *a, **k: 0)
+    monkeypatch.setattr(shard.daystate, "increment_today", lambda *a, **k: 0)     # the loop counts a run with one locked step; never the real daily_state.json
     monkeypatch.setattr(shard.loadout, "spec",
                         lambda n: {"cards_restore": "main_farm"})
     monkeypatch.setattr(shard.loadout, "apply_cards",
@@ -542,6 +509,7 @@ def test_shard_stop_flag_closes_chained_run(monkeypatch):
                         lambda **k: calls.append(("close", k)))
     monkeypatch.setattr(shard.daystate, "set_today", lambda *a: None)
     monkeypatch.setattr(shard.daystate, "get_today", lambda *a, **k: 0)
+    monkeypatch.setattr(shard.daystate, "increment_today", lambda *a, **k: 0)     # the loop counts a run with one locked step; never the real daily_state.json
     monkeypatch.setattr(shard.loadout, "spec",
                         lambda n: {"cards_restore": "main_farm"})
     monkeypatch.setattr(shard.loadout, "apply_cards",

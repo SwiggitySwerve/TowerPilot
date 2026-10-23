@@ -334,9 +334,10 @@ def test_main_reobserves_after_reward_dispatch_before_uw_or_shopping(
     monkeypatch.setattr(missions, 'guild_flow', reward_flow)
     monkeypatch.setattr(store, 'store_flow', reward_flow)
     monkeypatch.setattr(missions, 'free_gems_flow', lambda **k: reward_flow())
-    monkeypatch.setattr(orch, 'store_gems_due', lambda: True)
-    monkeypatch.setattr(global_rewards, 'check_due', lambda key: True)
-    monkeypatch.setattr(global_rewards, 'checked', lambda key: None)
+    from towerpilot_workflows.action_contract import Decision
+    monkeypatch.setattr(global_rewards, 'store_decide', lambda *a, **k: Decision('due', occurrence_key='2026-09-10'))
+    monkeypatch.setattr(global_rewards, 'decide', lambda key, now=None: Decision('due'))
+    monkeypatch.setattr(global_rewards, 'settle', lambda key, now=None: None)
     monkeypatch.setattr(orch.act, 'tap', lambda *a, reason, **k: actions.append(reason) or {})
     monkeypatch.setattr(shopper, '_swipe', lambda **k: actions.append('shopping_swipe'))
     monkeypatch.setattr(shopper, 'uw_toggle', lambda *a: actions.append('uw_toggle') or True)

@@ -2,20 +2,28 @@ import datetime
 from scheduling import global_rewards as rewards
 
 
+def store_due(now):
+    return rewards.store_decide(now).kind=='due'
+
+
+def check_due(name,now):
+    return rewards.decide(name,now).kind=='due'
+
+
 def test_daily_store_clock_is_utc_stable_and_account_scoped(monkeypatch):
     state={}
     monkeypatch.setattr(rewards.daystate,'get_raw',lambda k,d=None:state.get(k,d))
     monkeypatch.setattr(rewards,'account_key',lambda:'alice')
     midnight=datetime.datetime(2026,9,10,tzinfo=datetime.timezone.utc).timestamp()
-    assert not rewards.store_due(midnight+2999)
-    assert rewards.store_due(midnight+4201)
-    first=next(s for s in range(3000,4201) if rewards.store_due(midnight+s))
-    assert rewards.store_due(midnight+first)
+    assert not store_due(midnight+2999)
+    assert store_due(midnight+4201)
+    first=next(s for s in range(3000,4201) if store_due(midnight+s))
+    assert store_due(midnight+first)
     state['alice:store']='2026-09-10'
-    assert not rewards.store_due(midnight+80000)
+    assert not store_due(midnight+80000)
     monkeypatch.setattr(rewards,'account_key',lambda:'bob')
-    assert rewards.store_due(midnight+80000)
-    assert rewards.store_due(midnight+86400+4201)
+    assert store_due(midnight+80000)
+    assert store_due(midnight+86400+4201)
 
 
 def test_reward_clocks_are_independent_and_survive_run_restart(monkeypatch):
@@ -23,11 +31,45 @@ def test_reward_clocks_are_independent_and_survive_run_restart(monkeypatch):
     monkeypatch.setattr(rewards,'account_key',lambda:'alice')
     monkeypatch.setattr(rewards.daystate,'get_raw',lambda k,d=None:state.get(k,d))
     monkeypatch.setattr(rewards.daystate,'set_raw',lambda k,v:state.update({k:v}))
-    rewards.checked('guild_progress',1000)
-    assert not rewards.check_due('guild_progress',1299)
-    assert rewards.check_due('guild_progress',1300)
-    assert rewards.check_due('event_missions',1001)
-    assert rewards.check_due('daily_missions',1001)
+    rewards.settle('guild_progress',1000)
+    assert not check_due('guild_progress',1299)
+    assert check_due('guild_progress',1300)
+    assert check_due('event_missions',1001)
+    assert check_due('daily_missions',1001)
+
+
+def refusing_state(monkeypatch, state):
+    """A daily state that reads fine and refuses every write the way a lock that stays held does."""
+    monkeypatch.setattr(rewards,'account_key',lambda:'alice')
+    monkeypatch.setattr(rewards,'_unsaved',{})
+    monkeypatch.setattr(rewards.daystate,'get_raw',lambda k,d=None:state.get(k,d))
+    def refuse(key,value):
+        raise rewards.daystate.DaystateLockTimeout('stayed locked')
+    monkeypatch.setattr(rewards.daystate,'set_raw',refuse)
+    logged=[]
+    monkeypatch.setattr('runtime.logger.event',lambda kind,**fields:logged.append(kind))
+    return logged
+
+
+def test_a_check_whose_write_the_file_refuses_is_not_repeated_on_every_pass(monkeypatch):
+    state={}
+    logged=refusing_state(monkeypatch,state)
+    rewards.settle('guild_progress',1000)                       # a refused write does not raise into the loop
+    assert state=={} and logged==['daystate_write_failed']
+    assert not check_due('guild_progress',1299) and check_due('guild_progress',1300)     # the check just made still holds in this process
+    monkeypatch.setattr(rewards.daystate,'set_raw',lambda k,v:state.update({k:v}))
+    rewards.settle('guild_progress',2000)                       # a write that works makes the file the authority again
+    assert rewards._unsaved=={} and state['alice:guild_progress:next']==2300
+
+
+def test_a_store_claim_whose_write_the_file_refuses_still_closes_the_day_in_this_process(monkeypatch):
+    state={}
+    logged=refusing_state(monkeypatch,state)
+    midnight=datetime.datetime(2026,9,10,tzinfo=datetime.timezone.utc).timestamp()
+    assert store_due(midnight+4201)
+    rewards.store_settle(midnight+4300)
+    assert logged==['daystate_write_failed'] and not store_due(midnight+80000)           # claimed once: not claimed again today
+    assert store_due(midnight+86400+4201)                                               # the next UTC day is a new day
 
 
 def test_event_claim_detection_excludes_boost_purchase(monkeypatch):

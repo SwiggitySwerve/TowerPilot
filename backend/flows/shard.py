@@ -1504,7 +1504,7 @@ def run(loops: int | None = None, do_setup: bool = True,
         # Persist today's completed-run total after EVERY loop, not at exit:
         # an abort (a human taking the screen counts) must not lose the
         # count - combo resumes the remainder from this number.
-        daystate.set_today("shard_runs", daystate.get_today("shard_runs") + 1)
+        daystate.increment_today("shard_runs")      # one locked step: a get followed by a set would lose a run another process counted in between
     # v29 (user, 2026-08-28): put the farming deck back on the cards screen
     # before leaving. The coin block's global preset only SELECTS presets at
     # battle entry - nothing else moves the cards screen off this block's

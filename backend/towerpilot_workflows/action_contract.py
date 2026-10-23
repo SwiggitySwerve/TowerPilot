@@ -12,6 +12,8 @@ the backend. Policies not yet used by a migrated caller are declared as paramete
 from __future__ import annotations
 
 import contextlib
+import datetime
+import hashlib
 import math
 import re
 import time
@@ -360,21 +362,125 @@ class Backoff:
         return Decision('due', basis=self.basis), dict(state)
 
 
-# Declared as parameters; each is implemented with its first migrated caller (items 6-7).
-@dataclass(frozen=True)
-class DailyCalendar:
-    tz: str = 'local'
-    floor: str | None = None
-    offset_sec: int = 0
-    retry_sec: int = 0
-    close_on: str = 'confirmed'
-    basis = 'calendar'
+def _finite(*values) -> bool:
+    return all(type(value) in (int, float) and math.isfinite(value) for value in values)
+
+
+def _clock_time(*values) -> bool:
+    """A reading of a clock: a finite, non-negative real number. Anything else (NaN, infinity, a negative, a bool, a string) is invalid, never zero."""
+    return _finite(*values) and all(value >= 0 for value in values)
 
 
 @dataclass(frozen=True)
 class Cooldown:
+    """Not again before `floor_sec` after the last time (item 7, A3a: the 300 s reward-badge checks and the legacy side-menu visits).
+
+    State: `next_at` (the earliest the next one may happen, in the host's own clock; 0.0 or absent = nothing owed, so it is due at once).
+    A host that schedules its next occurrence by a sampled delay, not a fixed floor (the legacy visits), passes that delay to `after` and
+    keeps drawing from its own random source in the order the old code did. Unknown, negative or non-finite numbers are never read as zero:
+    a `now` that is not a finite non-negative number, or a `next_at` that is not finite, is `blocked` ("invalid_state"): never due, which is what the old
+    comparison did with NaN and +inf. A stored `next_at` in the past, negative included, is just a time that has passed.
+    """
     floor_sec: float = 0.0
+    recent_window: float = 0.0                              # a repeat sooner than this after the last occurrence waits `recent_delay` instead
+    recent_delay: tuple[float, float] | None = None
     basis = 'cooldown'
+
+    def evaluate(self, now: float, state: Mapping, conditions: Mapping | None = None) -> tuple[Decision, dict]:
+        next_at = state.get('next_at') or 0.0
+        if not _clock_time(now) or not _finite(next_at):
+            return Decision('blocked', reason='invalid_state', basis=self.basis), dict(state)
+        if now >= next_at:
+            return Decision('due', eligible_at=next_at or None, basis=self.basis), dict(state)
+        return Decision('wait', next_due_at=next_at, basis=self.basis), dict(state)
+
+    def after(self, now: float, delay: float | None = None) -> float:
+        """The next-earliest time once it has happened at `now` (a fixed floor, or the host's sampled delay)."""
+        return now + (self.floor_sec if delay is None else delay)
+
+    @staticmethod
+    def recent(now: float, last_at: float | None, window: float) -> bool:
+        """Did it happen within `window` of now? Never, when there is no last time."""
+        return last_at is not None and now - last_at < window
+
+    def delay_range(self, now: float, last_at: float | None, usual: tuple[float, float]) -> tuple[float, float]:
+        """The range the host draws its next delay from: `recent_delay` when it happened `recent_window` ago or less, else the host's usual range.
+        The draw itself stays with the host, so the order of random draws is the old code's."""
+        return self.recent_delay if self.recent_delay is not None and self.recent(now, last_at, self.recent_window) else usual
+
+
+@dataclass(frozen=True)
+class DailyCalendar:
+    """Once per calendar day, from a floor hour, closed by a confirmed or an attempted occurrence (item 7, A3a: the daily free-gems store and the chores).
+
+    `tz='utc'`: the day is the UTC date and the occurrence opens `floor_hour` hours after UTC midnight plus a stable offset in
+    [-spread_sec, +spread_sec] derived from the host's seed and the day (it survives restarts and does not move the deadline).
+    `tz='local'`: the day is the local date and the occurrence opens when the local clock reads `floor_hour` or later (a DST gap or repeat cannot
+    grant a second occurrence or hide the day: the day key is the date).
+    State: `consumed` (the day string already closed), `retry_at` (the earliest another attempt of the same day, in the host's retry clock; absent = none).
+    Conditions: `seed` (utc offset), `retry_now` (the retry clock's now, default `now`).
+    """
+    tz: str = 'local'
+    floor_hour: int = 0
+    spread_sec: int = 0
+    retry_sec: int = 0
+    close_on: str = 'confirmed'
+    zone: Any = None               # tz='local' only: the tzinfo whose calendar it reads (a test's fixed-rule zone); None is the machine's local time
+    basis = 'calendar'
+
+    def _moment(self, now: float):
+        if self.tz == 'utc':
+            return datetime.datetime.fromtimestamp(now, datetime.timezone.utc)
+        return datetime.datetime.fromtimestamp(now) if self.zone is None else datetime.datetime.fromtimestamp(now, self.zone)
+
+    def day(self, now: float) -> str:
+        """The ISO date `now` falls on in this calendar's time zone: the key an occurrence is closed under."""
+        return self._moment(now).date().isoformat()
+
+    def offset(self, seed: str, day: str) -> int:
+        if not self.spread_sec:
+            return 0
+        digest = hashlib.sha256((seed + day).encode()).digest()
+        return int.from_bytes(digest[:4], 'big') % (2 * self.spread_sec + 1) - self.spread_sec
+
+    def eligible_at(self, day: str, seed: str = '') -> float:
+        """When the occurrence of `day` opens, as an epoch time."""
+        date = datetime.date.fromisoformat(day)
+        if self.tz == 'utc':
+            midnight = datetime.datetime.combine(date, datetime.time(), datetime.timezone.utc).timestamp()
+            return midnight + self.floor_hour * 3600 + self.offset(seed, day)
+        return datetime.datetime.combine(date, datetime.time(self.floor_hour), tzinfo=self.zone).timestamp()
+
+    def _open(self, now: float, day: str, seed: str) -> bool:
+        if self.tz == 'utc':
+            return now >= self.eligible_at(day, seed)
+        return self._moment(now).hour >= self.floor_hour
+
+    def evaluate(self, now: float, state: Mapping, conditions: Mapping | None = None) -> tuple[Decision, dict]:
+        conditions = conditions or {}
+        seed, retry_now = conditions.get('seed', ''), conditions.get('retry_now', now)
+        if not _clock_time(now, retry_now):
+            return Decision('blocked', reason='invalid_state', basis=self.basis), dict(state)
+        try:
+            return self._decide(now, state, seed, retry_now)
+        except (OverflowError, OSError, ValueError):        # a time the calendar cannot express (far beyond any real clock)
+            return Decision('blocked', reason='invalid_state', basis=self.basis), dict(state)
+
+    def _decide(self, now: float, state: Mapping, seed: str, retry_now: float) -> tuple[Decision, dict]:
+        day = self.day(now)
+        if state.get('consumed') == day:
+            following = (datetime.date.fromisoformat(day) + datetime.timedelta(days=1)).isoformat()
+            return Decision('wait', occurrence_key=day, next_due_at=self.eligible_at(following, seed), reason='consumed', basis=self.basis), dict(state)
+        if not self._open(now, day, seed):
+            return Decision('wait', occurrence_key=day, next_due_at=self.eligible_at(day, seed), reason='before_floor', basis=self.basis), dict(state)
+        retry_at = state.get('retry_at')
+        if retry_at is not None and not retry_now >= retry_at:
+            return Decision('wait', occurrence_key=day, eligible_at=self.eligible_at(day, seed), next_attempt_at=retry_at, reason='retry', basis=self.basis), dict(state)
+        return Decision('due', occurrence_key=day, eligible_at=self.eligible_at(day, seed), basis=self.basis), dict(state)
+
+    def attempt(self, retry_now: float) -> float:
+        """The earliest another attempt of the same day, once one was made at `retry_now`."""
+        return retry_now + self.retry_sec
 
 
 @dataclass(frozen=True)
@@ -385,8 +491,26 @@ class Elapsed:
 
 @dataclass(frozen=True)
 class EventOnly:
+    """No time at all: it happens when its event does (item 7, A3a: the guild-store follow-up after a guild claim landed).
+
+    State: `pending` (the event happened and has not been consumed). Due while pending; otherwise there is nothing to wait for and the next
+    time is unknown (`None` plus the reason, never zero).
+    """
     reason: str = 'event'
     basis = 'event'
+
+    def evaluate(self, now: float, state: Mapping, conditions: Mapping | None = None) -> tuple[Decision, dict]:
+        if state.get('pending'):
+            return Decision('due', reason=self.reason, basis=self.basis), dict(state)
+        return Decision('wait', reason=self.reason, basis=self.basis), dict(state)
+
+    @staticmethod
+    def raised(state: Mapping) -> dict:
+        return dict(state, pending=True)
+
+    @staticmethod
+    def consumed(state: Mapping) -> dict:
+        return dict(state, pending=False)
 
 
 # ---------------------------------------------------------------- definitions
@@ -405,6 +529,7 @@ class ActionDefinition:
     consumes: str | None = None    # 'confirmed' | 'attempted' (calendar families)
     documents: tuple = ()          # whole-object controls the action owns (top-level control keys, replaced wholesale, never merged)
     saved_kinds: frozenset | None = None   # blueprint kinds that carry its saved controls; None = every kind
+    scope: str | None = None       # who its persisted daily state belongs to: 'installation' (one file for every emulator), 'account', or None (process state only)
 
     def field(self, path: str) -> Field | None:
         return next((item for item in self.fields if item.path == path), None)
@@ -482,7 +607,35 @@ HARVEST_LAUNCH = ActionDefinition(
     id='harvest_launch', label='Harvest collector launch', family='harvest', hosts=frozenset({'dashboard'}),
     schedule=Backoff(), capabilities=Capabilities(run_now='not_supported'), evidence=('launched',))
 
-CATALOG = Catalog((AD_GEMS, FLOATING_GEMS, SHOPPING, HARVEST_LAUNCH))
+
+
+def _plain(ident, label, family, schedule, *, consumes=None, evidence=(), scope=None):
+    """A timed action of the orchestrator host that has no live control, no Run now and no saved setting (item 7: its schedule and its history only)."""
+    return ActionDefinition(id=ident, label=label, family=family, hosts=frozenset({'orchestrator'}), schedule=schedule, capabilities=Capabilities(),
+                            evidence=evidence, consumes=consumes, scope=scope)
+
+
+# ---- item 7, A3a: rewards (a side-menu visit during a run) and chores (between runs, from Home). Each schedule is declared once and shared.
+REWARD_CHECK = Cooldown(300)                                       # the badge of a global reward behaviour is looked at every five minutes
+VISIT_SCHEDULE = Cooldown(recent_window=1200, recent_delay=(1500, 2400))   # a seen badge is visited after a sampled delay; a repeat soon after a visit waits longer
+STORE_SCHEDULE = DailyCalendar('utc', floor_hour=1, spread_sec=600, retry_sec=300, close_on='confirmed')   # 01:00 UTC +/- 10 min, a failed claim retries after 300 s
+CHORE_SCHEDULE = DailyCalendar('local', floor_hour=3, close_on='attempted')                              # nothing runs before 03:00 local; a failed chore still uses the day
+
+# A badge is not a game effect: the daily-missions and event checks have no evidence (their flows are recorded completed, effect unknown); the guild check proves one by its claims.
+DAILY_MISSIONS = _plain('daily_missions', 'Daily missions check', 'rewards', REWARD_CHECK, scope='account')
+GUILD_PROGRESS = _plain('guild_progress', 'Guild progress check', 'rewards', REWARD_CHECK, evidence=('milestones_claimed',), scope='account')
+EVENT_MISSIONS = _plain('event_missions', 'Event missions check', 'rewards', REWARD_CHECK, scope='account')
+QUEST_VISIT = _plain('quest_visit', 'Quest board visit', 'rewards', VISIT_SCHEDULE)
+GUILD_VISIT = _plain('guild_visit', 'Guild visit', 'rewards', VISIT_SCHEDULE, evidence=('milestones_claimed',))
+GUILD_STORE = _plain('guild_store', 'Guild store follow-up', 'rewards', EventOnly('guild_claim'))
+FREE_STORE_GEMS = _plain('free_store_gems', 'Daily free gems', 'rewards', STORE_SCHEDULE, consumes='confirmed', evidence=('cooldown_shown',), scope='account')
+# The chores' day flag is one key per chore in the installation-wide daily state (scheduling/daystate.py): every emulator's runner reads and closes the same day.
+QUEST_SCAN = _plain('quest_scan', 'Quest scan', 'chores', CHORE_SCHEDULE, consumes='attempted', scope='installation')
+SHATTER = _plain('shatter', 'Shatter', 'chores', CHORE_SCHEDULE, consumes='attempted', scope='installation')
+HOUSEKEEPING = _plain('housekeeping', 'Disk housekeeping', 'chores', CHORE_SCHEDULE, consumes='attempted', scope='installation')
+
+CATALOG = Catalog((AD_GEMS, FLOATING_GEMS, SHOPPING, HARVEST_LAUNCH, DAILY_MISSIONS, GUILD_PROGRESS, EVENT_MISSIONS, QUEST_VISIT, GUILD_VISIT, GUILD_STORE,
+                   FREE_STORE_GEMS, QUEST_SCAN, SHATTER, HOUSEKEEPING))
 _ACTIVE: list[Catalog] = []
 
 

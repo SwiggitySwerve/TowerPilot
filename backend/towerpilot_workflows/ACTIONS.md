@@ -3,7 +3,7 @@
 > **Status:** Active (item 6: the pilot, and the control surface generated from the catalog)
 > **Type:** Rules
 > **Created:** 2026-10-22
-> **Updated:** 2026-10-23
+> **Updated:** 2026-10-23 (item 7, A3a)
 > **Owner:** Backend
 > **Spec:** [roadmap-items-6-7/spec.md](../logs/reviews/roadmap-items-6-7/spec.md)
 > **Tags:** actions, scheduling, history, gems, shopping, harvest
@@ -57,6 +57,28 @@ second input owner: the device lease and the operations ledger stay the only own
 | `floating_gems` | `AppearanceDriven` | the same six hosts (r14g made the tapper appearance-driven; the contract follows the shipped behaviour) |
 | `shopping` | `AfterCompletion` | the orchestrator's `Shopper` (a sweep that sends input is a row; input-free sweeps are counted checks) |
 | `harvest_launch` | `Backoff` | the dashboard's reconciler: every accepted launch, refusal and failure |
+
+## Item 7, A3a: rewards and chores
+
+The side-menu reward upkeep and the between-run chores are migrated to the same contract. Their numbers live in the catalog and nowhere else:
+
+| Action | Policy (shared object) | Whose state | Recorded by |
+|---|---|---|---|
+| `daily_missions`, `guild_progress`, `event_missions` | `Cooldown(300)` (`REWARD_CHECK`) over `global_rewards:<account>:<key>:next` | account | `runtime/flow_history.py` (a check that finds no badge is one counted no-op row; a flow is an execution) |
+| `quest_visit`, `guild_visit` | `Cooldown` with a sampled delay (`VISIT_SCHEDULE`: a repeat within 1200 s of the last visit draws 1500-2400 s) | this run | the same |
+| `guild_store` | `EventOnly('guild_claim')`, raised by a guild flow that claimed something | this run | the same, trigger `dependency`, `host.parent_execution` = the guild visit |
+| `free_store_gems` | `DailyCalendar(utc, 01:00 +/- 600 s, retry 300 s, close on confirmed)` | account | the same, `occurrence_key` = the UTC day |
+| `quest_scan`, `shatter`, `housekeeping` | `DailyCalendar(local, floor 03:00, close on attempted)` | installation | `scheduling/chores.py` through an operation-scoped session |
+
+- **The day is the date, the hour is a floor.** A chore is closed for the local date (it rolls at local midnight); 03:00 is only the hour from which the first Home gap may run it.
+- **One attempted chore per gap (C1).** A chore that raised used the gap like one that completed. Before this, a failing chore let the next one run in the same gap, and a limit of two let three run.
+- **Handler completion is not a game effect.** A flow that ends normally is `succeeded` with effect `unknown`, unless the host proved one (`FlowHistory.proved`): a guild flow that claimed
+  milestones (`milestones_claimed`), a free-gems flow that saw the cooldown on the card (`cooldown_shown`). An action whose definition lists evidence is `succeeded` only with it; a flow that
+  completed without proof is `no_op`.
+- **A daily-state write the file refuses** (its lock stayed held) is logged (`daystate_write_failed`) and kept in this process (`global_rewards._unsaved`, `chores._unsaved`), so one busy
+  file does not make a check or a chore repeat on every pass. A restart forgets it, which is the old crash behaviour.
+- **Unreadable inputs are `blocked`, never zero.** NaN, infinity, a negative or a non-number clock reads as `invalid_state`; a time the calendar cannot express reads the same.
+- **Removed:** `global_rewards.check_due/checked/store_due/store_claimed`, the orchestrator's free-gems cap helpers and the daily-state UTC counters (nothing called them).
 
 ## Adding an action (what the contract asks, and nothing else)
 

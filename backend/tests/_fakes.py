@@ -110,6 +110,7 @@ def _install_fakes(rec_taps):
     ds.set_raw = lambda k, v: ds._d.__setitem__(k, v)
     ds.get_today = lambda k: 0
     ds.set_today = lambda k, v: None
+    ds.increment_today = lambda k, by=1: by
     ds.flag_today = lambda k: False
     ds.mark_today = lambda k: None
     mods["daystate"] = ds
@@ -164,7 +165,7 @@ def _install_fakes(rec_taps):
         m = types.ModuleType(name)
         m.store_flow = lambda: None
         m.collect = lambda inst: None
-        m.run_due = lambda: False
+        m.run_due = lambda *a, **k: False
         mods[name] = m
     return mods, log, lo
 
