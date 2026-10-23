@@ -53,6 +53,9 @@ from dashboard_contract_cases_runtime import WRITER_PID, run_runtime_cases
 from dashboard_contract_cases_environment import RE as ENV, runtime_environment_cases
 from dashboard_contract_cases_preview import PB as PRB, PF as PRP, PM as PRM, PS as PRS, run_preview_cases
 from dashboard_contract_cases_settings_modules import LE, LR, SM, SR, loadout_restore_eligibility_cases, settings_modules_cases, settings_switch_records_cases
+from dashboard_contract_cases_template_codes import CODED as TC, REFUSALS as TC_REFUSALS, run_templates_add_coded_cases
+from dashboard_contract_cases_shopping_more import OUT_OF_BOUNDS, RM as RMX, SB, run_controls_live_reset_all_mixed_cases, shopping_queue_bounds_cases
+from dashboard_contract_cases_run_parity import PARITY as PAR, run_entry_patch_parity_cases
 from dashboard_contract_cases_profile import run_profile_cases, run_schedule_cases
 from dashboard_contract_cases_settings import run_settings_cases
 from dashboard_contract_cases_runs import run_controls_live_cases, run_controls_save_cases
@@ -71,7 +74,8 @@ FAMILIES = [run_controls_save_cases, run_controls_live_cases, run_history_cases,
             context_fence_cases, emulator_bluestacks_inventory_cases, collection_first_policy_cases,
             recognition_context_fence_cases, run_controls_live_reset_all_cases, run_entry_patch_cases, run_templates_add_cases,
             run_battle_details_cases, run_plan_section_delete_cases, run_templates_add_fenced_cases, shopping_queue_cases, profile_target_cases,
-            runtime_environment_cases, run_preview_cases, settings_modules_cases, loadout_restore_eligibility_cases, settings_switch_records_cases]
+            runtime_environment_cases, run_preview_cases, settings_modules_cases, loadout_restore_eligibility_cases, settings_switch_records_cases,
+            run_templates_add_coded_cases, run_controls_live_reset_all_mixed_cases, run_entry_patch_parity_cases, shopping_queue_bounds_cases]
 UNNAMED_ALLOWED = 49      # cases no row names (the settling reads of one scenario); report.json lists them
 
 NOTES = dict(
@@ -1136,7 +1140,101 @@ COVERAGE.update({
         SR, 'saved_active_instance_between_sparse_accounts', 'read_after_the_sparse_switch', 'read_config_after_the_sparse_switch', 'saved_active_instance_back_to_the_first_sparse_account',
         'read_config_after_switching_back_every_record_as_it_was'),
 })
-FAMILY_ROWS = {SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
+COVERAGE.update({
+    'F6-11 r12c (a): id_taken - the run identifier or a policy copy exists - with both guards, only the revision, only the context': keys(
+        TC, 'id_taken_a_copied_policy_exists', 'id_taken_an_existing_dissonance_run', 'id_taken_the_run_exists', 'id_taken_with_only_the_context',
+        'id_taken_with_only_the_revision'),
+    'F6-11 r12c (a): recipe_refused - not an identifier, unknown template, an unsupported or malformed choice': keys(
+        TC, 'recipe_refused_choices_not_an_object', 'recipe_refused_count_is_a_shard_only_choice', 'recipe_refused_dissonant_tab_is_a_dissonance_only_choice',
+        'recipe_refused_dissonant_tab_unknown', 'recipe_refused_enable_rescue_on_a_recipe_without_rescue_rules', 'recipe_refused_enable_uw_not_true_or_false',
+        'recipe_refused_enable_uw_on_a_recipe_without_uw_rules', 'recipe_refused_gem_cap_is_a_tournament_only_choice', 'recipe_refused_identifier_empty',
+        'recipe_refused_identifier_longer_than_64_characters', 'recipe_refused_identifier_not_text', 'recipe_refused_identifier_starting_with_a_digit',
+        'recipe_refused_identifier_with_a_capital', 'recipe_refused_identifier_with_a_space', 'recipe_refused_perk_bans_not_a_list',
+        'recipe_refused_perk_bans_with_a_non_text_entry', 'recipe_refused_unknown_template', 'recipe_refused_unsupported_choice', 'recipe_refused_with_only_the_context',
+        'recipe_refused_with_only_the_revision'),
+    'F6-11 r12c (a): validation_failed - the profile validator refused the result (problems kept)': keys(
+        TC, 'validation_failed_default_label_clashes_with_an_existing_run', 'validation_failed_dissonance_default_label_clashes',
+        'validation_failed_dissonance_default_loadout_the_account_does_not_define', 'validation_failed_gem_cap_negative', 'validation_failed_shard_count_negative',
+        'validation_failed_shard_default_loadout_the_account_does_not_define', 'validation_failed_tier_text', 'validation_failed_tier_zero',
+        'validation_failed_tournament_default_loadout_the_account_does_not_define', 'validation_failed_unknown_loadout', 'validation_failed_with_only_the_context',
+        'validation_failed_with_only_the_revision'),
+    'F6-11 r12c (a): profile_unavailable - the starter and a scan draft (409), no such profile, an unreadable, non-UTF-8, empty or non-mapping file, a bad name': keys(
+        TC, 'profile_unavailable_a_scan_draft', 'profile_unavailable_empty_file', 'profile_unavailable_file_that_is_a_list', 'profile_unavailable_file_that_is_not_utf8',
+        'profile_unavailable_file_that_is_not_yaml', 'profile_unavailable_name_missing', 'profile_unavailable_name_not_text', 'profile_unavailable_name_with_a_path',
+        'profile_unavailable_no_such_profile', 'profile_unavailable_no_such_profile_with_only_the_context', 'profile_unavailable_the_starter'),
+    'F6-11 r12c (a): write_failed_nothing_saved only when the file is byte-identical; a write that changed the file has no code; the resend, and a clean add': keys(
+        TC, 'added_with_both_guards_has_no_code', 'identical_resend_after_the_error_is_revision_conflict', 'identical_resend_with_only_the_context_is_id_taken',
+        'write_failed_nothing_saved', 'write_failed_nothing_saved_with_only_the_context', 'written_then_the_answer_failed_has_no_code'),
+    'F6-11 r12c (a): the guards are judged first (a stale revision with a bad recipe is revision_conflict)': keys(
+        TC, 'stale_revision_with_a_bad_recipe_is_revision_conflict_not_recipe_refused'),
+    'F6-11 r12c (a): without a guard the answer is as it always was, with no code': keys(
+        TC, 'unguarded_body_not_an_object_has_no_code', 'unguarded_id_taken_has_no_code', 'unguarded_recipe_refused_has_no_code', 'unguarded_unknown_profile_has_no_code',
+        'unguarded_validation_failed_has_no_code', 'unguarded_write_failed_has_no_code'),
+    'F6-11 r12c (a): the profile read before an add and after the refusals, the policy clash and the failed write': keys(
+        TC, 'read_after_an_error_that_followed_the_write_holds_the_run', 'read_after_the_failed_write_the_revision_is_unchanged',
+        'read_after_the_policy_clash_nothing_changed', 'read_after_the_profile_refusals_nothing_changed', 'read_after_the_refusals_nothing_changed', 'read_before_any_add'),
+    'F6-11 r12c (b): the routine overrides and the shopping plan are set and read before the reset': keys(
+        RMX, 'read_before_the_reset_the_mixed_overrides_are_in_force', 'routine_overrides_set_before_the_reset', 'shopping_plan_set_before_the_reset'),
+    'F6-11 r12c (b): one request with null for shopping_plan and the routine overrides - accepted, requested, applied, replayed': keys(
+        RMX, 'accepted_null_for_shopping_plan_and_routine_overrides', 'identical_resend_of_the_mixed_reset_answered_from_the_record', 'read_after_the_mixed_reset_applied',
+        'read_after_the_reset_was_accepted_before_it_applies'),
+    'F6-11 r12c (b): only the plan, or only the routines, is reset and the other override stays': keys(
+        RMX, 'accepted_null_for_the_routine_overrides_only_keeps_the_plan_override', 'accepted_null_for_the_shopping_plan_only_keeps_the_routine_overrides',
+        'read_after_the_plan_only_reset_the_routine_overrides_remain', 'read_after_the_routines_only_reset_the_plan_override_remains'),
+    'F6-11 r12c (b): a stale control revision refuses the mixed reset and keeps both kinds of override': keys(
+        RMX, 'mixed_reset_with_a_stale_control_revision_refused', 'read_after_the_refusal_both_kinds_of_override_remain'),
+    "F6-11 RL9 (R-25): a run's label set, deleted so the run id shows, deleted when there is none, and the refusals (blank, not text, a name that repeats another run's)": keys(
+        PAR, 'label_delete_refused_the_identifier_title_cased_is_another_runs_label', 'label_delete_when_the_run_has_no_label', 'label_deleted_the_run_id_shows',
+        'label_empty_text_refused', 'label_not_text_refused', 'label_only_spaces_refused', 'label_the_same_as_another_runs_identifier_title_cased_refused',
+        'label_the_same_as_another_runs_label_refused', 'read_after_the_label_refusals_nothing_changed', 'read_after_the_label_was_deleted',
+        'read_before_the_label_edits', 'saved_label'),
+    'F6-11 RL12 (R-26): a coin run switched to dissonance and back (set, retarget, delete, null), unknown tabs refused, the reads around them': keys(
+        PAR, 'coin_run_switched_to_dissonance', 'coin_run_switched_to_dissonance_again', 'dissonance_run_retargeted_to_another_tab',
+        'dissonance_run_switched_back_to_coin_by_deleting_the_tab', 'dissonance_run_switched_back_to_coin_the_last_time', 'dissonant_tab_a_list_refused',
+        'dissonant_tab_a_number_refused', 'dissonant_tab_empty_text_refused', 'dissonant_tab_set_to_null_is_stored_as_null_not_deleted',
+        'dissonant_tab_text_not_a_tab_refused', 'dissonant_tab_ultimate_weapons_accepted', 'read_after_the_switch_back_to_coin', 'read_after_the_switch_to_dissonance',
+        'read_after_the_tab_was_set_to_null', 'read_before_the_kind_switches'),
+    'F6-11 RL12 (R-26): the `kind` field itself - refused while the run keeps a field of the old kind, accepted for a coin run that keeps none': keys(
+        PAR, 'kind_changed_from_coin_to_tournament_refused_by_the_equipment', 'kind_changed_on_a_coin_run_that_keeps_no_coin_only_field_is_accepted',
+        'kind_changed_to_dissonance_which_is_not_a_kind_refused', 'read_after_the_kind_attempts'),
+    'F6-11 RL13 (R-30): rides of a grant quest and cycles of a cycle quest - saved, rides deleted, cycles required': keys(
+        PAR, 'cycles_deleted_refused_a_cycle_quest_needs_its_cycles', 'read_after_the_limit_saves', 'read_before_the_limit_edits',
+        'rides_deleted_the_quest_uses_its_own_default', 'saved_cycles', 'saved_cycles_one', 'saved_rides', 'saved_rides_one'),
+    "F6-11 RL13 (R-30): rides and cycles refused (zero, negative, fraction, text), the other kind's field, count naming rides/cycles; nothing changed": keys(
+        PAR, 'count_on_a_cycle_quest_run_names_cycles_refused', 'count_on_a_grant_quest_run_names_rides_refused', 'cycles_fraction_refused', 'cycles_on_a_coin_run_refused',
+        'cycles_on_a_grant_quest_run_refused', 'cycles_text_refused', 'cycles_zero_refused', 'read_after_the_limit_refusals_nothing_changed', 'rides_fraction_refused',
+        'rides_negative_refused', 'rides_on_a_coin_run_refused', 'rides_on_a_cycle_quest_run_refused', 'rides_text_refused', 'rides_zero_refused'),
+    'F6-12 SQ5: the saved run save refuses a negative, fractional, text or boolean tap cap; nothing changes': keys(
+        SB, 'read_before_the_refusals', 'read_after_the_refusals_nothing_changed', 'saved_tap_cap_fraction_refused', 'saved_tap_cap_negative_refused', 'saved_tap_cap_text_refused', 'saved_tap_cap_true_refused'),
+    'F6-12 SQ5: the saved run save refuses a weight of 0, 101, a fraction or text': keys(
+        SB, 'saved_weight_above_100_refused', 'saved_weight_fraction_refused', 'saved_weight_text_refused', 'saved_weight_zero_refused'),
+    'F6-12 SQ5: the saved run save refuses a reversed, empty or non-whole wave range': keys(
+        SB, 'saved_from_wave_fraction_refused', 'saved_from_wave_zero_refused', 'saved_until_wave_below_two_refused', 'saved_until_wave_fraction_refused',
+        'saved_wave_range_empty_refused', 'saved_wave_range_reversed_refused'),
+    'F6-12 SQ5: the smallest and largest accepted values, saved and read': keys(
+        SB, 'read_after_the_boundary_values_were_saved', 'saved_boundary_values_accepted'),
+    'F6-12 SQ5: the live save refuses the same bounds and records nothing; the boundary values are accepted and applied': keys(
+        SB, 'live_boundary_values_accepted', 'live_tap_cap_fraction_refused', 'live_tap_cap_negative_refused', 'live_wave_range_reversed_refused', 'live_weight_zero_refused',
+        'read_after_the_live_boundary_values_applied', 'read_after_the_live_refusals_nothing_was_recorded'),
+})
+NOTES.update(
+    run_templates_add_coded=('r12c (F6-11 part 2 / RL4): POST /api/run-templates/add with a guard (`expected_revision` and/or `expected_context`) carries a stable `code` on every refusal the route can PROVE happened before anything was written, so a page may show it as Refused: '
+                             'id_taken (400: the run identifier, or a policy that identifier would create, exists), recipe_refused (400: not an identifier, unknown template, an unsupported or malformed choice), validation_failed (400: the profile validator refused the result; `problems` stays), '
+                             'profile_unavailable (400: no such profile, unreadable, not UTF-8, not a mapping, a name that is not a profile name; 409: the starter and a scan draft) and write_failed_nothing_saved (400: the write raised AND the profile file is byte-identical to what it was before the attempt). '
+                             'revision_conflict (409), context_changed (409) and invalid_request (400) are the guards\' own, unchanged, and are judged first. A failure after which the file differs, or cannot be read back, has NO code (written_then_the_answer_failed_has_no_code): its outcome is unknown and a read of the profile settles it. '
+                             'A request WITHOUT a guard is answered exactly as before, without a code (the unguarded_* cases). The same requests are in run_templates_add (unguarded, unchanged) and run_templates_add_fenced, where six answers gained the code.'),
+    run_controls_live_reset_all_mixed=('r12c (F6-11 RL2): ONE live-controls request that sends null for `shopping_plan` AND for the routine overrides applied together, from the applied mixed state of shopping_queue.shopping_plan_routine_overrides_applied (routine overrides shopping off / every 60 s at revision 1, the plan PW at revision 2). '
+                                       'A null removes the override: the plan returns to the battle\'s starting plan and the routines to their starting values, the three paths in one command; `overrides` keeps the (empty) routines mapping and no `shopping_plan` key. '
+                                       'The same request with only the plan keeps the routine overrides, with only the routines keeps the plan override; a stale control revision is a 409 that keeps both; the identical resend is answered from the record.'),
+    run_entry_patch_parity=('r12c (F6-11 RL9, RL12, RL13; legacy rows R-25, R-26, R-30): POST /api/profile-patch on [blueprints, <run>, <field>], the way the legacy page wrote them. label: a delete (op:"delete") makes the run identifier show again and is accepted even when there is no label; an empty, blank or non-text label is refused; '
+                            'a label or an identifier that title-cased is another run\'s name is refused, and so is deleting a label when the identifier would then repeat another run\'s label. kind: a dissonance run IS a coin run with `dissonant_tab` - set, retargeted, deleted (op:"delete") to go back; '
+                            'a bare value null is STORED as null (the key stays; the page deletes instead); an unknown tab is refused. `kind` itself is not guarded by the route: refused when the run keeps a field of the old kind (coin-only fields, the as_is equipment), ACCEPTED for a coin run that keeps none, which is why the Runs page must never send it. '
+                            'limits: `rides` of an Ultimate Weapon grant quest and `cycles` of a cycle quest are integers >= 1; rides may be deleted, cycles may not (required); the other kind\'s field and `count` are refused (count names rides / cycles).'),
+    shopping_queue_bounds=('r12c (F6-12 SQ5): what the SERVER answers to a shopping queue whose per-entry numbers are out of bounds, through the saved run save (POST /api/run-controls) and the live save (POST /api/operations/{id}/live-controls); both validate the plan with the same rules and refuse with 400 {ok:false, error}, '
+                           'recording nothing (a read after them shows the saved run unchanged and no command). tap_limit: an integer >= 0 (negative, fraction, text and booleans are refused); weight: an integer from 1 to 100 ("expected integer >= 1" for 0, a fraction or text; "from 1 to 100" above 100); '
+                           'from_wave an integer >= 1, until_wave an integer >= 2 and greater than from_wave (a reversed or empty range is "<id>: empty wave range"). The smallest and largest accepted values are saved and applied in boundary_values_accepted.'),
+)
+FAMILY_ROWS = {TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
                RESET: 'F6-11 RL2 (6.1)', TF: 'F6-11 RL4 guarded (root decision: run-templates/add gains expected_revision and expected_context)', SQ: 'F6-12 (brief section 8)', PTG: 'F6-14 (brief section 6)', ENTRY: 'F6-11 RL3 (6.2)', TEMPLATES: 'F6-11 RL4 (6.3)', DETAILS: 'F6-11 RL7 (6.4)', PLAN_DELETE: 'F6-11 RL8 (6.5)', SAVE: 'RUN-04..07', LIVE: 'RUN-08..11', HL: 'H-01', HD: 'H-01, H-02', CFG: 'G-01', PR: 'G-02', PP: 'G-03', SP: 'S-01', ST: 'G-04', LO: 'E-01', CO: 'C-01', AB: 'A-01', AC: 'P-01', PF: 'P-02', EI: 'M-01', EA: 'M-02', ET: 'M-03', RS: 'T-01', RD: 'T-02', RR: 'R-01, R-02, R-06', CW: 'R-02', RI: 'R-03', SA: 'R-04', RL: 'R-05'}
 
 
@@ -1177,7 +1275,8 @@ PUBLISHED_ORDER = ['run_controls_save_cases', 'run_controls_live_cases', 'run_hi
                    'emulator_bluestacks_inventory_cases', 'collection_first_policy_cases', 'recognition_context_fence_cases',
                    'run_controls_live_reset_all_cases', 'run_entry_patch_cases', 'run_templates_add_cases', 'run_battle_details_cases',
                    'run_plan_section_delete_cases', 'run_templates_add_fenced_cases', 'shopping_queue_cases', 'profile_target_cases',
-                   'runtime_environment_cases', 'run_preview_cases', 'settings_modules_cases', 'loadout_restore_eligibility_cases', 'settings_switch_records_cases']
+                   'runtime_environment_cases', 'run_preview_cases', 'settings_modules_cases', 'loadout_restore_eligibility_cases', 'settings_switch_records_cases',
+                   'run_templates_add_coded_cases', 'run_controls_live_reset_all_mixed_cases', 'run_entry_patch_parity_cases', 'shopping_queue_bounds_cases']
 
 
 CODED_PATHS = frozenset({'/api/calibrate/start', '/api/calibrate/observe', '/api/calibrate/apply', '/api/calibrate/stop', '/api/calibrate/status',
@@ -1236,6 +1335,17 @@ def test_the_environment_the_samples_report_does_not_depend_on_the_machine(dash,
     document = json.loads(here)['cases']['runtime_state']
     first = next(iter(document.values()))['body']['environment']
     assert first['os'] == dict(system='Windows', release='11', architecture='AMD64') and first['python'] == dict(version='3.12.0', kind='source')
+
+
+def test_the_r12c_families_are_made_by_the_real_routes_and_are_the_same_twice(dash, tmp_path, monkeypatch):
+    """The four families r12c added (the stable codes of run-templates/add, the mixed reset-all, the run-entry parity, the queue bounds) on their own: every assertion
+    of their generators runs (a refusal that is not refused, a code that is missing, an override that is not reset fails here), and two runs are byte-identical.
+    The full contract below also compares them with the committed fixture, but needs minutes; this is the fast discriminating test."""
+    chosen = [run_templates_add_coded_cases, run_controls_live_reset_all_mixed_cases, run_entry_patch_parity_cases, shopping_queue_bounds_cases]
+    first = render(build(dash, tmp_path / 'one', monkeypatch, chosen))
+    assert render(build(dash, tmp_path / 'two', monkeypatch, chosen)) == first
+    families = json.loads(first)['cases']
+    assert {name: len(cases) for name, cases in families.items()} == {TC: 67, RMX: 13, PAR: 53, SB: 25}
 
 
 def test_the_families_are_generated_in_a_fixed_order():

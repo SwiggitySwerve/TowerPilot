@@ -3357,37 +3357,74 @@ def api_run_template_add():
     chain the next add without a read; the answer to a request without it is unchanged (no `revision`). The resend of a committed add that
     carried `expected_revision` meets a changed profile and is refused 409 revision_conflict (a page settles it by reading the profile); one
     without it is refused by the run identifier that now exists (400), as before.
+
+    A request that names a guard (either of the two) also gets a stable `code` on each refusal the route can PROVE happened before anything was
+    written, so a page can show it as Refused instead of Unknown: id_taken (the run identifier, or a policy it would create, exists),
+    recipe_refused (bad identifier, unknown template, an unsupported or malformed choice), validation_failed (the profile validator refused the
+    result; the answer keeps `problems`), profile_unavailable (no such profile, unreadable or not a mapping, the starter or a scan draft) and
+    write_failed_nothing_saved (the write raised AND the profile file is byte-identical to what it was before the attempt, judged under the
+    profile lock). revision_conflict, context_changed and invalid_request are as before. A failure after which the file differs, or cannot be
+    read back, has NO code: its outcome is unknown and is settled by reading the profile. A request without a guard is answered exactly as it
+    always was, without a code.
     """
-    from player.run_templates import instantiate
+    from player.run_templates import RunIdTaken, instantiate
     body=request.get_json(force=True) or {}
     if not isinstance(body,dict):
         return jsonify(ok=False,error='Expected run template choices.'),400
+    guarded='expected_revision' in body or operation_api.expected_page_context(body) is not None
+
+    def refuse(status,code,error,**extra):
+        return jsonify(ok=False,error=error,**({'code':code} if guarded else {}),**extra),status
     name=body.get('profile')
     path=_profile_path(name)
     if not path:
-        return jsonify(ok=False,error='Choose a valid local profile.'),400
+        return refuse(400,'profile_unavailable','Choose a valid local profile.')
     if _is_starter(name) or _is_draft(name):
-        return jsonify(ok=False,error='Create a personal profile in Setup before adding run templates.'),409
+        return refuse(409,'profile_unavailable','Create a personal profile in Setup before adding run templates.')
     with _profile_lock(path):
         try:
-            if 'expected_revision' in body:
-                current=hashlib.sha256(Path(path).read_bytes()).hexdigest()
-                if body['expected_revision']!=current:
-                    return jsonify(ok=False,code='revision_conflict',revision=current,
-                                   error='Saved profile changed. Reload and reconcile the pending edit before saving again.'),409
+            current=hashlib.sha256(Path(path).read_bytes()).hexdigest() if guarded else None
+            if 'expected_revision' in body and body['expected_revision']!=current:
+                return jsonify(ok=False,code='revision_conflict',revision=current,
+                               error='Saved profile changed. Reload and reconcile the pending edit before saving again.'),409
             with open(path,encoding='utf-8') as fh:
                 original=yaml.safe_load(fh)
+        except (OSError,ValueError,yaml.YAMLError) as e:
+            return refuse(400,'profile_unavailable',str(e))
+        if not isinstance(original,dict):
+            return refuse(400,'profile_unavailable','Choose a valid local profile.')
+        try:
             updated=instantiate(original,body.get('template'),body.get('run_id'),body.get('options'))
+        except RunIdTaken as e:
+            return refuse(400,'id_taken',str(e))
+        except ValueError as e:
+            return refuse(400,'recipe_refused',str(e))
+        except (OSError,yaml.YAMLError) as e:
+            return jsonify(ok=False,error=str(e)),400
+        try:
             problems=_profile_check(updated)
-            if problems:
-                return jsonify(ok=False,error=problems[0],problems=problems),400
+        except (OSError,ValueError,yaml.YAMLError) as e:
+            return jsonify(ok=False,error=str(e)),400
+        if problems:
+            return refuse(400,'validation_failed',problems[0],problems=problems)
+        try:
             backup=_save_yaml_backup(path,updated)
             stored=hashlib.sha256(Path(path).read_bytes()).hexdigest() if 'expected_revision' in body else None
         except (OSError,ValueError,yaml.YAMLError) as e:
+            if guarded and _file_has_digest(path,current):
+                return refuse(400,'write_failed_nothing_saved',str(e))
             return jsonify(ok=False,error=str(e)),400
     if stored is not None:
         return jsonify(ok=True,profile=updated,backup=backup,revision=stored)
     return jsonify(ok=True,profile=updated,backup=backup)
+
+
+def _file_has_digest(path:str,digest:str|None)->bool:
+    """True only when `path` can be read and is byte-identical to the file whose SHA-256 is `digest`: the proof that a failed write changed nothing."""
+    try:
+        return digest is not None and hashlib.sha256(Path(path).read_bytes()).hexdigest()==digest
+    except OSError:
+        return False
 
 
 @app.get("/api/profile/<name>")
