@@ -50,6 +50,7 @@ from dashboard_contract_cases_history import run_history_cases
 from dashboard_contract_cases_recognition import run_recognition_cases
 from dashboard_contract_cases_screens import run_later_cases, run_screens_cases
 from dashboard_contract_cases_runtime import WRITER_PID, run_runtime_cases
+from dashboard_contract_cases_environment import RE as ENV, runtime_environment_cases
 from dashboard_contract_cases_profile import run_profile_cases, run_schedule_cases
 from dashboard_contract_cases_settings import run_settings_cases
 from dashboard_contract_cases_runs import run_controls_live_cases, run_controls_save_cases
@@ -67,7 +68,8 @@ FAMILIES = [run_controls_save_cases, run_controls_live_cases, run_history_cases,
             run_runtime_cases, run_recognition_cases, run_calibrate_cases, run_screens_cases, run_later_cases,
             context_fence_cases, emulator_bluestacks_inventory_cases, collection_first_policy_cases,
             recognition_context_fence_cases, run_controls_live_reset_all_cases, run_entry_patch_cases, run_templates_add_cases,
-            run_battle_details_cases, run_plan_section_delete_cases, run_templates_add_fenced_cases, shopping_queue_cases, profile_target_cases]
+            run_battle_details_cases, run_plan_section_delete_cases, run_templates_add_fenced_cases, shopping_queue_cases, profile_target_cases,
+            runtime_environment_cases]
 UNNAMED_ALLOWED = 49      # cases no row names (the settling reads of one scenario); report.json lists them
 
 NOTES = dict(
@@ -177,9 +179,9 @@ NOTES.update(
                        'is read as well, and a report or analysis that is not the shape its producer writes is skipped.'),
 )
 
-def generate(dash, base, monkeypatch):
+def generate(dash, base, monkeypatch, families=None):
     gen = PagesGenerator(dash, base, monkeypatch)
-    for family in FAMILIES:
+    for family in FAMILIES if families is None else families:
         family(gen)
     return gen.cases
 
@@ -202,10 +204,10 @@ def pin_process_identity(value):
     return value
 
 
-def build(dash, base, monkeypatch):
+def build(dash, base, monkeypatch, families=None):
     base = Path(base) / 'contract'
     document = dict(version=1, generated_by='backend/tests/test_dashboard_contract_pages.py', notes=NOTES,
-                    cases=dict(generate(dash, base, monkeypatch)))
+                    cases=dict(generate(dash, base, monkeypatch, families)))
     return dashboard.alias_ids(pin_process_identity(dashboard.pin_processes(dashboard.scrub(document, base))))
 
 
@@ -276,6 +278,14 @@ NOTES.update(
                              'defaults at templates[i].policies.gather[<reference>] (farm/tournament/dissonance `all_on`, shard `gems_only`), and POST /api/profile-patch '
                              '{name, path:[policies, gather, <new name>], value, expected_revision} creates it (a missing mapping step is created, so an empty gather map or no gather key both work). '
                              'A name already taken is REPLACED, not refused: the page must not offer a taken name. The empty policy is refused (gem_delay_sec is required); text, an unknown key and a stale revision are refused.'),
+)
+NOTES.update(
+    runtime_environment=('Item 10 p10b. GET /api/runtime carries `environment` (local prerequisites: operating system, interpreter, release kind, platform-tools with the version of a MATCHING install receipt only, '
+                         'emulator locators, scrcpy server and decoder, app build, OCR script and the stored OCR probe result); GET /api/stream/backends reports adb and scrcpy; POST /api/environment/probe '
+                         'with exactly {"probe": "windows_ocr"} runs the one OCR probe, under the global action lock. Every host input is pinned in the test world and every file the report reads is created under '
+                         '<root>/install, so the family is the same on every machine: the operating system, Python, adb (platform-tools) and scrcpy versions in it are the pins of the code or the values the '
+                         'world was given, never read from the machine that generated it. `available` is a local prerequisite, not a working emulator connection or capture; a locator that finds nothing is `unknown`; '
+                         'an OCR script is present without OCR being known to work until the probe says so. The family runtime_state records the same field (over an empty root) and keeps its place.'),
 )
 COVERAGE = {
     'RUN-05 saved save: success (switches, numbers, null reset, several paths, run as preset id, shared policy, shopping plan, run with fewer controls)': (
@@ -1017,7 +1027,29 @@ COVERAGE.update({
     'F6-14 inactive target: write failed, written then the answer failed, the reads that settle them': keys(
         PTG, 'inactive_target_write_failed', 'inactive_target_after_write_failed', 'inactive_target_written_then_answer_failed', 'inactive_target_after_written_then_answer_failed'),
 })
-FAMILY_ROWS = {CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
+COVERAGE.update({
+    'P10B-01 environment report: a source checkout with nothing installed, with every prerequisite, a portable release without the decoder, an unreadable or unrecognized release identity, another operating system, the emulator locators': keys(
+        ENV, 'source_checkout_nothing_installed', 'source_release_every_prerequisite_present', 'portable_release_scrcpy_server_present_decoder_missing',
+        'release_identity_that_cannot_be_read_is_unknown', 'release_identity_of_an_unrecognized_kind_is_unknown',
+        'other_operating_system_is_reported_as_it_is', 'emulator_locators_find_bluestacks_not_mumu'),
+    'P10B-02 adb: platform-tools with a matching, absent or other-version receipt and an unreadable folder; stream backends with adb missing, from the local tools, configured, gone, and an invalid preview setting': keys(
+        ENV, 'platform_tools_installed_without_a_receipt_version_unknown', 'platform_tools_receipt_does_not_match_the_pin_version_unknown',
+        'platform_tools_with_the_matching_receipt', 'platform_tools_folder_cannot_be_read_state_unknown', 'stream_backends_nothing_installed_adb_missing',
+        'stream_backends_adb_from_the_local_tools_and_scrcpy_ready', 'stream_backends_install_unreadable_adb_unknown', 'stream_backends_configured_adb_executable_found',
+        'stream_backends_configured_adb_executable_gone_falls_back_to_the_local_tools', 'stream_backends_configured_adb_executable_gone_and_no_local_tools',
+        'stream_backends_invalid_preview_setting_is_refused'),
+    'P10B-03 OCR probe before it runs: script present but never probed; invalid requests (no body, array, empty, other probe, extra key, JSON null, text); the action-lock refusal and the read after': keys(
+        ENV, 'ocr_script_present_but_never_probed_state_unknown', 'probe_without_a_body', 'probe_with_an_array', 'probe_with_an_empty_object',
+        'probe_with_another_probe_name', 'probe_with_an_extra_key', 'probe_with_json_null', 'probe_with_text_that_is_not_json',
+        'probe_refused_while_the_action_lock_is_held', 'read_after_the_refused_probe_still_unknown'),
+    'P10B-04 OCR probe outcomes and the reads after: success; script missing, text not recognized, nonzero exit, stderr, timeout, script host missing, budget used in preparation, another operating system; success replacing a failure': keys(
+        ENV, 'probe_recognizes_the_synthetic_text', 'read_after_the_successful_probe', 'probe_when_the_ocr_script_is_missing', 'read_after_the_missing_script_probe',
+        'probe_exit_zero_but_the_text_was_not_recognized', 'probe_nonzero_exit', 'probe_stderr_output_is_not_success', 'probe_exceeds_the_ten_second_budget',
+        'probe_cannot_start_the_script_host', 'read_after_the_last_failed_probe', 'probe_preparation_used_the_whole_budget_nothing_is_run',
+        'probe_on_another_operating_system_needs_windows', 'probe_succeeds_after_the_failures_and_replaces_the_stored_result',
+        'read_after_the_probe_that_replaced_the_failure'),
+})
+FAMILY_ROWS = {ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
                RESET: 'F6-11 RL2 (6.1)', TF: 'F6-11 RL4 guarded (root decision: run-templates/add gains expected_revision and expected_context)', SQ: 'F6-12 (brief section 8)', PTG: 'F6-14 (brief section 6)', ENTRY: 'F6-11 RL3 (6.2)', TEMPLATES: 'F6-11 RL4 (6.3)', DETAILS: 'F6-11 RL7 (6.4)', PLAN_DELETE: 'F6-11 RL8 (6.5)', SAVE: 'RUN-04..07', LIVE: 'RUN-08..11', HL: 'H-01', HD: 'H-01, H-02', CFG: 'G-01', PR: 'G-02', PP: 'G-03', SP: 'S-01', ST: 'G-04', LO: 'E-01', CO: 'C-01', AB: 'A-01', AC: 'P-01', PF: 'P-02', EI: 'M-01', EA: 'M-02', ET: 'M-03', RS: 'T-01', RD: 'T-02', RR: 'R-01, R-02, R-06', CW: 'R-02', RI: 'R-03', SA: 'R-04', RL: 'R-05'}
 
 
@@ -1057,7 +1089,8 @@ PUBLISHED_ORDER = ['run_controls_save_cases', 'run_controls_live_cases', 'run_hi
                    'run_recognition_cases', 'run_calibrate_cases', 'run_screens_cases', 'run_later_cases', 'context_fence_cases',
                    'emulator_bluestacks_inventory_cases', 'collection_first_policy_cases', 'recognition_context_fence_cases',
                    'run_controls_live_reset_all_cases', 'run_entry_patch_cases', 'run_templates_add_cases', 'run_battle_details_cases',
-                   'run_plan_section_delete_cases', 'run_templates_add_fenced_cases', 'shopping_queue_cases', 'profile_target_cases']
+                   'run_plan_section_delete_cases', 'run_templates_add_fenced_cases', 'shopping_queue_cases', 'profile_target_cases',
+                   'runtime_environment_cases']
 
 
 CODED_PATHS = frozenset({'/api/calibrate/start', '/api/calibrate/observe', '/api/calibrate/apply', '/api/calibrate/stop', '/api/calibrate/status',
@@ -1084,6 +1117,38 @@ def test_the_diagnostics_writer_is_pinned_to_one_pid_while_the_family_is_generat
         emit(w, 'main', 'probe')
         written = [json.loads(line) for line in (w.root / 'logs' / 'main' / 'events_20270115_080000_4242_pppppppp.jsonl').read_text(encoding='utf-8').splitlines()]
     assert [record['pid'] for record in written] == [WRITER_PID]
+
+
+def test_the_environment_the_samples_report_does_not_depend_on_the_machine(dash, tmp_path, monkeypatch):
+    """GET /api/runtime reports the local environment (item 10 p10b): the operating system, the interpreter, the emulator locators that read
+    Program Files, the scrcpy files. The runtime_state and runtime_environment samples must be the same on every machine, so every host input
+    is pinned in the test world. Generate them here, then again as if this were another machine (another operating system, release,
+    architecture and Python, a portable interpreter, no PyAV, MuMu and BlueStacks installed) and compare: a sample that records the machine differs."""
+    import importlib.util
+    import platform
+    import sys
+    chosen = [run_runtime_cases, runtime_environment_cases]
+    here = render(build(dash, tmp_path / 'here', monkeypatch, chosen))
+    programs = tmp_path / 'Program Files'
+    for leaf in ('Netease/MuMuPlayer/nx_main/MuMuManager.exe', 'BlueStacks_nxt/HD-Player.exe'):
+        (programs / leaf).parent.mkdir(parents=True, exist_ok=True)
+        (programs / leaf).write_bytes(b'MZ')
+    portable = tmp_path / 'portable' / 'python.exe'
+    portable.parent.mkdir()
+    portable.write_bytes(b'MZ')
+    portable.with_name('python312._pth').write_text('Lib/site-packages')
+    with monkeypatch.context() as elsewhere:
+        for name, value in (('system', 'Linux'), ('release', '6.8.0'), ('machine', 'aarch64'), ('python_version', '3.13.7')):
+            elsewhere.setattr(platform, name, lambda value=value: value)
+        elsewhere.setattr(sys, 'executable', str(portable))
+        elsewhere.setattr(importlib.util, 'find_spec', lambda name, package=None: None)     # PyAV (scrcpy's decoder) is not installed there
+        elsewhere.setenv('ProgramFiles', str(programs))
+        elsewhere.setenv('ProgramFiles(x86)', str(programs))
+        there = render(build(dash, tmp_path / 'there', monkeypatch, chosen))
+    assert there == here, 'a sample of the runtime families recorded a fact of the machine that generated it'
+    document = json.loads(here)['cases']['runtime_state']
+    first = next(iter(document.values()))['body']['environment']
+    assert first['os'] == dict(system='Windows', release='11', architecture='AMD64') and first['python'] == dict(version='3.12.0', kind='source')
 
 
 def test_the_families_are_generated_in_a_fixed_order():

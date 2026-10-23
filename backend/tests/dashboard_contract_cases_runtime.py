@@ -7,6 +7,11 @@ operations that persist a file. The server's own build snapshot (`_BUILD`) is re
 source tree (so no machine identity is read), then the real `build_info.compare` runs over that tree: unchanged, changed on
 disk, unreadable, and a snapshot that could not be taken at all are each a real answer.
 
+/api/runtime also reports the local `environment` (runtime/environment.py): the operating system, the interpreter, the emulator
+locators and the scrcpy files. Those are facts of whichever machine generates the sample, so `pin_environment` fixes every host
+input and the committed answers never depend on the machine, its install folders or the build of its web app. The family
+runtime_environment (dashboard_contract_cases_environment.py) records the environment itself, state by state.
+
 /api/diagnostics/events reads the raw JSONL events under <root>/logs/<instance>/. The events are written by the real
 writer (runtime.diagnostics.write_event) with its clock, ids, process and file names pinned; the bounds the route
 applies (files, bytes per file) are lowered for the truncation cases, and the writer's health counters are set for the failure
@@ -21,7 +26,8 @@ from types import SimpleNamespace
 
 from control import diagnostics as query_module
 from dashboard_contract_pages_world import pin_mtimes
-from runtime import build_info, diagnostics
+from device.preview import scrcpy_package
+from runtime import build_info, diagnostics, environment
 from test_dashboard_contract import raising
 
 RT, DG = 'runtime_state', 'runtime_diagnostics'
@@ -37,8 +43,35 @@ def source_tree(w, name='source'):
     return root
 
 
+def pin_environment(w, *, system='Windows', mumu=True, bluestacks=False):
+    """Every HOST input of runtime.environment.report fixed, so the report is the same on every machine: the operating
+    system and interpreter facts (Windows 11 AMD64, Python 3.12.0 outside a portable runtime), the emulator locators (which read
+    the machine's Program Files: here they find a synthetic MuMuManager.exe, and BlueStacks' player only when asked), scrcpy's
+    server path (a file of the world, absent) and its decoder module (found), the fixed clock for the probe's timestamp and
+    deadline, and the stored OCR probe result back at 'not probed'. What the report reads under the repository root (platform-tools,
+    the web app, the OCR script, the release identity) is the root's own folder: a world that wants one creates it."""
+    w.mp.setattr(environment, 'platform', SimpleNamespace(system=lambda: system, release=lambda: '11', machine=lambda: 'AMD64',
+                                                         python_version=lambda: '3.12.0'))
+    w.mp.setattr(environment, 'sys', SimpleNamespace(executable=str(w.root.parent / f'{w.name}-python' / 'python.exe')))
+    w.mp.setattr(environment, 'time', w.clock)
+    w.mp.setattr(environment, 'shutil', SimpleNamespace(which=lambda name: None))     # no adb on a PATH that is not the world's
+    w.mp.setattr(environment, '_windows_ocr', dict(state='unknown', basis='not probed', checked_at=None, detail='not probed'))
+    w.mp.setattr(scrcpy_package, 'default_server_path', lambda: w.root.parent / f'{w.name}-scrcpy' / 'scrcpy-server')
+    w.mp.setattr(scrcpy_package, 'importlib', SimpleNamespace(util=SimpleNamespace(find_spec=lambda name: object() if name == 'av' else None)))
+    emulators = w.root.parent / f'{w.name}-emulators'
+    emulators.mkdir(parents=True, exist_ok=True)
+    found = {}
+    for name, wanted, leaf in (('mumu', mumu, 'MuMuManager.exe'), ('bluestacks', bluestacks, 'HD-Player.exe')):
+        if wanted:
+            (emulators / leaf).write_bytes(b'MZ')
+            found[name] = str(emulators / leaf)
+    w.mp.setattr(w.dash, '_mumu_manager', lambda: found.get('mumu'))
+    w.mp.setattr(w.dash, '_bluestacks_player', lambda: found.get('bluestacks'))
+
+
 def pin_build(w, root, *, started=None):
-    """The server's snapshot over `root` (its ids and times pinned) and compare() over the same tree."""
+    """The server's snapshot over `root` (its ids and times pinned) and compare() over the same tree, and the environment it reports."""
+    pin_environment(w)
     snapshot = build_info.snapshot(root, 'dashboard') if started is None else started
     snapshot.update(pid=os.getpid(), session_id='server-session-0001', captured_at=w.clock.now - 3600)
     real_compare = build_info.compare

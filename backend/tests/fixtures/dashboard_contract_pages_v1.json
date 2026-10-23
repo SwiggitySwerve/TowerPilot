@@ -338344,6 +338344,2416 @@
     "status": 200
    }
   },
+  "runtime_environment": {
+   "emulator_locators_find_bluestacks_not_mumu": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       },
+       "mumu": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "ocr_script_present_but_never_probed_state_unknown": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "available"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "other_operating_system_is_reported_as_it_is": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Linux"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "platform_tools_folder_cannot_be_read_state_unknown": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "local tools check: PermissionError",
+       "state": "unknown",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "local tools check: PermissionError; device connection not probed",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "platform_tools_installed_without_a_receipt_version_unknown": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs; installed version unknown (no readable receipt)",
+       "state": "available",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": true,
+        "basis": "tool_install.installed: local executable and required DLLs; installed version unknown (no readable receipt); device connection not probed",
+        "state": "available"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "platform_tools_receipt_does_not_match_the_pin_version_unknown": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs; installed version unknown (receipt does not match pin)",
+       "state": "available",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": true,
+        "basis": "tool_install.installed: local executable and required DLLs; installed version unknown (receipt does not match pin); device connection not probed",
+        "state": "available"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "platform_tools_with_the_matching_receipt": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches",
+       "state": "available",
+       "version": "37.0.1"
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": true,
+        "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches; device connection not probed",
+        "state": "available"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "portable_release_scrcpy_server_present_decoder_missing": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "portable",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "portable-windows-x64"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "missing"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "available",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "probe_cannot_start_the_script_host": {
+    "body": {
+     "ok": true,
+     "windows_ocr": {
+      "basis": "on-demand synthetic OCR probe",
+      "checked_at": 1800000000.0,
+      "detail": "Windows OCR probe failed: FileNotFoundError",
+      "state": "missing"
+     }
+    },
+    "request": {
+     "body": {
+      "probe": "windows_ocr"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 200
+   },
+   "probe_exceeds_the_ten_second_budget": {
+    "body": {
+     "ok": true,
+     "windows_ocr": {
+      "basis": "on-demand synthetic OCR probe",
+      "checked_at": 1800000000.0,
+      "detail": "Windows OCR exceeded the 10 s probe deadline",
+      "state": "timeout"
+     }
+    },
+    "request": {
+     "body": {
+      "probe": "windows_ocr"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 200
+   },
+   "probe_exit_zero_but_the_text_was_not_recognized": {
+    "body": {
+     "ok": true,
+     "windows_ocr": {
+      "basis": "on-demand synthetic OCR probe",
+      "checked_at": 1800000000.0,
+      "detail": "Windows OCR did not recognize the synthetic text (exit 0)",
+      "state": "missing"
+     }
+    },
+    "request": {
+     "body": {
+      "probe": "windows_ocr"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 200
+   },
+   "probe_nonzero_exit": {
+    "body": {
+     "ok": true,
+     "windows_ocr": {
+      "basis": "on-demand synthetic OCR probe",
+      "checked_at": 1800000000.0,
+      "detail": "Windows OCR did not recognize the synthetic text (exit 1)",
+      "state": "missing"
+     }
+    },
+    "request": {
+     "body": {
+      "probe": "windows_ocr"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 200
+   },
+   "probe_on_another_operating_system_needs_windows": {
+    "body": {
+     "ok": true,
+     "windows_ocr": {
+      "basis": "on-demand synthetic OCR probe",
+      "checked_at": 1800000000.0,
+      "detail": "Windows OCR requires Windows",
+      "state": "missing"
+     }
+    },
+    "request": {
+     "body": {
+      "probe": "windows_ocr"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 200
+   },
+   "probe_preparation_used_the_whole_budget_nothing_is_run": {
+    "body": {
+     "ok": true,
+     "windows_ocr": {
+      "basis": "on-demand synthetic OCR probe",
+      "checked_at": 1800000000.0,
+      "detail": "Windows OCR exceeded the 10 s probe deadline",
+      "state": "timeout"
+     }
+    },
+    "request": {
+     "body": {
+      "probe": "windows_ocr"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 200
+   },
+   "probe_recognizes_the_synthetic_text": {
+    "body": {
+     "ok": true,
+     "windows_ocr": {
+      "basis": "on-demand synthetic OCR probe",
+      "checked_at": 1800000000.0,
+      "detail": "Synthetic text recognized by Windows OCR",
+      "state": "available"
+     }
+    },
+    "request": {
+     "body": {
+      "probe": "windows_ocr"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 200
+   },
+   "probe_refused_while_the_action_lock_is_held": {
+    "body": {
+     "code": "action_lock",
+     "error": "Another action is in progress; wait for its result",
+     "ok": false
+    },
+    "request": {
+     "body": {
+      "probe": "windows_ocr"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 409
+   },
+   "probe_stderr_output_is_not_success": {
+    "body": {
+     "ok": true,
+     "windows_ocr": {
+      "basis": "on-demand synthetic OCR probe",
+      "checked_at": 1800000000.0,
+      "detail": "Windows OCR did not recognize the synthetic text (exit 0)",
+      "state": "missing"
+     }
+    },
+    "request": {
+     "body": {
+      "probe": "windows_ocr"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 200
+   },
+   "probe_succeeds_after_the_failures_and_replaces_the_stored_result": {
+    "body": {
+     "ok": true,
+     "windows_ocr": {
+      "basis": "on-demand synthetic OCR probe",
+      "checked_at": 1800000000.0,
+      "detail": "Synthetic text recognized by Windows OCR",
+      "state": "available"
+     }
+    },
+    "request": {
+     "body": {
+      "probe": "windows_ocr"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 200
+   },
+   "probe_when_the_ocr_script_is_missing": {
+    "body": {
+     "ok": true,
+     "windows_ocr": {
+      "basis": "on-demand synthetic OCR probe",
+      "checked_at": 1800000000.0,
+      "detail": "Windows OCR script is missing",
+      "state": "missing"
+     }
+    },
+    "request": {
+     "body": {
+      "probe": "windows_ocr"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 200
+   },
+   "probe_with_an_array": {
+    "body": {
+     "error": "Expected {\"probe\": \"windows_ocr\"}",
+     "ok": false
+    },
+    "request": {
+     "body": [],
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 400
+   },
+   "probe_with_an_empty_object": {
+    "body": {
+     "error": "Expected {\"probe\": \"windows_ocr\"}",
+     "ok": false
+    },
+    "request": {
+     "body": {},
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 400
+   },
+   "probe_with_an_extra_key": {
+    "body": {
+     "error": "Expected {\"probe\": \"windows_ocr\"}",
+     "ok": false
+    },
+    "request": {
+     "body": {
+      "force": true,
+      "probe": "windows_ocr"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 400
+   },
+   "probe_with_another_probe_name": {
+    "body": {
+     "error": "Expected {\"probe\": \"windows_ocr\"}",
+     "ok": false
+    },
+    "request": {
+     "body": {
+      "probe": "adb"
+     },
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 400
+   },
+   "probe_with_json_null": {
+    "body": {
+     "error": "Expected {\"probe\": \"windows_ocr\"}",
+     "ok": false
+    },
+    "request": {
+     "body": "null",
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 400
+   },
+   "probe_with_text_that_is_not_json": {
+    "body": {
+     "error": "Expected {\"probe\": \"windows_ocr\"}",
+     "ok": false
+    },
+    "request": {
+     "body": "{broken",
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 400
+   },
+   "probe_without_a_body": {
+    "body": {
+     "error": "Expected {\"probe\": \"windows_ocr\"}",
+     "ok": false
+    },
+    "request": {
+     "method": "POST",
+     "path": "/api/environment/probe"
+    },
+    "status": 400
+   },
+   "read_after_the_last_failed_probe": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "on-demand synthetic OCR probe",
+       "checked_at": 1800000000.0,
+       "detail": "Windows OCR probe failed: FileNotFoundError",
+       "state": "missing"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "available"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "read_after_the_missing_script_probe": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "on-demand synthetic OCR probe",
+       "checked_at": 1800000000.0,
+       "detail": "Windows OCR script is missing",
+       "state": "missing"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "read_after_the_probe_that_replaced_the_failure": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "on-demand synthetic OCR probe",
+       "checked_at": 1800000000.0,
+       "detail": "Synthetic text recognized by Windows OCR",
+       "state": "available"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "available"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "read_after_the_refused_probe_still_unknown": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "available"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "read_after_the_successful_probe": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "on-demand synthetic OCR probe",
+       "checked_at": 1800000000.0,
+       "detail": "Synthetic text recognized by Windows OCR",
+       "state": "available"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "available"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "release_identity_of_an_unrecognized_kind_is_unknown": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "unknown"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "release_identity_that_cannot_be_read_is_unknown": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "unknown"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "source_checkout_nothing_installed": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "source_release_every_prerequisite_present": {
+    "body": {
+     "api_contract": 1,
+     "capabilities": [
+      "battle_controls",
+      "run_history",
+      "stream_backends",
+      "runtime_identity",
+      "process_refresh_status",
+      "schedule_status",
+      "revisioned_editor_saves",
+      "setup_battle_guard",
+      "collection_handoff",
+      "gem_harvesting"
+     ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "available"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches",
+       "state": "available",
+       "version": "37.0.1"
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "source"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "available",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": true,
+        "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches; device connection not probed",
+        "state": "available"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "available"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "available"
+      }
+     },
+     "persistence_operations": [],
+     "port": 8620,
+     "process_refresh": {
+      "age_sec": null,
+      "error": null,
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "state": "unknown"
+     },
+     "server": {
+      "captured_at": 1799996400.0,
+      "disk_source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "error": null,
+      "pid": 4242,
+      "role": "dashboard",
+      "session_id": "server-session-0001",
+      "source_changed": false,
+      "source_fingerprint": "00000000000000000000000000000000000000000000000000000000000000a0",
+      "source_revision": null
+     },
+     "workers": []
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/runtime"
+    },
+    "status": 200
+   },
+   "stream_backends_adb_from_the_local_tools_and_scrcpy_ready": {
+    "body": {
+     "adb": {
+      "available": true,
+      "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches; device connection not probed",
+      "state": "available"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": false,
+      "reason": "MuMu native preview needs a verified loopback TCP serial"
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": true,
+      "decoder_available": true,
+      "installed": true,
+      "reason": "",
+      "server_path": "<root>/scrcpy-server",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   },
+   "stream_backends_configured_adb_executable_found": {
+    "body": {
+     "adb": {
+      "available": true,
+      "basis": "configured adb executable found locally; device connection not probed",
+      "state": "available"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": false,
+      "reason": "MuMu native preview needs a verified loopback TCP serial"
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": false,
+      "decoder_available": true,
+      "installed": false,
+      "reason": "scrcpy server missing or unreadable: <root>/scrcpy-server",
+      "server_path": "<root>/scrcpy-server",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   },
+   "stream_backends_configured_adb_executable_gone_and_no_local_tools": {
+    "body": {
+     "adb": {
+      "available": false,
+      "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+      "state": "missing"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": false,
+      "reason": "MuMu native preview needs a verified loopback TCP serial"
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": false,
+      "decoder_available": true,
+      "installed": false,
+      "reason": "scrcpy server missing or unreadable: <root>/scrcpy-server",
+      "server_path": "<root>/scrcpy-server",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   },
+   "stream_backends_configured_adb_executable_gone_falls_back_to_the_local_tools": {
+    "body": {
+     "adb": {
+      "available": true,
+      "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches; device connection not probed",
+      "state": "available"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": false,
+      "reason": "MuMu native preview needs a verified loopback TCP serial"
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": false,
+      "decoder_available": true,
+      "installed": false,
+      "reason": "scrcpy server missing or unreadable: <root>/scrcpy-server",
+      "server_path": "<root>/scrcpy-server",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   },
+   "stream_backends_install_unreadable_adb_unknown": {
+    "body": {
+     "adb": {
+      "available": false,
+      "basis": "local tools check: PermissionError; device connection not probed",
+      "state": "unknown"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": false,
+      "reason": "MuMu native preview needs a verified loopback TCP serial"
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": false,
+      "decoder_available": true,
+      "installed": false,
+      "reason": "scrcpy server missing or unreadable: <root>/scrcpy-server",
+      "server_path": "<root>/scrcpy-server",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   },
+   "stream_backends_invalid_preview_setting_is_refused": {
+    "body": {
+     "error": "preview.backend must be auto, mumu, scrcpy, or adb",
+     "ok": false
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 400
+   },
+   "stream_backends_nothing_installed_adb_missing": {
+    "body": {
+     "adb": {
+      "available": false,
+      "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+      "state": "missing"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": false,
+      "reason": "MuMu native preview needs a verified loopback TCP serial"
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": false,
+      "decoder_available": true,
+      "installed": false,
+      "reason": "scrcpy server missing or unreadable: <root>/scrcpy-server",
+      "server_path": "<root>/scrcpy-server",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   }
+  },
   "runtime_state": {
    "a_profile_write_is_listed_as_a_persistence_operation_not_a_worker": {
     "body": {
@@ -338360,6 +340770,73 @@
       "collection_handoff",
       "gem_harvesting"
      ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
      "persistence_operations": [
       {
        "cancellable": false,
@@ -338436,6 +340913,73 @@
       "collection_handoff",
       "gem_harvesting"
      ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
      "persistence_operations": [],
      "port": 8620,
      "process_refresh": {
@@ -338482,6 +341026,73 @@
       "collection_handoff",
       "gem_harvesting"
      ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
      "persistence_operations": [],
      "port": 8620,
      "process_refresh": {
@@ -338525,6 +341136,73 @@
       "collection_handoff",
       "gem_harvesting"
      ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
      "persistence_operations": [],
      "port": 8620,
      "process_refresh": {
@@ -338571,6 +341249,73 @@
       "collection_handoff",
       "gem_harvesting"
      ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
      "persistence_operations": [],
      "port": 8620,
      "process_refresh": {
@@ -338623,6 +341368,73 @@
       "collection_handoff",
       "gem_harvesting"
      ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
      "persistence_operations": [],
      "port": 8620,
      "process_refresh": {
@@ -338666,6 +341478,73 @@
       "collection_handoff",
       "gem_harvesting"
      ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
      "persistence_operations": [],
      "port": 8620,
      "process_refresh": {
@@ -338712,6 +341591,73 @@
       "collection_handoff",
       "gem_harvesting"
      ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
      "persistence_operations": [],
      "port": 8620,
      "process_refresh": {
@@ -338755,6 +341701,73 @@
       "collection_handoff",
       "gem_harvesting"
      ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
      "persistence_operations": [],
      "port": 8620,
      "process_refresh": {
@@ -338810,6 +341823,73 @@
       "collection_handoff",
       "gem_harvesting"
      ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
      "persistence_operations": [],
      "port": 8620,
      "process_refresh": {
@@ -338865,6 +341945,73 @@
       "collection_handoff",
       "gem_harvesting"
      ],
+     "environment": {
+      "app_build": {
+       "basis": "app index.html exists; integrity not checked",
+       "state": "missing"
+      },
+      "emulators": {
+       "bluestacks": {
+        "basis": "not found by wizard locator; alternate installs not checked",
+        "state": "unknown"
+       },
+       "mumu": {
+        "basis": "wizard locator: local executable; not launched",
+        "state": "available"
+       }
+      },
+      "os": {
+       "architecture": "AMD64",
+       "release": "11",
+       "system": "Windows"
+      },
+      "platform_tools": {
+       "basis": "tool_install.installed: local executable and required DLLs",
+       "state": "missing",
+       "version": null
+      },
+      "python": {
+       "kind": "source",
+       "version": "3.12.0"
+      },
+      "release": {
+       "kind": "checkout"
+      },
+      "scrcpy_decoder": {
+       "basis": "scrcpy_package.status: PyAV module discovery",
+       "state": "available"
+      },
+      "scrcpy_server": {
+       "basis": "scrcpy_package.status: pinned server checksum",
+       "state": "missing",
+       "version": "5.0.1"
+      },
+      "stream_backends": {
+       "adb": {
+        "available": false,
+        "basis": "tool_install.installed: local executable and required DLLs; device connection not probed",
+        "state": "missing"
+       },
+       "mumu": {
+        "basis": "configured VM mapping not checked; see /api/stream/backends",
+        "state": "unknown"
+       },
+       "scrcpy": {
+        "basis": "scrcpy server and decoder prerequisites",
+        "state": "missing"
+       }
+      },
+      "windows_ocr": {
+       "basis": "not probed",
+       "checked_at": null,
+       "detail": "not probed",
+       "state": "unknown"
+      },
+      "windows_ocr_script": {
+       "basis": "local Windows OCR script",
+       "state": "missing"
+      }
+     },
      "persistence_operations": [],
      "port": 8620,
      "process_refresh": {
@@ -342967,7 +346114,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -343375,7 +346522,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -343783,7 +346930,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -344721,7 +347868,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -345129,7 +348276,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -345537,7 +348684,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -347046,7 +350193,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -347454,7 +350601,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -347862,7 +351009,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -348721,7 +351868,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -349129,7 +352276,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -349537,7 +352684,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -350396,7 +353543,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -350804,7 +353951,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -351212,7 +354359,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -352071,7 +355218,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -352479,7 +355626,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -352887,7 +356034,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -353746,7 +356893,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -354154,7 +357301,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -354562,7 +357709,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -355421,7 +358568,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -355829,7 +358976,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -356237,7 +359384,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -357120,7 +360267,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -357528,7 +360675,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -357936,7 +361083,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -358818,7 +361965,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -359226,7 +362373,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -359634,7 +362781,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -360506,7 +363653,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -360914,7 +364061,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -361322,7 +364469,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -362194,7 +365341,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -362602,7 +365749,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -363010,7 +366157,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -363886,7 +367033,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -364294,7 +367441,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -364702,7 +367849,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -365575,7 +368722,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -365983,7 +369130,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -366391,7 +369538,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -367264,7 +370411,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -367672,7 +370819,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -368080,7 +371227,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -368952,7 +372099,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -369360,7 +372507,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -369768,7 +372915,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -370641,7 +373788,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -371049,7 +374196,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -371457,7 +374604,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -372330,7 +375477,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -372738,7 +375885,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -373146,7 +376293,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -374021,7 +377168,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -374429,7 +377576,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -374837,7 +377984,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -375717,7 +378864,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -376125,7 +379272,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -376533,7 +379680,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -377406,7 +380553,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -377814,7 +380961,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -378222,7 +381369,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -379626,7 +382773,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -380034,7 +383181,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -380442,7 +383589,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -381336,7 +384483,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -381744,7 +384891,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -382152,7 +385299,7 @@
         },
         {
          "default": 15,
-         "description": "Wait after an unreadable balance or safety refusal. Once the window ends, wait for the next scheduled window.",
+         "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window.",
          "key": "gem_orbit.retry_backoff_sec",
          "label": "Backoff within the active window",
          "max": 300,
@@ -415263,6 +418410,7 @@
   "run_entry_patch": "POST /api/profile-patch on [blueprints, <run>, <field>] for a coin, a tournament, a shard and a dissonance coin run. The 500 answers here are the route's own JSON {ok:false, error} (validator unavailable / write failed), not the default error page. A stale revision is judged before the values.",
   "run_templates_add": "POST /api/run-templates/add has no expected_revision and no idempotency key: an identical resend after a committed add is 400 \"That run already exists\"; a lost answer is settled only by reading the profile. Every refusal and failure is 400 except a starter/draft profile (409); a write that fails after the file changed is also 400.",
   "run_templates_add_fenced": "POST /api/run-templates/add gained two OPTIONAL guards (root-approved behaviour change; absent = the legacy request, answered as before, see run_templates_add): `expected_revision` (the profile revision as GET /api/profile-src publishes it) is judged under the profile lock BEFORE the recipe: stale, null, empty or not text is 409 revision_conflict with the current revision, nothing written; a request that carries it also gets the new `revision` back in the 200 answer. `expected_context` {instance, account, profile, serial} is the fence of the other context-dependent writes (409 context_changed + current_context, judged first; malformed or null 400 invalid_request). The resend of a committed add carrying the old revision is 409; without it the run identifier refuses it (400).",
+  "runtime_environment": "Item 10 p10b. GET /api/runtime carries `environment` (local prerequisites: operating system, interpreter, release kind, platform-tools with the version of a MATCHING install receipt only, emulator locators, scrcpy server and decoder, app build, OCR script and the stored OCR probe result); GET /api/stream/backends reports adb and scrcpy; POST /api/environment/probe with exactly {\"probe\": \"windows_ocr\"} runs the one OCR probe, under the global action lock. Every host input is pinned in the test world and every file the report reads is created under <root>/install, so the family is the same on every machine: the operating system, Python, adb (platform-tools) and scrcpy versions in it are the pins of the code or the values the world was given, never read from the machine that generated it. `available` is a local prerequisite, not a working emulator connection or capture; a locator that finds nothing is `unknown`; an OCR script is present without OCR being known to work until the probe says so. The family runtime_state records the same field (over an empty root) and keeps its place.",
   "screen_analysis": "POST /api/screen-analysis/start does not consult the process table (the ledger refuses a second operation: 409 operation_active); a body must be a JSON object or empty / not claim to be JSON. Every refusal of start, status and frame carries a code (idempotency_key_reused | context_changed | operation_active | operation_unknown | operation_kind_mismatch | analysis_not_finished | artifact_unavailable | artifact_changed | artifact_invalid); status and frame follow the requested operation, else the latest of the context, else the shared files. A running operation reports status running whatever the file says; a file of another operation is not shown (message \"belongs to another operation\" stays in the reply next to status running); failed or interrupted operations are status error with the operation's message or \"Analysis did not complete\"; a finished operation whose result was never written is status unavailable. frame.png ignores the `revision` query the page may send; with no operation and no file it is 404 no_screenshot.",
   "shopping_queue": "F6-12: every case of the brief under the brief's own names. The saved queue is POST /api/run-controls changes.shopping_plan, the live queue POST /api/operations/{id}/live-controls, manual shopping POST /api/operations/{id}/actions, the shared library POST /api/profile-patch on policies.shopping_lists.<id>. The legacy conversion preview is GET /api/run-controls on a run whose policy is a legacy list/mapping (`legacy_conversion` {plan, warnings, requires_review}), a write only when the page saves a reviewed plan. A live plan command keeps the plan's own enabled/interval; routine overrides sit in effective.routines. The saved-only comment and the unsupported-plan case of run_controls_save are not edited (they would change that family's hash): the repaired case is shopping_queue.refused_the_shopping_plan_the_run_does_not_support."
  },
