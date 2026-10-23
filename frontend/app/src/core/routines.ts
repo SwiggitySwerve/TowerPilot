@@ -6,6 +6,7 @@ import {
   type BattleIdentity,
   type RecordDecision,
 } from './battle.ts';
+import { compatClaimLine, isShoppingAction, isShoppingVariant, type ActionKey } from './actions.ts';
 import { commandTerminal, commandView, payloadPaths, type CommandView } from './commands.ts';
 import { planHolds, queuePlan } from './shoppingPlan.ts';
 import type { ContextRead } from './connection.ts';
@@ -13,8 +14,6 @@ import { finite, hasOwn, id, list, own, ownPath, record, revision, stringList } 
 import type { DiagnosticQuery } from './runtime.ts';
 import { opaqueToken, sameToken, type OpaqueToken } from './tokens.ts';
 import { decide, type ChipDecision } from './vocabulary.ts';
-
-export type Routine = 'ad_gems' | 'floating_gems' | 'shopping';
 
 export type RoutineTiming = (ChipDecision | RecordDecision) & {
   readonly nextInSec: number | null;
@@ -29,7 +28,7 @@ export type RoutineTiming = (ChipDecision | RecordDecision) & {
 export function routineTiming(
   read: ContextRead,
   shown: BattleIdentity | null,
-  routine: Routine,
+  routine: ActionKey,
   elapsedSec = 0,
 ): RoutineTiming {
   const battle =
@@ -101,21 +100,20 @@ export interface RoutineResult {
 }
 
 /** F-057/F-068: result evidence is never converted into a balance or gem count. */
-export function routineResult(runtime: unknown, routine: Routine): RoutineResult {
+export function routineResult(runtime: unknown, routine: ActionKey): RoutineResult {
   // backend/runtime/battle_session.py publish/_manual_progress: raw paths only.
   const outcome = ownPath(runtime, 'routines', routine, 'last_outcome');
   const routineRecord = ownPath(runtime, 'routines', routine);
   const confirmed = own(outcome, 'confirmed') === true;
+  const shopping = isShoppingAction(routine);
   const fields = {
     confirmed,
     observedAt: finite(own(outcome, 'observed_at')) ?? null,
-    reason:
-      routine === 'shopping' ? ownPath(outcome, 'last_sweep', 'reason') : own(outcome, 'reason'),
+    reason: shopping ? ownPath(outcome, 'last_sweep', 'reason') : own(outcome, 'reason'),
     raw: outcome,
-    confirmedPurchases:
-      routine === 'shopping'
-        ? (finite(ownPath(outcome, 'last_sweep', 'confirmed_purchases')) ?? null)
-        : null,
+    confirmedPurchases: shopping
+      ? (finite(ownPath(outcome, 'last_sweep', 'confirmed_purchases')) ?? null)
+      : null,
   };
   if (
     record(routineRecord) === undefined ||
@@ -125,16 +123,12 @@ export function routineResult(runtime: unknown, routine: Routine): RoutineResult
     return { ...fields, decision: decide('F-057', 'unknown', 'routine_result_unreadable', null) };
   if (outcome === null)
     return { ...fields, decision: recordDecision('F-057', 'no_result_yet', routineRecord) };
-  if (routine === 'shopping')
+  if (shopping)
     return { ...fields, decision: recordDecision('F-068', 'shopping_result_reported', outcome) };
   return {
     ...fields,
     decision: confirmed
-      ? recordDecision(
-          'F-057',
-          routine === 'ad_gems' ? 'claim_confirmed' : 'floating_claim_confirmed',
-          outcome,
-        )
+      ? recordDecision('F-057', compatClaimLine(routine), outcome)
       : decide('F-057', 'unknown', 'result_unconfirmed', null),
   };
 }
@@ -179,10 +173,10 @@ export function actionGate(
     return deny('action_unsupported');
   if (freshBattleReport(read, shown, elapsedSec).kind === 'unknown')
     return deny('report_unavailable');
-  const isShopping = routine === 'shopping' || routine.startsWith('shopping:');
+  const isShopping = isShoppingAction(routine);
   if (
     isShopping &&
-    (shopping.requireQueue === true || routine.startsWith('shopping:')) &&
+    (shopping.requireQueue === true || isShoppingVariant(routine)) &&
     queuePlan(ownPath(battle, 'effective', 'shopping_plan')) === null
   )
     return deny('queue_unavailable');
@@ -201,7 +195,7 @@ export function actionGate(
   }
   if (
     isShopping &&
-    (shopping.requireQueue === true || routine.startsWith('shopping:')) &&
+    (shopping.requireQueue === true || isShoppingVariant(routine)) &&
     commands.some((command) => own(command, 'kind') === 'controls' && !commandTerminal(command))
   )
     return deny('control_change_pending');

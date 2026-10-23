@@ -93,6 +93,14 @@ export function stringList(value: unknown): readonly string[] | undefined {
   return out;
 }
 
+/**
+ * The entry a code-keyed table holds for `code` as its OWN key, else `fallback` (an inherited
+ * name such as `constructor` is never an entry). The one lookup of a code in a word table.
+ */
+export function ownOr<T>(table: Readonly<Record<string, T>>, code: string, fallback: T): T {
+  return Object.hasOwn(table, code) ? (table[code] ?? fallback) : fallback;
+}
+
 /** The own entries of a plain object (string keys, own enumerable properties only). */
 export function entries(value: unknown): readonly (readonly [string, unknown])[] {
   const object = record(value);

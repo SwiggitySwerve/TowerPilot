@@ -1,3 +1,7 @@
+import {
+  actionsBattleDetailAnswerSchema,
+  actionsMoreBattleDetailAnswerSchema,
+} from '../contract/actions.ts';
 import { historyDetailAnswerSchema, historyListAnswerSchema } from '../contract/history.ts';
 import { HISTORY_PAGE_SIZE } from '../core/history.ts';
 import { readEndpoint, type ReadOutcome } from './client.ts';
@@ -29,11 +33,17 @@ const listEndpoint: Endpoint = {
   strict: [historyListAnswerSchema],
   members: bodyMembers([historyListAnswerSchema]),
 };
+// A2-7 R0: a battle detail whose executions block lists recorded action executions.
+const DETAIL_SCHEMAS = [
+  historyDetailAnswerSchema,
+  actionsBattleDetailAnswerSchema,
+  actionsMoreBattleDetailAnswerSchema,
+];
 const detailEndpoint: Endpoint = {
   id: 'battleDetail',
   method: 'GET',
-  strict: [historyDetailAnswerSchema],
-  members: bodyMembers([historyDetailAnswerSchema]),
+  strict: DETAIL_SCHEMAS,
+  members: bodyMembers(DETAIL_SCHEMAS),
 };
 
 /** Read-only adapter over the existing transport and generated wire boundary. */

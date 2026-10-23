@@ -20,6 +20,11 @@ import {
 } from '../contract/recognitionAdvanced.ts';
 import { z } from 'zod';
 import { previewBackendsAnswerSchema, previewStatusAnswerSchema } from '../contract/preview.ts';
+import {
+  actionsBattleDetailAnswerSchema,
+  actionsMoreBattleDetailAnswerSchema,
+  actionsProjectionReadAnswerSchema,
+} from '../contract/actions.ts';
 import { automationAccessAnswerSchema } from '../contract/automationAccess.ts';
 import {
   accountsAnswerSchema,
@@ -547,9 +552,16 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       battleDetailsReadAnswerSchema,
       // F6-12: a battle's shopping queue changes and Try once commands, requested to completed.
       shoppingBattleReadAnswerSchema,
+      // A2-7 R0: the battle read carrying the timed-action projection runtime.actions.
+      actionsProjectionReadAnswerSchema,
     ]),
     battles: endpoint('battles', 'GET', [contract.battlesHistory]),
-    battleDetail: endpoint('battleDetail', 'GET', [contract.battleDetail]),
+    // A2-7 R0: a battle detail whose executions block lists recorded action executions.
+    battleDetail: endpoint('battleDetail', 'GET', [
+      contract.battleDetail,
+      actionsBattleDetailAnswerSchema,
+      actionsMoreBattleDetailAnswerSchema,
+    ]),
     schedule: endpoint('schedule', 'GET', [contract.schedule]),
     wizardTools: endpoint('wizardTools', 'GET', [contract.wizardTools, emulatorsToolsAnswerSchema]),
     wizardState: endpoint('wizardState', 'GET', [

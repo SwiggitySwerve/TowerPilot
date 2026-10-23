@@ -1,4 +1,5 @@
 import { editingTarget } from './editingTarget.ts';
+import { actions } from './actions.ts';
 import { previewCopy } from './preview.ts';
 import { emulatorSettings } from './emulatorSettings.ts';
 import { configEquipment } from './configEquipment.ts';
@@ -57,6 +58,8 @@ export const copy = {
   /** Spec 3.1: the eight status words (also under dashboard.shell.states). */
   states: shell.states,
   runs,
+  /** A2-7: action names and field labels (core/actions.ts actionName, fieldLabel). */
+  actions,
   runsAdd,
   editingTarget,
   emulatorSettings,

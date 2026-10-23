@@ -17,11 +17,6 @@ export const thisBattle = {
     result: entry('Last result'),
     action: entry('Action'),
   },
-  routines: {
-    ad_gems: entry('Ad gems'),
-    floating_gems: entry('Floating gems'),
-    shopping: entry('Shopping'),
-  },
   actions: {
     runNow: entry('Run now'),
     resend: entry('Send same request again'),

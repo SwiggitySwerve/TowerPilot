@@ -171,23 +171,6 @@ export const runs = {
   },
   discard: entry('Discard'),
   readAge: (seconds: number) => made(`read ${durationText(seconds)} ago`),
-  routines: {
-    ad_gems: entry('Ad gems'),
-    floating_gems: entry('Floating gems'),
-    shopping: entry('Shopping'),
-    rewards: entry('Rewards'),
-    abilities: entry('Abilities'),
-    rescue: entry('Rescue'),
-    repeat: entry('Repeat'),
-  },
-  otherRoutine: entry('Other routine'),
-  fields: {
-    enabled: entry('On'),
-    interval_sec: entry('Every'),
-    window_sec: entry('Window', 'How long one attempt may take.'),
-    tap_interval_sec: entry('Tap every', 'Time between taps on a floating gem.'),
-  },
-  otherField: entry('Setting'),
   seconds: entry('s'),
   notReported: entry('Not reported'),
   range: (min: number | null, max: number | null) =>

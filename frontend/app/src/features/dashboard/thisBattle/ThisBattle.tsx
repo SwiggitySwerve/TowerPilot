@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { copy } from '../../../copy/catalogue.ts';
 import { ageAgo, lastRead } from '../../../copy/dashboard/shell.ts';
 import type { CopyEntry } from '../../../copy/text.ts';
+import { actionName, isShoppingAction } from '../../../core/actions.ts';
+import { ownOr } from '../../../core/read.ts';
 import type { ServerText } from '../../../copy/server.ts';
 import {
   selectThisBattle,
@@ -27,13 +29,6 @@ import './thisBattle.css';
 import '../../runs/shoppingLive.css';
 
 const words = copy.dashboard.thisBattle;
-function lookup(
-  entries: Readonly<Record<string, CopyEntry>>,
-  code: string,
-  fallback: CopyEntry,
-): CopyEntry {
-  return Object.hasOwn(entries, code) ? (entries[code] ?? fallback) : fallback;
-}
 
 /**
  * F-055: "the blocker word": a routine's blocker is a code the runtime
@@ -43,7 +38,7 @@ function lookup(
 function Blocker({ code }: { readonly code: ServerText<'message'> }) {
   const known: Readonly<Record<string, CopyEntry>> = words.blockers;
   if (Object.hasOwn(known, code))
-    return <span>{lookup(known, code, words.blockers.other).short}</span>;
+    return <span>{ownOr(known, code, words.blockers.other).short}</span>;
   return (
     <span>
       {words.blockers.other.short}
@@ -58,13 +53,13 @@ function Decision({ value }: { readonly value: ChipVM }) {
   return (
     <>
       {value.word === null ? null : <Chip state={value.word} />}
-      <span>{lookup(words.lines, value.line, words.unknown).short}</span>
+      <span>{ownOr(words.lines, value.line, words.unknown).short}</span>
     </>
   );
 }
 
 function outcomeEntry(outcome: ThisBattleVM['outcomes'][number]): CopyEntry {
-  if (outcome.command !== null) return lookup(words.lines, outcome.command.line, words.unknown);
+  if (outcome.command !== null) return ownOr(words.lines, outcome.command.line, words.unknown);
   if (outcome.settledByRead !== null) return words.recorded;
   if (outcome.phase === 'sending') return copy.dashboard.shell.sending;
   return outcome.outcome === 'not_recorded' ? words.refused : words.outcomeUnknown;
@@ -128,7 +123,7 @@ function RoutineRow({
   readonly battleKey: string;
 }) {
   const { commands } = useDashboard();
-  const reason = lookup(
+  const reason = ownOr(
     words.disabled,
     row.runNow.reason ?? 'report_unavailable',
     words.disabled.report_unavailable,
@@ -139,7 +134,7 @@ function RoutineRow({
   return (
     <li className="tp-battle__routine">
       <strong className="tp-battle__name" id={nameId}>
-        {words.routines[row.routine].short}
+        {actionName(copy.actions.names, row.routine, copy.actions.otherName).short}
       </strong>
       <div className="tp-battle__setting">
         <span className="tp-battle__column-label">{words.columns.battle.short}</span>
@@ -169,7 +164,7 @@ function RoutineRow({
         ) : row.nextInSec !== null ? (
           words.next(row.nextInSec)
         ) : row.timing.line === 'routine_reported' && row.stateCode !== null ? (
-          lookup(words.states, row.stateCode, words.unknown).short
+          ownOr(words.states, row.stateCode, words.unknown).short
         ) : (
           <Decision value={row.timing} />
         )}
@@ -229,7 +224,7 @@ function ShoppingTryOnceAction({ item }: { readonly item: ShoppingTryOnceVM }) {
       {item.button.enabled ? null : (
         <div id={`${id}-reason`}>
           {
-            lookup(
+            ownOr(
               words.disabled,
               item.button.reason ?? 'report_unavailable',
               words.disabled.report_unavailable,
@@ -277,7 +272,7 @@ function Queue({
     <div className="tp-battle__queue">
       <ShoppingTryOnce value={tryOnce.filter((item) => item.known !== null)} />
       {value.warnings.map((warning) => {
-        const entry = lookup(
+        const entry = ownOr(
           {
             reserve_not_protected: words.queue.reserve_not_protected,
             purchase_quantity_unverified: words.queue.purchase_quantity_unverified,
@@ -318,9 +313,9 @@ function Queue({
           <p>{words.queue.review.short}</p>
         ) : (
           <>
-            <p>{lookup(words.queue.rules, value.mode ?? '', words.queue.unknownRule).short}</p>
+            <p>{ownOr(words.queue.rules, value.mode ?? '', words.queue.unknownRule).short}</p>
             <p>
-              {lookup(words.queue.cadence, value.cadence ?? '', words.queue.cadenceUnknown).short}
+              {ownOr(words.queue.cadence, value.cadence ?? '', words.queue.cadenceUnknown).short}
             </p>
             <p>
               {value.reserve === null ? words.queue.noReserve.short : words.reserve(value.reserve)}
@@ -496,7 +491,7 @@ function BattleContent() {
             {vm.header.word === null ? null : <Chip state={vm.header.word} />}
             {vm.header.row === 'B7' && vm.reportAgeSec !== null
               ? words.oldReport(vm.reportAgeSec)
-              : lookup(words.lines, vm.header.line, words.unknown).short}
+              : ownOr(words.lines, vm.header.line, words.unknown).short}
             {vm.header.row === 'B1' && vm.readAgeSec !== null ? (
               <span>{lastRead(vm.readAgeSec)}</span>
             ) : null}
@@ -529,7 +524,7 @@ function BattleContent() {
             <RoutineRow
               key={row.routine}
               row={row}
-              queue={row.routine === 'shopping' ? vm.queue : null}
+              queue={isShoppingAction(row.routine) ? vm.queue : null}
               run={vm.label}
               battleKey={vm.battleKey}
             />

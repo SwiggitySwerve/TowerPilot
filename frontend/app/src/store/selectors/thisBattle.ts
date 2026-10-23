@@ -1,3 +1,4 @@
+import { COMPAT_ROUTINES, isShoppingAction, type ActionKey } from '../../core/actions.ts';
 import { battleIdentity, battleView } from '../../core/battle.ts';
 import { commandView, type CommandView } from '../../core/commands.ts';
 import { entries, finite, id, list, own, ownPath, revision, text } from '../../core/read.ts';
@@ -8,7 +9,6 @@ import {
   routineTiming,
   runNowAnswer,
   shoppingView,
-  type Routine,
 } from '../../core/routines.ts';
 import { fromServer, type ServerText } from '../../copy/server.ts';
 import type { RunNowCommand } from '../commands.ts';
@@ -21,7 +21,7 @@ import { shoppingLiveScope } from './shoppingLive.ts';
 import { selectOutcomes, type OutcomeLineVM } from './outcomes.ts';
 
 export interface RoutineRowVM {
-  readonly routine: Routine;
+  readonly routine: ActionKey;
   readonly timing: ChipVM;
   readonly nextInSec: number | null;
   readonly windowEndsAt: number | null;
@@ -113,8 +113,6 @@ export interface BattleCommandVM extends ChipVM {
   };
 }
 
-const ROUTINES: readonly Routine[] = ['ad_gems', 'floating_gems', 'shopping'];
-
 /** Project a command read or receipt through the same command and routine rules. */
 function commandRow(
   view: CommandView,
@@ -122,7 +120,7 @@ function commandRow(
   age: (at: number | null) => number | null,
 ): BattleCommandVM {
   const action = text(own(view.payload, 'action')) ?? null;
-  const routine = ROUTINES.find((routine) => routine === action);
+  const routine = COMPAT_ROUTINES.find((routine) => routine === action);
   const result =
     routine === undefined || view.kind !== 'action'
       ? null
@@ -137,7 +135,8 @@ function commandRow(
       view.evidence === null || view.evidence === undefined ? null : JSON.stringify(view.evidence),
     ),
     shoppingState:
-      action?.startsWith('shopping') &&
+      action !== null &&
+      isShoppingAction(action) &&
       (view.state === 'requested' || view.state === 'started' || view.state === 'completed')
         ? view.state
         : null,
@@ -315,7 +314,7 @@ export function selectThisBattle(state: DashboardState): ThisBattleVM {
     routines:
       header.row === 'B2'
         ? []
-        : ROUTINES.map((routine): RoutineRowVM => {
+        : COMPAT_ROUTINES.map((routine): RoutineRowVM => {
             const matching = intents.filter(
               (r) =>
                 r.kind === 'run_now' &&
@@ -332,7 +331,7 @@ export function selectThisBattle(state: DashboardState): ThisBattleVM {
               routine,
               matching.some((r) => r.phase === 'unconfirmed' && settledByRead(state, r) === null),
               elapsed,
-              routine === 'shopping' ? shoppingOptions : {},
+              isShoppingAction(routine) ? shoppingOptions : {},
             );
             const timing = routineTiming(contextRead, shown, routine, elapsed);
             const result = routineResult(own(battle, 'runtime'), routine);

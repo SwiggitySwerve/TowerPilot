@@ -1,6 +1,7 @@
 import { restoreEditTargets, saveEditTargets } from '../api/editTargets.ts';
 import { createPreviewData } from './previewWiring.ts';
 import type { PreviewStore } from '../store/preview.ts';
+import { isShoppingAction } from '../core/actions.ts';
 import { setupPermit } from '../core/guards.ts';
 import { handoffTarget } from '../core/needs.ts';
 import { finite, own, ownPath, text } from '../core/read.ts';
@@ -703,7 +704,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     },
     runNow: (command) => {
       if (!fenced(command)) return Promise.resolve();
-      if (command.action === 'shopping' || command.action.startsWith('shopping:')) {
+      if (isShoppingAction(command.action)) {
         const current = selectThisBattle(store.getSnapshot()).tryOnce.find(
           (item) => item.action === command.action,
         )?.button;

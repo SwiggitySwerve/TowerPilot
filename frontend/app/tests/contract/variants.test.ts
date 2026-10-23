@@ -194,6 +194,9 @@ describe('R7-02 command schemas accept exactly the wire states of each kind', ()
   );
   it('RL2 SQ5 finds commands in exactly the command-bearing Dashboard endpoints', () => {
     expect(bearing.map(({ family }) => family.key).sort()).toEqual([
+      // A2-7 R0 (r17b candidate): the battle detail of a Run now execution and the projection reads.
+      'action_executions_more GET /api/battles/',
+      'battle_actions_projection GET /api/battles/active',
       'cases.battle_actions',
       'cases.battle_detail',
       'cases.battles_active',

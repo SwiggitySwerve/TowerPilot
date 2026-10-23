@@ -1,17 +1,12 @@
 import { copy } from '../../copy/catalogue.ts';
 import type { CopyEntry, CopyNode } from '../../copy/text.ts';
+import { actionName } from '../../core/actions.ts';
 import type { AdDetailsVM, RoutineDetailsVM, TimeVM } from '../../store/selectors/runs.ts';
 import { Disclosure } from '../../ui/Disclosure.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
 import { Why } from '../../ui/Why.tsx';
 
-const t = copy.runs;
 const d = copy.runs.live.details;
-const ROUTINES: Readonly<Record<string, CopyEntry>> = t.routines;
-
-function routineName(routine: string): CopyEntry {
-  return Object.hasOwn(ROUTINES, routine) ? (ROUTINES[routine] ?? t.otherRoutine) : t.otherRoutine;
-}
 
 function since(time: TimeVM): number | null {
   return time.sinceSec;
@@ -127,12 +122,11 @@ function AdRows({ ad }: { readonly ad: AdDetailsVM }) {
 }
 
 function RoutineDetails({ details }: { readonly details: RoutineDetailsVM }) {
-  const known = Object.hasOwn(ROUTINES, details.routine);
+  const name = actionName(copy.actions.names, details.routine, copy.actions.otherName);
+  // A code the page has no name for is shown as sent beside Other routine.
+  const known = name !== copy.actions.otherName;
   return (
-    <Disclosure
-      label={d.title(routineName(details.routine).short)}
-      focusKey={`runs:details:${details.routine}`}
-    >
+    <Disclosure label={d.title(name.short)} focusKey={`runs:details:${details.routine}`}>
       <div className="tp-run-details" data-routine-details={details.routine}>
         {known || details.code === null ? null : <ServerValue kind="id" value={details.code} />}
         <dl className="tp-run-details__list">

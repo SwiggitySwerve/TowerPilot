@@ -1,3 +1,11 @@
+import {
+  actionsView,
+  COMPAT_FIELDS,
+  hasLiveBounds,
+  liveConstraints,
+  liveFieldOrder,
+  orderedFields,
+} from '../../core/actions.ts';
 import { battleIdentity, battleServerNow, freshBattleReport } from '../../core/battle.ts';
 import { blueprintOf } from '../../core/gemSource.ts';
 import { entries, finite, own, ownPath, text } from '../../core/read.ts';
@@ -488,10 +496,12 @@ function fieldsVM(
   invalid: Readonly<Record<string, InvalidReason>>,
   changes: Readonly<Record<string, boolean | number>>,
   mark: (field: ControlGroup['fields'][number]) => LiveMark | null,
+  order: (routine: string) => readonly string[],
 ): readonly RunGroupVM[] {
   return groups.map((group) => ({
     routine: group.routine,
-    fields: group.fields.map((field) => {
+    // H9: each routine's fields in its field order (descriptor or compatibility), then the rest.
+    fields: orderedFields(group.fields, order(group.routine)).map((field) => {
       const typed = draft[field.path];
       return {
         path: field.path,
@@ -594,7 +604,14 @@ function savedSection(state: DashboardState, lines: readonly OutcomeLineVM[]): S
     notice: fromServer('message', own(body, 'notice')),
     editor: {
       scope,
-      groups: fieldsVM(groups, draft, review.invalid, review.changes, () => null),
+      groups: fieldsVM(
+        groups,
+        draft,
+        review.invalid,
+        review.changes,
+        () => null,
+        () => COMPAT_FIELDS,
+      ),
       save: gate.enabled
         ? commandVM<SaveRunCommand>(true, true, null, false, {
             epoch: state.epoch,
@@ -738,10 +755,12 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
   };
   if (shown === null)
     return { ...withDetails, boundsKnown: boundsBody !== undefined, editor: null };
+  const actions = actionsView(battle);
+  // R2 (H10): a live field's bounds are its item's descriptor bounds, else the saved run's.
   const groups = controlGroups(
     ownPath(battle, 'capabilities', 'controls'),
     own(battle, 'effective'),
-    own(boundsBody, 'constraints'),
+    liveConstraints(actions, own(boundsBody, 'constraints')),
   );
   const scope = liveScope(shown.id, shown.generation);
   const draft = state.runDrafts[scope] ?? {};
@@ -786,11 +805,17 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
   };
   return {
     ...withDetails,
-    boundsKnown: boundsBody !== undefined,
+    // R2: the bounds are known from the saved run or from the projection's descriptors.
+    boundsKnown: boundsBody !== undefined || hasLiveBounds(actions),
     editor: {
       scope,
-      groups: fieldsVM(groups, draft, review.invalid, review.changes, (field) =>
-        liveMark(battle, field),
+      groups: fieldsVM(
+        groups,
+        draft,
+        review.invalid,
+        review.changes,
+        (field) => liveMark(battle, field),
+        (routine) => liveFieldOrder(actions, routine),
       ),
       save:
         contextReady && gate.enabled

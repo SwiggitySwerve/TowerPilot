@@ -1,6 +1,8 @@
 import { useId, useState } from 'react';
 import { copy } from '../../copy/catalogue.ts';
 import type { CopyEntry, CopyNode } from '../../copy/text.ts';
+import { actionName, COMPAT_FIELDS, fieldLabel } from '../../core/actions.ts';
+import { ownOr } from '../../core/read.ts';
 import type {
   EditorVM,
   LiveResetAllVM,
@@ -14,15 +16,10 @@ import { Why } from '../../ui/Why.tsx';
 import { useDashboard } from '../dashboard/context.ts';
 
 const t = copy.runs;
-const COLUMNS = ['enabled', 'interval_sec', 'window_sec', 'tap_interval_sec'] as const;
-const COLUMN_SET: ReadonlySet<string> = new Set(COLUMNS);
-
-function entryOf(entries: Readonly<Record<string, CopyEntry>>, code: string, fallback: CopyEntry) {
-  return Object.hasOwn(entries, code) ? (entries[code] ?? fallback) : fallback;
-}
+const a = copy.actions;
 
 function FieldLabel({ field, id }: { readonly field: RunFieldVM; readonly id: string }) {
-  const label = entryOf(t.fields, field.field, t.otherField);
+  const label = fieldLabel(a.fields, field.field, a.otherField);
   return (
     <span id={id} className="tp-run-cell__label">
       {label.short}
@@ -132,11 +129,7 @@ function RoutineRow({
 }) {
   const own = useId();
   const nameId = `${own}-name`;
-  const known = COLUMNS.filter((column) => group.fields.some((f) => f.field === column));
-  const ordered = [
-    ...known.flatMap((column) => group.fields.filter((f) => f.field === column)),
-    ...group.fields.filter((f) => !COLUMN_SET.has(f.field)),
-  ];
+
   const marks = live
     ? group.fields.flatMap((f) => (f.mark === null || f.mark === 'saved' ? [] : [f.mark]))
     : [];
@@ -145,9 +138,9 @@ function RoutineRow({
   return (
     <li className="tp-run-row" data-routine={group.routine} data-edited={edited}>
       <strong id={nameId} className="tp-run-row__name">
-        {entryOf(t.routines, group.routine, t.otherRoutine).short}
+        {actionName(a.names, group.routine, a.otherName).short}
       </strong>
-      {ordered.map((field) =>
+      {group.fields.map((field) =>
         field.kind === 'toggle' ? (
           <ToggleCell key={field.path} field={field} scope={scope} nameId={nameId} />
         ) : (
@@ -208,7 +201,7 @@ function SwitchRow({
                   commands.editDraft(scope, field.path, event.currentTarget.checked);
                 }}
               />
-              <span>{entryOf(t.routines, group.routine, t.otherRoutine).short}</span>
+              <span>{actionName(a.names, group.routine, a.otherName).short}</span>
               {field.value === null && field.shown === null ? (
                 <span id={`${own}-${group.routine}`} className="tp-run-cell__note">
                   {t.notReported.short}
@@ -263,7 +256,7 @@ function ResetRow({
             onClick={() => undefined}
           />
           <span id={`${own}-reason`} className="tp-reason">
-            {entryOf(reasons, reset.reason ?? 'no_changes', t.reasons.no_changes).short}
+            {ownOr(reasons, reset.reason ?? 'no_changes', t.reasons.no_changes).short}
           </span>
         </>
       )}
@@ -281,8 +274,8 @@ function OverrideName({
   if (!('routine' in item)) return <span>{t.live.overrides.shoppingPlan.short}</span>;
   return (
     <>
-      <span>{entryOf(t.routines, item.routine, t.otherRoutine).short}</span>
-      <span>{entryOf(t.fields, item.field, t.otherField).short}</span>
+      <span>{actionName(a.names, item.routine, a.otherName).short}</span>
+      <span>{fieldLabel(a.fields, item.field, a.otherField).short}</span>
     </>
   );
 }
@@ -373,7 +366,7 @@ function LiveResets({
               />
               <span id={`${own}-all-reason`} className="tp-reason">
                 {
-                  entryOf(t.reasons, resetAll.reset.reason ?? 'no_changes', t.reasons.no_changes)
+                  ownOr(t.reasons, resetAll.reset.reason ?? 'no_changes', t.reasons.no_changes)
                     .short
                 }
               </span>
@@ -448,8 +441,8 @@ export function RunEditor<C>({
     <div className="tp-run-editor" data-scope-kind={live ? 'live' : 'saved'}>
       <div className="tp-run-columns" aria-hidden="true">
         <span>{copy.dashboard.thisBattle.columns.routine.short}</span>
-        {COLUMNS.map((column) => (
-          <span key={column}>{t.fields[column].short}</span>
+        {COMPAT_FIELDS.map((column) => (
+          <span key={column}>{fieldLabel(a.fields, column, a.otherField).short}</span>
         ))}
       </div>
       <ul className="tp-run-rows">
@@ -501,7 +494,7 @@ export function RunEditor<C>({
         </span>
         {save.enabled ? null : (
           <span id={reasonId} className="tp-reason">
-            {entryOf(reasons, save.reason ?? 'no_changes', t.reasons.no_changes).short}
+            {ownOr(reasons, save.reason ?? 'no_changes', t.reasons.no_changes).short}
           </span>
         )}
       </div>
