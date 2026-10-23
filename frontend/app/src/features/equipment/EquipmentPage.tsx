@@ -1,13 +1,57 @@
 import { useEffect, useLayoutEffect, useState, useSyncExternalStore } from 'react';
 import { equipment as t } from '../../copy/equipment.ts';
+import { configEquipment as c } from '../../copy/configEquipment.ts';
 import { type EquipmentStore } from '../../store/equipment.ts';
-import { selectEquipment } from '../../store/selectors/equipment.ts';
+import { selectEquipment, selectTournamentSettings } from '../../store/selectors/equipment.ts';
+import { useDashboard, useView, useEpochKey } from '../dashboard/context.ts';
+import { SettingsModuleForm } from '../settings/SettingsModuleForm.tsx';
 import { Button } from '../../ui/Button.tsx';
 import { ConfirmDialog } from '../../ui/ConfirmDialog.tsx';
 import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
 import { pageHref } from '../../ui/routes.ts';
 import { TopBar } from '../dashboard/topBar/TopBar.tsx';
 import './equipment.css';
+
+function TournamentSettings() {
+  const vm = useView(selectTournamentSettings);
+  const { commands } = useDashboard();
+  const epoch = useEpochKey();
+  useEffect(() => {
+    commands.openEquipment(true);
+    commands.checkSettings();
+    return () => {
+      commands.openEquipment(false);
+    };
+  }, [commands, epoch]);
+  return (
+    <section aria-labelledby="equipment-tournament">
+      <h2 id="equipment-tournament">{c.tournament.short}</h2>
+      <p>
+        {vm.account === null ? (
+          c.legacy.short
+        ) : (
+          <ServerValue kind="name" value={vm.account} label={c.account.short} />
+        )}
+      </p>
+      <Button tier="quiet" label={c.check.short} onClick={commands.checkSettings} />
+      {vm.failed ? <p role="alert">{c.stale.short}</p> : null}
+      {vm.module === null ? (
+        <p>{c.unavailable.short}</p>
+      ) : (
+        <SettingsModuleForm
+          vm={vm.module}
+          intro={c.tournamentIntro}
+          onEdit={commands.editDraft}
+          onDiscard={commands.discardDraft}
+          onSave={(command) => {
+            void commands.saveSettings(command);
+          }}
+          onDismiss={commands.dismiss}
+        />
+      )}
+    </section>
+  );
+}
 
 export function EquipmentPage({ equipment }: { readonly equipment: EquipmentStore }) {
   const state = useSyncExternalStore(equipment.subscribe, equipment.getSnapshot);
@@ -47,6 +91,7 @@ export function EquipmentPage({ equipment }: { readonly equipment: EquipmentStor
         }}
       >
         <p>{t.intro.short}</p>
+        <TournamentSettings />
         <div className="tp-equipment__target">
           <strong>{t.target.short}</strong>
           {vm.instance === null ? t.unknown.short : <ServerValue kind="name" value={vm.instance} />}
@@ -199,7 +244,15 @@ export function EquipmentPage({ equipment }: { readonly equipment: EquipmentStor
                   </pre>
                 </div>
               )}
-              {!vm.canSave ? <p id="equipment:blocked">{t.blocked.short}</p> : null}
+              {!vm.canSave ? (
+                <p id="equipment:blocked">
+                  {vm.restore.blocked === null
+                    ? vm.restore.invalid
+                      ? c.invalid.short
+                      : t.blocked.short
+                    : c[vm.restore.blocked].short}
+                </p>
+              ) : null}
               {vm.manual ? <p className="tp-equipment__warning">{t.manualWarning.short}</p> : null}
               <label>
                 <span>{t.mode.short}</span>
@@ -257,6 +310,95 @@ export function EquipmentPage({ equipment }: { readonly equipment: EquipmentStor
                 </p>
               ) : null}
               {vm.emptyBody && e.draft.mode !== 'manual' ? <p>{t.noChoice.short}</p> : null}
+              <section aria-labelledby="equipment-restore">
+                <h3 id="equipment-restore">{c.restore.short}</h3>
+                <p>{c.restoreIntro.short}</p>
+                {vm.restore.usage === null ? null : <p>{c[vm.restore.usage].short}</p>}
+                <label>
+                  <span>{c.cards.short}</span>
+                  <select
+                    id="equipment:restore-cards"
+                    value={vm.restore.cards}
+                    onChange={(event) => {
+                      equipment.editRestoreCards(event.currentTarget.value);
+                    }}
+                  >
+                    <option value="">{t.none.short}</option>
+                    {vm.restore.missing === null ? null : (
+                      <ServerOption value={vm.restore.cards} label={vm.restore.missing} />
+                    )}
+                    {vm.restore.choices.map((choice) => (
+                      <ServerOption key={choice.value} value={choice.value} label={choice.label} />
+                    ))}
+                  </select>
+                </label>
+                {vm.restore.missing === null ? null : <p>{c.missingCards.short}</p>}
+                <h4>{c.modules.short}</h4>
+                {vm.restore.rows.map((row, index) => (
+                  <fieldset key={row.key} className="tp-equipment__restore-row">
+                    <legend id={`restore-row-${row.key}`}>{c.entry(index)}</legend>
+                    <label>
+                      <span>{c.module.short}</span>
+                      <input
+                        type="text"
+                        value={row.module}
+                        aria-invalid={row.invalid || undefined}
+                        aria-describedby={row.invalid ? `restore-error-${row.key}` : undefined}
+                        aria-labelledby={`restore-module-${row.key} restore-row-${row.key}`}
+                        onChange={(event) => {
+                          equipment.editRestoreModule(row.key, 'module', event.currentTarget.value);
+                        }}
+                      />
+                      <span id={`restore-module-${row.key}`} hidden>
+                        {c.module.short}
+                      </span>
+                    </label>
+                    <label>
+                      <span>{c.slot.short}</span>
+                      <input
+                        type="text"
+                        value={row.slot}
+                        aria-invalid={row.invalid || undefined}
+                        aria-describedby={row.invalid ? `restore-error-${row.key}` : undefined}
+                        aria-labelledby={`restore-slot-${row.key} restore-row-${row.key}`}
+                        onChange={(event) => {
+                          equipment.editRestoreModule(row.key, 'slot', event.currentTarget.value);
+                        }}
+                      />
+                      <span id={`restore-slot-${row.key}`} hidden>
+                        {c.slot.short}
+                      </span>
+                    </label>
+                    <button
+                      className="tp-button"
+                      type="button"
+                      aria-labelledby={`restore-remove-${row.key} restore-row-${row.key} restore-name-${row.key}`}
+                      onClick={() => {
+                        equipment.removeRestoreModule(row.key);
+                      }}
+                    >
+                      <span id={`restore-remove-${row.key}`}>{c.removeModule.short}</span>
+                    </button>
+                    <span id={`restore-name-${row.key}`} hidden>
+                      {row.name === null ? null : <ServerValue kind="name" value={row.name} />}
+                    </span>
+                    {row.invalid ? (
+                      <p id={`restore-error-${row.key}`} role="alert">
+                        {c.invalid.short}
+                      </p>
+                    ) : null}
+                    {row.raw === null ? null : (
+                      <pre>
+                        <ServerValue kind="detail" value={row.raw} />
+                      </pre>
+                    )}
+                  </fieldset>
+                ))}
+                <button className="tp-button" type="button" onClick={equipment.addRestoreModule}>
+                  {c.addModule.short}
+                </button>
+                {vm.restore.invalid ? <p role="alert">{c.invalid.short}</p> : null}
+              </section>
               <details className="tp-equipment__compare" open={vm.conversion || undefined}>
                 <summary id="equipment:compare">{t.compare.short}</summary>
                 <h3>{t.before.short}</h3>

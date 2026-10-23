@@ -1,4 +1,7 @@
 import { editingTarget } from './editingTarget.ts';
+import { emulatorSettings } from './emulatorSettings.ts';
+import { configEquipment } from './configEquipment.ts';
+import { settingsList } from './settingsList.ts';
 import { recognitionAdvanced } from './recognitionAdvanced.ts';
 import { recognition } from './recognition.ts';
 import { automation } from './dashboard/automation.ts';
@@ -16,6 +19,7 @@ import { runsAdd } from './runsAdd.ts';
 import { runEntry } from './runEntry.ts';
 import { history } from './history.ts';
 import { runtime } from './runtime.ts';
+import { runtimeConfig } from './runtimeConfig.ts';
 import { shopping } from './shopping.ts';
 import { shoppingLibrary } from './shoppingLibrary.ts';
 import { shoppingLive } from './shoppingLive.ts';
@@ -29,6 +33,8 @@ export { observeCopy } from './entry.ts';
  * forbids string literals in JSX.
  */
 export const copy = {
+  configEquipment,
+  settingsList,
   app: {
     name: entry('Tower Pilot'),
     title: entry('Tower Pilot'),
@@ -51,6 +57,7 @@ export const copy = {
   runs,
   runsAdd,
   editingTarget,
+  emulatorSettings,
   runEntry,
   shopping,
   shoppingLibrary,
@@ -58,6 +65,7 @@ export const copy = {
   shoppingSaved,
   history,
   runtime,
+  runtimeConfig,
   recognition,
   recognitionAdvanced,
   dashboard: {

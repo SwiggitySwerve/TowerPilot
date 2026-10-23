@@ -10,6 +10,10 @@ import {
   invalidEquipment,
   loadoutOf,
   restoreEquipmentDraft,
+  restoreChanged,
+  restoreEligibility,
+  restoreInvalid,
+  restoreModuleRows,
   type EquipmentDraft,
   type EquipmentField,
   type EquipmentMode,
@@ -64,6 +68,10 @@ export interface EquipmentState {
   readonly targets: Readonly<Record<string, EquipmentTarget>>;
 }
 export interface EquipmentStore extends Store<EquipmentState> {
+  readonly editRestoreCards: (value: string) => void;
+  readonly editRestoreModule: (key: string, field: 'module' | 'slot', value: string) => void;
+  readonly addRestoreModule: () => void;
+  readonly removeRestoreModule: (key: string) => void;
   readonly setTarget: (context: PageContext | null, epoch: number) => void;
   readonly refresh: () => Promise<void>;
   readonly select: (name: string) => void;
@@ -133,7 +141,7 @@ export function canSaveEquipment(s: EquipmentState, now: number): boolean {
   const target = currentEquipment(s);
   const e = currentLoadout(s);
   return (
-    s.context?.profile != null &&
+    s.context !== null &&
     target !== null &&
     e !== null &&
     target.selected !== null &&
@@ -147,8 +155,13 @@ export function canSaveEquipment(s: EquipmentState, now: number): boolean {
     e.revision === configRevision(target.config) &&
     !e.reconcile &&
     !equipmentPending(e) &&
-    e.draft.mode !== 'manual' &&
-    (equipmentDraft(e.original).mode !== 'manual' || e.reviewedVersion === e.version) &&
+    (e.draft.mode !== 'manual' || restoreChanged(e.draft, e.original)) &&
+    (equipmentDraft(e.original).mode !== 'manual' ||
+      e.draft.mode === 'manual' ||
+      e.reviewedVersion === e.version) &&
+    restoreEligibility(e.draft, e.original, target.profile, target.selected, s.context.profile) ===
+      null &&
+    !restoreInvalid(e.draft) &&
     Object.keys(equipmentBody(e.draft, e.original)).length > 0 &&
     invalidEquipment(e.draft, target.profile).length === 0
   );
@@ -394,7 +407,7 @@ export function createEquipmentStore(
       last?.kind === 'answered' &&
       api.configMatches(last.answer.body, context) &&
       configRevision(last.answer.body) === configRevision(config) &&
-      profile !== undefined;
+      (context.profile === null || profile !== undefined);
     if (!valid) {
       change(key, (t) => ({ ...t, busy: false, readError: true }));
       return;
@@ -484,6 +497,58 @@ export function createEquipmentStore(
   };
   return {
     ...store,
+    editRestoreCards: (value) => {
+      editEntry((e) => ({
+        ...e,
+        draft: { ...e.draft, restoreCards: value },
+        dirty: true,
+        version: e.version + 1,
+      }));
+    },
+    editRestoreModule: (key, field, value) => {
+      editEntry((e) => ({
+        ...e,
+        draft: {
+          ...e.draft,
+          restoreModules: restoreModuleRows(e.draft, e.original).map((row) =>
+            row.key === key
+              ? {
+                  ...row,
+                  [field]: value,
+                  ...(field === 'module' ? { moduleEdited: true } : { slotEdited: true }),
+                }
+              : row,
+          ),
+        },
+        dirty: true,
+        version: e.version + 1,
+      }));
+    },
+    addRestoreModule: () => {
+      editEntry((e) => ({
+        ...e,
+        draft: {
+          ...e.draft,
+          restoreModules: [
+            ...restoreModuleRows(e.draft, e.original),
+            { key: `draft:${String(e.version)}`, module: '', slot: '' },
+          ],
+        },
+        dirty: true,
+        version: e.version + 1,
+      }));
+    },
+    removeRestoreModule: (key) => {
+      editEntry((e) => ({
+        ...e,
+        draft: {
+          ...e.draft,
+          restoreModules: restoreModuleRows(e.draft, e.original).filter((row) => row.key !== key),
+        },
+        dirty: true,
+        version: e.version + 1,
+      }));
+    },
     refresh,
     setTarget: (context, epoch) => {
       const key = context === null ? null : api.targetKey(context);

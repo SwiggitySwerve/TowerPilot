@@ -150,6 +150,7 @@ export function recordingCommands(): RecordingCommands {
     checkCollection: vi.fn(() => undefined),
     openEmulators: vi.fn(() => undefined),
     openRuntime: vi.fn(() => undefined),
+    openEquipment: vi.fn(() => undefined),
     openRecognition: vi.fn(() => undefined),
     selectRecognitionRun: vi.fn(() => undefined),
     checkRecognitionReadiness: vi.fn(done),

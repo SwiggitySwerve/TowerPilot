@@ -402,6 +402,24 @@ export function candidateSettlement(
       // refusal may follow a save that did commit (an identical resend is refused as
       // stale): only a read holding every sent value settles it, as applied.
       const conflict = record.phase === 'refused' && record.answer?.status === 409;
+      // C15-4 is the sole intentional context transition. Its receipt stays attached
+      // to the submitting context, and only a config read begun after it proves it.
+      if (record.kind === 'settings_save' && record.meta.module === 'active-instance') {
+        const read = state.reads.config.latest;
+        const then = record.context;
+        if (
+          record.phase === 'sending' ||
+          (record.phase === 'refused' && !conflict) ||
+          then === null ||
+          read === null ||
+          read.startedSeq <= Math.max(after, record.answerSeq ?? record.lostSeq ?? 0) ||
+          read.outcome.kind !== 'answered' ||
+          read.outcome.status !== 200
+        )
+          return null;
+        const settled = settleSettingsSave(read.outcome.body, record.meta, then);
+        return settled === null ? null : found(settled, read.startedSeq);
+      }
       // F6C-01: nothing settles a write still in flight, and only a read started after its
       // answer, or after the page learned the answer was lost, can (an earlier read may
       // predate the server's commit).
@@ -520,7 +538,9 @@ export function nextSettlements(
     (record) =>
       ((profileWriteKind(record.kind) && sameEmulator(state, record)) ||
         // An adopt rewrites the address of its instance: judged by that instance's reads.
-        (record.kind === 'adopt' && record.context?.instance === state.context?.instance)) &&
+        (record.kind === 'adopt' && record.context?.instance === state.context?.instance) ||
+        // C15-4: an intentional selection is judged across its old-to-new context change.
+        (record.kind === 'settings_save' && record.meta.module === 'active-instance')) &&
       !facts.records.some((own) => own.id === record.id),
   );
   for (const record of [...facts.records, ...profileWrites]) {

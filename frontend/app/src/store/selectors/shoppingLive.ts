@@ -31,9 +31,13 @@ export function selectShoppingLive(state: DashboardState) {
     catalog: shopCatalog(own(body, 'catalog')),
   };
   const editor = selectQueueEditor(base, draft);
-  const supported =
+  const advertised =
     base.plan !== null &&
     (stringList(ownPath(battle, 'capabilities', 'controls')) ?? []).includes('shopping_plan');
+  // The draft scope names the page context: before the config read confirms it, typing would
+  // land in a scope the page then stops showing, so the editor waits for the context.
+  const contextKnown = state.contextConfirmed && state.context !== null;
+  const supported = advertised && contextKnown;
   const records = contextIntents(state).filter(
     (r) =>
       r.kind === 'live_controls' &&
@@ -80,7 +84,13 @@ export function selectShoppingLive(state: DashboardState) {
     editor,
     supported,
     command,
-    reason: !supported ? 'unsupported' : gate.enabled ? null : gate.reason,
+    reason: !advertised
+      ? 'unsupported'
+      : !contextKnown
+        ? 'context_unknown'
+        : gate.enabled
+          ? null
+          : gate.reason,
     discard: Object.keys(draft).length > 0,
     routineEnabled:
       typeof ownPath(battle, 'effective', 'routines', 'shopping', 'enabled') === 'boolean'

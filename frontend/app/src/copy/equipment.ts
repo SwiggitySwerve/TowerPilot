@@ -51,7 +51,7 @@ export const equipment = {
   recognition: entry('Open Recognition'),
   noChoice: entry('Select at least one discovered preset. An empty body cannot be saved.'),
   manualWarning: entry(
-    'Manual equipment is read-only here. At battle entry, hand-equipping can permanently rewrite the active game preset. Switching mode removes the legacy fields listed below.',
+    'Manual equipment selections are preserved here; restore values can be edited below. At battle entry, hand-equipping can permanently rewrite the active game preset. Switching mode removes the legacy fields listed below.',
   ),
   help: entry('How equipment is used'),
   helpGlobal: entry(

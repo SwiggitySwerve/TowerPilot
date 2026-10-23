@@ -198,6 +198,7 @@ export interface DashboardCommands {
   readonly openEmulators: (open: boolean) => void;
   /** The Runtime page opened or closed: its settings are read while it is open. */
   readonly openRuntime: (open: boolean) => void;
+  readonly openEquipment: (open: boolean) => void;
   /** The Recognition page opened or closed. */
   readonly openRecognition: (open: boolean) => void;
   /** R4: the run the Recognition page checks and prepares (null: none). Sends nothing. */

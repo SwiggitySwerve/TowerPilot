@@ -26,6 +26,7 @@ import { SavedShopping } from './SavedShopping.tsx';
 import { AddRun } from './AddRun.tsx';
 import { ShoppingLibrary } from './ShoppingLibrary.tsx';
 import { RunOutcome } from './RunOutcome.tsx';
+import { RunDefaults } from './RunDefaults.tsx';
 import './runs.css';
 
 const t = copy.runs;
@@ -259,6 +260,7 @@ function SavedSection() {
         <p className="tp-runs__links">
           <a href={PREVIOUS_RUNS}>{t.saved.previousPage.short}</a>
         </p>
+        <RunDefaults />
       </RegionBody>
     </>
   );

@@ -122,9 +122,9 @@ describe('T1 T2 shared Runtime settings', () => {
         expect(button).toHaveAttribute('aria-disabled', 'true');
     },
   );
-  it('T1 T2 SR-1 opening only reads; all five modules, scopes, units and next-start limits are visible', async () => {
+  it('T1 T2 SR-1 opening only reads; all eight modules, scopes, units and next-start limits are visible', async () => {
     const page = await openRuntime();
-    expect(document.querySelectorAll('[data-runtime-module]')).toHaveLength(5);
+    expect(document.querySelectorAll('[data-runtime-module]')).toHaveLength(8);
     expect(screen.getAllByText('This emulator · next time automation starts')).toHaveLength(3);
     expect(
       screen.getAllByText('This computer · every emulator · next time automation starts'),

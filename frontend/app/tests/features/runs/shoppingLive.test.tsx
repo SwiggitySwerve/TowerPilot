@@ -11,6 +11,8 @@ import { dashboardBody, dashboardPagesCase } from '../../support/dashboardFixtur
 import { addBody, addFailure, regionState, tick } from '../../store/regionHelpers.ts';
 import { renderPage, renderRegion } from '../dashboard/harness.tsx';
 const sample = (name: string) => dashboardPagesCase(`shopping_queue.${name}`);
+/** A region state whose page context the config read has confirmed (the live editor needs it). */
+const confirmedState = () => ({ ...regionState(), contextConfirmed: true });
 const record = (value: unknown) => Object.fromEntries(entries(value));
 /** The fixture records the read after admission. Undo only admission for the pre-click UI; keep its effective plan and report. */
 function before(name = 'shopping_plan_read_requested') {
@@ -167,7 +169,7 @@ it('SQ7 routine overrides stay visible and a plan save preserves them', async ()
   expect(textOutsideCatalogue(root())).toEqual([]);
 });
 it('SQ7 SQ12 drafts stay with battle generation, stale reports and unsupported legacy queues send nothing', () => {
-  let state = addBody(regionState(), 'battlesActive', sample('shopping_plan_read_applied').body);
+  let state = addBody(confirmedState(), 'battlesActive', sample('shopping_plan_read_applied').body);
   const vm = selectShoppingLive(state);
   state = { ...state, runDrafts: { [vm.scope]: { reserve: '1234' } } };
   expect(selectShoppingLive(tick(state, 300)).reason).toBe('report_stale');
@@ -181,7 +183,7 @@ it('SQ7 SQ12 drafts stay with battle generation, stale reports and unsupported l
   };
   expect(selectShoppingLive(addBody(state, 'battlesActive', successor)).draft).toEqual({});
   const legacy = addBody(
-    regionState(),
+    confirmedState(),
     'battlesActive',
     dashboardBody('battles_active.legacy_shopping_plan'),
   );
@@ -193,7 +195,7 @@ it('SQ7 SQ12 drafts stay with battle generation, stale reports and unsupported l
 it('SQ7 live queue is axe clean and uses only catalogue or server text', async () => {
   vi.useRealTimers();
   const h = renderRegion(
-    addBody(regionState(), 'battlesActive', sample('shopping_plan_read_applied').body),
+    addBody(confirmedState(), 'battlesActive', sample('shopping_plan_read_applied').body),
     <LiveShopping />,
   );
   expect(textOutsideCatalogue(h.view.container)).toEqual([]);
@@ -283,7 +285,7 @@ it('SQ12 a wrong-key read leaves Unknown; only the exact request key in the same
 
 it('SQ12 live queue drafts do not transfer across context or operation', () => {
   const original = addBody(
-    regionState(),
+    confirmedState(),
     'battlesActive',
     sample('shopping_plan_read_applied').body,
   );
@@ -344,3 +346,18 @@ it.each([false, true])(
     );
   },
 );
+
+it('SQ11 SQ7 the live queue waits for the confirmed page context before it can be edited', () => {
+  const read = addBody(
+    confirmedState(),
+    'battlesActive',
+    sample('shopping_plan_read_applied').body,
+  );
+  const unconfirmed = selectShoppingLive({ ...read, contextConfirmed: false });
+  expect(unconfirmed.supported).toBe(false);
+  expect(unconfirmed.reason).toBe('context_unknown');
+  expect(unconfirmed.command).toBeNull();
+  const confirmed = selectShoppingLive({ ...read, contextConfirmed: true });
+  expect(confirmed.supported).toBe(true);
+  expect(confirmed.reason).not.toBe('context_unknown');
+});

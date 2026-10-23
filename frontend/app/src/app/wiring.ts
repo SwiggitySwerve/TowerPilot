@@ -87,6 +87,11 @@ import { answeredBody, contextReadOf, latestRead } from '../store/reads.ts';
 import { idleForConnectionChange } from '../core/connection.ts';
 import { controlFacts, highestStopRevision } from '../store/selectors/controlFacts.ts';
 import { selectOutcomes } from '../store/selectors/outcomes.ts';
+import {
+  emulatorSwitchPending,
+  selectEmulatorSettings,
+} from '../store/selectors/emulatorSettings.ts';
+import { settingsSavePending } from '../store/selectors/settingsModule.ts';
 import { selectPauseInputs } from '../store/selectors/pauseInputs.ts';
 import { recognitionLaunchReason, selectRecognitionPage } from '../store/selectors/recognition.ts';
 import { keptOperationScope, trackedOperation } from '../store/selectors/recognitionOperation.ts';
@@ -834,6 +839,9 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     openRuntime: (open) => {
       store.dispatch({ type: 'runtime_open', open });
     },
+    openEquipment: (open) => {
+      store.dispatch({ type: 'equipment_open', open });
+    },
     openRecognition: (open) => {
       store.dispatch({ type: 'recognition_open', open });
     },
@@ -1034,6 +1042,14 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       activePoller.read('wizardEmulators');
     },
     checkSettings: () => {
+      // C15-4: settings cannot verify a context transition. Recovery must read config
+      // first so the subsequent settings read belongs to the verified current epoch.
+      if (emulatorSwitchPending(store.getSnapshot())) {
+        void activePoller.readNow('config').then(() => {
+          activePoller.read('settings');
+        });
+        return;
+      }
       activePoller.read('settings');
     },
     checkTools: () => {
@@ -1108,10 +1124,51 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       }
       if (
         collectionWriteInFlight(command.context) ||
-        collectionChecks.has(contextKey(command.context))
+        collectionChecks.has(contextKey(command.context)) ||
+        emulatorSwitchPending(store.getSnapshot())
       ) {
         notice('command_not_sent', 'collection_write_in_flight');
         return;
+      }
+      if (command.module === 'active-instance') {
+        // Reserve this settings write while click-time reads revalidate the reviewed
+        // context, revision and exact draft. The confirmation itself never sends.
+        const reservation = contextKey(command.context);
+        const clickedSeq = sequence.next();
+        if (settingsSavePending(store.getSnapshot(), ['settings'])) {
+          notice('command_not_sent', 'collection_write_in_flight');
+          return;
+        }
+        collectionChecks.add(reservation);
+        try {
+          const named = await readClickTimeContext();
+          if (named === null || !sameContext(named, command.context) || !fenced(command)) {
+            notice('command_not_sent', 'context_changed');
+            return;
+          }
+          let checked = await activePoller.readNow('settings');
+          if (checked !== null && checked.startedSeq <= clickedSeq)
+            checked = await activePoller.readNow('settings');
+          const offered = selectEmulatorSettings(store.getSnapshot()).active?.save.command;
+          if (
+            checked === null ||
+            checked.startedSeq <= clickedSeq ||
+            checked.outcome.kind !== 'answered' ||
+            checked.outcome.status !== 200 ||
+            !fenced(command) ||
+            !sameContext(tracker.current(), command.context) ||
+            offered === undefined ||
+            offered === null ||
+            offered.revision !== command.revision ||
+            JSON.stringify(offered.values) !== JSON.stringify(command.values) ||
+            collectionWriteInFlight(command.context)
+          ) {
+            notice('command_not_sent', 'context_changed');
+            return;
+          }
+        } finally {
+          collectionChecks.delete(reservation);
+        }
       }
       report(
         sendSettingsSave(

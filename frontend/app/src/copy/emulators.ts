@@ -239,6 +239,7 @@ export const emulators = {
     dismiss: entry('Dismiss'),
   },
   notSent: {
+    collection_write_in_flight: entry('Not sent - wait until the pending edit has been read back'),
     emulator_write_in_flight: entry('Not sent - the last request is still waiting for its reply'),
     process_listed: entry('Not sent - automation is running; stop it on the Dashboard first'),
     process_list_unavailable: entry('Not sent - the process list is not read yet'),

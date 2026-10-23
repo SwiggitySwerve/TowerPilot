@@ -33,6 +33,7 @@ import { RevocationFallback } from '../dashboard/shared/RevocationFallback.tsx';
 import { TopBar } from '../dashboard/topBar/TopBar.tsx';
 import { SettingsModuleForm } from '../settings/SettingsModuleForm.tsx';
 import './emulators.css';
+import { EmulatorSettings } from './EmulatorSettings.tsx';
 
 const connectionLines: Readonly<Record<string, CopyEntry>> = copy.dashboard.topBar.connection;
 /** The requests this page owns; their owner notices are shown here (the shared notice). */
@@ -930,7 +931,7 @@ export function EmulatorsPage() {
   }, [commands]);
   return (
     <>
-      <header className="tp-topbar">
+      <header className="tp-topbar tp-emulators-topbar">
         <RegionBoundary
           fallback={<RevocationFallback part="topBar" />}
           resetKey={useEpochKey()}
@@ -944,6 +945,7 @@ export function EmulatorsPage() {
         <FaultPoint part="page" />
         <div className="tp-emulators">
           <NotSent />
+          <EmulatorSettings />
           <EmulatorsRegion id="emulatorsTarget" title={t.target.title}>
             <TargetSection />
           </EmulatorsRegion>

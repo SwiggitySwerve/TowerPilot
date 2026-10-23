@@ -1,0 +1,15 @@
+.tp-run-defaults {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tp-run-defaults summary {
+  cursor: pointer;
+  min-height: 28px;
+  padding-block: var(--tp-space-1);
+}
+@media (max-width: 760px) {
+  .tp-run-defaults summary,
+  .tp-run-defaults .tp-button[data-tier] {
+    min-height: 44px;
+  }
+}

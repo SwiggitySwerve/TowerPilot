@@ -21,6 +21,12 @@ import { fetchTransport, type Transport } from './transport.ts';
 import { bodyMembers, ENDPOINTS, type Endpoint } from './wire.ts';
 import { contextFenceAnswerSchema } from '../contract/contextFence.ts';
 import {
+  restoreConfigAnswerSchema,
+  restoreEligibilityConfigAnswerSchema,
+  restoreEligibilityPatchAnswerSchema,
+  restorePatchAnswerSchema,
+} from '../contract/configFields.ts';
+import {
   equipmentConfigAnswerSchema,
   equipmentContextAnswerSchema,
   equipmentPatchAnswerSchema,
@@ -41,6 +47,8 @@ const config = endpoint([
   equipmentConfigAnswerSchema,
   equipmentContextAnswerSchema,
   equipmentSampleConfigAnswerSchema,
+  restoreConfigAnswerSchema,
+  restoreEligibilityConfigAnswerSchema,
 ]);
 const profile = endpoint([
   equipmentProfileAnswerSchema,
@@ -48,7 +56,13 @@ const profile = endpoint([
   equipmentSampleProfileAnswerSchema,
 ]);
 const patch = endpoint(
-  [equipmentPatchAnswerSchema, equipmentSamplePatchAnswerSchema, contextFenceAnswerSchema],
+  [
+    equipmentPatchAnswerSchema,
+    equipmentSamplePatchAnswerSchema,
+    contextFenceAnswerSchema,
+    restorePatchAnswerSchema,
+    restoreEligibilityPatchAnswerSchema,
+  ],
   'POST',
 );
 

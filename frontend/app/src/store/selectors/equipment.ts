@@ -1,5 +1,9 @@
-import { entries, list, own, ownPath } from '../../core/read.ts';
+import { entries, list, own, ownPath, text } from '../../core/read.ts';
+import { settingsView } from '../../core/settingsFields.ts';
 import { fromServer } from '../../copy/server.ts';
+import { answeredBody } from '../reads.ts';
+import type { DashboardState } from '../types.ts';
+import { settingsModuleVM, settingsSavePending } from './settingsModule.ts';
 import {
   canSaveEquipment,
   currentEquipment,
@@ -16,7 +20,27 @@ import {
   EQUIPMENT_FIELDS,
   invalidEquipment,
   loadoutOf,
+  restoreEligibility,
+  restoreUsage,
+  restoreInvalid,
+  restoreModuleRows,
+  restoreModuleValue,
+  restoreRowInvalid,
 } from '../equipmentDraft.ts';
+
+export function selectTournamentSettings(state: DashboardState) {
+  const failed = state.reads.settings.latest?.outcome.kind === 'failed';
+  return {
+    module: settingsModuleVM(
+      state,
+      settingsView(answeredBody(state, 'settings')),
+      'tournament-cards',
+      { pending: failed || settingsSavePending(state, ['settings']) },
+    ),
+    account: fromServer('name', state.context?.account),
+    failed,
+  };
+}
 
 const messages = (value: unknown) =>
   (list(value) ?? []).flatMap((line) => {
@@ -74,7 +98,46 @@ export function selectEquipment(s: EquipmentState, now: number) {
   );
   const after = fromServer('detail', JSON.stringify(draftBody ?? null, null, 2));
   const revision = configRevision(target?.config);
+  const restoreCards = e?.draft.restoreCards ?? text(own(e?.original, 'cards_restore')) ?? '';
+  const restoreChoices = discoveredOptions(target?.profile, 'cards');
   return {
+    restore: {
+      cards: restoreCards,
+      missing:
+        restoreCards !== '' && !restoreChoices.includes(restoreCards)
+          ? fromServer('name', restoreCards)
+          : null,
+      choices: restoreChoices.flatMap((value) => {
+        const label = fromServer('name', value);
+        return label === null ? [] : [{ value, label }];
+      }),
+      rows:
+        e === null
+          ? []
+          : restoreModuleRows(e.draft, e.original).map((row) => ({
+              ...row,
+              name: fromServer('name', row.module),
+              invalid: restoreRowInvalid(row),
+              raw: restoreRowInvalid(row)
+                ? fromServer('detail', JSON.stringify(restoreModuleValue(row)))
+                : null,
+            })),
+      invalid: e !== null && restoreInvalid(e.draft),
+      usage:
+        selected === null
+          ? null
+          : restoreUsage(target?.profile, selected, s.context?.profile ?? null),
+      blocked:
+        e === null || selected === null || e.revision !== revision
+          ? null
+          : restoreEligibility(
+              e.draft,
+              e.original,
+              target?.profile,
+              selected,
+              s.context?.profile ?? null,
+            ),
+    },
     target,
     entry: e,
     selected,

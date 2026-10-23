@@ -4,6 +4,9 @@ import {
   fieldParts,
   reviewModule,
   savedPart,
+  stringListRows,
+  stringListSource,
+  nextStringListKey,
   settingsModule,
   settingsSaveAnswer,
   settingsView,
@@ -51,6 +54,14 @@ export interface SettingsPartVM {
 }
 
 export interface SettingsFieldVM {
+  readonly listSource: { readonly key: string; readonly raw: string };
+  readonly listRows: readonly {
+    readonly key: string;
+    readonly raw: string;
+    readonly name: ServerText<'name'> | null;
+    readonly malformed: boolean;
+  }[];
+  readonly nextListKey: string;
   readonly path: string;
   readonly type: SettingsFieldType | null;
   readonly label: ServerText<'name'> | null;
@@ -134,6 +145,25 @@ export function settingsFieldVM(field: SettingsField, draft: SettingsDraft): Set
         ? null
         : savedFieldProblem(field);
   return {
+    listSource: stringListSource(field, draft),
+    listRows:
+      field.type === 'string-list'
+        ? stringListRows(field, draft).map((row) => ({
+            key: row.key,
+            raw:
+              typeof row.raw === 'string'
+                ? row.raw
+                : row.raw === undefined
+                  ? ''
+                  : JSON.stringify(row.raw),
+            name: fromServer(
+              'name',
+              typeof row.raw === 'string' ? row.raw : JSON.stringify(row.raw),
+            ),
+            malformed: typeof row.raw !== 'string',
+          }))
+        : [],
+    nextListKey: nextStringListKey(field, draft),
     path: field.path,
     type: field.type,
     label: fromServer('name', field.label),
@@ -363,7 +393,7 @@ export function settingsModuleVM(
   const sent = new Set(
     found.fields
       .filter((field) => review.values[field.path] !== undefined)
-      .flatMap((field) => fieldParts(field)),
+      .flatMap((field) => fieldParts(field, draft)),
   );
   const command: SettingsSaveCommand | null =
     reason === null && context !== null && settingsContext !== null && revision !== null

@@ -1,4 +1,19 @@
 /* The shared settings-module editor (features/settings). */
+.tp-settings__list-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-2);
+  min-width: 0;
+}
+.tp-settings__list-row .tp-settings__input {
+  flex: 1 1 10rem;
+  width: 100%;
+  min-width: 0;
+}
+.tp-settings__field[data-field] {
+  margin-inline: 0;
+}
 .tp-settings {
   min-width: 0;
   margin: var(--tp-space-3) 0 0;

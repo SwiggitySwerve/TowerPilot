@@ -22,7 +22,10 @@ import {
   loadJsonWithIdentity,
 } from '../scripts/contract-fixture.mjs';
 import { DEFAULT_GETS, SCENARIOS } from './scenarios.mjs';
+import { emulatorConfigRead } from './emulators-config-fixtures.mjs';
+import { equipmentConfigRead } from './equipment-config-fixtures.mjs';
 import { RUNTIME_SAVES, runtimeSaveRefusal } from './runtime-fixtures.mjs';
+import { runtimeConfigRead } from './runtime-config-fixtures.mjs';
 import { historyAnswer } from './history-fixtures.mjs';
 import { shoppingLibrarySource } from './shopping-library-fixtures.mjs';
 import {
@@ -361,6 +364,11 @@ const WRITE_CASES = Object.freeze({
     'settings.stale_revision_another_client_saved_first',
     'settings.saved_then_the_answer_failed_500',
   ],
+  loadoutPatch: [
+    'loadout_restore.saved_cards_restore',
+    'loadout_restore.refused_cards_restore',
+    null,
+  ],
   profilePatch: [
     'profile_patch.multi_save_first_request_saved',
     'profile_patch.stale_revision_409',
@@ -514,6 +522,8 @@ export function createApiHandler(fixture, options = {}) {
   };
   /** A reference names a Dashboard case, then a pages case, then a harvest one. @param {string} reference */
   const answerFor = (reference) =>
+    equipmentConfigRead(reference) ??
+    runtimeConfigRead(reference) ??
     runsTargetSource(reference) ??
     fixtureCase(
       lookup(dashboard, reference) !== undefined
@@ -805,6 +815,16 @@ export function createApiHandler(fixture, options = {}) {
         ...settings.body,
         context: { ...record(settings.body['context']), account: runtime['account'] },
       });
+      return;
+    }
+    const emulatorSettings = emulatorConfigRead(reference);
+    const equipmentConfig = equipmentConfigRead(reference);
+    if (equipmentConfig !== null) {
+      sendCase(res, equipmentConfig);
+      return;
+    }
+    if (emulatorSettings !== null) {
+      sendCase(res, emulatorSettings);
       return;
     }
     const librarySource = shoppingLibrarySource(reference);

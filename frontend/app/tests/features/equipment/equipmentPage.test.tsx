@@ -830,6 +830,8 @@ describe('Equipment Wanted rows', () => {
     expect(
       equipmentBody(
         s.entry()?.draft ?? {
+          restoreCards: null,
+          restoreModules: null,
           mode: 'category',
           values: {
             global_preset: '',

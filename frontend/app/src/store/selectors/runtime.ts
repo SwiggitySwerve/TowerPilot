@@ -14,13 +14,38 @@ import type { DashboardState } from '../types.ts';
 import type { RuntimeState } from '../runtime.ts';
 import { settingsMatchContext, settingsModuleVM, settingsSavePending } from './settingsModule.ts';
 
-const MODULES = ['loop', 'missions', 'fleet', 'tap', 'logging'] as const;
+type RuntimeModule =
+  | 'loop-defaults'
+  | 'missions-defaults'
+  | 'fleet-defaults'
+  | 'loop'
+  | 'missions'
+  | 'fleet'
+  | 'tap'
+  | 'logging';
+const MODULES: readonly RuntimeModule[] = [
+  'loop-defaults',
+  'missions-defaults',
+  'fleet-defaults',
+  'loop',
+  'missions',
+  'fleet',
+  'tap',
+  'logging',
+];
 export function selectRuntimeSettings(state: DashboardState) {
   const view = settingsView(answeredBody(state, 'settings'));
   const pending = settingsSavePending(state, ['settings']);
   const read = state.reads.settings;
   const failed = read.latest?.outcome.kind === 'failed' ? read.latest.outcome : null;
+  const instance = state.context?.instance;
+  const config = answeredBody(state, 'config');
   return {
+    emulator: fromServer(
+      'name',
+      instance === undefined ? null : ownPath(config, 'instances', instance, 'label'),
+    ),
+    instance: fromServer('id', instance),
     readFailure:
       failed === null
         ? null

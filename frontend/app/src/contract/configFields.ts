@@ -18,4 +18,4 @@ export {
   switchConfigAnswerSchema,
   switchSettingsReadAnswerSchema,
   switchSettingsSaveAnswerSchema,
-} from './generated/dashboard_contract_pages_v1_config_fields.bc0ac076.ts';
+} from './generated/dashboard_contract_pages_v1_config_fields.9cfb7fc4.ts';

@@ -1,5 +1,6 @@
 import { entries, finite, id, list, own, text } from './read.ts';
 import { typedDecimal } from './typedNumber.ts';
+import { configContext, configRevision } from './config.ts';
 
 /**
  * The typed settings of `GET /api/settings` (collection brief C1 to C4, abilities brief A1):
@@ -9,7 +10,7 @@ import { typedDecimal } from './typedNumber.ts';
  * owner of these rules for every page that edits a settings module.
  */
 export type SettingsFieldType =
-  'boolean' | 'integer' | 'number' | 'range' | 'point' | 'enum' | 'string';
+  'boolean' | 'integer' | 'number' | 'range' | 'point' | 'enum' | 'string' | 'string-list';
 
 const FIELD_TYPES: readonly SettingsFieldType[] = [
   'boolean',
@@ -19,6 +20,7 @@ const FIELD_TYPES: readonly SettingsFieldType[] = [
   'point',
   'enum',
   'string',
+  'string-list',
 ];
 
 export interface SettingsOption {
@@ -36,6 +38,7 @@ export interface SettingsField {
   readonly unit: string | null;
   readonly min: number | null;
   readonly max: number | null;
+  readonly maxItems: number | null;
   /** A range whose bounds must be whole numbers. */
   readonly wholeNumbers: boolean;
   readonly options: readonly SettingsOption[];
@@ -88,6 +91,7 @@ function field(raw: unknown): SettingsField | null {
     unit: unit === undefined || unit === '' ? null : unit,
     min: finite(own(raw, 'min')) ?? null,
     max: finite(own(raw, 'max')) ?? null,
+    maxItems: finite(own(raw, 'maxItems')) ?? null,
     wholeNumbers: own(raw, 'wholeNumbers') === true,
     options,
     value: own(raw, 'value'),
@@ -150,10 +154,114 @@ export function partKey(path: string, part: 0 | 1 | null): string {
 }
 
 /** The keys of a field's raw parts in a draft. */
-export function fieldParts(field: SettingsField): readonly string[] {
+export function fieldParts(field: SettingsField, draft: SettingsDraft = {}): readonly string[] {
+  if (field.type === 'string-list')
+    return [
+      field.path,
+      stringListSourceKey(field),
+      ...Object.keys(draft).filter((key) => key.startsWith(`${field.path}#list:`)),
+    ];
   return field.type === 'range' || field.type === 'point'
     ? [partKey(field.path, 0), partKey(field.path, 1)]
     : [partKey(field.path, null)];
+}
+
+/** Stable row keys and removal tombstones keep raw lists in the shared scalar draft store.
+ * The path marker means edited; an absent marker keeps the server list. Names are never
+ * normalized or checked for ownership. Tombstones retain identity on explicit removal.
+ */
+function stringListSourceKey(field: Pick<SettingsField, 'path'>): string {
+  return `${field.path}#list-source`;
+}
+
+/** Internal provenance for the scalar draft journal, never an editable JSON field or
+ * the value sent to the server. It preserves malformed saved members across later reads.
+ */
+export function stringListSource(field: SettingsField, draft: SettingsDraft) {
+  const key = stringListSourceKey(field);
+  const existing = draft[key];
+  return {
+    key,
+    raw:
+      typeof existing === 'string'
+        ? existing
+        : field.value === undefined
+          ? 'null'
+          : JSON.stringify(field.value),
+  };
+}
+
+function stringListOriginal(
+  field: SettingsField,
+  draft: SettingsDraft,
+): readonly unknown[] | undefined {
+  if (draft[field.path] !== true) return list(field.value);
+  const source = draft[stringListSourceKey(field)];
+  if (source === undefined) return [];
+  if (typeof source !== 'string') return undefined;
+  try {
+    const parsed: unknown = JSON.parse(source);
+    return list(parsed);
+  } catch {
+    return undefined;
+  }
+}
+
+export function stringListRows(field: SettingsField, draft: SettingsDraft) {
+  const prefix = `${field.path}#list:`;
+  const saved = stringListOriginal(field, draft) ?? [];
+  const keys = new Set([
+    ...saved.map((_, index) => `${prefix}${String(index)}`),
+    ...Object.keys(draft).filter((key) => key.startsWith(prefix)),
+  ]);
+  return [...keys].flatMap((key) => {
+    const index = Number(key.slice(prefix.length));
+    const raw = draft[key] ?? saved[index];
+    return draft[key] === false ? [] : [{ key, raw }];
+  });
+}
+
+/** A list is one draft value. A confirmed older save cannot clear its marker or
+ * tombstones separately from newer rows: that would reindex the server's readback
+ * into the person's draft. Scalar fields continue to settle part by part.
+ */
+export function retainedStringListKeys(
+  current: SettingsDraft,
+  sent: SettingsDraft,
+): ReadonlySet<string> {
+  const paths = new Set(
+    Object.keys(current).flatMap((key) => {
+      const marker = key.indexOf('#list:');
+      return marker < 0 ? [] : [key.slice(0, marker)];
+    }),
+  );
+  const kept = new Set<string>();
+  for (const path of paths) {
+    const keys = Object.keys(current).filter(
+      (key) =>
+        key === path || key === stringListSourceKey({ path }) || key.startsWith(`${path}#list:`),
+    );
+    if (keys.some((key) => current[key] !== sent[key])) keys.forEach((key) => kept.add(key));
+  }
+  return kept;
+}
+
+function stringListProblem(
+  field: SettingsField,
+  values: readonly unknown[] | undefined,
+): FieldReason | null {
+  if (values === undefined) return 'unknown_type';
+  if (field.maxItems !== null && values.length > field.maxItems) return 'above_max';
+  return values.some((value) => typeof value !== 'string' || value.trim() === '') ? 'empty' : null;
+}
+
+export function nextStringListKey(field: SettingsField, draft: SettingsDraft): string {
+  const prefix = `${field.path}#list:`;
+  const indices = Object.keys(draft)
+    .filter((key) => key.startsWith(prefix))
+    .map((key) => Number(key.slice(prefix.length)))
+    .filter(Number.isInteger);
+  return `${prefix}${String(Math.max((stringListOriginal(field, draft)?.length ?? 0) - 1, ...indices) + 1)}`;
 }
 
 /** The text a part shows before any edit: the saved value as the server sent it. */
@@ -205,11 +313,24 @@ function sameJson(a: unknown, b: unknown): boolean {
  * changed fields are sent, as the recorded saves do.
  */
 export function checkField(field: SettingsField, draft: SettingsDraft): FieldCheck {
-  const parts = fieldParts(field).map((key) => draft[key]);
+  const parts = fieldParts(field, draft).map((key) => draft[key]);
   if (parts.every((part) => part === undefined)) return { kind: 'unchanged' };
   const valid = (value: unknown): FieldCheck =>
     sameJson(value, field.value) ? { kind: 'unchanged' } : { kind: 'valid', value };
   switch (field.type) {
+    case 'string-list': {
+      if (draft[field.path] !== true)
+        return { kind: 'invalid', reason: 'unknown_type', part: null };
+      const rows = stringListRows(field, draft);
+      if (
+        draft[stringListSourceKey(field)] !== undefined &&
+        stringListOriginal(field, draft) === undefined
+      )
+        return { kind: 'invalid', reason: 'unknown_type', part: null };
+      const values = rows.map((row) => row.raw);
+      const reason = stringListProblem(field, values);
+      return reason === null ? valid(values) : { kind: 'invalid', reason, part: null };
+    }
     case null:
       return { kind: 'invalid', reason: 'unknown_type', part: null };
     case 'boolean': {
@@ -263,6 +384,10 @@ export function savedFieldProblem(
   field: SettingsField,
 ): { readonly reason: FieldReason; readonly part: 0 | 1 | null } | null {
   if (field.type === 'boolean') return null;
+  if (field.type === 'string-list') {
+    const reason = stringListProblem(field, list(field.value));
+    return reason === null ? null : { reason, part: null };
+  }
   const keys = fieldParts(field);
   const saved = Object.fromEntries(
     keys.map((key, index) => [
@@ -337,6 +462,9 @@ export function settingsSaveAnswer(
   sent: SentSettings,
 ): SettingsSaveAnswer {
   if (answer.status === 200 && own(answer.body, 'ok') === true) {
+    // C15-4: the receipt cannot prove which context every page should now use.
+    // Retain its original journal until a later config read verifies the transition.
+    if (sent.module === 'active-instance') return { kind: 'unknown' };
     const view = settingsView(answer.body);
     if (holdsValues(view, sent))
       return {
@@ -368,6 +496,18 @@ export function settleSettingsSave(
   sent: SentSettings,
   context: SettingsContext,
 ): 'applied' | null {
+  // C15-4: selection intentionally changes context. Only config readback with a
+  // readable target address proves it; a settings receipt never adopts a context.
+  if (sent.module === 'active-instance') {
+    const intended = id(own(sent.values, 'active_instance'));
+    const named = configContext(readBody);
+    return intended !== undefined &&
+      intended !== context.instance &&
+      named?.instance === intended &&
+      configRevision(readBody) !== null
+      ? 'applied'
+      : null;
+  }
   const view = settingsView(readBody);
   if (view === null || sent.module === undefined || !sameSettingsContext(view.context, context))
     return null;

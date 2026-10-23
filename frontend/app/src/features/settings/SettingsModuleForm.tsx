@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { settings as t } from '../../copy/settings.ts';
+import { settingsList as lists } from '../../copy/settingsList.ts';
 import type { CopyEntry } from '../../copy/text.ts';
 import type {
   SettingsFieldVM,
@@ -119,6 +120,79 @@ export function SettingsField({
       )}
     </>
   );
+  if (field.type === 'string-list') {
+    const edit = (key: string, value: string | boolean) => {
+      if (scope === null) return;
+      onEdit(scope, field.listSource.key, field.listSource.raw);
+      onEdit(scope, field.path, true);
+      onEdit(scope, key, value);
+    };
+    return (
+      <fieldset className="tp-settings__field" data-field={field.path}>
+        <legend id={labelId}>{label}</legend>
+        {field.listRows.map((row, index) => (
+          <div key={row.key} className="tp-settings__list-row">
+            <label htmlFor={`${own}-${row.key}`}>
+              <span id={`${own}-${row.key}-label`}>{lists.entry(index)}</span>
+            </label>
+            <input
+              id={`${own}-${row.key}`}
+              type="text"
+              className="tp-settings__input"
+              value={row.raw}
+              disabled={scope === null}
+              aria-labelledby={`${labelId} ${own}-${row.key}-label`}
+              aria-invalid={field.invalid === null ? undefined : true}
+              aria-describedby={
+                [errorId, row.malformed ? `${own}-${row.key}-malformed` : null]
+                  .filter((id) => id !== null)
+                  .join(' ') || undefined
+              }
+              onChange={(event) => {
+                edit(row.key, event.currentTarget.value);
+              }}
+            />
+            <button
+              className="tp-button"
+              type="button"
+              disabled={scope === null}
+              aria-labelledby={`${own}-${row.key}-remove ${labelId} ${own}-${row.key}-label ${own}-${row.key}-value`}
+              onClick={() => {
+                edit(row.key, false);
+              }}
+            >
+              <span id={`${own}-${row.key}-remove`}>{lists.remove.short}</span>
+            </button>
+            <span id={`${own}-${row.key}-value`} hidden>
+              {row.name === null ? null : <ServerValue kind="name" value={row.name} />}
+            </span>
+            {row.malformed ? (
+              <span id={`${own}-${row.key}-malformed`}>{lists.malformed.short}</span>
+            ) : null}
+          </div>
+        ))}
+        <button
+          className="tp-button"
+          type="button"
+          disabled={scope === null}
+          aria-labelledby={`${own}-add ${labelId}`}
+          onClick={() => {
+            edit(field.nextListKey, '');
+          }}
+        >
+          <span id={`${own}-add`}>{lists.add.short}</span>
+        </button>
+        {field.invalid === null ? null : (
+          <span id={errorId ?? undefined} role="alert">
+            {lists.listInvalid.short}
+          </span>
+        )}
+        {field.description === null ? null : (
+          <ServerValue kind="message" value={field.description} />
+        )}
+      </fieldset>
+    );
+  }
   if (field.type === 'boolean') {
     const part = field.parts[0];
     const on = part?.raw === true;

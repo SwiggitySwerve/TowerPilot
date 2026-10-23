@@ -1,4 +1,5 @@
 import { editTargetKey, pickableProfiles } from '../core/editingTarget.ts';
+import { retainedStringListKeys } from '../core/settingsFields.ts';
 import { editingFiles } from './selectors/editingTarget.ts';
 import { onFromRead } from '../core/harvestChoice.ts';
 import { harvestView } from '../core/readability.ts';
@@ -83,6 +84,7 @@ export function initialDashboardState(
     collectionOpen: false,
     emulatorsOpen: false,
     runtimeOpen: false,
+    equipmentOpen: false,
     recognitionOpen: false,
     recognitionRun: null,
     recognitionReadiness: null,
@@ -102,10 +104,15 @@ function withoutDraft(
 ): DashboardState['runDrafts'] {
   const current = drafts[scope];
   if (current === undefined) return drafts;
+  const retained = only === undefined ? new Set<string>() : retainedStringListKeys(current, only);
   const kept =
     only === undefined
       ? {}
-      : Object.fromEntries(Object.entries(current).filter(([path, value]) => only[path] !== value));
+      : Object.fromEntries(
+          Object.entries(current).filter(
+            ([path, value]) => retained.has(path) || only[path] !== value,
+          ),
+        );
   const others = Object.entries(drafts).filter(([key]) => key !== scope);
   return Object.freeze(
     Object.fromEntries(
@@ -208,6 +215,7 @@ export function reduceDashboard(state: DashboardState, action: DashboardAction):
         collectionOpen: state.collectionOpen,
         emulatorsOpen: state.emulatorsOpen,
         runtimeOpen: state.runtimeOpen,
+        equipmentOpen: state.equipmentOpen,
         recognitionOpen: state.recognitionOpen,
         recognitionRun: state.recognitionRun,
         // SR-2: a person's edits outlive a context change; their scope keeps them to their own.
@@ -290,6 +298,10 @@ export function reduceDashboard(state: DashboardState, action: DashboardAction):
       return action.open === state.emulatorsOpen
         ? state
         : Object.freeze({ ...state, emulatorsOpen: action.open });
+    case 'equipment_open':
+      return action.open === state.equipmentOpen
+        ? state
+        : Object.freeze({ ...state, equipmentOpen: action.open });
     case 'runtime_open':
       return action.open === state.runtimeOpen
         ? state

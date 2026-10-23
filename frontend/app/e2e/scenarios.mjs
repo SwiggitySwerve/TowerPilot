@@ -2,6 +2,9 @@
 /** Fixture choices only; HTTP routing and per-browser state belong to fake-backend.mjs. */
 import { loadFixture } from '../scripts/contract-fixture.mjs';
 import { RUNTIME_SAVES } from './runtime-fixtures.mjs';
+import { EMULATOR_CONFIG_SCENARIOS } from './emulators-config-fixtures.mjs';
+import { RUNTIME_CONFIG_SCENARIOS } from './runtime-config-fixtures.mjs';
+import { EQUIPMENT_CONFIG_SCENARIOS } from './equipment-config-fixtures.mjs';
 
 /**
  * GET keys are endpoint ids, pathnames, or full paths (including the query).
@@ -158,6 +161,9 @@ const e0Samples = Object.fromEntries(
 
 /** @type {Readonly<Record<string, Scenario>>} */
 export const SCENARIOS = Object.freeze({
+  ...EQUIPMENT_CONFIG_SCENARIOS,
+  ...EMULATOR_CONFIG_SCENARIOS,
+  ...RUNTIME_CONFIG_SCENARIOS,
   profile_target_collection_label: {
     description: 'PE4 inactive label at its recorded revision',
     harvest: 'off',

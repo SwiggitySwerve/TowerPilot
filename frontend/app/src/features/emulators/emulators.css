@@ -199,7 +199,8 @@
   .tp-emulators__field select {
     width: 100%;
   }
-  .tp-emulators .tp-button {
+  .tp-emulators .tp-button,
+  .tp-emulators-topbar .tp-button {
     min-height: var(--tp-control-height-touch);
   }
 }

@@ -135,7 +135,11 @@ export function selectReadPlan(state: DashboardState, resource: ResourceId): Rea
         ? { path: '/api/profile-files', mode: 'off' }
         : { path: null, mode: 'off' };
     case 'settings':
-      return state.collectionOpen || state.emulatorsOpen || state.runtimeOpen
+      return state.collectionOpen ||
+        state.emulatorsOpen ||
+        state.runtimeOpen ||
+        state.runsOpen ||
+        state.equipmentOpen
         ? { path: '/api/settings', mode: 'off' }
         : { path: null, mode: 'off' };
     case 'runTemplates':
@@ -353,11 +357,15 @@ export function readTriggers(
   if (next.runtimeOpen && !previous.runtimeOpen) {
     for (const resource of ['config', 'settings'] as const) wanted.add(resource);
   }
+  if (next.equipmentOpen && !previous.equipmentOpen) {
+    for (const resource of ['config', 'settings'] as const) wanted.add(resource);
+  }
   if (next.emulatorsOpen && !previous.emulatorsOpen) {
     for (const resource of ['config', 'settings', 'wizardTools', 'wizardState'] as const)
       wanted.add(resource);
   }
   if (next.runsOpen && !previous.runsOpen) {
+    wanted.add('settings');
     wanted.add('profileSource');
     wanted.add('profileFiles');
     wanted.add('runTemplates');

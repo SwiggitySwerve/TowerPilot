@@ -115,6 +115,7 @@ export interface DashboardState {
   readonly emulatorsOpen: boolean;
   /** The Runtime page is open (its settings are read). */
   readonly runtimeOpen: boolean;
+  readonly equipmentOpen: boolean;
   /** The Recognition page is open (its reads follow it). */
   readonly recognitionOpen: boolean;
   /**
@@ -202,6 +203,7 @@ export type DashboardAction =
   | { readonly type: 'profile_checked'; readonly epoch: number; readonly check: ProfileCheck }
   | { readonly type: 'emulators_open'; readonly open: boolean }
   | { readonly type: 'runtime_open'; readonly open: boolean }
+  | { readonly type: 'equipment_open'; readonly open: boolean }
   | { readonly type: 'recognition_open'; readonly open: boolean }
   | { readonly type: 'recognition_run'; readonly run: string | null }
   | {
