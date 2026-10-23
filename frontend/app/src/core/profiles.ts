@@ -1,4 +1,5 @@
 import { entries, finite, id, list, own, ownPath, stringList, text } from './read.ts';
+import { configContext, configRevision, type PauseContext } from './config.ts';
 import { readiness, runDefined } from './readiness.ts';
 
 /**
@@ -237,6 +238,7 @@ export function checkTier(raw: string): TierCheck {
 
 /** What a Profiles write sent, as its record keeps it (api/intents IntentMeta). */
 export interface SentProfileWrite {
+  readonly context?: (PauseContext & { readonly account: string | null }) | null;
   /** The account id, the profile name, or the copy or promotion destination. */
   readonly name?: string | undefined;
   readonly maxTier?: number | undefined;
@@ -338,7 +340,12 @@ export function profileWriteAnswer(
 export function settleProfileWrite(
   kind: ProfileWriteKind,
   sent: SentProfileWrite,
-  reads: { readonly accounts: unknown; readonly files: unknown; readonly source?: unknown },
+  reads: {
+    readonly accounts: unknown;
+    readonly files: unknown;
+    readonly source?: unknown;
+    readonly config?: unknown;
+  },
 ): 'applied' | null {
   const { name } = sent;
   switch (kind) {
@@ -364,11 +371,22 @@ export function settleProfileWrite(
       return view.maxTier === sent.maxTier ? 'applied' : null;
     }
     case 'profile_activate': {
+      if (sent.unbind === true) {
+        const context = configContext(reads.config);
+        const expected = sent.context;
+        if (context === null || expected == null || configRevision(reads.config) === null)
+          return null;
+        const account = id(ownPath(reads.config, 'instances', context.instance, 'account')) ?? null;
+        const profile = own(reads.config, 'active_profile');
+        return context.instance === expected.instance &&
+          context.serial === expected.serial &&
+          account === expected.account &&
+          (profile === null || profile === undefined)
+          ? 'applied'
+          : null;
+      }
       const view = profileFilesView(reads.files);
       if (view === null) return null;
-      // F6-14 PE1: an unbind is proved by a list that names no active profile (it is offered
-      // only while one is active, and the read must follow the request).
-      if (sent.unbind === true) return view.active === null ? 'applied' : null;
       if (name === undefined) return null;
       return view.active === name ? 'applied' : null;
     }

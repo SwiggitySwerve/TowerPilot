@@ -10,10 +10,11 @@ import {
   type CollectionSource,
 } from '../../core/collectionPolicies.ts';
 import { settingsView } from '../../core/settingsFields.ts';
+import { editTargetScope } from '../../core/editingTarget.ts';
 import { gatherDefaults } from '../../core/runTemplates.ts';
 import { fromServer, type ServerText } from '../../copy/server.ts';
 import type { Fenced } from '../commands.ts';
-import { contextScopeKey } from '../intents.ts';
+import { editorSource, editingTargetVM, selectEditingTarget } from './editingTarget.ts';
 import { readAgeSec } from '../reads.ts';
 import type { ContextView, DashboardState, ReadRecord } from '../types.ts';
 import { commandVM, type CommandVM } from '../viewModels.ts';
@@ -37,6 +38,9 @@ import {
 /** A profile patch as its view model offered it (C4 to C6). */
 export interface ProfilePatchCommand extends Fenced {
   readonly context: ContextView;
+  /** Collection-only target data; other users of the shared patch command keep their contract. */
+  readonly profileName?: string;
+  readonly targetGeneration?: number;
   /** The write target: one outcome line per policy action or for the chores. */
   readonly target: string;
   readonly path: readonly string[];
@@ -86,6 +90,7 @@ export interface PolicyEditorVM {
   readonly labelDraft: string;
   /** The name was edited (Cancel restores the saved name). */
   readonly labelDirty: boolean;
+  readonly pin: Readonly<Record<string, string>>;
   readonly saveLabel: CommandVM<ProfilePatchCommand>;
   readonly labelOutcome: SaveOutcomeVM | null;
   readonly remove: CommandVM<ProfilePatchCommand>;
@@ -113,6 +118,7 @@ export interface CollectionPageVM {
   readonly epoch: number;
   readonly context: ContextView | null;
   readonly profile: ServerText<'name'> | null;
+  readonly inactive: boolean;
   readonly settingsRead: ReadState;
   readonly sourceRead: ReadState;
   readonly settingsAgeSec: number | null;
@@ -120,6 +126,10 @@ export interface CollectionPageVM {
   readonly rewards: SettingsModuleVM | null;
   readonly policies: readonly PolicyRowVM[];
   readonly editor: PolicyEditorVM | null;
+  readonly deletedOutcomes: readonly {
+    readonly id: ServerText<'id'> | null;
+    readonly outcome: SaveOutcomeVM;
+  }[];
   readonly copy: CopyFormVM;
   readonly create: {
     readonly choices: readonly { readonly key: string; readonly label: ServerText<'name'> }[];
@@ -139,6 +149,7 @@ export interface CollectionPageVM {
   readonly problems: readonly ServerText<'message'>[];
   readonly validatorError: ServerText<'message'> | null;
   readonly chores: {
+    readonly pin: Readonly<Record<string, string>>;
     readonly scope: string | null;
     readonly rows: readonly ChoreVM[];
     readonly read: ReadState;
@@ -153,6 +164,9 @@ const NOT_SENT_REASONS: readonly string[] = [
   'context_unconfirmed',
   'context_changed',
   'collection_write_in_flight',
+  'target_changed',
+  'target_missing',
+  'target_unconfirmed',
 ];
 
 function readState(slot: {
@@ -174,8 +188,14 @@ function answered200(slot: { readonly lastAnswered: ReadRecord | null }): unknow
 }
 
 /** The draft scope of a Collection form in a context. */
-export function collectionScope(context: ContextView | null, form: string): string | null {
-  return context === null ? null : `collection:${form}:${contextScopeKey(context)}`;
+export function collectionScope(
+  context: ContextView | null,
+  form: string,
+  name: string | null = context?.profile ?? null,
+): string | null {
+  return context === null || name === null
+    ? null
+    : `collection:${form}:${editTargetScope(context, name)}`;
 }
 
 function draftOf(
@@ -198,8 +218,16 @@ function ids(values: readonly string[]): readonly ServerText<'id'>[] {
 }
 
 /** The patch target of a policy action or the chores (one outcome line each). */
-export function patchTarget(context: ContextView, what: string): string {
-  return `patch:${what}:${contextScopeKey(context)}`;
+export function patchTarget(
+  context: ContextView,
+  what: string,
+  name: string = context.profile ?? '',
+): string {
+  return `patch:${what}:${editTargetScope(context, name)}`;
+}
+
+export function selectCollectionTargetName(state: DashboardState) {
+  return editingTargetVM(selectEditingTarget(state)).name;
 }
 
 export function selectCollectionPage(
@@ -207,15 +235,22 @@ export function selectCollectionPage(
   selected: string | null,
 ): CollectionPageVM {
   const context = state.context;
+  const target = selectEditingTarget(state);
   const settingsBody = answered200(state.reads.settings);
   const view = settingsView(settingsBody);
-  const sourceBody = answered200(state.reads.profileSource);
+  const sourceRecord = editorSource(state);
+  const sourceBody =
+    sourceRecord?.outcome.kind === 'answered' ? sourceRecord.outcome.body : undefined;
   const read = collectionSource(sourceBody);
-  // The source must be of the profile the page context names (a new profile, a new read).
+  // Target-source reads never substitute the active profile's values while loading.
   const source: CollectionSource | null =
-    read !== null && context !== null && read.profile === context.profile ? read : null;
-  const pending = settingsSavePending(state);
-  const sourceRead = source === null ? readState(state.reads.profileSource) : 'ready';
+    read !== null && context !== null && read.profile === target.name ? read : null;
+  const pending = settingsSavePending(
+    state,
+    target.inactive ? ['targetSource'] : ['settings', 'profileSource'],
+  );
+  const sourceState = readState(state.reads[target.inactive ? 'targetSource' : 'profileSource']);
+  const sourceRead = source !== null ? 'ready' : sourceState === 'ready' ? 'not_read' : sourceState;
   const settingsRead: ReadState =
     view === null
       ? readState(state.reads.settings)
@@ -224,34 +259,49 @@ export function selectCollectionPage(
         : 'other_context';
   const rewards = settingsModuleVM(state, view, REWARDS_MODULE, { pending });
   // Profile patches are offered only where the server lets this profile be edited.
-  const profileEditable = rewards !== null && rewards.readOnly === null;
+  const profileEditable = target.inactive
+    ? target.blocked === null && source !== null && source.validatorError === null
+    : rewards !== null && rewards.readOnly === null;
+  const scopeOf = (form: string) => collectionScope(context, form, target.name);
+  // An inactive draft's starting revision survives polls, target switches and reloads.
+  const pinOf = (draft: Readonly<Record<string, string | boolean>>) =>
+    target.inactive && draft['base_revision'] === undefined && source?.revision != null
+      ? { base_revision: source.revision }
+      : {};
   const editableReason = (): string | null =>
     context === null || !state.contextConfirmed
       ? 'context_unknown'
-      : source?.revision == null
-        ? 'source_not_read'
-        : !profileEditable
-          ? 'read_only'
-          : pending
-            ? 'save_pending'
-            : null;
+      : target.blocked !== null
+        ? target.blocked
+        : source?.revision == null
+          ? 'source_not_read'
+          : !profileEditable
+            ? 'read_only'
+            : pending
+              ? 'save_pending'
+              : null;
   const command = (
-    target: string,
+    what: string,
     path: readonly string[],
     remove: boolean,
     value: unknown,
     draft: ProfilePatchCommand['draft'],
   ): ProfilePatchCommand | null =>
-    context === null || source?.revision == null
+    context === null || source?.revision == null || target.name === null
       ? null
       : {
           epoch: state.epoch,
           context,
-          target: patchTarget(context, target),
+          profileName: target.name,
+          targetGeneration: state.editTargetGeneration,
+          target: patchTarget(context, what, target.name),
           path,
           remove,
           value,
-          revision: source.revision,
+          revision:
+            typeof draft?.values['base_revision'] === 'string'
+              ? draft.values['base_revision']
+              : source.revision,
           draft,
         };
   const offered = (reason: string | null, next: ProfilePatchCommand | null) =>
@@ -259,7 +309,9 @@ export function selectCollectionPage(
       ? commandVM(true, true, null, false, next)
       : commandVM<ProfilePatchCommand>(true, false, reason ?? 'context_unknown', pending, null);
   const outcomeOf = (what: string) =>
-    context === null ? null : saveOutcome(state, patchTarget(context, what));
+    context === null || target.name === null
+      ? null
+      : saveOutcome(state, patchTarget(context, what, target.name));
 
   const policies = source?.policies ?? [];
   const chosen = policies.find((policy) => policy.id === selected) ?? policies[0] ?? null;
@@ -276,7 +328,7 @@ export function selectCollectionPage(
   let editor: PolicyEditorVM | null = null;
   if (chosen !== null) {
     const modules = policyModules(chosen.id);
-    const labelScope = collectionScope(context, `label:${chosen.id}`);
+    const labelScope = scopeOf(`label:${chosen.id}`);
     const labelDraftValues = draftOf(state, labelScope);
     const labelDraft = textOf(labelDraftValues, 'label', chosen.label ?? '');
     const labelChanged = labelDraft.trim() !== (chosen.label ?? '');
@@ -296,6 +348,7 @@ export function selectCollectionPage(
       labelScope,
       labelDraft,
       labelDirty: Object.keys(labelDraftValues).length > 0,
+      pin: pinOf(labelDraftValues),
       saveLabel: offered(
         labelReason,
         labelReason === null && labelScope !== null
@@ -304,7 +357,7 @@ export function selectCollectionPage(
               ['policies', 'gather', chosen.id, 'label'],
               false,
               labelDraft.trim(),
-              { scope: labelScope, values: { label: labelDraft } },
+              { scope: labelScope, values: { ...labelDraftValues, label: labelDraft } },
             )
           : null,
       ),
@@ -319,13 +372,16 @@ export function selectCollectionPage(
     };
   }
 
-  const copyScope = collectionScope(context, 'copy');
+  const copyScope = scopeOf('copy');
   const copyDraft = draftOf(state, copyScope);
   const copyFrom = textOf(copyDraft, 'from', chosen?.id ?? '');
   const copySource = policies.find((policy) => policy.id === copyFrom) ?? null;
   const copyId = textOf(copyDraft, 'id');
   const copyLabel = textOf(copyDraft, 'label');
-  const idReason = source === null ? null : policyIdCheck(copyId, source, settingsBody);
+  const idReason =
+    source === null
+      ? null
+      : policyIdCheck(copyId, source, target.inactive ? undefined : settingsBody);
   const copyReason =
     editableReason() ??
     (policies.length === 0
@@ -338,7 +394,10 @@ export function selectCollectionPage(
     from: copyFrom,
     id: copyId,
     label: copyLabel,
-    pin: copyDraft['from'] === undefined && copyFrom !== '' ? { from: copyFrom } : {},
+    pin: {
+      ...pinOf(copyDraft),
+      ...(copyDraft['from'] === undefined && copyFrom !== '' ? { from: copyFrom } : {}),
+    },
     dirty: Object.keys(copyDraft).length > 0,
     idReason,
     save: offered(
@@ -361,14 +420,17 @@ export function selectCollectionPage(
     const label = fromServer('name', `${entry.templateLabel} / ${entry.ref}`);
     return label === null ? [] : [{ key: JSON.stringify([entry.templateId, entry.ref]), label }];
   });
-  const createScope = collectionScope(context, 'create');
+  const createScope = scopeOf('create');
   const createDraft = draftOf(state, createScope);
   const template = textOf(createDraft, 'template', choices[0]?.key ?? '');
   const templateDefault = defaults.find(
     (entry) => JSON.stringify([entry.templateId, entry.ref]) === template,
   );
   const createId = textOf(createDraft, 'id');
-  const createIdReason = source === null ? null : policyIdCheck(createId, source, settingsBody);
+  const createIdReason =
+    source === null
+      ? null
+      : policyIdCheck(createId, source, target.inactive ? undefined : settingsBody);
   const createReason =
     editableReason() ?? (templateDefault === undefined ? 'template_not_read' : createIdReason);
   const create: CollectionPageVM['create'] = {
@@ -376,7 +438,10 @@ export function selectCollectionPage(
     scope: createScope,
     template,
     id: createId,
-    pin: createDraft['template'] === undefined && template !== '' ? { template } : {},
+    pin: {
+      ...pinOf(createDraft),
+      ...(createDraft['template'] === undefined && template !== '' ? { template } : {}),
+    },
     dirty: Object.keys(createDraft).length > 0,
     idReason: createIdReason,
     save: offered(
@@ -391,7 +456,7 @@ export function selectCollectionPage(
     outcome: outcomeOf('create'),
   };
 
-  const choreScope = collectionScope(context, 'chores');
+  const choreScope = scopeOf('chores');
   const choreDraft = draftOf(state, choreScope);
   const names = choreNames(answered200(state.reads.vocab));
   const choreList = choreRows(source, names).map((row): ChoreVM => {
@@ -417,6 +482,7 @@ export function selectCollectionPage(
     epoch: state.epoch,
     context,
     profile: fromServer('name', context?.profile),
+    inactive: target.inactive,
     settingsRead,
     sourceRead,
     settingsAgeSec:
@@ -427,6 +493,26 @@ export function selectCollectionPage(
     rewards,
     policies: rows,
     editor,
+    deletedOutcomes: [
+      ...new Set(
+        state.intents.flatMap((intent) => {
+          const path = intent.meta.patchPath;
+          const id = path?.[2];
+          return intent.kind === 'profile_patch' &&
+            intent.meta.patchRemove === true &&
+            intent.meta.name === target.name &&
+            path?.[0] === 'policies' &&
+            path[1] === 'gather' &&
+            id !== undefined &&
+            !policies.some((policy) => policy.id === id)
+            ? [id]
+            : [];
+        }),
+      ),
+    ].flatMap((id) => {
+      const outcome = outcomeOf(`delete:${id}`);
+      return outcome === null ? [] : [{ id: fromServer('id', id), outcome }];
+    }),
     copy,
     create,
     missing: (source?.missing ?? []).map((entry) => ({
@@ -439,6 +525,7 @@ export function selectCollectionPage(
     }),
     validatorError: fromServer('message', source?.validatorError),
     chores: {
+      pin: pinOf(choreDraft),
       scope: choreScope,
       rows: choreList,
       read: names === null ? readState(state.reads.vocab) : sourceRead,

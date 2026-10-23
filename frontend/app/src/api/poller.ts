@@ -46,6 +46,7 @@ export type PolledResource =
   | 'runControls'
   | 'profileFiles'
   | 'profileSource'
+  | 'targetSource'
   | 'settings'
   | 'vocab'
   | 'runTemplates';
@@ -66,6 +67,7 @@ export const POLLED_RESOURCES: readonly PolledResource[] = [
   'runControls',
   'profileFiles',
   'profileSource',
+  'targetSource',
   'settings',
   'vocab',
   'runTemplates',
@@ -203,6 +205,14 @@ export const POLICIES: Readonly<Record<PolledResource, Policy>> = Object.freeze(
     onVisible: true,
   },
   profileSource: {
+    endpoint: 'profileSource',
+    activeMs: null,
+    idleMs: null,
+    hiddenMs: null,
+    backoff: 'none',
+    onVisible: true,
+  },
+  targetSource: {
     endpoint: 'profileSource',
     activeMs: null,
     idleMs: null,

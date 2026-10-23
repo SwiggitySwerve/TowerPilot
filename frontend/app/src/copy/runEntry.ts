@@ -8,6 +8,9 @@ export const runEntry = {
   continue: entry('Continue from the read'),
   discard: entry('Discard field draft'),
   save: entry('Save field'),
+  savingFor: entry('Saving entry settings for:'),
+  picker: entry('Entry run'),
+  activeOnly: entry('Return editing to the active profile to change these'),
   none: entry('None (remove this reference)'),
   remove: entry('Leave the game’s perk bans alone'),
   perks: entry(
@@ -19,7 +22,7 @@ export const runEntry = {
   abilities: entry('Open Abilities'),
   shopping: entry('Shopping policy'),
   notSent: entry(
-    'Nothing sent: the emulator, account or profile changed, or another save is being checked. Read entry settings again.',
+    'Nothing sent: the runtime or editing target changed, the target could not be confirmed, or another save is being checked. Your draft is kept. Read entry settings again.',
   ),
   fields: {
     label: entry('Run label'),

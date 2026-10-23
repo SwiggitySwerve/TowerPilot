@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkEntry, entryRaw, runEntryFields } from '../../src/core/runEntry.ts';
+import { checkEntry, entryRaw, runEntryFields, runEntryRuns } from '../../src/core/runEntry.ts';
 import { profilePatchAnswer, sentPatch, settleProfilePatch } from '../../src/core/profilePatch.ts';
 import { own, stringList } from '../../src/core/read.ts';
 import { dashboardPagesCase, dashboardPagesCaseNames } from '../support/dashboardFixture.ts';
@@ -13,6 +13,16 @@ const vocab = dashboardPagesCase('profile_reads.vocab_ok').body;
 const names = dashboardPagesCaseNames('run_entry_patch');
 
 describe('RL3 entry domain', () => {
+  it('PE6 lists only the target source blueprints with their own labels', () => {
+    const source = dashboardPagesCase('profile_target.same_account_inactive_target_source').body;
+    expect(runEntryRuns(source)).toEqual([
+      { key: 'farm', label: 'Second farm' },
+      { key: 'farm_deep', label: 'farm_deep' },
+      { key: 'shards', label: 'shards' },
+      { key: 'tourney', label: 'tourney' },
+    ]);
+    expect(runEntryRuns(undefined)).toEqual([]);
+  });
   it.each(['farm', 'farm_deep', 'tourney', 'shards', 'dissonance'])(
     'RL3 fields follow the vocabulary for %s',
     (run) => {

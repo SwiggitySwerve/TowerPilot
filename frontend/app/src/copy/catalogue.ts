@@ -1,3 +1,4 @@
+import { editingTarget } from './editingTarget.ts';
 import { recognitionAdvanced } from './recognitionAdvanced.ts';
 import { recognition } from './recognition.ts';
 import { automation } from './dashboard/automation.ts';
@@ -49,6 +50,7 @@ export const copy = {
   states: shell.states,
   runs,
   runsAdd,
+  editingTarget,
   runEntry,
   shopping,
   shoppingLibrary,

@@ -493,8 +493,28 @@ export function createApiHandler(fixture, options = {}) {
   };
   /** @type {Map<string, Session>} */
   const sessions = new Map();
+  /** PE6: no intermediate GET was recorded between the sequential target saves.
+   * Reuse the exact preceding recorded receipt's profile/revision in the genuine GET
+   * envelope. These are explicitly modified cases, not new backend recordings.
+   * @param {string} reference
+   */
+  const runsTargetSource = (reference) => {
+    const preceding =
+      reference === 'profile_target_runs_before_label'
+        ? 'inactive_rescue_policy_saved'
+        : reference === 'profile_target_runs_after_label'
+          ? 'inactive_run_entry_label_saved'
+          : null;
+    if (preceding === null) return undefined;
+    const source = fixtureCase(pages, 'profile_target.same_account_inactive_target_source');
+    const receipt = fixtureCase(pages, `profile_target.${preceding}`);
+    source.body['profile'] = receipt.body['profile'];
+    source.body['revision'] = receipt.body['revision'];
+    return source;
+  };
   /** A reference names a Dashboard case, then a pages case, then a harvest one. @param {string} reference */
   const answerFor = (reference) =>
+    runsTargetSource(reference) ??
     fixtureCase(
       lookup(dashboard, reference) !== undefined
         ? dashboard
@@ -638,7 +658,14 @@ export function createApiHandler(fixture, options = {}) {
           sendJson(res, 404, { ok: false, error: 'Unknown fake write path or action' });
           return;
         }
-        const selected = scenario.writes?.[route.key] ?? scenario.writes?.[route.id];
+        const entryPath = body['path'];
+        const entryChoice =
+          name.startsWith('profile_target_runs_') &&
+          route.id === 'profilePatch' &&
+          Array.isArray(entryPath)
+            ? scenario.writes?.[`profilePatch:${String(entryPath.at(-1))}`]
+            : undefined;
+        const selected = entryChoice ?? scenario.writes?.[route.key] ?? scenario.writes?.[route.id];
         /** @type {WriteChoice} */
         const choice = typeof selected === 'string' ? { mode: selected } : (selected ?? {});
         const mode = choice.mode ?? scenario.writeMode ?? 'ok';
@@ -742,6 +769,44 @@ export function createApiHandler(fixture, options = {}) {
       sendFlaskError(res, 502);
       return;
     }
+    if (
+      reference?.startsWith('profile_target_collection_source:') ||
+      reference?.startsWith('profile_target_collection_copy_source:')
+    ) {
+      const receipt = answerFor(`profile_target.${reference.split(':')[1]}`);
+      const original = answerFor('profile_target.same_account_inactive_target_source');
+      // Modified recorded GET: intermediate saves only record patch receipts. Keep the
+      // source envelope and use exactly that receipt's persisted profile and revision.
+      const body = {
+        ...original.body,
+        profile: structuredClone(receipt.body['profile']),
+        revision: receipt.body['revision'],
+      };
+      if (reference.startsWith('profile_target_collection_copy_source:')) {
+        // The recorded copy POST creates GATHER directly, with no source GET holding it.
+        // Give all_on that recorded value to prove the browser copies the target source.
+        const profile = record(body.profile);
+        const policies = record(profile['policies']);
+        record(policies['gather'])['all_on'] = record(
+          lookup(pages, 'profile_target.inactive_gather_copy_saved.request.body'),
+        )['value'];
+      }
+      sendJson(res, 200, body);
+      return;
+    }
+    if (reference === 'profile_target_collection_settings') {
+      const settings = answerFor('settings.populated_account_every_module');
+      const runtime = record(
+        lookup(pages, 'profile_target.inactive_gather_label_saved.request.body.expected_context'),
+      );
+      // Modified recorded settings: bind its existing active mine values to alpha,
+      // the profile_target world's account. No field value or module is changed.
+      sendJson(res, settings.status, {
+        ...settings.body,
+        context: { ...record(settings.body['context']), account: runtime['account'] },
+      });
+      return;
+    }
     const librarySource = shoppingLibrarySource(reference);
     if (librarySource !== undefined) {
       sendCase(res, librarySource);
@@ -768,6 +833,19 @@ export function createApiHandler(fixture, options = {}) {
     }
     if (reference === undefined) throw new Error(`No default GET case for ${id}`);
     const answer = answerFor(reference);
+    if (
+      name.startsWith('profile_target_abilities_') &&
+      id === 'profileSource' &&
+      answer.body['name'] === undefined
+    ) {
+      // Modified recorded case: expose a preceding patch's profile/revision as
+      // a later source read. Reuse the recorded source envelope and exact saved data.
+      answer.body = {
+        ...answerFor('profile_target.same_account_inactive_target_source').body,
+        ...answer.body,
+        name: decodeURIComponent(url.pathname.split('/').at(-1) ?? ''),
+      };
+    }
     if (
       name === 'shopping_saved_create' &&
       id === 'runControls' &&

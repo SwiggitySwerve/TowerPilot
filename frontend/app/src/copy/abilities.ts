@@ -14,12 +14,33 @@ export const abilities = {
   ),
   stale: entry('Read saved result to check the target and both revisions before saving.'),
   scope: entry(
-    'Policies and the global override are shared by this profile’s future runs. Each save writes one policy or the override once.',
+    'Policies apply to the editing profile’s future runs. The global override applies to the active profile. Each save writes one policy or the override once.',
   ),
   limit: entry(
-    'Profile patches check the profile revision but do not accept a full emulator/account fence. This page checks the target before and after reads; that cannot prevent every server-side context race.',
+    'Inactive policy saves check the target revision and runtime context on the server. Active-profile saves check the revision; their page checks cannot prevent every server-side context race.',
   ),
   global: entry('Global Demon Mode timing'),
+  activeOnly: entry('Return editing to the active profile to change these'),
+  globalUnavailable: entry(
+    'The active profile’s settings could not be read. Read saved result before changing the global override.',
+  ),
+  saveTarget: entry('Save target:'),
+  space: made(' '),
+  checking: entry('Checking the runtime context and editing profile before saving…'),
+  targetCheck: {
+    context_changed: entry(
+      'The runtime context or editing target changed. Nothing was sent; the draft is kept.',
+    ),
+    context_unconfirmed: entry(
+      'The runtime context could not be confirmed. Nothing was sent; the draft is kept.',
+    ),
+    target_missing: entry(
+      'The editing profile is no longer listed or editable. Nothing was sent; the draft is kept.',
+    ),
+    target_unconfirmed: entry(
+      'The editing profile list could not be read. Nothing was sent; the draft is kept.',
+    ),
+  },
   override: entry('Use Demon Mode whenever ready'),
   overrideHelp: entry(
     'Overrides held Demon Mode rescue timing in every run in this profile. It does not mean Demon Mode is owned, recognized, ready or fired.',

@@ -4,6 +4,7 @@ import { fromServer } from '../../copy/server.ts';
 import { currentSchedule, type ScheduleState } from '../schedule.ts';
 import { profileRevision, schedulePlan, WEEK_SLOTS } from '../scheduleDraft.ts';
 import { viewEqual } from '../store.ts';
+import { editingTargetVM } from './editingTarget.ts';
 
 const messages = (value: unknown) =>
   (list(value) ?? []).flatMap((line) => {
@@ -137,12 +138,33 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
               : e.reconcile
                 ? 'reconcile'
                 : 'clean';
+  const removeBlocked:
+    'dirty' | 'revision' | 'reading' | 'checking' | 'sending' | 'unknown' | 'reconcile' | null =
+    state.target.blocked !== null
+      ? 'revision'
+      : e === null || e.dirty
+        ? 'dirty'
+        : e.baseRevision === null || e.readError
+          ? 'revision'
+          : e.busy
+            ? 'reading'
+            : e.checking
+              ? 'checking'
+              : intent?.phase === 'sending'
+                ? 'sending'
+                : pending
+                  ? 'unknown'
+                  : e.reconcile
+                    ? 'reconcile'
+                    : null;
   return {
+    target: editingTargetVM(state.target),
+    activeProfile: fromServer('name', state.context?.profile),
     entry: e,
-    profile: fromServer('name', state.context?.profile),
+    profile: fromServer('name', state.target.name),
     instance: fromServer('name', state.context?.instance),
     account: fromServer('name', state.context?.account),
-    noProfile: state.context !== null && state.context.profile === null,
+    noProfile: state.context !== null && state.target.name === null,
     canAdd:
       (draft?.days[e?.day ?? '']?.[0] ??
         list(ownPath(sourceProfile, 'plan', 'days', e?.day ?? ''))?.[0]) !== undefined,
@@ -186,7 +208,8 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
     })),
     empty: draft !== null && Object.values(draft.days).every((blocks) => blocks.length === 0),
     canSave:
-      state.context?.profile !== null &&
+      state.target.name !== null &&
+      state.target.blocked === null &&
       e !== null &&
       e.dirty &&
       !e.busy &&
@@ -219,22 +242,7 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
      * says why Remove is unavailable now (unsaved changes first, then the Save reasons).
      */
     planSaved: own(sourceProfile, 'plan') !== undefined && draft !== null,
-    removeBlocked:
-      e === null || e.dirty
-        ? ('dirty' as const)
-        : e.baseRevision === null || e.readError
-          ? ('revision' as const)
-          : e.busy
-            ? ('reading' as const)
-            : e.checking
-              ? ('checking' as const)
-              : intent?.phase === 'sending'
-                ? ('sending' as const)
-                : pending
-                  ? ('unknown' as const)
-                  : e.reconcile
-                    ? ('reconcile' as const)
-                    : null,
+    removeBlocked,
     planMissing:
       draft === null &&
       e !== null &&

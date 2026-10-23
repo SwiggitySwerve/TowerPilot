@@ -1,3 +1,6 @@
+import { editTargetKey } from '../../../src/core/editingTarget.ts';
+import { editorSource, selectEditingTarget } from '../../../src/store/selectors/editingTarget.ts';
+import { selectReadPlan } from '../../../src/store/selectors/readPlan.ts';
 import { within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -320,7 +323,7 @@ function region(name: 'profilesAccount' | 'profilesTier' | 'profilesFiles' | 'pr
   return found;
 }
 
-function form(name: 'create' | 'activate' | 'copy' | 'promote'): HTMLElement {
+function form(name: 'create' | 'activate' | 'copy' | 'promote' | 'editing-target'): HTMLElement {
   const found = document.querySelector<HTMLElement>(`[data-form="${name}"]`);
   if (found === null) throw new Error(`form ${name} missing`);
   return found;
@@ -1130,7 +1133,7 @@ describe('P5 automation profiles', () => {
   });
 });
 
-describe('F6-14 PE1 use no profile (r12 candidate profile_target, brief f6-14-profiles-brief.md)', () => {
+describe('F6-14 PE1 use no profile (landed profile_target, brief f6-14-profiles-brief.md)', () => {
   const target = (name: string) => dashboardPagesCase(`profile_target.${name}`);
   // The synthetic world of profile_target: Alpha on main/fake:1 with mine active, second inactive.
   const world: Reads = {
@@ -1182,8 +1185,10 @@ describe('F6-14 PE1 use no profile (r12 candidate profile_target, brief f6-14-pr
   });
 
   it('PE1 a runner owning the device refuses the unbind with its reason; nothing is resent', async () => {
-    const page = await openProfiles(world);
+    let config = () => target('inactive_editor_context_before_save');
+    const page = await openProfiles({ ...world, config: () => config() });
     await confirmUnbind(page);
+    config = () => target('read_after_unbind_runner_refusal');
     await answer(page, 'unbind_refused_while_runner_listed');
     expect(within(unbindForm()).getByText('Not done')).toBeVisible();
     expect(unbindForm()).toHaveTextContent('runners alive - stop them first');
@@ -1206,29 +1211,72 @@ describe('F6-14 PE1 use no profile (r12 candidate profile_target, brief f6-14-pr
     expect(writesTo(page, '/api/profile-activate')).toHaveLength(1);
   });
 
-  it.each(['unbind_failed_before_write', 'unbind_written_then_answer_failed'])(
-    'PE1 %s (500): Unknown; an unchanged list keeps it Unknown; only a list naming no active profile settles it; never resent',
-    async (name) => {
-      let files = world.files ?? (() => target('same_account_inactive_target_listed'));
-      const page = await openProfiles({ ...world, files: () => files() });
+  it.each([
+    ['unbind_failed_before_write', 'read_after_unbind_failed_before_write', false],
+    ['unbind_written_then_answer_failed', 'read_after_unbind_written_then_answer_failed', true],
+  ])(
+    'PE1 %s + %s: only the later config can settle; never resent',
+    async (write, readback, applied) => {
+      let config = () => target('inactive_editor_context_before_save');
+      const page = await openProfiles({ ...world, config: () => config() });
       await confirmUnbind(page);
-      await answer(page, name);
+      await answer(page, write);
       expect(within(unbindForm()).getByText(/^No confirmed reply/u)).toBeVisible();
+      // Supporting file-list evidence never settles an unbind, even when it says none active.
+      page.fake.route('GET', '/api/profile-files', () =>
+        answerOf(pages('profile_files_write.files_after_unbinding_have_no_active_profile')),
+      );
       page.data.poller.read('profileFiles');
       await page.advance(1_000);
       expect(within(unbindForm()).getByText(/^No confirmed reply/u)).toBeVisible();
-      // Modified pairing: profile_target records the settling read as GET /api/config; the
-      // profile list naming no active profile is profile_files_write's recorded list after an
-      // unbind (its own synthetic world).
-      files = () => pages('profile_files_write.files_after_unbinding_have_no_active_profile');
-      page.data.poller.read('profileFiles');
+      config = () => target(readback);
+      page.data.poller.read('config');
       await page.advance(1_000);
-      expect(within(unbindForm()).queryByText(/^No confirmed reply/u)).toBeNull();
+      expect(
+        page.data.machine.snapshot().find((entry) => entry.kind === 'profile_activate')
+          ?.readSettlement,
+      ).toBe(applied ? 'applied' : null);
+      if (applied) {
+        expect(
+          within(unbindForm()).getByText('A later read shows the requested result'),
+        ).toBeVisible();
+        expect(useNone()).toHaveAccessibleDescription('No profile is active');
+      } else expect(within(unbindForm()).getByText(/^No confirmed reply/u)).toBeVisible();
+      await page.advance(30_000);
+      expect(writesTo(page, '/api/profile-activate')).toHaveLength(1);
+    },
+  );
+
+  it.each([
+    ['unbind_with_matching_account_context', 'read_after_unbind_account_context', 'alpha'],
+    [
+      'unbind_with_matching_legacy_context',
+      'read_after_unbind_legacy_context',
+      'this installation',
+    ],
+  ])(
+    'PE1 %s + %s: reviewed identity, lost receipt and fresh config settlement',
+    async (write, readback, account) => {
+      let config = () =>
+        write === 'unbind_with_matching_legacy_context'
+          ? pages('config_state.read_before_the_save')
+          : target('inactive_editor_context_before_save');
+      const page = await openProfiles({ ...world, config: () => config() });
+      await page.user.click(useNone());
+      expect(openDialog()).toHaveTextContent(account);
+      expect(openDialog()).toHaveTextContent('main');
+      expect(openDialog()).toHaveTextContent('mine');
+      await page.user.click(within(openDialog()).getByRole('button', { name: 'Use no profile' }));
+      await page.advance(0);
+      expect(writesTo(page, '/api/profile-activate')).toEqual([target(write).request.body]);
+      // The recorded successful request committed; transport loses its reply.
+      config = () => target(readback);
+      page.fake.next('/api/profile-activate', 'POST').lose();
+      await page.advance(1_000);
       expect(
         within(unbindForm()).getByText('A later read shows the requested result'),
       ).toBeVisible();
-      expect(unbindForm()).toHaveTextContent('none - the scheduler runs its legacy rules');
-      expect(useNone()).toHaveAccessibleDescription('No profile is active');
+      await page.advance(30_000);
       expect(writesTo(page, '/api/profile-activate')).toHaveLength(1);
     },
   );
@@ -1239,5 +1287,153 @@ describe('F6-14 PE1 use no profile (r12 candidate profile_target, brief f6-14-pr
     expect(textOutsideCatalogue(page.view.container)).toEqual([]);
     vi.useRealTimers();
     expect(await axe(page.view.container)).toHaveNoViolations();
+  });
+});
+
+describe('F6-14 PE2 editing target foundation', () => {
+  const target = (name: string) => pages(`profile_target.${name}`);
+  const world: Reads = {
+    config: () => target('inactive_editor_context_before_save'),
+    files: () => target('same_account_inactive_target_listed'),
+  };
+  const box = () => form('editing-target');
+  async function pickSecond(page: Page) {
+    await page.user.selectOptions(within(box()).getByRole('combobox'), 'second');
+    await page.user.click(within(box()).getByRole('button', { name: 'Edit this profile' }));
+  }
+  const returnButton = () =>
+    within(box()).getByRole('button', { name: 'Return editing to the active profile' });
+
+  it('PE2 pick second while mine is active sends no request of any kind; generation increases on pick and return', async () => {
+    const page = await openProfiles(world);
+    const before = page.fake.requests.length;
+    const generation = page.data.store.getSnapshot().editTargetGeneration;
+    await pickSecond(page);
+    expect(page.fake.requests).toHaveLength(before);
+    expect(selectEditingTarget(page.data.store.getSnapshot())).toMatchObject({
+      name: 'second',
+      active: 'mine',
+      pinned: true,
+      inactive: true,
+      blocked: null,
+      generation: generation + 1,
+    });
+    expect(box()).toHaveTextContent('Editing:second(not the active profile)');
+    await page.user.click(returnButton());
+    expect(page.fake.requests).toHaveLength(before);
+    expect(selectEditingTarget(page.data.store.getSnapshot())).toMatchObject({
+      name: 'mine',
+      pinned: false,
+      generation: generation + 2,
+    });
+  });
+
+  it('PE2 the pick persists per account identity and reload restores permission only after the files read lists it', async () => {
+    const page = await openProfiles(world);
+    await pickSecond(page);
+    page.view.unmount();
+    page.data.stop();
+    let files: DashboardCase | 'hold' = 'hold';
+    const again = await openProfiles(world, {
+      storage: page.storage,
+      before: (fake) => {
+        fake.route('GET', '/api/profile-files', () =>
+          files === 'hold' ? 'hold' : answerOf(files),
+        );
+      },
+    });
+    expect(selectEditingTarget(again.data.store.getSnapshot())).toMatchObject({
+      name: 'second',
+      pinned: true,
+      blocked: 'files_unread',
+    });
+    expect(editorSource(again.data.store.getSnapshot())).toBeNull();
+    files = target('same_account_inactive_target_listed');
+    again.fake.next('/api/profile-files').respond(files.status, files.body);
+    await again.advance(0);
+    expect(selectEditingTarget(again.data.store.getSnapshot())).toMatchObject({
+      name: 'second',
+      blocked: null,
+    });
+    expect(again.fake.writes()).toEqual([]);
+  });
+
+  it('PE2 inactive_target_list_after_deletion stays pinned and blocked not_listed without fallback', async () => {
+    let files = () => target('same_account_inactive_target_listed');
+    const page = await openProfiles({ ...world, files: () => files() });
+    await pickSecond(page);
+    files = () => target('inactive_target_list_after_deletion');
+    page.data.poller.read('profileFiles');
+    await page.advance(0);
+    expect(selectEditingTarget(page.data.store.getSnapshot())).toMatchObject({
+      name: 'second',
+      active: 'mine',
+      pinned: true,
+      blocked: 'not_listed',
+    });
+    expect(box()).toHaveTextContent('This profile is no longer listed');
+    expect(page.fake.writes()).toEqual([]);
+  });
+
+  it('PE2 profile_files_with_a_draft_and_the_starter never offers starter or draft', async () => {
+    await openProfiles({
+      ...world,
+      files: () => pages('profile_reads.profile_files_with_a_draft_and_the_starter'),
+    });
+    const options = within(box()).getAllByRole('option');
+    expect(options.map((option) => option.getAttribute('value'))).not.toContain('default');
+    expect(options.map((option) => option.getAttribute('value'))).not.toContain('mine.draft');
+  });
+
+  it('PE2 another account identity does not see the pick; return clears only this identity', async () => {
+    let config = () => target('inactive_editor_context_before_save');
+    const page = await openProfiles({ ...world, config: () => config() });
+    await pickSecond(page);
+    const context = page.data.store.getSnapshot().context;
+    if (context === null) throw new Error('missing context');
+    const alphaKey = editTargetKey(context);
+    config = () => pages('config_state.effective_view_of_the_other_account');
+    page.data.poller.read('config');
+    await page.advance(0);
+    expect(selectEditingTarget(page.data.store.getSnapshot())).toMatchObject({
+      name: 'theirs',
+      pinned: false,
+    });
+    await page.user.click(returnButton());
+    expect(page.data.store.getSnapshot().editTargets[alphaKey]?.name).toBe('second');
+    config = () => target('inactive_editor_context_before_save');
+    page.data.poller.read('config');
+    await page.advance(0);
+    expect(selectEditingTarget(page.data.store.getSnapshot()).name).toBe('second');
+    await page.user.click(returnButton());
+    expect(page.data.store.getSnapshot().editTargets[alphaKey]).toBeUndefined();
+    expect(page.fake.writes()).toEqual([]);
+  });
+
+  it('PE2 targetSource reads /api/profile-src/second; editorSource accepts only a body named second', async () => {
+    const page = await openProfiles(world);
+    await pickSecond(page);
+    expect(selectReadPlan(page.data.store.getSnapshot(), 'targetSource').path).toBeNull();
+    // An editor opens. The initial recorded mine body deliberately fails the name fence.
+    page.data.commands.openCollection(true);
+    await page.advance(0);
+    expect(page.fake.requests.some((request) => request.path === '/api/profile-src/second')).toBe(
+      true,
+    );
+    expect(selectReadPlan(page.data.store.getSnapshot(), 'profileSource').path).toBe(
+      '/api/profile-src/mine',
+    );
+    expect(editorSource(page.data.store.getSnapshot())).toBeNull();
+    page.fake.route('GET', '/api/profile-src/second', () =>
+      answerOf(target('same_account_inactive_target_source')),
+    );
+    page.data.poller.read('targetSource');
+    await page.advance(0);
+    const read = editorSource(page.data.store.getSnapshot());
+    expect(read?.path).toBe('/api/profile-src/second');
+    expect(read?.outcome.kind === 'answered' ? read.outcome.body : null).toEqual(
+      target('same_account_inactive_target_source').body,
+    );
+    expect(page.fake.writes()).toEqual([]);
   });
 });

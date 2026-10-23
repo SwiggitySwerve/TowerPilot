@@ -162,3 +162,8 @@
     padding: var(--tp-space-3);
   }
 }
+
+/* F6-14 PE5: a save outcome names its target on one line and the outcome on the next. */
+.tp-abilities__line {
+  display: block;
+}

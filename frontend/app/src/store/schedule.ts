@@ -1,6 +1,8 @@
 import type { PageContext } from '../api/context.ts';
 import type { IntentRecord } from '../api/intents/types.ts';
 import type { ScheduleApi } from '../api/schedule.ts';
+import type { TargetCheckResult } from '../api/clickContext.ts';
+import { editingTarget, type EditingTarget } from '../core/editingTarget.ts';
 import { settleProfilePatch, sentPatch } from '../core/profilePatch.ts';
 import { own, text } from '../core/read.ts';
 import { createStore, viewEqual, type Store } from './store.ts';
@@ -38,22 +40,23 @@ export interface ScheduleEntry {
   /** F6-11-P2-01: a Save or Remove whose click-time context check is still running. */
   readonly checking: boolean;
   /** F6-11-P2-01: why the last Save or Remove of this target was not sent. */
-  readonly notSent: 'context_unconfirmed' | 'context_changed' | null;
+  readonly notSent: Exclude<TargetCheckResult, 'same'> | null;
 }
 /**
  * F6-11-P2-01: what a Save or Remove click did: `sent` once, nothing at all (`blocked`: the
  * page no longer allows it), or nothing because a config read started after the click could
  * not confirm, or no longer names, the emulator, account and profile the page was drawn for.
  */
-export type ScheduleSendResult = 'sent' | 'blocked' | 'context_unconfirmed' | 'context_changed';
+export type ScheduleSendResult = 'sent' | 'blocked' | Exclude<TargetCheckResult, 'same'>;
 export interface ScheduleState {
   readonly context: PageContext | null;
+  readonly target: EditingTarget;
   readonly epoch: number;
   readonly key: string | null;
   readonly entries: Readonly<Record<string, ScheduleEntry>>;
 }
 export interface ScheduleStore extends Store<ScheduleState> {
-  readonly setTarget: (context: PageContext | null, epoch: number) => void;
+  readonly setTarget: (context: PageContext | null, epoch: number, target?: EditingTarget) => void;
   readonly refresh: () => Promise<void>;
   readonly selectDay: (day: string) => void;
   readonly edit: (key: string, field: BlockField, value: string) => void;
@@ -101,7 +104,13 @@ export const currentSchedule = (state: ScheduleState): ScheduleEntry | null =>
 
 /** Owns target-bound drafts, read fences and revision reconciliation; never schedules a run. */
 export function createScheduleStore(api: ScheduleApi, now: () => number = Date.now): ScheduleStore {
-  const store = createStore<ScheduleState>({ context: null, epoch: 0, key: null, entries: {} });
+  const store = createStore<ScheduleState>({
+    context: null,
+    target: editingTarget(null, undefined, null),
+    epoch: 0,
+    key: null,
+    entries: {},
+  });
   let controller: AbortController | null = null;
   let counter = 0;
   const submitted = new Map<
@@ -139,14 +148,22 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
     );
   };
   const sync = () => {
-    for (const intent of api.machine.snapshot()) {
+    const seen = new Set<string>();
+    for (const intent of [...api.machine.snapshot()].reverse()) {
       if (
         intent.kind !== 'schedule_save' ||
         intent.context === null ||
         intent.supersededBySeq !== null
       )
         continue;
-      const key = api.targetKey(intent.context);
+      const key = api.targetKey(
+        intent.context,
+        text(own(JSON.parse(intent.request.body), 'name')) ?? intent.context.profile,
+      );
+      // A target keeps its entry across active-binding changes. Older records from another
+      // runtime binding remain history, even when the machine did not supersede them.
+      if (seen.has(key)) continue;
+      seen.add(key);
       const entry = store.getSnapshot().entries[key];
       if (entry === undefined || entry.intent === intent) continue;
       const sent = submitted.get(intent.id);
@@ -181,7 +198,7 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
 
   const refresh = async () => {
     const state = store.getSnapshot();
-    const { context, key, epoch } = state;
+    const { context, key, epoch, target } = state;
     if (context === null || key === null || controller !== null) return;
     const request = new AbortController();
     controller = request;
@@ -192,9 +209,9 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
     const correct = api.configMatches(body, context);
     const [profile, status] = correct
       ? await Promise.all([
-          context.profile === null
+          target.name === null || target.blocked !== null
             ? Promise.resolve(null)
-            : api.readProfile(context.profile, request.signal),
+            : api.readProfile(target.name, request.signal),
           api.readStatus(context, request.signal),
         ])
       : [null, null];
@@ -211,7 +228,7 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
     const source =
       !sourceObsolete &&
       profile?.kind === 'answered' &&
-      own(profile.answer.body, 'name') === context.profile &&
+      own(profile.answer.body, 'name') === target.name &&
       own(profile.answer.body, 'ok') === true
         ? profile.answer.body
         : undefined;
@@ -227,8 +244,7 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
       return {
         ...e,
         busy: false,
-        readError:
-          !correct || (!sourceObsolete && context.profile !== null && source === undefined),
+        readError: !correct || (!sourceObsolete && target.name !== null && source === undefined),
         ...(source === undefined
           ? {}
           : {
@@ -307,11 +323,12 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
     send: (context: PageContext, entry: ScheduleEntry) => boolean,
     ready: (entry: ScheduleEntry) => boolean,
   ): Promise<ScheduleSendResult> => {
-    const { context, key, epoch } = store.getSnapshot();
+    const { context, key, epoch, target } = store.getSnapshot();
     const clicked = key === null ? undefined : store.getSnapshot().entries[key];
     if (
       context === null ||
-      context.profile === null ||
+      target.name === null ||
+      target.blocked !== null ||
       key === null ||
       clicked === undefined ||
       clicked.checking ||
@@ -319,20 +336,38 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
     )
       return 'blocked';
     change(key, (e) => ({ ...e, checking: true, notSent: null }));
-    let named: 'same' | 'changed' | 'unconfirmed';
+    let named: TargetCheckResult;
     try {
-      named = await api.checkContext(context);
+      if (target.inactive) named = await api.checkTarget(context, target.name);
+      else {
+        const checked = await api.checkContext(context);
+        named =
+          checked === 'same'
+            ? 'same'
+            : checked === 'changed'
+              ? 'context_changed'
+              : 'context_unconfirmed';
+      }
     } finally {
       change(key, (e) => ({ ...e, checking: false }));
     }
     const now = store.getSnapshot();
     const e = now.entries[key];
-    if (now.key !== key || now.epoch !== epoch || e === undefined) return 'blocked';
+    if (
+      now.key !== key ||
+      now.epoch !== epoch ||
+      now.target.generation !== target.generation ||
+      now.target.blocked !== null ||
+      e === undefined
+    ) {
+      change(key, (current) => ({ ...current, notSent: 'context_changed' }));
+      return 'blocked';
+    }
     if (named !== 'same') {
-      const reason = named === 'changed' ? 'context_changed' : 'context_unconfirmed';
+      const reason = named;
       change(key, (current) => ({ ...current, notSent: reason }));
       // The page catches up with the server's binding through its own read.
-      if (named === 'changed') void refresh();
+      if (named === 'context_changed') void refresh();
       return reason;
     }
     return send(context, e) ? 'sent' : 'blocked';
@@ -340,16 +375,36 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
 
   return {
     ...store,
-    setTarget: (context, epoch) => {
-      const key = context === null ? null : api.targetKey(context);
-      if (key === store.getSnapshot().key && epoch === store.getSnapshot().epoch) return;
+    setTarget: (context, epoch, target = editingTarget(context, undefined, null)) => {
+      const key = context === null ? null : api.targetKey(context, target.name);
+      const previous = store.getSnapshot();
+      if (key === previous.key && epoch === previous.epoch && viewEqual(target, previous.target))
+        return;
       controller?.abort();
       controller = null;
       const oldKey = store.getSnapshot().key;
       if (oldKey !== null) change(oldKey, (e) => ({ ...e, busy: false }));
-      store.update((s) => ({ ...s, context, epoch, key }));
+      // Draft scope excludes the active binding; scheduler evidence still belongs to the
+      // full runtime context. Clear mismatches atomically with the context/target change.
+      store.update((s) => {
+        const entries = { ...s.entries };
+        const entry = key === null ? undefined : entries[key];
+        if (
+          key !== null &&
+          context !== null &&
+          entry !== undefined &&
+          !api.reportMatches(entry.observed, context)
+        )
+          entries[key] = {
+            ...entry,
+            observed: undefined,
+            observedAtMs: null,
+            observationFailed: true,
+          };
+        return { ...s, context, target, epoch, key, entries };
+      });
       api.machine.setContext(context, epoch);
-      if (key === null) return;
+      if (key === null || context === null) return;
       if (store.getSnapshot().entries[key] === undefined) {
         const stored = api.loadDraft(key);
         const draft = restoreScheduleDraft(own(stored, 'draft'));
@@ -438,7 +493,7 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
       fencedSend((context, e) => {
         if (!canSave(e) || e.draft === null || e.baseRevision === null) return false;
         const plan = schedulePlan(e.draft);
-        const result = api.send(context, e.baseRevision, plan);
+        const result = api.send(context, e.baseRevision, plan, store.getSnapshot().target.name);
         if (result.kind !== 'sent') return false;
         submitted.set(result.record.id, { version: e.version, plan });
         return true;
@@ -455,7 +510,7 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
         !unresolved(e);
       return fencedSend((context, e) => {
         if (!ready(e)) return false;
-        const result = api.remove(context, revision);
+        const result = api.remove(context, revision, store.getSnapshot().target.name);
         if (result.kind !== 'sent') return false;
         submitted.set(result.record.id, { version: e.version, plan: undefined, remove: true });
         return true;

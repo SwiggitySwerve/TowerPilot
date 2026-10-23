@@ -1,6 +1,8 @@
 import type { AbilitiesApi } from '../api/abilities.ts';
 import type { PageContext } from '../api/context.ts';
 import type { ApiPath } from '../api/transport.ts';
+import { editingTarget, type EditingTarget } from '../core/editingTarget.ts';
+import { STARTER_PROFILE } from '../core/profiles.ts';
 import { entries, own, ownPath, record, text } from '../core/read.ts';
 import { profilePatchAnswer, sentPatch, settleProfilePatch } from '../core/profilePatch.ts';
 import {
@@ -27,6 +29,7 @@ import {
 
 export type AbilityFamily = 'uw_policies' | 'rescue_policies';
 export type AbilityOutcome =
+  | 'checking'
   | 'sending'
   | 'saved'
   | 'unknown'
@@ -58,6 +61,8 @@ export interface AbilityEditor {
   readonly outcome: AbilityOutcome | null;
   readonly submission: Submission | null;
   readonly detail: unknown;
+  readonly blockedReason?:
+    'context_changed' | 'context_unconfirmed' | 'target_missing' | 'target_unconfirmed' | undefined;
   readonly isNew: boolean;
   readonly deleting: boolean;
 }
@@ -75,12 +80,13 @@ export interface AbilitiesTarget {
 }
 export interface AbilitiesState {
   readonly context: PageContext | null;
+  readonly editing: EditingTarget;
   readonly epoch: number;
   readonly key: string | null;
   readonly targets: Readonly<Record<string, AbilitiesTarget>>;
 }
 export interface AbilitiesStore extends Store<AbilitiesState> {
-  readonly setTarget: (context: PageContext | null, epoch: number) => void;
+  readonly setTarget: (context: PageContext | null, epoch: number, target?: EditingTarget) => void;
   readonly refresh: () => Promise<void>;
   readonly select: (key: string) => void;
   readonly newId: (family: AbilityFamily, value: string) => void;
@@ -113,7 +119,8 @@ export const currentAbilities = (s: AbilitiesState): AbilitiesTarget | null =>
   s.key === null ? null : (s.targets[s.key] ?? null);
 export const currentAbility = (s: AbilitiesState): AbilityEditor | null => {
   const t = currentAbilities(s);
-  return t?.selected == null ? null : (t.editors[t.selected] ?? null);
+  const entry = t?.selected == null ? null : (t.editors[t.selected] ?? null);
+  return s.editing.inactive && entry?.family === 'global' ? null : entry;
 };
 export const sourceRevision = (value: unknown) => text(own(value, 'revision')) ?? null;
 export const abilityModule = (settings: unknown) =>
@@ -139,15 +146,29 @@ const settingsMatch = (body: unknown, context: PageContext) =>
   ownPath(body, 'context', 'instance') === context.instance &&
   ownPath(body, 'context', 'account') === context.account &&
   ownPath(body, 'context', 'profile') === context.profile;
-const pending = (t: AbilitiesTarget) =>
-  Object.values(t.editors).some((e) => e.outcome === 'sending' || e.outcome === 'unknown');
+const unresolvedAbility = (e: AbilityEditor) =>
+  e.outcome === 'checking' || e.outcome === 'sending' || e.outcome === 'unknown';
+const pending = (t: AbilitiesTarget) => Object.values(t.editors).some(unresolvedAbility);
+export function abilityReadOnly(s: AbilitiesState): boolean {
+  const e = currentAbility(s);
+  return (
+    s.editing.blocked !== null ||
+    s.editing.name === STARTER_PROFILE ||
+    s.editing.name?.endsWith('.draft') === true ||
+    (e?.family === 'global' &&
+      (s.editing.inactive ||
+        own(abilityModule(currentAbilities(s)?.settings), 'editable') !== true))
+  );
+}
 export function canSaveAbility(s: AbilitiesState, now: number, deleting = false): boolean {
   const t = currentAbilities(s),
     e = currentAbility(s);
   if (
     t === null ||
     e === null ||
-    s.context?.profile == null ||
+    s.context === null ||
+    s.editing.name === null ||
+    abilityReadOnly(s) ||
     t.busy ||
     t.error ||
     t.readAt === null ||
@@ -158,8 +179,8 @@ export function canSaveAbility(s: AbilitiesState, now: number, deleting = false)
     own(t.source, 'validator_error') != null
   )
     return false;
-  if (e.family === 'global') return own(abilityModule(t.settings), 'editable') === true && e.dirty;
-  if (s.context.profile === 'default' || s.context.profile.endsWith('.draft')) return false;
+  if (e.family === 'global')
+    return !s.editing.inactive && own(abilityModule(t.settings), 'editable') === true && e.dirty;
   if (deleting)
     return !e.isNew && savedValue(t, e) !== undefined && abilityConsumers(t, e).length === 0;
   return (
@@ -178,7 +199,10 @@ export function canReconcileAbility(s: AbilitiesState, now: number): boolean {
     return false;
   if (
     Object.values(t.editors).some(
-      (entry) => entry.outcome === 'sending' || (entry.outcome === 'unknown' && entry !== e),
+      (entry) =>
+        entry.outcome === 'checking' ||
+        entry.outcome === 'sending' ||
+        (entry.outcome === 'unknown' && entry !== e),
     )
   )
     return false;
@@ -222,7 +246,13 @@ export function createAbilitiesStore(
   api: AbilitiesApi,
   now: () => number = Date.now,
 ): AbilitiesStore {
-  const store = createStore<AbilitiesState>({ context: null, key: null, epoch: 0, targets: {} });
+  const store = createStore<AbilitiesState>({
+    context: null,
+    editing: editingTarget(null, undefined, null),
+    key: null,
+    epoch: 0,
+    targets: {},
+  });
   let controller: AbortController | null = null;
   let sequence = 0;
   const change = (key: string, transform: (t: AbilitiesTarget) => AbilitiesTarget) => {
@@ -349,8 +379,15 @@ export function createAbilitiesStore(
   const unsubscribe = api.machine.subscribe(sync);
   const refresh = async () => {
     const s = store.getSnapshot(),
-      { key, context, epoch } = s;
-    if (key === null || context?.profile == null || controller !== null) return;
+      { key, context, epoch, editing } = s;
+    if (
+      key === null ||
+      context === null ||
+      editing.name === null ||
+      editing.blocked !== null ||
+      controller !== null
+    )
+      return;
     const started = ++sequence,
       request = new AbortController();
     controller = request;
@@ -362,8 +399,8 @@ export function createAbilitiesStore(
     const good = first.kind === 'answered' && api.configMatches(first.answer.body, context);
     const reads = good
       ? await Promise.all([
-          api.profile(context.profile, request.signal),
-          api.settings(request.signal),
+          api.profile(editing.name, request.signal),
+          editing.inactive ? Promise.resolve(null) : api.settings(request.signal),
           api.vocab(request.signal),
         ])
       : null;
@@ -372,7 +409,8 @@ export function createAbilitiesStore(
     if (
       controller !== request ||
       store.getSnapshot().key !== key ||
-      store.getSnapshot().epoch !== epoch
+      store.getSnapshot().epoch !== epoch ||
+      store.getSnapshot().editing.generation !== editing.generation
     )
       return;
     controller = null;
@@ -389,12 +427,8 @@ export function createAbilitiesStore(
       own(last.answer.body, 'config_revision') === own(first.answer.body, 'config_revision') &&
       profile?.kind === 'answered' &&
       own(profile.answer.body, 'ok') === true &&
-      own(profile.answer.body, 'name') === context.profile &&
+      own(profile.answer.body, 'name') === editing.name &&
       sourceRevision(profile.answer.body) !== null &&
-      settings?.kind === 'answered' &&
-      own(settings.answer.body, 'ok') === true &&
-      settingsMatch(settings.answer.body, context) &&
-      sourceRevision(settings.answer.body) !== null &&
       vocab?.kind === 'answered' &&
       own(vocab.answer.body, 'ok') === true &&
       record(own(vocab.answer.body, 'vocab')) !== undefined;
@@ -403,7 +437,13 @@ export function createAbilitiesStore(
       return;
     }
     const source = profile.answer.body,
-      settingsBody = settings.answer.body,
+      settingsBody =
+        settings?.kind === 'answered' &&
+        own(settings.answer.body, 'ok') === true &&
+        settingsMatch(settings.answer.body, context) &&
+        sourceRevision(settings.answer.body) !== null
+          ? settings.answer.body
+          : undefined,
       vocabulary = own(vocab.answer.body, 'vocab');
     change(key, (t) => {
       const target = {
@@ -416,21 +456,21 @@ export function createAbilitiesStore(
         readAt: now(),
       };
       const editors: Record<string, AbilityEditor> = { ...t.editors };
-      const snapshots: [AbilityEditor['family'], string, unknown, string | null][] = [
-        [
+      const snapshots: [AbilityEditor['family'], string, unknown, string | null][] = [];
+      if (!editing.inactive && settingsBody !== undefined)
+        snapshots.push([
           'global',
           'demon_mode_always',
           globalAbilityValue(settingsBody),
           sourceRevision(settingsBody),
-        ],
-      ];
+        ]);
       for (const family of ['uw_policies', 'rescue_policies'] as const)
         for (const [id, value] of entries(ownPath(source, 'profile', 'policies', family)))
           snapshots.push([family, id, value, sourceRevision(source)]);
       for (const [family, id, value, revision] of snapshots) {
         const name = abilityKey(family, id),
           e = editors[name];
-        if (e === undefined || (!e.dirty && e.outcome !== 'sending' && e.outcome !== 'unknown')) {
+        if (e === undefined || (!e.dirty && !unresolvedAbility(e))) {
           const fresh = editor(family, id, value, revision);
           const merged = e === undefined ? fresh.node : reconcileAbilityNode(e.node, value);
           editors[name] =
@@ -455,8 +495,8 @@ export function createAbilitiesStore(
         if (
           !e.isNew &&
           !e.dirty &&
-          e.outcome !== 'sending' &&
-          e.outcome !== 'unknown' &&
+          !unresolvedAbility(e) &&
+          !(e.family === 'global' && settingsBody === undefined) &&
           savedValue(target, e) === undefined
         ) {
           Reflect.deleteProperty(editors, name);
@@ -503,18 +543,128 @@ export function createAbilitiesStore(
         ...target,
         editors,
         selected:
-          (t.selected !== null && Object.hasOwn(editors, t.selected) ? t.selected : null) ??
+          (t.selected !== null &&
+          Object.hasOwn(editors, t.selected) &&
+          !(editing.inactive && editors[t.selected]?.family === 'global')
+            ? t.selected
+            : null) ??
           snapshots.map(([f, id]) => abilityKey(f, id)).find((n) => n.startsWith('uw_policies/')) ??
           null,
       };
     });
   };
+  const save = async (deleting = false) => {
+    const s = store.getSnapshot(),
+      t = currentAbilities(s),
+      e = currentAbility(s);
+    if (
+      !canSaveAbility(s, now(), deleting) ||
+      s.context === null ||
+      t === null ||
+      e === null ||
+      e.revision === null
+    )
+      return;
+    const value = abilityValue(e.node),
+      path: ApiPath = e.family === 'global' ? '/api/settings' : '/api/profile-patch';
+    const body =
+      e.family === 'global'
+        ? {
+            context: own(t.settings, 'context'),
+            revision: e.revision,
+            module: 'global_abilities',
+            values: { demon_mode_always: value },
+          }
+        : {
+            name: s.editing.name,
+            ...(s.editing.inactive ? { expected_context: api.expectedContext(s.context) } : {}),
+            expected_revision: e.revision,
+            path: ['policies', e.family, e.id],
+            ...(deleting ? { op: 'delete' } : { value }),
+          };
+    const key = s.key,
+      name = t.selected;
+    if (key === null || name === null || s.editing.name === null) return;
+    const updateSubmitted = (transform: (entry: AbilityEditor) => AbilityEditor) => {
+      change(key, (current) => {
+        const entry = current.editors[name];
+        return entry === undefined
+          ? current
+          : {
+              ...current,
+              editors: { ...current.editors, [name]: transform(entry) },
+            };
+      });
+    };
+    if (s.editing.inactive) {
+      updateSubmitted((current) => ({
+        ...current,
+        outcome: 'checking',
+        detail: undefined,
+        blockedReason: undefined,
+      }));
+      const checked = await api.checkTarget(s.context, s.editing.name);
+      const latest = store.getSnapshot();
+      if (
+        latest.epoch !== s.epoch ||
+        latest.key !== key ||
+        latest.editing.generation !== s.editing.generation ||
+        latest.editing.blocked !== null
+      ) {
+        // setTarget already marked this check not sent. Do not overwrite a
+        // newer explicit save after a person leaves and returns to this file.
+        return;
+      }
+      if (checked !== 'same') {
+        updateSubmitted((current) => ({
+          ...current,
+          outcome: 'notSent',
+          detail: undefined,
+          blockedReason: checked,
+        }));
+        return;
+      }
+    }
+    const sent = api.send(s.context, path, body, key);
+    if (sent.kind !== 'sent' && sent.kind !== 'resent') {
+      updateSubmitted((current) => ({ ...current, outcome: 'notSent', detail: undefined }));
+      return;
+    }
+    updateSubmitted((current) => ({
+      ...current,
+      outcome: 'sending',
+      detail: undefined,
+      blockedReason: undefined,
+      submission: {
+        path,
+        body,
+        revision: e.revision ?? '',
+        original: e.original,
+        value,
+        version: e.version,
+        deleted: deleting,
+      },
+    }));
+    sync();
+  };
+
   return {
     ...store,
     refresh,
-    setTarget: (context, epoch) => {
-      const key = context === null ? null : api.targetKey(context);
-      if (key === store.getSnapshot().key && epoch === store.getSnapshot().epoch) return;
+    setTarget: (context, epoch, supplied) => {
+      const editing = supplied ?? editingTarget(context, undefined, null);
+      const key =
+        context === null || editing.name === null
+          ? null
+          : api.editTargetScope(context, editing.name);
+      const before = store.getSnapshot();
+      if (
+        key === before.key &&
+        epoch === before.epoch &&
+        editing.generation === before.editing.generation &&
+        editing.blocked === before.editing.blocked
+      )
+        return;
       controller?.abort();
       controller = null;
       const old = store.getSnapshot().key;
@@ -526,11 +676,15 @@ export function createAbilitiesStore(
           editors: Object.fromEntries(
             Object.entries(t.editors).map(([name, e]) => [
               name,
-              e.outcome === 'sending' ? { ...e, outcome: 'unknown' } : e,
+              e.outcome === 'sending'
+                ? { ...e, outcome: 'unknown' }
+                : e.outcome === 'checking'
+                  ? { ...e, outcome: 'notSent', blockedReason: 'context_changed' }
+                  : e,
             ]),
           ),
         }));
-      store.update((s) => ({ ...s, context, key, epoch }));
+      store.update((s) => ({ ...s, context, key, epoch, editing }));
       api.machine.setContext(context, epoch);
       if (key === null) return;
       if (store.getSnapshot().targets[key] === undefined) {
@@ -788,6 +942,7 @@ export function createAbilitiesStore(
         e === null ||
         key === null ||
         name == null ||
+        e.outcome === 'checking' ||
         e.outcome === 'sending' ||
         e.outcome === 'unknown'
       )
@@ -814,53 +969,7 @@ export function createAbilitiesStore(
       );
     },
     save: (deleting = false) => {
-      const s = store.getSnapshot(),
-        t = currentAbilities(s),
-        e = currentAbility(s);
-      if (
-        !canSaveAbility(s, now(), deleting) ||
-        s.context === null ||
-        t === null ||
-        e === null ||
-        e.revision === null
-      )
-        return;
-      const value = abilityValue(e.node),
-        path: ApiPath = e.family === 'global' ? '/api/settings' : '/api/profile-patch';
-      const body =
-        e.family === 'global'
-          ? {
-              context: own(t.settings, 'context'),
-              revision: e.revision,
-              module: 'global_abilities',
-              values: { demon_mode_always: value },
-            }
-          : {
-              name: s.context.profile,
-              expected_revision: e.revision,
-              path: ['policies', e.family, e.id],
-              ...(deleting ? { op: 'delete' } : { value }),
-            };
-      const sent = api.send(s.context, path, body);
-      if (sent.kind !== 'sent' && sent.kind !== 'resent') {
-        changeEditor((current) => ({ ...current, outcome: 'notSent', detail: undefined }));
-        return;
-      }
-      changeEditor((current) => ({
-        ...current,
-        outcome: 'sending',
-        detail: undefined,
-        submission: {
-          path,
-          body,
-          revision: e.revision ?? '',
-          original: current.original,
-          value,
-          version: current.version,
-          deleted: deleting,
-        },
-      }));
-      sync();
+      void save(deleting);
     },
     reconcile: () => {
       const s = store.getSnapshot(),

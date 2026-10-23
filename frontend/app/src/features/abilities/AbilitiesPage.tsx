@@ -4,7 +4,7 @@ import { abilities as t, abilityLabel } from '../../copy/abilities.ts';
 import {
   abilityKey,
   abilityConsumers,
-  abilityModule,
+  abilityReadOnly,
   canSaveAbility,
   canReconcileAbility,
   currentAbilities,
@@ -29,6 +29,9 @@ import { TopBar } from '../dashboard/topBar/TopBar.tsx';
 import { AbilityField, AbilityBackendErrors, Json } from './AbilityField.tsx';
 import { RuleEditor } from './RuleEditor.tsx';
 import { SettingsField } from '../settings/SettingsModuleForm.tsx';
+import { EditingTargetLine } from '../profiles/EditingTargetLine.tsx';
+import { editingTarget as targetCopy } from '../../copy/editingTarget.ts';
+import { editingTargetVM } from '../../store/selectors/editingTarget.ts';
 import './abilities.css';
 
 export function AbilitiesPage({ abilities: store }: { readonly abilities: AbilitiesStore }) {
@@ -72,14 +75,13 @@ export function AbilitiesPage({ abilities: store }: { readonly abilities: Abilit
         : 'unspecified';
   const secondWind = armMode === 'second_wind';
   const stale = target !== null && (target.readAt === null || now - target.readAt > 30_000);
-  const readOnly =
-    s.context?.profile === 'default' ||
-    s.context?.profile?.endsWith('.draft') === true ||
-    own(abilityModule(target?.settings), 'editable') === false;
+  const readOnly = abilityReadOnly(s);
   const consumers = e === null || target === null ? [] : abilityConsumers(target, e);
   const name = abilityName(e?.id),
     globalKey = abilityKey('global', 'demon_mode_always');
   const globalField = abilityGlobalField(target, e);
+  const editing = editingTargetVM(s.editing);
+  const shownTarget = e?.family === 'global' ? editing.active : editing.name;
   return (
     <>
       <header className="tp-topbar">
@@ -112,10 +114,27 @@ export function AbilitiesPage({ abilities: store }: { readonly abilities: Abilit
         {target?.busy === true ? <p role="status">{t.reading.short}</p> : null}
         {target?.error === true ? <p role="alert">{t.readError.short}</p> : null}
         {stale ? <p role="status">{t.stale.short}</p> : null}
-        {s.context?.profile == null ? <p>{t.noTarget.short}</p> : null}
+        {s.editing.name === null ? <p>{t.noTarget.short}</p> : null}
         {readOnly ? <p role="status">{t.readOnly.short}</p> : null}
-        <section className="tp-abilities__card" aria-labelledby="abilities-global">
+        <section
+          className="tp-abilities__card"
+          aria-labelledby="abilities-global"
+          data-testid="abilities-active-only"
+        >
           <h2 id="abilities-global">{t.global.short}</h2>
+          <div className="tp-abilities__actions">
+            {targetCopy.active.short}
+            {editing.active === null ? (
+              targetCopy.none.short
+            ) : (
+              <ServerValue kind="name" value={editing.active} />
+            )}
+          </div>
+          {s.editing.inactive || target?.editors[globalKey] === undefined ? (
+            <p id="abilities-global-reason">
+              {s.editing.inactive ? t.activeOnly.short : t.globalUnavailable.short}
+            </p>
+          ) : null}
           <p>{t.overrideHelp.short}</p>
           <button
             type="button"
@@ -124,11 +143,17 @@ export function AbilitiesPage({ abilities: store }: { readonly abilities: Abilit
             onClick={() => {
               store.select(globalKey);
             }}
-            disabled={target?.editors[globalKey] === undefined}
+            disabled={s.editing.inactive || target?.editors[globalKey] === undefined}
+            aria-describedby={
+              s.editing.inactive || target?.editors[globalKey] === undefined
+                ? 'abilities-global-reason'
+                : undefined
+            }
           >
             {t.global.short}
           </button>
         </section>
+        <EditingTargetLine />
         <div className="tp-abilities__layout">
           <aside className="tp-abilities__card" aria-labelledby="abilities-plans">
             <h2 id="abilities-plans">{t.plans.short}</h2>
@@ -228,6 +253,15 @@ export function AbilitiesPage({ abilities: store }: { readonly abilities: Abilit
             </h2>
             {e === null ? null : (
               <>
+                <div className="tp-abilities__actions">
+                  {t.saveTarget.short}
+                  {t.space}
+                  {shownTarget === null ? (
+                    targetCopy.none.short
+                  ) : (
+                    <ServerValue kind="name" value={shownTarget} />
+                  )}
+                </div>
                 <p>{e.dirty ? t.dirty.short : t.clean.short}</p>
                 <p>{t.consumers.short}</p>
                 {consumers.length === 0 ? (
@@ -498,6 +532,7 @@ export function AbilitiesPage({ abilities: store }: { readonly abilities: Abilit
                     className="tp-button"
                     disabled={
                       (!e.dirty && Object.keys(e.stash).length === 0) ||
+                      e.outcome === 'checking' ||
                       e.outcome === 'sending' ||
                       e.outcome === 'unknown'
                     }
@@ -531,15 +566,30 @@ export function AbilitiesPage({ abilities: store }: { readonly abilities: Abilit
                   )}
                 </div>
                 {e.dirty && !canSaveAbility(s, now) ? <p>{t.blocked.short}</p> : null}
+                {e.blockedReason === undefined ? null : (
+                  <p role="status">{t.targetCheck[e.blockedReason].short}</p>
+                )}
                 {e.outcome === null ? null : (
                   <p role="status">
-                    {e.isNew &&
-                    e.submission?.deleted === true &&
-                    (e.outcome === 'saved' || e.outcome === 'readApplied')
-                      ? t.deletedDraft.short
-                      : e.outcome === 'unknown'
-                        ? t.unknownResult.short
-                        : t[e.outcome].short}
+                    {/* The target and the outcome are separate lines (each its own text). */}
+                    <span className="tp-abilities__line">
+                      {t.saveTarget.short}
+                      {t.space}
+                      {shownTarget === null ? (
+                        targetCopy.none.short
+                      ) : (
+                        <ServerValue kind="name" value={shownTarget} />
+                      )}
+                    </span>
+                    <span className="tp-abilities__line">
+                      {e.isNew &&
+                      e.submission?.deleted === true &&
+                      (e.outcome === 'saved' || e.outcome === 'readApplied')
+                        ? t.deletedDraft.short
+                        : e.outcome === 'unknown'
+                          ? t.unknownResult.short
+                          : t[e.outcome].short}
+                    </span>
                   </p>
                 )}
                 {e.detail === undefined ? null : <Json value={e.detail} />}

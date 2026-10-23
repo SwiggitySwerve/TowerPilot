@@ -1,4 +1,11 @@
 import {
+  profileTargetConfigAnswerSchema,
+  profileTargetFilesAnswerSchema,
+  profileTargetSourceAnswerSchema,
+  profileTargetPatchAnswerSchema,
+  profileTargetActivateAnswerSchema,
+} from '../contract/profileTarget.ts';
+import {
   analysisStartAnswerSchema,
   templateWriteAnswerSchema,
 } from '../contract/recognitionAdvanced.ts';
@@ -428,6 +435,7 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
   return Object.freeze({
     status: endpoint('status', 'GET', [status]),
     config: endpoint('config', 'GET', [
+      profileTargetConfigAnswerSchema,
       fencedAddConfigAnswerSchema,
       contract.config,
       profilesConfigReadAnswerSchema,
@@ -439,11 +447,13 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
     // Profiles page (profiles brief P1 to P5): the pages fixture's profile file list and the
     // source of one profile, as the reads and the writes' settling reads record them.
     profileFiles: endpoint('profileFiles', 'GET', [
+      profileTargetFilesAnswerSchema,
       profilesFilesReadAnswerSchema,
       profilesFilesAfterAccountAnswerSchema,
       profilesFilesAfterWriteAnswerSchema,
     ]),
     profileSource: endpoint('profileSource', 'GET', [
+      profileTargetSourceAnswerSchema,
       profilesSourceReadAnswerSchema,
       profilesSourceAfterTierAnswerSchema,
       profilesSourceAfterPromoteAnswerSchema,
@@ -568,6 +578,7 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       shoppingRunSaveAnswerSchema,
     ]),
     profilePatch: endpoint('profilePatch', 'POST', [
+      profileTargetPatchAnswerSchema,
       schedulePatchAnswerSchema,
       collectionPatchAnswerSchema,
       firstPolicyPatchAnswerSchema,
@@ -594,7 +605,10 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
     // POST /api/accounts (select or create), /api/account-tier and the profile file writes.
     accountsWrite: endpoint('accountsWrite', 'POST', [profilesAccountsPostAnswerSchema]),
     accountTier: endpoint('accountTier', 'POST', [profilesTierPostAnswerSchema]),
-    profileActivate: endpoint('profileActivate', 'POST', [profilesActivatePostAnswerSchema]),
+    profileActivate: endpoint('profileActivate', 'POST', [
+      profilesActivatePostAnswerSchema,
+      profileTargetActivateAnswerSchema,
+    ]),
     profileCopy: endpoint('profileCopy', 'POST', [profilesCopyPostAnswerSchema]),
     profilePromote: endpoint('profilePromote', 'POST', [profilesPromotePostAnswerSchema]),
     diagnostics: endpoint('diagnostics', 'POST', [contract.diagnostics]),

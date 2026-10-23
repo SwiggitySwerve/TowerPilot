@@ -594,6 +594,28 @@ export const CONTRACT_INPUTS = [
       })),
     },
   },
+  {
+    file: DASHBOARD_PAGES_FIXTURE_PATH,
+    descriptor: {
+      name: 'dashboard_contract_pages_v1_profile_target',
+      boundTo: 'families',
+      families: /** @type {const} */ ([
+        ['GET', '/api/config', 'ProfileTargetConfigAnswer'],
+        ['GET', '/api/profile-files', 'ProfileTargetFilesAnswer'],
+        ['GET', '/api/profile-src/', 'ProfileTargetSourceAnswer'],
+        ['POST', '/api/profile-patch', 'ProfileTargetPatchAnswer'],
+        ['POST', '/api/profile-activate', 'ProfileTargetActivateAnswer'],
+      ]).map(([method, route, name]) => ({
+        key: `profile_target ${method} ${route}`,
+        source: 'cases.profile_target',
+        method,
+        pathPrefix: route,
+        name,
+        rawPath: 'answer',
+        pick: ['status', 'body'],
+      })),
+    },
+  },
 ];
 
 /** The fixture families a descriptor reads (`cases.<family>` names the family `<family>`). */

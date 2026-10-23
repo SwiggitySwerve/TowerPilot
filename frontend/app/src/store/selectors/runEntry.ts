@@ -3,44 +3,64 @@ import {
   entryDraftSnapshot,
   entryRaw,
   runEntryFields,
+  runEntryRuns,
   type EntryReason,
 } from '../../core/runEntry.ts';
 import { id, own, ownPath } from '../../core/read.ts';
+import { editTargetScope } from '../../core/editingTarget.ts';
 import { fromServer } from '../../copy/server.ts';
-import { boundIntents, contextScopeKey } from '../intents.ts';
+import { boundIntents } from '../intents.ts';
 import { answeredBody } from '../reads.ts';
 import { settledByRead } from '../fences.ts';
 import type { DashboardState } from '../types.ts';
 import type { ProfilePatchCommand } from './collection.ts';
 import { saveOutcome, settingsSavePending } from './settingsModule.ts';
-import { runsPageRun } from './readPlan.ts';
+import { editorSource, editingTargetVM, selectEditingTarget } from './editingTarget.ts';
+
+export interface RunEntryCommand extends ProfilePatchCommand {
+  readonly profile: string;
+  readonly generation: number;
+  readonly inactive: boolean;
+}
 
 /** RL3's saved entry fields. All parsing and legality belongs to core/runEntry. */
 export function selectRunEntry(state: DashboardState) {
   const context = state.context;
-  const run = runsPageRun(state);
-  const sourceRead = state.reads.profileSource.latest;
-  const source = answeredBody(state, 'profileSource');
+  const target = selectEditingTarget(state);
+  const sourceRead = editorSource(state);
+  const source = sourceRead?.outcome.kind === 'answered' ? sourceRead.outcome.body : undefined;
+  const runs = runEntryRuns(source);
+  // An explicitly selected missing run stays named; never silently edit a different entry.
+  const run = state.runsRun ?? runs[0]?.key ?? null;
   const revision = id(own(source, 'revision')) ?? null;
   const readable =
     sourceRead?.outcome.kind === 'answered' &&
     sourceRead.outcome.status === 200 &&
-    own(source, 'name') === context?.profile &&
+    own(source, 'name') === target.name &&
     revision !== null;
   const vocab = answeredBody(state, 'vocab');
-  const records = boundIntents(state).filter((record) => record.kind === 'profile_patch');
+  const records = boundIntents(state).filter(
+    (record) => record.kind === 'profile_patch' && record.meta.name === target.name,
+  );
   const unresolved = records.filter(
     (record) =>
       record.phase === 'unconfirmed' &&
       record.accepted !== true &&
       settledByRead(state, record) === null,
   );
-  const pending = settingsSavePending(state, ['profileSource']);
+  const newest = Math.max(
+    0,
+    ...records.map((record) => record.answerSeq ?? record.lostSeq ?? record.sentSeq),
+  );
+  const pending = target.inactive
+    ? records.some((record) => record.phase === 'sending') ||
+      (newest > 0 && (sourceRead === null || sourceRead.startedSeq <= newest))
+    : settingsSavePending(state, ['profileSource']);
   const fields =
-    run === null || context === null || own(source, 'name') !== context.profile
+    run === null || context === null || target.name === null || own(source, 'name') !== target.name
       ? []
       : runEntryFields(source, run, answeredBody(state, 'config'), vocab).map((field) => {
-          const scope = `runs:entry:${run}:${field.key}:${contextScopeKey(context)}`;
+          const scope = `runs:entry:${run}:${field.key}:${editTargetScope(context, target.name ?? '')}`;
           const draft = state.runDrafts[scope] ?? {};
           const marker = entryDraftSnapshot(draft['base_revision']);
           const raw = draft['value'] ?? marker?.raw ?? entryRaw(field);
@@ -68,11 +88,14 @@ export function selectRunEntry(state: DashboardState) {
                     : checked.kind === 'invalid'
                       ? checked.reason
                       : null;
-          const command: ProfilePatchCommand | null =
-            reason === null && base !== null && checked.kind === 'valid'
+          const command: RunEntryCommand | null =
+            reason === null && base !== null && checked.kind === 'valid' && target.name !== null
               ? {
                   epoch: state.epoch,
                   context,
+                  profile: target.name,
+                  generation: target.generation,
+                  inactive: target.inactive,
                   target: scope,
                   revision: base,
                   path: ['blueprints', run, ...field.key.split('.')],
@@ -144,15 +167,23 @@ export function selectRunEntry(state: DashboardState) {
           };
         });
   return {
+    target: editingTargetVM(target),
+    unlistedRun: runs.some((entry) => entry.key === run) ? null : fromServer('name', run),
+    runs: runs.map((entry) => ({ key: entry.key, label: fromServer('name', entry.label) })),
     fields,
     readable,
     run,
     notSent: state.notices.some(
       (notice) =>
         notice.kind === 'command_not_sent' &&
-        ['context_changed', 'context_unconfirmed', 'collection_write_in_flight'].includes(
-          notice.reason,
-        ),
+        [
+          'context_changed',
+          'context_unconfirmed',
+          'target_missing',
+          'target_unconfirmed',
+          'target_changed',
+          'collection_write_in_flight',
+        ].includes(notice.reason),
     ),
   };
 }

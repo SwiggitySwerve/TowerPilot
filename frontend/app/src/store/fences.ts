@@ -229,11 +229,13 @@ export function candidateSettlement(
       // readable source can confirm an explicitly saved player.max_tier.
       if (!unresolved(record) || !sameSettlementScope(state, record, record.kind)) return null;
       const resource =
-        record.kind === 'account_tier'
-          ? 'profileSource'
-          : record.kind.startsWith('account_')
-            ? 'accounts'
-            : 'profileFiles';
+        record.kind === 'profile_activate' && record.meta.unbind === true
+          ? 'config'
+          : record.kind === 'account_tier'
+            ? 'profileSource'
+            : record.kind.startsWith('account_')
+              ? 'accounts'
+              : 'profileFiles';
       const read = state.reads[resource].latest;
       if (
         read === null ||
@@ -244,11 +246,12 @@ export function candidateSettlement(
         return null;
       const settled = settleProfileWrite(
         record.kind,
-        { ...record.meta, profile: record.context?.profile },
+        { ...record.meta, profile: record.context?.profile, context: record.context },
         {
           accounts: resource === 'accounts' ? read.outcome.body : undefined,
           files: resource === 'profileFiles' ? read.outcome.body : undefined,
           source: resource === 'profileSource' ? read.outcome.body : undefined,
+          config: resource === 'config' ? read.outcome.body : undefined,
         },
       );
       return settled === null ? null : found(settled, read.startedSeq);
@@ -407,10 +410,14 @@ export function candidateSettlement(
       )
         return null;
       const point = Math.max(after, record.answerSeq ?? record.lostSeq ?? 0);
+      // F6-14: a patch of a profile other than the active one (the editing target) is
+      // settled by that profile's own source read; settleProfilePatch checks the name.
       const read =
         record.kind === 'settings_save'
           ? state.reads.settings.latest
-          : state.reads.profileSource.latest;
+          : record.meta.name !== undefined && record.meta.name !== then.profile
+            ? state.reads.targetSource.latest
+            : state.reads.profileSource.latest;
       if (
         read === null ||
         read.startedSeq <= point ||

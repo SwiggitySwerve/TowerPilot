@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import type { PageTarget } from '../../ui/routes.ts';
 import { copy } from '../../copy/catalogue.ts';
 import type { CopyNode } from '../../copy/text.ts';
 import { selectRunsPage } from '../../store/selectors/runs.ts';
+import { editingTargetVM, selectEditingTarget } from '../../store/selectors/editingTarget.ts';
 import { Button } from '../../ui/Button.tsx';
 import { RegionBoundary } from '../../ui/RegionBoundary.tsx';
 import { Region, RegionBody, RegionEnd, RegionInline } from '../../ui/Region.tsx';
@@ -32,6 +33,36 @@ const t = copy.runs;
 /** The previous Runs page keeps the shopping queue and the entry settings (brief RUN-14, RUN-17). */
 const PREVIOUS_RUNS = '/ui/index.html#runs';
 const RECOGNITION = '/ui/index.html#screens';
+
+/** PE6: these forms keep their active values; the entry editor has its own target. */
+function ActiveOnly({ children }: { readonly children: CopyNode }) {
+  const target = useView(selectEditingTarget);
+  const vm = editingTargetVM(target);
+  const reasonId = useId();
+  return (
+    <fieldset
+      className="tp-run-entry tp-run-entry__field"
+      disabled={target.inactive}
+      data-runs-active-only="true"
+      aria-describedby={target.inactive ? reasonId : undefined}
+    >
+      {target.inactive ? (
+        <>
+          <legend className="tp-profiles__summary">
+            <span>{copy.editingTarget.active.short}</span>
+            {vm.active === null ? (
+              copy.editingTarget.none.short
+            ) : (
+              <ServerValue kind="name" value={vm.active} />
+            )}
+          </legend>
+          <div id={reasonId}>{copy.runEntry.activeOnly.short}</div>
+        </>
+      ) : null}
+      <div>{children}</div>
+    </fieldset>
+  );
+}
 
 function LiveSection() {
   const vm = useView(selectRunsPage);
@@ -168,7 +199,9 @@ function SavedSection() {
           )}
           <a href={RECOGNITION}>{t.saved.prepare.short}</a>
         </div>
-        <AddRun />
+        <ActiveOnly>
+          <AddRun />
+        </ActiveOnly>
         {saved.run !== null && !saved.runListed ? (
           <p className="tp-runs__note" data-run-unlisted="true">
             {t.saved.notListed.short}
@@ -200,25 +233,27 @@ function SavedSection() {
             />
           </p>
         ) : null}
-        {saved.editor === null ? null : (
-          <RunEditor
-            editor={saved.editor}
-            live={false}
-            saveLabel={t.saved.save}
-            onSave={(command) => {
-              void commands.saveRun(command);
-            }}
-            extra={
-              <Button
-                tier="quiet"
-                label={t.saved.check.short}
-                focusKey="runs:check"
-                onClick={commands.checkRun}
-              />
-            }
-          />
-        )}
-        <SavedShopping />
+        <ActiveOnly>
+          {saved.editor === null ? null : (
+            <RunEditor
+              editor={saved.editor}
+              live={false}
+              saveLabel={t.saved.save}
+              onSave={(command) => {
+                void commands.saveRun(command);
+              }}
+              extra={
+                <Button
+                  tier="quiet"
+                  label={t.saved.check.short}
+                  focusKey="runs:check"
+                  onClick={commands.checkRun}
+                />
+              }
+            />
+          )}
+          <SavedShopping />
+        </ActiveOnly>
         <RunEntry />
         {line === null ? null : <RunOutcome outcome={line} />}
         <p className="tp-runs__links">
@@ -298,12 +333,16 @@ export function RunsPage({
         <FaultPoint part="page" />
         <div className="tp-runs">
           <RunsRegion id="runsLive" part="runsLive" title={t.live.title}>
-            <LiveSection />
+            <ActiveOnly>
+              <LiveSection />
+            </ActiveOnly>
           </RunsRegion>
           <RunsRegion id="runsSaved" part="runsSaved" title={t.saved.title}>
             <SavedSection />
           </RunsRegion>
-          <ShoppingLibrary />
+          <ActiveOnly>
+            <ShoppingLibrary />
+          </ActiveOnly>
         </div>
       </main>
     </>

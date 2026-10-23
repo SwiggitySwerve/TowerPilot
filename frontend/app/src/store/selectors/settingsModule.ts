@@ -193,7 +193,7 @@ export function settingsMatchContext(view: SettingsView | null, context: Context
  */
 export function settingsSavePending(
   state: DashboardState,
-  reads: readonly ('settings' | 'profileSource')[] = ['settings', 'profileSource'],
+  reads: readonly ('settings' | 'profileSource' | 'targetSource')[] = ['settings', 'profileSource'],
 ): boolean {
   const records = boundIntents(state).filter(
     (record) => record.kind === 'settings_save' || record.kind === 'profile_patch',

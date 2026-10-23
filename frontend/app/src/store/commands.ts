@@ -10,6 +10,7 @@ import type { SettingsSaveCommand } from './selectors/settingsModule.ts';
 import type { ReconnectCommand } from './selectors/topBar.ts';
 import type { ContextView } from './types.ts';
 import type { AddRunCommand } from './selectors/runsAdd.ts';
+import type { RunEntryCommand } from './selectors/runEntry.ts';
 
 /**
  * The page's commands (spec 7.1): declared in store/ and implemented in app/
@@ -168,6 +169,8 @@ export interface DashboardCommands {
   /** RUN-10: read the tracked battle again (a GET, never a write). */
   readonly checkBattle: () => void;
   /** The Profiles page opened or closed: its profile files and active profile are read while open. */
+  readonly pickEditingTarget: (command: Fenced & { readonly name: string }) => void;
+  readonly returnEditingToActive: (command: Fenced) => void;
   readonly openProfiles: (open: boolean) => void;
   /**
    * P5: read one profile's source (a GET) to show its validation before it may be activated;
@@ -187,6 +190,8 @@ export interface DashboardCommands {
   readonly saveSettings: (command: SettingsSaveCommand) => Promise<void>;
   /** C4 to C6: one profile patch, sent once after a click-time config read still names its context. */
   readonly patchProfile: (command: ProfilePatchCommand) => Promise<void>;
+  readonly patchRunEntry: (command: RunEntryCommand) => Promise<void>;
+  readonly checkRunEntry: () => void;
   /** Read the settings and the profile source again (a GET each, never a write). */
   readonly checkCollection: () => void;
   /** The Emulators page opened or closed: its preview settings are read, an install is followed. */

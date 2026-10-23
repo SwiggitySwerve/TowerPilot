@@ -4,6 +4,7 @@ import { SchedulePage } from '../features/schedule/SchedulePage.tsx';
 import { useDashboard } from '../features/dashboard/context.ts';
 import { createScheduleStore, type ScheduleStore } from '../store/schedule.ts';
 import type { DashboardStore } from '../store/dashboardStore.ts';
+import { selectEditingTarget } from '../store/selectors/editingTarget.ts';
 
 const editors = new WeakMap<DashboardStore, ScheduleStore>();
 /** The app wires transport to the store; the feature only renders the store. */
@@ -20,7 +21,11 @@ export function ConnectedSchedulePage() {
   useEffect(() => {
     const sync = () => {
       const state = dashboard.getSnapshot();
-      schedule.setTarget(state.contextConfirmed ? state.context : null, state.epoch);
+      schedule.setTarget(
+        state.contextConfirmed ? state.context : null,
+        state.epoch,
+        selectEditingTarget(state),
+      );
     };
     const unsubscribe = dashboard.subscribe(sync);
     sync();

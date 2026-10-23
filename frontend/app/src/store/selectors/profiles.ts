@@ -166,6 +166,8 @@ export interface ProfilesSectionVM {
    * rules). Enabled only while a profile is active; null until the profile list is read.
    */
   readonly unbind: {
+    readonly account: ServerText<'name'> | null;
+    readonly instance: ServerText<'name'> | null;
     readonly active: ServerText<'name'> | null;
     readonly command: CommandVM<ProfileWriteCommand>;
     readonly outcome: ProfileOutcomeVM | null;
@@ -573,7 +575,7 @@ export function selectProfilesPage(state: DashboardState): ProfilesPageVM {
       : null;
   // F6-14 PE1: use no profile, only while one is active.
   const unbindReason =
-    files?.active === null || files?.active === undefined
+    context?.profile === null || context?.profile === undefined
       ? ('none_active' as const)
       : sending
         ? ('write_in_flight' as const)
@@ -740,7 +742,9 @@ export function selectProfilesPage(state: DashboardState): ProfilesPageVM {
         files === null
           ? null
           : {
-              active: fromServer('name', files.active),
+              account: fromServer('name', unbindCommand?.context.account),
+              instance: fromServer('name', unbindCommand?.context.instance),
+              active: fromServer('name', context?.profile),
               command: offered(unbindReason, unbindCommand),
               outcome: newestOf(state, records, ['profile_activate'], true),
             },

@@ -1,5 +1,7 @@
 import { readEndpoint } from './client.ts';
-import { contextFromConfig, type PageContext } from './context.ts';
+import { contextFromConfig, sameContext, type PageContext } from './context.ts';
+import { editingTarget } from '../core/editingTarget.ts';
+import { profileFilesView } from '../core/profiles.ts';
 import { ownPath } from '../core/read.ts';
 import { GET_TIMEOUT_MS } from './poller.ts';
 import { browserTimers, type Timers } from './timers.ts';
@@ -12,6 +14,7 @@ function createClickTimeConfigRead<T>(
   config: Endpoint,
   project: (body: unknown) => T | null,
   timers: Timers,
+  path: '/api/config' | '/api/profile-files' = '/api/config',
 ) {
   return async (signal?: AbortSignal): Promise<T | null> => {
     const controller = new AbortController();
@@ -22,7 +25,7 @@ function createClickTimeConfigRead<T>(
       const outcome = await readEndpoint(
         transport,
         config,
-        '/api/config',
+        path,
         signal === undefined ? controller.signal : AbortSignal.any([controller.signal, signal]),
       );
       if (outcome.kind !== 'answered' || outcome.answer.status !== 200) return null;
@@ -65,4 +68,36 @@ export function createClickTimeLaunchContextRead(
   timers: Timers = browserTimers,
 ) {
   return createClickTimeConfigRead(transport, config, launchContextFromConfig, timers);
+}
+
+export type TargetCheckResult =
+  'same' | 'context_changed' | 'context_unconfirmed' | 'target_missing' | 'target_unconfirmed';
+
+/** D5: fresh independent reads after each click. Caller rechecks epoch/generation before send. */
+export function createClickTimeTargetCheck(
+  transport: Transport,
+  endpoints: { readonly config: Endpoint; readonly profileFiles: Endpoint },
+  timers: Timers = browserTimers,
+) {
+  const readContext = createClickTimeContextRead(transport, endpoints.config, timers);
+  const readFiles = createClickTimeConfigRead(
+    transport,
+    endpoints.profileFiles,
+    profileFilesView,
+    timers,
+    '/api/profile-files',
+  );
+  return async (
+    drawn: PageContext,
+    name: string,
+    signal?: AbortSignal,
+  ): Promise<TargetCheckResult> => {
+    const [context, files] = await Promise.all([readContext(signal), readFiles(signal)]);
+    if (context === null) return 'context_unconfirmed';
+    if (!sameContext(context, drawn)) return 'context_changed';
+    if (files === null) return 'target_unconfirmed';
+    return editingTarget(context, { name, generation: 0 }, files).blocked === null
+      ? 'same'
+      : 'target_missing';
+  };
 }

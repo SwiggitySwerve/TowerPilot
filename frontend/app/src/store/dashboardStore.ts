@@ -1,3 +1,5 @@
+import { editTargetKey, pickableProfiles } from '../core/editingTarget.ts';
+import { editingFiles } from './selectors/editingTarget.ts';
 import { onFromRead } from '../core/harvestChoice.ts';
 import { harvestView } from '../core/readability.ts';
 import { nextSettlements } from './fences.ts';
@@ -42,6 +44,7 @@ function emptyReads(): Readonly<Record<ResourceId, ReadSlot>> {
     runControls: EMPTY_SLOT,
     profileFiles: EMPTY_SLOT,
     profileSource: EMPTY_SLOT,
+    targetSource: EMPTY_SLOT,
     settings: EMPTY_SLOT,
     vocab: EMPTY_SLOT,
     runTemplates: EMPTY_SLOT,
@@ -85,6 +88,8 @@ export function initialDashboardState(
     recognitionReadiness: null,
     resolutionCheck: null,
     profileCheck: null,
+    editTargets: Object.freeze({}),
+    editTargetGeneration: 0,
     runDrafts: Object.freeze({}),
   });
 }
@@ -207,6 +212,8 @@ export function reduceDashboard(state: DashboardState, action: DashboardAction):
         recognitionRun: state.recognitionRun,
         // SR-2: a person's edits outlive a context change; their scope keeps them to their own.
         runDrafts: state.runDrafts,
+        editTargets: state.editTargets,
+        editTargetGeneration: state.editTargetGeneration,
       });
     }
     case 'intents':
@@ -248,6 +255,30 @@ export function reduceDashboard(state: DashboardState, action: DashboardAction):
       return action.run === state.runsRun && action.open === state.runsOpen
         ? state
         : Object.freeze({ ...state, runsRun: action.run, runsOpen: action.open });
+    case 'edit_target_pick':
+    case 'edit_target_return': {
+      if (action.epoch !== state.epoch || state.context === null || !state.contextConfirmed)
+        return state;
+      if (
+        action.type === 'edit_target_pick' &&
+        !pickableProfiles(editingFiles(state)).some((file) => file.name === action.name)
+      )
+        return state;
+      const key = editTargetKey(state.context);
+      const generation = state.editTargetGeneration + 1;
+      const remaining = Object.fromEntries(
+        Object.entries(state.editTargets).filter(([name]) => name !== key),
+      );
+      return Object.freeze({
+        ...state,
+        editTargetGeneration: generation,
+        editTargets: Object.freeze(
+          action.type === 'edit_target_pick'
+            ? { ...remaining, [key]: { name: action.name, generation } }
+            : remaining,
+        ),
+      });
+    }
     case 'profiles_open':
       return action.open === state.profilesOpen
         ? state

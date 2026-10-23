@@ -19,6 +19,42 @@ const INITIAL = sample('read_before_the_first_save');
 const names = dashboardPagesCaseNames('run_entry_patch');
 const PATCH = '/api/profile-patch';
 const PROFILE = '/api/profile-src/mine';
+const targetCase = (name: string) => dashboardPagesCase(`profile_target.${name}`);
+function targetSource(receipt = 'inactive_rescue_policy_saved'): DashboardCase {
+  const original = targetCase('same_account_inactive_target_source');
+  const saved = targetCase(receipt);
+  // The sequential recorded entry saves follow PE3-PE5. No intermediate GET was recorded;
+  // place the preceding recorded receipt's exact profile/revision in the target GET envelope.
+  return {
+    ...original,
+    body: {
+      ...Object.fromEntries(entries(original.body)),
+      profile: own(saved.body, 'profile'),
+      revision: own(saved.body, 'revision'),
+    },
+  };
+}
+async function openTarget(options: PageOptions = {}, source = () => targetSource(), run = 'farm') {
+  const page = await open(run, {
+    ...options,
+    config: options.config ?? (() => targetCase('inactive_editor_context_before_save').body),
+    before: (fake) => {
+      fake.route('GET', '/api/profile-files', () =>
+        targetCase('same_account_inactive_target_listed'),
+      );
+      fake.route('GET', '/api/profile-src/second', source);
+      options.before?.(fake);
+    },
+  });
+  act(() => {
+    page.data.commands.pickEditingTarget({
+      epoch: page.data.store.getSnapshot().epoch,
+      name: 'second',
+    });
+  });
+  await page.advance(100);
+  return page;
+}
 function root() {
   const box = document.querySelector<HTMLElement>('[data-run-entry]');
   if (box === null) throw new Error('missing entry editor');
@@ -79,6 +115,262 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   window.location.hash = '';
+});
+
+describe('PE6 target-bound entry editor', () => {
+  it('PE6 an unlisted explicit run remains named and never falls back to another entry', async () => {
+    const page = await openTarget({}, () => targetSource(), 'dissonance');
+    expect(form().getByLabelText('Entry run')).toHaveValue('dissonance');
+    expect(selectRunEntry(page.data.store.getSnapshot()).fields).toEqual([]);
+    expect(form().queryByLabelText('Run label')).toBeNull();
+    expect(page.fake.writes()).toEqual([]);
+  });
+  it.each(names.filter((name) => name.startsWith('saved_')))(
+    'PE6 inactive body rule preserves the recorded active field shape: %s',
+    async (name) => {
+      const entry = sample(name);
+      const path = stringList(own(entry.request.body, 'path')) ?? [];
+      const fieldKey = path.slice(2).join('.');
+      const previous = sourceBefore(entry);
+      // Coverage gap: inactive recordings exist only for label/loadout. Reuse each recorded
+      // active source/profile and revision under second's GET identity to test the same
+      // one-field rule plus D4's inactive name/context fence; this is not a backend recording.
+      const source: DashboardCase = {
+        ...targetCase('same_account_inactive_target_source'),
+        body: { ...Object.fromEntries(entries(previous.body)), name: 'second' },
+      };
+      const page = await openTarget(
+        {
+          before: (fake) => {
+            fake.route('POST', PATCH, () => entry);
+          },
+        },
+        () => source,
+        path[1],
+      );
+      const value = own(entry.request.body, 'value');
+      const raw =
+        typeof value === 'boolean'
+          ? value
+          : value == null
+            ? ''
+            : Array.isArray(value)
+              ? value.join('\n')
+              : typeof value === 'string' || typeof value === 'number'
+                ? String(value)
+                : '';
+      const field = selectRunEntry(page.data.store.getSnapshot()).fields.find(
+        (item) => item.key === fieldKey,
+      );
+      if (field === undefined) throw new Error('missing recorded entry field');
+      act(() => {
+        page.data.commands.editDraft(field.scope, 'value', raw);
+        if (own(entry.request.body, 'op') === 'delete')
+          page.data.commands.editDraft(field.scope, 'remove', true);
+      });
+      await save(page, fieldKey);
+      expect(page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown)).toEqual([
+        {
+          ...Object.fromEntries(entries(entry.request.body)),
+          name: 'second',
+          expected_context: own(
+            targetCase('inactive_run_entry_label_saved').request.body,
+            'expected_context',
+          ),
+        },
+      ]);
+    },
+  );
+  it.each([
+    'read_config_after_editor_active_profile_switch',
+    'read_config_after_editor_instance_switch',
+    'read_config_after_editor_serial_change',
+  ])('PE6 click-time %s sends nothing and retains the target draft', async (name) => {
+    let config = targetCase('inactive_editor_context_before_save').body;
+    const page = await openTarget({ config: () => config });
+    await page.user.type(row('label').getByLabelText('Run label'), ' draft');
+    const scope = selectRunEntry(page.data.store.getSnapshot()).fields[0]?.scope ?? '';
+    config = targetCase(name).body;
+    await save(page, 'label');
+    expect(page.fake.writes()).toEqual([]);
+    expect(page.data.store.getSnapshot().runDrafts[scope]?.['value']).toBe('Second farm draft');
+    expect(form().getByRole('status')).toHaveTextContent('Nothing sent');
+  });
+  it('PE6 rechecks target generation after held click-time reads and keeps the draft', async () => {
+    let hold = false;
+    const page = await openTarget({
+      before: (fake) => {
+        fake.route('GET', '/api/profile-files', () =>
+          hold ? 'hold' : targetCase('same_account_inactive_target_listed'),
+        );
+      },
+    });
+    await page.user.type(row('label').getByLabelText('Run label'), ' draft');
+    hold = true;
+    await page.user.click(row('label').getByRole('button', { name: 'Save field' }));
+    act(() => {
+      page.data.commands.returnEditingToActive({ epoch: page.data.store.getSnapshot().epoch });
+      page.data.commands.pickEditingTarget({
+        epoch: page.data.store.getSnapshot().epoch,
+        name: 'second',
+      });
+    });
+    await act(async () => {
+      const response = targetCase('same_account_inactive_target_listed');
+      page.fake.next('/api/profile-files').respond(response.status, response.body);
+      await Promise.resolve();
+    });
+    await page.advance(100);
+    expect(page.fake.writes()).toEqual([]);
+    expect(row('label').getByLabelText('Run label')).toHaveValue('Second farm draft');
+    expect(form().getByRole('status')).toHaveTextContent('Nothing sent');
+  });
+  it('PE6 deleted target at the click sends nothing and keeps the named draft', async () => {
+    let deleted = false;
+    const page = await openTarget({
+      before: (fake) => {
+        fake.route('GET', '/api/profile-files', () =>
+          targetCase(
+            deleted ? 'inactive_target_list_after_deletion' : 'same_account_inactive_target_listed',
+          ),
+        );
+      },
+    });
+    await page.user.type(row('label').getByLabelText('Run label'), ' draft');
+    deleted = true;
+    await save(page, 'label');
+    expect(page.fake.writes()).toEqual([]);
+    expect(row('label').getByLabelText('Run label')).toHaveValue('Second farm draft');
+    expect(form().getByRole('status')).toHaveTextContent('Nothing sent');
+  });
+  it('PE6 a stale target revision keeps its draft and requires explicit continuation', async () => {
+    const page = await openTarget({
+      before: (fake) => {
+        // Ordering injection: a legitimate entry edit receives the recorded revision refusal.
+        // The refusal case itself patches a different path; no inactive entry refusal is recorded.
+        fake.route('POST', PATCH, () => targetCase('inactive_target_stale_revision'));
+      },
+    });
+    await page.user.type(row('label').getByLabelText('Run label'), ' draft');
+    await save(page, 'label');
+    expect(row('label').getByLabelText('Run label')).toHaveValue('Second farm draft');
+    expect(selectRunEntry(page.data.store.getSnapshot()).fields[0]?.reason).toBe('revision');
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+  it('PE6 Unknown settles only from a later target source read holding the entry value', async () => {
+    let source = targetSource();
+    let readable = true;
+    const page = await openTarget({
+      before: (fake) => {
+        fake.route('GET', '/api/profile-src/second', () => (readable ? source : 'hold'));
+        fake.route('POST', PATCH, () => {
+          readable = false;
+          // Transport loss wraps the recorded entry receipt; no fabricated error body.
+          return 'hold';
+        });
+      },
+    });
+    await page.user.clear(row('label').getByLabelText('Run label'));
+    await page.user.type(row('label').getByLabelText('Run label'), 'Offline farm');
+    await save(page, 'label');
+    await act(async () => {
+      page.fake.next(PATCH).lose();
+      await Promise.resolve();
+    });
+    await page.advance(100);
+    expect(row('label').getByText('Unknown')).toBeInTheDocument();
+    await act(async () => {
+      await page.data.poller.readNow('profileSource');
+    });
+    expect(row('label').getByText('Unknown')).toBeInTheDocument();
+    source = targetSource('inactive_run_entry_label_saved');
+    readable = true;
+    await act(async () => {
+      page.fake.next('/api/profile-src/second').respond(source.status, source.body);
+      await Promise.resolve();
+    });
+    await page.advance(100);
+    expect(root().querySelector('[data-outcome="applied"]')).not.toBeNull();
+    expect(row('label').getByLabelText('Run label')).toHaveValue('Offline farm');
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+  it('PE6 active-only Runs sections are disabled with a visible reason until Return', async () => {
+    const page = await openTarget();
+    const sections = document.querySelectorAll<HTMLFieldSetElement>('[data-runs-active-only]');
+    expect(sections.length).toBeGreaterThanOrEqual(3);
+    for (const section of sections) {
+      expect(section).toBeDisabled();
+      expect(section).toHaveTextContent('Active profile:mine');
+      expect(section).toHaveTextContent('Return editing to the active profile to change these');
+      for (const button of within(section).queryAllByRole('button')) expect(button).toBeDisabled();
+    }
+    act(() => {
+      page.data.commands.returnEditingToActive({ epoch: page.data.store.getSnapshot().epoch });
+    });
+    await page.advance(100);
+    expect(document.querySelector('fieldset[data-runs-active-only][disabled]')).toBeNull();
+    expect(page.fake.writes()).toEqual([]);
+  });
+  it('PE6 reads the target run list, fields, references and revision, retaining separate active drafts', async () => {
+    const page = await openTarget();
+    expect(row('label').getByLabelText('Run label')).toHaveValue('Second farm');
+    expect(form().getByLabelText('Entry run').querySelectorAll('option')).toHaveLength(4);
+    expect(row('policies.uw').getByRole('option', { name: 'Calm' })).toBeInTheDocument();
+    expect(row('loadout').getByRole('option', { name: 'plain' })).toBeInTheDocument();
+    await page.user.clear(row('label').getByLabelText('Run label'));
+    await page.user.type(row('label').getByLabelText('Run label'), 'Second draft');
+    const targetScope = selectRunEntry(page.data.store.getSnapshot()).fields[0]?.scope;
+    act(() => {
+      page.data.commands.returnEditingToActive({ epoch: page.data.store.getSnapshot().epoch });
+    });
+    await page.advance(100);
+    expect(row('label').getByLabelText('Run label')).toHaveValue('');
+    await page.user.type(row('label').getByLabelText('Run label'), 'Active draft');
+    act(() => {
+      page.data.commands.pickEditingTarget({
+        epoch: page.data.store.getSnapshot().epoch,
+        name: 'second',
+      });
+    });
+    await page.advance(100);
+    expect(row('label').getByLabelText('Run label')).toHaveValue('Second draft');
+    expect(selectRunEntry(page.data.store.getSnapshot()).fields[0]?.scope).toBe(targetScope);
+    expect(page.fake.writes()).toEqual([]);
+  });
+
+  it('PE6 saves label and loadout once with the exact recorded inactive bodies and target revision', async () => {
+    let source = targetSource();
+    let receipt = 'inactive_run_entry_label_saved';
+    const page = await openTarget(
+      {
+        before: (fake) => {
+          fake.route('POST', PATCH, () => {
+            source = targetSource(receipt);
+            return targetCase(receipt);
+          });
+        },
+      },
+      () => source,
+    );
+    await page.user.clear(row('label').getByLabelText('Run label'));
+    await page.user.type(row('label').getByLabelText('Run label'), 'Offline farm');
+    await save(page, 'label');
+    receipt = 'inactive_run_entry_loadout_saved';
+    await page.user.selectOptions(row('loadout').getByLabelText('Run equipment'), 'plain');
+    await save(page, 'loadout');
+    expect(page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown)).toEqual([
+      targetCase('inactive_run_entry_label_saved').request.body,
+      targetCase('inactive_run_entry_loadout_saved').request.body,
+    ]);
+    expect(row('label').getByLabelText('Run label')).toHaveValue('Offline farm');
+    expect(row('loadout').getByLabelText('Run equipment')).toHaveValue('plain');
+    expect(textOutsideCatalogue(root())).toEqual([]);
+    vi.useRealTimers();
+    expect(await axe(root())).toHaveNoViolations();
+    act(() => {
+      page.data.stop();
+    });
+  });
 });
 
 describe('RL3 and RL6 saved entry editor', () => {

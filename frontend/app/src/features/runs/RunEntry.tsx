@@ -3,7 +3,8 @@ import { entryDraftMarker } from '../../core/runEntry.ts';
 import { copy } from '../../copy/catalogue.ts';
 import { selectRunEntry } from '../../store/selectors/runEntry.ts';
 import { Button } from '../../ui/Button.tsx';
-import { ServerOption } from '../../ui/ServerValue.tsx';
+import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
+import { EditingTargetLine } from '../profiles/EditingTargetLine.tsx';
 import { pageHref } from '../../ui/routes.ts';
 import { useDashboard, useView } from '../dashboard/context.ts';
 import { SaveOutcome } from '../settings/SaveOutcome.tsx';
@@ -129,7 +130,7 @@ function EntryField({ field }: { readonly field: FieldVM }) {
           focusKey={`entry:${field.scope}:save`}
           {...(field.command === null ? { disabled: true, reasonId } : {})}
           onClick={() => {
-            if (field.command !== null) void commands.patchProfile(field.command);
+            if (field.command !== null) void commands.patchRunEntry(field.command);
           }}
         />
         {field.dirty ? (
@@ -175,8 +176,31 @@ export function RunEntry() {
   return (
     <section className="tp-run-entry" data-run-entry="true" aria-labelledby="run-entry-title">
       <h3 id="run-entry-title">{t.title.short}</h3>
+      <EditingTargetLine />
       <p>{t.scope.short}</p>
-      <Button tier="quiet" label={t.check.short} onClick={commands.checkCollection} />
+      <label className="tp-runs__picker tp-runs__picker-label">
+        <span>{t.picker.short}</span>
+        <select
+          value={vm.run ?? ''}
+          onChange={(event) => {
+            commands.openRuns(true, event.currentTarget.value);
+          }}
+        >
+          {vm.unlistedRun === null ? null : (
+            <ServerOption value={vm.run ?? ''} label={vm.unlistedRun} />
+          )}
+          {vm.runs.map((run) =>
+            run.label === null ? null : (
+              <ServerOption key={run.key} value={run.key} label={run.label} />
+            ),
+          )}
+        </select>
+      </label>
+      <div className="tp-profiles__summary">
+        <span>{t.savingFor.short}</span>
+        {vm.target.name === null ? null : <ServerValue kind="name" value={vm.target.name} />}
+      </div>
+      <Button tier="quiet" label={t.check.short} onClick={commands.checkRunEntry} />
       {!vm.readable || vm.fields.length === 0 ? <p>{t.unavailable.short}</p> : null}
       {vm.notSent ? <div role="status">{t.notSent.short}</div> : null}
       <div className="tp-run-entry__grid">

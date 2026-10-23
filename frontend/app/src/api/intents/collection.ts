@@ -60,11 +60,13 @@ export function sendSettingsSave(
 }
 
 export interface ProfilePatch {
-  /** Shopping-library writes also fence the server's active binding. */
+  /** Some fenced delete contracts omit value; the shopping library keeps value:null. */
+  readonly omitDeleteValue?: boolean;
+  /** Fenced callers name the actual runtime binding separately from the edited file. */
   readonly expected_context?: PageContext;
   /** The record line it belongs to (a policy action, or the chores). */
   readonly target: string;
-  /** The profile it names: the page context's active profile, fenced before sending. */
+  /** The named file to patch; inactive Collection targets differ from context.profile. */
   readonly profile: string;
   readonly path: readonly string[];
   readonly remove: boolean;
@@ -96,7 +98,10 @@ export function sendProfilePatch(
             path: patch.path,
             ...(patch.expected_context === undefined
               ? {}
-              : { expected_context: patch.expected_context, value: null }),
+              : {
+                  expected_context: patch.expected_context,
+                  ...(patch.omitDeleteValue === true ? {} : { value: null }),
+                }),
           }
         : {
             expected_revision: patch.revision,

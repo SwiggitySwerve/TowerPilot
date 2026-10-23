@@ -13,10 +13,17 @@ export const schedule = {
   missing: entry(
     'This saved profile has no plan. The scheduler uses its legacy rules; no schedule hours are reported here.',
   ),
+  missingInactive: entry(
+    'This saved profile has no plan. Its legacy rules apply if it is activated and loaded. The active scheduler is unchanged.',
+  ),
   /** F6-11 RL8 (classic Plan tab "add a plan"). */
   startPlan: entry(
     'Start a day plan',
     'Drafts one day plan used every day of the week, holding one block that runs the run you choose. Choose its block kind, then Save schedule. A saved plan replaces the legacy rules.',
+  ),
+  startPlanInactive: entry(
+    'Start a day plan',
+    'Drafts one day plan used every day of the week, holding one block that runs the run you choose. Choose its block kind, then Save schedule. These saved rules apply if this profile is activated and loaded; the active scheduler is unchanged.',
   ),
   startRun: entry('Run for the first block'),
   startNoRun: entry('Add a run in Runs first: every plan block names a run.'),
@@ -26,9 +33,16 @@ export const schedule = {
     'Remove the day plan',
     'Deletes the whole plan from this profile. The scheduler then uses its legacy rules instead. Removing it never starts, stops or ends a battle; you can start a new day plan afterwards.',
   ),
+  removePlanInactive: entry(
+    'Remove the day plan',
+    'Deletes the whole plan from this saved profile. Its legacy rules apply if it is activated and loaded. The active scheduler is unchanged.',
+  ),
   removeTitle: entry('Remove the day plan from this profile?'),
   removeBody: entry(
     'Every day plan and the weekday mapping are deleted from the saved profile. The scheduler then uses its legacy rules. Nothing starts or stops now.',
+  ),
+  removeInactiveBody: entry(
+    'Deletes every day plan and weekday mapping from this saved profile. Its legacy rules apply if it is activated and loaded. The active scheduler is unchanged.',
   ),
   removeConfirm: entry('Remove day plan'),
   removeUnavailable: {
@@ -42,6 +56,9 @@ export const schedule = {
   },
   removed: entry(
     'Day plan removed. The scheduler uses its legacy rules from its next load; this is not confirmation of that load.',
+  ),
+  removedInactive: entry(
+    'Day plan removed from this saved profile. The active scheduler is unchanged.',
   ),
   readRemoved: entry('Readback confirms the day plan is removed.'),
   /** F6-11-P2-04: what a confirmed removal click did, before any answer. */
@@ -58,6 +75,12 @@ export const schedule = {
   removeRefused: entry('Day plan removal refused. The saved plan is unchanged.'),
   /** F6-11-P2-01: a Save or Remove click whose click-time context check sent nothing. */
   notSent: {
+    target_missing: entry(
+      'Not sent: the editing target is no longer a listed, editable profile. Your draft stays with its original profile. Choose a profile in Profiles.',
+    ),
+    target_unconfirmed: entry(
+      'Not sent: the editing target could not be confirmed just now. Your draft is kept. Read the profile list in Profiles before trying again.',
+    ),
     context_unconfirmed: entry(
       'Not sent: the selected emulator, account and profile could not be confirmed just now. Nothing was changed and your draft is kept. Try again.',
     ),
@@ -151,6 +174,8 @@ export const schedule = {
   validation: entry('Profile validation and save details'),
   warnings: entry('Saved profile warnings'),
   observed: entry('Observed scheduler choice'),
+  observedProfile: entry('Observed active profile:'),
+  editingProfile: entry('Plan for:'),
   unavailable: entry('Scheduler observation unavailable'),
   stale: entry('Last observation is stale; no current winner or next check is confirmed.'),
   noWinner: entry('No eligible block reported'),

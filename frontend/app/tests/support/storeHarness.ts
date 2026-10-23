@@ -56,6 +56,7 @@ const PATHS: Readonly<Record<ResourceId, string>> = {
   runControls: '/api/run-controls?blueprint=farm',
   profileFiles: '/api/profile-files',
   profileSource: '/api/profile-src/mine',
+  targetSource: '/api/profile-src/second',
   settings: '/api/settings',
   vocab: '/api/vocab',
   runTemplates: '/api/run-templates',

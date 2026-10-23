@@ -1,4 +1,5 @@
 import { entry, made } from './entry.ts';
+import { editingTarget } from './editingTarget.ts';
 
 /**
  * The Collection page (backend/logs/reviews/ui-pages/collection-brief.md, C1 to C6): what
@@ -7,6 +8,9 @@ import { entry, made } from './entry.ts';
  */
 export const collection = {
   pageName: entry('Collection'),
+  activeProfile: entry('Active profile:'),
+  noActiveProfile: entry('none'),
+  activeOnly: entry('Return editing to the active profile to change these'),
   scope: entry(
     'Saved collection settings of the active profile',
     'They apply when a run starts or at its next driver or battle boundary; nothing here starts, restarts or taps anything. Harvesting on and off stays on the Dashboard.',
@@ -56,6 +60,7 @@ export const collection = {
     validatorError: entry("The profile check couldn't run"),
   },
   editor: {
+    deletion: entry('Policy deletion:'),
     label: entry('Name shown'),
     saveLabel: entry('Save name'),
     gather: entry('Rewards gathered during runs'),
@@ -123,6 +128,7 @@ export const collection = {
     save: entry('Save chores'),
   },
   reasons: {
+    ...editingTarget.blocked,
     context_unknown: entry('The emulator and account are not confirmed yet'),
     source_not_read: entry('The profile has not been read yet'),
     read_only: entry('The active profile cannot be edited here'),
@@ -139,6 +145,13 @@ export const collection = {
     vocab_not_read: entry('The chore list has not been read yet'),
   },
   notSent: {
+    target_changed: entry('Not sent - the editing target changed; your draft is kept'),
+    target_missing: entry(
+      'Not sent - the editing target is no longer available; your draft is kept',
+    ),
+    target_unconfirmed: entry(
+      'Not sent - the editing target could not be confirmed; your draft is kept',
+    ),
     context_unconfirmed: entry(
       "Not sent - the current emulator, account and profile couldn't be confirmed",
       'The page reads the configuration before each profile change; that read did not name a context. Nothing was sent.',

@@ -1,4 +1,4 @@
-import { entries, id, list, own, ownPath, text } from '../core/read.ts';
+import { entries, list, own, ownPath, text } from '../core/read.ts';
 
 export const EQUIPMENT_FIELDS = [
   'global_preset',
@@ -15,8 +15,7 @@ export interface EquipmentDraft {
   readonly values: Readonly<Record<EquipmentField, string>>;
 }
 export const loadoutOf = (body: unknown, name: string): unknown => ownPath(body, 'loadouts', name);
-export const configRevision = (body: unknown): string | null =>
-  id(own(body, 'config_revision')) ?? null;
+export { configRevision } from '../core/config.ts';
 
 export function equipmentMode(body: unknown): EquipmentMode {
   const fields = entries(body);

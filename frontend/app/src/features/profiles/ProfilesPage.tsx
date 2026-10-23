@@ -1,3 +1,5 @@
+import { EditingTargetPicker } from './EditingTargetPicker.tsx';
+import { editingTarget as targetCopy } from '../../copy/editingTarget.ts';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { profiles as t } from '../../copy/profiles.ts';
 import type { CopyEntry, CopyNode } from '../../copy/text.ts';
@@ -333,7 +335,29 @@ function UnbindProfile({
         open={current !== null}
         tier="primary"
         title={t.unbind.confirm.short}
-        body={<p>{t.unbind.effect.short}</p>}
+        body={
+          <div>
+            <p>{t.unbind.effect.short}</p>
+            <div className="tp-profiles__summary">
+              <span>{t.unbind.account.short}</span>
+              {unbind.account === null ? (
+                <span>{t.unbind.installation.short}</span>
+              ) : (
+                <ServerValue kind="name" value={unbind.account} />
+              )}
+            </div>
+            <div className="tp-profiles__summary">
+              <span>{t.unbind.emulator.short}</span>
+              {unbind.instance === null ? null : (
+                <ServerValue kind="name" value={unbind.instance} />
+              )}
+            </div>
+            <div className="tp-profiles__summary">
+              <span>{t.unbind.profile.short}</span>
+              {unbind.active === null ? null : <ServerValue kind="name" value={unbind.active} />}
+            </div>
+          </div>
+        }
         confirmLabel={t.unbind.send.short}
         cancelLabel={t.unbind.cancel.short}
         onCancel={() => {
@@ -675,42 +699,46 @@ function FilesSection() {
           </tbody>
         </table>
       )}
-      <fieldset className="tp-profiles__form" data-form="activate">
-        <legend>{t.activate.title.short}</legend>
-        <div className="tp-profiles__row">
-          <ProfileSelect
-            label={t.activate.picker}
-            value={files.activate.pick ?? ''}
-            rows={files.rows}
-            scope={files.activate.scope}
-            path="name"
-            empty={t.activate.choose}
-            onPick={(name) => {
-              if (name !== '') void commands.checkProfile(name);
-            }}
-          />
-          <WriteButton
-            vm={files.activate.command}
-            label={t.activate.submit}
-            focusKey="profiles:activate:submit"
-            onSend={send}
-          />
-        </div>
-        {files.activate.check === 'checking' ? <p>{t.activate.checking.short}</p> : null}
-        {files.activate.validation === null ? null : (
-          <Validation validation={files.activate.validation} />
-        )}
-        {files.activate.checkError === null ? null : (
-          <p>
-            <span>{t.reasons.unreadable.short}</span>
-            <ServerValue kind="message" value={files.activate.checkError} />
-          </p>
-        )}
-        {files.activate.outcome === null ? null : (
-          <ProfileOutcome outcome={files.activate.outcome} />
-        )}
+      <fieldset className="tp-profiles__form" data-form="automation">
+        <legend>{targetCopy.automation.short}</legend>
+        <fieldset className="tp-profiles__form" data-form="activate">
+          <legend>{t.activate.title.short}</legend>
+          <div className="tp-profiles__row">
+            <ProfileSelect
+              label={t.activate.picker}
+              value={files.activate.pick ?? ''}
+              rows={files.rows}
+              scope={files.activate.scope}
+              path="name"
+              empty={t.activate.choose}
+              onPick={(name) => {
+                if (name !== '') void commands.checkProfile(name);
+              }}
+            />
+            <WriteButton
+              vm={files.activate.command}
+              label={t.activate.submit}
+              focusKey="profiles:activate:submit"
+              onSend={send}
+            />
+          </div>
+          {files.activate.check === 'checking' ? <p>{t.activate.checking.short}</p> : null}
+          {files.activate.validation === null ? null : (
+            <Validation validation={files.activate.validation} />
+          )}
+          {files.activate.checkError === null ? null : (
+            <p>
+              <span>{t.reasons.unreadable.short}</span>
+              <ServerValue kind="message" value={files.activate.checkError} />
+            </p>
+          )}
+          {files.activate.outcome === null ? null : (
+            <ProfileOutcome outcome={files.activate.outcome} />
+          )}
+        </fieldset>
+        {files.unbind === null ? null : <UnbindProfile unbind={files.unbind} onSend={send} />}
       </fieldset>
-      {files.unbind === null ? null : <UnbindProfile unbind={files.unbind} onSend={send} />}
+      <EditingTargetPicker key={vm.epoch} />
       <fieldset className="tp-profiles__form" data-form="copy">
         <legend>{t.copy.title.short}</legend>
         <div className="tp-profiles__row">
@@ -803,10 +831,10 @@ function NotSent() {
   const entry = notSent[vm.notSent];
   if (entry === undefined) return null;
   return (
-    <p className="tp-profiles__not-sent" data-not-sent={vm.notSent} role="status">
+    <div className="tp-profiles__not-sent" data-not-sent={vm.notSent} role="status">
       <span>{entry.short}</span>
       {entry.why === undefined ? null : <Why why={entry.why} />}
-    </p>
+    </div>
   );
 }
 

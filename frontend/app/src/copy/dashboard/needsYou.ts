@@ -17,6 +17,7 @@ const sources = {
   runControls: entry('Run settings'),
   profileFiles: entry('Automation profiles'),
   profileSource: entry('Active automation profile'),
+  targetSource: entry('Profile being edited'),
   settings: entry('Settings'),
   vocab: entry('Profile vocabulary'),
   runTemplates: entry('Run templates'),

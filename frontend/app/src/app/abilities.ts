@@ -4,6 +4,7 @@ import { createAbilitiesStore, type AbilitiesStore } from '../store/abilities.ts
 import type { DashboardStore } from '../store/dashboardStore.ts';
 import { AbilitiesPage } from '../features/abilities/AbilitiesPage.tsx';
 import { useDashboard } from '../features/dashboard/context.ts';
+import { selectEditingTarget } from '../store/selectors/editingTarget.ts';
 const editors = new WeakMap<DashboardStore, AbilitiesStore>();
 export function ConnectedAbilitiesPage() {
   const dashboard = useDashboard().store;
@@ -18,7 +19,7 @@ export function ConnectedAbilitiesPage() {
   useEffect(() => {
     const sync = () => {
       const s = dashboard.getSnapshot();
-      abilities.setTarget(s.contextConfirmed ? s.context : null, s.epoch);
+      abilities.setTarget(s.contextConfirmed ? s.context : null, s.epoch, selectEditingTarget(s));
     };
     const unsubscribe = dashboard.subscribe(sync);
     sync();

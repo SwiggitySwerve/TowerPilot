@@ -11,20 +11,34 @@ import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
 import { pageHref } from '../../ui/routes.ts';
 import { Why } from '../../ui/Why.tsx';
 import { TopBar } from '../dashboard/topBar/TopBar.tsx';
+import { EditingTargetLine } from '../profiles/EditingTargetLine.tsx';
 import './schedule.css';
 
 function fieldId(key: string, field: string): string {
   return `schedule:${encodeURIComponent(key)}:${field}`;
 }
 
+function PlanTarget({ name }: { readonly name: ServerText<'name'> | null }) {
+  return (
+    <span>
+      {t.editingProfile.short}
+      {t.space}
+      {name === null ? t.notReported.short : <ServerValue kind="name" value={name} />}
+    </span>
+  );
+}
+
 /** F6-11 RL8: draft a first plan for a profile without one; Save schedule sends it. */
 function StartPlan({
   runs,
   onStart,
+  inactive,
 }: {
   readonly runs: readonly { readonly key: string; readonly label: ServerText<'name'> | null }[];
   readonly onStart: (run: string) => void;
+  readonly inactive: boolean;
 }) {
+  const copy = inactive ? t.startPlanInactive : t.startPlan;
   const [picked, setPicked] = useState('');
   const named = runs.filter((run) => run.label !== null);
   const run = named.some((item) => item.key === picked) ? picked : (named[0]?.key ?? '');
@@ -50,12 +64,12 @@ function StartPlan({
       <Button
         tier="primary"
         id="schedule:start"
-        label={t.startPlan.short}
+        label={copy.short}
         onClick={() => {
           onStart(run);
         }}
       />
-      <Why why={t.startPlan.why} />
+      <Why why={copy.why} />
     </div>
   );
 }
@@ -80,6 +94,13 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
   };
   const vm = selectSchedule(state, now);
   const entry = vm.entry;
+  const removalCopy = vm.target.inactive ? t.removePlanInactive : t.removePlan;
+  const outcomeCopy =
+    vm.outcome === null
+      ? null
+      : vm.outcome === 'removed' && vm.target.inactive
+        ? t.removedInactive
+        : t[vm.outcome];
   const announce = useAnnounce();
   // F6-11-P2-04: "removed" is announced only once an answer or a read proves it, once per
   // request; sending a removal announces only that it was requested.
@@ -89,8 +110,14 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
   useEffect(() => {
     if (removalId === null || !removalProved || announcedRemoval.current === removalId) return;
     announcedRemoval.current = removalId;
-    announce(vm.outcome === 'readRemoved' ? t.readRemoved.short : t.removed.short);
-  }, [announce, removalId, removalProved, vm.outcome]);
+    announce(
+      vm.outcome === 'readRemoved'
+        ? t.readRemoved.short
+        : vm.target.inactive
+          ? t.removedInactive.short
+          : t.removed.short,
+    );
+  }, [announce, removalId, removalProved, vm.outcome, vm.target.inactive]);
   useEffect(() => {
     const timer = setInterval(() => {
       setNow(Date.now());
@@ -121,6 +148,7 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
         }}
       >
         <p>{t.intro.short}</p>
+        <EditingTargetLine />
         <p className="tp-schedule__target">
           <strong>{t.target.short}</strong>
           {vm.instance === null ? (
@@ -141,6 +169,15 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
         </p>
         <section aria-labelledby="schedule-observed" className="tp-schedule__observed">
           <h2 id="schedule-observed">{t.observed.short}</h2>
+          <p>
+            {t.observedProfile.short}
+            {t.space}
+            {vm.activeProfile === null ? (
+              t.notReported.short
+            ) : (
+              <ServerValue kind="name" value={vm.activeProfile} />
+            )}
+          </p>
           {vm.observationState === null ? null : <p>{t[vm.observationState].short}</p>}
           {vm.winner === null ? null : (
             <p>
@@ -206,7 +243,9 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
         {entry?.busy === true ? <p role="status">{t.reading.short}</p> : null}
         {entry?.readError === true ? <p role="alert">{t.readError.short}</p> : null}
         {vm.notSent === null ? null : <p role="alert">{t.notSent[vm.notSent].short}</p>}
-        {entry?.source !== undefined && !vm.hasDraftPlan ? <p>{t.missing.short}</p> : null}
+        {entry?.source !== undefined && !vm.hasDraftPlan ? (
+          <p>{vm.target.inactive ? t.missingInactive.short : t.missing.short}</p>
+        ) : null}
         {/* F6-11 RL8: once the plan is removed its editor is gone; its outcome stays here. */}
         {!vm.hasDraftPlan && vm.outcome !== null ? (
           <section
@@ -214,7 +253,8 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
             className="tp-schedule__errors"
             role={vm.outcome === 'refused' || vm.outcome === 'removeRefused' ? 'alert' : 'status'}
           >
-            <p>{t[vm.outcome].short}</p>
+            <p>{outcomeCopy?.short}</p>
+            <PlanTarget name={vm.profile} />
             {vm.error === null ? null : (
               <p>
                 <ServerValue kind="message" value={vm.error} />
@@ -224,6 +264,7 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
         ) : null}
         {vm.planMissing ? (
           <StartPlan
+            inactive={vm.target.inactive}
             runs={vm.runs}
             onStart={(run) => {
               if (!schedule.start(run)) return;
@@ -444,7 +485,8 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
               role={vm.outcome === 'refused' || vm.outcome === 'removeRefused' ? 'alert' : 'status'}
             >
               <div id="schedule-errors">
-                {vm.outcome === null ? null : <p>{t[vm.outcome].short}</p>}
+                {outcomeCopy === null ? null : <p>{outcomeCopy.short}</p>}
+                {vm.outcome === null ? null : <PlanTarget name={vm.profile} />}
                 {vm.error === null ? null : (
                   <p>
                     <ServerValue kind="message" value={vm.error} />
@@ -481,6 +523,7 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
               </div>
             ) : null}
             <div className="tp-schedule__save">
+              <PlanTarget name={vm.profile} />
               <strong>{entry.dirty ? t.dirty.short : t.clean.short}</strong>
               <span>{t.scope.short}</span>
               <Button
@@ -516,7 +559,7 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
             <Button
               id="schedule:remove"
               tier="quiet"
-              label={t.removePlan.short}
+              label={removalCopy.short}
               busy={vm.checking}
               {...(vm.removeBlocked === null
                 ? {}
@@ -528,7 +571,7 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
                   setRemoveTarget({ key: target.key, epoch: target.epoch, revision });
               }}
             />
-            {t.removePlan.why === undefined ? null : <Why why={t.removePlan.why} />}
+            {removalCopy.why === undefined ? null : <Why why={removalCopy.why} />}
             {vm.removeBlocked === null ? null : (
               <span id="schedule:remove-reason" className="tp-reason">
                 {t.removeUnavailable[vm.removeBlocked].short}
@@ -546,7 +589,7 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
             vm.removeBlocked === null
           }
           title={t.removeTitle.short}
-          body={t.removeBody.short}
+          body={vm.target.inactive ? t.removeInactiveBody.short : t.removeBody.short}
           confirmLabel={t.removeConfirm.short}
           cancelLabel={t.cancel.short}
           tier="halt"

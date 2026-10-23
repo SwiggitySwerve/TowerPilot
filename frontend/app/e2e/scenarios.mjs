@@ -71,6 +71,14 @@ const collectionGets = Object.freeze({
   vocab: 'profile_reads.vocab_ok',
 });
 
+/** PE4: exact recorded Collection writes, each starting at its recorded revision. */
+const profileTargetCollectionGets = Object.freeze({
+  ...collectionGets,
+  config: 'profile_target.inactive_editor_context_before_save',
+  profileFiles: 'profile_target.same_account_inactive_target_listed',
+  settings: 'profile_target_collection_settings',
+});
+
 /** Emulators page reads shared by its connection and tools scenarios. */
 const emulatorsGets = Object.freeze({
   config: 'config_state.read_before_the_save',
@@ -150,6 +158,128 @@ const e0Samples = Object.fromEntries(
 
 /** @type {Readonly<Record<string, Scenario>>} */
 export const SCENARIOS = Object.freeze({
+  profile_target_collection_label: {
+    description: 'PE4 inactive label at its recorded revision',
+    harvest: 'off',
+    get: {
+      ...profileTargetCollectionGets,
+      '/api/profile-src/second':
+        'profile_target_collection_source:inactive_plan_saved_while_runner_listed',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_gather_label_saved',
+        reads: {
+          '/api/profile-src/second': 'profile_target_collection_source:inactive_gather_label_saved',
+        },
+      },
+    },
+  },
+  profile_target_collection_copy: {
+    description: 'PE4 inactive copy with the recorded value as source',
+    harvest: 'off',
+    get: {
+      ...profileTargetCollectionGets,
+      '/api/profile-src/second':
+        'profile_target_collection_copy_source:inactive_gather_label_saved',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_gather_copy_saved',
+        reads: {
+          '/api/profile-src/second': 'profile_target_collection_source:inactive_gather_copy_saved',
+        },
+      },
+    },
+  },
+  profile_target_collection_create: {
+    description: 'PE4 inactive template creation',
+    harvest: 'off',
+    get: {
+      ...profileTargetCollectionGets,
+      '/api/profile-src/second': 'profile_target_collection_source:inactive_gather_copy_saved',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_gather_template_created',
+        reads: {
+          '/api/profile-src/second':
+            'profile_target_collection_source:inactive_gather_template_created',
+        },
+      },
+    },
+  },
+  profile_target_collection_delete: {
+    description: 'PE4 inactive unused delete without value',
+    harvest: 'off',
+    get: {
+      ...profileTargetCollectionGets,
+      '/api/profile-src/second':
+        'profile_target_collection_source:inactive_gather_template_created',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_unused_gather_deleted',
+        reads: {
+          '/api/profile-src/second':
+            'profile_target_collection_source:inactive_unused_gather_deleted',
+        },
+      },
+    },
+  },
+  profile_target_collection_chores: {
+    description: 'PE4 inactive chores',
+    harvest: 'off',
+    get: {
+      ...profileTargetCollectionGets,
+      '/api/profile-src/second': 'profile_target_collection_source:inactive_unused_gather_deleted',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_chores_saved',
+        reads: {
+          '/api/profile-src/second': 'profile_target_collection_source:inactive_chores_saved',
+        },
+      },
+    },
+  },
+  profile_target_collection_changed: {
+    description: 'PE4 click-time active context change',
+    harvest: 'off',
+    get: {
+      ...profileTargetCollectionGets,
+      config: 'profile_target.read_config_after_editor_active_profile_switch',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+    },
+  },
+  profile_target_collection_stale: {
+    description: 'PE4 path-independent recorded stale refusal',
+    harvest: 'off',
+    get: {
+      ...profileTargetCollectionGets,
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+    },
+    // Modified case: the producer requests plan; its stale refusal applies to label too.
+    writes: { profilePatch: { case: 'profile_target.inactive_target_stale_revision' } },
+  },
+  profile_target_collection_unknown: {
+    description: 'PE4 failed inactive label then positive target read',
+    harvest: 'off',
+    get: {
+      ...profileTargetCollectionGets,
+      '/api/profile-src/second':
+        'profile_target_collection_source:inactive_plan_saved_while_runner_listed',
+    },
+    // Modified case: the producer requests plan; the failure envelope applies to label too.
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_target_written_then_answer_failed',
+        reads: {
+          '/api/profile-src/second': 'profile_target_collection_source:inactive_gather_label_saved',
+        },
+      },
+    },
+  },
   shopping_library_create: {
     description: 'SQ9 empty queue creation with explicit reserve and choices.',
     harvest: 'off',
@@ -1137,6 +1267,226 @@ export const SCENARIOS = Object.freeze({
       runControlsSave: {
         mode: 'drop',
         reads: { runControls: 'run_controls_save.read_after_a_lost_answer_the_save_is_there' },
+      },
+    },
+  },
+  profile_target_schedule_saved: {
+    description: 'PE3: named second plan save while a runner is listed.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      '/api/profile-src/mine': 'profile_patch.read_before_the_first_save',
+      status: 'status.processes_two_rows_same_runner',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_plan_saved_while_runner_listed',
+        reads: {
+          '/api/profile-src/second':
+            'profile_target.inactive_target_after_written_then_answer_failed',
+        },
+      },
+    },
+  },
+  profile_target_schedule_lost: {
+    description: 'PE3: Unknown second plan save settles only from second readback.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      '/api/profile-src/mine': 'profile_patch.read_before_the_first_save',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_target_written_then_answer_failed',
+        reads: {
+          '/api/profile-src/second':
+            'profile_target.inactive_target_after_written_then_answer_failed',
+        },
+      },
+    },
+  },
+  profile_target_schedule_failed: {
+    description: 'PE3: failed second plan write stays Unknown after unchanged readback.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      '/api/profile-src/mine': 'profile_patch.read_before_the_first_save',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_target_write_failed',
+        reads: { '/api/profile-src/second': 'profile_target.inactive_target_after_write_failed' },
+      },
+    },
+  },
+  profile_target_schedule_stale: {
+    description: 'PE3: second source revision changed before patch.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      '/api/profile-src/mine': 'profile_patch.read_before_the_first_save',
+    },
+    writes: { profilePatch: { case: 'profile_target.inactive_target_stale_revision' } },
+  },
+  profile_target_schedule_deleted: {
+    description: 'PE3: second deleted after its source was read, no fallback.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+      '/api/profile-src/mine': 'profile_patch.read_before_the_first_save',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_target_deleted_before_patch',
+        reads: {
+          '/api/profile-src/second': 'profile_target.inactive_target_after_deletion',
+          profileFiles: 'profile_target.inactive_target_list_after_deletion',
+        },
+      },
+    },
+  },
+  profile_target_runs_saved: {
+    description:
+      'PE6: second entry fields, sequential recorded label/loadout patches; mine stays active.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      profileSource: 'run_entry_patch.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target_runs_before_label',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      'profilePatch:label': {
+        case: 'profile_target.inactive_run_entry_label_saved',
+        reads: { '/api/profile-src/second': 'profile_target_runs_after_label' },
+      },
+      'profilePatch:loadout': {
+        case: 'profile_target.inactive_run_entry_loadout_saved',
+        reads: {
+          '/api/profile-src/second': 'profile_target.inactive_target_read_after_save',
+        },
+      },
+    },
+  },
+  profile_target_runs_context_changed: {
+    description:
+      'PE6: same recorded target source; the browser injects the recorded changed config at click.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      profileSource: 'run_entry_patch.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target_runs_before_label',
+      vocab: 'profile_reads.vocab_ok',
+    },
+  },
+  profile_target_abilities_uw: {
+    description: 'PE5: second UW create, active mine and isolated drafts.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'ability_policies.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.inactive_chores_saved',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_uw_policy_saved',
+        reads: {
+          '/api/profile-src/second': 'profile_target.inactive_uw_policy_saved',
+        },
+      },
+    },
+  },
+  profile_target_abilities_rescue: {
+    description: 'PE5: second rescue create after the recorded UW create.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/mine': 'ability_policies.read_before_the_first_save',
+      '/api/profile-src/second': 'profile_target.inactive_uw_policy_saved',
+      vocab: 'profile_reads.vocab_ok',
+    },
+    writes: {
+      profilePatch: {
+        case: 'profile_target.inactive_rescue_policy_saved',
+        reads: {
+          '/api/profile-src/second': 'profile_target.inactive_rescue_policy_saved',
+        },
+      },
+    },
+  },
+  profile_target_abilities_context_changed: {
+    description: 'PE5: click reads a changed serial; no write may leave the page.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.read_config_after_editor_serial_change',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/second': 'profile_target.inactive_uw_policy_saved',
+      vocab: 'profile_reads.vocab_ok',
+    },
+  },
+  profile_target_pick: {
+    description: 'PE2: edit second independently of active mine, with no writes.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+      '/api/profile-src/second': 'profile_target.same_account_inactive_target_source',
+    },
+  },
+  profile_target_unbind: {
+    description: 'PE1: successful unbind, config names the same account with no profile.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+    },
+    writes: {
+      profileActivate: {
+        case: 'profile_target.unbind_with_matching_account_context',
+        reads: { config: 'profile_target.read_after_unbind_account_context' },
+      },
+    },
+  },
+  profile_target_unbind_lost: {
+    description: 'PE1: written then answer failed; only the config read settles the outcome.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+    },
+    writes: {
+      profileActivate: {
+        case: 'profile_target.unbind_written_then_answer_failed',
+        reads: { config: 'profile_target.read_after_unbind_written_then_answer_failed' },
+      },
+    },
+  },
+  profile_target_runner_refusal: {
+    description: 'PE1: runner refusal leaves mine active and never resends.',
+    harvest: 'off',
+    get: {
+      config: 'profile_target.inactive_editor_context_before_save',
+      profileFiles: 'profile_target.same_account_inactive_target_listed',
+    },
+    writes: {
+      profileActivate: {
+        case: 'profile_target.unbind_refused_while_runner_listed',
+        reads: { config: 'profile_target.read_after_unbind_runner_refusal' },
       },
     },
   },

@@ -104,6 +104,9 @@ export function settleProfilePatch(readBody: unknown, sent: SentPatch): 'applied
   const revision = id(own(readBody, 'revision'));
   if (profile === undefined || revision === undefined) return null;
   if (sent.name === undefined || id(own(readBody, 'name')) !== sent.name) return null;
+  // The file must have changed since the revision the patch was made from: a read at that
+  // same revision shows what was there before, not the patch (F6-14 brief section 3).
+  if (sent.revision !== null && revision === sent.revision) return null;
   const found = atPath(profile, sent.path);
   return (sent.remove ? found === undefined : sameJson(found, sent.value)) ? 'applied' : null;
 }

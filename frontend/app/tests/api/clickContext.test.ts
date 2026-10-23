@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { createClickTimeContextRead } from '../../src/api/clickContext.ts';
+import {
+  createClickTimeContextRead,
+  createClickTimeTargetCheck,
+} from '../../src/api/clickContext.ts';
 import { contextFromConfig, expectedContext } from '../../src/api/context.ts';
 import { ENDPOINTS } from '../../src/api/wire.ts';
 import { dashboardPagesCase } from '../support/dashboardFixture.ts';
@@ -77,3 +80,57 @@ it('r10 the shared mutation-context serializer emits exactly the four fields and
     'serial',
   ]);
 });
+
+it.each([
+  ['inactive_editor_context_before_save', 'same_account_inactive_target_listed', 'same'],
+  [
+    'read_config_after_editor_active_profile_switch',
+    'same_account_inactive_target_listed',
+    'context_changed',
+  ],
+  [
+    'read_config_after_editor_instance_switch',
+    'same_account_inactive_target_listed',
+    'context_changed',
+  ],
+  [
+    'read_config_after_editor_serial_change',
+    'same_account_inactive_target_listed',
+    'context_changed',
+  ],
+  ['inactive_editor_context_before_save', 'inactive_target_list_after_deletion', 'target_missing'],
+])('PE2 click-time %s + %s returns %s and never sends a POST', async (config, files, result) => {
+  const fake = createFakeTransport();
+  const target = (name: string) => dashboardPagesCase(`profile_target.${name}`);
+  const drawn = contextFromConfig(target('inactive_editor_context_before_save').body);
+  if (drawn === null) throw new Error('fixture context missing');
+  fake.route('GET', '/api/config', () => target(config));
+  fake.route('GET', '/api/profile-files', () => target(files));
+  const check = createClickTimeTargetCheck(fake.transport, ENDPOINTS);
+  expect(await check(drawn, 'second')).toBe(result);
+  expect(fake.requests.map((request) => request.path)).toEqual([
+    '/api/config',
+    '/api/profile-files',
+  ]);
+  expect(fake.writes()).toEqual([]);
+  expect(vi.getTimerCount()).toBe(0);
+});
+
+it.each(['config', 'profile-files'])(
+  'PE2 click-time unreadable %s cannot authorize the target',
+  async (resource) => {
+    const fake = createFakeTransport();
+    const target = (name: string) => dashboardPagesCase(`profile_target.${name}`);
+    const drawn = contextFromConfig(target('inactive_editor_context_before_save').body);
+    if (drawn === null) throw new Error('fixture context missing');
+    fake.route('GET', '/api/config', () => target('inactive_editor_context_before_save'));
+    fake.route('GET', '/api/profile-files', () => target('same_account_inactive_target_listed'));
+    fake.route('GET', `/api/${resource}`, () => 'hold');
+    const checking = createClickTimeTargetCheck(fake.transport, ENDPOINTS)(drawn, 'second');
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(await checking).toBe(
+      resource === 'config' ? 'context_unconfirmed' : 'target_unconfirmed',
+    );
+    expect(fake.writes()).toEqual([]);
+  },
+);

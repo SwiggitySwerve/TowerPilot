@@ -64,6 +64,14 @@ const EDITED_FIELDS = [
   'shopping',
 ] as const;
 export type EntryKey = (typeof EDITED_FIELDS)[number];
+
+/** Entries come from the edited file, independently of the active /api/runs list. */
+export function runEntryRuns(source: unknown) {
+  return entries(ownPath(source, 'profile', 'blueprints')).map(([key, blueprint]) => ({
+    key,
+    label: text(own(blueprint, 'label')) ?? key,
+  }));
+}
 export interface EntryField {
   readonly key: EntryKey;
   readonly type: 'text' | 'number' | 'toggle' | 'select' | 'list';

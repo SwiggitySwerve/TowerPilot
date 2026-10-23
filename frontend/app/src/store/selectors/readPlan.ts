@@ -1,3 +1,4 @@
+import { selectEditingTarget } from './editingTarget.ts';
 import { profileWriteKind } from '../../core/profiles.ts';
 import { selectRun } from '../../core/readiness.ts';
 import { id, list, own, ownPath } from '../../core/read.ts';
@@ -132,7 +133,7 @@ export function selectReadPlan(state: DashboardState, resource: ResourceId): Rea
       return path === undefined ? { path: null, mode: 'off' } : { path, mode: 'off' };
     }
     case 'profileFiles':
-      return state.profilesOpen
+      return state.profilesOpen || state.collectionOpen || state.runsOpen
         ? { path: '/api/profile-files', mode: 'off' }
         : { path: null, mode: 'off' };
     case 'settings':
@@ -147,6 +148,15 @@ export function selectReadPlan(state: DashboardState, resource: ResourceId): Rea
       return state.collectionOpen || state.runsOpen
         ? { path: '/api/vocab', mode: 'off' }
         : { path: null, mode: 'off' };
+    case 'targetSource': {
+      const target = selectEditingTarget(state);
+      return (state.collectionOpen || state.runsOpen) &&
+        target.inactive &&
+        target.name !== null &&
+        target.blocked === null
+        ? { path: `/api/profile-src/${encodeURIComponent(target.name)}`, mode: 'off' }
+        : { path: null, mode: 'off' };
+    }
     case 'profileSource': {
       // The active profile as the page context names it (its config read): a new profile
       // is a new context, read again from the start (S-014).
@@ -200,7 +210,13 @@ const RECOGNITION_WRITES: readonly string[] = [
 ];
 
 /** The reads that show the Collection page's saved settings (collection brief C1 to C6). */
-const COLLECTION_READS: readonly ResourceId[] = ['config', 'settings', 'profileSource'];
+const COLLECTION_READS: readonly ResourceId[] = [
+  'config',
+  'settings',
+  'profileSource',
+  'targetSource',
+  'profileFiles',
+];
 
 /** The run the Runs page shows: the one it was opened on, else the Start picker's default (RUN-01). */
 export function runsPageRun(state: DashboardState): string | null {
@@ -341,6 +357,7 @@ export function readTriggers(
   }
   if (next.runsOpen && !previous.runsOpen) {
     wanted.add('profileSource');
+    wanted.add('profileFiles');
     wanted.add('runTemplates');
     wanted.add('vocab');
   }
@@ -397,5 +414,8 @@ export function readTriggers(
   ) {
     wanted.add('runControls');
   }
+  const targetPath = selectReadPlan(next, 'targetSource').path;
+  if (targetPath !== null && targetPath !== selectReadPlan(previous, 'targetSource').path)
+    wanted.add('targetSource');
   return [...wanted];
 }

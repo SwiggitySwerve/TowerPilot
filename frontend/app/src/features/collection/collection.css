@@ -154,6 +154,7 @@
 }
 
 .tp-collection__form {
+  min-width: 0;
   margin: var(--tp-space-3) 0 0;
   padding: var(--tp-space-2) 0 0;
   border: 0;

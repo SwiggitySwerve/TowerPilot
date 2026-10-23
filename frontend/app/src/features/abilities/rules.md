@@ -24,7 +24,9 @@ Routine reads preserve unchanged raw numeric text and hidden mode/rule branches.
 
 Refresh reconciles unchanged fields individually. An exact saved rule keeps its identity and hidden history when the server reorders it. A changed rule cannot be associated safely without a backend identifier; the editor retains the draft and exposes a conflict. Unfinished new-plan identifiers use the shared draft persistence under their original target and policy family, with an explicit discard control.
 
-Profile patches have no complete server-side emulator/account fence. The page discloses this backend limit. No route on this page launches a worker, controls input, fires an ability, captures a screen or ends a battle.
+UW and rescue policies use the shared Profiles editing target and `editTargetScope(runtime, target)` for source reads, revisions, drafts, identifiers and submissions. A pinned target needs no active profile or active settings snapshot. Its source owns validator checks, recorded ownership and consumers. Inactive writes use the shared click-time target check, then recheck the runtime epoch and target generation before sending the target name, source revision and runtime `expected_context`. A failed check keeps the draft and shows why nothing was sent. Active writes retain their existing bodies; adding their server context fence belongs to F6-14b.
+
+The global Demon Mode setting remains active-only. Inactive editing shows the active profile's name and a disabled action with the return-to-active reason. Active settings values never appear under the inactive editor heading. No route on this page launches a worker, controls input, fires an ability, captures a screen or ends a battle.
 
 ---
 

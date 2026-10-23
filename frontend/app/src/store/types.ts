@@ -1,3 +1,4 @@
+import type { EditTargets } from '../core/editingTarget.ts';
 import type { PageContext } from '../api/context.ts';
 import type {
   IntentAnswer,
@@ -132,6 +133,8 @@ export interface DashboardState {
    * reads and context changes (the scope names its context, so a draft is never shown or
    * sent in another); only a person's Discard, or a save of exactly those values, clears it.
    */
+  readonly editTargets: EditTargets;
+  readonly editTargetGeneration: number;
   readonly runDrafts: Readonly<Record<string, Readonly<Record<string, string | boolean>>>>;
 }
 
@@ -188,6 +191,8 @@ export type DashboardAction =
   | { readonly type: 'select_gem_source'; readonly run: string | null }
   /** The Runs page opened (or closed) on a run (null: its default run). */
   | { readonly type: 'runs_open'; readonly open: boolean; readonly run: string | null }
+  | { readonly type: 'edit_target_pick'; readonly epoch: number; readonly name: string }
+  | { readonly type: 'edit_target_return'; readonly epoch: number }
   | { readonly type: 'profiles_open'; readonly open: boolean }
   | { readonly type: 'collection_open'; readonly open: boolean }
   | { readonly type: 'profile_checked'; readonly epoch: number; readonly check: ProfileCheck }

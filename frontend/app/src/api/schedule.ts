@@ -1,13 +1,15 @@
 import {
   contextFromConfig,
   contextKey,
+  expectedContext,
   readStoredContext,
   sameContext,
   type PageContext,
 } from './context.ts';
 import { own } from '../core/read.ts';
 import { readEndpoint } from './client.ts';
-import { createClickTimeContextRead } from './clickContext.ts';
+import { createClickTimeContextRead, createClickTimeTargetCheck } from './clickContext.ts';
+import { editTargetScope } from '../core/editingTarget.ts';
 import { createIntentMachine, type IntentMachine } from './intents/machine.ts';
 import { sendOnce } from './intents/send.ts';
 import { createSequence } from './sequence.ts';
@@ -19,7 +21,11 @@ import {
   type KeyValueStorage,
 } from './storage.ts';
 import { fetchTransport, type Transport } from './transport.ts';
-import { bodyMembers, type Endpoint } from './wire.ts';
+import { bodyMembers, ENDPOINTS, type Endpoint } from './wire.ts';
+import {
+  profileTargetConfigAnswerSchema,
+  profileTargetSourceAnswerSchema,
+} from '../contract/profileTarget.ts';
 import {
   scheduleConfigAnswerSchema,
   schedulePatchAnswerSchema,
@@ -30,6 +36,7 @@ import { scheduleStatusAnswerSchema } from '../contract/dashboard.ts';
 import { planDeleteSourceAnswerSchema } from '../contract/r12Families.ts';
 
 const sourceSchemas = [
+  profileTargetSourceAnswerSchema,
   scheduleProfileAnswerSchema,
   schedulePatchAnswerSchema,
   schedulePlanAnswerSchema,
@@ -45,8 +52,8 @@ const source: Endpoint = {
 const config: Endpoint = {
   id: 'config',
   method: 'GET',
-  strict: [scheduleConfigAnswerSchema],
-  members: bodyMembers([scheduleConfigAnswerSchema]),
+  strict: [scheduleConfigAnswerSchema, profileTargetConfigAnswerSchema],
+  members: bodyMembers([scheduleConfigAnswerSchema, profileTargetConfigAnswerSchema]),
 };
 const status: Endpoint = {
   id: 'schedule',
@@ -75,19 +82,36 @@ function intentStorage(storage: KeyValueStorage | null): KeyValueStorage | null 
   };
 }
 
+/** The shared draft/intent scope excludes the active binding and includes the edited name. */
+function scheduleKey(context: PageContext, name = context.profile): string {
+  return name === null ? contextKey(context) : editTargetScope(context, name);
+}
+
 /**
  * F6-11 RL8: one explicit removal of the whole plan section ({op:"delete"} on ["plan"], r12
  * candidate plan_section_delete), through the same record kind as a plan save: a later read
  * without a plan settles it, as one holding a sent plan settles a save.
  */
-export function sendScheduleRemove(machine: IntentMachine, context: PageContext, revision: string) {
-  return sendOnce(machine, `schedule:${contextKey(context)}`, context, () =>
+export function sendScheduleRemove(
+  machine: IntentMachine,
+  context: PageContext,
+  revision: string,
+  name = context.profile,
+) {
+  const target = `schedule:${scheduleKey(context, name)}`;
+  return sendOnce(machine, target, context, () =>
     machine.send({
       kind: 'schedule_save',
-      target: `schedule:${contextKey(context)}`,
+      target,
       endpoint: 'profilePatch',
       path: '/api/profile-patch',
-      body: { name: context.profile, path: ['plan'], op: 'delete', expected_revision: revision },
+      body: {
+        name,
+        path: ['plan'],
+        op: 'delete',
+        expected_revision: revision,
+        ...(name !== context.profile ? { expected_context: expectedContext(context) } : {}),
+      },
       context,
       key: null,
       meta: { profileRevision: revision },
@@ -102,14 +126,22 @@ export function sendScheduleSave(
   context: PageContext,
   revision: string,
   plan: unknown,
+  name = context.profile,
 ) {
-  return sendOnce(machine, `schedule:${contextKey(context)}`, context, () =>
+  const target = `schedule:${scheduleKey(context, name)}`;
+  return sendOnce(machine, target, context, () =>
     machine.send({
       kind: 'schedule_save',
-      target: `schedule:${contextKey(context)}`,
+      target,
       endpoint: 'profilePatch',
       path: '/api/profile-patch',
-      body: { name: context.profile, path: ['plan'], value: plan, expected_revision: revision },
+      body: {
+        name,
+        path: ['plan'],
+        value: plan,
+        expected_revision: revision,
+        ...(name !== context.profile ? { expected_context: expectedContext(context) } : {}),
+      },
       context,
       key: null,
       meta: { profileRevision: revision },
@@ -124,10 +156,13 @@ export function createScheduleApi(
   windowMs?: number,
 ) {
   const sequence = createSequence();
-  // F6-11-P2-01: a profile patch names a profile, not the page context, so the server cannot
-  // refuse a write after another client changed the emulator, account or profile: the page
-  // fences each explicit click with a config read started after it (as Profiles, Collection).
+  // D4: active writes retain their existing click-time config check. Inactive writes also
+  // check the listed target after the click and send the recorded server context fence.
   const readClickContext = createClickTimeContextRead(transport, config);
+  const checkTarget = createClickTimeTargetCheck(transport, {
+    config,
+    profileFiles: ENDPOINTS.profileFiles,
+  });
   const machine = createIntentMachine({
     transport,
     storage: intentStorage(storage),
@@ -137,7 +172,8 @@ export function createScheduleApi(
   return {
     machine,
     sequence,
-    targetKey: contextKey,
+    targetKey: scheduleKey,
+    checkTarget,
     configMatches: (body: unknown, context: PageContext) =>
       sameContext(contextFromConfig(body), context),
     reportMatches: (body: unknown, context: PageContext) =>
@@ -160,10 +196,10 @@ export function createScheduleApi(
         `/api/schedule/status?instance=${encodeURIComponent(context.instance)}`,
         signal,
       ),
-    send: (context: PageContext, revision: string, plan: unknown) =>
-      sendScheduleSave(machine, context, revision, plan),
-    remove: (context: PageContext, revision: string) =>
-      sendScheduleRemove(machine, context, revision),
+    send: (context: PageContext, revision: string, plan: unknown, name = context.profile) =>
+      sendScheduleSave(machine, context, revision, plan, name),
+    remove: (context: PageContext, revision: string, name = context.profile) =>
+      sendScheduleRemove(machine, context, revision, name),
     loadDraft: (key: string) => readJsonItem(storage, `tp.schedule.draft:${key}`),
     keepDraft: (key: string, draft: unknown) =>
       writeJsonItem(storage, `tp.schedule.draft:${key}`, draft),

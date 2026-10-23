@@ -1,13 +1,14 @@
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { collection as t } from '../../copy/collection.ts';
 import type { CopyEntry, CopyNode } from '../../copy/text.ts';
 import {
   selectCollectionPage,
+  selectCollectionTargetName,
   type CollectionPageVM,
   type PolicyEditorVM,
   type ProfilePatchCommand,
 } from '../../store/selectors/collection.ts';
-import type { SettingsModuleVM } from '../../store/selectors/settingsModule.ts';
+import type { SaveOutcomeVM, SettingsModuleVM } from '../../store/selectors/settingsModule.ts';
 import type { CommandVM } from '../../store/viewModels.ts';
 import { Button } from '../../ui/Button.tsx';
 import { Disclosure } from '../../ui/Disclosure.tsx';
@@ -27,6 +28,7 @@ import { RevocationFallback } from '../dashboard/shared/RevocationFallback.tsx';
 import { TopBar } from '../dashboard/topBar/TopBar.tsx';
 import { SaveOutcome } from '../settings/SaveOutcome.tsx';
 import { SettingsModuleForm } from '../settings/SettingsModuleForm.tsx';
+import { EditingTargetLine } from '../profiles/EditingTargetLine.tsx';
 import './collection.css';
 
 /** Orbit fields drawn under "Tap geometry": native screen pixels, advanced. */
@@ -52,25 +54,51 @@ function Line({ entry }: { readonly entry: CopyEntry }) {
   );
 }
 
+function TargetLabel({ id }: { readonly id?: string }) {
+  const name = useView(selectCollectionTargetName);
+  return name === null ? null : (
+    <span id={id} data-collection-target="true">
+      <span>{t.profile.short}</span>
+      <ServerValue kind="name" value={name} />
+    </span>
+  );
+}
+
+function PatchOutcome({ outcome }: { readonly outcome: SaveOutcomeVM }) {
+  const { commands } = useDashboard();
+  return (
+    <div data-collection-outcome="true">
+      <TargetLabel />
+      <SaveOutcome outcome={outcome} onDismiss={commands.dismiss} />
+    </div>
+  );
+}
+
 /** One profile patch button: enabled with its command, or disabled with its visible reason. */
 function PatchButton({
   vm,
   label,
   focusKey,
+  id,
   onSend,
 }: {
   readonly vm: CommandVM<ProfilePatchCommand>;
   readonly label: CopyEntry;
   readonly focusKey: string;
+  readonly id?: string;
   readonly onSend: (command: ProfilePatchCommand) => void;
 }) {
   const own = useId();
+  const inactive = useCollection(null).inactive;
   const { command } = vm;
   const enabled = vm.enabled && command !== null;
   // F6C-03: one button element whatever its state, so a focused button keeps focus.
   return (
     <span className="tp-collection__action">
+      <TargetLabel id={`${own}-target`} />
       <Button
+        {...(id === undefined ? {} : { id })}
+        {...(inactive ? { targetId: `${own}-target` } : {})}
         tier="secondary"
         label={label.short}
         focusKey={focusKey}
@@ -184,21 +212,33 @@ function Module({
   readonly notes?: Readonly<Record<string, CopyEntry>>;
 }) {
   const { commands } = useDashboard();
+  const page = useCollection(null);
   if (vm === null) return null;
   return (
-    <SettingsModuleForm
-      vm={vm}
-      legend={legend}
-      {...(intro === undefined ? {} : { intro })}
-      {...(advanced === undefined ? {} : { advanced })}
-      {...(notes === undefined ? {} : { notes })}
-      onEdit={commands.editDraft}
-      onDiscard={commands.discardDraft}
-      onSave={(command) => {
-        void commands.saveSettings(command);
-      }}
-      onDismiss={commands.dismiss}
-    />
+    <fieldset className="tp-collection__form" disabled={page.inactive} data-active-profile="true">
+      <legend>
+        <span>{t.activeProfile.short}</span>
+        {page.profile === null ? (
+          t.noActiveProfile.short
+        ) : (
+          <ServerValue kind="name" value={page.profile} />
+        )}
+      </legend>
+      {page.inactive ? <div className="tp-reason">{t.activeOnly.short}</div> : null}
+      <SettingsModuleForm
+        vm={vm}
+        legend={legend}
+        {...(intro === undefined ? {} : { intro })}
+        {...(advanced === undefined ? {} : { advanced })}
+        {...(notes === undefined ? {} : { notes })}
+        onEdit={commands.editDraft}
+        onDiscard={commands.discardDraft}
+        onSave={(command) => {
+          if (!page.inactive) void commands.saveSettings(command);
+        }}
+        onDismiss={commands.dismiss}
+      />
+    </fieldset>
   );
 }
 
@@ -262,6 +302,16 @@ function Editor({
 }) {
   const { commands } = useDashboard();
   const [confirming, setConfirming] = useState(false);
+  const triggerId = useId();
+  const confirmId = useId();
+  const restoreDeleteFocus = useRef(false);
+  useEffect(() => {
+    if (confirming) document.getElementById(confirmId)?.focus();
+    else if (restoreDeleteFocus.current) {
+      document.getElementById(triggerId)?.focus();
+      restoreDeleteFocus.current = false;
+    }
+  }, [confirming, confirmId, triggerId]);
   useEffect(() => {
     if (focusOnOpen) document.getElementById('collection-editor-title')?.focus();
   }, [focusOnOpen]);
@@ -301,6 +351,7 @@ function Editor({
           value={editor.labelDraft}
           scope={editor.labelScope}
           path="label"
+          pin={editor.pin}
         />
         <PatchButton
           vm={editor.saveLabel}
@@ -319,9 +370,7 @@ function Editor({
           />
         ) : null}
       </div>
-      {editor.labelOutcome === null ? null : (
-        <SaveOutcome outcome={editor.labelOutcome} onDismiss={commands.dismiss} />
-      )}
+      {editor.labelOutcome === null ? null : <PatchOutcome outcome={editor.labelOutcome} />}
       <Module
         vm={editor.gather}
         legend={t.editor.gather}
@@ -341,6 +390,7 @@ function Editor({
             <Button
               tier="secondary"
               label={t.editor.confirm.short}
+              id={confirmId}
               focusKey="collection:delete:confirm"
               onClick={() => {
                 const command = editor.remove.command;
@@ -353,6 +403,7 @@ function Editor({
               label={t.editor.cancel.short}
               focusKey="collection:delete:cancel"
               onClick={() => {
+                restoreDeleteFocus.current = true;
                 setConfirming(false);
               }}
             />
@@ -360,6 +411,7 @@ function Editor({
         ) : (
           <PatchButton
             vm={editor.remove}
+            id={triggerId}
             label={t.editor.remove}
             focusKey={`collection:delete:${editor.id}`}
             onSend={() => {
@@ -368,9 +420,7 @@ function Editor({
           />
         )}
       </div>
-      {editor.removeOutcome === null ? null : (
-        <SaveOutcome outcome={editor.removeOutcome} onDismiss={commands.dismiss} />
-      )}
+      {editor.removeOutcome === null ? null : <PatchOutcome outcome={editor.removeOutcome} />}
     </section>
   );
 }
@@ -384,6 +434,7 @@ function PoliciesSection({ selected }: { readonly selected: string | null }) {
   };
   return (
     <RegionBody>
+      <EditingTargetLine />
       <Line entry={t.policies.intro} />
       {vm.sourceRead === 'ready' && vm.policies.length === 0 ? (
         <p>{t.policies.none.short}</p>
@@ -447,6 +498,13 @@ function PoliciesSection({ selected }: { readonly selected: string | null }) {
       {vm.editor === null ? null : (
         <Editor key={vm.editor.id} editor={vm.editor} focusOnOpen={selected === vm.editor.id} />
       )}
+      {vm.deletedOutcomes.map((entry) => (
+        <div key={entry.outcome.id}>
+          <span>{t.editor.deletion.short}</span>
+          {entry.id === null ? null : <ServerValue kind="id" value={entry.id} />}
+          <PatchOutcome outcome={entry.outcome} />
+        </div>
+      ))}
       <fieldset className="tp-collection__form" data-form="create">
         <legend>{t.create.title.short}</legend>
         <Line entry={t.create.intro} />
@@ -463,8 +521,11 @@ function PoliciesSection({ selected }: { readonly selected: string | null }) {
                 disabled={vm.create.scope === null}
                 data-focus-key="collection:create:template"
                 onChange={(event) => {
-                  if (vm.create.scope !== null)
+                  if (vm.create.scope !== null) {
+                    for (const [key, value] of Object.entries(vm.create.pin))
+                      commands.editDraft(vm.create.scope, key, value);
                     commands.editDraft(vm.create.scope, 'template', event.currentTarget.value);
+                  }
                 }}
               >
                 {vm.create.choices.map((choice) => (
@@ -505,9 +566,7 @@ function PoliciesSection({ selected }: { readonly selected: string | null }) {
             />
           ) : null}
         </div>
-        {vm.create.outcome === null ? null : (
-          <SaveOutcome outcome={vm.create.outcome} onDismiss={commands.dismiss} />
-        )}
+        {vm.create.outcome === null ? null : <PatchOutcome outcome={vm.create.outcome} />}
       </fieldset>
       <fieldset className="tp-collection__form" data-form="copy">
         <legend>{t.copy.title.short}</legend>
@@ -520,8 +579,11 @@ function PoliciesSection({ selected }: { readonly selected: string | null }) {
               disabled={vm.copy.scope === null}
               data-focus-key="collection:copy:from"
               onChange={(event) => {
-                if (vm.copy.scope !== null)
+                if (vm.copy.scope !== null) {
+                  for (const [key, value] of Object.entries(vm.copy.pin))
+                    commands.editDraft(vm.copy.scope, key, value);
                   commands.editDraft(vm.copy.scope, 'from', event.currentTarget.value);
+                }
               }}
             >
               {vm.policies.map((row) =>
@@ -568,9 +630,7 @@ function PoliciesSection({ selected }: { readonly selected: string | null }) {
             />
           ) : null}
         </div>
-        {vm.copy.outcome === null ? null : (
-          <SaveOutcome outcome={vm.copy.outcome} onDismiss={commands.dismiss} />
-        )}
+        {vm.copy.outcome === null ? null : <PatchOutcome outcome={vm.copy.outcome} />}
       </fieldset>
     </RegionBody>
   );
@@ -588,6 +648,7 @@ function ChoresSection() {
   const chores = vm.chores;
   return (
     <RegionBody>
+      <EditingTargetLine />
       <Line entry={t.chores.intro} />
       <ul className="tp-collection__chores">
         {chores.rows.map((row) => {
@@ -601,8 +662,11 @@ function ChoresSection() {
                   disabled={chores.scope === null || row.unknown}
                   data-focus-key={`collection:chore:${row.name}`}
                   onChange={(event) => {
-                    if (chores.scope !== null)
+                    if (chores.scope !== null) {
+                      for (const [key, value] of Object.entries(chores.pin))
+                        commands.editDraft(chores.scope, key, value);
                       commands.editDraft(chores.scope, row.name, event.currentTarget.checked);
+                    }
                   }}
                 />
                 <span>
@@ -646,9 +710,7 @@ function ChoresSection() {
           />
         ) : null}
       </div>
-      {chores.outcome === null ? null : (
-        <SaveOutcome outcome={chores.outcome} onDismiss={commands.dismiss} />
-      )}
+      {chores.outcome === null ? null : <PatchOutcome outcome={chores.outcome} />}
     </RegionBody>
   );
 }

@@ -1,3 +1,4 @@
+import { configRevision } from '../../core/config.ts';
 import type { EmulatorWrite } from '../../api/intents/emulators.ts';
 import {
   CONNECTION_WRITES,
@@ -441,7 +442,7 @@ export function selectEmulatorsPage(state: DashboardState): EmulatorsPageVM {
     target !== null &&
     inventory.activeInstance !== null &&
     inventory.activeInstance !== target.instance;
-  const baseRevision = id(own(config, 'config_revision')) ?? null;
+  const baseRevision = configRevision(config);
   const configuredSerial =
     context === null ? undefined : id(ownPath(config, 'instances', context.instance, 'serial'));
   const lastScanSeq = scanSlot.lastAnswered?.startedSeq ?? 0;

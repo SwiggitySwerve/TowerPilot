@@ -132,6 +132,10 @@ export const profiles = {
   },
   /** F6-14 PE1: use no profile (classic "none - legacy constants"). */
   unbind: {
+    account: entry('Account:'),
+    installation: entry('this installation'),
+    emulator: entry('Emulator:'),
+    profile: entry('Current profile:'),
     title: entry('Use no profile'),
     active: entry('Active profile:'),
     none: entry('none - the scheduler runs its legacy rules'),

@@ -1,3 +1,4 @@
+import { restoreEditTargets, saveEditTargets } from '../api/editTargets.ts';
 import { setupPermit } from '../core/guards.ts';
 import { handoffTarget } from '../core/needs.ts';
 import { finite, own, ownPath, text } from '../core/read.ts';
@@ -6,6 +7,8 @@ import { savedSaveAnswer } from '../core/runControls.ts';
 import { runAddSource, runIdCheck } from '../core/runAdd.ts';
 import { selectRunsAdd } from '../store/selectors/runsAdd.ts';
 import { sendRunAdd } from '../api/intents/runAdd.ts';
+import { sendRunEntryPatch } from '../api/intents/runEntry.ts';
+import { selectEditingTarget } from '../store/selectors/editingTarget.ts';
 import {
   contextKey,
   createContextTracker,
@@ -19,6 +22,7 @@ import {
   configRendering,
   createClickTimeContextRead,
   createClickTimeLaunchContextRead,
+  createClickTimeTargetCheck,
   type LaunchContext,
 } from '../api/clickContext.ts';
 import { restoreDrafts, saveDrafts } from '../api/drafts.ts';
@@ -143,6 +147,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     ...(options.newId === undefined ? {} : { newId: options.newId }),
     ...(options.endpoints === undefined ? {} : { endpoints: options.endpoints }),
   });
+  const restoredEditTargets = restoreEditTargets(storage);
   const store = createDashboardStore({
     ...initialDashboardState({
       nowMs: timers.now(),
@@ -152,6 +157,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     intents: machine.snapshot(),
     // F6R-02: the drafts this tab kept, before any read is judged against them.
     runDrafts: restoreDrafts(storage),
+    ...restoredEditTargets,
   });
   const diagnostics = createDiagnostics(transport, options.endpoints);
   const savedApplyReadback = createRecognitionApplyReadback(machine, transport, tracker, timers);
@@ -316,7 +322,14 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
   };
   /** F6R-02: the drafts are written to session storage whenever they change. */
   let storedDrafts = store.getSnapshot().runDrafts;
+  let storedEditTargetGeneration = store.getSnapshot().editTargetGeneration;
   const persistDrafts = () => {
+    const targets = store.getSnapshot().editTargets;
+    const generation = store.getSnapshot().editTargetGeneration;
+    if (generation !== storedEditTargetGeneration) {
+      storedEditTargetGeneration = generation;
+      saveEditTargets(storage, targets, generation);
+    }
     const drafts = store.getSnapshot().runDrafts;
     if (drafts === storedDrafts) return;
     storedDrafts = drafts;
@@ -1058,6 +1071,9 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     checkCollection: () => {
       activePoller.read('settings');
       activePoller.read('profileSource');
+      // F6-14: the editing target's own source, when it is not the active profile (the read
+      // plan names no path otherwise, and nothing is read).
+      activePoller.read('targetSource');
       activePoller.read('runTemplates');
       activePoller.read('vocab');
     },
@@ -1161,9 +1177,114 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
         collectionChecks.delete(reservation);
       }
     },
+    checkRunEntry: () => {
+      activePoller.read(
+        selectEditingTarget(store.getSnapshot()).inactive ? 'targetSource' : 'profileSource',
+      );
+      activePoller.read('profileFiles');
+      activePoller.read('vocab');
+    },
+    patchRunEntry: async (command) => {
+      if (!fenced(command)) return;
+      const currentTarget = () => {
+        const target = selectEditingTarget(store.getSnapshot());
+        return (
+          target.name === command.profile &&
+          target.generation === command.generation &&
+          target.blocked === null
+        );
+      };
+      if (!currentTarget()) {
+        notice('command_not_sent', 'target_changed');
+        return;
+      }
+      const reservation = contextKey(command.context);
+      if (collectionChecks.has(reservation) || collectionWriteInFlight(command.context)) {
+        notice('command_not_sent', 'collection_write_in_flight');
+        return;
+      }
+      collectionChecks.add(reservation);
+      try {
+        if (command.inactive) {
+          const endpoints = options.endpoints ?? ENDPOINTS;
+          const checked = await createClickTimeTargetCheck(
+            transport,
+            {
+              config: endpoints.config,
+              profileFiles: endpoints.profileFiles,
+            },
+            timers,
+          )(command.context, command.profile);
+          if (checked !== 'same') {
+            notice('command_not_sent', checked);
+            return;
+          }
+        } else {
+          // D4: preserve the active write's existing click-time config fence and body.
+          const named = await readClickTimeContext();
+          if (named === null) {
+            notice('command_not_sent', 'context_unconfirmed');
+            return;
+          }
+          if (!sameContext(named, command.context)) {
+            await activePoller.readNow('config');
+            notice('command_not_sent', 'context_changed');
+            return;
+          }
+        }
+        if (
+          !fenced(command) ||
+          !sameContext(tracker.current(), command.context) ||
+          !currentTarget()
+        ) {
+          notice('command_not_sent', 'target_changed');
+          return;
+        }
+        if (collectionWriteInFlight(command.context)) {
+          notice('command_not_sent', 'collection_write_in_flight');
+          return;
+        }
+        report(
+          sendRunEntryPatch(
+            machine,
+            {
+              target: command.target,
+              profile: command.profile,
+              path: command.path,
+              ...(command.inactive
+                ? {
+                    expected_context: expectedContext(command.context),
+                    omitDeleteValue: true,
+                  }
+                : {}),
+              remove: command.remove,
+              value: command.value,
+              revision: command.revision,
+              draft: command.draft,
+            },
+            command.context,
+          ),
+        );
+      } finally {
+        collectionChecks.delete(reservation);
+      }
+    },
     patchProfile: async (command) => {
       if (!fenced(command)) return;
-      const profile = command.context.profile;
+      const profile = command.profileName ?? command.context.profile;
+      const inactive = profile !== command.context.profile;
+      const collectionTarget = command.targetGeneration !== undefined;
+      const targetStillCurrent = () => {
+        const target = selectEditingTarget(store.getSnapshot());
+        return (
+          !collectionTarget ||
+          (target.name === profile && target.generation === command.targetGeneration)
+        );
+      };
+      if (!targetStillCurrent()) {
+        notice('command_not_sent', 'target_changed');
+        return;
+      }
       if (profile === null || collectionWriteInFlight(command.context)) {
         notice(
           'command_not_sent',
@@ -1182,12 +1303,30 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       }
       collectionChecks.add(reservation);
       try {
-        const named = await readClickTimeContext();
+        if (inactive) {
+          const result = await createClickTimeTargetCheck(
+            transport,
+            { config: ENDPOINTS.config, profileFiles: ENDPOINTS.profileFiles },
+            timers,
+          )(command.context, profile);
+          if (result !== 'same') {
+            notice('command_not_sent', result);
+            return;
+          }
+        }
+        const named = inactive ? command.context : await readClickTimeContext();
         if (named === null) {
           notice('command_not_sent', 'context_unconfirmed');
           return;
         }
-        if (!fenced(command)) return;
+        if (!fenced(command)) {
+          notice('command_not_sent', 'context_changed');
+          return;
+        }
+        if (!targetStillCurrent()) {
+          notice('command_not_sent', 'target_changed');
+          return;
+        }
         if (
           !sameContext(named, command.context) ||
           !sameContext(tracker.current(), command.context)
@@ -1207,9 +1346,11 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
               target: command.target,
               profile,
               path: command.path,
-              ...(command.path[0] === 'policies' && command.path[1] === 'shopping_lists'
+              ...(inactive ||
+              (command.path[0] === 'policies' && command.path[1] === 'shopping_lists')
                 ? { expected_context: expectedContext(command.context) }
                 : {}),
+              ...(collectionTarget ? { omitDeleteValue: true } : {}),
               remove: command.remove,
               value: command.value,
               revision: command.revision,
@@ -1221,6 +1362,12 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       } finally {
         collectionChecks.delete(reservation);
       }
+    },
+    pickEditingTarget: (command) => {
+      store.dispatch({ type: 'edit_target_pick', epoch: command.epoch, name: command.name });
+    },
+    returnEditingToActive: (command) => {
+      store.dispatch({ type: 'edit_target_return', epoch: command.epoch });
     },
     openProfiles: (open) => {
       store.dispatch({ type: 'profiles_open', open });

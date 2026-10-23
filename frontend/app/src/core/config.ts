@@ -24,6 +24,11 @@ export interface PauseContext {
   readonly serial: string;
 }
 
+/** The opaque configuration revision, or null when this is not a revisioned config read. */
+export function configRevision(body: unknown): string | null {
+  return id(own(body, 'config_revision')) ?? null;
+}
+
 function activeInstance(body: unknown): { readonly name: string; readonly record: unknown } | null {
   const name = id(own(body, 'active_instance'));
   if (name === undefined) {
