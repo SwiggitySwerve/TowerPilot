@@ -7,3 +7,6 @@ e2e/playwright-report/
 e2e/test-results/
 playwright-report/
 test-results/
+# gate and probe logs, npm cache written by a misread --cache flag
+*.log
+/false/
