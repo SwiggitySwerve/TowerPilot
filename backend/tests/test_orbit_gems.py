@@ -24,7 +24,7 @@ def diamond():
     return glyph
 
 
-def scene(angle=0., center=(786, 1038), kind='gem', debris=False):
+def scene(angle=0., center=(786, 1038), kind='gem', debris=False, scale=1.):
     frame = np.zeros((2560, 1080, 3), np.uint8)
     x, y, w, h = manifest()['interface']['screens']['battle']['orbiting_gem']['hud_icon_rect']
     glyph = diamond()
@@ -42,7 +42,7 @@ def scene(angle=0., center=(786, 1038), kind='gem', debris=False):
     if debris:
         tile[48:50, 48:50] = 255
         tile[100:102, 100:102] = 255
-    tile = cv2.warpAffine(tile, cv2.getRotationMatrix2D((75, 75), angle, 1), (150, 150))
+    tile = cv2.warpAffine(tile, cv2.getRotationMatrix2D((75, 75), angle, scale), (150, 150))
     cx, cy = center
     frame[cy-75:cy+75, cx-75:cx+75] = tile
     return frame
@@ -129,6 +129,29 @@ def test_full_frame_debris_keeps_the_verified_gem(angle):
     assert gem is not None
     assert math.dist(gem.center, (786, 1038)) <= 2
     assert gem.score >= .8
+
+
+@pytest.mark.parametrize('angle', [0, 20, 45, 90, 135, 225, 300])
+@pytest.mark.parametrize('scale', [.72, .76])
+def test_smaller_collectible_keeps_its_verified_glyph(angle, scale):
+    gem = orbit_gems.find_orbit_gem(scene(angle, scale=scale))
+    assert gem is not None
+    assert math.dist(gem.center, (786, 1038)) <= 2
+    assert gem.score >= .8
+
+
+@pytest.mark.parametrize('kind', ['empty', 'filled', 'boss', 'red'])
+@pytest.mark.parametrize('angle', [0, 45, 90, 225])
+def test_small_nonfaceted_shapes_remain_unknown(kind, angle):
+    assert orbit_gems.find_orbit_gem(scene(angle, kind=kind, scale=.72)) is None
+
+
+def test_two_small_collectibles_are_still_ambiguous():
+    first = scene(center=(786, 1038), scale=.72)
+    second = scene(center=(250, 600), scale=.72)
+    assert orbit_gems.find_orbit_gem(first) is not None
+    assert orbit_gems.find_orbit_gem(second) is not None
+    assert orbit_gems.find_orbit_gem(np.maximum(first, second)) is None
 
 
 @pytest.mark.parametrize('environment_variable,labels_filename', [

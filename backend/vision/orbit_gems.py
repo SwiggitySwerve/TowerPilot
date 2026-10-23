@@ -114,7 +114,10 @@ def find_orbit_gem(frame: np.ndarray, *, layout_offset: int = 0) -> OrbitGem | N
         sides = np.linalg.norm(vectors, axis=1)
         if sides.min() == 0 or sides.max()/sides.min() > 1.15:
             continue
-        if not 1.2*glyph_width <= sides.mean() <= 2.4*glyph_width:
+        # The bounded box above already rejects tiny candidates. Requiring
+        # another minimum edge/HUD ratio rejected smaller field gems whose
+        # pink square and faceted glyph pass the unchanged checks below.
+        if sides.mean() > 2.4*glyph_width:
             continue
         cosines = np.sum(vectors*np.roll(vectors, -1, axis=0), axis=1)/(sides*np.roll(sides, -1))
         if np.max(np.abs(cosines)) > .18:
