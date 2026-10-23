@@ -46,6 +46,10 @@ async function setup(
   configRef = 'loadout_patch.read_before_the_first_save',
   saveRef = 'loadout_restore.saved_cards_restore',
   profileRef = 'ability_policies.read_before_the_first_save',
+  // The intent machine's answer window (real time). 50 ms lets most cases reach their lost
+  // answer quickly; a case that asserts a held send is still in flight needs a window the
+  // assertion cannot outlive under a loaded machine.
+  windowMs = 50,
 ) {
   const fake = createFakeTransport();
   let config = fixture(configRef);
@@ -56,7 +60,7 @@ async function setup(
   const context = contextFromConfig(config.body);
   if (context === null) throw new Error('No context');
   const storage = createMemoryStorage();
-  const api = createEquipmentApi(fake.transport, storage, 50);
+  const api = createEquipmentApi(fake.transport, storage, windowMs);
   const equipment = createEquipmentStore(api);
   cleanups.push(equipment.dispose);
   await change(() => {
@@ -94,7 +98,7 @@ for (const row of ['C15-8', 'C15-9']) {
   it.each(['selection', 'refresh', 'preflight revision', 'new edit'])(
     `${row} C-02 held preflight fences changed %s and preserves the reserved submission and named draft`,
     async (race) => {
-      const s = await setup();
+      const s = await setup(undefined, undefined, undefined, 60_000);
       const before = fixture('loadout_patch.read_before_the_first_save');
       const after = fixture('loadout_restore.read_after_saved_cards_restore');
       await change(() => {

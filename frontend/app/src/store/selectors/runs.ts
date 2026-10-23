@@ -749,6 +749,11 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
   const elapsed = last === null ? 0 : readAgeSec(state, last);
   const fresh = freshBattleReport(contextReadOf(last), shown, elapsed).kind === 'known';
   const request = requestOn(state, records, last?.startedSeq ?? 0);
+  // SQ5 (core/runControls.rules.md): a live write waits for the config read that confirms
+  // the page context. A battle read can answer first; the confirming read then starts a new
+  // epoch that drops it, so a save or reset offered before then would vanish under the
+  // person's hand (an open reset confirmation closed by itself).
+  const contextReady = hasConfirmedContext(state);
   const gate = liveSaveGate(battle, fresh, review, request);
   // F6-11 RL1/RL2: the applied overrides of this battle, and the reset of some of them (one
   // path, or every path at once), bound to the target it would be sent to.
@@ -758,7 +763,7 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
   const leaves = liveOverrideLeaves(battle);
   const resetOf = (paths: readonly string[]) => {
     const reset = liveResetGate(battle, fresh, paths, request);
-    return reset.enabled
+    return contextReady && reset.enabled
       ? {
           target: liveResetKey(reset.command),
           reset: commandVM<ResetLiveCommand>(true, true, null, false, {
@@ -772,7 +777,8 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
           reset: commandVM<ResetLiveCommand>(
             true,
             false,
-            reset.reason,
+            reset.enabled ? 'context_unknown' : reset.reason,
+
             request === 'sending',
             null,
           ),
@@ -786,15 +792,22 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
       groups: fieldsVM(groups, draft, review.invalid, review.changes, (field) =>
         liveMark(battle, field),
       ),
-      save: gate.enabled
-        ? commandVM<SaveLiveCommand>(true, true, null, false, {
-            epoch: state.epoch,
-            scope,
-            ...gate.command,
-            draft: submittedDraft(draft, gate.command.changes),
-            battleLabel: text(own(battle, 'label')) ?? null,
-          })
-        : commandVM<SaveLiveCommand>(true, false, gate.reason, request === 'sending', null),
+      save:
+        contextReady && gate.enabled
+          ? commandVM<SaveLiveCommand>(true, true, null, false, {
+              epoch: state.epoch,
+              scope,
+              ...gate.command,
+              draft: submittedDraft(draft, gate.command.changes),
+              battleLabel: text(own(battle, 'label')) ?? null,
+            })
+          : commandVM<SaveLiveCommand>(
+              true,
+              false,
+              gate.enabled ? 'context_unknown' : gate.reason,
+              request === 'sending',
+              null,
+            ),
       discard: Object.keys(draft).length > 0,
       changeCount: Object.keys(review.changes).length,
       invalidCount: Object.keys(review.invalid).length,

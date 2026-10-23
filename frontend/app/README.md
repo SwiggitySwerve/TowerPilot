@@ -2,15 +2,16 @@
 > **Status:** Active (Phase 0 scaffold)
 > **Type:** Knowledge
 > **Created:** 2026-10-21
-> **Updated:** 2026-10-21
+> **Updated:** 2026-10-23
 > **Decision record:** ADR-001, frontend stack and structure (2026-10-21)
 
 ## Purpose
 
 The new dashboard application: React 19, TypeScript (strict), Vite. It builds into
 `frontend/webui/app/`, which Flask serves at `/ui/app/`. The build is git-ignored;
-CI and the release scripts produce it. The legacy page (`/ui/index.html`) stays
-the default until the Dashboard cutover.
+CI and the release scripts produce it. It is the only dashboard: `/` serves it,
+and `/ui/index.html` is a small redirect page that maps the old page anchors
+to the app's pages (R17).
 
 ---
 

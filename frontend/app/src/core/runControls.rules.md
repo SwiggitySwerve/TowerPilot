@@ -21,7 +21,10 @@ discovery, including a whole shopping plan as one leaf.
 - SQ5 context-scoped routine and shopping editors use `store/intents.ts`'s
   `hasConfirmedContext` before accepting input. A stored session context is provisional:
   config can change the context key and hide edits made under it. Saved, live and shared
-  policy editors show catalogue waiting text until config confirms the context. Saved run
+  policy editors show catalogue waiting text until config confirms the context. Live Save and
+  every live reset stay closed with `context_unknown` until then: a battle read can answer
+  before config, and the confirming read starts a new epoch that drops it, which would close an
+  open reset confirmation by itself. Saved run
   editors also wait for the initial successful run catalogue read to resolve their identity: `farm` and
   `bp_farm` resolve to the same controls read but name different persisted draft scopes.
   `selectRunsPage().saved.scopeReady` owns this saved-editor gate. A failed initial

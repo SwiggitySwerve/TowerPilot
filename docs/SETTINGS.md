@@ -1,9 +1,9 @@
 # Dashboard and configuration
 > **Status:** Active
 > **Type:** User guide
-> **Updated:** 2026-10-22
+> **Updated:** 2026-10-23
 
-The sidebar is one flat list of destinations. **Find a page** filters that list; choosing a destination opens its content directly. Configuration sections appear on their functional page, with no second navigation tier.
+The **Pages** menu is one flat list of destinations; choosing a destination opens its content directly. Configuration sections appear on their functional page, with no second navigation tier.
 
 ## Pages
 
@@ -69,4 +69,4 @@ Orbit collection retries short tap sets at least five seconds apart by default. 
 
 The dashboard serves the catalog through `GET /api/settings`. A save submits the module identifier, allowed field values, account/emulator/profile context and revision to `POST /api/settings`. The server checks those against current state, validates the complete patch before writing, and uses the existing backup and persistence functions. A stale revision or changed context is refused instead of overwriting newer settings.
 
-The interface is isolated in [settings.js](../frontend/webui/settings.js) and [settings.css](../frontend/webui/settings.css). Existing specialized run, rescue, shopping, weapon and equipment editors remain responsible for their structured configurations.
+The interface is the shared settings form, [SettingsModuleForm.tsx](../frontend/app/src/features/settings/SettingsModuleForm.tsx) with [settings.css](../frontend/app/src/features/settings/settings.css), used by each page that shows a settings module. Existing specialized run, rescue, shopping, weapon and equipment editors remain responsible for their structured configurations.

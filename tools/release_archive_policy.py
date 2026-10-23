@@ -1,8 +1,11 @@
 """Release archive rules: reject local state and personal content at the ZIP boundary.
 
 Dependency image exceptions are trusted checker data, never archive-supplied data.
-Only dependency licence/notice files waive the e-mail marker. Every text file
-still receives all other marker checks and the caller's local forbid list.
+Only dependency licence/notice files (dist-info licences and the app build's generated
+npm THIRD_PARTY_NOTICES.txt) waive the e-mail marker. Source strings that only look
+like a marker (action keys of the form <action>@<instance>.<field>) are waived one exact
+string per file by tools/release_marker_allowlist.json. Every text file still receives
+all other marker checks and the caller's local forbid list.
 """
 import hashlib
 import json
@@ -10,7 +13,7 @@ import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path, PurePosixPath
 
-from build_release import APP_BUILD, APP_INVENTORY
+from build_release import APP_BUILD, APP_INVENTORY, APP_NOTICES
 
 STATE_DIRECTORIES = (
     'backend/accounts', 'backend/logs', 'backend/runs', 'backend/captures',
@@ -26,7 +29,8 @@ MARKERS = {
     'drive-project-path': re.compile(
         r'\b[a-z]:[\\/]+(?:projects?|repos?|workspaces?|worktrees?)[\\/]', re.I),
     'tool-temp-path': re.compile(
-        r'(?:[\\/](?:tmp|temp)[\\/]+|%temp%[\\/]+)'
+        # /data/local/tmp/ is the Android device's temp folder (adb push target), not a host path.
+        r'(?:(?<!/data/local)[\\/](?:tmp|temp)[\\/]+|%temp%[\\/]+)'
         r'\.?(?:codex|claude|t3|towerpilot|tower-pilot|portable-build|pytest)[\w.-]*', re.I),
     'url-credentials': re.compile(r'\b[a-z][a-z0-9+.-]*://[^\s/@]+@', re.I),
     'email': re.compile(r'\b[a-z0-9.!#$%&\x27*+/=?^_`{|}~-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+\b', re.I),
@@ -67,7 +71,24 @@ def state_path(name: str) -> bool:
             or (name.startswith('backend/profiles/') and name != 'backend/profiles/default.yaml'))
 
 
+APP_NOTICES_PATH = APP_BUILD + '/' + APP_NOTICES
+ALLOWLIST_PATH = 'tools/release_marker_allowlist.json'
+
+
+def marker_allowlist(directory: Path) -> dict[tuple[str, str], frozenset[str]]:
+    """Exact (path, marker) -> matched strings that are not personal data; trusted checker data."""
+    rows = json.loads((directory / 'release_marker_allowlist.json').read_bytes())['entries']
+    allowed: dict[tuple[str, str], set[str]] = {}
+    for row in rows:
+        if row['marker'] not in MARKERS or not row['reason'].strip() or not MARKERS[row['marker']].fullmatch(row['text']):
+            raise ValueError('invalid release marker allowlist entry')
+        allowed.setdefault((row['path'], row['marker']), set()).add(row['text'])
+    return {key: frozenset(value) for key, value in allowed.items()}
+
+
 def _dependency_licence(name: str) -> bool:
+    if name == APP_NOTICES_PATH:
+        return True
     parts = name.split('/')
     if (len(parts) < 5 or parts[:3] != ['runtime', 'Lib', 'site-packages']
             or not parts[3].endswith('.dist-info')):
@@ -83,7 +104,9 @@ def release_notes_path(version: str) -> str:
     return 'docs/RELEASE_' + version.upper().replace('-', '_') + '.md'
 
 
-def content_problems(entries: Mapping[str, bytes], forbidden: Sequence[str]) -> list[str]:
+def content_problems(entries: Mapping[str, bytes], forbidden: Sequence[str],
+                     allowed: Mapping[tuple[str, str], frozenset[str]] | None = None) -> list[str]:
+    allowed = marker_allowlist(Path(__file__).parent) if allowed is None else allowed
     problems = []
     for name, data in entries.items():
         if PurePosixPath(name).suffix.lower() not in TEXT_SUFFIXES:
@@ -93,7 +116,10 @@ def content_problems(entries: Mapping[str, bytes], forbidden: Sequence[str]) -> 
         for marker, pattern in MARKERS.items():
             if marker == 'email' and _dependency_licence(name):
                 continue
-            if pattern.search(text):
+            waived = allowed.get((name, marker), frozenset())
+            if name == ALLOWLIST_PATH:   # the allowlist necessarily repeats the strings it waives
+                waived = frozenset().union(*(texts for (_, m), texts in allowed.items() if m == marker))
+            if any(m.group(0) not in waived for m in pattern.finditer(text)):
                 problems.append(f'content marker {marker}: {name}')
         if any(value.casefold() in text.casefold() for value in forbidden):
             problems.append(f'content marker local-forbid-list: {name}')

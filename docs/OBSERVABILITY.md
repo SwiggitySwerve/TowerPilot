@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** User guide
 > **Created:** 2026-10-19
-> **Updated:** 2026-10-19
+> **Updated:** 2026-10-23
 > **Tags:** diagnostics, collection, streaming
 
 ## Understand an Ad Gem wait
@@ -36,7 +36,8 @@ sighting. Offer history can span multiple windows. A dispatched tap, dry run or
 screen change alone does not prove a reward; inspect the confirmation outcome.
 
 Source: [Ad Gem collector](../backend/interactions/ad_gems.py) and
-[live controls](../frontend/webui/run-workspace.js).
+[live controls](../frontend/app/src/features/runs/RunEditor.tsx) with
+[Battle details](../frontend/app/src/features/runs/BattleDetails.tsx) on the Runs page.
 
 ---
 
@@ -93,7 +94,7 @@ report the health of runner or other process writers. Missing health is unknown;
 even a zero count cannot establish that all expected events reached disk.
 
 Source: [bounded event queries](../backend/control/diagnostics.py) and
-[Runtime viewer](../frontend/webui/diagnostics-view.js).
+[Runtime viewer](../frontend/app/src/features/runtime/DiagnosticsSection.tsx).
 
 ---
 
@@ -125,4 +126,4 @@ the selected settings. Switching pages, hiding the browser tab or turning stream
 off releases the stream request.
 
 Source: [stream server](../frontend/dashboard.py) and
-[stream controls](../frontend/webui/index.html).
+[stream controls](../frontend/app/src/features/dashboard/Preview.tsx) (the Dashboard preview).

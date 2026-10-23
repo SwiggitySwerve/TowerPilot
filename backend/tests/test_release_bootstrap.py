@@ -266,12 +266,3 @@ def test_promote_keeps_a_scanned_verification_and_refuses_bad_input(dash, profil
         assert c.post("/api/profile-promote",
                       json={"draft": "acct", "name": "y", "base": "missing"}).status_code == 400
     assert not (profiles_dir / "x.yaml").exists()
-
-
-# --------------------------------------------------------------------- UI
-def test_ui_wires_the_cropper_and_the_promote_button():
-    html = (BACKEND.parent / "frontend" / "webui" / "index.html").read_text(encoding="utf-8")
-    for needle in ("/api/wizard/required", "function cropSave", "/api/template/",
-                   "async function promoteDraft", "/api/profile-promote",
-                   'id="crop-canvas"'):
-        assert needle in html, needle

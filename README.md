@@ -87,12 +87,12 @@ Steps 1–3 below apply only to the source distribution.
    Python environment and installs dependencies. Its setup console closes after
    launch; the server runs without a terminal window.
 3. Use the Tower Pilot notification-area icon to open
-   [Setup](http://127.0.0.1:8620/ui/index.html#setup), or right-click it to quit
+   [Emulators](http://127.0.0.1:8620/ui/app/#emulators), or right-click it to quit
    the dashboard. Startup failures appear in a dialog, with details in
    `backend/logs/launcher.log`. Quitting the dashboard leaves detached runners alive.
    The first start copies `backend/config.example.yaml` to
    `backend/config.yaml` - that file is your machine and is git-ignored.
-4. **Setup** page: choose **Install connection tools** to let the Python app
+4. **Emulators** page: choose **Install connection tools** to let the Python app
    download ADB from Google into its own local tools directory. No separate
    ADB installation, administrator access or PATH changes are needed.
    The wizard lists the emulators it finds, including closed instances. **Start it**
@@ -133,7 +133,7 @@ $env:TOWER_PILOT_PORT = "8621"
 .\Start-TowerPilot.ps1
 ```
 
-Open [Control on port 8621](http://127.0.0.1:8621/ui/index.html#home).
+Open [the dashboard on port 8621](http://127.0.0.1:8621/ui/app/).
 
 ## Readiness, stopping and repair
 
@@ -171,7 +171,7 @@ in the folder it belongs to, never a patch inside a monolith.
 
 | Path | What lives there |
 |---|---|
-| [frontend/](frontend/) | The control panel: `dashboard.py` (Flask, port 8620, `TOWER_PILOT_PORT` overrides) + `webui/`. Never taps the game except the human-driven template cropper. |
+| [frontend/](frontend/) | The control panel: `dashboard.py` (Flask, port 8620, `TOWER_PILOT_PORT` overrides) and the dashboard app's sources in [frontend/app/](frontend/app/), built into the git-ignored `webui/app/` and served at `/ui/app/`. `webui/index.html` only redirects old `/ui/index.html#...` bookmarks to the matching app page. |
 | [backend/orchestrator.py](backend/orchestrator.py) | The engine: the observe-decide-act loop that schedules everything below. Deliberately the one root-level module. |
 | [backend/flows/](backend/flows/) | **One file per type of run** (coin, tournament, shard, quests). Each declares a `FLOW` spec; the registry makes it schedulable everywhere ([guide](backend/flows/README.md)). |
 | [backend/device/](backend/device/) | Talking to the emulator: adb socket client, screen capture, taps/swipes, boot pipeline, ad-overlay cleanup. |
@@ -252,7 +252,7 @@ Work from a source checkout. In PowerShell, from the project folder:
 py -3.12 -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 .venv\Scripts\python.exe -m pytest
-node --test "frontend/tests/*.test.cjs"
+cd frontend/app; npm ci; npm run typecheck; npm run lint; npm test; npm run build; npm run e2e
 ```
 
 `requirements-dev.txt` pulls in `requirements.txt` and adds pytest;
@@ -260,10 +260,12 @@ node --test "frontend/tests/*.test.cjs"
 with no path: `pytest.ini` points it at `backend/tests`, puts `backend` and
 `backend/tests` on the import path and adds `-q -p no:cacheprovider`.
 
-The dashboard tests need [Node.js](https://nodejs.org/) 22 or newer; the
-release workflow runs them on Node 22. Keep the quoted `*.test.cjs` glob:
-Node expands it itself, so the line works in PowerShell and Git Bash, while
-the directory form `node --test frontend/tests/` fails.
+The dashboard app needs [Node.js](https://nodejs.org/) 22.13+ (22.x), 24.x or
+26+; the release workflow runs its checks on Node 22. `npm test` runs the unit
+tests (Vitest), `npm run build` writes `frontend/webui/app/`, and `npm run e2e`
+runs the browser suite against a fixture backend (no device, no live
+dashboard). On Windows the browser suite runs under Node 22: `npm run e2e`
+switches to it when the current Node is another version.
 
 The pure operation ledger is independently installable from the root
 `pyproject.toml`. See [local workflow boundaries and package verification](docs/WORKFLOW_ARCHITECTURE_PROPOSAL.md#implementation-boundaries)

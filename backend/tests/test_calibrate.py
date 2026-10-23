@@ -303,14 +303,6 @@ def test_calibrator_counts_as_a_runner_for_the_process_guards():
         assert "runners.other_runners()" in (BACKEND / "player" / guard).read_text(encoding="utf-8"), guard
 
 
-def test_ui_offers_the_calibrate_button_and_report():
-    html = (REPO / "frontend" / "webui" / "index.html").read_text(encoding="utf-8")
-    for needle in ("/api/calibrate/start", "/api/calibrate/status", "async function startCalibrate",
-                   "function calibReport", "Phase 1: basic scan", "id=\"calib-over\"",
-                   "fresh: !resume"):
-        assert needle in html, needle
-
-
 def test_navigation_landmarks_are_generic_not_account_templates():
     src = (BACKEND / "interactions" / "presets.py").read_text(encoding="utf-8")
     for account in ("presets/guardians_farm.png", "presets/bots_farm.png",

@@ -22,8 +22,6 @@ import pytest
 import yaml
 
 BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-INDEX = os.path.join(os.path.dirname(BACKEND), "frontend", "webui",
-                     "index.html")
 
 
 def _load_seeds() -> dict:
@@ -355,28 +353,6 @@ def test_start_engine_preset_keeps_preset_argv(dash, start_cmds, monkeypatch):
     assert any(c.endswith("orchestrator.py") for c in cmd)
 
 
-def test_run_types_have_editable_display_names():
-    """Run types get what the behavior library has: a display name (the
-    blueprint `label` the compiler and tray already read) edited in the run
-    type's editor, shown in the list with the identifier as a chip, and used
-    in the day plan's run picker with the identifier as the tooltip."""
-    with open(INDEX, encoding="utf-8") as fh:
-        html = fh.read()
-    for needle in ("function bpLabel", "function setBpLabel",
-                   "setBpLabel('${esc(bpName)}', this.value)",
-                   "function bpOptionText", "${esc(bpOptionText(n, b))}",
-                   'title="${esc(n)}"', "used.map(n => esc(bpLabel(n)))",
-                   "<legend>Name</legend>", "function bpKindLabel",
-                   "Achievement run (${b.dissonant_tab} dissonance)",
-                   # the Dissonance run type (2026-09-14): disabled tab and
-                   # perk bans in the editor and in the template dialog
-                   "function dissonantTabs", "<legend>Dissonance</legend>",
-                   "<legend>Perk bans</legend>", "function setBpLines",
-                   'id="template-tab"', 'id="template-bans"',
-                   "options.dissonant_tab=", "options.perk_bans="):
-        assert needle in html, needle
-
-
 def test_starter_profile_is_read_only_in_the_dashboard(dash):
     """profiles/default.yaml ships with the repo: a UI edit while it is the
     active profile (every fresh install) would rewrite the tracked file with
@@ -406,10 +382,3 @@ def test_starter_profile_is_read_only_in_the_dashboard(dash):
     with open(starter, encoding="utf-8") as fh:
         assert fh.read().lstrip().startswith("#")                # the starter kept its guide
 
-
-def test_home_page_offers_the_starter_copy():
-    with open(INDEX, encoding="utf-8") as fh:
-        html = fh.read()
-    for needle in ("function starterBanner", "function copyStarter", "/api/profile-copy",
-                   "requirementHTML('configuration') + starterBanner()", "Copy the starter into my own profile"):
-        assert needle in html, needle

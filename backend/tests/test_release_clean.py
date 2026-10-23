@@ -171,10 +171,3 @@ def test_catalogue_endpoint_lists_the_module_slugs(dash):
     slugs = {m["slug"] for m in mods}
     assert {"space_displacer", "multiverse_nexus"} <= slugs
     assert all(m["name"] and isinstance(m["abbrevs"], list) for m in mods)
-
-
-def test_calibrate_page_tells_a_fresh_account_what_to_cut():
-    html = (REPO / "frontend" / "webui" / "index.html").read_text(encoding="utf-8")
-    for needle in ("/api/catalogue/modules", "cards/preset_&lt;name&gt;.png",
-                   "presets/gp_&lt;slug&gt;.png", "modules/equipped/&lt;slug&gt;.png"):
-        assert needle in html, needle

@@ -276,6 +276,12 @@ export interface ReadPlan {
   readonly mode: 'active' | 'idle' | 'off';
   /** Only targetSource: the editing selection asking for this read. */
   readonly targetSelection?: TargetSourceSelection;
+  /**
+   * A failure backoff the plan asks for now, for a resource whose policy has none (
+one):
+   * a failed read is read again on it until a read answers (only GETs, never a write).
+   */
+  readonly retry?: Exclude<Backoff, 'none'>;
 }
 
 export interface Visibility {
@@ -436,8 +442,9 @@ export function createPoller(options: PollerOptions): Poller {
     }
     let delay: number | null =
       plan.mode === 'active' ? policy.activeMs : plan.mode === 'idle' ? policy.idleMs : null;
-    if (slot.failures > 0 && policy.backoff !== 'none') {
-      delay = backoffMs(policy.backoff, slot.failures);
+    const backoff = policy.backoff === 'none' ? (plan.retry ?? 'none') : policy.backoff;
+    if (slot.failures > 0 && backoff !== 'none') {
+      delay = backoffMs(backoff, slot.failures);
     }
     if (delay === null) return;
     if (hidden()) {

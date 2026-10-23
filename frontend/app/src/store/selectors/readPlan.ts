@@ -107,7 +107,13 @@ export function selectReadPlan(state: DashboardState, resource: ResourceId): Rea
         ? { path: null, mode: 'off' }
         : { path: `/api/battles?limit=3&instance=${encodeURIComponent(instance)}`, mode: 'off' };
     case 'config':
-      return { path: '/api/config', mode: 'off' };
+      // The config read names the page context. Until one answers in this epoch, a failed
+      // or timed-out read is read again on the schedule backoff (2 s doubling to 60 s), so a
+      // page whose first read failed is never left without a context; once confirmed, config
+      // is read on events only.
+      return state.contextConfirmed
+        ? { path: '/api/config', mode: 'off' }
+        : { path: '/api/config', mode: 'off', retry: 'schedule' };
     case 'accounts':
       return { path: '/api/accounts', mode: 'off' };
     case 'runs':

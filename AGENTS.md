@@ -17,6 +17,7 @@ Skills and workflow guidance live in `.claude/`:
 - `.codex/config.toml` - project-local Codex configuration.
 
 Verification habits: `python -m py_compile <files>` after edits, `python -m
-pytest` from the repo root (offline), `node --test frontend/tests/*.test.cjs`
-for the dashboard. Machine and account state (config, profiles, logs,
+pytest` from the repo root (offline), and for the dashboard app `cd frontend/app;
+npm ci; npm run typecheck; npm run lint; npm test; npm run build; npm run e2e`.
+Machine and account state (config, profiles, logs,
 templates, captures) never enter git - see `.gitignore`.

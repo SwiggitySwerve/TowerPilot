@@ -298,7 +298,7 @@ def test_single_artifact_runs_without_checkout_or_application_imports(
     tools = tmp_path / 'standalone'
     tools.mkdir()
     for name in ('check_release_zips.py', 'release_archive_policy.py', 'build_release.py',
-                 'dependency_images.json', 'portable_pins.json'):
+                 'dependency_images.json', 'portable_pins.json', 'release_marker_allowlist.json'):
         shutil.copyfile(REPO / 'tools' / name, tools / name)
     result = subprocess.run([sys.executable, '-E', '-s', str(tools / 'check_release_zips.py'),
                              '--archive', str(path), '--kind', artifact[2]],
@@ -309,7 +309,7 @@ def test_single_artifact_runs_without_checkout_or_application_imports(
 
 def test_gate_source_and_data_pass_their_own_content_rules(checker: ModuleType, artifact: Artifact) -> None:
     for name in ('check_release_zips.py', 'release_archive_policy.py', 'generate_dependency_images.py',
-                 'dependency_images.json', 'portable_pins.json'):
+                 'dependency_images.json', 'portable_pins.json', 'release_marker_allowlist.json'):
         artifact[3]['tools/' + name] = (REPO / 'tools' / name).read_bytes()
     artifact[3]['backend/tests/test_release_archive_gate.py'] = Path(__file__).read_bytes()
     assert check(checker, artifact) == 0
@@ -349,3 +349,47 @@ def test_generator_verifies_wheel_bytes_before_inspecting_images(
     wheel.write_bytes(b'mutated wheel')
     with pytest.raises(ValueError, match='Pinned artifact hash mismatch'):
         generator.generate(pins_path, tmp_path)
+
+def test_android_device_temp_path_is_not_a_host_temp_path(checker: ModuleType, artifact: Artifact) -> None:
+    artifact[3]['backend/device/push.py'] = b'remote = "/data/local/tmp/towerpilot_preview_00.jar"\n'
+    assert check(checker, artifact) == 0
+    artifact[3]['backend/device/push.py'] = ('local = "' + '/tmp/' + 'towerpilot_preview_00.jar"\n').encode()
+    assert check(checker, artifact) == 1
+
+
+def test_allowlisted_marker_string_is_waived_only_for_its_exact_path_and_text(
+        checker: ModuleType, artifact: Artifact, capsys: pytest.CaptureFixture[str]) -> None:
+    import release_archive_policy as policy
+    rows = json.loads((REPO / 'tools' / 'release_marker_allowlist.json').read_bytes())['entries']
+    row = rows[0]
+    artifact[3][row['path']] = ('x = "' + row['text'] + '"\n').encode()
+    assert check(checker, artifact) == 0
+    artifact[3]['backend/tests/other_file.py'] = ('x = "' + row['text'] + '"\n').encode()
+    assert check(checker, artifact) == 1
+    assert 'content marker email: backend/tests/other_file.py' in capsys.readouterr().out
+    del artifact[3]['backend/tests/other_file.py']
+    other = 'synthetic-person' + chr(64) + 'example.invalid'
+    artifact[3][row['path']] = ('x = "' + row['text'] + '"\ny = "' + other + '"\n').encode()
+    assert check(checker, artifact) == 1
+    for bad in ({**row, 'text': 'not a match'}, {**row, 'reason': ' '}, {**row, 'marker': 'unknown'}):
+        with pytest.raises(ValueError):
+            _load_allowlist(policy, bad)
+
+
+def _load_allowlist(policy: ModuleType, row: dict) -> None:
+    import tempfile
+    with tempfile.TemporaryDirectory() as folder:
+        Path(folder, 'release_marker_allowlist.json').write_text(json.dumps({'entries': [row]}), encoding='utf-8')
+        policy.marker_allowlist(Path(folder))
+
+
+def test_generated_app_notices_waive_only_the_email_marker(checker: ModuleType, artifact: Artifact) -> None:
+    email = 'synthetic-author' + chr(64) + 'example.invalid'
+    artifact[3][APP + 'THIRD_PARTY_NOTICES.txt'] = ('Copyright ' + email + '\n').encode()
+    app = {name[len(APP):]: data for name, data in artifact[3].items() if name.startswith(APP) and not name.endswith('BUILD_INVENTORY.txt')}
+    artifact[3][APP + 'BUILD_INVENTORY.txt'] = inventory(app)
+    assert check(checker, artifact) == 0
+    artifact[3][APP + 'THIRD_PARTY_NOTICES.txt'] = ('Copyright ' + email + '\n' + personal_markers()[0][1] + '\n').encode()
+    app = {name[len(APP):]: data for name, data in artifact[3].items() if name.startswith(APP) and not name.endswith('BUILD_INVENTORY.txt')}
+    artifact[3][APP + 'BUILD_INVENTORY.txt'] = inventory(app)
+    assert check(checker, artifact) == 1

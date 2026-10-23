@@ -149,10 +149,3 @@ def test_resolution_check_reads_the_captured_frame_not_the_panel(dash, tmp_path,
     # read-only display lookup (MuMu puts the game on a secondary display)
     assert calls and all(cmd == "screencap" or cmd.startswith("dumpsys SurfaceFlinger") for cmd in calls)
     assert calls.count("screencap") >= 2
-
-
-def test_ui_offers_prepare_for_bluestacks():
-    html = (BACKEND.parent / "frontend" / "webui" / "index.html").read_text(encoding="utf-8")
-    for needle in ("/api/wizard/bluestacks/prepare", "async function prepareBS",
-                   "ADB switch off in BlueStacks", "needs 2560x1080@360"):
-        assert needle in html, needle

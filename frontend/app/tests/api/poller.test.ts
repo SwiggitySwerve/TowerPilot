@@ -250,3 +250,36 @@ describe('S-012 status reads are accepted while any write is in flight', () => {
     data.stop();
   });
 });
+
+describe('plan-requested retry for a read without a policy backoff', () => {
+  it('a failed config read is read again on the schedule backoff only while its plan asks for retry', async () => {
+    const plans: Partial<Record<PolledResource, ReadPlan>> = {
+      config: { path: '/api/config', mode: 'off', retry: 'schedule' },
+    };
+    const h = harness(plans);
+    let fail = true;
+    h.fake.route('GET', '/api/config', () =>
+      fail ? { status: 502, body: 'Bad gateway' } : { status: 200, body: {} },
+    );
+    h.poller.start();
+    await vi.advanceTimersByTimeAsync(6_500);
+    // Entry read, then 2000 ms and 4000 ms after each failed read ended.
+    expect(reads(h, '/api/config')).toEqual([0, 2000, 6000]);
+    fail = false;
+    await vi.advanceTimersByTimeAsync(8_000);
+    expect(reads(h, '/api/config')).toEqual([0, 2000, 6000, 14000]);
+    // Answered: config has no cadence of its own, so nothing more is read.
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(reads(h, '/api/config')).toHaveLength(4);
+    h.poller.stop();
+  });
+
+  it('without a plan retry a failed config read is not read again', async () => {
+    const h = harness({ config: { path: '/api/config', mode: 'off' } });
+    h.fake.route('GET', '/api/config', () => ({ status: 502, body: 'Bad gateway' }));
+    h.poller.start();
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(reads(h, '/api/config')).toEqual([0]);
+    h.poller.stop();
+  });
+});

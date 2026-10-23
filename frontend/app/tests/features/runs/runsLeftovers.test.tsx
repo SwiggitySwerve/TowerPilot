@@ -443,6 +443,38 @@ describe('RL2 recorded mixed shopping and routine resets', () => {
     expect(await axe(page.view.container)).toHaveNoViolations();
   }, 15_000);
 
+  it('RL2 reset of all waits for the config read that confirms the context; a late confirmation never closes an offered dialog', async () => {
+    const source = mixed('read_before_the_reset_the_mixed_overrides_are_in_force');
+    const page = await openLive(() => source, {
+      before: (fake) => {
+        fake.route('GET', '/api/config', () => 'hold');
+      },
+    });
+    // The battle read answered; the config read that names the page context has not.
+    expect(
+      liveRegion().querySelector('[data-reset-all-items]')?.querySelectorAll('li'),
+    ).toHaveLength(3);
+    expect(allButton()).toHaveAttribute('aria-disabled', 'true');
+    expect(
+      within(liveRegion()).getAllByText('Waiting for the emulator, account and profile to be read.')
+        .length,
+    ).toBeGreaterThan(0);
+    for (const row of resetRows())
+      expect(within(row).getByRole('button', { name: /starting value/u })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+    await page.user.click(allButton());
+    expect(document.querySelector('dialog[open]')).toBeNull();
+    page.fake.next('/api/config', 'GET').respond(200, e0Config(true));
+    await page.advance(1_000);
+    expect(allButton()).not.toHaveAttribute('aria-disabled', 'true');
+    await page.user.click(allButton());
+    expect(within(dialog()).getAllByRole('listitem')).toHaveLength(3);
+    await page.advance(5_000);
+    expect(within(dialog()).getAllByRole('listitem')).toHaveLength(3);
+    expect(page.fake.writes()).toEqual([]);
+  });
   it('RL2 stale mixed refusal preserves the complete list and raw draft without resending', async () => {
     const source = mixed('read_after_the_refusal_both_kinds_of_override_remain');
     const refused = mixed('mixed_reset_with_a_stale_control_revision_refused');

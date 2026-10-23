@@ -41,6 +41,10 @@ APP_NOTICES = 'THIRD_PARTY_NOTICES.txt'
 APP_INVENTORY = 'BUILD_INVENTORY.txt'
 APP_BUILD_SUFFIXES = {'.html', '.js', '.css'}
 APP_BUILD_HINT = 'cd frontend/app; npm ci; npm run build'
+# Outside the app, the frontend is the Flask server and the static page that
+# redirects old /ui/index.html bookmarks onto the app (plan R17, option A). The
+# previous dashboard's pages, modules and node tests are retired and never ship.
+FRONTEND_FILES = {'frontend/dashboard.py', 'frontend/webui/index.html'}
 
 
 def allowed(name):
@@ -56,7 +60,7 @@ def allowed(name):
                 'backend/tests/fixtures/golden_profile.yaml', 'backend/tools/winocr.ps1',
                 'tools/build_release.py', 'tools/build_portable.py', 'tools/check_release_zips.py',
                 'tools/portable_launcher.py', 'tools/portable_pins.json',
-                'tools/release_archive_policy.py', 'tools/dependency_images.json',
+                'tools/release_archive_policy.py', 'tools/dependency_images.json', 'tools/release_marker_allowlist.json',
                 'tools/generate_dependency_images.py'}:
         return True
     if p.parts[0] == 'backend':
@@ -68,9 +72,7 @@ def allowed(name):
                 and (p.suffix in APP_SOURCE_SUFFIXES or p.name in APP_SOURCE_NAMES))
     if p.parts[:3] == ('frontend', 'webui', 'app'):
         return False                # the build product: app_build_files() adds it
-    if p.parts[0] == 'frontend':
-        return p.suffix in {'.py', '.html', '.css', '.js', '.cjs'}
-    return False
+    return name in FRONTEND_FILES
 
 
 class _AppIndexParser(HTMLParser):

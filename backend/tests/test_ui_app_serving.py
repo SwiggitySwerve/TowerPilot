@@ -1,13 +1,16 @@
 """The new dashboard app (frontend/app, ADR-001) is served at /ui/app/ from its
 git-ignored build in frontend/webui/app/. Without a build, every /ui/app/ URL
-answers a page that says how to build it; with one, the files are served from
-the build folder and nothing else. The legacy page stays at /ui/index.html; / opens
-the new app once it is built and the legacy page otherwise. Links are resolved: a junction or symlink inside the build, or a linked
-build folder, never serves a file outside the real build folder. Flask test
-client against a temporary webui folder - no server, no device, and the
-checkout's own build (if any) is never read."""
+and / answer a page that says how to build it; with one, the files are served
+from the build folder and nothing else, and / opens the app. /ui/index.html is a
+static page that redirects old bookmarks onto the app (plan R17, option A). Links
+are resolved: a junction or symlink inside the build, or a linked build folder,
+never serves a file outside the real build folder. Flask test client against a
+temporary webui folder - no server, no device, and the checkout's own build (if
+any) is never read; the redirect checks read the checkout's real index.html."""
 import importlib.util
+import json
 import os
+import re
 import socket
 import sys
 from pathlib import Path
@@ -17,6 +20,7 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[2]
 BUILD_HINT = b"cd frontend/app; npm ci; npm run build"
+STATIC_PAGE = b"<p>static redirect page</p>"
 
 
 @pytest.fixture()
@@ -35,10 +39,10 @@ def dash(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
 
 @pytest.fixture()
 def webui(dash: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """A stand-in frontend/webui/ with the legacy page and no app build."""
+    """A stand-in frontend/webui/ with a top-level static page and no app build."""
     folder = tmp_path / "webui"
     folder.mkdir()
-    (folder / "index.html").write_text("<p>legacy page</p>", encoding="utf-8")
+    (folder / "index.html").write_bytes(STATIC_PAGE)
     monkeypatch.setattr(dash.app, "static_folder", str(folder))
     return folder
 
@@ -60,7 +64,7 @@ def test_without_a_build_every_app_url_says_how_to_build_it(dash: ModuleType, we
     assert r.status_code == 404
     assert r.mimetype == "text/html"
     assert BUILD_HINT in r.data and b"not built" in r.data
-    assert b'href="/ui/index.html"' in r.data
+    assert b"/ui/index.html" not in r.data            # no link to the retired dashboard
     assert r.headers.get("X-Frame-Options") == "DENY"
 
 
@@ -104,7 +108,7 @@ def test_app_urls_never_leave_the_build_folder(dash: ModuleType, webui: Path, pa
         body = r.data
         r.close()
     assert r.status_code == 404
-    assert b"legacy page" not in body and b"import " not in body
+    assert STATIC_PAGE not in body and b"import " not in body
 
 
 def test_build_output_and_node_modules_are_git_ignored() -> None:
@@ -187,7 +191,7 @@ def test_a_symlink_to_a_file_outside_the_build_is_refused(dash: ModuleType, webu
 
 def test_absolute_drive_and_unc_paths_are_refused(dash: ModuleType, webui: Path, outside: Path) -> None:
     _build(webui)
-    canary = (outside / "secret.txt").resolve().as_posix()          # e.g. C:/Users/.../secret.txt
+    canary = (outside / "secret.txt").resolve().as_posix()          # a path outside the served app folder
     for path in ("/ui/app/" + canary, "/ui/app/" + canary.replace("/", "%5C"),
                  "/ui/app/C:/Windows/win.ini", "/ui/app/C:%5CWindows%5Cwin.ini",
                  "/ui/app/%5C%5Clocalhost%5Cshare%5Csecret.txt", "/ui/app/%2F%2Flocalhost/share/secret.txt",
@@ -276,15 +280,15 @@ def test_dot_segments_before_the_build_serve_its_own_files(dash: ModuleType, web
 
 
 @windows_only
-def test_a_legacy_static_link_cannot_leave_webui(dash: ModuleType, webui: Path, outside: Path) -> None:
+def test_a_plain_static_link_cannot_leave_webui(dash: ModuleType, webui: Path, outside: Path) -> None:
     _junction(webui / "linked", outside)
     (webui / "css").mkdir()
     (webui / "css" / "site.css").write_text("body{}", encoding="utf-8")
     for path in ("/ui/linked/secret.txt", "/ui/linked/index.html", "/ui/LINKED/secret.txt"):
         status, body, frame = _get(dash, path)
         assert (status, OUTSIDE in body, frame) == (404, False, "DENY"), path
-    # controls: legacy files, nested ones included, are served as before
-    assert _get(dash, "/ui/index.html")[:2] == (200, b"<p>legacy page</p>")
+    # controls: plain static files, nested ones included, are served as before
+    assert _get(dash, "/ui/index.html")[:2] == (200, STATIC_PAGE)
     assert _get(dash, "/ui/css/site.css")[:2] == (200, b"body{}")
 
 
@@ -294,7 +298,7 @@ def test_static_paths_with_drive_stream_backslash_or_parent_syntax_are_refused(
         dash: ModuleType, webui: Path, path: str) -> None:
     _build(webui)
     status, body, frame = _get(dash, path)
-    assert status == 404 and b"legacy page" not in body and frame == "DENY", path
+    assert status == 404 and STATIC_PAGE not in body and frame == "DENY", path
 
 
 def test_only_the_static_route_and_ui_app_serve_files_under_ui(dash: ModuleType) -> None:
@@ -309,7 +313,54 @@ def test_the_home_page_opens_the_new_dashboard_once_it_is_built(dash: ModuleType
         before = c.get("/")
         _build(webui)
         after = c.get("/")
-        legacy = c.get("/ui/index.html")
-    assert before.status_code == 302 and before.headers["Location"].endswith("/ui/index.html")
+        redirect_page = c.get("/ui/index.html")
+    assert before.status_code == 404 and before.mimetype == "text/html"
+    assert BUILD_HINT in before.data and b"/ui/index.html" not in before.data
+    assert before.headers.get("X-Frame-Options") == "DENY"
     assert after.status_code == 302 and after.headers["Location"].endswith("/ui/app/")
-    assert legacy.status_code == 200 and b"legacy page" in legacy.data
+    assert redirect_page.status_code == 200 and redirect_page.data == STATIC_PAGE
+
+
+# ------------------------------------------- /ui/index.html: the R17 redirect
+REDIRECT = REPO / "frontend" / "webui" / "index.html"
+
+
+def _redirect_aliases() -> dict[str, str]:
+    html = REDIRECT.read_text(encoding="utf-8")
+    block = re.search(r'<script id="aliases" type="application/json">(.*?)</script>', html, re.S)
+    assert block is not None
+    return json.loads(block.group(1))
+
+
+def test_the_old_dashboard_address_is_a_redirect_with_no_legacy_page_left() -> None:
+    """Option A (R17 brief decision 7): old bookmarks and the backend's
+    calibration_url (/ui/index.html#calibrate) open the matching app page. The
+    page carries no panels, stylesheets, script files or API calls."""
+    html = REDIRECT.read_text(encoding="utf-8")
+    assert "window.location.replace('/ui/app/'" in html
+    assert '<a href="/ui/app/">' in html                          # works without JavaScript
+    for absent in ("<link", " src=", "fetch(", "/api/", "<section", "<style", "style=", "classic.html"):
+        assert absent not in html, absent
+    assert len(html.splitlines()) < 40
+
+
+def test_the_redirect_maps_the_old_anchors_onto_app_pages() -> None:
+    assert _redirect_aliases() == {
+        "overview": "dashboard", "home": "dashboard", "screens": "recognition",
+        "calibrate": "recognition", "setup": "emulators", "settings": "runtime",
+        "rewards": "collection"}
+    pages = (REPO / "frontend" / "app" / "src" / "ui" / "routes.ts").read_text(encoding="utf-8")
+    for target in set(_redirect_aliases().values()):
+        assert f"'{target}'," in pages, target                     # every target is an app page
+
+
+def test_the_dashboard_serves_the_real_redirect_page(dash: ModuleType, monkeypatch: pytest.MonkeyPatch) -> None:
+    # this fixture loads dashboard.py by path, so Flask resolves "webui" against
+    # the working directory; point it at the checkout's real folder
+    monkeypatch.setattr(dash.app, "static_folder", str(REDIRECT.parent))
+    with dash.app.test_client() as c:
+        r = c.get("/ui/index.html")
+        body = r.data
+        r.close()
+    assert r.status_code == 200 and r.mimetype == "text/html"
+    assert body == REDIRECT.read_bytes() and r.headers.get("X-Frame-Options") == "DENY"

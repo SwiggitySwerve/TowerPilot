@@ -13,7 +13,8 @@ Download **TowerPilot-0.5-beta-source.zip** below, or clone the repository and
 check out `v0.5-beta`. Install Python 3.12, then double-click **Start Tower
 Pilot.cmd**; the source launcher creates its environment and installs dependencies.
 Alternatively run `py -3.12 -m pip install -r requirements.txt`, then
-`py -3.12 frontend/dashboard.py` and open http://127.0.0.1:8620/ui/index.html#setup.
+`py -3.12 frontend/dashboard.py` and open http://127.0.0.1:8620/ui/app/#emulators. The source ZIP includes the dashboard app build; a clone builds it
+once with `cd frontend/app; npm ci; npm run build`.
 
 GitHub's automatically generated “Source code” downloads are also source-only;
 choose **windows-x64.zip** if you do not want to install Python.

@@ -43,7 +43,8 @@ SOURCES = {
     "README.md": b"# test\n",
     "docs/RELEASE_9.9.9.md": b"# Release\n\n## Environment limits\nSynthetic test only.\n",
     "frontend/dashboard.py": b"# dashboard\n",
-    "frontend/webui/index.html": b"<p>legacy</p>",
+    "frontend/webui/index.html": (b"<script>window.location.replace('/ui/app/')</script>"
+                                  b'<a href="/ui/app/">open the dashboard</a>'),
     "frontend/app/package.json": b"{}\n",
     "frontend/app/package-lock.json": b"{}\n",
     "frontend/app/.npmrc": b"save-exact=true\n",
@@ -62,6 +63,17 @@ NEVER = {
     "frontend/app/test-results/smoke/trace.txt": b"trace",
     "frontend/app/playwright-report/index.html": b"<p>report</p>",
 }
+# The previous dashboard (retired by plan R17): pages, modules and node tests
+# left in a checkout never reach a release; only the redirect page does.
+RETIRED = {
+    "frontend/webui/classic.html": b"<p>classic</p>",
+    "frontend/webui/run-workspace.js": b"export {};",
+    "frontend/webui/settings.css": b"body{}",
+    "frontend/webui/vendor/pico.min.css": b"body{}",
+    "frontend/tests/helpers.cjs": b"module.exports = {};",
+    "frontend/tests/dashboard.test.cjs": b"require('node:test');",
+}
+NEVER.update(RETIRED)
 
 
 def _write(root: Path, files: Mapping[str, bytes]) -> None:
@@ -108,6 +120,8 @@ def _assert_release_contents(entries: Mapping[str, bytes]) -> None:
         assert name in entries, name
     for name in NEVER:
         assert name not in entries, name
+    assert entries["frontend/webui/index.html"] == SOURCES["frontend/webui/index.html"]
+    assert not any(name.startswith("frontend/tests/") for name in entries)
     inventory = entries["SHA256SUMS.txt"].decode()
     for name in BUILD:
         assert inventory.count("  " + name + "\n") == 1, name
@@ -166,8 +180,27 @@ def test_allowed_admits_app_sources_and_leaves_the_build_to_the_filesystem(
         assert build_release.allowed(name), name
     for name in ("frontend/app/node_modules/react/index.js", "frontend/app/test-results/x.txt",
                  "frontend/app/playwright-report/index.html", "frontend/app/coverage/index.html",
-                 "frontend/webui/app/index.html", "frontend/app"):
+                 "frontend/webui/app/index.html", "frontend/app", *RETIRED,
+                 "frontend/webui/dashboard-view.js", "frontend/webui/new-page.html", "frontend/other.py"):
         assert not build_release.allowed(name), name
+    assert build_release.allowed("frontend/webui/index.html") and build_release.allowed("frontend/dashboard.py")
+
+
+def test_this_checkout_ships_the_redirect_and_no_retired_dashboard(tools: tuple[ModuleType, ModuleType]) -> None:
+    """R17: the release carries the old-bookmark redirect and the tracked policy
+    seeds that replaced the legacy page's ui-seeds block, and nothing else of
+    the previous dashboard."""
+    build_release, _ = tools
+    if shutil.which("git") is None:
+        pytest.skip("git is not installed")
+    listed = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+                            cwd=REPO, capture_output=True, text=True, check=True).stdout.splitlines()
+    names = {name for name in listed if build_release.allowed(name) and (REPO / name).is_file()}
+    assert {"frontend/webui/index.html", "frontend/dashboard.py",
+            "backend/tests/fixtures/ui_policy_seeds.json"} <= names
+    outside_app = {name for name in names if name.startswith("frontend/")
+                   and not name.startswith(("frontend/app/", "frontend/webui/app/"))}
+    assert outside_app == {"frontend/webui/index.html", "frontend/dashboard.py"}
 
 
 def test_every_app_source_in_this_checkout_ships(tools: tuple[ModuleType, ModuleType]) -> None:

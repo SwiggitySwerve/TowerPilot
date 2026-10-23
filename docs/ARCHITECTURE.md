@@ -19,7 +19,7 @@ touches the emulator). Coordinates everywhere are native 1080x2560 @ 360 dpi.
 
 ```
  browser  --HTTP-->  frontend/dashboard.py  --pythonw spawn-->  backend process
- (webui/index.html)      Flask :8620              |  calibrate.py / scan.py / orchestrator.py
+ (/ui/app/, frontend/app) Flask :8620             |  calibrate.py / scan.py / orchestrator.py
                      (TOWER_PILOT_PORT)          |  flows/*.py / scheduling/combo.py / device/boot.py
                                                  v
                                      device/adbclient.py (socket to adb server :5037)
@@ -219,9 +219,12 @@ POST /api/calibrate/start {bootstrap:true, flows:true}
   (`/api/wizard/emulators|launch|prepare|adopt|reconnect|resolution`), accounts
   (`/api/accounts`), the cropper (`/api/frame.png`, `POST /api/template/<rel>`),
   profile editing (`/api/profile*`).
-- `webui/index.html` - the whole SPA (setup -> calibrate -> control, gated).
-  `startBootstrap()` shows the consent popup; Cancel means `flows:false`
-  (menus only, no battle). Uses vendored Pico CSS, never a CDN.
+- `app/` - the dashboard app (React, TypeScript, Vite; layers and commands in
+  [frontend/app/README.md](../frontend/app/README.md)). It builds into the
+  git-ignored `webui/app/`, which Flask serves at `/ui/app/`; `/` opens it.
+- `webui/index.html` - a static redirect: old `/ui/index.html#<page>` bookmarks
+  (and the backend's `calibration_url`) open the matching app page. The
+  previous dashboard it replaced was retired by plan R17.
 
 ## 3. Emulator wizard
 `/api/wizard/emulators` finds installed adb binaries (MuMu, BlueStacks, LD) and
@@ -257,5 +260,6 @@ screenshots at each test's `tmp_path`; `test_suite_isolation.py` guards both.
 Notable:
 `test_flow_capture.py` (consented capture decisions), `test_bootstrap_manifest.py`
 (manifest <-> allowlist), `test_release_clean.py`, `test_ui_contract.py`.
-Frontend: `node --test "frontend/tests/*.test.cjs"` (Node 22+; the directory
-form fails).
+Frontend: from `frontend/app`, `npm run typecheck`, `npm run lint`, `npm test`
+(Vitest), `npm run build`, then `npm run e2e` (Playwright against a fixture
+backend; on Windows it runs under Node 22).

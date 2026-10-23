@@ -1837,26 +1837,25 @@ def api_account_tier():
 
 @app.get("/")
 def index():
-    # The new Dashboard (frontend/app) is the default page once it is built; the
-    # previous dashboard stays at /ui/index.html (linked from the new app as
-    # "Previous Dashboard") until every capability it still hosts has a new home.
+    # The dashboard (frontend/app) is the only page; a checkout that has not
+    # built it gets the page saying how. /ui/index.html is a static redirect that
+    # maps old bookmarks onto /ui/app/ (plan R17, option A).
     if os.path.isfile(os.path.join(app.static_folder, "app", "index.html")):
         return redirect("/ui/app/")
-    return redirect("/ui/index.html")
+    return Response(_APP_NOT_BUILT, status=404, mimetype="text/html")
 
 
-# The new dashboard app (frontend/app, ADR-001) is a build product in
+# The dashboard app (frontend/app, ADR-001) is a build product in
 # webui/app/, git-ignored, served by the static folder at /ui/app/. A source
 # checkout that has not built it gets a page saying how, not a bare 404.
 _APP_NOT_BUILT = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>Tower Pilot - UI not built</title></head>
 <body style="background:#17191e;color:#e5e7eb;font-family:system-ui,sans-serif;margin:2rem">
-<h1>The new dashboard is not built yet</h1>
-<p>This checkout has no build of the new app (<code>frontend/webui/app/</code>).
+<h1>The dashboard is not built yet</h1>
+<p>This checkout has no build of the dashboard app (<code>frontend/webui/app/</code>).
 Build it once with Node.js 22.13+ (22.x), 24.x or 26+:</p>
 <pre>cd frontend/app; npm ci; npm run build</pre>
-<p>Then reload this page. The current dashboard works without it:
-<a href="/ui/index.html" style="color:#7cbaff">open the current dashboard</a>.</p>
+<p>Then reload this page.</p>
 </body></html>
 """
 

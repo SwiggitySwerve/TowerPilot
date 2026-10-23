@@ -115,8 +115,9 @@ def test_every_response_forbids_framing(dash):
         served = c.get("/api/profiles", headers={"Host": "127.0.0.1:8620"})
         posted = c.post("/api/control", json={"action": "clear_flag"}, headers={"Host": "127.0.0.1:8620"})
         refused = c.get("/api/profiles", headers={"Host": "attacker.example"})
-        page = c.get("/ui/index.html", headers={"Host": "127.0.0.1:8620"})
-    for r in (served, posted, refused, page):
+        page = c.get("/ui/app/", headers={"Host": "127.0.0.1:8620"})
+        static = c.get("/ui/index.html", headers={"Host": "127.0.0.1:8620"})
+    for r in (served, posted, refused, page, static):
         assert r.headers.get("X-Frame-Options") == "DENY", r.request.path
 
 

@@ -49,6 +49,8 @@ frontend/app/node_modules/
 frontend/app/test-results/
 frontend/app/playwright-report/
 frontend/app/coverage/
+# TypeScript incremental-build cache: machine state, never source
+frontend/app/*.tsbuildinfo
 
 # --- editors / os ------------------------------------------------------
 .vscode/

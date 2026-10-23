@@ -36,8 +36,8 @@ function fakePackage(files: Record<string, string>): string {
 describe('packageDirOf', () => {
   it.each([
     [
-      'C:\\repo\\frontend\\app\\node_modules\\react\\cjs\\react.production.js',
-      'C:/repo/frontend/app/node_modules/react',
+      'D:\\checkout\\frontend\\app\\node_modules\\react\\cjs\\react.production.js',
+      'D:/checkout/frontend/app/node_modules/react',
     ],
     ['/repo/node_modules/@scope/pkg/dist/index.js', '/repo/node_modules/@scope/pkg'],
     [

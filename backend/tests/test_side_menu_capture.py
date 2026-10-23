@@ -294,5 +294,3 @@ def test_manual_cut_leaves_a_report_entry_with_its_native_rect(tmp_path, monkeyp
 def test_dashboard_cropper_records_provenance_and_observe_accepts_a_watch(monkeypatch):
     src = Path(__file__).resolve().parents[2].joinpath("frontend", "dashboard.py").read_text(encoding="utf-8")
     assert "calibrate.record_manual_cut(" in src and '"--observe-watch"' in src
-    html = Path(__file__).resolve().parents[2].joinpath("frontend", "webui", "index.html").read_text(encoding="utf-8")
-    assert "observeNow(120)" in html and "async function observeNow(watch)" in html

@@ -1,7 +1,7 @@
 # Learning and preparation flow contract
 > **Status:** Implemented; live emulator acceptance not exercised
 > **Type:** Domain rules and verification record
-> **Updated:** 2026-10-19
+> **Updated:** 2026-10-23
 
 ## Ownership
 
@@ -11,13 +11,16 @@ authority for the contracts described here.
 
 | Source | Responsibility |
 | --- | --- |
-| [Learning controller](../frontend/webui/learning-controller.js) | Consent, commands, operation reconciliation, application and readiness checks |
-| [Learning state](../frontend/webui/learning-state.js) | Legal transitions, immutable snapshots, observation freshness and bounded history |
-| [Learning store](../frontend/webui/learning-store.js) | Context-scoped resumable references and conditional replacement |
-| [Learning view](../frontend/webui/learning-view.js) | Phase labels, game requirements and unavailable-status feedback |
-| [Dashboard page](../frontend/webui/index.html) | HTTP adapters, ordered observations, browser reference persistence and views |
+| [Recognition rules](../frontend/app/src/core/recognition.ts) ([rules document](../frontend/app/src/core/recognition.rules.md)) | Scan choices, launch and stop guards, operation evidence and the run query |
+| [Recognition writes](../frontend/app/src/api/intents/recognition.ts) | Launch, observe, apply and Stop: one record per click, body and idempotency key frozen at the click |
+| [Followed operation](../frontend/app/src/store/selectors/recognitionOperation.ts) | The operation the page follows in this context, kept across a reload |
+| [Recognition page](../frontend/app/src/features/recognition/RecognitionPage.tsx) | The page the person uses: preparation, consent and status |
 | [Operation adapter](../backend/control/operations.py) | Target validation, acceptance, worker resolution and revision checks |
 | [Operation ledger](../backend/towerpilot_workflows/operations.py) | Transactional lifecycle and idempotency records |
+
+The browser side is the app's Recognition page; the previous dashboard's
+learning modules were retired by plan R17. The rest of this section describes
+the contract as it was written for those modules.
 
 Views consume `S.learningFlow`. Browser snapshots include the flow, phase,
 context, selected run, operation ID and revision, reason, observation freshness,
@@ -51,7 +54,7 @@ applying. Reviewing legacy observations starts no worker and removes the legacy
 `finishFullSetup` marker only after successful application and readiness checking.
 Unscoped or timestamp-only browser records cannot authorize automatic application.
 
-The [state graph](../frontend/webui/learning-state.js) is executable authority.
+The [Recognition rules](../frontend/app/src/core/recognition.ts) are executable authority.
 Completion may precede the first observed running state. Restoration, waiting to
 apply, interruption, cancellation, failure and supersession remain distinct from
 readiness. Screens keeps guided preparation visible and places targeted scans,
@@ -124,14 +127,16 @@ this contract makes no exactly-once claim about game input.
 
 ## Verification
 
-Run `node --test frontend/tests/*.test.cjs` from the repository root. The current
-session's offline run passed 195 tests. Coverage includes reversed observations,
+Current checks: from `frontend/app`, `npm test` (Recognition unit and component tests
+under `tests/core/` and `tests/features/recognition/`) and `npm run e2e`
+(`e2e/recognition*.spec.ts`, fixture backend). History (2026-10-19, the retired
+`frontend/tests` node suite): that session's offline run passed 195 tests. Coverage includes reversed observations,
 request ordering, profile/account switches, reload with the same operation,
 revision-bound apply and Stop, duplicate completion, restoration, busy apply,
 application failure, lost acceptance responses and another tab replacing a
 reference. These are fake-I/O contract tests, not live emulator evidence.
 
-The [offline harness](../frontend/tests/fixtures/learning-harness.html) loads the
+The offline harness (`frontend/tests/fixtures/learning-harness.html`, retired with that suite) loaded the
 production learning modules with simulated ID/revision adapters. Its source was
 updated for this contract; browser execution was not exercised in this session.
 No live dashboard, emulator or game action was started, stopped or reloaded for

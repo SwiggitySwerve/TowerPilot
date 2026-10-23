@@ -4,7 +4,7 @@ import { own, ownPath } from '../../src/core/read.ts';
 import { answeredBody } from '../../src/store/reads.ts';
 import { selectOutcomes } from '../../src/store/selectors/outcomes.ts';
 import { selectReadPlan } from '../../src/store/selectors/readPlan.ts';
-import { bootDashboard, flush, fence } from '../support/dataLayer.ts';
+import { bootDashboard, E0_CONTEXT, e0Config, flush, fence } from '../support/dataLayer.ts';
 import { dashboardBody, dashboardCase } from '../support/dashboardFixture.ts';
 import { sample, statusBody } from '../support/fixture.ts';
 
@@ -233,6 +233,62 @@ describe('the read plan follows the store (spec 7.2)', () => {
       ]),
     );
     expect(data.store.getSnapshot().hidden).toBe(false);
+    data.stop();
+  });
+});
+
+describe('a failed first config read recovers (PE5 load flake, readPlan config retry)', () => {
+  for (const failure of ['http', 'timeout'] as const) {
+    it(`a ${failure} first config read is read again on the backoff until the context is confirmed, then config polling stops`, async () => {
+      let fail = true;
+      const { fake, data } = bootDashboard({
+        before: (transport) => {
+          transport.route('GET', '/api/config', () => {
+            if (!fail) return { status: 200, body: e0Config() };
+            // A timed-out read never answers; the poller aborts it after 5 s.
+            return failure === 'http' ? { status: 502, body: 'Bad gateway' } : 'hold';
+          });
+        },
+      });
+      const configReads = () =>
+        fake.requests.filter((entry) => entry.path === '/api/config').length;
+      await flush();
+      if (failure === 'timeout') await vi.advanceTimersByTimeAsync(5_000);
+      expect(data.store.getSnapshot().reads.config.latest?.outcome.kind).toBe('failed');
+      expect(data.store.getSnapshot().contextConfirmed).toBe(false);
+      expect(selectReadPlan(data.store.getSnapshot(), 'config').retry).toBe('schedule');
+      fail = false;
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(data.store.getSnapshot().contextConfirmed).toBe(true);
+      expect(data.store.getSnapshot().context).toEqual(E0_CONTEXT);
+      expect(selectReadPlan(data.store.getSnapshot(), 'config').retry).toBeUndefined();
+      const settled = configReads();
+      expect(settled).toBeGreaterThan(1);
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(configReads()).toBe(settled);
+      data.stop();
+    });
+  }
+
+  it('a failed config read in a confirmed context is not retried by the plan', async () => {
+    let fail = false;
+    const { fake, data } = bootDashboard({
+      before: (transport) => {
+        transport.route('GET', '/api/config', () =>
+          fail ? { status: 502, body: 'Bad gateway' } : { status: 200, body: e0Config() },
+        );
+      },
+    });
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(data.store.getSnapshot().contextConfirmed).toBe(true);
+    fail = true;
+    await data.commands.turnInputOff();
+    fake.last('/api/automation-access').respond(502, 'Bad gateway');
+    await flush();
+    const configReads = () => fake.requests.filter((entry) => entry.path === '/api/config').length;
+    const after = configReads();
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(configReads()).toBe(after);
     data.stop();
   });
 });
