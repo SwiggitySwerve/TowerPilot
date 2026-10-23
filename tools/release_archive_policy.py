@@ -78,6 +78,11 @@ def _dependency_licence(name: str) -> bool:
                              parts[-1], re.I) is not None)
 
 
+def release_notes_path(version: str) -> str:
+    """The repository names release notes RELEASE_<VERSION in upper case, '-' as '_'>.md (docs/RELEASE_0.5_BETA.md)."""
+    return 'docs/RELEASE_' + version.upper().replace('-', '_') + '.md'
+
+
 def content_problems(entries: Mapping[str, bytes], forbidden: Sequence[str]) -> list[str]:
     problems = []
     for name, data in entries.items():
@@ -107,7 +112,7 @@ def metadata_problems(entries: Mapping[str, bytes], prefix: str, *, portable: bo
     expected_prefix = 'TowerPilot-' + version + ('-windows-x64' if portable else '')
     if prefix != expected_prefix:
         problems.append('VERSION does not match archive name')
-    limits = f'docs/RELEASE_{version}.md'
+    limits = release_notes_path(version)
     if limits not in entries:
         problems.append(f'missing environment limits document: {limits}')
     elif not re.search(rb'^#{1,6}[ \t]+Environment limits[ \t]*\r?$', entries[limits], re.M | re.I):
