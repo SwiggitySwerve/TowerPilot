@@ -1,4 +1,9 @@
-"""Collect diamonds on an existing battle; never start, equip or end a run."""
+"""Collect diamonds on an existing battle; never start, equip or end a run.
+
+Between battles a collector that harvesting launched also claims the Ad Gem
+offer on the exact Home screen (`AdGemCollector.poll_home`): one recognized
+CLAIM tap per window, nothing else on Home, and nothing at all on any other
+screen."""
 import argparse
 import time
 from types import SimpleNamespace
@@ -58,7 +63,7 @@ def main(instance, preset):
     session = BattleSession.from_environment(resolved_preset(), settings.CONFIG, origin='adopted')
     body = session.effective_preset() if session is not None else resolved_preset()
     from runtime.action_session import ActionSession
-    actions = ActionSession.for_battle(session, 'collector') if session is not None else None
+    actions = ActionSession.for_battle(session, 'collector', tracked_only=True) if session is not None else None
     gems=GemWatch(body.get('gather', {}), session=actions)
     state = SimpleNamespace(gems=gems, tracker=wave_reader.WaveTracker(), mission=None, shop=None)
     wave_hwm = None
@@ -98,10 +103,25 @@ def main(instance, preset):
                 logger.event('gem_collector_stopped',reason=reason)
                 return
         saw_battle=saw_battle or live
-        label='collecting' if live else 'waiting_for_battle'
+        # Home claims: only a collector harvesting launched (its fence proves
+        # the person's choice still asks for it), on the exact Home screen,
+        # with the routine enabled and no battle active.
+        home = (fence is not None and not live and sc.name == 'home' and gems.ad_gems.enabled
+                and (session is None or session.battle['status'] != 'active'))
+        label='collecting' if live else 'claiming_home_offer' if home else 'waiting_for_battle'
         if label!=last_status:
             logger.event('gem_collector_state',state=label)
             last_status=label
+        if home:
+            fence()     # immediately before any Home input decision, not only every FENCE_RECHECK_SEC
+            fence_checked = time.monotonic()
+            gems.ad_gems.poll_home(frame)
+            if session is not None and session.battle['status'] == 'prepared':
+                session.checkpoint(state, battle_visible=False, observed=('ad_gems',))
+            time.sleep(1)
+            continue
+        if fence is not None and not live:
+            gems.ad_gems.leave_home()
         if live:
             if session is not None:
                 if session.battle['status'] not in ('prepared', 'active'):

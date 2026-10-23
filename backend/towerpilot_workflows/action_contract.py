@@ -589,7 +589,7 @@ AD_GEMS = ActionDefinition(
     id='ad_gems', label='Ad gems', family='gems', hosts=_GEM_HOSTS, schedule=StartToStart(),
     fields=(_ENABLED, _INTERVAL, _WINDOW),
     capabilities=Capabilities(live_controls=True, pause=True, run_now=True), saved='gather_policy',
-    evidence=('offer_disappeared',))
+    evidence=('offer_disappeared', 'balance_increased'))     # battle: the offer vanished; Home: stable exact +6
 FLOATING_GEMS = ActionDefinition(
     id='floating_gems', label='Floating gems', family='gems', hosts=_GEM_HOSTS, schedule=AppearanceDriven(),
     fields=(_ENABLED,

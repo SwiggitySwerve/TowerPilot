@@ -24,26 +24,31 @@ _glyph_cache: dict[str, dict[str, np.ndarray]] = {}
 
 # Native 1080x2560 battle HUD: excludes the diamond icon and neighboring rows.
 GEM_BALANCE_REGION = (90, 190, 240, 60)
+# Native 1080x2560 Home top bar, measured on captured Home frames (966, 972,
+# 993, 2522): the digits start 13 px inside the region, right of the diamond
+# icon (x 382-428), and stay left of the stones icon (x >= 668).
+HOME_GEM_BALANCE_REGION = (434, 18, 226, 60)
 
 
-def gem_balance_crop(frame: np.ndarray) -> np.ndarray | None:
+def gem_balance_crop(frame: np.ndarray, region=None) -> np.ndarray | None:
     """The exact counter pixels used by the reader and failure diagnostics."""
     if getattr(frame, 'shape', None) != (2560, 1080, 3):
         return None
-    x, y, w, h = GEM_BALANCE_REGION
+    x, y, w, h = GEM_BALANCE_REGION if region is None else region
     return frame[y:y+h, x:x+w]
 
 
-def read_gem_balance(frame: np.ndarray) -> int | None:
-    """Strict integer-only HUD read; unknown/cropped glyphs fail closed.
+def read_gem_balance(frame: np.ndarray, region=None) -> int | None:
+    """Strict integer-only counter read; unknown/cropped glyphs fail closed.
 
     Uses existing account-local digit templates, never captures new templates.
-    Callers must independently establish that this is a battle screen.
+    Callers must independently establish the screen `region` belongs to: the
+    battle HUD by default, `HOME_GEM_BALANCE_REGION` on the exact Home screen.
     Only a contiguous, baseline-aligned number belongs to the HUD. Detached
     battle art clipped at the lower crop edge may follow a clear gutter;
     overlapping components must also be too wide for a digit in this font.
     """
-    crop = gem_balance_crop(frame)
+    crop = gem_balance_crop(frame, region)
     if crop is None:
         return None
     h, w = crop.shape[:2]

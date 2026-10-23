@@ -176,7 +176,9 @@ class BattleSession:
             raise ValueError('Runtime gate is unsupported')
         return binding.configure({field: value})
 
-    def checkpoint(self, rs, *, battle_visible):
+    def checkpoint(self, rs, *, battle_visible, observed=()):
+        """observed: routine keys the host still observes on a screen that is not the battle (the collector's Ad Gem
+        offer on Home); their own visibility is kept instead of being marked unobserved."""
         if self.battle['status'] not in ('prepared', 'active'):
             return
         self.battle = self.store.validate_driver(self.battle['id'], self.generation, self.operation_id)
@@ -211,7 +213,7 @@ class BattleSession:
                     continue
                 self.manual = dict(id=command['id'], action=action, binding=binding, began=False, command=command)
             self._manual_progress(rs)
-        self.publish(rs, battle_visible=battle_visible)
+        self.publish(rs, battle_visible=battle_visible, observed=observed)
 
     def _acknowledge(self, before, *, diagnostic=None, **changes):
         """Mirror durable command progress once, after the ledger accepts it."""
@@ -269,7 +271,7 @@ class BattleSession:
             self._acknowledge(manual['command'], state='completed', evidence=result.acknowledgement(), diagnostic=diagnostic)
             self.manual = None
 
-    def publish(self, rs, *, battle_visible):
+    def publish(self, rs, *, battle_visible, observed=()):
         now = time.monotonic()
         if self._last_observation is not None:
             delta = now-self._last_observation
@@ -290,7 +292,7 @@ class BattleSession:
         routines = {key: binding.routine(battle_visible=battle_visible, now=now, epoch=epoch) for key, binding in bindings.items()}
         if not battle_visible:
             for key, binding in bindings.items():
-                if binding.mark_unobserved('waiting_for_game_state'):
+                if key not in observed and binding.mark_unobserved('waiting_for_game_state'):
                     routines[key] = binding.routine(battle_visible=battle_visible, now=now, epoch=epoch)
         for state in routines.values():
             state.update(blocker=state.get('blocker') if battle_visible else 'waiting_for_game_state', server_time=epoch)
@@ -329,12 +331,13 @@ class BattleSession:
                            coverage='sampled_driver_observations', ad_claim_confirmations=0,
                            orbit_balance_confirmations=0, orbit_recorded_increase=0,
                            latest_confirmations={})
-        for name, expected_reason, counter in (
-                ('ad_gems', 'offer_disappeared', 'ad_claim_confirmations'),
-                ('floating_gems', 'balance_increased', 'orbit_balance_confirmations')):
+        # An Ad Gem claim is proven by the offer disappearing in battle, or by a stable exact +6 on the Home counter.
+        for name, expected_reasons, counter in (
+                ('ad_gems', ('offer_disappeared', 'balance_increased'), 'ad_claim_confirmations'),
+                ('floating_gems', ('balance_increased',), 'orbit_balance_confirmations')):
             outcome = routines.get(name, {}).get('last_outcome') or {}
             observed = outcome.get('observed_at')
-            if (outcome.get('confirmed') is not True or outcome.get('reason') != expected_reason
+            if (outcome.get('confirmed') is not True or outcome.get('reason') not in expected_reasons
                     or type(observed) not in (int, float) or not start <= observed <= epoch):
                 continue
             identity = outcome.get('claim_attempt_id') or outcome.get('window_id') or outcome.get('attempt_id')
