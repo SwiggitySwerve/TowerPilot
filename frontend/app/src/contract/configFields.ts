@@ -18,10 +18,18 @@ export {
   switchConfigAnswerSchema,
   switchSettingsReadAnswerSchema,
   switchSettingsSaveAnswerSchema,
-} from './generated/dashboard_contract_pages_v1_config_fields.9cfb7fc4.ts';
+} from './generated/dashboard_contract_pages_v1_config_fields.7f0005d9.ts';
 /** r12e (c945da8): settings_modules_more, the F6-15 C-03 recordings. */
 export {
   configFieldsMoreConfigAnswerSchema,
   configFieldsMoreSettingsReadAnswerSchema,
   configFieldsMoreSettingsSaveAnswerSchema,
-} from './generated/dashboard_contract_pages_v1_config_fields_more.cb6e0a1b.ts';
+} from './generated/dashboard_contract_pages_v1_config_fields_more.b0ae7b81.ts';
+/** r12f: settings_modules_more_2 (restore-only save, profiles without blueprints, malformed lists). */
+export {
+  configFieldsMore2ConfigAnswerSchema,
+  configFieldsMore2LoadoutPatchAnswerSchema,
+  configFieldsMore2SettingsReadAnswerSchema,
+  configFieldsMore2SettingsSaveAnswerSchema,
+  configFieldsMore2SourceAnswerSchema,
+} from './generated/dashboard_contract_pages_v1_config_fields_more_2.4e219485.ts';

@@ -9,6 +9,7 @@ import {
   type EntryReason,
 } from '../../core/runEntry.ts';
 import { id, own, ownPath } from '../../core/read.ts';
+import { profilePatchAnswer } from '../../core/profilePatch.ts';
 import { editTargetScope } from '../../core/editingTarget.ts';
 import { fromServer } from '../../copy/server.ts';
 import { boundIntents } from '../intents.ts';
@@ -16,7 +17,7 @@ import { answeredBody } from '../reads.ts';
 import { settledByRead } from '../fences.ts';
 import type { DashboardState } from '../types.ts';
 import type { ProfilePatchCommand } from './collection.ts';
-import { saveOutcome, settingsSavePending } from './settingsModule.ts';
+import { saveOutcome, settingsSavePending, type SaveOutcomeVM } from './settingsModule.ts';
 import { editorSource, editingTargetVM, selectEditingTarget } from './editingTarget.ts';
 
 export interface RunEntryCommand extends ProfilePatchCommand {
@@ -55,7 +56,13 @@ export function selectRunEntry(state: DashboardState) {
     ...records.map((record) => record.answerSeq ?? record.lostSeq ?? record.sentSeq),
   );
   const pending = target.inactive
-    ? records.some((record) => record.phase === 'sending') ||
+    ? records.some(
+        (record) =>
+          record.phase === 'sending' ||
+          (record.phase === 'confirmed' &&
+            record.target.startsWith('runs:entry:') &&
+            settledByRead(state, record) === null),
+      ) ||
       (newest > 0 && (sourceRead === null || sourceRead.startedSeq <= newest))
     : settingsSavePending(state, ['profileSource']);
   const fields =
@@ -72,6 +79,18 @@ export function selectRunEntry(state: DashboardState) {
           const checked = checkEntry(field, raw, remove);
           const outcome = saveOutcome(state, scope);
           const record = records.findLast((item) => item.target === scope);
+          // A receipt alone does not report Saved for an inactive run entry. The
+          // shared fence owns the named, advanced read proof, including after loss.
+          const outcomeVM: SaveOutcomeVM | null =
+            outcome !== null &&
+            target.inactive &&
+            record?.phase === 'confirmed' &&
+            record.answer !== null &&
+            profilePatchAnswer(record.answer).kind === 'done'
+              ? settledByRead(state, record) === 'applied'
+                ? { ...outcome, code: 'saved', word: null }
+                : { ...outcome, code: 'sending', word: 'waiting' }
+              : outcome;
           const stale =
             record?.phase === 'refused' &&
             own(record.answer?.body, 'code') === 'revision_conflict' &&
@@ -205,7 +224,7 @@ export function selectRunEntry(state: DashboardState) {
                 ? fromServer('name', raw)
                 : null,
             none: field.removable && field.type === 'select',
-            outcome: outcome === null ? null : { ...outcome, acceptOffered: false },
+            outcome: outcomeVM === null ? null : { ...outcomeVM, acceptOffered: false },
             profiles:
               record?.phase === 'refused' &&
               record.answer?.status === 409 &&

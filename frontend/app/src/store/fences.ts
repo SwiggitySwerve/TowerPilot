@@ -400,8 +400,8 @@ export function candidateSettlement(
       // Collection (C1 to C6): a later read of the settings (a settings save) or of the
       // profile source (a profile patch), started after the answer or the loss.
       // Settings saves intentionally allow a stale identical resend to settle from
-      // matching values. Every definite profile-patch refusal stays refused; only
-      // an Unknown patch can settle from a later named, advanced source read.
+      // matching values. Every definite profile-patch refusal stays refused. Unknown
+      // patches and inactive entry receipts use the later named, advanced source read.
       const conflict =
         record.kind === 'settings_save' &&
         record.phase === 'refused' &&
@@ -427,7 +427,14 @@ export function candidateSettlement(
       // F6C-01: nothing settles a write still in flight, and only a read started after its
       // answer, or after the page learned the answer was lost, can (an earlier read may
       // predate the server's commit).
-      if (record.phase !== 'unconfirmed' && !conflict) return null;
+      // PE6: even a successful inactive entry receipt needs its named source read
+      // before the editor reports Saved. Reuse the same path/revision proof as a loss.
+      const inactiveEntryReceipt =
+        record.kind === 'profile_patch' &&
+        record.phase === 'confirmed' &&
+        record.target.startsWith('runs:entry:') &&
+        record.meta.name !== record.context?.profile;
+      if (record.phase !== 'unconfirmed' && !conflict && !inactiveEntryReceipt) return null;
       // F6C-R1-05: only a read made under the write's own emulator, account and profile.
       const then = record.context;
       if (

@@ -71,7 +71,7 @@ it('PE6 F6-14c C-01 stale refusal stays refused after matching advanced read and
 });
 
 it.each(['label', 'rides'] as const)(
-  'PE6 F6-14c C-02 explicit %s clear follows the delete owner and describes its disabled reason',
+  'PE6 F6-14c C-02 explicit %s clear follows the delete owner and preserves a visible reason when blocked',
   async (key) => {
     const entry = moreCase('inactive_saved_tier');
     const quest = parityCase('saved_rides');
@@ -91,23 +91,25 @@ it.each(['label', 'rides'] as const)(
     const button = within(row).getByRole('button', {
       name: key === 'label' ? 'Clear label' : /quest default/i,
     });
-    expect(button).toHaveAttribute('aria-disabled', 'true');
-    const reason = document.getElementById(button.getAttribute('aria-describedby') ?? '');
-    expect(reason).toBeVisible();
-    expect(reason).toHaveTextContent('Return editing to the active profile');
+    expect(button).not.toHaveAttribute('aria-disabled', 'true');
     const owner = entryRules.inactiveEntryRecorded;
-    // Simulate a future recorded delete without enabling the queued operations in production.
+    // Simulate an unrecorded operation to keep both explicit clears tied to the owner.
     const spy = vi
       .spyOn(entryRules, 'inactiveEntryRecorded')
       .mockImplementation((field, remove) =>
-        field === key && remove ? true : owner(field, remove),
+        field === key && remove ? false : owner(field, remove),
       );
     const field = selectRunEntry(page.data.store.getSnapshot()).fields.find(
       (item) => item.key === key,
     );
     expect(spy).toHaveBeenCalledWith(key, true);
-    expect(field?.clearReason).toBeNull();
-    expect(field?.clearCommand).toMatchObject({ inactive: true, remove: true, profile: 'second' });
+    expect(field?.clearReason).toBe('activeOnly');
+    expect(field?.clearCommand).toBeNull();
+    await page.advance(1000);
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    const reason = document.getElementById(button.getAttribute('aria-describedby') ?? '');
+    expect(reason).toBeVisible();
+    expect(reason).toHaveTextContent('Return editing to the active profile');
     expect(page.fake.writes()).toEqual([]);
   },
 );

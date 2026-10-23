@@ -717,6 +717,49 @@ export const CONTRACT_INPUTS = [
     },
   },
   {
+    // r12f: F6-15 follow-up (restore-only save, profiles without blueprints, malformed lists).
+    file: DASHBOARD_PAGES_FIXTURE_PATH,
+    descriptor: {
+      name: 'dashboard_contract_pages_v1_config_fields_more_2',
+      boundTo: 'families',
+      families: /** @type {const} */ ([
+        ['GET', '/api/settings', 'ConfigFieldsMore2SettingsReadAnswer'],
+        ['POST', '/api/settings', 'ConfigFieldsMore2SettingsSaveAnswer'],
+        ['GET', '/api/config', 'ConfigFieldsMore2ConfigAnswer'],
+        ['GET', '/api/profile-src/', 'ConfigFieldsMore2SourceAnswer'],
+        ['POST', '/api/loadout-patch', 'ConfigFieldsMore2LoadoutPatchAnswer'],
+      ]).map(([method, route, name]) => ({
+        key: `settings_modules_more_2 ${method} ${route}`,
+        source: 'cases.settings_modules_more_2',
+        method,
+        pathPrefix: route,
+        name,
+        rawPath: 'answer',
+        pick: ['status', 'body'],
+      })),
+    },
+  },
+  {
+    // r12f: the seven inactive run-entry edits of F6-14c not in profile_target_more.
+    file: DASHBOARD_PAGES_FIXTURE_PATH,
+    descriptor: {
+      name: 'dashboard_contract_pages_v1_profile_target_more_2',
+      boundTo: 'families',
+      families: /** @type {const} */ ([
+        ['GET', '/api/profile-src/', 'ProfileTargetMore2SourceAnswer'],
+        ['POST', '/api/profile-patch', 'ProfileTargetMore2PatchAnswer'],
+      ]).map(([method, route, name]) => ({
+        key: `profile_target_more_2 ${method} ${route}`,
+        source: 'cases.profile_target_more_2',
+        method,
+        pathPrefix: route,
+        name,
+        rawPath: 'answer',
+        pick: ['status', 'body'],
+      })),
+    },
+  },
+  {
     // r12e (c945da8): F6-14 inactive-target paths not recorded in profile_target.
     file: DASHBOARD_PAGES_FIXTURE_PATH,
     descriptor: {

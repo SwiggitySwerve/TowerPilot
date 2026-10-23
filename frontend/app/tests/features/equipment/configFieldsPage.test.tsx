@@ -45,14 +45,13 @@ async function change(action: () => void | Promise<void>) {
 async function setup(
   configRef = 'loadout_patch.read_before_the_first_save',
   saveRef = 'loadout_restore.saved_cards_restore',
+  profileRef = 'ability_policies.read_before_the_first_save',
 ) {
   const fake = createFakeTransport();
   let config = fixture(configRef);
   let answer: DashboardCase | 'hold' = fixture(saveRef);
   fake.route('GET', '/api/config', () => config);
-  fake.route('GET', /\/api\/profile-src\//, () =>
-    fixture('ability_policies.read_before_the_first_save'),
-  );
+  fake.route('GET', /\/api\/profile-src\//, () => fixture(profileRef));
   fake.route('POST', '/api/loadout-patch', () => answer);
   const context = contextFromConfig(config.body);
   if (context === null) throw new Error('No context');
@@ -250,12 +249,12 @@ it.each(['cards', 'modules'])(
   },
 );
 
-it('C15-9 C-03 a recorded receipt containing an additional manual field stays Unknown for a restore-only submission', async () => {
+it('C15-9 r12f restore-only first save matches the recorded body, warning and read-after', async () => {
   const s = await setup(
     'settings_modules_more.read_before_saved_modules_restore',
-    'loadout_restore.saved_modules_restore',
+    'settings_modules_more_2.saved_modules_restore_only',
   );
-  const recorded = fixture('loadout_restore.saved_modules_restore');
+  const recorded = fixture('settings_modules_more_2.saved_modules_restore_only');
   await change(s.equipment.addRestoreModule);
   expect(save()).toHaveAttribute('aria-disabled', 'true');
   const row = screen.getByRole('group', { name: 'Entry 1' });
@@ -279,21 +278,17 @@ it('C15-9 C-03 a recorded receipt containing an additional manual field stays Un
   expect(slotInput).not.toHaveAttribute('aria-invalid');
   await change(s.equipment.save);
   await waitFor(() => {
-    expect(s.entry()?.outcome).toBe('unknown');
+    expect(s.entry()?.outcome).toBe('saved');
   });
   const sent = JSON.parse(s.fake.writes()[0]?.body ?? '{}') as { body: unknown };
-  expect(sent).toEqual({
-    ...Object.fromEntries(entries(recorded.request.body)),
-    body: {
-      cards: 'main_farm',
-      cards_restore: 'no_card',
-      modules_restore: [['black_hole_digestor', 'assist']],
-    },
-  });
+  expect(sent).toEqual(recorded.request.body);
+  for (const warning of list(own(recorded.body, 'warnings')) ?? []) {
+    expect(screen.getByText(String(warning), { exact: true })).toBeVisible();
+  }
   expect(own(sent.body, 'modules')).toBeUndefined();
-  s.config('loadout_restore.read_after_saved_modules_restore');
+  s.config('settings_modules_more_2.read_after_saved_modules_restore_only');
   await change(s.equipment.refresh);
-  expect(s.entry()?.outcome).toBe('unknown');
+  expect(s.entry()?.outcome).toBe('readApplied');
   expect(moduleInput).toHaveValue('black_hole_digestor');
   expect(slotInput).toHaveValue('assist');
   expect(s.fake.writes()).toHaveLength(1);
@@ -401,45 +396,68 @@ it('C15-8 C-03 unchanged stored restore values do not block an ordinary unused-l
   // The stored restore value is preserved in the request; no success is invented.
 });
 
-it('C15-9 unavailable blueprint references defer to the recorded restore_loadout_unused server refusal', async () => {
-  const reference =
-    'loadout_restore_eligibility.refused_owned_modules_restore_on_a_loadout_no_run_uses';
-  const s = await setup('loadout_patch.read_before_the_first_save', reference);
-  await change(() => {
-    // Modified source: omit blueprint coverage, preserving the recorded player data.
-    // The page must defer to the server when that usage evidence is unavailable.
-    s.equipment.update((state) => {
-      const key = state.key;
-      const target = key === null ? undefined : state.targets[key];
-      if (key === null || target === undefined) return state;
-      const profile = Object.fromEntries(
-        entries(own(target.profile, 'profile')).filter(([key]) => key !== 'blueprints'),
-      );
-      return {
-        ...state,
-        targets: {
-          ...state.targets,
-          [key]: {
-            ...target,
-            profile: { ...Object.fromEntries(entries(target.profile)), profile },
-          },
-        },
-      };
+it.each([
+  'without_blueprints',
+  'with_blueprints_null',
+  'with_blueprints_a_list',
+  'with_an_empty_blueprints_mapping',
+])(
+  'C15-8 r12f profile %s defers to the verbatim recorded refusal and retains the draft',
+  async (shape) => {
+    const family = 'settings_modules_more_2.';
+    const reference = family + 'restore_refused_for_a_profile_' + shape;
+    const s = await setup(
+      family + 'read_config_after_the_refusals_nothing_changed',
+      reference,
+      family + 'profile_src_' + shape,
+    );
+    await change(() => {
+      s.equipment.edit('cards', 'main_farm');
+      s.equipment.editRestoreCards('no_card');
     });
-    s.equipment.select('spare');
-    s.equipment.addRestoreModule();
-    s.equipment.editRestoreModule('draft:0', 'module', 'black_hole_digestor');
-    s.equipment.editRestoreModule('draft:0', 'slot', 'assist');
+    expect(save()).toBeEnabled();
+    const draft = s.entry()?.draft;
+    await change(s.equipment.save);
+    await waitFor(() => {
+      expect(s.entry()?.outcome).toBe('refused');
+    });
+    const recorded = fixture(reference);
+    expect(JSON.parse(s.fake.writes()[0]?.body ?? '')).toEqual(recorded.request.body);
+    expect(screen.getByText(String(own(recorded.body, 'error')), { exact: true })).toBeVisible();
+    expect(s.entry()?.intent?.answer?.contract).toBe('exact');
+    await change(s.equipment.refresh);
+    expect(s.entry()?.outcome).toBe('refused');
+    expect(s.entry()?.draft).toEqual(draft);
+    expect(s.entry()?.dirty).toBe(true);
+    expect(s.fake.writes()).toHaveLength(1);
+  },
+);
+
+it('C15-8 r12f ordinary save without blueprints shows the recorded validator refusal and saves nothing', async () => {
+  const family = 'settings_modules_more_2.';
+  const reference = family + 'loadout_save_refused_for_a_profile_without_blueprints';
+  const s = await setup(
+    family + 'read_config_after_the_refusals_nothing_changed',
+    reference,
+    family + 'profile_src_without_blueprints',
+  );
+  await change(() => {
+    s.equipment.edit('cards', 'no_card');
   });
   expect(save()).toBeEnabled();
+  const draft = s.entry()?.draft;
   await change(s.equipment.save);
   await waitFor(() => {
     expect(s.entry()?.outcome).toBe('refused');
   });
-  const recorded = fixture(reference);
-  expect(JSON.parse(s.fake.writes()[0]?.body ?? '')).toEqual(recorded.request.body);
-  expect(screen.getByText(String(own(recorded.body, 'error')), { exact: true })).toBeVisible();
-  expect(s.entry()?.intent?.answer?.contract).toBe('exact');
+  expect(JSON.parse(s.fake.writes()[0]?.body ?? '')).toEqual(fixture(reference).request.body);
+  expect(
+    screen.getAllByText(String(own(fixture(reference).body, 'error')), { exact: true })[0],
+  ).toBeVisible();
+  await change(s.equipment.refresh);
+  expect(s.entry()?.outcome).toBe('refused');
+  expect(s.entry()?.draft).toEqual(draft);
+  expect(s.fake.writes()).toHaveLength(1);
 });
 
 it('C15-8 no active profile shows its catalogue reason without sending a save', async () => {
@@ -518,25 +536,17 @@ it('C15-6 C15-7 tournament form uses raw labelled list rows, explicit add/remove
   expect(await axe(s.mounted.view.container)).toHaveNoViolations();
 });
 
-it('C15-6 C15-7 malformed saved members survive sibling editing until explicitly repaired or removed', async () => {
+it('C15-6 C15-7 r12f malformed saved members survive sibling editing until explicitly repaired or removed', async () => {
   const s = await setup();
-  const recorded = fixture('settings.populated_account_every_module');
-  // Modified recorded field value: historical invalid members stay visible and raw;
-  // only explicit edits/removals can repair them. The response envelope is unchanged.
-  const modules = (list(own(recorded.body, 'modules')) ?? []).map((module) =>
-    own(module, 'id') !== 'tournament-cards'
-      ? module
-      : {
-          ...Object.fromEntries(entries(module)),
-          fields: (list(own(module, 'fields')) ?? []).map((field) =>
-            own(field, 'path') === 'drop'
-              ? { ...Object.fromEntries(entries(field)), value: [false, 7, 'keep'] }
-              : field,
-          ),
-        },
+  const recorded = fixture(
+    'settings_modules_more_2.read_after_the_add_list_was_saved_the_malformed_drop_list_remains',
   );
   s.mounted.setState(
-    addBody(regionState(), 'settings', { ...Object.fromEntries(entries(recorded.body)), modules }),
+    addBody(
+      { ...regionState(), context: { ...s.context, account: 'alpha' } },
+      'settings',
+      recorded.body,
+    ),
   );
   s.mounted.commands.editDraft.mockImplementation((scope, path, value) => {
     s.mounted.store.dispatch({ type: 'draft_edit', scope, path, value });
@@ -545,18 +555,26 @@ it('C15-6 C15-7 malformed saved members survive sibling editing until explicitly
   const inputs = within(form).getAllByRole('textbox');
   expect(inputs[0]).toHaveValue('false');
   expect(inputs[1]).toHaveValue('7');
-  fireEvent.change(inputs[2] ?? form, { target: { value: 'changed' } });
+  fireEvent.change(inputs[2] ?? form, { target: { value: 'keep' } });
   expect(inputs[0]).toHaveValue('false');
   expect(inputs[1]).toHaveValue('7');
   expect(within(form).getByRole('button', { name: 'Save' })).toHaveAttribute(
     'aria-disabled',
     'true',
   );
-  fireEvent.click(within(form).getAllByRole('button', { name: /^Remove entry/ })[0] ?? form);
-  fireEvent.change(within(form).getAllByRole('textbox')[0] ?? form, { target: { value: 'fixed' } });
+  for (let i = 0; i < 2; i += 1) {
+    fireEvent.click(within(form).getAllByRole('button', { name: /^Remove entry/ })[0] ?? form);
+  }
   fireEvent.click(within(form).getByRole('button', { name: 'Save' }));
-  expect(s.mounted.commands.saveSettings.mock.calls[0]?.[0].values).toEqual({
-    drop: ['fixed', 'changed'],
+  const command = s.mounted.commands.saveSettings.mock.calls[0]?.[0];
+  const request = fixture(
+    'settings_modules_more_2.saved_tournament_cards_repairing_the_malformed_drop_list',
+  ).request.body;
+  expect(command).toMatchObject({
+    module: own(request, 'module'),
+    revision: own(request, 'revision'),
+    values: own(request, 'values'),
+    settingsContext: own(request, 'context'),
   });
 });
 

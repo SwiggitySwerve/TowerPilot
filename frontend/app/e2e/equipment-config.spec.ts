@@ -43,7 +43,7 @@ async function open(page: Page, width: number, scenario: string, loadout = 'plai
   if (
     !scenario.startsWith('lists') &&
     !scenario.startsWith('empty') &&
-    !['invalid', 'stale'].includes(scenario)
+    !['invalid', 'stale', 'malformed'].includes(scenario)
   )
     await page.getByRole('button', { name: loadout, exact: true }).click();
 }
@@ -575,7 +575,7 @@ for (const width of [1360, 1054, 390]) {
     await accessibility(page, width);
     await screenshot(page, width, 'cards-saved');
   });
-  test(`C15-9 C-03 an extra manual field in the recorded receipt keeps a restore-only save Unknown at ${String(width)}`, async ({
+  test(`C15-9 r12f exact restore-only first save, warning and readback at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, width, 'modules');
@@ -584,28 +584,132 @@ for (const width of [1360, 1054, 390]) {
     await row.getByRole('textbox', { name: /Module name/ }).fill('black_hole_digestor');
     await row.getByRole('textbox', { name: /Slot/ }).fill('assist');
     await save(page).click();
-    await expect(restoreUnknown(page)).toBeVisible();
+    await expect(page.getByText(/Selection saved in configuration/)).toBeVisible();
     const request = JSON.parse((await posts(page))[0]?.body ?? '{}') as { body: unknown };
-    expect(request).toEqual({
-      ...Object.fromEntries(
-        entries(ownPath(cases, 'loadout_restore', 'saved_modules_restore', 'request', 'body')),
-      ),
-      body: {
-        cards: 'main_farm',
-        cards_restore: 'no_card',
-        modules_restore: [['black_hole_digestor', 'assist']],
-      },
-    });
+    expect(request).toEqual(
+      ownPath(cases, 'settings_modules_more_2', 'saved_modules_restore_only', 'request', 'body'),
+    );
+    for (const warning of list(
+      own(body('settings_modules_more_2', 'saved_modules_restore_only'), 'warnings'),
+    ) ?? []) {
+      await expect(page.getByText(String(warning), { exact: true })).toBeVisible();
+    }
     expect(own(request.body, 'modules')).toBeUndefined();
     await enter(page, readRestore(page));
-    await expect(restoreUnknown(page)).toBeVisible();
+    await expect(page.getByText(/saved read contains the submitted selection/)).toBeVisible();
     await expect(row.getByRole('textbox', { name: /Module name/ })).toHaveValue(
       'black_hole_digestor',
     );
     await expect(row.getByRole('textbox', { name: /Slot/ })).toHaveValue('assist');
     expect(await posts(page)).toHaveLength(1);
     await accessibility(page, width);
-    await screenshot(page, width, 'modules-additional-field-unknown');
+    await screenshot(page, width, 'r12f-modules-saved');
+  });
+  for (const shape of [
+    'without_blueprints',
+    'with_blueprints_null',
+    'with_blueprints_a_list',
+    'with_an_empty_blueprints_mapping',
+  ]) {
+    test(`C15-8 r12f ${shape} defers, refuses verbatim and keeps draft at ${String(width)}`, async ({
+      page,
+    }) => {
+      await open(page, width, shape);
+      await page.getByRole('combobox', { name: 'Cards', exact: true }).selectOption('main_farm');
+      await page
+        .getByRole('combobox', { name: 'Restore cards preset', exact: true })
+        .selectOption('no_card');
+      await expect(save(page)).toBeEnabled();
+      await enter(page, save(page));
+      const key = `restore_refused_for_a_profile_${shape}`;
+      await expect(
+        page
+          .getByText(String(own(body('settings_modules_more_2', key), 'error')), { exact: true })
+          .first(),
+      ).toBeVisible();
+      expect(JSON.parse((await posts(page))[0]?.body ?? '')).toEqual(
+        ownPath(cases, 'settings_modules_more_2', key, 'request', 'body'),
+      );
+      await enter(page, readRestore(page));
+      await expect(
+        page.getByRole('combobox', { name: 'Restore cards preset', exact: true }),
+      ).toHaveValue('no_card');
+      await expect(
+        page
+          .getByText(String(own(body('settings_modules_more_2', key), 'error')), { exact: true })
+          .first(),
+      ).toBeVisible();
+      expect(await posts(page)).toHaveLength(1);
+      await accessibility(page, width);
+      await screenshot(page, width, `r12f-${shape}-refused`);
+    });
+  }
+  test(`C15-6 C15-7 r12f raw malformed list survives sibling save and explicit repair settles at ${String(width)}`, async ({
+    page,
+  }) => {
+    await open(page, width, 'malformed');
+    const drop = tournament(page).locator('[data-field="drop"]');
+    await expect(drop.getByRole('textbox').nth(0)).toHaveValue('false');
+    await expect(drop.getByRole('textbox').nth(1)).toHaveValue('7');
+    await expect(drop.getByRole('textbox').nth(2)).toHaveValue('keep');
+    await add(page, 'add', ['golden_orb']);
+    const button = tournament(page).getByRole('button', { name: 'Save', exact: true });
+    await enter(page, button);
+    await expect(tournament(page).getByText('Saved', { exact: true })).toBeVisible();
+    expect(JSON.parse((await posts(page))[0]?.body ?? '')).toEqual(
+      ownPath(
+        cases,
+        'settings_modules_more_2',
+        'saved_tournament_cards_add_list_only_the_malformed_drop_list_stays',
+        'request',
+        'body',
+      ),
+    );
+    await page.getByRole('button', { name: 'Read tournament settings', exact: true }).click();
+    await expect(drop.getByRole('textbox').nth(0)).toHaveValue('false');
+    await expect(drop.getByRole('textbox').nth(1)).toHaveValue('7');
+    await screenshot(page, width, 'r12f-malformed-sibling-saved');
+    // Full recorded replies; only select which recorded transition follows the next click.
+    const repairRequests: unknown[] = [];
+    await page.route('**/api/settings', async (route) => {
+      if (route.request().method() === 'POST') repairRequests.push(route.request().postDataJSON());
+      await reply(
+        route,
+        `settings_modules_more_2.${route.request().method() === 'POST' ? 'saved_tournament_cards_repairing_the_malformed_drop_list' : repairRequests.length === 0 ? 'read_after_the_add_list_was_saved_the_malformed_drop_list_remains' : 'read_after_the_malformed_drop_list_was_repaired'}`,
+      );
+    });
+    for (let i = 0; i < 2; i += 1)
+      await enter(page, drop.getByRole('button', { name: /^Remove entry/ }).first());
+    await enter(page, button);
+    await expect(tournament(page).getByText('Saved', { exact: true })).toBeVisible();
+    await expect
+      .poll(() => repairRequests)
+      .toEqual([
+        ownPath(
+          cases,
+          'settings_modules_more_2',
+          'saved_tournament_cards_repairing_the_malformed_drop_list',
+          'request',
+          'body',
+        ),
+      ]);
+    await page.getByRole('button', { name: 'Read tournament settings', exact: true }).click();
+    await expect(drop.getByRole('textbox')).toHaveCount(1);
+    await expect(drop.getByRole('textbox')).toHaveValue('keep');
+    await expect(button).toBeDisabled();
+    // The intercepted repair is counted separately from the fake-backend POST log.
+    expect(await posts(page)).toHaveLength(1);
+    expect(repairRequests).toEqual([
+      ownPath(
+        cases,
+        'settings_modules_more_2',
+        'saved_tournament_cards_repairing_the_malformed_drop_list',
+        'request',
+        'body',
+      ),
+    ]);
+    await accessibility(page, width);
+    await screenshot(page, width, 'r12f-malformed-repaired');
   });
   test(`C15-9 C-03 editing recorded restore rows preserves manual fields and a lost answer stays Unknown at ${String(width)}`, async ({
     page,

@@ -190,68 +190,50 @@ it.each(['coin_run_switched_to_dissonance', 'saved_rides', 'saved_cycles'])(
   },
 );
 
-it.each(['dissonant_tab', 'rides', 'cycles'])(
-  'PE6 F6-14c inactive %s follows its recorded save or keeps the active-profile reason',
-  async (key) => {
-    const save = moreCase('inactive_saved_dissonant_tab');
-    const initial =
-      key === 'dissonant_tab' ? moreSourceBefore(save) : parityCase('read_before_the_limit_edits');
-    const run = key === 'rides' ? 'quest_sm' : key === 'cycles' ? 'quest_ilm' : 'dissonance';
-    window.location.hash = `#runs/saved/${run}`;
-    const page = await renderPage({
-      config: () => recorded('profile_target.inactive_editor_context_before_save').body,
-      before: (fake) => {
-        if (key === 'dissonant_tab') fake.route('POST', '/api/profile-patch', () => save);
-        fake.route('GET', '/api/profile-files', () =>
-          recorded('profile_target.same_account_inactive_target_listed'),
-        );
-        // No inactive quest recording exists. Put the recorded active profile under
-        // second's GET identity only to test the local active-only gate; no write is sent.
-        fake.route('GET', '/api/profile-src/second', () => ({
-          ...initial,
+it('PE6 F6-14c inactive dissonant_tab follows its recorded save', async () => {
+  const save = moreCase('inactive_saved_dissonant_tab');
+  let source = moreSourceBefore(save);
+  window.location.hash = '#runs/saved/dissonance';
+  const page = await renderPage({
+    config: () => recorded('profile_target.inactive_editor_context_before_save').body,
+    before: (fake) => {
+      fake.route('POST', '/api/profile-patch', () => {
+        // Intermediate GET: the exact recorded receipt inside its source envelope.
+        source = {
+          ...source,
           body: {
-            ...Object.fromEntries(entries(initial.body)),
-            name: 'second',
+            ...Object.fromEntries(entries(source.body)),
+            ...Object.fromEntries(entries(save.body)),
           },
-        }));
-        fake.route('GET', '/api/vocab', () => recorded('profile_reads.vocab_ok'));
-      },
-    });
-    await page.advance(100);
-    act(() => {
-      page.data.commands.pickEditingTarget({
-        epoch: page.data.store.getSnapshot().epoch,
-        name: 'second',
+        };
+        return save;
       });
+      fake.route('GET', '/api/profile-files', () =>
+        recorded('profile_target.same_account_inactive_target_listed'),
+      );
+      fake.route('GET', '/api/profile-src/second', () => source);
+      fake.route('GET', '/api/vocab', () => recorded('profile_reads.vocab_ok'));
+    },
+  });
+  await page.advance(100);
+  act(() => {
+    page.data.commands.pickEditingTarget({
+      epoch: page.data.store.getSnapshot().epoch,
+      name: 'second',
     });
-    await page.advance(100);
-    const element = document.querySelector<HTMLElement>(`[data-entry-field="${key}"]`);
-    if (element === null) throw new Error('missing inactive field');
-    const row = within(element);
-    if (key === 'dissonant_tab')
-      await page.user.selectOptions(row.getByRole('combobox'), 'defense');
-    else {
-      await page.user.clear(row.getByRole('textbox'));
-      await page.user.type(row.getByRole('textbox'), '0');
-    }
-    await page.user.click(row.getByRole('button', { name: 'Save field' }));
-    if (key === 'dissonant_tab') {
-      await page.advance(100);
-      expect(page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown)).toEqual([
-        save.request.body,
-      ]);
-      expect(row.getByText('Saved')).toBeVisible();
-      return;
-    }
-    expect(
-      row.getAllByText('Return editing to the active profile to change this field.').length,
-    ).toBeGreaterThan(0);
-    const vm = selectRunEntry(page.data.store.getSnapshot()).fields.find((f) => f.key === key);
-    expect(vm?.command).toBeNull();
-    expect(vm?.raw).toBe(key === 'dissonant_tab' ? 'attack' : '0');
-    expect(page.fake.writes()).toEqual([]);
-  },
-);
+  });
+  await page.advance(100);
+  const element = document.querySelector<HTMLElement>('[data-entry-field="dissonant_tab"]');
+  if (element === null) throw new Error('missing inactive field');
+  const row = within(element);
+  await page.user.selectOptions(row.getByRole('combobox'), 'defense');
+  await page.user.click(row.getByRole('button', { name: 'Save field' }));
+  await page.advance(100);
+  expect(page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown)).toEqual([
+    save.request.body,
+  ]);
+  expect(row.getByText('Saved')).toBeVisible();
+});
 
 it('RL13 F6-11-P3-03 absent rides describes the disabled quest-default action with a visible reason', async () => {
   window.location.hash = '#runs/saved/quest_sm';

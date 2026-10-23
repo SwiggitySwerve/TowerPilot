@@ -65,12 +65,19 @@ const EDITED_FIELDS = [
 ] as const;
 export type EntryKey = (typeof EDITED_FIELDS)[number];
 
-/** profile_target_more records these inactive entry saves and three explicit deletions.
- * Quest values and the remaining deletes await their own fenced recordings. */
+/** profile_target_more and profile_target_more_2 own the recorded inactive operations.
+ * Field vocabulary and parsing still decide which operation a run can offer. */
 export function inactiveEntryRecorded(key: EntryKey, remove: boolean): boolean {
   return remove
-    ? key === 'perk_bans' || key === 'policies.uw' || key === 'shopping'
-    : key !== 'rides' && key !== 'cycles';
+    ? key === 'label' ||
+        key === 'policies.gather' ||
+        key === 'policies.rescue' ||
+        key === 'dissonant_tab' ||
+        key === 'rides' ||
+        key === 'perk_bans' ||
+        key === 'policies.uw' ||
+        key === 'shopping'
+    : true;
 }
 
 /** Entries come from the edited file, independently of the active /api/runs list. */

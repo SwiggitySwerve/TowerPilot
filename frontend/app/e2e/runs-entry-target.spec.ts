@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { bodiesTo, posts } from './helpers.ts';
 import { own, ownPath } from '../src/core/read.ts';
 import { dashboardPagesCase, type DashboardCase } from '../tests/support/dashboardFixture.ts';
+import { more2Writes } from '../tests/support/runEntryTargetMore2.ts';
 import {
   moreWorld,
   openMore,
@@ -23,6 +24,65 @@ const OUT =
   path.resolve('../../backend/logs/reviews/frontend-f6-screens');
 mkdirSync(OUT, { recursive: true });
 const sample = (name: string) => dashboardPagesCase(`profile_target.${name}`);
+
+for (const width of [1360, 1054, 390])
+  for (const { name, before, write, after } of more2Writes) {
+    test(`PE6 F6-14c r12f ${name} exact request and saved readback at ${width}`, async ({
+      page,
+    }) => {
+      let source = before;
+      const sent: unknown[] = [];
+      let reads = 0;
+      await page.route('**/api/profile-src/second', async (route) => {
+        reads++;
+        await route.fulfill({ status: source.status, json: source.body });
+      });
+      await page.route('**/api/profile-patch', async (route) => {
+        sent.push(route.request().postDataJSON());
+        await route.fulfill({ status: write.status, json: write.body });
+      });
+      const body = record(write.request.body),
+        path = body['path'] as string[];
+      const key = path.slice(2).join('.');
+      await openMore(page, width, `#runs/saved/${path[1]}`, 'profile_target_runs_saved');
+      const row = moreEntry(page, key);
+      await expect(row).toBeVisible();
+      if (body['op'] === 'delete' && (key === 'label' || key === 'rides')) {
+        await row
+          .getByRole('button', {
+            name: key === 'label' ? 'Clear label' : 'Use the quest default',
+            exact: true,
+          })
+          .click();
+      } else {
+        if (await row.getByRole('combobox').count()) {
+          if (key === 'dissonant_tab')
+            await expect(
+              row.getByRole('option', { name: 'Coin run (remove the disabled tab)', exact: true }),
+            ).toHaveAttribute('value', '');
+          await row
+            .getByRole('combobox')
+            .selectOption(body['op'] === 'delete' ? '' : String(body['value']));
+        } else await row.getByRole('textbox').fill(String(body['value']));
+        await row.getByRole('button', { name: 'Save field', exact: true }).click();
+      }
+      await expect.poll(() => sent.length).toBe(1);
+      expect(sent).toEqual([write.request.body]);
+      await expect(row.locator('[data-outcome="sending"]')).toBeVisible();
+      await expect(row.locator('[data-outcome="saved"]')).toHaveCount(0);
+      source = after;
+      const count = reads;
+      await editor(page).getByRole('button', { name: 'Read entry settings', exact: true }).click();
+      await expect.poll(() => reads).toBeGreaterThan(count);
+      await expect(row.locator('[data-outcome="saved"]')).toBeVisible();
+      expect(sent).toEqual([write.request.body]);
+      if (body['op'] === 'delete') expect(body).not.toHaveProperty('value');
+      if (key === 'dissonant_tab' || key.startsWith('policies.'))
+        await expect(row.getByRole('combobox')).toHaveValue('');
+      else if (body['op'] !== 'delete') await expect(row.getByRole('textbox')).toHaveValue('2');
+      await proof(page, `f6-14c-r12f-${name}`, width);
+    });
+  }
 
 for (const width of [1360, 1054, 390])
   for (const name of [

@@ -40,6 +40,50 @@ export const EQUIPMENT_CONFIG_SCENARIOS = {
       },
     ]),
   ),
+  ...Object.fromEntries(
+    [
+      'without_blueprints',
+      'with_blueprints_null',
+      'with_blueprints_a_list',
+      'with_an_empty_blueprints_mapping',
+    ].map((shape) => [
+      `config_fields_equipment_${shape}`,
+      {
+        description: `C15-8 r12f ${shape} defers to recorded server refusal`,
+        harvest: 'off',
+        get: {
+          ...equipment,
+          config: 'settings_modules_more_2.read_config_after_the_refusals_nothing_changed',
+          profileSource: `settings_modules_more_2.profile_src_${shape}`,
+        },
+        writes: {
+          loadoutPatch: {
+            case: `settings_modules_more_2.restore_refused_for_a_profile_${shape}`,
+            reads: {
+              config: 'settings_modules_more_2.read_config_after_the_refusals_nothing_changed',
+            },
+          },
+        },
+      },
+    ]),
+  ),
+  config_fields_equipment_malformed: {
+    description: 'C15-6/7 r12f save sibling list without sending malformed drop entries',
+    harvest: 'off',
+    get: {
+      ...tournament,
+      settings: 'settings_modules_more_2.read_with_malformed_tournament_cards',
+    },
+    writes: {
+      settingsSave: {
+        case: 'settings_modules_more_2.saved_tournament_cards_add_list_only_the_malformed_drop_list_stays',
+        reads: {
+          settings:
+            'settings_modules_more_2.read_after_the_add_list_was_saved_the_malformed_drop_list_remains',
+        },
+      },
+    },
+  },
   config_fields_equipment_lists_lost: {
     description: 'C15-6/7 C-04 recorded tournament save with its reply lost; unchanged reads',
     harvest: 'off',
@@ -126,14 +170,13 @@ export const EQUIPMENT_CONFIG_SCENARIOS = {
     },
   },
   config_fields_equipment_modules: {
-    description:
-      'C15-9 C-03 a receipt with an additional manual field cannot confirm the submitted restore-only body',
+    description: 'C15-9 r12f exact restore-only first save and readback',
     harvest: 'off',
     get: { ...equipment, config: 'settings_modules_more.read_before_saved_modules_restore' },
     writes: {
       loadoutPatch: {
-        case: 'loadout_restore.saved_modules_restore',
-        reads: { config: 'loadout_restore.read_after_saved_modules_restore' },
+        case: 'settings_modules_more_2.saved_modules_restore_only',
+        reads: { config: 'settings_modules_more_2.read_after_saved_modules_restore_only' },
       },
     },
   },

@@ -12,3 +12,8 @@ export {
   profileTargetMoreSourceAnswerSchema,
   profileTargetMorePatchAnswerSchema,
 } from './generated/dashboard_contract_pages_v1_profile_target_more.a5e5fc7c.ts';
+/** r12f: profile_target_more_2, the seven remaining inactive run-entry edits. */
+export {
+  profileTargetMore2SourceAnswerSchema,
+  profileTargetMore2PatchAnswerSchema,
+} from './generated/dashboard_contract_pages_v1_profile_target_more_2.83c12b88.ts';

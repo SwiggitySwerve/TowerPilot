@@ -14,8 +14,8 @@ import {
 } from '../../scripts/contract-fixture.mjs';
 
 const cases = own(loadJsonWithIdentity(DASHBOARD_PAGES_FIXTURE_PATH).fixture, 'cases');
-function field(path: string) {
-  const view = settingsView(ownPath(cases, 'settings', 'populated_account_every_module', 'body'));
+function field(path: string, family = 'settings', key = 'populated_account_every_module') {
+  const view = settingsView(ownPath(cases, family, key, 'body'));
   const found = settingsModule(view, 'tournament-cards')?.fields.find(
     (entry) => entry.path === path,
   );
@@ -23,13 +23,19 @@ function field(path: string) {
   return found;
 }
 describe('shared string lists', () => {
-  it('C15-6 C15-7 adding after a later empty server read cannot reuse a retained original row key', () => {
-    // Modified recorded field value and controlled later read: the retained draft source
-    // is authoritative for row identity while a fresh server value becomes empty.
-    const f = { ...field('drop'), value: [] };
+  it('C15-6 C15-7 r12f adding after a later empty server read cannot reuse a retained original row key', () => {
+    // Controlled ordering of two complete recordings: a retained malformed source
+    // remains authoritative when a later recorded empty-list read arrives.
+    const f = field(
+      'drop',
+      'settings_modules_more',
+      'read_after_saved_tournament_cards_empty_lists',
+    );
     const draft = {
       drop: true,
-      'drop#list-source': JSON.stringify([false, 7, 'keep']),
+      'drop#list-source': JSON.stringify(
+        field('drop', 'settings_modules_more_2', 'read_with_malformed_tournament_cards').value,
+      ),
       'drop#list:0': 'fixed',
     };
     const key = nextStringListKey(f, draft);
@@ -42,10 +48,8 @@ describe('shared string lists', () => {
       value: ['fixed', 'keep', 'added'],
     });
   });
-  it('C15-6 C15-7 malformed saved false/numeric members remain raw until explicitly changed or removed', () => {
-    // Modified recorded list value: invalid historical members must not become removals
-    // or empty text when another entry changes. Source snapshot is internal draft data.
-    const f = { ...field('drop'), value: [false, 7, 'keep'] };
+  it('C15-6 C15-7 r12f malformed saved false/numeric members remain raw until explicitly changed or removed', () => {
+    const f = field('drop', 'settings_modules_more_2', 'read_with_malformed_tournament_cards');
     expect(stringListRows(f, {}).map((row) => row.raw)).toEqual([false, 7, 'keep']);
     const draft = {
       drop: true,
@@ -59,7 +63,7 @@ describe('shared string lists', () => {
       value: ['fixed', 'edited'],
     });
   });
-  it('C15-6 C15-7 an older save clears a list atomically and retains every row when newer typing exists', () => {
+  it('C15-6 C15-7 r12f an older save clears a list atomically and retains every row when newer typing exists', () => {
     const sent = {
       drop: true,
       'drop#list:0': false,
@@ -73,7 +77,7 @@ describe('shared string lists', () => {
     };
     const next = reduceDashboard(state, { type: 'draft_discard', scope, only: sent });
     expect(next.runDrafts[scope]).toEqual(state.runDrafts[scope]);
-    const saved = { ...field('drop'), value: ['cash', 'extra_orb'] };
+    const saved = field('drop', 'settings_modules', 'read_after_saved_tournament_cards');
     expect(checkField(saved, next.runDrafts[scope] ?? {})).toEqual({
       kind: 'valid',
       value: ['cash', 'newer raw name'],
@@ -91,7 +95,7 @@ describe('shared string lists', () => {
     expect(checkField(f, { drop: true, 'drop#list:0': '  ' })).toMatchObject({ kind: 'invalid' });
     expect(checkField(f, { drop: 'not a list' })).toMatchObject({ kind: 'invalid' });
   });
-  it('C15-7 empty lists, explicit removal and the server maxItems are authoritative', () => {
+  it('C15-7 r12f empty lists, explicit removal and the server maxItems are authoritative', () => {
     const f = field('add');
     expect(checkField(f, { add: true, 'add#list:0': false })).toEqual({ kind: 'unchanged' });
     expect(
@@ -111,7 +115,10 @@ describe('shared string lists', () => {
       reason: 'above_max',
     });
     expect(
-      checkField({ ...f, value: ['saved unsupported'] }, { add: true, 'add#list:0': false }),
+      checkField(field('add', 'settings_modules', 'read_after_saved_tournament_cards'), {
+        add: true,
+        'add#list:0': false,
+      }),
     ).toEqual({ kind: 'valid', value: [] });
   });
 });

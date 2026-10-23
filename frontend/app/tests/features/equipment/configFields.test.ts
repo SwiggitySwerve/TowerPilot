@@ -16,9 +16,10 @@ const cases = own(loadJsonWithIdentity(DASHBOARD_PAGES_FIXTURE_PATH).fixture, 'c
 const body = (family: string, key: string) => ownPath(cases, family, key, 'body');
 const profile = body('ability_policies', 'read_before_the_first_save');
 describe('restore body owner', () => {
-  it('C15-9 malformed saved restore rows keep raw types and extra members when another row changes', () => {
-    // Modified recorded modules_restore: inject an old invalid numeric slot and extra
-    // tuple member to prove editing a different row never silently repairs saved data.
+  it('C15-9 r12f malformed saved restore rows keep raw types and extra members when another row changes', () => {
+    // Synthetic historical tuple: no recording contains a saved numeric restore slot
+    // or extra tuple member. This boundary-only regression proves sibling edits and
+    // draft reload never silently repair malformed saved data (not an API response).
     const original = {
       modules_restore: [
         ['first', 42, 'kept extra'],
@@ -45,7 +46,7 @@ describe('restore body owner', () => {
       equipmentBody({ ...draft, restoreModules: changed }, original),
     );
   });
-  it('C15-8 changes restore cards while retaining every untouched manual key', () => {
+  it('C15-8 r12f changes restore cards while retaining every untouched manual key', () => {
     const original = ownPath(
       body('loadout_restore', 'read_after_saved_modules_restore'),
       'loadouts',
@@ -56,13 +57,14 @@ describe('restore body owner', () => {
       ...Object(original),
       cards_restore: 'main_farm',
     });
-    // Modified recorded placeholder: changing only restore values must retain defined.
+    const placeholder = ownPath(
+      body('loadout_restore', 'read_after_saved_modules_restore'),
+      'loadouts',
+      'later',
+    );
     expect(
-      equipmentBody(
-        { ...equipmentDraft({ defined: false }), restoreCards: 'no_card' },
-        { defined: false },
-      ),
-    ).toEqual({ defined: false, cards_restore: 'no_card' });
+      equipmentBody({ ...equipmentDraft(placeholder), restoreCards: 'no_card' }, placeholder),
+    ).toEqual({ ...Object(placeholder), cards_restore: 'no_card' });
   });
   it('C15-9 preserves ordered raw restore rows and refuses unused changes including clearing', () => {
     const original = ownPath(

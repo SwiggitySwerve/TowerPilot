@@ -21,6 +21,9 @@ import { fetchTransport, type Transport } from './transport.ts';
 import { bodyMembers, ENDPOINTS, type Endpoint } from './wire.ts';
 import { contextFenceAnswerSchema } from '../contract/contextFence.ts';
 import {
+  configFieldsMore2ConfigAnswerSchema,
+  configFieldsMore2LoadoutPatchAnswerSchema,
+  configFieldsMore2SourceAnswerSchema,
   restoreConfigAnswerSchema,
   restoreEligibilityConfigAnswerSchema,
   restoreEligibilityPatchAnswerSchema,
@@ -49,11 +52,15 @@ const config = endpoint([
   equipmentSampleConfigAnswerSchema,
   restoreConfigAnswerSchema,
   restoreEligibilityConfigAnswerSchema,
+  // r12f: the config after the restore-only save and after the refusals.
+  configFieldsMore2ConfigAnswerSchema,
 ]);
 const profile = endpoint([
   equipmentProfileAnswerSchema,
   equipmentDiscoveryAnswerSchema,
   equipmentSampleProfileAnswerSchema,
+  // r12f: a profile with no usable blueprints mapping (absent, null, a list or {}).
+  configFieldsMore2SourceAnswerSchema,
 ]);
 const patch = endpoint(
   [
@@ -62,6 +69,8 @@ const patch = endpoint(
     contextFenceAnswerSchema,
     restorePatchAnswerSchema,
     restoreEligibilityPatchAnswerSchema,
+    // r12f: restore-only save and the refusals for a profile without blueprints.
+    configFieldsMore2LoadoutPatchAnswerSchema,
   ],
   'POST',
 );

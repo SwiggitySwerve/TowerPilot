@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { checkEntry, entryRaw, runEntryFields, runEntryRuns } from '../../src/core/runEntry.ts';
+import {
+  checkEntry,
+  entryRaw,
+  inactiveEntryRecorded,
+  runEntryFields,
+  runEntryRuns,
+} from '../../src/core/runEntry.ts';
 import { profilePatchAnswer, sentPatch, settleProfilePatch } from '../../src/core/profilePatch.ts';
 import { own, stringList } from '../../src/core/read.ts';
 import { dashboardPagesCase, dashboardPagesCaseNames } from '../support/dashboardFixture.ts';
@@ -11,6 +17,41 @@ const config = dashboardPagesCase(
 ).body;
 const vocab = dashboardPagesCase('profile_reads.vocab_ok').body;
 const names = dashboardPagesCaseNames('run_entry_patch');
+
+it('PE6 F6-14c r12f owner allows exactly the recorded inactive entry operations', () => {
+  const keys = new Set(
+    ['farm', 'dissonance', 'shards', 'tourney', 'quest_sm', 'quest_ilm'].flatMap((run) =>
+      runEntryFields(
+        dashboardPagesCase('profile_target_more_2.read_before_the_farm_label_is_deleted').body,
+        run,
+        config,
+        vocab,
+      ).map((field) => field.key),
+    ),
+  );
+  const writes = ['profile_target', 'profile_target_more', 'profile_target_more_2']
+    .flatMap((family) =>
+      dashboardPagesCaseNames(family).map((name) => dashboardPagesCase(`${family}.${name}`)),
+    )
+    .filter(
+      (item) =>
+        item.request.method === 'POST' &&
+        item.request.path === '/api/profile-patch' &&
+        item.status === 200 &&
+        own(item.request.body, 'name') === 'second' &&
+        stringList(own(item.request.body, 'path'))?.[0] === 'blueprints',
+    );
+  expect(keys.size).toBe(16);
+  for (const key of keys)
+    for (const remove of [false, true]) {
+      const recorded = writes.some(
+        (item) =>
+          stringList(own(item.request.body, 'path'))?.slice(2).join('.') === key &&
+          (own(item.request.body, 'op') === 'delete') === remove,
+      );
+      expect(inactiveEntryRecorded(key, remove), `${key}, delete=${String(remove)}`).toBe(recorded);
+    }
+});
 
 describe('RL3 entry domain', () => {
   it('PE6 lists only the target source blueprints with their own labels', () => {
