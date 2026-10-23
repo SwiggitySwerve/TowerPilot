@@ -1,13 +1,11 @@
-import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { historyCase, HISTORY_RECORDS } from './history-fixtures.mjs';
-import { openScenario, posts } from './helpers.ts';
+import { axeIds, openScenario, posts, WCAG_AA_TAGS } from './helpers.ts';
 import { loadHistoryFixture } from '../scripts/history-fixture.mjs';
 import { record } from '../scripts/generate-contract.mjs';
 
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const ROWS = '.tp-history__record';
 const WIDTHS = [1360, 1054, 390] as const;
 const SCREENS =
@@ -209,22 +207,7 @@ for (const width of WIDTHS) {
     await expect(page.getByRole('button', { name: 'Retry detail' })).toBeFocused();
     await expect(page.locator('.tp-history__evidence')).toBeVisible();
     await expect(page.getByText(/Previously loaded evidence/)).toBeVisible();
-    await page.addScriptTag({ path: AXE });
-    const violations = await page.evaluate(async () => {
-      const scope = window as unknown as {
-        axe: {
-          run: (root: Document, options: unknown) => Promise<{ violations: { id: string }[] }>;
-        };
-      };
-      return (
-        await scope.axe.run(document, {
-          runOnly: {
-            type: 'tag',
-            values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'],
-          },
-        })
-      ).violations.map((v) => v.id);
-    });
+    const violations = await axeIds(page, WCAG_AA_TAGS);
     expect(violations).toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,

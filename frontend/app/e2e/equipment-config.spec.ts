@@ -1,15 +1,13 @@
-import { createRequire } from 'node:module';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page, type Route, type Locator } from '@playwright/test';
-import { posts } from './helpers.ts';
+import { axeCounts, posts, WCAG_AA_TAGS } from './helpers.ts';
 import {
   DASHBOARD_PAGES_FIXTURE_PATH,
   loadJsonWithIdentity,
 } from '../scripts/contract-fixture.mjs';
 import { entries, list, own, ownPath } from '../src/core/read.ts';
 
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT =
   process.env['TP_F6_SCREENS_DIR'] ??
   path.resolve('../../backend/logs/reviews/frontend-f6-screens');
@@ -123,20 +121,8 @@ async function restoreDraft(page: Page) {
     .getByRole('combobox', { name: 'Restore cards preset', exact: true })
     .selectOption('no_card');
 }
-interface AxeResult {
-  readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
-}
 async function accessibility(page: Page, width: number) {
-  await page.addScriptTag({ path: AXE });
-  const violations = await page.evaluate(async () => {
-    const scope = window as unknown as {
-      axe: { run: (root: Document, options: unknown) => Promise<AxeResult> };
-    };
-    const result = await scope.axe.run(document, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
-    });
-    return result.violations.map((v) => `${v.id} (${v.nodes.length})`);
-  });
+  const violations = await axeCounts(page, WCAG_AA_TAGS);
   expect(violations).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(

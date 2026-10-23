@@ -1,11 +1,9 @@
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test } from '@playwright/test';
-import { bodiesTo, posts } from './helpers.ts';
+import { axeIds, bodiesTo, posts, WCAG_AA_TAGS } from './helpers.ts';
 import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
 
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT =
   process.env['TP_F6_SCREENS_DIR'] ??
   path.resolve('../../backend/logs/reviews/frontend-f6-screens');
@@ -111,25 +109,7 @@ for (const width of [1360, 1054, 390]) {
           'Saved profile changed. Reload and reconcile the pending edit before saving again.',
         );
       }
-      await page.addScriptTag({ path: AXE });
-      const violations = await page.evaluate(async () => {
-        const scope = window as unknown as {
-          axe: {
-            run: (
-              root: Document,
-              options: unknown,
-            ) => Promise<{ violations: readonly { id: string }[] }>;
-          };
-        };
-        return (
-          await scope.axe.run(document, {
-            runOnly: {
-              type: 'tag',
-              values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'],
-            },
-          })
-        ).violations.map((item) => item.id);
-      });
+      const violations = await axeIds(page, WCAG_AA_TAGS);
       expect(violations).toEqual([]);
       expect(
         await page.evaluate(

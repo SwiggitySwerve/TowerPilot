@@ -1,4 +1,3 @@
-import { createRequire } from 'node:module';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
@@ -7,7 +6,7 @@ import {
   DASHBOARD_PAGES_FIXTURE_PATH,
   loadJsonWithIdentity,
 } from '../scripts/contract-fixture.mjs';
-import { bodiesTo, posts } from './helpers.ts';
+import { axeIds, bodiesTo, posts, WCAG_AA_TAGS } from './helpers.ts';
 import { dashboardPagesCase, type DashboardCase } from '../tests/support/dashboardFixture.ts';
 import { moreWorld, openMore, moreCase, invalidSourceTests } from './profile-target-more.ts';
 
@@ -105,7 +104,6 @@ for (const width of [1360, 1054, 390]) {
   });
 }
 const body = (name: string) => ownPath(cases, 'profile_target', name, 'request', 'body');
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT =
   process.env['TP_F6_SCREENS_DIR'] ??
   path.resolve('../../backend/logs/reviews/frontend-f6-screens');
@@ -152,17 +150,7 @@ async function open(
   return errors;
 }
 async function proof(page: Page, state: string, width: number) {
-  await page.addScriptTag({ path: AXE });
-  const violations = await page.evaluate(async () => {
-    const scope = window as unknown as {
-      axe: { run: (root: Document, options: unknown) => Promise<{ violations: { id: string }[] }> };
-    };
-    return (
-      await scope.axe.run(document, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
-      })
-    ).violations.map((violation) => violation.id);
-  });
+  const violations = await axeIds(page, WCAG_AA_TAGS);
   expect(violations).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(

@@ -1,29 +1,18 @@
 import { fillBoundsDraft, expectBoundsDraft } from './shopping-bounds.ts';
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page, type Locator } from '@playwright/test';
-import { bodiesTo, posts } from './helpers.ts';
+import { axeIds, bodiesTo, posts, WCAG_AA_TAGS } from './helpers.ts';
 import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
 import { bounds } from '../tests/support/shoppingBounds.ts';
 import { own } from '../src/core/read.ts';
 import { contextFromConfig } from '../src/api/context.ts';
 
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
 const root = (page: Page) => page.locator('[data-shopping-saved]');
 const row = (page: Page, id: string) => root(page).locator(`.tp-shop__entry[data-upgrade="${id}"]`);
 const sample = (name: string) => dashboardPagesCase(`shopping_queue.${name}`);
-interface AxeResult {
-  readonly violations: readonly { readonly id: string }[];
-}
-declare global {
-  interface Window {
-    axe: { run: (root: Document, options: unknown) => Promise<AxeResult> };
-  }
-}
-
 async function open(page: Page, scenario: string, width: number) {
   await page.setViewportSize({ width, height: 900 });
   await page.goto(`/__fake/use?scenario=shopping_saved_${scenario}`);
@@ -123,14 +112,7 @@ test('SQ5 failed startup run catalogue has a visible retry that restores saved e
 });
 
 async function check(page: Page, width: number, state: string) {
-  await page.addScriptTag({ path: AXE });
-  const violations = await page.evaluate(async () => {
-    return (
-      await window.axe.run(document, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
-      })
-    ).violations.map((item) => item.id);
-  });
+  const violations = await axeIds(page, WCAG_AA_TAGS);
   expect(violations).toEqual([]);
   expect(
     await page.evaluate(

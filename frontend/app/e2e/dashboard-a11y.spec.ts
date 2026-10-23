@@ -1,7 +1,6 @@
-import { createRequire } from 'node:module';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { loadFixture } from '../scripts/contract-fixture.mjs';
-import { bodiesTo, openScenario } from './helpers.ts';
+import { axeCounts, bodiesTo, openScenario } from './helpers.ts';
 
 /**
  * Spec 8 in a real browser: axe in the main scenarios at 1360, 1054 and 390
@@ -11,23 +10,7 @@ import { bodiesTo, openScenario } from './helpers.ts';
  * disclosures survive counted polls (8.8); reflow at 320 and long server
  * text at 390 (8.9); Dismiss by keyboard never drops focus to the body (8.11).
  */
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const WIDTHS = [1360, 1054, 390] as const;
-
-interface AxeResult {
-  readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
-}
-
-async function axeViolations(page: Page): Promise<string[]> {
-  await page.addScriptTag({ path: AXE });
-  const result = await page.evaluate(async () => {
-    const scope = window as unknown as { axe: { run: (root: Document) => Promise<AxeResult> } };
-    return scope.axe.run(document);
-  });
-  return result.violations.map(
-    (violation) => `${violation.id} (${String(violation.nodes.length)})`,
-  );
-}
 
 for (const scenario of [
   'sketch',
@@ -40,7 +23,7 @@ for (const scenario of [
     test(`axe is clean: ${scenario} at ${String(width)}`, async ({ page }) => {
       await openScenario(page, scenario, { width, waitForRead: scenario !== 'cold_502' });
       await page.waitForTimeout(500);
-      expect(await axeViolations(page)).toEqual([]);
+      expect(await axeCounts(page)).toEqual([]);
       await expect(page.locator('[aria-live]')).toHaveCount(1);
       await expect(page.locator('[role="alert"]')).toHaveCount(0);
     });
@@ -49,7 +32,7 @@ for (const scenario of [
 
 test('axe is clean with a render fault in every Control slot', async ({ page }) => {
   await openScenario(page, 'collecting', { faults: ['slot:automation', 'slot:input', 'slot:gem'] });
-  expect(await axeViolations(page)).toEqual([]);
+  expect(await axeCounts(page)).toEqual([]);
 });
 
 /** Region rank of the focused element in the spec 8.3 order. */

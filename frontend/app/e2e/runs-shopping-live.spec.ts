@@ -1,13 +1,11 @@
 import { fillBoundsDraft, expectBoundsDraft } from './shopping-bounds.ts';
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { entries, own, ownPath } from '../src/core/read.ts';
 import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
 import { bounds } from '../tests/support/shoppingBounds.ts';
-import { bodiesTo, posts } from './helpers.ts';
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
+import { axeIds, bodiesTo, posts } from './helpers.ts';
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
 const sample = (name: string) => dashboardPagesCase(`shopping_queue.${name}`);
@@ -94,17 +92,7 @@ async function openUpgradeQueue(page: Page, name: string) {
   await page.getByText('Queue for this battle', { exact: true }).click();
 }
 async function check(page: Page, width: number, state: string) {
-  await page.addScriptTag({ path: AXE });
-  const violations = await page.evaluate(async () => {
-    const scope = window as unknown as {
-      axe: { run: (root: Document, options: unknown) => Promise<{ violations: { id: string }[] }> };
-    };
-    return (
-      await scope.axe.run(document, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
-      })
-    ).violations.map((v) => v.id);
-  });
+  const violations = await axeIds(page, ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']);
   expect(violations).toEqual([]);
   const layout = await page.evaluate(() => ({
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,

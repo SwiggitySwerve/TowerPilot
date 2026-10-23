@@ -1,12 +1,11 @@
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import {
   DASHBOARD_PAGES_FIXTURE_PATH,
   loadJsonWithIdentity,
 } from '../scripts/contract-fixture.mjs';
-import { bodiesTo, openScenario, posts } from './helpers.ts';
+import { axeCounts, bodiesTo, openScenario, posts } from './helpers.ts';
 import { profilesContextCase } from './profiles-context.ts';
 
 /**
@@ -17,7 +16,6 @@ import { profilesContextCase } from './profiles-context.ts';
  * and target sizes at 1360, 1054 and 390, and the screenshots
  * (TP_F6_SCREENS_DIR, else test-results/f6-screens).
  */
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const WIDTHS = [1360, 1054, 390] as const;
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
@@ -44,19 +42,6 @@ const reviewed = (body: unknown) => ({
 });
 
 const account = (page: Page) => page.locator('[data-region="profilesAccount"]');
-
-interface AxeResult {
-  readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
-}
-
-async function axeViolations(page: Page): Promise<string[]> {
-  await page.addScriptTag({ path: AXE });
-  const result = await page.evaluate(async () => {
-    const scope = window as unknown as { axe: { run: (root: Document) => Promise<AxeResult> } };
-    return scope.axe.run(document);
-  });
-  return result.violations.map((v) => `${v.id} (${String(v.nodes.length)})`);
-}
 
 /** A recorded case of the pages contract fixture (accounts_write, profile_files_write). */
 function pagesCase(path: string): {
@@ -449,7 +434,7 @@ test('P4 tools missing, modules waiting to be restored and a run not ready stay 
     '#recognition',
   );
   await setup.screenshot({ path: path.join(OUT, 'profiles-setup-1360.png') });
-  expect(await axeViolations(page)).toEqual([]);
+  expect(await axeCounts(page)).toEqual([]);
   await setup.getByRole('link', { name: 'Emulators' }).click();
   await expect(page).toHaveURL(/\/ui\/app\/#emulators$/u);
   expect(await posts(page)).toEqual([]);
@@ -496,7 +481,7 @@ for (const width of WIDTHS) {
       'data-active',
       'false',
     );
-    expect(await axeViolations(page)).toEqual([]);
+    expect(await axeCounts(page)).toEqual([]);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
@@ -580,7 +565,7 @@ for (const width of WIDTHS) {
       page.locator('[data-region="profilesFiles"] [data-profile]').first(),
     ).toBeVisible();
     await page.waitForTimeout(500);
-    expect(await axeViolations(page)).toEqual([]);
+    expect(await axeCounts(page)).toEqual([]);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );

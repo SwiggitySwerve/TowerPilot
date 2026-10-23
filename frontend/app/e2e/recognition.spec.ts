@@ -1,8 +1,7 @@
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { bodiesTo, openScenario, posts } from './helpers.ts';
+import { axeCounts, bodiesTo, expectAppStyles, openScenario, posts } from './helpers.ts';
 
 /**
  * The Recognition page in a real browser on the fake backend (brief
@@ -12,7 +11,6 @@ import { bodiesTo, openScenario, posts } from './helpers.ts';
  * target sizes at 1360, 1054 and 390, and the screenshots (TP_F6_SCREENS_DIR, else
  * test-results/f6-screens). Advanced repairs (R9 to R11) have their own spec.
  */
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const WIDTHS = [1360, 1054, 390] as const;
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
@@ -39,20 +37,8 @@ async function openRecognition(page: Page, scenario: string, width = 1360): Prom
 
 const region = (page: Page, name: string) => page.locator(`[data-region="${name}"]`);
 
-interface AxeResult {
-  readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
-}
-
-async function axeViolations(page: Page): Promise<string[]> {
-  await page.addScriptTag({ path: AXE });
-  const result = await page.evaluate(async () => {
-    const scope = window as unknown as { axe: { run: (root: Document) => Promise<AxeResult> } };
-    return scope.axe.run(document);
-  });
-  return result.violations.map((v) => `${v.id} (${String(v.nodes.length)})`);
-}
-
 async function layoutProblems(page: Page, width: number): Promise<string[]> {
+  await expectAppStyles(page);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
@@ -145,7 +131,7 @@ for (const width of WIDTHS) {
     await page.waitForTimeout(1_500);
     expect(await posts(page)).toEqual([]);
     expect(await layoutProblems(page, width)).toEqual([]);
-    expect(await axeViolations(page)).toEqual([]);
+    expect(await axeCounts(page)).toEqual([]);
     await page.screenshot({
       path: path.join(OUT, `recognition-page-${String(width)}.png`),
       fullPage: true,

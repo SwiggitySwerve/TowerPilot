@@ -1,8 +1,7 @@
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { bodiesTo, posts } from './helpers.ts';
+import { axeCounts, bodiesTo, expectAppStyles, posts, WCAG_AA_TAGS } from './helpers.ts';
 import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
 
 /**
@@ -11,30 +10,13 @@ import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
  * override, RL7 battle details and RL8 start a day plan, with axe, reflow, target sizes
  * and screenshots at 1360, 1054 and 390 (TP_F6_SCREENS_DIR, else test-results/f6-screens).
  */
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const WIDTHS = [1360, 1054, 390] as const;
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
 
-interface AxeResult {
-  readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
-}
-
-async function axeViolations(page: Page): Promise<string[]> {
-  await page.addScriptTag({ path: AXE });
-  const result = await page.evaluate(async () => {
-    const scope = window as unknown as {
-      axe: { run: (root: Document, options: unknown) => Promise<AxeResult> };
-    };
-    return scope.axe.run(document, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
-    });
-  });
-  return result.violations.map((v) => `${v.id} (${String(v.nodes.length)})`);
-}
-
 /** No horizontal scroll and every visible control in main at least 24 px (WCAG 2.5.8). */
 async function layoutProblems(page: Page): Promise<{ overflow: number; small: string[] }> {
+  await expectAppStyles(page);
   return page.evaluate(() => ({
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     small: [
@@ -142,7 +124,7 @@ for (const width of WIDTHS) {
           idempotency_key: expect.any(String),
         },
       ]);
-      expect(await axeViolations(page)).toEqual([]);
+      expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
       expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
       if (width === 390)
         for (const button of await live(page).locator('.tp-run-resets button:visible').all())
@@ -176,7 +158,7 @@ for (const width of WIDTHS) {
     await expect(
       live(page).locator('[data-routine-details="floating_gems"]').getByText('None recorded'),
     ).toBeVisible();
-    expect(await axeViolations(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
     await live(page).screenshot({
       path: path.join(OUT, `runs-leftovers-details-${String(width)}.png`),
@@ -204,7 +186,7 @@ for (const width of WIDTHS) {
     await expect(
       ad.getByRole('link', { name: 'Events of this battle on Runtime' }),
     ).toHaveAttribute('href', /offer_id=bd_ad_offer_failed-offer&since=1799999931$/u);
-    expect(await axeViolations(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
     await live(page).screenshot({
       path: path.join(OUT, `runs-leftovers-details-seen-${String(width)}.png`),
@@ -247,7 +229,7 @@ for (const width of WIDTHS) {
     await resets.first().click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
-    expect(await axeViolations(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     await page.screenshot({
       path: path.join(OUT, `runs-leftovers-reset-${String(width)}.png`),
       fullPage: false,
@@ -281,7 +263,7 @@ for (const width of WIDTHS) {
     await all.click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByRole('listitem')).toHaveCount(2);
-    expect(await axeViolations(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     await page.screenshot({
       path: path.join(OUT, `runs-leftovers-reset-all-${String(width)}.png`),
     });
@@ -317,7 +299,7 @@ for (const width of WIDTHS) {
     await expect(live(page).getByText('Applied to this battle', { exact: true })).toBeVisible();
     await expect(live(page).getByText('Sent to this battle - waiting to apply')).toHaveCount(0);
     await expect(live(page).getByRole('checkbox', { name: 'Ad gems On' })).not.toBeChecked();
-    expect(await axeViolations(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
     await live(page).screenshot({
       path: path.join(OUT, `runs-leftovers-applied-${String(width)}.png`),
@@ -346,7 +328,7 @@ for (const width of WIDTHS) {
     await remove.click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByText(/The scheduler then uses its legacy rules/u)).toBeVisible();
-    expect(await axeViolations(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     await page.screenshot({
       path: path.join(OUT, `runs-leftovers-schedule-remove-${String(width)}.png`),
     });
@@ -393,7 +375,7 @@ for (const width of WIDTHS) {
     ).toBeVisible();
     const start = page.getByRole('button', { name: 'Start a day plan' });
     await expect(start).toBeVisible();
-    expect(await axeViolations(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
     if (width === 390) expect((await start.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
     await page.screenshot({

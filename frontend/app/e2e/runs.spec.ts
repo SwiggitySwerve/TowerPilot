@@ -1,12 +1,11 @@
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import {
   DASHBOARD_PAGES_FIXTURE_PATH,
   loadJsonWithIdentity,
 } from '../scripts/contract-fixture.mjs';
-import { bodiesTo, openScenario, posts } from './helpers.ts';
+import { axeCounts, bodiesTo, openScenario, posts } from './helpers.ts';
 
 /**
  * The Runs page in a real browser on the fake backend (brief
@@ -15,7 +14,6 @@ import { bodiesTo, openScenario, posts } from './helpers.ts';
  * target sizes at 1360, 1054 and 390, and the screenshots
  * (TP_F6_SCREENS_DIR, else test-results/f6-screens).
  */
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const WIDTHS = [1360, 1054, 390] as const;
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
@@ -33,19 +31,6 @@ async function openRuns(page: Page, scenario: string, hash: string, width = 1360
   await expect(page.getByRole('heading', { level: 1, name: 'Runs' })).toBeVisible();
   await expect(page.locator('[data-region="runsSaved"] input[type="text"]').first()).toBeVisible();
   return problems;
-}
-
-interface AxeResult {
-  readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
-}
-
-async function axeViolations(page: Page): Promise<string[]> {
-  await page.addScriptTag({ path: AXE });
-  const result = await page.evaluate(async () => {
-    const scope = window as unknown as { axe: { run: (root: Document) => Promise<AxeResult> } };
-    return scope.axe.run(document);
-  });
-  return result.violations.map((v) => `${v.id} (${String(v.nodes.length)})`);
 }
 
 test('RUN-12 the Pages menu opens the new Runs page, and the Dashboard links open its exact targets', async ({
@@ -245,7 +230,7 @@ for (const width of WIDTHS) {
   }) => {
     const problems = await openRuns(page, 'runs_live_applied', '#runs', width);
     await page.waitForTimeout(500);
-    expect(await axeViolations(page)).toEqual([]);
+    expect(await axeCounts(page)).toEqual([]);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );

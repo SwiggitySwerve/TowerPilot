@@ -1,12 +1,10 @@
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { entries, ownPath } from '../src/core/read.ts';
 import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
-import { bodiesTo, posts } from './helpers.ts';
+import { axeViolations, bodiesTo, posts, WCAG_AA_TAGS } from './helpers.ts';
 
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
 const sample = (name: string) => dashboardPagesCase(`shopping_queue.${name}`);
@@ -47,24 +45,11 @@ async function weighted(page: Page) {
   await expect(up).toBeFocused();
   return form;
 }
-interface AxeResult {
-  readonly violations: readonly {
-    readonly id: string;
-    readonly nodes: readonly { readonly target: readonly string[] }[];
-  }[];
-}
 async function check(page: Page, width: number, state: string, box: Locator = library(page)) {
-  await page.addScriptTag({ path: AXE });
-  const violations = await page.evaluate(async () => {
-    const scope = window as unknown as {
-      axe: { run: (root: Document, options: unknown) => Promise<AxeResult> };
-    };
-    return (
-      await scope.axe.run(document, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
-      })
-    ).violations.map((item) => ({ id: item.id, targets: item.nodes.map((node) => node.target) }));
-  });
+  const violations = (await axeViolations(page, WCAG_AA_TAGS)).map((item) => ({
+    id: item.id,
+    targets: item.nodes.map((node) => node.target),
+  }));
   expect(
     violations,
     JSON.stringify(

@@ -1,22 +1,14 @@
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { posts } from './helpers.ts';
+import { axeIds, posts } from './helpers.ts';
 import { blueStacksCase, stoppedBlueStacks } from '../tests/support/emulatorsFixtures.ts';
 
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT = path.resolve('../../backend/logs/reviews/frontend-f6-screens');
 mkdirSync(OUT, { recursive: true });
 
 async function expectAxeClean(page: Page) {
-  await page.addScriptTag({ path: AXE });
-  const violations = await page.evaluate(async () => {
-    const scope = window as unknown as {
-      axe: { run: (root: Document) => Promise<{ violations: { id: string }[] }> };
-    };
-    return (await scope.axe.run(document)).violations.map((violation) => violation.id);
-  });
+  const violations = await axeIds(page);
   expect(violations).toEqual([]);
 }
 

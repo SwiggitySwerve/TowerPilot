@@ -1,8 +1,7 @@
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { bodiesTo, openScenario, posts } from './helpers.ts';
+import { axeCounts, bodiesTo, openScenario, posts } from './helpers.ts';
 
 /**
  * The Emulators page in a real browser on the fake backend (brief
@@ -12,7 +11,6 @@ import { bodiesTo, openScenario, posts } from './helpers.ts';
  * the preview settings, axe, reflow and target sizes at 1360, 1054 and 390, and the
  * screenshots (TP_F6_SCREENS_DIR, else test-results/f6-screens).
  */
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const WIDTHS = [1360, 1054, 390] as const;
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
@@ -47,19 +45,6 @@ const detected = (page: Page) => page.locator('[data-region="emulatorsDetected"]
 const tools = (page: Page) => page.locator('[data-region="emulatorsTools"]');
 const preview = (page: Page) => page.locator('[data-region="emulatorsPreview"]');
 const row = (page: Page, key: string) => page.locator(`[data-row="${key}"]`);
-
-interface AxeResult {
-  readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
-}
-
-async function axeViolations(page: Page): Promise<string[]> {
-  await page.addScriptTag({ path: AXE });
-  const result = await page.evaluate(async () => {
-    const scope = window as unknown as { axe: { run: (root: Document) => Promise<AxeResult> } };
-    return scope.axe.run(document);
-  });
-  return result.violations.map((v) => `${v.id} (${String(v.nodes.length)})`);
-}
 
 test('M1 M2 SR-1 SR-6 the Pages menu opens Emulators with no request; Use this one asks first by keyboard, Cancel sends nothing, Use it sends one adopt that reads back saved and connected', async ({
   page,
@@ -312,7 +297,7 @@ for (const width of WIDTHS) {
   }) => {
     const { problems } = await openEmulators(page, 'emulators', width);
     await page.waitForTimeout(500);
-    expect(await axeViolations(page)).toEqual([]);
+    expect(await axeCounts(page)).toEqual([]);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );

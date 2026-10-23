@@ -1,14 +1,12 @@
-import { createRequire } from 'node:module';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { posts } from './helpers.ts';
+import { axeCounts, posts, WCAG_AA_TAGS } from './helpers.ts';
 import { loadJsonWithIdentity } from '../scripts/contract-fixture.mjs';
 import { EQUIPMENT_FIXTURE_PATH } from './equipment-fixtures.mjs';
 import { own, ownPath, record } from '../src/core/read.ts';
 import { contextFromConfig } from '../src/api/context.ts';
 
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT = path.resolve('../../backend/logs/reviews/frontend-f6-screens');
 mkdirSync(OUT, { recursive: true });
 const SAMPLES = own(loadJsonWithIdentity(EQUIPMENT_FIXTURE_PATH).fixture, 'cases');
@@ -38,20 +36,8 @@ async function shot(page: Page, label: string, width: number) {
     fullPage: true,
   });
 }
-interface AxeResult {
-  readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
-}
 async function accessibility(page: Page) {
-  await page.addScriptTag({ path: AXE });
-  const violations = await page.evaluate(async () => {
-    const scope = window as unknown as {
-      axe: { run: (root: Document, options: unknown) => Promise<AxeResult> };
-    };
-    const result = await scope.axe.run(document, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
-    });
-    return result.violations.map((v) => `${v.id} (${v.nodes.length})`);
-  });
+  const violations = await axeCounts(page, WCAG_AA_TAGS);
   expect(violations).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(

@@ -1,21 +1,13 @@
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { bodiesTo, openScenario } from './helpers.ts';
+import { axeViolations, bodiesTo, openScenario } from './helpers.ts';
 
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT = path.resolve('../../backend/logs/reviews/frontend-f6-screens');
 mkdirSync(OUT, { recursive: true });
 
 async function accessibility(page: Page, width: number) {
-  await page.addScriptTag({ path: AXE });
-  const violations = await page.evaluate(async () => {
-    const scope = window as unknown as {
-      axe: { run: (root: Document) => Promise<{ violations: unknown[] }> };
-    };
-    return (await scope.axe.run(document)).violations;
-  });
+  const violations = await axeViolations(page);
   expect(violations).toEqual([]);
   const faults = await page.evaluate((mobile) => {
     const controls = [

@@ -1,8 +1,7 @@
-import { createRequire } from 'node:module';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { openScenario, posts } from './helpers.ts';
+import { axeViolations, expectAppStyles, openScenario, posts, WCAG_AA_TAGS } from './helpers.ts';
 import { RUNTIME_CONFIG_SAVES } from './runtime-config-fixtures.mjs';
 import { DRAFTS_KEY } from '../src/api/drafts.ts';
 import { SETTINGS_BASE_REVISION } from '../src/core/settingsFields.ts';
@@ -12,7 +11,6 @@ import {
 } from '../scripts/contract-fixture.mjs';
 import { record } from '../scripts/generate-contract.mjs';
 
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const SCREENS = path.resolve(
   process.env['TP_F6_SCREENS_DIR'] ?? '../../backend/logs/reviews/frontend-f6-screens',
 );
@@ -91,6 +89,7 @@ async function fill(page: Page, module: Module, overrides = false) {
   return body;
 }
 async function layout(page: Page, width: number, module: Module) {
+  await expectAppStyles(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
@@ -114,17 +113,7 @@ async function layout(page: Page, width: number, module: Module) {
     width,
   );
   expect(small).toEqual([]);
-  await page.addScriptTag({ path: AXE });
-  const violations = await page.evaluate(async () => {
-    const axe = Reflect.get(window, 'axe') as {
-      run: (context: unknown, options: unknown) => Promise<{ violations: unknown[] }>;
-    };
-    return (
-      await axe.run(document, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
-      })
-    ).violations;
-  });
+  const violations = await axeViolations(page, WCAG_AA_TAGS);
   expect(violations).toEqual([]);
 }
 for (const width of [1360, 1054, 390]) {

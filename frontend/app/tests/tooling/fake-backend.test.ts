@@ -1,10 +1,18 @@
 // @vitest-environment node
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer, IncomingMessage, ServerResponse } from 'node:http';
-import { connect, Socket } from 'node:net';
+import { connect, Server, Socket } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { Writable } from 'node:stream';
 import { crc32, inflateSync } from 'node:zlib';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createApiHandler, loadFixture, startServer } from '../../e2e/fake-backend.mjs';
+import {
+  createApiHandler,
+  loadFixture,
+  resetAfterClientClose,
+  startServer,
+} from '../../e2e/fake-backend.mjs';
 import { SCENARIOS, type Scenario, type WriteMode } from '../../e2e/scenarios.mjs';
 import { DASHBOARD_FIXTURE_PATH, loadJsonWithIdentity } from '../../scripts/contract-fixture.mjs';
 import {
@@ -577,6 +585,32 @@ describe('controls and composition', () => {
       /app is not built/,
     );
     expect(() => createApiHandler(fixture, { scenario: 'nope' })).toThrow(/No fixture scenario/);
+  });
+  it('answers a client FIN with a reset before http sends its own FIN, so no TIME_WAIT is left', () => {
+    const socket = new Socket();
+    const order: string[] = [];
+    socket.on('end', () => order.push('http end'));
+    vi.spyOn(socket, 'resetAndDestroy').mockImplementation(() => {
+      order.push('reset');
+      return socket;
+    });
+    resetAfterClientClose(socket);
+    socket.emit('end');
+    expect(order).toEqual(['reset', 'http end']);
+  });
+  it('the standalone server resets every connection the client has closed', () => {
+    const buildDir = mkdtempSync(join(tmpdir(), 'tp-fake-build-'));
+    try {
+      writeFileSync(join(buildDir, 'index.html'), '<!doctype html>');
+      // Server#listen is refused in unit tests (R2h); only the registered listeners matter here.
+      vi.spyOn(Server.prototype, 'listen').mockImplementation(function (this: Server) {
+        return this;
+      });
+      const server = startServer({ port: 0, buildDir });
+      expect(server.listeners('connection')).toContain(resetAfterClientClose);
+    } finally {
+      rmSync(buildDir, { recursive: true, force: true });
+    }
   });
 });
 describe('Collection fixture routes', () => {

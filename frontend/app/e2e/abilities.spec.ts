@@ -1,14 +1,13 @@
 import { withRecordedFence } from '../tests/support/profilePatchFenced.ts';
 import type { DashboardCase } from '../tests/support/dashboardFixture.ts';
 import { contextFromConfig } from '../src/api/context.ts';
-import { createRequire } from 'node:module';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page, type Locator } from '@playwright/test';
 import { own, ownPath, entries } from '../src/core/read.ts';
 import { loadJsonWithIdentity } from '../scripts/contract-fixture.mjs';
 import { ABILITIES_FIXTURE_PATH } from './abilities-fixtures.mjs';
-import { posts } from './helpers.ts';
+import { axeCounts, posts, WCAG_AA_TAGS } from './helpers.ts';
 
 const CASES = own(loadJsonWithIdentity(ABILITIES_FIXTURE_PATH).fixture, 'cases');
 const fixture = (view: string, suffix = 'saved') => {
@@ -18,7 +17,6 @@ const fixture = (view: string, suffix = 'saved') => {
   const context = contextFromConfig(ownPath(CASES, 'abilities_samples', `${view}_config`, 'body'));
   return context === null ? found : withRecordedFence(found, context);
 };
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT = path.resolve('../../backend/logs/reviews/frontend-f6-screens');
 mkdirSync(OUT, { recursive: true });
 const widths = [1360, 1054, 390];
@@ -72,20 +70,8 @@ async function shot(page: Page, label: string, width: number) {
     fullPage: true,
   });
 }
-interface AxeResult {
-  readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
-}
 async function accessibility(page: Page) {
-  await page.addScriptTag({ path: AXE });
-  const result = await page.evaluate(async () => {
-    const scope = window as unknown as {
-      axe: { run: (root: Document, options: unknown) => Promise<AxeResult> };
-    };
-    const result = await scope.axe.run(document, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
-    });
-    return result.violations.map((v) => `${v.id} (${v.nodes.length})`);
-  });
+  const result = await axeCounts(page, WCAG_AA_TAGS);
   expect(result).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(

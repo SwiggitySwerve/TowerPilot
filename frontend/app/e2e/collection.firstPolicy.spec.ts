@@ -1,12 +1,10 @@
 import { withRecordedFence } from '../tests/support/profilePatchFenced.ts';
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { firstPolicyCase } from '../tests/support/collectionFirstPolicy.ts';
-import { bodiesTo, posts } from './helpers.ts';
+import { axeIds, bodiesTo, posts, WCAG_AA_TAGS } from './helpers.ts';
 
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT = path.resolve('../../backend/logs/reviews/frontend-f6-screens');
 const WIDTHS = [1360, 1054, 390] as const;
 mkdirSync(OUT, { recursive: true });
@@ -29,22 +27,7 @@ async function open(page: Page, width: number) {
 }
 
 async function axe(page: Page) {
-  await page.addScriptTag({ path: AXE });
-  const violations = await page.evaluate(async () => {
-    const scope = window as unknown as {
-      axe: {
-        run: (
-          root: Document,
-          options: { runOnly: { type: string; values: string[] } },
-        ) => Promise<{ violations: { id: string }[] }>;
-      };
-    };
-    return (
-      await scope.axe.run(document, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
-      })
-    ).violations.map((entry) => entry.id);
-  });
+  const violations = await axeIds(page, WCAG_AA_TAGS);
   expect(violations).toEqual([]);
 }
 

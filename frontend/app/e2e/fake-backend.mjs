@@ -974,8 +974,28 @@ export function startServer(options) {
       res.end('Not found');
     }
   });
+  server.on('connection', resetAfterClientClose);
   server.listen(options.port, '127.0.0.1');
   return server;
+}
+
+/**
+ * Close a connection the client has finished with by reset, not by FIN.
+ *
+ * Every Playwright test opens a fresh browser context with up to six keep-alive connections
+ * and closes them when the test ends. The side that closes first keeps its socket in TIME_WAIT
+ * (two minutes on Windows): a full eight-worker run held about 4,700 of them on the client
+ * side of this port, and one run lost the app stylesheet to net::ERR_NO_BUFFER_SPACE. Answering
+ * the client's FIN with a reset ends both sides without TIME_WAIT. It runs only after the client
+ * has closed its side, so no answer it could still read is cut, and the deliberate drops
+ * (`req.socket.destroy()` before the client closes) are unchanged.
+ * @param {import('node:net').Socket} socket
+ */
+export function resetAfterClientClose(socket) {
+  // Before http's own 'end' listener, which would otherwise send the FIN that leaves TIME_WAIT.
+  socket.prependListener('end', () => {
+    socket.resetAndDestroy();
+  });
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {

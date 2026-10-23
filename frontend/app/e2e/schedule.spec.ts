@@ -1,8 +1,7 @@
-import { createRequire } from 'node:module';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { bodiesTo, posts } from './helpers.ts';
+import { axeCounts, bodiesTo, expectAppStyles, posts, WCAG_AA_TAGS } from './helpers.ts';
 import { dashboardPagesCase as pagesCase } from '../tests/support/dashboardFixture.ts';
 import { own, ownPath, entries } from '../src/core/read.ts';
 import { scheduleRace } from './schedule-race.ts';
@@ -15,7 +14,6 @@ function gate() {
   return { pending, release: () => release?.() };
 }
 
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT =
   process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('playwright-report/f6-schedule-screens');
 mkdirSync(OUT, { recursive: true });
@@ -50,21 +48,6 @@ async function mapSunday(page: Page) {
 }
 async function screenshot(page: Page, name: string, width: number) {
   await page.screenshot({ path: path.join(OUT, `schedule-${name}-${width}.png`), fullPage: true });
-}
-interface AxeResult {
-  readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
-}
-async function axe(page: Page) {
-  await page.addScriptTag({ path: AXE });
-  return page.evaluate(async () => {
-    const scope = window as unknown as {
-      axe: { run: (root: Document, options: unknown) => Promise<AxeResult> };
-    };
-    const result = await scope.axe.run(document, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
-    });
-    return result.violations.map((v) => `${v.id} (${v.nodes.length})`);
-  });
 }
 
 for (const width of widths) {
@@ -141,7 +124,7 @@ for (const width of widths) {
         week: { ...Object.fromEntries(entries(own(plan, 'week'))), monday: 'unknown_day' },
       },
     });
-    expect(await axe(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     await screenshot(page, 'refused', width);
   });
   test(`S3 unknown weekday mapping has an associated server error at ${width}`, async ({
@@ -156,7 +139,7 @@ for (const width of widths) {
     await expect(sunday).toHaveAttribute('aria-invalid', 'true');
     await expect(sunday).toHaveAccessibleDescription(/plan.week.sunday: unknown day plan/);
     await expect(page.getByLabel('Monday', { exact: true })).not.toHaveAttribute('aria-invalid');
-    expect(await axe(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     await screenshot(page, 'week-refused', width);
   });
   test(`S3 S4 coherent week save, readback, duplicate protection and newer typing at ${width}`, async ({
@@ -275,7 +258,7 @@ for (const width of widths) {
     ).toHaveCount(0);
     await expect(page.getByText('No unsaved changes', { exact: true })).toBeVisible();
     expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
-    expect(await axe(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     await screenshot(page, 'recovered-validation', width);
   });
   test(`S6 observation, no fabricated quota, axe and no overflow at ${width}`, async ({ page }) => {
@@ -285,6 +268,7 @@ for (const width of widths) {
     await expect(page.getByText('2027-01-16T00:00:00+00:00', { exact: true })).toBeVisible();
     await expect(page.getByText('Remaining quota: not reported', { exact: true })).toHaveCount(2);
     await expect(page.getByText('Next start: not reported', { exact: true })).toHaveCount(2);
+    await expectAppStyles(page);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);
@@ -300,7 +284,7 @@ for (const width of widths) {
           .map((n) => n.textContent),
       );
     expect(short).toEqual([]);
-    expect(await axe(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     expect(await posts(page)).toEqual([]);
     await screenshot(page, 'observed', width);
   });
@@ -605,7 +589,7 @@ for (const width of widths) {
     ).toBeVisible();
     await page.waitForTimeout(1_000);
     expect(await bodiesTo(page, '/api/profile-patch')).toEqual([]);
-    expect(await axe(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     await screenshot(page, 'remove-not-sent', width);
   });
 }

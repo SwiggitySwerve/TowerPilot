@@ -1,5 +1,4 @@
 import { mkdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { entries, own } from '../src/core/read.ts';
@@ -9,8 +8,8 @@ import {
 } from '../tests/support/dashboardFixture.ts';
 import { parityCase, paritySourceBefore } from '../tests/support/runEntryParity.ts';
 import { withRecordedFence, fencedRuntime } from '../tests/support/profilePatchFenced.ts';
+import { axeIds, WCAG_AA_TAGS } from './helpers.ts';
 
-const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results/f6-screens');
 mkdirSync(OUT, { recursive: true });
 const field = (page: Page, key: string) => page.locator(`[data-entry-field="${key}"]`);
@@ -20,17 +19,7 @@ async function sourceRoute(page: Page, read: () => DashboardCase) {
   );
 }
 async function proof(page: Page, width: number, state: string) {
-  await page.addScriptTag({ path: AXE });
-  const violations = await page.evaluate(async () => {
-    const scope = window as unknown as {
-      axe: { run: (root: Document, options: unknown) => Promise<{ violations: { id: string }[] }> };
-    };
-    return (
-      await scope.axe.run(document, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
-      })
-    ).violations.map((v) => v.id);
-  });
+  const violations = await axeIds(page, WCAG_AA_TAGS);
   expect(violations).toEqual([]);
   expect(
     await page.evaluate(
