@@ -1104,8 +1104,8 @@ EMULATOR_ADB_CANDIDATES = [
 # a hardcoded allowlist that drifted every time a preset was added. A preset
 # is startable unless it is an explicit placeholder (defined: false).
 def runnable_presets(cfg: dict) -> list[str]:
-    return [name for name, body in (cfg.get("presets") or {}).items()
-            if isinstance(body, dict) and body.get("defined", True)]
+    from control.settings_catalog import runnable_presets as derived     # one definition: the catalogue offers the same list as choices
+    return derived(cfg)
 
 
 _COMPILER_LOCK = threading.RLock()
@@ -1387,6 +1387,16 @@ def save_config(data: dict) -> str:
     return _save_yaml_backup(CONFIG_PATH, data)
 
 
+def save_active_instance(instance: str) -> str:
+    """Select another emulator: the stored configuration with `active_instance` changed and NOTHING else. Selecting is not an edit of any
+    account, so accounts.persist - which files the effective fields of the selected emulator under its account and fills in the defaults
+    of a sparse record ({} loadouts, {} tweaks, a sorted profile list) - is not run: every account record stays as it was stored."""
+    with open(CONFIG_PATH, encoding="utf-8") as fh:
+        stored = yaml.safe_load(fh)
+    stored['active_instance'] = instance
+    return _save_yaml_backup(CONFIG_PATH, stored)
+
+
 def _settings_snapshot(cfg):
     import hashlib
     from player import accounts
@@ -1480,8 +1490,13 @@ def api_settings_post():
                 if not isinstance(node[part], dict):
                     raise ValueError(f'{prefix}: existing value is not an object')
                 node = node[part]
-            for key, value in values.items():
-                write(node, key, value)
+            switch = values.get('active_instance') if module['id'] == 'active-instance' else None
+            if switch is not None:
+                from player import accounts
+                accounts.identity(dict(cfg, active_instance=switch))      # an unknown account is refused here, before anything is written
+            else:
+                for key, value in values.items():
+                    write(node, key, value)
             if module['id'] == 'device-preview':
                 from device.preview.common import options as preview_options
                 preview_options(node)
@@ -1494,6 +1509,8 @@ def api_settings_post():
                 if introduced:
                     raise ValueError('; '.join(sorted(introduced)))
                 backup = _save_yaml_backup(path, profile)
+            elif switch is not None:
+                backup = save_active_instance(switch)
             else:
                 backup = save_config(cfg)
             fresh, _, _ = _settings_snapshot(load_config())
@@ -3795,25 +3812,43 @@ def api_loadout_patch():
                                      f"config.yaml"}), 404
         patched = dict(cfg.get("loadouts") or {})
         patched[name] = lo
+        # THE RESTORE VALUES (cards_restore, modules_restore) are checked against the account only for a loadout a blueprint of the ACTIVE
+        # profile names: the validator reads no other. A body that sets, changes or clears one of them on any other loadout - or when there is no
+        # active profile - would be saved looking verified and is not: refused, nothing written. A body whose restore keys are as stored is
+        # not a restore edit (the page sends whole bodies) and is judged as it always was.
+        from player import playerprofile
+        stored_body = (cfg.get("loadouts") or {}).get(name)
+        stored_body = stored_body if isinstance(stored_body, dict) else {}
+        absent = object()
+        restore_changed = [key for key in playerprofile.LOADOUT_RESTORE_KEYS if stored_body.get(key, absent) != lo.get(key, absent)]
         active = cfg.get("active_profile")
-        problems, warns = [], []
+        used, problems, warns = [], [], []
         if active:
             ppath = _profile_path(active)
             try:
                 with _profile_lock(ppath):
                     with open(ppath, encoding="utf-8") as fh:
                         prof = yaml.safe_load(fh)
-                from player import playerprofile
-                candidate = dict(cfg, loadouts=patched)
-                problems = _profile_check(prof if isinstance(prof, dict) else {}, candidate)
-                warns = _profile_check(prof if isinstance(prof, dict) else {}, candidate, warnings=True)
+                prof = prof if isinstance(prof, dict) else {}
+                used = playerprofile.loadouts_in_use(prof)
+                if name in used or not restore_changed:
+                    candidate = dict(cfg, loadouts=patched)
+                    problems = _profile_check(prof, candidate)
+                    warns = _profile_check(prof, candidate, warnings=True)
             except Exception as e:              # noqa: BLE001
                 return jsonify({"ok": False,
                                 "error": f"validator unavailable: "
                                          f"{type(e).__name__}: {e}"}), 500
-            if problems:
-                return jsonify({"ok": False, "problems": problems,
-                                "error": problems[0]}), 400
+        if restore_changed and name not in used:
+            keys = ", ".join(restore_changed)
+            why = (f"is not used by any run of the active profile {active!r}, so its restore values ({keys}) cannot be checked against the "
+                   f"account and are not saved. Use the loadout in a run of that profile first." if active else
+                   f"cannot be checked: there is no active profile, so its restore values ({keys}) are not saved. Activate a profile that "
+                   f"uses the loadout first.")
+            return jsonify({"ok": False, "code": "restore_loadout_unused", "loadout": name, "restore_keys": restore_changed,
+                            "active_profile": active or None, "error": f"Loadout {name!r} {why}"}), 409
+        if problems:
+            return jsonify({"ok": False, "problems": problems, "error": problems[0]}), 400
         cfg["loadouts"] = patched
         try:
             backup = save_config(cfg)

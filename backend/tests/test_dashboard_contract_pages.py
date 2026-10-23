@@ -52,6 +52,7 @@ from dashboard_contract_cases_screens import run_later_cases, run_screens_cases
 from dashboard_contract_cases_runtime import WRITER_PID, run_runtime_cases
 from dashboard_contract_cases_environment import RE as ENV, runtime_environment_cases
 from dashboard_contract_cases_preview import PB as PRB, PF as PRP, PM as PRM, PS as PRS, run_preview_cases
+from dashboard_contract_cases_settings_modules import LE, LR, SM, SR, loadout_restore_eligibility_cases, settings_modules_cases, settings_switch_records_cases
 from dashboard_contract_cases_profile import run_profile_cases, run_schedule_cases
 from dashboard_contract_cases_settings import run_settings_cases
 from dashboard_contract_cases_runs import run_controls_live_cases, run_controls_save_cases
@@ -70,7 +71,7 @@ FAMILIES = [run_controls_save_cases, run_controls_live_cases, run_history_cases,
             context_fence_cases, emulator_bluestacks_inventory_cases, collection_first_policy_cases,
             recognition_context_fence_cases, run_controls_live_reset_all_cases, run_entry_patch_cases, run_templates_add_cases,
             run_battle_details_cases, run_plan_section_delete_cases, run_templates_add_fenced_cases, shopping_queue_cases, profile_target_cases,
-            runtime_environment_cases, run_preview_cases]
+            runtime_environment_cases, run_preview_cases, settings_modules_cases, loadout_restore_eligibility_cases, settings_switch_records_cases]
 UNNAMED_ALLOWED = 49      # cases no row names (the settling reads of one scenario); report.json lists them
 
 NOTES = dict(
@@ -1091,7 +1092,51 @@ NOTES.update(
     preview_frame_png=('F6-13: GET /api/frame.png with the headers it sends (the answers also exist in recognition_images, which records none): Content-Type only, no Cache-Control, and no age or source header; '
                        'a failed capture is a text 502 (Flask\'s default text/html), an invalid display a 400 JSON.'),
 )
-FAMILY_ROWS = {PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
+COVERAGE.update({
+    'F6-15 settings modules: instance defaults, selected emulator, run defaults, tournament deck changes, and the loop, missions and fleet machine defaults - saved, stale revision, the read after the save': keys(
+        SM, 'saved_instance_defaults', 'stale_revision_instance_defaults', 'read_after_saved_instance_defaults', 'saved_active_instance', 'stale_revision_active_instance',
+        'read_after_saved_active_instance', 'saved_run_defaults', 'stale_revision_run_defaults', 'read_after_saved_run_defaults', 'saved_tournament_cards',
+        'stale_revision_tournament_cards', 'read_after_saved_tournament_cards', 'saved_loop_defaults', 'stale_revision_loop_defaults', 'read_after_saved_loop_defaults',
+        'saved_missions_defaults', 'stale_revision_missions_defaults', 'read_after_saved_missions_defaults', 'saved_fleet_defaults', 'stale_revision_fleet_defaults',
+        'read_after_saved_fleet_defaults'),
+    'F6-15 the configuration read right after the selected emulator was switched (both accounts and the legacy defaults unchanged)': keys(SM, 'read_config_after_saved_active_instance'),
+    'F6-15 invalid values of the new modules: string, enum, boolean, string list, number, range, integer; nothing is written': keys(
+        SM, 'invalid_string_instance_defaults', 'invalid_enum_instance_defaults', 'invalid_boolean_instance_defaults', 'invalid_enum_active_instance',
+        'invalid_enum_run_defaults', 'invalid_string_list_tournament_cards', 'invalid_number_loop_defaults', 'invalid_boolean_loop_defaults',
+        'invalid_range_missions_defaults', 'invalid_integer_fleet_defaults'),
+    'F6-15 loadout restore values (cards_restore, modules_restore): saved, refused for a card preset or module the account does not have, and the configuration read after each save': keys(
+        LR, 'saved_cards_restore', 'refused_cards_restore', 'read_after_saved_cards_restore', 'saved_modules_restore', 'refused_modules_restore', 'read_after_saved_modules_restore'),
+})
+NOTES.update(
+    settings_modules=('F6-15 / r12b: the cases the brief names settings.<case> and loadout_patch.<case> are in the NEW families settings_modules and loadout_restore, under the brief\'s own case names: appended families keep every published family\'s ids and hash. '
+                      'GET/POST /api/settings gained seven typed modules, so EVERY snapshot in the `settings` family now lists them (that is why the family `settings` changed): instance-defaults (label, default preset, autostart of the selected emulator), active-instance (the selected emulator), run-defaults (the machine fallback preset), '
+                      'tournament-cards (the standing deck drop/add lists; a `string-list` field: ordered, non-blank strings, `maxItems` 50, nothing coerced or deduplicated) and loop-defaults, missions-defaults, fleet-defaults '
+                      '(the ROOT blocks, apart from the selected emulator\'s override, which the modules loop, missions and fleet keep editing). Preset choices are the runnable presets (a placeholder is not offered) and the '
+                      'instance default also offers the empty value "Use machine fallback". A bound account\'s tournament lists are saved under that account. Saving active-instance is a selection-only write: the stored configuration differs from before in `active_instance` and nothing else, so no account record changes, whatever it stores (a sparse record is not filled in; settings_switch_records); '
+                      'an emulator whose account is unknown is refused before anything is written. A stale revision or context is 409 whatever the values; one invalid field writes none. The restore values cards_restore and modules_restore are keys of a loadout body '
+                      'validated like `cards` and `modules` (the card preset must be on the account, the module owned), and are editable only on a loadout a run of the ACTIVE profile names (loadout_restore_eligibility).'),
+    loadout_restore=('POST /api/loadout-patch with cards_restore and modules_restore (see settings_modules): the whole loadout body, config expected_revision and the reviewed expected_context; the config read after each save.'),
+    loadout_restore_eligibility=('r12b2 (review R1): POST /api/loadout-patch refuses a restore edit it cannot check. The profile validator reads the loadouts a run of the ACTIVE profile names and no others, so a body that sets, changes or clears `cards_restore` or '
+                                 '`modules_restore` of any other loadout - or any loadout when there is no active profile - is 409 {ok:false, code:"restore_loadout_unused", loadout, restore_keys, active_profile, error} and writes nothing, whether the value looks valid or not '
+                                 '(ownership is the point, not the value). Order of the checks: context, revision, the loadout exists (404), this guard, then the validator\'s problems (400). A body whose restore keys are as stored is not a restore edit and is judged as it always was.'),
+    settings_switch_records=('r12b2 (review R2): saving the active-instance module writes only `active_instance`. Over accounts that store only what they were given (no loadouts, no tweaks, an unsorted profile list, no profile list) every record is exactly as it was, '
+                             'in the file and in the configuration read afterwards; the answer is the snapshot of the new context.'),
+)
+COVERAGE.update({
+    'F6-15 r12b2 R1: a restore value (cards_restore, modules_restore) of a loadout no run of the active profile names is refused with 409 restore_loadout_unused, nothing written - unknown or owned value, cards or modules, both together': keys(
+        LE, 'refused_unknown_cards_restore_on_a_loadout_no_run_uses', 'refused_owned_cards_restore_on_a_loadout_no_run_uses', 'refused_unknown_modules_restore_on_a_loadout_no_run_uses',
+        'refused_owned_modules_restore_on_a_loadout_no_run_uses', 'refused_both_restore_values_on_a_loadout_no_run_uses', 'read_after_the_refusals_nothing_changed'),
+    'F6-15 r12b2 R1: the same refusal when only an inactive profile names the loadout, when there is no active profile, and when a stored restore value would be cleared': keys(
+        LE, 'refused_restore_when_only_an_inactive_profile_names_the_loadout', 'refused_restore_with_no_active_profile_nothing_to_check_it_against', 'read_after_the_no_profile_refusal_nothing_changed',
+        'refused_clearing_the_stored_restore_value_of_a_loadout_no_run_uses', 'read_after_the_clearing_refusal_the_stored_value_remains'),
+    'F6-15 r12b2 R1 controls: an unused loadout still saves without restore edits or with its restore values as stored; the revision is judged first; the loadout a run uses still saves its restore value': keys(
+        LE, 'unused_loadout_saved_without_restore_values_is_unchanged_behaviour', 'unused_loadout_saved_with_its_stored_restore_value_unchanged', 'stale_revision_is_judged_before_the_restore_guard',
+        'owned_cards_restore_saved_on_the_loadout_the_active_profile_uses'),
+    'F6-15 r12b2 R2: switching the selected emulator over sparse accounts writes only the selection (every account record as stored), and back': keys(
+        SR, 'saved_active_instance_between_sparse_accounts', 'read_after_the_sparse_switch', 'read_config_after_the_sparse_switch', 'saved_active_instance_back_to_the_first_sparse_account',
+        'read_config_after_switching_back_every_record_as_it_was'),
+})
+FAMILY_ROWS = {SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
                RESET: 'F6-11 RL2 (6.1)', TF: 'F6-11 RL4 guarded (root decision: run-templates/add gains expected_revision and expected_context)', SQ: 'F6-12 (brief section 8)', PTG: 'F6-14 (brief section 6)', ENTRY: 'F6-11 RL3 (6.2)', TEMPLATES: 'F6-11 RL4 (6.3)', DETAILS: 'F6-11 RL7 (6.4)', PLAN_DELETE: 'F6-11 RL8 (6.5)', SAVE: 'RUN-04..07', LIVE: 'RUN-08..11', HL: 'H-01', HD: 'H-01, H-02', CFG: 'G-01', PR: 'G-02', PP: 'G-03', SP: 'S-01', ST: 'G-04', LO: 'E-01', CO: 'C-01', AB: 'A-01', AC: 'P-01', PF: 'P-02', EI: 'M-01', EA: 'M-02', ET: 'M-03', RS: 'T-01', RD: 'T-02', RR: 'R-01, R-02, R-06', CW: 'R-02', RI: 'R-03', SA: 'R-04', RL: 'R-05'}
 
 
@@ -1132,7 +1177,7 @@ PUBLISHED_ORDER = ['run_controls_save_cases', 'run_controls_live_cases', 'run_hi
                    'emulator_bluestacks_inventory_cases', 'collection_first_policy_cases', 'recognition_context_fence_cases',
                    'run_controls_live_reset_all_cases', 'run_entry_patch_cases', 'run_templates_add_cases', 'run_battle_details_cases',
                    'run_plan_section_delete_cases', 'run_templates_add_fenced_cases', 'shopping_queue_cases', 'profile_target_cases',
-                   'runtime_environment_cases', 'run_preview_cases']
+                   'runtime_environment_cases', 'run_preview_cases', 'settings_modules_cases', 'loadout_restore_eligibility_cases', 'settings_switch_records_cases']
 
 
 CODED_PATHS = frozenset({'/api/calibrate/start', '/api/calibrate/observe', '/api/calibrate/apply', '/api/calibrate/stop', '/api/calibrate/status',

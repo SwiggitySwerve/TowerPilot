@@ -43,12 +43,12 @@ def config_of(w):
     return w.client.get('/api/config').get_json()
 
 
-def loadout(w, case, name, body, revision=None, *, expect=None, **extra):
+def loadout(w, case, name, body, revision=None, *, expect=None, family=LOADOUT, **extra):
     request = dict(name=name, body=body)
     if revision is not None:
         request['expected_revision'] = revision
     request.update(extra)
-    reply = w.post(LOADOUT, case, LOADOUT_URL, request)
+    reply = w.post(family, case, LOADOUT_URL, request)
     if expect is not None:
         assert reply.status_code == expect, (case, reply.status_code, reply.get_json())
     return reply

@@ -21,8 +21,8 @@ SET = 'settings'
 URL = '/api/settings'
 
 
-def snapshot(w, case=None):
-    response = w.get(SET, case, URL) if case else w.client.get(URL)
+def snapshot(w, case=None, family=SET):
+    response = w.get(family, case, URL) if case else w.client.get(URL)
     return response.get_json()
 
 
@@ -30,17 +30,17 @@ def module_of(snap, ident):
     return next(m for m in snap['modules'] if m['id'] == ident)
 
 
-def submit(w, case, snap, module, values, *, expect=None, **override):
+def submit(w, case, snap, module, values, *, expect=None, family=SET, **override):
     body = dict(context=snap['context'], revision=snap['revision'], module=module, values=values)
     body.update(override)
-    reply = w.post(SET, case, URL, body)
+    reply = w.post(family, case, URL, body)
     if expect is not None:
         assert reply.status_code == expect, (case, reply.status_code, reply.get_json())
     return reply
 
 
-def save(w, case, snap, module, values):
-    reply = submit(w, case, snap, module, values, expect=200).get_json()
+def save(w, case, snap, module, values, family=SET):
+    reply = submit(w, case, snap, module, values, expect=200, family=family).get_json()
     assert reply['ok'] and reply['revision'] != snap['revision'] and reply['backup']
     return reply
 
@@ -50,7 +50,8 @@ def settings_read_cases(gen):
         populate(w)
         snap = snapshot(w, 'populated_account_every_module')
         ids = [m['id'] for m in snap['modules']]
-        assert ids == ['tap', 'device-preview', 'loop', 'missions', 'fleet', 'logging', 'rewards', 'global_abilities',
+        assert ids == ['tap', 'device-preview', 'loop', 'missions', 'fleet', 'loop-defaults', 'missions-defaults', 'fleet-defaults', 'instance-defaults',
+                       'active-instance', 'run-defaults', 'tournament-cards', 'logging', 'rewards', 'global_abilities',
                        'gather:all_on', 'ad:all_on', 'orbit:all_on', 'gather:gems_only', 'ad:gems_only', 'orbit:gems_only',
                        'gather:hands_off', 'ad:hands_off', 'orbit:hands_off'], ids
         assert {m['scope'] for m in snap['modules']} == {'machine', 'instance', 'profile'} and all(m['editable'] for m in snap['modules'])

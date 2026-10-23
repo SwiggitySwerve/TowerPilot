@@ -1168,6 +1168,22 @@ def _uw_ownership_warnings(profile: dict) -> list[str]:
     return out
 
 
+# The keys of a loadout body that name what a quest or shard block restores AFTER its own equip (v29). They are checked against the account like
+# `cards` and `modules` - and, like every loadout key, only for a loadout a blueprint of the profile names (see loadouts_in_use).
+LOADOUT_RESTORE_KEYS = ("cards_restore", "modules_restore")
+
+
+def loadouts_in_use(profile: dict) -> list[str]:
+    """The loadouts a blueprint of `profile` names, each once, in blueprint order. validate() checks a loadout's contents against the account
+    (`_validate_loadout_ownership`) for exactly these and no others: a loadout outside this list is saved unchecked."""
+    names: list[str] = []
+    for bp in _d(_d(profile).get("blueprints")).values():
+        name = _d(bp).get("loadout")
+        if isinstance(name, str) and name not in names:
+            names.append(name)
+    return names
+
+
 def loadout_corruption_warnings(profile: dict) -> list[str]:
     """v29 advisory: a loadout that hand-equips a category the account has
     presets for, WITHOUT selecting a preset first, mutates whichever preset
@@ -1180,12 +1196,7 @@ def loadout_corruption_warnings(profile: dict) -> list[str]:
     player = _d(profile.get("player"))
     cat_presets = _d(player.get("category_presets"))
     loadouts = _d(CONFIG.get("loadouts"))
-    seen: set[str] = set()
-    for bp in _d(profile.get("blueprints")).values():
-        name = _d(bp).get("loadout")
-        if not isinstance(name, str) or name in seen:
-            continue
-        seen.add(name)
+    for name in loadouts_in_use(profile):
         lo = _d(loadouts.get(name))
         if lo.get("global_preset"):
             continue
