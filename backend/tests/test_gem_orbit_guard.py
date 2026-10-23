@@ -75,6 +75,53 @@ def test_a_clean_live_battle_passes(world):
     assert shard.battlefield_live(POINTS) == (True, "live")
 
 
+def test_motion_observation_exposes_only_its_verified_latest_frame(world):
+    latest = world.frames[-1]
+    ok, why, frame = shard.battlefield_observation(POINTS)
+    assert ok and why == 'live' and frame is latest
+
+
+def test_motion_refusal_exposes_no_usable_frame(world):
+    world.wave = None
+    assert shard.battlefield_observation(POINTS) == (False, 'no_wave', None)
+
+
+def test_first_tap_reuses_the_motion_verified_frame(world, monkeypatch):
+    fresh, motion, later_unknown = _frame(1), _frame(2), _frame(3)
+    world.frames = [fresh, motion, later_unknown]
+    monkeypatch.setattr(shard, 'read_gem_balance',
+                        lambda frame: None if frame is later_unknown else 100)
+    tapper = _tapper()
+    tapper.taps = 1
+    tapper.poll(_frame(4))
+    assert len(world.taps) == 1
+    assert tapper.balance_before == 100 and tapper.sent_tap
+    assert not any(kind == 'gem_orbit_claim' for kind, _ in world.events)
+
+
+@pytest.mark.parametrize('unknown', ['counter', 'gem'])
+def test_reused_motion_frame_still_needs_current_optical_evidence(world, monkeypatch, unknown):
+    fresh, motion, later = _frame(1), _frame(2), _frame(3)
+    world.frames = [fresh, motion, later]
+    if unknown == 'counter':
+        monkeypatch.setattr(shard, 'read_gem_balance', lambda frame: None if frame is motion or frame is later else 100)
+    else:
+        detector = shard.find_orbit_gem
+        monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw: None if frame is motion or frame is later else detector(frame, **kw))
+    _tapper().poll(_frame(4))
+    assert world.taps == []
+
+
+def test_unknown_motion_counter_retains_the_original_fresh_capture(world, monkeypatch):
+    fresh, motion, later = _frame(1), _frame(2), _frame(3)
+    world.frames = [fresh, motion, later]
+    monkeypatch.setattr(shard, 'read_gem_balance', lambda frame: None if frame is motion else 100)
+    tapper = _tapper()
+    tapper.taps = 1
+    tapper.poll(_frame(4))
+    assert len(world.taps) == 1
+
+
 def test_no_wave_is_not_a_battle(world):
     world.wave = None
     assert shard.battlefield_live(POINTS) == (False, "no_wave")
@@ -207,8 +254,8 @@ def test_probe_outside_frame_refuses(world):
 def test_panel_change_before_first_tap_refuses(world, monkeypatch):
     def change_layout(points, frame=None):
         shard.capture.layout_offset = shard.capture.PANEL_SHIFT
-        return True, "live"
-    monkeypatch.setattr(shard, "battlefield_live", change_layout)
+        return True, "live", frame
+    monkeypatch.setattr(shard, "battlefield_observation", change_layout)
     _tapper().poll(_frame(1))
     assert world.taps == []
     assert world.events[-1] == ("gem_orbit_skip", {"reason": "layout_changed"})
@@ -237,7 +284,7 @@ def _tapper(**kw):
 
 def test_the_set_is_tapped_when_the_guard_passes(world, monkeypatch):
     t = _tapper()
-    monkeypatch.setattr(shard, "battlefield_live", lambda pts, frame=None: (True, "live"))
+    monkeypatch.setattr(shard, "battlefield_observation", lambda pts, frame=None: (True, "live", frame))
     t.poll(_frame(1))
     assert len(world.taps) == 3
     assert [k for k, _ in world.events] == ["gem_orbit_window", "gem_orbit_geometry"] + ["gem_orbit_tap"] * 3
@@ -245,8 +292,8 @@ def test_the_set_is_tapped_when_the_guard_passes(world, monkeypatch):
 
 def test_a_refused_guard_taps_nothing_and_says_why_once(world, monkeypatch):
     t = _tapper()
-    monkeypatch.setattr(shard, "battlefield_live",
-                        lambda pts, frame=None: (False, "static:0.0"))
+    monkeypatch.setattr(shard, "battlefield_observation",
+                        lambda pts, frame=None: (False, "static:0.0", None))
     for _ in range(3):
         t.next_at = 0.0                      # three polls, all due
         t.poll(_frame(1))
@@ -258,8 +305,8 @@ def test_a_refused_guard_taps_nothing_and_says_why_once(world, monkeypatch):
 def test_a_new_reason_is_logged_again(world, monkeypatch):
     t = _tapper()
     reasons = iter(["static:0.0", "static:0.0", "overlay:com.android.vending"])
-    monkeypatch.setattr(shard, "battlefield_live",
-                        lambda pts, frame=None: (False, next(reasons)))
+    monkeypatch.setattr(shard, "battlefield_observation",
+                        lambda pts, frame=None: (False, next(reasons), None))
     for _ in range(3):
         t.next_at = 0.0
         t.poll(_frame(1))
@@ -268,7 +315,7 @@ def test_a_new_reason_is_logged_again(world, monkeypatch):
 
 
 def test_disabled_asks_nothing_at_all(world, monkeypatch):
-    monkeypatch.setattr(shard, "battlefield_live",
+    monkeypatch.setattr(shard, "battlefield_observation",
                         lambda *a, **k: pytest.fail("must not even look"))
     shard.GemOrbitTapper(enabled=False).poll(_frame(1))
     assert world.taps == []

@@ -21,7 +21,7 @@ def device_frames(monkeypatch):
                         SimpleNamespace(center=(680., 805.), rect=(640, 765, 80, 80), score=.99))
     monkeypatch.setattr(shard.capture, 'grab', lambda: object())
     monkeypatch.setattr(shard.screen, 'identify', lambda frame: SimpleNamespace(name='battle'))
-    monkeypatch.setattr(shard, 'battlefield_live', lambda points, frame=None: (True, 'live'))
+    monkeypatch.setattr(shard, 'battlefield_observation', lambda points, frame=None: (True, 'live', frame))
 
 
 def test_diamonds_need_no_captured_images_even_with_legacy_flag():
@@ -50,7 +50,7 @@ def test_collector_refreshes_frame_after_ad_claim(monkeypatch):
 
 def test_orbit_stops_when_screen_changes_between_taps(monkeypatch):
     taps = []
-    frames = iter(['battle', 'battle', 'exit_battle'])
+    frames = iter(['battle', 'exit_battle'])
     monkeypatch.setattr(shard.capture, 'grab', lambda: next(frames))
     monkeypatch.setattr(shard.screen, 'identify', lambda frame: SimpleNamespace(name=frame))
     monkeypatch.setattr(shard.wave_reader, 'read_wave', lambda f: 100)
@@ -102,8 +102,8 @@ def test_tapper_fires_one_set_and_respects_cadence(monkeypatch):
     monkeypatch.setattr(shard.wave_reader, "read_wave", lambda f: 100)
     # the battlefield guard has its own file (test_gem_orbit_guard.py); here
     # it stands in as "a clean live battle", which is what these two are about
-    monkeypatch.setattr(shard, "battlefield_live",
-                        lambda points, frame=None: (True, "live"))
+    monkeypatch.setattr(shard, "battlefield_observation",
+                        lambda points, frame=None: (True, "live", frame))
     monkeypatch.setattr(shard.logger, "event", lambda *a, **k: None)
     t = shard.GemOrbitTapper(enabled=True, taps=3)
     t.poll(object())
@@ -118,8 +118,8 @@ def test_tapper_never_taps_the_ability_row(monkeypatch):
     monkeypatch.setattr(shard.wave_reader, "read_wave", lambda f: 100)
     # the battlefield guard has its own file (test_gem_orbit_guard.py); here
     # it stands in as "a clean live battle", which is what these two are about
-    monkeypatch.setattr(shard, "battlefield_live",
-                        lambda points, frame=None: (True, "live"))
+    monkeypatch.setattr(shard, "battlefield_observation",
+                        lambda points, frame=None: (True, "live", frame))
     monkeypatch.setattr(shard.logger, "event", lambda *a, **k: None)
     ax, ay, aw, ah = shard.CONFIG["rois"]["ability_row"]
     monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw:

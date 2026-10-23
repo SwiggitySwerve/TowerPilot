@@ -250,7 +250,7 @@ def test_orbit_raw_events_and_status_retain_window_and_attempt_identity(monkeypa
     monkeypatch.setattr(shard, 'read_gem_balance', lambda frame: frame)
     monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw:
                         SimpleNamespace(center=(680., 805.), rect=(640, 765, 80, 80), score=.99))
-    monkeypatch.setattr(shard, 'battlefield_live', lambda *args: (True, 'live'))
+    monkeypatch.setattr(shard, 'battlefield_observation', lambda *args: (True, 'live', args[1]))
     monkeypatch.setattr(shard, '_in_ability_row', lambda point: False)
     monkeypatch.setattr(shard.act, 'tap', lambda *args, **kwargs: {'dry_run': False})
     collector = shard.GemOrbitTapper(enabled=True, taps=1, jitter=0)

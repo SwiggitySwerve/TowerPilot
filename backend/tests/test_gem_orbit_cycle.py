@@ -18,7 +18,7 @@ def cycle(monkeypatch):
     monkeypatch.setattr(shard, 'read_gem_balance', lambda frame: frame)
     monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw:
                         SimpleNamespace(center=(680., 805.), rect=(640, 765, 80, 80), score=.99))
-    monkeypatch.setattr(shard, 'battlefield_live', lambda *a: (True, 'live'))
+    monkeypatch.setattr(shard, 'battlefield_observation', lambda *a: (True, 'live', a[1]))
     monkeypatch.setattr(shard, '_in_ability_row', lambda p: False)
     monkeypatch.setattr(shard.logger, 'event', lambda kind, **kw: state.events.append((kind, kw)))
     monkeypatch.setattr(shard.act, 'tap', lambda *a, **kw: state.taps.append(a) or {'dry_run': state.dry})
@@ -72,7 +72,7 @@ def test_refusals_do_not_restart_or_extend_collection_window(cycle, monkeypatch,
     elif reason == 'balance_unreadable':
         state.balance = None
     else:
-        monkeypatch.setattr(shard, 'battlefield_live', lambda *a: (False, 'static'))
+        monkeypatch.setattr(shard, 'battlefield_observation', lambda *a: (False, 'static', None))
     for now in [100, 115, 130, 145, 160, 200, 1059]:
         state.now = now
         tapper.poll(state.balance)
@@ -185,6 +185,21 @@ def test_unreadable_baseline_does_not_tap(cycle):
     assert state.events[-1] == ('gem_orbit_skip', {'reason': 'balance_unreadable'})
 
 
+@pytest.mark.parametrize('observed', [202, 206])
+def test_unknown_motion_gem_cannot_hide_a_readable_changed_balance(cycle, monkeypatch, observed):
+    state, tapper = cycle
+    tapper.poll(200)
+    detector = shard.find_orbit_gem
+    monkeypatch.setattr(shard, 'battlefield_observation', lambda *a: (True, 'live', observed))
+    monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw: None if frame == observed else detector(frame, **kw))
+    state.now = 105
+    tapper.poll(200)
+    assert len(state.taps) == 3
+    assert not any(kind == 'gem_orbit_claim' and data['confirmed'] for kind, data in state.events)
+    assert tapper.balance_before == (200 if observed == 202 else None)
+    assert tapper.sent_tap == (observed == 202)
+
+
 @pytest.mark.parametrize('unknown', ['balance', 'gem'])
 def test_transient_unknown_retries_the_next_supplied_frame(cycle, monkeypatch, unknown):
     state, tapper = cycle
@@ -204,7 +219,7 @@ def test_transient_unknown_retries_the_next_supplied_frame(cycle, monkeypatch, u
 
 def test_partial_set_unknown_preserves_actual_input_pacing(cycle, monkeypatch):
     state, tapper = cycle
-    frames = iter([200, 200, None])
+    frames = iter([200, None])
     monkeypatch.setattr(shard.capture, 'grab', lambda: next(frames))
     tapper.poll(200)
     assert len(state.taps) == 1
@@ -220,10 +235,10 @@ def test_partial_set_unknown_preserves_actual_input_pacing(cycle, monkeypatch):
 @pytest.mark.parametrize('reason', ['static', 'screen:home', 'windows_unreadable:OSError'])
 def test_hard_safety_backoff_still_blocks_early_input(cycle, monkeypatch, reason):
     state, tapper = cycle
-    monkeypatch.setattr(shard, 'battlefield_live', lambda *a: (False, reason))
+    monkeypatch.setattr(shard, 'battlefield_observation', lambda *a: (False, reason, None))
     tapper.poll(200)
     assert tapper.next_at == 115 and state.taps == []
-    monkeypatch.setattr(shard, 'battlefield_live', lambda *a: (True, 'live'))
+    monkeypatch.setattr(shard, 'battlefield_observation', lambda *a: (True, 'live', a[1]))
     state.now = 101
     tapper.poll(200)
     assert state.taps == []
@@ -266,7 +281,7 @@ def test_unknown_gem_stops_input_without_erasing_pending_confirmation(cycle, mon
     dispatched = len(state.taps)
     good = shard.find_orbit_gem(None)
     observations = iter([None] if stage == 'fresh' else [good, None])
-    monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw: next(observations))
+    monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw: next(observations, None))
     state.now = 105
     tapper.poll(200)
     assert len(state.taps) == dispatched
@@ -283,7 +298,7 @@ def test_camera_radius_change_before_dispatch_refuses(cycle, monkeypatch):
     center, _ = tapper._orbit_geometry()
     sightings = iter([170, 343])
     monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw:
-                        SimpleNamespace(center=(center[0]+next(sightings), center[1]),
+                        SimpleNamespace(center=(center[0]+next(sightings, 343), center[1]),
                                         rect=(0, 0, 80, 80), score=.99))
     tapper.poll(200)
     assert state.taps == []
@@ -335,6 +350,8 @@ def test_unreadable_observation_retains_dispatched_attempt_for_later_stable_conf
         frames = iter([200, None])
         monkeypatch.setattr(shard.capture, 'grab', lambda: next(frames))
         tapper.poll(200)
+        assert len(state.taps) == dispatched + 1
+        dispatched = len(state.taps)
         monkeypatch.setattr(shard.capture, 'grab', lambda: state.balance)
     assert len(state.taps) == dispatched
     assert tapper.balance_before == 200 and tapper.sent_tap
@@ -557,6 +574,65 @@ def test_dry_run_cannot_confirm_a_collection(cycle):
     state.now = 105
     tapper.poll(202)
     assert not any(k == 'gem_orbit_claim' for k, _ in state.events)
+
+
+def test_unknown_gem_diagnostic_keeps_supplied_field_once_per_stage(cycle, monkeypatch):
+    import cv2
+    import numpy as np
+
+    state, tapper = cycle
+    frame = np.full((2560, 1080, 3), (20, 30, 40), np.uint8)
+    state.balance = frame
+    monkeypatch.setattr(shard, 'read_gem_balance', lambda _: 200)
+    monkeypatch.setattr(shard, 'find_orbit_gem', lambda *a, **kw: None)
+    monkeypatch.setitem(shard.CONFIG['logging'], 'screenshot_on_trigger', True)
+    tapper.poll(frame)
+    tapper._gem_geometry(frame, 'fresh')
+    tapper._gem_geometry(frame, 'pre_tap')
+    diagnostics = [data for kind, data in state.events if kind == 'gem_orbit_recognition_unknown']
+    assert [data['stage'] for data in diagnostics] == ['fresh', 'pre_tap']
+    fx, fy, fw, fh = shard.field_region(0)
+    for data in diagnostics:
+        path = shard.logger.run_file().parent / data['field_frame']
+        saved = cv2.imread(str(path))
+        assert np.array_equal(saved, frame[fy:fy+fh, fx:fx+fw])
+    assert state.taps == []
+
+
+def test_unknown_motion_gem_is_saved_before_readable_fallback_once_per_window(cycle, monkeypatch):
+    import cv2
+    import numpy as np
+
+    state, tapper = cycle
+    fresh = np.full((2560, 1080, 3), (20, 30, 40), np.uint8)
+    motion = np.full_like(fresh, (50, 60, 70))
+    state.balance = fresh
+    tapper.taps = 1
+    detected = shard.find_orbit_gem(fresh)
+    monkeypatch.setattr(shard, 'read_gem_balance', lambda _: 200)
+    monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw:
+                        None if frame is motion else detected)
+    monkeypatch.setattr(shard, 'battlefield_observation', lambda *a: (True, 'live', motion))
+    monkeypatch.setitem(shard.CONFIG['logging'], 'screenshot_on_trigger', True)
+
+    tapper.poll(fresh)
+    state.now = 105
+    tapper.poll(fresh)
+    diagnostics = [data for kind, data in state.events if kind == 'gem_orbit_recognition_unknown']
+    assert [data['stage'] for data in diagnostics] == ['motion']
+    path = shard.logger.run_file().parent / diagnostics[0]['field_frame']
+    fx, fy, fw, fh = shard.field_region(0)
+    assert np.array_equal(cv2.imread(str(path)), motion[fy:fy+fh, fx:fx+fw])
+    assert len(state.taps) == 2
+    assert not any(kind == 'gem_orbit_claim' for kind, _ in state.events)
+
+    state.now = 160
+    tapper.poll(fresh)
+    state.now = 1060
+    tapper.poll(fresh)
+    diagnostics = [data for kind, data in state.events if kind == 'gem_orbit_recognition_unknown']
+    assert [data['stage'] for data in diagnostics] == ['motion', 'motion']
+    assert len(list(path.parent.glob('*gem_not_detected*.png'))) == 2
 
 
 def test_returns_post_tap_frame_even_after_last_tap(cycle, monkeypatch):

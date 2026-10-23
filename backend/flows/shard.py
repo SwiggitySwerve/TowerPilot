@@ -47,7 +47,10 @@ from pathlib import Path
 # backend root as cwd - put that root on sys.path so sibling modules resolve.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from collections.abc import Callable
+
 import cv2
+import numpy as np
 
 from device import act
 from device import capture
@@ -241,9 +244,18 @@ def _probe_box(points, pad: int = ORBIT_PROBE_PAD) -> tuple[int, int, int, int]:
 
 
 def battlefield_live(points, frame=None, *, guard=None) -> tuple[bool, str]:
+    """Boolean guard contract for callers that do not consume its latest frame."""
+    ok, why, _ = battlefield_observation(points, frame, guard=guard)
+    return ok, why
+
+
+def battlefield_observation(points: list[tuple[int, int]], frame: np.ndarray | None = None,
+                            *, guard: Callable[[np.ndarray, str], np.ndarray] | None = None
+                            ) -> tuple[bool, str, np.ndarray | None]:
     """Is the tower on screen with nothing over `points`, RIGHT NOW?
 
-    Returns (ok, why) - `why` is logged on a refusal so a run that collects
+    Returns (ok, why, verified_frame); refusals expose no usable frame.
+    `why` is logged on a refusal so a run that collects
     nothing says which gate stopped it rather than going quiet. See the note
     above GEM_ORBIT_* for why each of the three checks is here.
     """
@@ -251,20 +263,20 @@ def battlefield_live(points, frame=None, *, guard=None) -> tuple[bool, str]:
     if guard is not None:
         frame = guard(frame, "battle")
     if not points:
-        return False, "no_points"
+        return False, "no_points", None
     if wave_reader.read_wave(frame) is None:
-        return False, "no_wave"
+        return False, "no_wave", None
     layout_offset = capture.layout_offset
     name = screen.identify(frame).name
     if name != "battle":
-        return False, f"screen:{name}"
+        return False, f"screen:{name}", None
     try:
         from device import overlays
         wins = overlays.windows(settings.instance()["serial"], visible_only=True)
     except Exception as exc:                      # noqa: BLE001
         # The window list is EVIDENCE, and evidence that cannot be read is not
         # permission: an adb hiccup must not turn into a blind tap.
-        return False, f"windows_unreadable:{type(exc).__name__}"
+        return False, f"windows_unreadable:{type(exc).__name__}", None
     # IN FRONT, not merely present. `dumpsys window windows` lists front to
     # back, and a backgrounded activity stays in it: the Play Store sat at #1
     # behind the game (#0) all day on 2026-10-13 while the game played
@@ -272,28 +284,27 @@ def battlefield_live(points, frame=None, *, guard=None) -> tuple[bool, str]:
     # matters is whether anything that is not system chrome is ABOVE the game.
     blocker = overlays.foreground_blocker(wins)
     if blocker:
-        return False, blocker
+        return False, blocker, None
     y0, y1, x0, x1 = _probe_box(points)
     time.sleep(ORBIT_MOTION_GAP)
     after = capture.grab()
     if guard is not None:
         after = guard(after, "battle")
     if wave_reader.read_wave(after) is None:
-        return False, "no_wave"
+        return False, "no_wave", None
     if capture.layout_offset != layout_offset:
-        return False, "layout_changed"
+        return False, "layout_changed", None
     name = screen.identify(after).name
     if name != "battle":
-        return False, f"screen:{name}"
+        return False, f"screen:{name}", None
     if frame.shape != after.shape or not (0 <= y0 < y1 <= frame.shape[0]
                                          and 0 <= x0 < x1 <= frame.shape[1]):
-        return False, "invalid_probe"
+        return False, "invalid_probe", None
     motion = float(cv2.absdiff(frame[y0:y1, x0:x1],
                                after[y0:y1, x0:x1]).mean())
     if motion < ORBIT_MOTION_MIN:
-        return False, f"static:{motion:.1f}"
-    return True, "live"
-
+        return False, f"static:{motion:.1f}", None
+    return True, "live", after
 
 class GemOrbitTapper:
     """Scheduled arc windows; a stable +2 HUD balance stops the window early.
@@ -382,6 +393,7 @@ class GemOrbitTapper:
         self.manual_active = False
         self._balance_diagnostic_written = False
         self._gem_observation_states = set()
+        self._gem_diagnostic_stages = set()
         self._input_ready_at = 0.0
 
     def _balance_unreadable(self, frame, stage):
@@ -434,6 +446,17 @@ class GemOrbitTapper:
         return _orbit_points(center, radius, self.angle, self.taps,
                              self.jitter, self.spread)
 
+    def _record_gem_unknown(self, frame: np.ndarray, stage: str) -> None:
+        if stage not in self._gem_diagnostic_stages:
+            self._gem_diagnostic_stages.add(stage)
+            fx, fy, fw, fh = field_region(capture.layout_offset)
+            crop = (frame[fy:fy+fh, fx:fx+fw]
+                    if getattr(frame, 'ndim', None) == 3
+                    and 0 <= fx < fx+fw <= frame.shape[1]
+                    and 0 <= fy < fy+fh <= frame.shape[0] else None)
+            filename = logger.shot(crop, 'gem_not_detected') if crop is not None else None
+            logger.event('gem_orbit_recognition_unknown', stage=stage, field_frame=filename)
+
     def _gem_geometry(self, frame, stage: str) -> tuple[OrbitGem, float] | None:
         gem = find_orbit_gem(frame, layout_offset=capture.layout_offset)
         visible = gem is not None
@@ -449,6 +472,7 @@ class GemOrbitTapper:
                          gem_rect=gem.rect if visible else None,
                          score=gem.score if visible else None)
         if not visible:
+            self._record_gem_unknown(frame, stage)
             self._backoff('gem_not_detected')
             return None
         return gem, radius
@@ -563,16 +587,33 @@ class GemOrbitTapper:
         if any(not (fx <= x < fx+fw and fy <= y < fy+fh) for x, y in points):
             self._backoff('invalid_orbit_arc')
             return frame
-        ok, why = battlefield_live(points, frame,
+        ok, why, verified_frame = battlefield_observation(points, frame,
                                     **({"guard": self.guard} if self.guard is not None else {}))
-        if not ok:
-            self._backoff(why)
+        if not ok or verified_frame is None:
+            self._backoff(why if not ok else 'battle_frame_unreadable')
             return frame
         self._last_skip = None
         if self.balance_before is None:
             self.balance_before = balance
-        for x, y in points:
-            frame = capture.grab()
+        for index, (x, y) in enumerate(points):
+            # The motion probe's final frame is already fresh. Keep its
+            # pixels for the first input decision instead of discarding them
+            # and requiring another independent clean observation.
+            frame = verified_frame if index == 0 else capture.grab()
+            motion_balance = read_gem_balance(frame) if index == 0 else None
+            motion_unknown = (
+                index == 0
+                and motion_balance == self.balance_before
+                and find_orbit_gem(frame, layout_offset=layout_offset) is None
+            )
+            if motion_unknown:
+                self._record_gem_unknown(frame, 'motion')
+            if index == 0 and (motion_balance is None or motion_unknown):
+                # Retain the original fresh-capture opportunity when the
+                # motion frame cannot supply optical evidence for input.
+                # A readable changed balance must reach the conflict/reward
+                # handling below; a missing gem must never hide it.
+                frame = capture.grab()
             if self.guard is not None:
                 frame = self.guard(frame, "battle")
             if wave_reader.read_wave(frame) is None or screen.identify(frame).name != "battle":
