@@ -44,7 +44,7 @@ export const runEntry = {
     minimum: entry('The value is below the allowed minimum.'),
     maximum: entry('The value exceeds the allowed maximum.'),
     choice: entry('Choose one of the available values.'),
-    list: entry('Use up to 30 nonblank perk fragments, one per line.'),
+    list: entry('Use nonblank perk fragments, one per line.'),
     text: entry('Enter a nonblank label.'),
     unchanged: entry('No change to save.'),
     unavailable: entry('A current profile and vocabulary read is required.'),

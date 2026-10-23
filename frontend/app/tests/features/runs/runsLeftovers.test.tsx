@@ -401,6 +401,46 @@ describe('F6-11 RL2 reset every override of this battle at once (r12 candidate r
   });
 });
 
+describe('RL2 F6-11-P2-05 mixed shopping and routine override reset-all', () => {
+  const reason =
+    'This battle also overrides its shopping plan. Resetting a shopping plan from here is not available yet. Reset routine overrides one at a time.';
+
+  it.each([2, 1])(
+    'RL2 F6-11-P2-05 %i routine overrides plus a shopping plan list every leaf, disable reset-all with a reason, and send zero POSTs',
+    async (routineCount) => {
+      const read = dashboardPagesCase('shopping_queue.shopping_plan_routine_overrides_applied');
+      if (routineCount === 1) {
+        // Modified recorded read: remove only interval_sec from both override maps to cover
+        // exactly one routine leaf plus the shopping plan (no such read was recorded).
+        const battle = (read.body as { battle: Record<string, unknown> }).battle;
+        for (const key of ['overrides', 'applied_overrides']) {
+          const overrides = battle[key] as { routines: { shopping: Record<string, unknown> } };
+          delete overrides.routines.shopping['interval_sec'];
+        }
+      }
+      const page = await openLive(() => read);
+      const all = within(liveRegion()).getByRole('button', {
+        name: `Use the battle's starting values for all ${String(routineCount + 1)}`,
+      });
+      expect(all).toHaveAttribute('aria-disabled', 'true');
+      expect(all).toHaveAccessibleDescription(reason);
+      expect(within(liveRegion()).getByText(reason)).toBeVisible();
+      const list = liveRegion().querySelector('[data-reset-all-items]');
+      expect(list).not.toBeNull();
+      expect(within(list as HTMLElement).getAllByRole('listitem')).toHaveLength(routineCount + 1);
+      expect(within(list as HTMLElement).getByText('Shopping plan')).toBeVisible();
+      expect(resetRows()).toHaveLength(routineCount);
+      await page.user.click(all);
+      await page.advance(30_000);
+      expect(document.querySelector('dialog[open]')).toBeNull();
+      expect(page.fake.writes()).toEqual([]);
+      expect(textOutsideCatalogue(page.view.container)).toEqual([]);
+      vi.useRealTimers();
+      expect(await axe(page.view.container)).toHaveNoViolations();
+    },
+  );
+});
+
 describe('F6-11-IR-01 a live change follows later reads of its own battle', () => {
   const SWITCH_OFF = live('accepted_switch_off');
   const outcomeText = () =>

@@ -35,6 +35,7 @@ export const schedule = {
     dirty: entry('Save or discard your changes first.'),
     revision: entry('The profile revision has not been read.'),
     reading: entry('Wait for the saved plan read.'),
+    checking: entry('Wait while the emulator, account and profile are checked.'),
     sending: entry('Wait for this save answer.'),
     unknown: entry('Check the unknown save before removing the plan.'),
     reconcile: entry('Read and reconcile the saved revision first.'),
@@ -43,6 +44,27 @@ export const schedule = {
     'Day plan removed. The scheduler uses its legacy rules from its next load; this is not confirmation of that load.',
   ),
   readRemoved: entry('Readback confirms the day plan is removed.'),
+  /** F6-11-P2-04: what a confirmed removal click did, before any answer. */
+  removeChecking: entry(
+    'Checking that this emulator, account and profile are still selected before removing the day plan.',
+  ),
+  removeRequested: entry(
+    'Removal of the day plan requested. Waiting for its answer; nothing is confirmed yet.',
+  ),
+  removeSending: entry('Removing the day plan… Nothing is confirmed until the answer arrives.'),
+  removeUnknown: entry(
+    'Day plan removal outcome unknown. Read the saved plan; do not resend the request.',
+  ),
+  removeRefused: entry('Day plan removal refused. The saved plan is unchanged.'),
+  /** F6-11-P2-01: a Save or Remove click whose click-time context check sent nothing. */
+  notSent: {
+    context_unconfirmed: entry(
+      'Not sent: the selected emulator, account and profile could not be confirmed just now. Nothing was changed and your draft is kept. Try again.',
+    ),
+    context_changed: entry(
+      'Not sent: the emulator, account or profile changed after this page was read. Nothing was changed; your draft stays with the profile it was made for.',
+    ),
+  },
   empty: entry(
     'This plan has no blocks. It is invalid; an empty plan does not enable fallback scheduling.',
   ),
@@ -109,6 +131,7 @@ export const schedule = {
   saveUnavailable: {
     clean: entry('Edit a block or weekday mapping before saving.'),
     reading: entry('Wait for the saved plan read.'),
+    checking: entry('Wait while the emulator, account and profile are checked.'),
     sending: entry('Wait for this save answer.'),
     unknown: entry('Check the unknown save before saving again.'),
     reconcile: entry('Read and reconcile the saved revision before saving again.'),

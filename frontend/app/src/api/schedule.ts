@@ -7,6 +7,7 @@ import {
 } from './context.ts';
 import { own } from '../core/read.ts';
 import { readEndpoint } from './client.ts';
+import { createClickTimeContextRead } from './clickContext.ts';
 import { createIntentMachine, type IntentMachine } from './intents/machine.ts';
 import { sendOnce } from './intents/send.ts';
 import { createSequence } from './sequence.ts';
@@ -123,6 +124,10 @@ export function createScheduleApi(
   windowMs?: number,
 ) {
   const sequence = createSequence();
+  // F6-11-P2-01: a profile patch names a profile, not the page context, so the server cannot
+  // refuse a write after another client changed the emulator, account or profile: the page
+  // fences each explicit click with a config read started after it (as Profiles, Collection).
+  const readClickContext = createClickTimeContextRead(transport, config);
   const machine = createIntentMachine({
     transport,
     storage: intentStorage(storage),
@@ -138,6 +143,14 @@ export function createScheduleApi(
     reportMatches: (body: unknown, context: PageContext) =>
       sameContext(readStoredContext(own(body, 'context')), context),
     readConfig: (signal: AbortSignal) => readEndpoint(transport, config, '/api/config', signal),
+    /**
+     * Whether a config read started now (never joined to an earlier read) still names exactly
+     * `context`: `unconfirmed` when it has no usable answer.
+     */
+    checkContext: async (context: PageContext): Promise<'same' | 'changed' | 'unconfirmed'> => {
+      const named = await readClickContext();
+      return named === null ? 'unconfirmed' : sameContext(named, context) ? 'same' : 'changed';
+    },
     readProfile: (name: string, signal: AbortSignal) =>
       readEndpoint(transport, source, `/api/profile-src/${encodeURIComponent(name)}`, signal),
     readStatus: (context: PageContext, signal: AbortSignal) =>

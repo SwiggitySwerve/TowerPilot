@@ -121,10 +121,12 @@ export function runAddAnswer(
     (sent.baseRevision === undefined || id(own(answer.body, 'revision')) !== undefined)
   )
     return 'confirmed';
-  // The recorded route can catch an error AFTER saving and return 400. It is not a refusal.
-  if (own(answer.body, 'error') === 'the answer could not be built after the file was written')
-    return 'unconfirmed';
-  return (answer.status === 400 || answer.status === 409) && own(answer.body, 'ok') === false
+  // Only these stable codes guarantee a pre-write refusal. An uncoded 400 can come
+  // from backup cleanup or the revision read AFTER saving; error text proves nothing.
+  const code = own(answer.body, 'code');
+  return own(answer.body, 'ok') === false &&
+    ((answer.status === 400 && code === 'invalid_request') ||
+      (answer.status === 409 && (code === 'revision_conflict' || code === 'context_changed')))
     ? 'refused'
     : 'unconfirmed';
 }

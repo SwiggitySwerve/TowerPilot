@@ -1,7 +1,7 @@
 import { act, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { own } from '../../../src/core/read.ts';
+import { entries, own } from '../../../src/core/read.ts';
 import { selectRunsAdd } from '../../../src/store/selectors/runsAdd.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import type { DashboardCase } from '../../support/dashboardFixture.ts';
@@ -204,7 +204,7 @@ describe('RL4 Add a run', () => {
     dashboardPagesCaseNames('run_templates_add').filter(
       (name) => sample(name).status === 400 && name !== 'written_then_the_answer_failed',
     ),
-  )('RL4 server 400 keeps the form and its exact text: %s', async (name) => {
+  )('RL4 F6-11-P2-02 uncoded server 400 stays Unknown with its exact text: %s', async (name) => {
     // Fault injection replays each recorded server refusal to a well-formed fenced request, including races and server-side validation.
     const entry = sample(name);
     const page = await open({
@@ -214,11 +214,11 @@ describe('RL4 Add a run', () => {
     });
     await fill(page, fenced('added_with_the_matching_revision_and_context'));
     await save(page);
-    expect(
-      name === 'body_not_json_400'
-        ? form().getByText(/^Unknown: the add/u)
-        : form().getByText('Run was not added. Your draft is kept.'),
-    ).toBeVisible();
+    expect(form().getByText(/^Unknown: the add/u)).toBeVisible();
+    expect(form().getByRole('button', { name: 'Save new run' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     expect(
       document.querySelector('[data-run-add-outcome] [data-server-text="message"]')?.textContent,
     ).toBe(own(entry.body, 'error') ?? own(entry.body, 'text'));
@@ -238,6 +238,7 @@ describe('RL4 Add a run', () => {
       });
       await fill(page, fenced('added_with_the_matching_revision_and_context'));
       await save(page);
+      expect(form().getByText(/^Unknown: the add/u)).toBeVisible();
       expect(form().getByRole('link', { name: 'Open Profiles' })).toHaveAttribute(
         'href',
         '#profiles',
@@ -260,6 +261,7 @@ describe('RL4 Add a run', () => {
     });
     await fill(page, fenced('added_with_the_matching_revision_and_context'));
     await save(page);
+    expect(form().getByText('Run was not added. Your draft is kept.')).toBeVisible();
     expect(form().getByLabelText('Run identifier')).toHaveValue('fenced_one');
     expect(
       document.querySelector('[data-run-add-outcome] [data-server-text="message"]')?.textContent,
@@ -270,6 +272,66 @@ describe('RL4 Add a run', () => {
       ).toContain('beta');
     expect(page.fake.writes()).toHaveLength(1);
   });
+
+  it.each(['written_then_the_answer_failed', 'run_id_taken', 'ordinary_filesystem_error'])(
+    'RL4 F6-11-P2-02 %s locks Unknown until a positive profile read without resending',
+    async (name) => {
+      let source = SOURCE;
+      const entry = sample(
+        name === 'ordinary_filesystem_error' ? 'written_then_the_answer_failed' : name,
+      );
+      // Replay a recorded failure after a valid lost_run request to test the client fence.
+      // For the filesystem variation, change only the post-write error text: backup cleanup
+      // can raise an ordinary OSError through the same catch after the profile was saved.
+      const answer =
+        name === 'ordinary_filesystem_error'
+          ? {
+              ...entry,
+              body: {
+                ...Object.fromEntries(entries(entry.body)),
+                error: '[Errno 13] Permission denied while removing a profile backup',
+              },
+            }
+          : entry;
+      const page = await open(
+        {
+          before: (fake) => {
+            fake.route('POST', ADD, () => answer);
+          },
+        },
+        () => source,
+      );
+      await fill(page, fenced('added_and_the_answer_is_lost'));
+      await save(page);
+      expect(form().getByText(/^Unknown: the add/u)).toBeVisible();
+      expect(
+        document.querySelector('[data-run-add-outcome] [data-server-text="message"]')?.textContent,
+      ).toBe(own(answer.body, 'error'));
+      expect(form().getByRole('button', { name: 'Save new run' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+      expect(form().getByText(/^Wait for this add to finish/u)).toBeVisible();
+      await save(page);
+      await page.user.click(form().getByRole('button', { name: 'Check profile' }));
+      await page.advance(100);
+      expect(form().getByText(/^Unknown: the add/u)).toBeVisible();
+      expect(form().getByLabelText('Run identifier')).toHaveValue('lost_run');
+      const record = page.data.machine.snapshot().findLast((item) => item.kind === 'run_add');
+      expect(record?.phase).toBe('unconfirmed');
+      expect(page.data.machine.resend(record?.id ?? '')).toBe('not_resendable');
+      await page.advance(20_000);
+      expect(page.fake.writes()).toHaveLength(1);
+      source = fenced('read_settles_the_lost_answer_the_run_is_there_once');
+      await page.user.click(form().getByRole('button', { name: 'Check profile' }));
+      await page.advance(100);
+      expect(form().getByText('New run saved.')).toBeVisible();
+      expect(page.data.machine.snapshot().find((item) => item.id === record?.id)?.phase).toBe(
+        'confirmed',
+      );
+      expect(page.fake.writes()).toHaveLength(1);
+    },
+  );
 
   it.each([
     ['added_and_the_answer_is_lost', 'read_settles_the_lost_answer_the_run_is_there_once'],

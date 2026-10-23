@@ -6,7 +6,7 @@ import {
   runIdCheck,
   runRecipes,
 } from '../../src/core/runAdd.ts';
-import { own, ownPath } from '../../src/core/read.ts';
+import { entries, own, ownPath } from '../../src/core/read.ts';
 import { dashboardPagesCase, dashboardPagesCaseNames } from '../support/dashboardFixture.ts';
 
 const sample = (name: string) => dashboardPagesCase(`run_templates_add.${name}`);
@@ -62,12 +62,25 @@ describe('RL4 recipe rules', () => {
   );
 
   it.each(
-    dashboardPagesCaseNames('run_templates_add').filter((name) => sample(name).status === 400),
-  )('RL4 recorded 400 class %s is refused except a failure after writing', (name) => {
+    dashboardPagesCaseNames('run_templates_add').filter((name) =>
+      [400, 409].includes(sample(name).status),
+    ),
+  )('RL4 F6-11-P2-02 uncoded recorded failure %s is Unknown', (name) => {
     expect(runAddAnswer(sample(name), { blueprint: 'new_run', preset: 'coin' })).toBe(
-      name === 'written_then_the_answer_failed' || name === 'body_not_json_400'
-        ? 'unconfirmed'
-        : 'refused',
+      'unconfirmed',
+    );
+  });
+
+  it('RL4 F6-11-P2-02 an ordinary post-write filesystem error stays Unknown regardless of its message', () => {
+    const entry = sample('written_then_the_answer_failed');
+    // The recorded post-write catch has the same envelope for a backup-cleanup OSError.
+    // Change only its message: error prose cannot prove whether the file was written.
+    const body = {
+      ...Object.fromEntries(entries(entry.body)),
+      error: '[Errno 13] Permission denied while removing a profile backup',
+    };
+    expect(runAddAnswer({ ...entry, body }, { blueprint: 'new_run', preset: 'coin' })).toBe(
+      'unconfirmed',
     );
   });
 
@@ -75,7 +88,7 @@ describe('RL4 recipe rules', () => {
     dashboardPagesCaseNames('run_templates_add_fenced').filter(
       (name) => fenced(name).request.method === 'POST',
     ),
-  )('RL4 guarded answer %s follows its recorded outcome', (name) => {
+  )('RL4 F6-11-P2-02 guarded answer %s refuses only stable pre-write codes', (name) => {
     const entry = fenced(name);
     const body = entry.request.body;
     const blueprint = own(body, 'run_id');
@@ -94,9 +107,26 @@ describe('RL4 recipe rules', () => {
     ).toBe(
       entry.status === 200
         ? 'confirmed'
-        : name === 'written_then_the_answer_failed' || name === 'body_not_json_400'
-          ? 'unconfirmed'
-          : 'refused',
+        : [
+              'composed_for_alpha_is_refused_after_the_switch',
+              'context_when_config_yaml_is_missing_is_refused_and_creates_nothing',
+              'expected_context_missing_the_serial',
+              'expected_context_not_an_object',
+              'expected_context_null_is_refused_not_read_as_absent',
+              'expected_context_serial_not_text',
+              'expected_revision_empty_is_a_stale_revision',
+              'expected_revision_not_text_is_a_stale_revision',
+              'expected_revision_null_is_a_stale_revision',
+              'identical_resend_after_the_error_is_refused_stale',
+              'resend_of_the_first_request_after_it_committed_is_refused_stale',
+              'stale_revision_409_nothing_written',
+              'stale_revision_is_judged_before_the_recipe_and_its_choices',
+              'the_context_is_judged_before_the_revision',
+              'the_current_context_with_a_stale_revision_is_a_revision_conflict',
+              'the_identical_resend_is_refused_stale_not_applied_twice',
+            ].includes(name)
+          ? 'refused'
+          : 'unconfirmed',
     );
   });
 

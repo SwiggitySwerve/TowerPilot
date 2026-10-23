@@ -238,8 +238,7 @@ function ResetRow({
   return (
     <li className="tp-run-reset" data-path={item.path}>
       <span id={`${own}-name`} className="tp-run-reset__name">
-        <span>{entryOf(t.routines, item.routine, t.otherRoutine).short}</span>
-        <span>{entryOf(t.fields, item.field, t.otherField).short}</span>
+        <OverrideName item={item} />
       </span>
       {reset.enabled ? (
         <Button
@@ -273,11 +272,17 @@ function ResetRow({
 }
 
 /** The routine and field names of one override, as one line. */
-function OverrideName({ routine, field }: { readonly routine: string; readonly field: string }) {
+function OverrideName({
+  item,
+}: {
+  readonly item:
+    { readonly routine: string; readonly field: string } | { readonly kind: 'shopping_plan' };
+}) {
+  if (!('routine' in item)) return <span>{t.live.overrides.shoppingPlan.short}</span>;
   return (
     <>
-      <span>{entryOf(t.routines, routine, t.otherRoutine).short}</span>
-      <span>{entryOf(t.fields, field, t.otherField).short}</span>
+      <span>{entryOf(t.routines, item.routine, t.otherRoutine).short}</span>
+      <span>{entryOf(t.fields, item.field, t.otherField).short}</span>
     </>
   );
 }
@@ -317,7 +322,7 @@ function LiveResets({
       ? resetAll
       : null;
   if (asking !== null && current === null && all === null) setAsking(null);
-  if (resets.length === 0) return null;
+  if (resets.length === 0 && resetAll === null) return null;
   const o = t.live.overrides;
   const command = current?.reset.command ?? all?.reset.command ?? null;
   return (
@@ -339,6 +344,15 @@ function LiveResets({
       </ul>
       {resetAll === null ? null : (
         <div className="tp-run-reset tp-run-reset--all" data-reset-all="true">
+          {resetAll.reset.enabled ? null : (
+            <ul className="tp-run-resets__confirm-list" data-reset-all-items="true">
+              {resetAll.items.map((item) => (
+                <li key={item.path} className="tp-run-reset__name">
+                  <OverrideName item={item} />
+                </li>
+              ))}
+            </ul>
+          )}
           {resetAll.reset.enabled ? (
             <Button
               tier="quiet"
@@ -377,14 +391,14 @@ function LiveResets({
           <>
             {current === null ? null : (
               <p className="tp-run-reset__name">
-                <OverrideName routine={current.routine} field={current.field} />
+                <OverrideName item={current} />
               </p>
             )}
             {all === null ? null : (
               <ul className="tp-run-resets__confirm-list">
                 {all.items.map((item) => (
                   <li key={item.path} className="tp-run-reset__name">
-                    <OverrideName routine={item.routine} field={item.field} />
+                    <OverrideName item={item} />
                   </li>
                 ))}
               </ul>

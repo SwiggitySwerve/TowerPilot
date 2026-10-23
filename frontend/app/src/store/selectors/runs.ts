@@ -5,6 +5,7 @@ import { readiness, runDefined, type ReadinessView } from '../../core/readiness.
 import {
   controlGroups,
   liveMark,
+  liveOverrideLeaves,
   liveResetGate,
   liveResetKey,
   liveSaveGate,
@@ -14,6 +15,7 @@ import {
   type DraftValues,
   type InvalidReason,
   type LiveMark,
+  type LiveOverrideLeaf,
   type SaveRequest,
 } from '../../core/runControls.ts';
 import {
@@ -92,11 +94,7 @@ export interface EditorVM<C> {
 }
 
 export interface LiveResetAllVM {
-  readonly items: readonly {
-    readonly path: string;
-    readonly routine: string;
-    readonly field: string;
-  }[];
+  readonly items: readonly LiveOverrideLeaf[];
   /** The target the reset would be sent to (core liveResetKey), or null while it is not offered. */
   readonly target: string | null;
   readonly reset: CommandVM<ResetLiveCommand>;
@@ -738,6 +736,7 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
   const changed = groups.flatMap((group) =>
     group.fields.filter((field) => liveMark(battle, field) === 'changed'),
   );
+  const leaves = liveOverrideLeaves(battle);
   const resetOf = (paths: readonly string[]) => {
     const reset = liveResetGate(battle, fresh, paths, request);
     return reset.enabled
@@ -787,11 +786,11 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
         ...resetOf([field.path]),
       })),
       resetAll:
-        changed.length < 2
+        leaves.length < 2
           ? null
           : {
-              items: changed.map(({ path, routine, field }) => ({ path, routine, field })),
-              ...resetOf(changed.map((field) => field.path)),
+              items: leaves,
+              ...resetOf(leaves.map((leaf) => leaf.path)),
             },
     },
   };

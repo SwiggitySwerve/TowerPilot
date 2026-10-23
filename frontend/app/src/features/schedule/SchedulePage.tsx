@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { schedule as t } from '../../copy/schedule.ts';
 import { currentSchedule, type ScheduleStore } from '../../store/schedule.ts';
 import type { ServerText } from '../../copy/server.ts';
@@ -81,6 +81,16 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
   const vm = selectSchedule(state, now);
   const entry = vm.entry;
   const announce = useAnnounce();
+  // F6-11-P2-04: "removed" is announced only once an answer or a read proves it, once per
+  // request; sending a removal announces only that it was requested.
+  const announcedRemoval = useRef<string | null>(null);
+  const removalId = vm.removal ? (entry?.intent?.id ?? null) : null;
+  const removalProved = vm.outcome === 'removed' || vm.outcome === 'readRemoved';
+  useEffect(() => {
+    if (removalId === null || !removalProved || announcedRemoval.current === removalId) return;
+    announcedRemoval.current = removalId;
+    announce(vm.outcome === 'readRemoved' ? t.readRemoved.short : t.removed.short);
+  }, [announce, removalId, removalProved, vm.outcome]);
   useEffect(() => {
     const timer = setInterval(() => {
       setNow(Date.now());
@@ -139,8 +149,7 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
           )}
           {vm.previousWinner === null ? null : (
             <p>
-              {t.previousWinner.short}
-              <ServerValue kind="name" value={vm.previousWinner} />
+              {t.previousWinner.short} <ServerValue kind="name" value={vm.previousWinner} />
             </p>
           )}
           <div className="tp-schedule__facts">
@@ -196,13 +205,14 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
         ) : null}
         {entry?.busy === true ? <p role="status">{t.reading.short}</p> : null}
         {entry?.readError === true ? <p role="alert">{t.readError.short}</p> : null}
+        {vm.notSent === null ? null : <p role="alert">{t.notSent[vm.notSent].short}</p>}
         {entry?.source !== undefined && !vm.hasDraftPlan ? <p>{t.missing.short}</p> : null}
         {/* F6-11 RL8: once the plan is removed its editor is gone; its outcome stays here. */}
         {!vm.hasDraftPlan && vm.outcome !== null ? (
           <section
             aria-label={t.validation.short}
             className="tp-schedule__errors"
-            role={vm.outcome === 'refused' ? 'alert' : 'status'}
+            role={vm.outcome === 'refused' || vm.outcome === 'removeRefused' ? 'alert' : 'status'}
           >
             <p>{t[vm.outcome].short}</p>
             {vm.error === null ? null : (
@@ -431,7 +441,7 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
             <section
               aria-label={t.validation.short}
               className="tp-schedule__errors"
-              role={vm.outcome === 'refused' ? 'alert' : 'status'}
+              role={vm.outcome === 'refused' || vm.outcome === 'removeRefused' ? 'alert' : 'status'}
             >
               <div id="schedule-errors">
                 {vm.outcome === null ? null : <p>{t[vm.outcome].short}</p>}
@@ -477,9 +487,11 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
                 id="schedule:save"
                 tier="secondary"
                 label={t.save.short}
-                busy={entry.intent?.phase === 'sending'}
+                busy={entry.intent?.phase === 'sending' || vm.checking}
                 {...(!vm.canSave ? { disabled: true, reasonId: 'schedule:save-reason' } : {})}
-                onClick={schedule.save}
+                onClick={() => {
+                  void schedule.save();
+                }}
               />
               <Button
                 id="schedule:discard"
@@ -505,6 +517,7 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
               id="schedule:remove"
               tier="quiet"
               label={t.removePlan.short}
+              busy={vm.checking}
               {...(vm.removeBlocked === null
                 ? {}
                 : { disabled: true, reasonId: 'schedule:remove-reason' })}
@@ -542,16 +555,17 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
           }}
           onConfirm={() => {
             const target = schedule.getSnapshot();
-            if (
-              removeTarget !== null &&
-              removeTarget.key === target.key &&
-              removeTarget.epoch === target.epoch &&
-              schedule.removePlan(removeTarget.revision)
-            ) {
-              announce(t.removed.short);
-              focus('schedule:read');
-            }
+            const asked = removeTarget;
             setRemoveTarget(null);
+            if (asked === null || asked.key !== target.key || asked.epoch !== target.epoch) return;
+            // F6-11-P2-01/04: the click starts a context check; only a sent request is
+            // announced, as requested (the outcome announces a proved removal).
+            announce(t.removeChecking.short);
+            focus('schedule:read');
+            void schedule.removePlan(asked.revision).then((result) => {
+              if (result === 'sent') announce(t.removeRequested.short);
+              else if (result !== 'blocked') announce(t.notSent[result].short);
+            });
           }}
         />
         <ConfirmDialog

@@ -63,13 +63,17 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
     );
   // F6-11 RL8: the newest request removed the whole plan section ({op:"delete"}).
   const removal = intent !== null && own(JSON.parse(intent.request.body), 'op') === 'delete';
+  // F6-11-P2-04: a removal says removal, never "save", in every state.
   const outcome:
     | 'readApplied'
     | 'readRemoved'
     | 'readUnchanged'
     | 'sending'
+    | 'removeSending'
     | 'unknown'
+    | 'removeUnknown'
     | 'refused'
+    | 'removeRefused'
     | 'partial'
     | 'confirmed'
     | 'removed'
@@ -81,11 +85,17 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
       : intent?.readSettlement === 'not_applied'
         ? 'readUnchanged'
         : intent?.phase === 'sending'
-          ? 'sending'
+          ? removal
+            ? 'removeSending'
+            : 'sending'
           : intent?.phase === 'unconfirmed'
-            ? 'unknown'
+            ? removal
+              ? 'removeUnknown'
+              : 'unknown'
             : intent?.phase === 'refused'
-              ? 'refused'
+              ? removal
+                ? 'removeRefused'
+                : 'refused'
               : partial
                 ? 'partial'
                 : intent?.phase === 'confirmed'
@@ -112,18 +122,21 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
             : available
               ? null
               : 'unavailable';
-  const saveUnavailable: 'clean' | 'reading' | 'sending' | 'unknown' | 'reconcile' | 'revision' =
+  const saveUnavailable:
+    'clean' | 'reading' | 'checking' | 'sending' | 'unknown' | 'reconcile' | 'revision' =
     e?.baseRevision === null || e === null || e.readError
       ? 'revision'
       : e.busy
         ? 'reading'
-        : intent?.phase === 'sending'
-          ? 'sending'
-          : pending
-            ? 'unknown'
-            : e.reconcile
-              ? 'reconcile'
-              : 'clean';
+        : e.checking
+          ? 'checking'
+          : intent?.phase === 'sending'
+            ? 'sending'
+            : pending
+              ? 'unknown'
+              : e.reconcile
+                ? 'reconcile'
+                : 'clean';
   return {
     entry: e,
     profile: fromServer('name', state.context?.profile),
@@ -177,6 +190,7 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
       e !== null &&
       e.dirty &&
       !e.busy &&
+      !e.checking &&
       !e.readError &&
       !e.reconcile &&
       !pending &&
@@ -186,6 +200,11 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
     partial,
     saveUnavailable,
     outcome,
+    /** F6-11 RL8: the newest request of this target removed the plan section. */
+    removal,
+    /** F6-11-P2-01: a click-time context check is running; why the last click sent nothing. */
+    checking: e?.checking === true,
+    notSent: e?.notSent ?? null,
     error: fromServer('message', own(intent?.answer?.body, 'error')),
     problems: [
       ...messages(own(e?.source, 'problems')),
@@ -207,13 +226,15 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
           ? ('revision' as const)
           : e.busy
             ? ('reading' as const)
-            : intent?.phase === 'sending'
-              ? ('sending' as const)
-              : pending
-                ? ('unknown' as const)
-                : e.reconcile
-                  ? ('reconcile' as const)
-                  : null,
+            : e.checking
+              ? ('checking' as const)
+              : intent?.phase === 'sending'
+                ? ('sending' as const)
+                : pending
+                  ? ('unknown' as const)
+                  : e.reconcile
+                    ? ('reconcile' as const)
+                    : null,
     planMissing:
       draft === null &&
       e !== null &&

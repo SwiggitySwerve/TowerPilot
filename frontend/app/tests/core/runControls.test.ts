@@ -3,6 +3,8 @@ import {
   checkDraft,
   controlGroups,
   liveMark,
+  liveOverrideLeaves,
+  liveResetGate,
   liveSaveGate,
   reviewDraft,
   savedSaveAnswer,
@@ -10,7 +12,7 @@ import {
   settleSavedSave,
 } from '../../src/core/runControls.ts';
 import { controlApplication } from '../../src/core/battle.ts';
-import { dashboardBody } from '../support/dashboardFixture.ts';
+import { dashboardBody, dashboardPagesCase } from '../support/dashboardFixture.ts';
 
 /** Runs brief (backend/logs/reviews/ui-pages/runs-brief.md): core's run-control rules. */
 const SAVED = dashboardBody('run_controls.ad_gems_on_floating_off') as Record<string, unknown>;
@@ -249,5 +251,79 @@ describe('RUN-08 RUN-09 the live save gate and marks', () => {
     expect(liveMark(BATTLE, field)).toBe('changed');
     expect(liveMark(BATTLE, plain)).toBe('saved');
     expect(liveMark({ ...BATTLE, applied_overrides: {} }, field)).toBe('waiting');
+  });
+});
+
+describe('RL2 F6-11-P2-05 every applied override leaf belongs to reset-all', () => {
+  const battle = (name: string) =>
+    (dashboardPagesCase(name).body as { battle: Record<string, unknown> }).battle;
+  const mixed = () => battle('shopping_queue.shopping_plan_routine_overrides_applied');
+  const paths = (read: unknown) => liveOverrideLeaves(read).map((leaf) => leaf.path);
+
+  it('RL2 F6-11-P2-05 routine-only recorded reads list every leaf and retain the recorded reset body paths', () => {
+    const read = battle(
+      'run_controls_live_reset_all.read_before_the_reset_two_overrides_are_in_force',
+    );
+    const found = paths(read);
+    expect(found).toEqual(['routines.ad_gems.interval_sec', 'routines.floating_gems.enabled']);
+    expect(liveResetGate(read, true, found, 'none')).toMatchObject({
+      enabled: true,
+      command: { paths: found },
+    });
+    expect(
+      paths(
+        battle('run_controls_live_reset_all.read_after_the_partial_reset_one_override_remains'),
+      ),
+    ).toEqual(['routines.ad_gems.window_sec']);
+  });
+
+  it('RL2 F6-11-P2-05 the recorded mixed read treats shopping_plan as one applied leaf and blocks its reset', () => {
+    const read = mixed();
+    const found = paths(read);
+    expect(found).toEqual([
+      'routines.shopping.enabled',
+      'routines.shopping.interval_sec',
+      'shopping_plan',
+    ]);
+    expect(liveResetGate(read, true, found, 'none')).toEqual({
+      enabled: false,
+      reason: 'shopping_plan_reset_unavailable',
+    });
+    expect(paths(battle('shopping_queue.shopping_plan_read_applied'))).toEqual(['shopping_plan']);
+  });
+
+  it('RL2 F6-11-P2-05 recorded empty routine mappings after reset-all contain no leaves', () => {
+    expect(
+      paths(battle('run_controls_live_reset_all.read_after_every_override_was_reset')),
+    ).toEqual([]);
+    expect(
+      paths(battle('run_controls_live_reset_all.read_after_the_second_reset_nothing_to_remove')),
+    ).toEqual([]);
+  });
+
+  it('RL2 F6-11-P2-05 discovery ignores renderer capabilities and excludes unapplied overrides', () => {
+    // Modified recorded read: remove only the renderer capability list to prove discovery
+    // comes from the battle overrides rather than which fields the editor can render.
+    expect(paths({ ...mixed(), capabilities: { controls: [] } })).toEqual(paths(mixed()));
+    expect(
+      paths(battle('shopping_queue.shopping_plan_requested_over_routine_overrides_read')),
+    ).toEqual(['routines.shopping.enabled', 'routines.shopping.interval_sec']);
+  });
+
+  it('RL2 F6-11-P2-05 null routine values are not overrides and applied plan equality ignores object key order', () => {
+    const read = mixed();
+    const applied = read['applied_overrides'] as Record<string, unknown>;
+    const plan = applied['shopping_plan'] as Record<string, unknown>;
+    // Modified recorded read: a null is a removal marker, and JSON object key order has no meaning.
+    expect(
+      paths({
+        ...read,
+        overrides: { routines: { shopping: { enabled: null } }, shopping_plan: plan },
+        applied_overrides: {
+          routines: { shopping: { enabled: null } },
+          shopping_plan: Object.fromEntries(Object.entries(plan).reverse()),
+        },
+      }),
+    ).toEqual(['shopping_plan']);
   });
 });

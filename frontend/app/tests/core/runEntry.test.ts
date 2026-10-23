@@ -90,6 +90,20 @@ describe('RL3 entry domain', () => {
       expect(entryRaw(field)).toBe('1');
     },
   );
+  it('RL3 F6-11-P2-06 sends 31 perk bans to the owning server validator', () => {
+    const entry = sample('perk_bans_thirty_one_entries');
+    const items = stringList(own(entry.request.body, 'value'));
+    const field = runEntryFields(initial, 'farm', config, vocab).find(
+      (item) => item.key === 'perk_bans',
+    );
+    if (field === undefined || items === undefined) throw new Error('missing recorded perk bans');
+    expect(items).toHaveLength(31);
+    expect(checkEntry(field, items.join('\n'))).toEqual({
+      kind: 'valid',
+      remove: false,
+      value: items,
+    });
+  });
   it.each(
     names.filter(
       (name) =>

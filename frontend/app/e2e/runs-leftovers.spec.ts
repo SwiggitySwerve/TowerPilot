@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { bodiesTo, posts } from './helpers.ts';
+import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
 
 /**
  * F6-11 Runs leftovers in a real browser on the fake backend
@@ -67,6 +68,42 @@ async function openRunsLive(page: Page, scenario: string, width: number) {
 const live = (page: Page) => page.locator('[data-region="runsLive"]');
 
 for (const width of WIDTHS) {
+  test(`RL2 F6-11-P2-05 mixed overrides at ${String(width)}: full list, disabled reason, zero POSTs, axe and targets`, async ({
+    page,
+  }) => {
+    const read = dashboardPagesCase('shopping_queue.shopping_plan_routine_overrides_applied');
+    await page.route('**/api/battles/active', async (route) => {
+      await route.fulfill({ status: read.status, json: read.body });
+    });
+    const problems = await openRunsLive(page, 'runs_live_reset_all', width);
+    const all = live(page).getByRole('button', {
+      name: "Use the battle's starting values for all 3",
+    });
+    await expect(all).toHaveAttribute('aria-disabled', 'true');
+    await expect(all).toHaveAccessibleDescription(
+      'This battle also overrides its shopping plan. Resetting a shopping plan from here is not available yet. Reset routine overrides one at a time.',
+    );
+    const items = live(page).locator('[data-reset-all-items]');
+    await expect(items.getByRole('listitem')).toHaveCount(3);
+    await expect(items.getByText('Shopping plan', { exact: true })).toBeVisible();
+    await expect(live(page).locator('[data-path]')).toHaveCount(2);
+    // The aria-disabled control remains focusable; keyboard activation must send nothing.
+    await all.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    expect(await posts(page)).toEqual([]);
+    expect(await axeViolations(page)).toEqual([]);
+    expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+    if (width === 390) {
+      for (const button of await live(page).locator('.tp-run-resets button:visible').all())
+        expect((await button.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
+    await live(page).screenshot({
+      path: path.join(OUT, `runs-leftovers-mixed-reset-${String(width)}.png`),
+    });
+    expect(problems).toEqual([]);
+  });
+
   test(`RL7 battle details at ${String(width)}: read-only, axe, reflow, targets and screenshot`, async ({
     page,
   }) => {

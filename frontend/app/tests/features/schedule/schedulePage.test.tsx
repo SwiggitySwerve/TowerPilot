@@ -35,7 +35,7 @@ afterEach(() => {
   for (const cleanup of cleanups.splice(0)) cleanup();
 });
 
-async function change(action: () => void | Promise<void>) {
+async function change(action: () => unknown) {
   await act(async () => {
     await action();
   });
@@ -210,9 +210,7 @@ describe('Schedule Wanted rows', () => {
     fireEvent.click(screen.getByText('Weekday mapping', { exact: true }));
     fireEvent.change(screen.getByLabelText('Sunday'), { target: { value: 'no_such_day' } });
     fireEvent.change(firstCount(), { target: { value: '60' } });
-    await change(() => {
-      s.schedule.save();
-    });
+    await change(() => s.schedule.save());
     expect(screen.getByLabelText('Sunday')).toHaveValue('no_such_day');
     expect(screen.getByLabelText('Sunday')).toHaveAttribute('aria-invalid', 'true');
     expect(screen.getByLabelText('Sunday')).toHaveAccessibleDescription(
@@ -234,9 +232,11 @@ describe('Schedule Wanted rows', () => {
     const input = firstCount();
     input.focus();
     fireEvent.change(input, { target: { value: '60' } });
-    await change(() => {
-      s.schedule.save();
-      s.schedule.save();
+    await change(async () => {
+      // F6-11-P2-01: the second click arrives while the first one's context check runs.
+      const first = s.schedule.save();
+      expect(await s.schedule.save()).toBe('blocked');
+      expect(await first).toBe('sent');
     });
     expect(input).toHaveFocus();
     expect(s.fake.writes()).toHaveLength(1);
@@ -261,7 +261,8 @@ describe('Schedule Wanted rows', () => {
     async (newerTyping) => {
       const s = await setup({ save: 'hold' });
       s.schedule.mapWeek('sunday', 'tourney_day');
-      s.schedule.save();
+      // F6-11-P2-01: Save sends after its click-time config read.
+      await change(() => s.schedule.save());
       s.fake.route('GET', '/api/profile-src/mine', () => 'hold');
       const reported = fixture('schedule_status.available_no_winner');
       s.fake.route('GET', '/api/schedule/status?instance=main', () => reported);
@@ -309,9 +310,9 @@ describe('Schedule Wanted rows', () => {
       const s = await setup({ profile: `profile_reads.${profile}` });
       const previous = selectSchedule(s.schedule.getSnapshot());
       expect(previous.problems.length + previous.warnings.length).toBeGreaterThan(0);
-      await change(() => {
+      await change(async () => {
         s.schedule.mapWeek('sunday', 'tourney_day');
-        s.schedule.save();
+        await s.schedule.save();
       });
       expect(s.entry()?.source).toEqual(
         fixture('profile_patch.multi_save_first_request_saved').body,
@@ -362,9 +363,9 @@ describe('Schedule Wanted rows', () => {
     renderRegion(initialDashboardState(), <SchedulePage schedule={s.schedule} />);
     expect(screen.getByText(/must be an integer >= 1, got 0/)).toBeVisible();
     fireEvent.change(firstCount(), { target: { value: '60' } });
-    await change(() => {
+    await change(async () => {
       s.schedule.mapWeek('sunday', 'tourney_day');
-      s.schedule.save();
+      await s.schedule.save();
     });
     expect(firstCount()).toHaveValue('60');
     expect(s.entry()?.dirty).toBe(false);
@@ -374,9 +375,7 @@ describe('Schedule Wanted rows', () => {
   it('S4 F6C-R1-02 a lost save is never resent; an unchanged original-target read keeps it Unknown until the person reconciles', async () => {
     const s = await setup({ save: 'hold' });
     fireEvent.change(firstCount(), { target: { value: '60' } });
-    await change(() => {
-      s.schedule.save();
-    });
+    await change(() => s.schedule.save());
     await change(() => {
       s.fake.held.find((h) => h.request.method === 'POST')?.lose();
     });
@@ -410,7 +409,7 @@ describe('Schedule Wanted rows', () => {
       const storage = memoryStorage();
       const s = await setup({ save: 'hold', storage, mount: false });
       s.schedule.mapWeek('sunday', 'tourney_day');
-      s.schedule.save();
+      await change(() => s.schedule.save());
       s.schedule.edit(s.block()?.key ?? '', 'count', '100.00');
       await change(() => {
         s.fake.next('/api/profile-patch', 'POST').lose();
@@ -443,9 +442,7 @@ describe('Schedule Wanted rows', () => {
   it('S4 conflict requires read and explicit reconciliation; partial-save readback retains all unsaved work', async () => {
     const s = await setup({ save: 'profile_patch.stale_revision_409' });
     fireEvent.change(firstCount(), { target: { value: '66' } });
-    await change(() => {
-      s.schedule.save();
-    });
+    await change(() => s.schedule.save());
     expect(screen.getByRole('button', { name: 'Save schedule' })).toHaveAttribute(
       'aria-disabled',
       'true',
@@ -481,9 +478,7 @@ describe('Schedule Wanted rows', () => {
   it('S4 a timed-out save is read, never replayed; a different read revision needs explicit reconciliation', async () => {
     const s = await setup({ save: 'hold', windowMs: 10 });
     fireEvent.change(firstCount(), { target: { value: '70' } });
-    await change(() => {
-      s.schedule.save();
-    });
+    await change(() => s.schedule.save());
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
@@ -512,7 +507,7 @@ describe('Schedule Wanted rows', () => {
     const s = await setup({ save: 'hold', mount: false });
     const key = s.block()?.key ?? '';
     s.schedule.edit(key, 'count', '70');
-    s.schedule.save();
+    await change(() => s.schedule.save());
     const pending = s.fake.held.find((item) => item.request.method === 'POST');
     s.schedule.setTarget({ ...context, profile: 'second' }, 2);
     await change(() => {
@@ -617,7 +612,7 @@ describe('Schedule Wanted rows', () => {
       'aria-disabled',
       'true',
     );
-    s.schedule.save();
+    expect(await s.schedule.save()).toBe('blocked');
     expect(s.fake.writes()).toHaveLength(0);
   });
   it.each([
@@ -871,7 +866,9 @@ describe('F6-11 RL8 remove the whole plan (pages fixture plan_section_delete)', 
       save: 'plan_section_delete.plan_section_delete_stale_revision_409',
     });
     await confirmRemove();
-    expect(screen.getByText('Schedule save refused. Your draft is kept.')).toBeVisible();
+    expect(
+      screen.getByText('Day plan removal refused. The saved plan is unchanged.'),
+    ).toBeVisible();
     expect(s.entry()?.draft).not.toBeNull();
     expect(s.fake.writes()).toHaveLength(1);
   });
@@ -882,17 +879,21 @@ describe('F6-11 RL8 remove the whole plan (pages fixture plan_section_delete)', 
     await change(() => {
       s.fake.held.find((h) => h.request.method === 'POST')?.lose();
     });
-    expect(screen.getByText(/Schedule save outcome unknown/u)).toBeVisible();
+    expect(screen.getByText(/Day plan removal outcome unknown/u)).toBeVisible();
     await act(async () => {
       await s.schedule.refresh();
     });
-    expect(screen.getByText(/Schedule save outcome unknown/u)).toBeVisible();
+    expect(screen.getByText(/Day plan removal outcome unknown/u)).toBeVisible();
     expect(s.entry()?.intent?.readSettlement).toBeNull();
     s.readback('plan_section_delete.read_after_the_plan_section_was_deleted');
     await act(async () => {
       await s.schedule.refresh();
     });
-    expect(screen.getByText('Readback confirms the day plan is removed.')).toBeVisible();
+    expect(
+      within(screen.getByRole('status', { name: 'Profile validation and save details' })).getByText(
+        'Readback confirms the day plan is removed.',
+      ),
+    ).toBeVisible();
     expect(s.entry()?.draft).toBeNull();
     expect(screen.getByRole('button', { name: 'Start a day plan' })).toBeVisible();
     expect(s.fake.writes()).toHaveLength(1);
@@ -914,7 +915,11 @@ describe('F6-11 RL8 remove the whole plan (pages fixture plan_section_delete)', 
     await act(async () => {
       await second.schedule.refresh();
     });
-    expect(screen.getByText('Readback confirms the day plan is removed.')).toBeVisible();
+    expect(
+      within(screen.getByRole('status', { name: 'Profile validation and save details' })).getByText(
+        'Readback confirms the day plan is removed.',
+      ),
+    ).toBeVisible();
     expect(second.entry()?.draft).toBeNull();
     expect(second.entry()?.dirty).toBe(false);
     expect(second.fake.writes()).toHaveLength(0);
@@ -932,6 +937,168 @@ describe('F6-11 RL8 remove the whole plan (pages fixture plan_section_delete)', 
     });
     expect(document.querySelector('dialog[open]')).toBeNull();
     expect(s.fake.writes()).toHaveLength(0);
+  });
+
+  /** Every text the app's one live region announces from now on. */
+  function announcements() {
+    const region = document.querySelector('[aria-live]');
+    if (region === null) throw new Error('no live region');
+    const announced: string[] = [];
+    const observer = new MutationObserver(() => {
+      const said = region.textContent;
+      if (said !== '' && announced.at(-1) !== said) announced.push(said);
+    });
+    observer.observe(region, { childList: true, subtree: true, characterData: true });
+    cleanups.push(() => {
+      observer.disconnect();
+    });
+    return announced;
+  }
+  const flush = () => change(() => new Promise((resolve) => setTimeout(resolve, 0)));
+
+  it.each([
+    // Recorded configurations naming another account and profile, and another active profile.
+    ['context_fence.read_config_after_another_client_switched_the_account'],
+    ['profile_target.read_config_after_editor_active_profile_switch'],
+  ])(
+    'RL8 F6-11-P2-01 a removal whose click-time config read names another context (%s) sends nothing and keeps the plan',
+    async (switched) => {
+      const s = await setup({ profile: BEFORE, save: DELETED });
+      s.fake.route('GET', '/api/config', () => 'hold');
+      await confirmRemove();
+      expect(s.entry()?.checking).toBe(true);
+      expect(remove()).toHaveAttribute('aria-disabled', 'true');
+      const answer = fixture(switched);
+      await change(() => {
+        s.fake.next('/api/config', 'GET').respond(answer.status, answer.body);
+      });
+      await flush();
+      expect(s.fake.writes()).toHaveLength(0);
+      expect(s.entry()?.notSent).toBe('context_changed');
+      expect(
+        screen.getByText(/^Not sent: the emulator, account or profile changed/u, { selector: 'p' }),
+      ).toBeVisible();
+      expect(s.entry()?.draft).not.toBeNull();
+      expect(s.entry()?.intent).toBeNull();
+    },
+  );
+
+  it('RL8 F6-11-P2-01 a removal whose click-time config read gets no answer sends nothing', async () => {
+    const s = await setup({ profile: BEFORE, save: DELETED });
+    s.fake.route('GET', '/api/config', () => 'hold');
+    await confirmRemove();
+    await change(() => {
+      s.fake.next('/api/config', 'GET').lose();
+    });
+    await flush();
+    expect(s.fake.writes()).toHaveLength(0);
+    expect(
+      screen.getByText(
+        /^Not sent: the selected emulator, account and profile could not be confirmed/u,
+        {
+          selector: 'p',
+        },
+      ),
+    ).toBeVisible();
+    expect(s.entry()?.draft).not.toBeNull();
+    // A new person action sends it once the context is confirmed again.
+    s.fake.route('GET', '/api/config', () => fixture('config_state.read_before_the_save'));
+    await confirmRemove();
+    await flush();
+    expect(s.fake.writes()).toHaveLength(1);
+  });
+
+  it('RL8 F6-11-P2-01 a save whose click-time config read names another active profile sends nothing and keeps the draft', async () => {
+    const s = await setup();
+    fireEvent.change(firstCount(), { target: { value: '7' } });
+    s.fake.route('GET', '/api/config', () =>
+      fixture('profile_target.read_config_after_editor_active_profile_switch'),
+    );
+    await change(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save schedule' }));
+    });
+    await flush();
+    expect(s.fake.writes()).toHaveLength(0);
+    expect(s.entry()?.notSent).toBe('context_changed');
+    expect(firstCount()).toHaveValue('7');
+    expect(s.entry()?.dirty).toBe(true);
+  });
+
+  it('RL8 F6-11-P2-03 typing after a lost removal survives the read that settles it', async () => {
+    const s = await setup({ profile: BEFORE, save: 'hold' });
+    await confirmRemove();
+    await change(() => {
+      s.fake.held.find((h) => h.request.method === 'POST')?.lose();
+    });
+    fireEvent.change(firstCount(), { target: { value: '7' } });
+    s.readback('plan_section_delete.read_after_the_plan_section_was_deleted');
+    await act(async () => {
+      await s.schedule.refresh();
+    });
+    expect(s.entry()?.intent?.readSettlement).toBe('applied');
+    expect(s.entry()?.dirty).toBe(true);
+    expect(s.entry()?.draft).not.toBeNull();
+    expect(firstCount()).toHaveValue('7');
+    expect(s.fake.writes()).toHaveLength(1);
+  });
+
+  it('RL8 F6-11-P2-03 typing after a lost removal survives a reload and the read that settles it', async () => {
+    const storage = memoryStorage();
+    const first = await setup({ profile: BEFORE, save: 'hold', storage });
+    await confirmRemove();
+    await change(() => {
+      first.fake.held.find((h) => h.request.method === 'POST')?.lose();
+    });
+    fireEvent.change(firstCount(), { target: { value: '7' } });
+    for (const cleanup of cleanups.splice(0)) cleanup();
+    document.body.innerHTML = '';
+    const second = await setup({
+      profile: 'plan_section_delete.read_after_the_plan_section_was_deleted',
+      storage,
+    });
+    await act(async () => {
+      await second.schedule.refresh();
+    });
+    expect(second.entry()?.intent?.readSettlement).toBe('applied');
+    expect(second.entry()?.dirty).toBe(true);
+    expect(second.block()?.count).toBe('7');
+    expect(firstCount()).toHaveValue('7');
+    expect(second.fake.writes()).toHaveLength(0);
+  });
+
+  it('RL8 F6-11-P2-04 a held removal announces only that it was requested; its answer announces the removal', async () => {
+    const s = await setup({ profile: BEFORE, save: 'hold' });
+    const announced = announcements();
+    await confirmRemove();
+    await flush();
+    expect(s.fake.writes()).toHaveLength(1);
+    expect(announced.some((said) => said.startsWith('Day plan removed'))).toBe(false);
+    expect(announced.at(-1)).toBe(
+      'Removal of the day plan requested. Waiting for its answer; nothing is confirmed yet.',
+    );
+    const deleted = fixture(DELETED);
+    await change(() => {
+      s.fake.next('/api/profile-patch', 'POST').respond(deleted.status, deleted.body);
+    });
+    await flush();
+    expect(announced.at(-1)).toMatch(/^Day plan removed\./u);
+  });
+
+  it('RL8 F6-11-P2-04 a stale-refused removal never announces that the plan was removed', async () => {
+    const s = await setup({
+      profile: BEFORE,
+      save: 'plan_section_delete.plan_section_delete_stale_revision_409',
+    });
+    const announced = announcements();
+    await confirmRemove();
+    await flush();
+    expect(s.fake.writes()).toHaveLength(1);
+    expect(announced.some((said) => said.startsWith('Day plan removed'))).toBe(false);
+    expect(
+      within(screen.getByRole('alert', { name: 'Profile validation and save details' })).getByText(
+        'Day plan removal refused. The saved plan is unchanged.',
+      ),
+    ).toBeVisible();
   });
 
   it('RL8 the removal and its confirmation use catalogue words and pass axe', async () => {

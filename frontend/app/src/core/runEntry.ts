@@ -174,8 +174,7 @@ export function checkEntry(field: EntryField, raw: string | boolean, remove = fa
       }
     } else if (field.type === 'list') {
       const items = raw === '' ? [] : raw.split('\n');
-      if (items.some((item) => item.trim() === '') || items.length > 30)
-        return { kind: 'invalid', reason: 'list' };
+      if (items.some((item) => item.trim() === '')) return { kind: 'invalid', reason: 'list' };
       value = items;
     } else if (field.type === 'select') {
       if (raw === '' && field.removable)

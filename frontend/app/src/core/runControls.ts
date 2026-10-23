@@ -1,5 +1,6 @@
 import { controlApplication } from './battle.ts';
-import { finite, id, own, ownPath, revision, stringList } from './read.ts';
+import { sameJson } from './json.ts';
+import { entries, finite, id, own, ownPath, revision, stringList } from './read.ts';
 
 /**
  * Run controls (roadmap item 5; Runs page brief backend/logs/reviews/ui-pages/runs-brief.md):
@@ -191,6 +192,7 @@ export function savedSaveGate(
 
 /** Why a live save is not offered. */
 export type LiveSaveReason =
+  | 'shopping_plan_reset_unavailable'
   | 'no_battle'
   | 'battle_not_active'
   | 'report_stale'
@@ -245,6 +247,37 @@ export interface LiveReset extends LiveTarget {
   readonly paths: readonly string[];
 }
 
+/** One applied override; a shopping plan is one leaf regardless of its nested settings. */
+export type LiveOverrideLeaf =
+  | {
+      readonly kind: 'routine';
+      readonly path: string;
+      readonly routine: string;
+      readonly field: string;
+    }
+  | { readonly kind: 'shopping_plan'; readonly path: 'shopping_plan' };
+
+/**
+ * RL2 F6-11-P2-05: every non-null override already applied to this battle,
+ * independently of the fields capabilities.controls lets the editor render.
+ * Empty routine mappings left behind by a reset contain no override leaves.
+ */
+export function liveOverrideLeaves(battle: unknown): readonly LiveOverrideLeaf[] {
+  const overrides = own(battle, 'overrides');
+  const applied = own(battle, 'applied_overrides');
+  const leaves: LiveOverrideLeaf[] = [];
+  for (const [routine, fields] of entries(own(overrides, 'routines'))) {
+    for (const [field, value] of entries(fields)) {
+      if (overrideMark(value, ownPath(applied, 'routines', routine, field)) === 'changed')
+        leaves.push({ kind: 'routine', path: `routines.${routine}.${field}`, routine, field });
+    }
+  }
+  const plan = own(overrides, 'shopping_plan');
+  if (overrideMark(plan, own(applied, 'shopping_plan')) === 'changed')
+    leaves.push({ kind: 'shopping_plan', path: 'shopping_plan' });
+  return leaves;
+}
+
 /**
  * RL1, RL2 (spec F-060, Runs RUN-15): removing this battle's overrides of `paths` (the
  * battle's starting value applies again, `backend/towerpilot_workflows/battles.py`
@@ -260,6 +293,11 @@ export function liveResetGate(
   const target = liveTarget(battle, reportFresh, request);
   if (!target.enabled) return target;
   if (paths.length === 0) return { enabled: false, reason: 'no_changes' };
+  // RL2 F6-11-P2-05: missing recorded case
+  // run_controls_live_reset_all.accepted_null_for_shopping_plan_and_routine_overrides
+  // with before/after battle reads. Remove this guard when recorded.
+  if (paths.includes('shopping_plan'))
+    return { enabled: false, reason: 'shopping_plan_reset_unavailable' };
   return { enabled: true, command: { ...target.command, paths: [...paths] } };
 }
 
@@ -313,6 +351,11 @@ function liveTarget(
 /** How one live field stands against the saved run: inherited, changed for this battle, or waiting to apply. */
 export type LiveMark = 'saved' | 'changed' | 'waiting';
 
+function overrideMark(requested: unknown, applied: unknown): LiveMark {
+  if (!sameJson(requested, applied)) return 'waiting';
+  return requested === undefined || requested === null ? 'saved' : 'changed';
+}
+
 /**
  * A live field's mark: `waiting` while the requested override differs from the
  * applied one, `changed` while this battle overrides the path, else `saved`.
@@ -320,8 +363,7 @@ export type LiveMark = 'saved' | 'changed' | 'waiting';
 export function liveMark(battle: unknown, field: ControlField): LiveMark {
   const requested = ownPath(own(battle, 'overrides'), 'routines', field.routine, field.field);
   const applied = ownPath(own(battle, 'applied_overrides'), 'routines', field.routine, field.field);
-  if (requested !== applied) return 'waiting';
-  return requested === undefined || requested === null ? 'saved' : 'changed';
+  return overrideMark(requested, applied);
 }
 
 /** The answer of a saved-settings save (dashboard.py api_run_controls POST). */

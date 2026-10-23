@@ -82,6 +82,52 @@ afterEach(() => {
 });
 
 describe('RL3 and RL6 saved entry editor', () => {
+  it('RL3 F6-11-P2-06 sends 31 perk bans once, shows the recorded refusal and keeps the raw draft under its original target', async () => {
+    const entry = sample('perk_bans_thirty_one_entries');
+    const items = stringList(own(entry.request.body, 'value'));
+    if (items === undefined) throw new Error('missing recorded perk bans');
+    const raw = items.join('\n');
+    const page = await open(
+      'farm',
+      {
+        before: (fake) => {
+          fake.route('POST', PATCH, () => entry);
+        },
+      },
+      () => sourceBefore(entry),
+    );
+    const input = row('perk_bans').getByLabelText('Perk bans (one per line)');
+    await page.user.clear(input);
+    await page.user.type(input, raw);
+    const before = selectRunEntry(page.data.store.getSnapshot()).fields.find(
+      (field) => field.key === 'perk_bans',
+    );
+    expect(row('perk_bans').getByRole('button', { name: 'Save field' })).not.toHaveAttribute(
+      'aria-disabled',
+    );
+    expect(before?.command?.value).toEqual(items);
+    await save(page, 'perk_bans');
+    expect(JSON.parse(page.fake.writes()[0]?.body ?? '{}')).toEqual(entry.request.body);
+    expect(row('perk_bans').getByLabelText('Perk bans (one per line)')).toHaveValue(raw);
+    expect(root().querySelector('[data-refusal] [data-server-text="message"]')?.textContent).toBe(
+      own(entry.body, 'error'),
+    );
+    await page.user.click(row('perk_bans').getByText('1 problem'));
+    expect(
+      root().querySelector('.tp-save-outcome__problems [data-server-text="message"]')?.textContent,
+    ).toBe(own(entry.body, 'error'));
+    expect(page.data.store.getSnapshot().runDrafts[before?.scope ?? '']?.['value']).toBe(raw);
+    const record = page.data.machine.snapshot().findLast((item) => item.kind === 'profile_patch');
+    expect(record?.target).toBe(before?.scope);
+    expect(record?.phase).toBe('refused');
+    expect(page.data.machine.resend(record?.id ?? '')).toBe('not_resendable');
+    await page.user.click(form().getByRole('button', { name: 'Read entry settings' }));
+    await page.advance(20_000);
+    expect(row('perk_bans').getByLabelText('Perk bans (one per line)')).toHaveValue(raw);
+    expect(page.data.store.getSnapshot().runDrafts[before?.scope ?? '']?.['value']).toBe(raw);
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
   it.each(names.filter((name) => name.startsWith('saved_')))(
     'RL3 one exact request per field: %s',
     async (name) => {

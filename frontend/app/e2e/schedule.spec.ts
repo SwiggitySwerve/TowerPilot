@@ -556,3 +556,37 @@ for (const status of [
     await screenshot(page, status, 390);
   });
 }
+
+for (const width of widths) {
+  test(`RL8 F6-11-P2-01 a removal after another client switched the account sends nothing at ${width}`, async ({
+    page,
+  }) => {
+    const plan = {
+      profile: 'plan_section_delete.read_before_the_plan_section_was_deleted',
+      save: 'plan_section_delete.saved_the_whole_plan_section_deleted',
+      readback: 'plan_section_delete.read_after_the_plan_section_was_deleted',
+    };
+    await open(page, width, plan);
+    await page.getByRole('button', { name: 'Remove the day plan' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText(/The scheduler then uses its legacy rules/u)).toBeVisible();
+    // Another client switches the account while the confirmation is open: from now on the
+    // config read names account beta and profile theirs (recorded context_fence configuration).
+    await page.request.get(
+      `/__fake/schedule?${new URLSearchParams({
+        ...plan,
+        config: 'context_fence.read_config_after_another_client_switched_the_account',
+      })}`,
+    );
+    await dialog.getByRole('button', { name: 'Remove day plan' }).click();
+    await expect(
+      page.locator('p[role="alert"]', {
+        hasText: /^Not sent: the emulator, account or profile changed/u,
+      }),
+    ).toBeVisible();
+    await page.waitForTimeout(1_000);
+    expect(await bodiesTo(page, '/api/profile-patch')).toEqual([]);
+    expect(await axe(page)).toEqual([]);
+    await screenshot(page, 'remove-not-sent', width);
+  });
+}

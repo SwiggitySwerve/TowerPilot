@@ -1,6 +1,7 @@
 import type { PageContext } from '../api/context.ts';
 import type { IntentRecord } from '../api/intents/types.ts';
 import type { ScheduleApi } from '../api/schedule.ts';
+import { settleProfilePatch, sentPatch } from '../core/profilePatch.ts';
 import { own, text } from '../core/read.ts';
 import { createStore, viewEqual, type Store } from './store.ts';
 import {
@@ -34,7 +35,17 @@ export interface ScheduleEntry {
   readonly checked: boolean;
   readonly focus: string | null;
   readonly resolvedIntent: string | null;
+  /** F6-11-P2-01: a Save or Remove whose click-time context check is still running. */
+  readonly checking: boolean;
+  /** F6-11-P2-01: why the last Save or Remove of this target was not sent. */
+  readonly notSent: 'context_unconfirmed' | 'context_changed' | null;
 }
+/**
+ * F6-11-P2-01: what a Save or Remove click did: `sent` once, nothing at all (`blocked`: the
+ * page no longer allows it), or nothing because a config read started after the click could
+ * not confirm, or no longer names, the emulator, account and profile the page was drawn for.
+ */
+export type ScheduleSendResult = 'sent' | 'blocked' | 'context_unconfirmed' | 'context_changed';
 export interface ScheduleState {
   readonly context: PageContext | null;
   readonly epoch: number;
@@ -50,14 +61,15 @@ export interface ScheduleStore extends Store<ScheduleState> {
   readonly add: () => string | null;
   /**
    * F6-11 RL8: remove the whole plan section of the profile read at `revision` (one request,
-   * after the person confirmed). Only from a clean draft; false when nothing was sent.
+   * after the person confirmed). Only from a clean draft, and only after a config read started
+   * after the click still names this target (F6-11-P2-01).
    */
-  readonly removePlan: (revision: string) => boolean;
+  readonly removePlan: (revision: string) => Promise<ScheduleSendResult>;
   /** F6-11 RL8: draft a first plan for a profile that has none (nothing is sent). */
   readonly start: (run: string) => boolean;
   readonly move: (key: string, direction: -1 | 1) => number | null;
   readonly remove: (key: string) => string | null;
-  readonly save: () => void;
+  readonly save: () => Promise<ScheduleSendResult>;
   readonly discard: () => void;
   readonly reconcile: () => void;
   readonly rememberFocus: (focus: string) => void;
@@ -81,6 +93,8 @@ const empty = (): ScheduleEntry => ({
   checked: false,
   focus: null,
   resolvedIntent: null,
+  checking: false,
+  notSent: null,
 });
 export const currentSchedule = (state: ScheduleState): ScheduleEntry | null =>
   state.key === null ? null : (state.entries[state.key] ?? null);
@@ -236,37 +250,92 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
       intent?.phase === 'unconfirmed' &&
       started > (intent.answerSeq ?? intent.sentSeq)
     ) {
-      const value: unknown = JSON.parse(intent.request.body);
+      const sent = sentPatch(JSON.parse(intent.request.body));
       const revision = profileRevision(source);
-      const applied =
-        revision !== intent.meta.profileRevision && viewEqual(planOf(source), own(value, 'value'));
-      // Shared rule (Collection review F6C-R1-02): only a read holding the sent plan settles
-      // the save; an unchanged revision cannot prove it failed (it may still commit), so the
-      // save stays unknown until the person reconciles explicitly.
-      if (applied) {
+      // Shared rule (core/profilePatch.ts settleProfilePatch; Collection review F6C-R1-02):
+      // only a read of this profile holding the sent plan (or, for a removal, no plan) settles
+      // the request; an unchanged revision cannot prove it failed (it may still commit), so it
+      // stays unknown until the person reconciles explicitly.
+      if (sent !== null && settleProfilePatch(source, sent) === 'applied') {
         api.machine.settleByRead(intent.id, 'applied');
-        // F6-11 RL8: a removal (sent only from a clean draft) leaves nothing to edit.
-        if (own(value, 'op') === 'delete')
-          change(key, (current) => ({
-            ...current,
-            baseRevision: revision,
-            dirty: false,
-            draft: null,
-            day: '',
-          }));
-        else
-          change(key, (current) => ({
-            ...current,
-            baseRevision: revision,
-            dirty:
-              submitted.get(intent.id)?.version !== current.version ||
-              !viewEqual(
-                current.draft === null ? undefined : schedulePlan(current.draft),
-                own(value, 'value'),
-              ),
-          }));
+        const submittedVersion = submitted.get(intent.id)?.version;
+        change(key, (current) =>
+          sent.remove
+            ? // F6-11 RL8: a removal is sent only from a clean draft, so a dirty draft now holds
+              // edits typed after it (F6-11-P2-03, also when restored after a reload): they stay
+              // a draft under this target; only the unchanged draft goes with the plan.
+              current.dirty
+              ? { ...current, baseRevision: revision }
+              : { ...current, baseRevision: revision, dirty: false, draft: null, day: '' }
+            : {
+                ...current,
+                baseRevision: revision,
+                dirty:
+                  submittedVersion !== current.version ||
+                  !viewEqual(
+                    current.draft === null ? undefined : schedulePlan(current.draft),
+                    sent.value,
+                  ),
+              },
+        );
       } else change(key, (current) => ({ ...current, reconcile: true }));
     }
+  };
+
+  /** A request of this target is in flight, or its answer was lost and nobody settled it. */
+  const unresolved = (e: ScheduleEntry) =>
+    e.intent?.phase === 'sending' ||
+    (e.intent?.phase === 'unconfirmed' &&
+      e.intent.readSettlement === null &&
+      e.resolvedIntent !== e.intent.id);
+  const canSave = (e: ScheduleEntry) =>
+    e.draft !== null &&
+    e.dirty &&
+    !e.busy &&
+    !e.readError &&
+    e.baseRevision !== null &&
+    !e.reconcile &&
+    !unresolved(e);
+  /**
+   * F6-11-P2-01: the one way a Save or Remove leaves this page. `ready` is checked at the
+   * click, again after a config read started after the click (which must still name exactly
+   * the target the page was drawn for), and `send` checks it once more at the send boundary.
+   * One check per target at a time; a changed or unconfirmed context sends nothing, keeps the
+   * draft under its original target and says why (a new click is needed).
+   */
+  const fencedSend = async (
+    send: (context: PageContext, entry: ScheduleEntry) => boolean,
+    ready: (entry: ScheduleEntry) => boolean,
+  ): Promise<ScheduleSendResult> => {
+    const { context, key, epoch } = store.getSnapshot();
+    const clicked = key === null ? undefined : store.getSnapshot().entries[key];
+    if (
+      context === null ||
+      context.profile === null ||
+      key === null ||
+      clicked === undefined ||
+      clicked.checking ||
+      !ready(clicked)
+    )
+      return 'blocked';
+    change(key, (e) => ({ ...e, checking: true, notSent: null }));
+    let named: 'same' | 'changed' | 'unconfirmed';
+    try {
+      named = await api.checkContext(context);
+    } finally {
+      change(key, (e) => ({ ...e, checking: false }));
+    }
+    const now = store.getSnapshot();
+    const e = now.entries[key];
+    if (now.key !== key || now.epoch !== epoch || e === undefined) return 'blocked';
+    if (named !== 'same') {
+      const reason = named === 'changed' ? 'context_changed' : 'context_unconfirmed';
+      change(key, (current) => ({ ...current, notSent: reason }));
+      // The page catches up with the server's binding through its own read.
+      if (named === 'changed') void refresh();
+      return reason;
+    }
+    return send(context, e) ? 'sent' : 'blocked';
   };
 
   return {
@@ -365,53 +434,32 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
       editDraft((draft, day) => ({ ...draft, days: { ...draft.days, [day]: remaining } }));
       return remaining[Math.min(index, remaining.length - 1)]?.key ?? null;
     },
-    save: () => {
-      const s = store.getSnapshot();
-      const e = currentSchedule(s);
-      if (
-        s.context?.profile === null ||
-        s.context === null ||
-        e?.draft === null ||
-        e === null ||
-        !e.dirty ||
-        e.busy ||
-        e.readError ||
-        e.baseRevision === null ||
-        e.reconcile ||
-        e.intent?.phase === 'sending' ||
-        (e.intent?.phase === 'unconfirmed' &&
-          e.intent.readSettlement === null &&
-          e.resolvedIntent !== e.intent.id)
-      )
-        return;
-      const plan = schedulePlan(e.draft);
-      const result = api.send(s.context, e.baseRevision, plan);
-      if (result.kind === 'sent') submitted.set(result.record.id, { version: e.version, plan });
-    },
+    save: () =>
+      fencedSend((context, e) => {
+        if (!canSave(e) || e.draft === null || e.baseRevision === null) return false;
+        const plan = schedulePlan(e.draft);
+        const result = api.send(context, e.baseRevision, plan);
+        if (result.kind !== 'sent') return false;
+        submitted.set(result.record.id, { version: e.version, plan });
+        return true;
+      }, canSave),
     removePlan: (revision) => {
-      const s = store.getSnapshot();
-      const e = currentSchedule(s);
-      if (
-        s.context === null ||
-        s.context.profile === null ||
-        e === null ||
-        e.draft === null ||
-        planOf(e.source) === undefined ||
-        e.dirty ||
-        e.busy ||
-        e.readError ||
-        e.reconcile ||
-        e.baseRevision !== revision ||
-        e.intent?.phase === 'sending' ||
-        (e.intent?.phase === 'unconfirmed' &&
-          e.intent.readSettlement === null &&
-          e.resolvedIntent !== e.intent.id)
-      )
-        return false;
-      const result = api.remove(s.context, revision);
-      if (result.kind !== 'sent') return false;
-      submitted.set(result.record.id, { version: e.version, plan: undefined, remove: true });
-      return true;
+      const ready = (e: ScheduleEntry) =>
+        e.draft !== null &&
+        planOf(e.source) !== undefined &&
+        !e.dirty &&
+        !e.busy &&
+        !e.readError &&
+        !e.reconcile &&
+        e.baseRevision === revision &&
+        !unresolved(e);
+      return fencedSend((context, e) => {
+        if (!ready(e)) return false;
+        const result = api.remove(context, revision);
+        if (result.kind !== 'sent') return false;
+        submitted.set(result.record.id, { version: e.version, plan: undefined, remove: true });
+        return true;
+      }, ready);
     },
     discard: () => {
       activeChange((e) => ({
