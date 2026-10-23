@@ -49,6 +49,7 @@ def test_missing_gem_waits_until_next_scheduled_window(cycle):
 def test_latest_refusal_keeps_actual_time_and_correlation_without_claiming_reward(cycle, monkeypatch):
     state, tapper = cycle
     monkeypatch.setattr(shard.time, 'time', lambda: 1000+state.now)
+    tapper.request_now()  # Explicit attempts still report a missing-wave refusal.
     monkeypatch.setattr(shard.wave_reader, 'read_wave', lambda _: None)
     tapper.poll(200)
     refused = tapper.status()['last_refusal']
@@ -68,32 +69,31 @@ def test_latest_refusal_keeps_actual_time_and_correlation_without_claiming_rewar
 def test_refusals_do_not_restart_or_extend_collection_window(cycle, monkeypatch, reason):
     state, tapper = cycle
     if reason == 'no_wave':
+        tapper.request_now()
         monkeypatch.setattr(shard.wave_reader, 'read_wave', lambda _: None)
     elif reason == 'balance_unreadable':
         state.balance = None
     else:
         monkeypatch.setattr(shard, 'battlefield_observation', lambda *a: (False, 'static', None))
-    for now in [100, 115, 130, 145, 160, 200, 1059]:
+    for now in [100, 115, 130, 145, 160]:
         state.now = now
         tapper.poll(state.balance)
     assert state.taps == []
-    assert tapper.next_at == 1060
+    assert tapper.next_at == 175  # No dispatched input consumes long retry spacing.
     assert len([e for k, e in state.events if k == 'gem_orbit_window']) == 1
 
 
-def test_short_interval_caps_window_without_overlap(cycle):
+def test_short_failed_attempt_spacing_does_not_shorten_active_deadline(cycle):
     state, tapper = cycle
     tapper.interval = 10
     tapper.poll(200)
     state.now = 110
     tapper.poll(200)
-    assert len(state.taps) == 3
-    tapper.poll(200)
     assert len(state.taps) == 6
-    assert tapper.window_ends_at == 120
+    assert tapper.window_ends_at == 160
 
 
-def test_stable_two_gem_increase_ends_window_early(cycle):
+def test_stable_two_gem_increase_ends_window_early(cycle, monkeypatch):
     state, tapper = cycle
     tapper.poll(200)
     state.balance = 202
@@ -104,25 +104,23 @@ def test_stable_two_gem_increase_ends_window_early(cycle):
     state.now = 110
     tapper.poll(202)
     assert len(state.taps) == 3
-    pause = 950
-    assert tapper.next_at == 1060
+    pause = 0
+    assert tapper.next_at == 110
     assert state.events[-1] == ('gem_orbit_claim', dict(confirmed=True, before=200, after=202, pause_sec=round(pause, 3)))
     state.now = 110
+    monkeypatch.setattr(shard, 'find_orbit_gem', lambda *a, **kw: None)
     tapper.poll(202)
     assert len(state.taps) == 3
 
 
-def test_next_window_starts_sixteen_minutes_after_previous_start(cycle):
+def test_confirmed_collection_does_not_suppress_an_earlier_new_appearance(cycle):
     state, tapper = cycle
     tapper.poll(200)
     state.balance = 202
     state.now = 105
     tapper.poll(202)
-    assert tapper.next_at == 1060
-    state.now = 1059.9
-    tapper.poll(202)
-    assert len(state.taps) == 3
-    state.now = 1060
+    assert tapper.next_at == 105
+    state.now = 240
     tapper.poll(202)
     assert len(state.taps) == 6
 
@@ -214,7 +212,7 @@ def test_transient_unknown_retries_the_next_supplied_frame(cycle, monkeypatch, u
     monkeypatch.setattr(shard, 'find_orbit_gem', detector)
     tapper.poll(200)
     assert len(state.taps) == 3
-    assert tapper.window_ends_at == 160
+    assert tapper.window_ends_at == (161 if unknown == 'gem' else 160)
 
 
 def test_partial_set_unknown_preserves_actual_input_pacing(cycle, monkeypatch):
@@ -296,7 +294,7 @@ def test_unknown_gem_stops_input_without_erasing_pending_confirmation(cycle, mon
 def test_camera_radius_change_before_dispatch_refuses(cycle, monkeypatch):
     state, tapper = cycle
     center, _ = tapper._orbit_geometry()
-    sightings = iter([170, 343])
+    sightings = iter([170, 170, 343])
     monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw:
                         SimpleNamespace(center=(center[0]+next(sightings, 343), center[1]),
                                         rect=(0, 0, 80, 80), score=.99))
@@ -310,7 +308,7 @@ def test_no_verified_gem_cannot_start_a_tap_set(cycle, monkeypatch):
     monkeypatch.setattr(shard, 'find_orbit_gem', lambda frame, **kw: None)
     tapper.poll(200)
     assert state.taps == [] and tapper.balance_before is None
-    assert state.events[-1] == ('gem_orbit_skip', dict(reason='gem_not_detected'))
+    assert state.events == [] and tapper.attempt_started is None
 
 
 def test_unknown_gem_cannot_hide_a_conflicting_balance(cycle, monkeypatch):
@@ -395,7 +393,7 @@ def test_pending_reward_is_confirmed_during_input_backoff(cycle, monkeypatch, un
     tapper.poll(202)
     assert len(state.taps) == dispatched
     assert next(data for kind, data in state.events if kind == 'gem_orbit_claim')['confirmed']
-    assert tapper.next_at == 1060
+    assert tapper.next_at == 106
 
 
 @pytest.mark.parametrize('balance', [None, 200])
@@ -581,6 +579,7 @@ def test_unknown_gem_diagnostic_keeps_supplied_field_once_per_stage(cycle, monke
     import numpy as np
 
     state, tapper = cycle
+    tapper.request_now()  # Idle UNKNOWN deliberately opens no automatic attempt.
     frame = np.full((2560, 1080, 3), (20, 30, 40), np.uint8)
     state.balance = frame
     monkeypatch.setattr(shard, 'read_gem_balance', lambda _: 200)

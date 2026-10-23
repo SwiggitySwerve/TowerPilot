@@ -213,7 +213,8 @@ class GemWatch:
         frame = self.ad_gems.poll(frame)
         if self.guard is not None:
             frame = self.guard(frame, "battle")
-        # The orbit collector refreshes only when due, then before each tap.
+        # Idle orbit sensing reuses this frame; only a recognized appearance
+        # opens the existing guarded capture/claim path.
         return self.orbit.poll(frame)
 
 
@@ -307,7 +308,7 @@ def battlefield_observation(points: list[tuple[int, int]], frame: np.ndarray | N
     return True, "live", after
 
 class GemOrbitTapper:
-    """Scheduled arc windows; a stable +2 HUD balance stops the window early.
+    """Recognized appearances open bounded attempts; stable +2 confirms a claim.
 
     Gem recognition never proves a reward. Each set retains the battlefield, window,
     motion, layout and ability-row guards. The observe loop runs between sets.
@@ -343,6 +344,8 @@ class GemOrbitTapper:
         self._last_skip = None
         self.last_refusal = None
         self.last_window_started_at = None
+        self._timeout_ready_at = 0.0
+        self._failed_retry_anchor = None
         self.manual_requested = False
         self.manual_active = False
         self.last_outcome = None
@@ -357,10 +360,13 @@ class GemOrbitTapper:
             self.enabled = values['enabled']
         if values.get('interval_sec') is not None:
             self.interval = values['interval_sec']
-            if self.last_window_started_at is not None:
-                self.next_window_at = self.last_window_started_at + self.interval
-                if self.attempt_started is None:
-                    self.next_at = self.next_window_at
+            if self.last_window_started_at is not None and (
+                    self.attempt_started is not None or not self.last_outcome
+                    or not self.last_outcome['confirmed']):
+                anchor = self.last_window_started_at
+                if self.attempt_started is None and self.last_outcome is not None:
+                    anchor = self._failed_retry_anchor
+                self._set_retry_spacing(anchor)
         if values.get('window_sec') is not None:
             self.attempt_timeout = values['window_sec']
             if self.attempt_started is not None:
@@ -390,6 +396,7 @@ class GemOrbitTapper:
         self.balance_before = None
         self.attempt_started = None
         self.sent_tap = False
+        self._attempt_had_input = False
         self.manual_active = False
         self._balance_diagnostic_written = False
         self._gem_observation_states = set()
@@ -485,9 +492,21 @@ class GemOrbitTapper:
                          before=self.balance_before, after=balance)
         self.last_outcome = dict(confirmed=False, reason='attempt_timeout', observed_at=time.time(),
                                  window_id=self.window_id, attempt_id=self.attempt_id)
+        self._failed_retry_anchor = self.attempt_started if self._attempt_had_input else None
+        input_ready_at = self._input_ready_at
         self._reset_attempt()
-        self.next_at = self.next_window_at
+        # Only real dispatched input consumes the long retry spacing. An
+        # optical refusal still keeps safety backoff and prior input pacing.
+        self._timeout_ready_at = max(time.monotonic()+self.retry_backoff, input_ready_at)
+        self._set_retry_spacing(self._failed_retry_anchor)
         return True
+
+    def _set_retry_spacing(self, anchor: float | None) -> None:
+        """Keep the timeout safety floor separate from editable retry spacing."""
+        self.next_window_at = max(0.0 if anchor is None else anchor+self.interval,
+                                  self._timeout_ready_at)
+        if self.attempt_started is None:
+            self.next_at = self.next_window_at
 
     def poll(self, frame):
         candidate = self.window_id if self.attempt_started is not None else uuid.uuid4().hex
@@ -508,20 +527,24 @@ class GemOrbitTapper:
                                       and self.balance_before is not None and self.sent_tap):
             return frame
         if self.attempt_started is None:
-            now = time.monotonic()
-            if not manual and self.next_window_at and now >= self.next_window_at + min(self.attempt_timeout, self.interval):
-                import math
-                self.next_window_at += (math.floor((now-self.next_window_at)/self.interval)+1)*self.interval
-                self.next_at = self.next_window_at
+            # UNKNOWN is not absence. It authorizes neither an attempt nor
+            # more captures: inspect only the loop's already supplied pixels.
+            # An explicit manual request retains its bounded seeking attempt.
+            if not manual and (
+                    find_orbit_gem(frame, layout_offset=capture.layout_offset) is None
+                    or wave_reader.read_wave(frame) is None
+                    or screen.identify(frame).name != 'battle'):
                 return frame
             self.attempt_started = time.monotonic()
+            self._timeout_ready_at = 0.0
+            self._failed_retry_anchor = None
             self.window_id = logger.current_context()['window_id']
             self.last_window_started_at = self.attempt_started
             self.manual_requested = False
             self.manual_active = manual
-            self.next_window_at = self.attempt_started + self.interval
-            self.window_ends_at = self.attempt_started + min(self.attempt_timeout, self.interval)
-            logger.event("gem_orbit_window", duration_sec=min(self.attempt_timeout, self.interval),
+            self._set_retry_spacing(self.attempt_started)
+            self.window_ends_at = self.attempt_started + self.attempt_timeout
+            logger.event("gem_orbit_window", duration_sec=self.attempt_timeout,
                          interval_sec=self.interval)
         self.attempt_id = logger.current_context()['attempt_id']
         if wave_reader.read_wave(frame) is None:
@@ -533,6 +556,11 @@ class GemOrbitTapper:
         # supplied frames without more I/O until a readable change warrants
         # the same fresh-pair validation used on a normal collection poll.
         if confirmation_only and (prior_balance is None or prior_balance == self.balance_before):
+            return frame
+        if prior_balance is None and self.balance_before is None:
+            # No pending baseline can be confirmed or contradicted by another
+            # reading. Keep these pixels and retry on the next supplied frame.
+            self._balance_unreadable(prior_frame, 'prior')
             return frame
         frame = capture.grab()
         if self.guard is not None:
@@ -559,13 +587,16 @@ class GemOrbitTapper:
         if self.balance_before is not None and balance != self.balance_before:
             if self._is_collection_balance(balance):
                 if prior_balance == balance:
-                    pause = max(0.0, self.next_window_at - time.monotonic())
+                    # A confirmed collectible is gone. Resume appearance
+                    # sensing after input pacing, without another timed window.
+                    ready_at = max(time.monotonic(), self._input_ready_at)
+                    pause = ready_at - time.monotonic()
                     logger.event("gem_orbit_claim", confirmed=True,
                                  before=self.balance_before, after=balance, pause_sec=round(pause, 3))
                     self.last_outcome = dict(confirmed=True, reason='balance_increased', observed_at=time.time(),
                                              window_id=self.window_id, attempt_id=self.attempt_id)
                     self._reset_attempt()
-                    self.next_at = self.next_window_at
+                    self.next_at = self.next_window_at = ready_at
                 else:
                     # Let the HUD settle, without sending another tap.
                     self._wait_to_retry()
@@ -649,7 +680,9 @@ class GemOrbitTapper:
                 event = act.tap(x, y, reason="gem_orbit", deadline=self.window_ends_at)
                 logger.event("gem_orbit_tap", gem_center=gem.center,
                              measured_radius=current_radius, **event)
-                self.sent_tap = self.sent_tap or not event.get('dry_run', False)
+                dispatched = not event.get('dry_run', False)
+                self.sent_tap = self.sent_tap or dispatched
+                self._attempt_had_input = self._attempt_had_input or dispatched
                 # Interrupted sets must retain pacing from their last input,
                 # while the remaining taps inside this guarded set stay paced
                 # by the shared input boundary as before.

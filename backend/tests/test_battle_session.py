@@ -285,7 +285,7 @@ def test_timer_numeric_changes_keep_anchor_and_completed_window_closed(kind, mon
     assert collector.status()['window_ends_at'] is None
     collector.configure({'window_sec': 60, 'enabled': True})
     assert collector.status()['window_ends_at'] is None
-    assert collector.next_window_at == 890
+    assert collector.next_window_at == (126 if kind == 'orbit' else 890)
 
 
 def test_raw_control_acknowledgements_emit_only_actual_progress(driver, monkeypatch):

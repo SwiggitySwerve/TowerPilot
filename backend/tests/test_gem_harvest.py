@@ -55,7 +55,7 @@ def test_orbit_stops_when_screen_changes_between_taps(monkeypatch):
     monkeypatch.setattr(shard.screen, 'identify', lambda frame: SimpleNamespace(name=frame))
     monkeypatch.setattr(shard.wave_reader, 'read_wave', lambda f: 100)
     monkeypatch.setattr(shard.act, 'tap', lambda *a, **kw: taps.append(a) or {})
-    shard.GemOrbitTapper(enabled=True, taps=3).poll('old battle')
+    shard.GemOrbitTapper(enabled=True, taps=3).poll('battle')
     assert len(taps) == 1
 
 

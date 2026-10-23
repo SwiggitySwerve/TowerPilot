@@ -4,17 +4,17 @@ import math
 
 ORBIT_TIMING_FIELDS = {
     "interval_sec": {"default": 960, "min": 1, "max": 3600,
-        "label": "Time between collection windows",
-        "description": "Start-to-start interval, whether collected or missed. Defaults to 16 minutes. A new collector starts its first window immediately."},
+        "label": "Retry spacing after unconfirmed taps",
+        "description": "Minimum time between attempt starts after taps were sent but collection was not confirmed. An attempt that sent no taps retries after the safety backoff. A recognized gem starts the first attempt; a confirmed claim resumes watching after tap pacing. Defaults to 16 minutes from the previous attempt's start; this is not a gem spawn period."},
     "retry_interval_sec": {"default": 5, "min": 0.5, "max": 30,
         "label": "Time between tap sets while seeking",
-        "description": "Short retries within one collection attempt; farming continues between sets."},
+        "description": "Minimum time between tap sets during a collection attempt. Farming and confirmation continue between sets."},
     "attempt_timeout_sec": {"default": 60, "min": 5, "max": 60,
-        "label": "Collection window duration",
-        "description": "Maximum active time per window; confirmation stops it early. Misses and safety refusals do not extend the window."},
+        "label": "Maximum floating gem claim attempt",
+        "description": "Maximum time to collect a recognized gem, or to seek one after Run now. A stable exact +2 balance increase confirms collection and ends the attempt. Refusals do not extend this time."},
     "retry_backoff_sec": {"default": 15, "min": 1, "max": 300,
-        "label": "Backoff within the active window",
-        "description": "Wait after a safety refusal. Unreadable balances and unrecognized gems retry on a later frame while keeping the time between tap sets. Once the window ends, wait for the next scheduled window."},
+        "label": "Safety backoff during a floating gem attempt",
+        "description": "Wait after an input safety refusal, and at least this long after an attempt times out. Unknown balances or gems are checked again while keeping the same tap spacing and claim deadline."},
 }
 
 
