@@ -26,7 +26,8 @@ export type ProfileWrite =
       readonly importCurrent: boolean;
     }
   | { readonly kind: 'account_tier'; readonly maxTier: number }
-  | { readonly kind: 'profile_activate'; readonly name: string }
+  /** `name: null` unbinds the active profile (F6-14 PE1): the scheduler runs its legacy rules. */
+  | { readonly kind: 'profile_activate'; readonly name: string | null }
   | {
       readonly kind: 'profile_copy';
       readonly from: string;
@@ -84,7 +85,7 @@ function request(write: ProfileWrite): Request {
         endpoint: 'profileActivate',
         path: '/api/profile-activate',
         body: { name: write.name },
-        meta: { name: write.name },
+        meta: write.name === null ? { unbind: true } : { name: write.name },
       };
     case 'profile_copy':
       return {

@@ -130,6 +130,8 @@ export function recordingCommands(): RecordingCommands {
     editDraft: vi.fn(() => undefined),
     discardDraft: vi.fn(() => undefined),
     saveRun: vi.fn(done),
+    addRun: vi.fn(done),
+    checkRunAdd: vi.fn(),
     saveLive: vi.fn(done),
     resetLive: vi.fn(done),
     checkRun: vi.fn(() => undefined),

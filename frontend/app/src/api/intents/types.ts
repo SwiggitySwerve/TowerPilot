@@ -26,6 +26,7 @@ export type IntentKind =
   | 'reconnect'
   | 'run_now'
   | 'run_save'
+  | 'run_add'
   | 'schedule_save'
   | 'live_controls'
   | 'account_select'
@@ -61,6 +62,7 @@ export const INTENT_KINDS: readonly IntentKind[] = [
   'reconnect',
   'run_now',
   'run_save',
+  'run_add',
   'schedule_save',
   'live_controls',
   'account_select',
@@ -149,6 +151,8 @@ export interface IntentMeta {
   readonly name?: string;
   readonly maxTier?: number;
   readonly existed?: boolean;
+  /** F6-14 PE1: a profile activation with `name: null` (use no profile). */
+  readonly unbind?: boolean;
   /**
    * A settings save (collection brief C1 to C4): the module it saved and the values it
    * sent, to know the answer's receipt (the module holds them) and to judge a later read.

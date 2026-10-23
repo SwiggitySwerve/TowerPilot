@@ -10,4 +10,4 @@ export {
   settingsPostAnswerSchema,
   settingsReadAnswerSchema,
   vocabReadAnswerSchema,
-} from './generated/dashboard_contract_pages_v1_collection.7d65b5eb.ts';
+} from './generated/dashboard_contract_pages_v1_collection.0039fbe2.ts';

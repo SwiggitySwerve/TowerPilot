@@ -240,7 +240,11 @@ test('R4 an operation awaiting apply is applied on a confirmed click with its id
     'applied',
   );
   expect(await bodiesTo(page, '/api/calibrate/apply')).toEqual([
-    { operation_id: '00000090-0000-4000-8000-000000000000', expected_revision: 3 },
+    {
+      operation_id: '00000090-0000-4000-8000-000000000000',
+      expected_revision: 3,
+      expected_context: { instance: 'main', account: null, profile: 'mine', serial: 'fake:1' },
+    },
   ]);
   await page.screenshot({ path: path.join(OUT, 'recognition-apply-1360.png'), fullPage: true });
 });

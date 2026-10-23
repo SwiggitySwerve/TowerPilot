@@ -102,6 +102,40 @@ for (const width of WIDTHS) {
     expect(problems).toEqual([]);
   });
 
+  test(`RL7 the recorded seen offer and Floating gems refusal at ${String(width)}: dates, failure, counts, axe and screenshot`, async ({
+    page,
+  }) => {
+    const problems = await openRunsLive(page, 'runs_live_battle_details', width);
+    await live(page).getByText('Ad gems: battle details', { exact: true }).click();
+    const ad = live(page).locator('[data-routine-details="ad_gems"]');
+    await expect(ad.getByText('Seen on the last battle screen', { exact: true })).toBeVisible();
+    await expect(ad.getByText(/; 5 s between looks$/u)).toBeVisible();
+    await expect(ad.getByText('offer_still_visible', { exact: true })).toBeVisible();
+    await expect(
+      ad.getByText('Attempts 1, confirmed 0, skipped 0, windows missed 0', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      ad.getByRole('link', { name: 'Events of this battle on Runtime' }),
+    ).toHaveAttribute('href', /offer_id=bd_ad_offer_failed-offer&since=1799999931$/u);
+    expect(await axeViolations(page)).toEqual([]);
+    expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+    await live(page).screenshot({
+      path: path.join(OUT, `runs-leftovers-details-seen-${String(width)}.png`),
+    });
+    await page.goto('/__fake/use?scenario=runs_live_floating_refusal');
+    await page.evaluate(() => {
+      window.location.hash = '#runs/live';
+    });
+    await live(page).getByText('Floating gems: battle details', { exact: true }).click();
+    await expect(
+      live(page)
+        .locator('[data-routine-details="floating_gems"]')
+        .getByText('invalid_orbit_arc', { exact: true }),
+    ).toBeVisible();
+    expect(await posts(page)).toEqual([]);
+    expect(problems).toEqual([]);
+  });
+
   test(`RL1 reset one live override at ${String(width)}: Cancel sends nothing, a confirmed reset sends null once`, async ({
     page,
   }) => {
@@ -148,6 +182,40 @@ for (const width of WIDTHS) {
     expect(problems).toEqual([]);
   });
 
+  test(`RL2 reset every override at ${String(width)}: the confirmation lists both, one POST with both paths null, then none left`, async ({
+    page,
+  }) => {
+    const problems = await openRunsLive(page, 'runs_live_reset_all', width);
+    const all = live(page).getByRole('button', {
+      name: "Use the battle's starting values for all 2",
+    });
+    await expect(all).toBeVisible();
+    if (width === 390) expect((await all.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await all.click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('listitem')).toHaveCount(2);
+    expect(await axeViolations(page)).toEqual([]);
+    await page.screenshot({
+      path: path.join(OUT, `runs-leftovers-reset-all-${String(width)}.png`),
+    });
+    await dialog.getByRole('button', { name: 'Use starting values' }).click();
+    await expect
+      .poll(async () => (await posts(page)).filter((p) => p.path.endsWith('/live-controls')).length)
+      .toBe(1);
+    const [sent] = (await posts(page)).filter((p) => p.path.endsWith('/live-controls'));
+    expect((JSON.parse(sent?.body ?? '{}') as { changes?: unknown }).changes).toEqual({
+      'routines.ad_gems.interval_sec': null,
+      'routines.floating_gems.enabled': null,
+    });
+    await live(page).getByRole('button', { name: 'Check this battle' }).click();
+    await expect(live(page).getByText('Applied to this battle', { exact: true })).toBeVisible();
+    await expect(live(page).locator('[data-path]')).toHaveCount(0);
+    expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+    await page.waitForTimeout(2_000);
+    expect((await posts(page)).filter((p) => p.path.endsWith('/live-controls'))).toHaveLength(1);
+    expect(problems).toEqual([]);
+  });
+
   test(`IR-01 a recorded live change reads "Applied to this battle" once its battle's read lists it applied, at ${String(width)}`, async ({
     page,
   }) => {
@@ -170,6 +238,53 @@ for (const width of WIDTHS) {
     await page.waitForTimeout(2_000);
     expect((await posts(page)).filter((p) => p.path.endsWith('/live-controls'))).toHaveLength(1);
     expect(problems).toEqual([]);
+  });
+
+  test(`RL8 remove the day plan at ${String(width)}: asks first, one delete with the read revision, then a new start is offered`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.request.get('/__fake/use?scenario=runs_saved');
+    await page.request.get(
+      `/__fake/schedule?${new URLSearchParams({
+        profile: 'plan_section_delete.read_before_the_plan_section_was_deleted',
+        save: 'plan_section_delete.saved_the_whole_plan_section_deleted',
+        readback: 'plan_section_delete.read_after_the_plan_section_was_deleted',
+      })}`,
+    );
+    await page.goto(`/ui/app/?rl8-remove=${String(width)}#schedule`);
+    const remove = page.getByRole('button', { name: 'Remove the day plan' });
+    await expect(remove).toBeVisible();
+    if (width === 390) expect((await remove.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await remove.click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText(/The scheduler then uses its legacy rules/u)).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    await page.screenshot({
+      path: path.join(OUT, `runs-leftovers-schedule-remove-${String(width)}.png`),
+    });
+    await dialog.getByRole('button', { name: 'Keep editing' }).click();
+    expect(await bodiesTo(page, '/api/profile-patch')).toEqual([]);
+    await remove.click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Remove day plan' }).dblclick();
+    await expect.poll(async () => (await bodiesTo(page, '/api/profile-patch')).length).toBe(1);
+    expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
+      {
+        name: 'mine',
+        expected_revision: '000000000000000000000000000000000000000000000000000000000000003c',
+        path: ['plan'],
+        op: 'delete',
+      },
+    ]);
+    await expect(
+      page
+        .getByRole('status', { name: 'Profile validation and save details' })
+        .getByText(/^Day plan removed\./u),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start a day plan' })).toBeVisible();
+    expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+    await page.waitForTimeout(2_000);
+    expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
   });
 
   test(`RL8 start a day plan at ${String(width)}: drafting sends nothing, Save sends the whole plan once`, async ({

@@ -140,18 +140,18 @@ export function selectReadPlan(state: DashboardState, resource: ResourceId): Rea
         ? { path: '/api/settings', mode: 'off' }
         : { path: null, mode: 'off' };
     case 'runTemplates':
-      return state.collectionOpen
+      return state.collectionOpen || state.runsOpen
         ? { path: '/api/run-templates', mode: 'off' }
         : { path: null, mode: 'off' };
     case 'vocab':
-      return state.collectionOpen
+      return state.collectionOpen || state.runsOpen
         ? { path: '/api/vocab', mode: 'off' }
         : { path: null, mode: 'off' };
     case 'profileSource': {
       // The active profile as the page context names it (its config read): a new profile
       // is a new context, read again from the start (S-014).
       const profile = state.context?.profile ?? null;
-      return (state.profilesOpen || state.collectionOpen) && profile !== null
+      return (state.profilesOpen || state.collectionOpen || state.runsOpen) && profile !== null
         ? { path: `/api/profile-src/${encodeURIComponent(profile)}`, mode: 'off' }
         : { path: null, mode: 'off' };
     }
@@ -280,11 +280,22 @@ export function readTriggers(
   // Collection (C1 to C6): a settings save or a profile patch, answered or its answer lost,
   // is followed by the reads that show what is saved now (never by a resend).
   for (const record of contextIntents(next)) {
-    if (record.kind !== 'settings_save' && record.kind !== 'profile_patch') continue;
+    if (
+      record.kind !== 'settings_save' &&
+      record.kind !== 'profile_patch' &&
+      record.kind !== 'run_add'
+    )
+      continue;
     const old = before.get(record.id);
     const answered = record.answerSeq !== null && record.answerSeq !== old?.answerSeq;
     const lost = record.lostReason !== null && record.lostReason !== old?.lostReason;
-    if (answered || lost) for (const resource of COLLECTION_READS) wanted.add(resource);
+    if (answered || lost) {
+      for (const resource of COLLECTION_READS) wanted.add(resource);
+      if (record.kind === 'run_add') {
+        wanted.add('runs');
+        wanted.add('runControls');
+      }
+    }
   }
   // Emulators (M2 to M5): each request's answer, or the loss of its answer, is followed by
   // the reads that show what changed (never by a resend). An adopt rewrites the configured
@@ -327,6 +338,11 @@ export function readTriggers(
   if (next.emulatorsOpen && !previous.emulatorsOpen) {
     for (const resource of ['config', 'settings', 'wizardTools', 'wizardState'] as const)
       wanted.add(resource);
+  }
+  if (next.runsOpen && !previous.runsOpen) {
+    wanted.add('profileSource');
+    wanted.add('runTemplates');
+    wanted.add('vocab');
   }
   if (next.collectionOpen && !previous.collectionOpen) {
     for (const resource of [...COLLECTION_READS, 'vocab', 'runs', 'runTemplates'] as const)

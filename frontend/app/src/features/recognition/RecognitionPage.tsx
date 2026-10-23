@@ -212,6 +212,24 @@ function Outcome({ outcome }: { readonly outcome: RecognitionOutcomeVM }) {
                   {outcome.refusalCode === null ? null : (
                     <ServerValue kind="id" label={o.code.short} value={outcome.refusalCode} />
                   )}
+                  {outcome.currentContext === null ? null : (
+                    <span className="tp-recognition__context" data-current-context="true">
+                      <span>{o.currentContext.short}</span>
+                      {(['instance', 'account', 'profile', 'serial'] as const).map((key) => {
+                        const value = outcome.currentContext?.[key] ?? null;
+                        return (
+                          <span className="tp-recognition__context-field" key={key}>
+                            <span>{o.contextFields[key].short}</span>
+                            {value === null ? (
+                              o.contextUnknown.short
+                            ) : (
+                              <ServerValue kind="name" value={value} />
+                            )}
+                          </span>
+                        );
+                      })}
+                    </span>
+                  )}
                   {outcome.error === null ? null : (
                     <span data-server-error="true">
                       <span>{o.serverSaid.short}</span>

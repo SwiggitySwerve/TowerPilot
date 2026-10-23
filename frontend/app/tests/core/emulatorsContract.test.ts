@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import r11 from '../../e2e/r11-candidate-samples.json';
 import { ENDPOINTS, parseAnswer, type EndpointId } from '../../src/api/wire.ts';
 import {
   adoptAnswer,
@@ -76,9 +75,10 @@ const v1Cases = V1.flatMap((path) => {
 });
 
 describe('the Emulators contract at the wire boundary', () => {
-  it.each(Object.entries(r11.cases.emulator_bluestacks_inventory))(
-    'M4 r11 emulator_bluestacks_inventory.%s keeps every recorded member',
-    (_name, found) => {
+  it.each(dashboardPagesCaseNames('emulator_bluestacks_inventory'))(
+    'M4 emulator_bluestacks_inventory.%s keeps every recorded member',
+    (name) => {
+      const found = dashboardPagesCase(`emulator_bluestacks_inventory.${name}`);
       const endpoint = endpointOf(found);
       if (endpoint === null) throw new Error('BlueStacks case has no endpoint');
       const parsed = wire(endpoint, found);

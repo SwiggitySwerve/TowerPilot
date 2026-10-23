@@ -434,11 +434,16 @@ export const CONTRACT_INPUTS = [
   },
   { file: DASHBOARD_PAGES_FIXTURE_PATH, descriptor: PAGES_RECOGNITION_DESCRIPTOR },
   {
-    // The r11 candidate's first-policy and BlueStacks families, snapshot until r11 lands.
-    file: path.join(APP, 'e2e/r11-candidate-samples.json'),
+    // The families r12 added to the pages fixture: the first gathering policy, BlueStacks, the
+    // F6-11 Runs leftovers, the guarded run add and the Recognition apply fence.
+    file: DASHBOARD_PAGES_FIXTURE_PATH,
     descriptor: {
-      name: 'r11_candidate_samples_v1',
+      name: 'dashboard_contract_pages_v1_r12',
       boundTo: 'families',
+      // The reset-all answers and reads carry battle commands: their states are what the
+      // backend's one serializer writes for each kind (F-058), as for run_controls_live.
+      vocabularies: [COMMAND_STATE_VOCABULARY],
+      vocabularyFrom: [{ file: DASHBOARD_FIXTURE_PATH, descriptor: DASHBOARD_DESCRIPTOR }],
       families: /** @type {const} */ ([
         ['collection_first_policy', 'GET', '/api/run-templates', 'RunTemplatesAnswer'],
         ['collection_first_policy', 'GET', '/api/profile-src/', 'FirstPolicySourceAnswer'],
@@ -455,6 +460,33 @@ export const CONTRACT_INPUTS = [
           '/api/wizard/bluestacks/prepare',
           'BlueStacksPrepareAnswer',
         ],
+        ['run_controls_live_reset_all', 'POST', '/api/operations/', 'ResetAllAnswer'],
+        ['run_controls_live_reset_all', 'GET', '/api/battles/active', 'ResetAllReadAnswer'],
+        ['battle_details_runtime', 'GET', '/api/battles/active', 'BattleDetailsReadAnswer'],
+        ['run_entry_patch', 'POST', '/api/profile-patch', 'RunEntryPatchAnswer'],
+        ['run_entry_patch', 'GET', '/api/profile-src/', 'RunEntrySourceAnswer'],
+        ['run_templates_add', 'POST', '/api/run-templates/add', 'RunTemplatesAddAnswer'],
+        ['run_templates_add', 'GET', '/api/profile-src/', 'RunTemplatesAddSourceAnswer'],
+        ['run_templates_add', 'GET', '/api/run-templates', 'RunTemplatesListAnswer'],
+        // Batch 2: the add with its optional expected_revision and expected_context guards.
+        ['run_templates_add_fenced', 'POST', '/api/run-templates/add', 'FencedAddAnswer'],
+        ['run_templates_add_fenced', 'GET', '/api/profile-src/', 'FencedAddSourceAnswer'],
+        ['run_templates_add_fenced', 'GET', '/api/config', 'FencedAddConfigAnswer'],
+        ['plan_section_delete', 'POST', '/api/profile-patch', 'PlanDeleteAnswer'],
+        ['plan_section_delete', 'GET', '/api/profile-src/', 'PlanDeleteSourceAnswer'],
+        ['recognition_context_fence', 'POST', '/api/calibrate/apply', 'FencedApplyAnswer'],
+        ['recognition_context_fence', 'POST', '/api/calibrate/start', 'FencedStartAnswer'],
+        ['recognition_context_fence', 'POST', '/api/calibrate/observe', 'FencedObserveAnswer'],
+        ['recognition_context_fence', 'POST', '/api/calibrate/stop', 'FencedStopAnswer'],
+        [
+          'recognition_context_fence',
+          'POST',
+          '/api/screen-analysis/start',
+          'FencedAnalysisStartAnswer',
+        ],
+        ['recognition_context_fence', 'GET', '/api/config', 'FenceConfigAnswer'],
+        ['recognition_context_fence', 'GET', '/api/calibrate/status', 'FenceCalibrateStatusAnswer'],
+        ['recognition_context_fence', 'GET', '/api/profile/', 'FenceProfileAnswer'],
       ]).map(([family, method, route, name]) => ({
         key: `${family} ${method} ${route}`,
         source: `cases.${family}`,

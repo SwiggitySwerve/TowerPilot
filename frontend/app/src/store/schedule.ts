@@ -48,6 +48,11 @@ export interface ScheduleStore extends Store<ScheduleState> {
   readonly edit: (key: string, field: BlockField, value: string) => void;
   readonly mapWeek: (slot: string, value: string) => void;
   readonly add: () => string | null;
+  /**
+   * F6-11 RL8: remove the whole plan section of the profile read at `revision` (one request,
+   * after the person confirmed). Only from a clean draft; false when nothing was sent.
+   */
+  readonly removePlan: (revision: string) => boolean;
   /** F6-11 RL8: draft a first plan for a profile that has none (nothing is sent). */
   readonly start: (run: string) => boolean;
   readonly move: (key: string, direction: -1 | 1) => number | null;
@@ -85,7 +90,10 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
   const store = createStore<ScheduleState>({ context: null, epoch: 0, key: null, entries: {} });
   let controller: AbortController | null = null;
   let counter = 0;
-  const submitted = new Map<string, { readonly version: number; readonly plan: unknown }>();
+  const submitted = new Map<
+    string,
+    { readonly version: number; readonly plan: unknown; readonly remove?: true }
+  >();
   const change = (key: string, transform: (entry: ScheduleEntry) => ScheduleEntry) => {
     store.update((s) => ({
       ...s,
@@ -144,6 +152,8 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
             }
           : {}),
         ...(accepted && exact ? { dirty: false } : {}),
+        // F6-11 RL8: an accepted removal leaves no plan to edit (Start a day plan returns).
+        ...(accepted && exact && sent.remove === true ? { draft: null, day: '' } : {}),
         reconcile:
           e.reconcile ||
           own(intent.answer?.body, 'code') === 'revision_conflict' ||
@@ -235,16 +245,26 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
       // save stays unknown until the person reconciles explicitly.
       if (applied) {
         api.machine.settleByRead(intent.id, 'applied');
-        change(key, (current) => ({
-          ...current,
-          baseRevision: revision,
-          dirty:
-            submitted.get(intent.id)?.version !== current.version ||
-            !viewEqual(
-              current.draft === null ? undefined : schedulePlan(current.draft),
-              own(value, 'value'),
-            ),
-        }));
+        // F6-11 RL8: a removal (sent only from a clean draft) leaves nothing to edit.
+        if (own(value, 'op') === 'delete')
+          change(key, (current) => ({
+            ...current,
+            baseRevision: revision,
+            dirty: false,
+            draft: null,
+            day: '',
+          }));
+        else
+          change(key, (current) => ({
+            ...current,
+            baseRevision: revision,
+            dirty:
+              submitted.get(intent.id)?.version !== current.version ||
+              !viewEqual(
+                current.draft === null ? undefined : schedulePlan(current.draft),
+                own(value, 'value'),
+              ),
+          }));
       } else change(key, (current) => ({ ...current, reconcile: true }));
     }
   };
@@ -367,6 +387,31 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
       const plan = schedulePlan(e.draft);
       const result = api.send(s.context, e.baseRevision, plan);
       if (result.kind === 'sent') submitted.set(result.record.id, { version: e.version, plan });
+    },
+    removePlan: (revision) => {
+      const s = store.getSnapshot();
+      const e = currentSchedule(s);
+      if (
+        s.context === null ||
+        s.context.profile === null ||
+        e === null ||
+        e.draft === null ||
+        planOf(e.source) === undefined ||
+        e.dirty ||
+        e.busy ||
+        e.readError ||
+        e.reconcile ||
+        e.baseRevision !== revision ||
+        e.intent?.phase === 'sending' ||
+        (e.intent?.phase === 'unconfirmed' &&
+          e.intent.readSettlement === null &&
+          e.resolvedIntent !== e.intent.id)
+      )
+        return false;
+      const result = api.remove(s.context, revision);
+      if (result.kind !== 'sent') return false;
+      submitted.set(result.record.id, { version: e.version, plan: undefined, remove: true });
+      return true;
     },
     discard: () => {
       activeChange((e) => ({

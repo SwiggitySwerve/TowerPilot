@@ -67,6 +67,8 @@ export interface ProfileOutcomeVM {
   readonly answeredAgeSec: number | null;
   /** Restored from this tab's session storage after a reload. */
   readonly restored: boolean;
+  /** F6-14 PE1: an activation that named no profile (use no profile). */
+  readonly unbind: boolean;
   /** Dismiss hides the line; the record and what it fences stay. */
   readonly dismissOffered: boolean;
 }
@@ -159,6 +161,15 @@ export interface ProfilesSectionVM {
     readonly command: CommandVM<ProfileWriteCommand>;
     readonly outcome: ProfileOutcomeVM | null;
   };
+  /**
+   * F6-14 PE1: "Use no profile": unbind the active profile (the scheduler runs its legacy
+   * rules). Enabled only while a profile is active; null until the profile list is read.
+   */
+  readonly unbind: {
+    readonly active: ServerText<'name'> | null;
+    readonly command: CommandVM<ProfileWriteCommand>;
+    readonly outcome: ProfileOutcomeVM | null;
+  } | null;
   readonly copy: {
     readonly scope: string | null;
     readonly from: string;
@@ -293,6 +304,7 @@ function outcomeVM(state: DashboardState, record: IntentView | undefined): Profi
         ? null
         : Math.max(0, Math.floor((state.nowMs - record.answeredAtMs) / 1000)),
     restored: record.restored,
+    unbind: record.meta.unbind === true,
     dismissOffered: record.phase !== 'sending',
   };
 }
@@ -301,10 +313,16 @@ function newestOf(
   state: DashboardState,
   records: readonly IntentView[],
   kinds: readonly ProfileWriteKind[],
+  unbind = false,
 ): ProfileOutcomeVM | null {
   return outcomeVM(
     state,
-    records.filter((record) => kinds.some((kind) => kind === record.kind)).at(-1),
+    records
+      .filter(
+        (record) =>
+          kinds.some((kind) => kind === record.kind) && (record.meta.unbind === true) === unbind,
+      )
+      .at(-1),
   );
 }
 
@@ -553,6 +571,15 @@ export function selectProfilesPage(state: DashboardState): ProfilesPageVM {
     activateReason === null && activatePick !== null
       ? command(state, { kind: 'profile_activate', name: activatePick }, null)
       : null;
+  // F6-14 PE1: use no profile, only while one is active.
+  const unbindReason =
+    files?.active === null || files?.active === undefined
+      ? ('none_active' as const)
+      : sending
+        ? ('write_in_flight' as const)
+        : null;
+  const unbindCommand =
+    unbindReason === null ? command(state, { kind: 'profile_activate', name: null }, null) : null;
 
   const copyScope = profilesScope(state, 'copy');
   const copyDraft = draftOf(state, copyScope);
@@ -709,6 +736,14 @@ export function selectProfilesPage(state: DashboardState): ProfilesPageVM {
         command: offered(activateReason, activateCommand),
         outcome: newestOf(state, records, ['profile_activate']),
       },
+      unbind:
+        files === null
+          ? null
+          : {
+              active: fromServer('name', files.active),
+              command: offered(unbindReason, unbindCommand),
+              outcome: newestOf(state, records, ['profile_activate'], true),
+            },
       copy: {
         scope: copyScope,
         from: copyFrom,

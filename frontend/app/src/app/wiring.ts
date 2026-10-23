@@ -3,6 +3,9 @@ import { handoffTarget } from '../core/needs.ts';
 import { finite, own, ownPath, text } from '../core/read.ts';
 import { startGate } from '../core/readiness.ts';
 import { savedSaveAnswer } from '../core/runControls.ts';
+import { runAddSource, runIdCheck } from '../core/runAdd.ts';
+import { selectRunsAdd } from '../store/selectors/runsAdd.ts';
+import { sendRunAdd } from '../api/intents/runAdd.ts';
 import {
   contextKey,
   createContextTracker,
@@ -55,6 +58,7 @@ import {
 import { sendProfileWrite } from '../api/intents/profiles.ts';
 import { sendProfilePatch, sendSettingsSave } from '../api/intents/collection.ts';
 import { sendEmulatorWrite } from '../api/intents/emulators.ts';
+import { createRecognitionApplyReadback } from '../api/recognitionApplyReadback.ts';
 import {
   sendCalibrateApply,
   sendCalibrateObserve,
@@ -146,6 +150,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     runDrafts: restoreDrafts(storage),
   });
   const diagnostics = createDiagnostics(transport, options.endpoints);
+  const savedApplyReadback = createRecognitionApplyReadback(machine, transport, tracker, timers);
 
   const notice = (kind: LocalNotice['kind'], reason: string) => {
     store.dispatch({
@@ -212,6 +217,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     previous = next;
     for (const resource of readTriggers(before, next)) activePoller.read(resource);
     activePoller.replan();
+    savedApplyReadback.check(next.reads.calibrate.latest?.startedSeq ?? 0);
   };
   const onMachine = () => {
     store.dispatch({ type: 'intents', records: machine.snapshot() });
@@ -258,6 +264,13 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
           ? Object.fromEntries(Object.entries(draft).filter(([path]) => answer.kept.includes(path)))
           : draft;
       store.dispatch({ type: 'draft_discard', scope: draftScope, only });
+      if (
+        record.kind === 'run_add' &&
+        sameContext(state.context, record.context) &&
+        record.meta.blueprint !== undefined
+      ) {
+        store.dispatch({ type: 'runs_open', open: state.runsOpen, run: record.meta.blueprint });
+      }
     }
   };
   /**
@@ -359,7 +372,9 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       .snapshot()
       .some(
         (record) =>
-          (record.kind === 'settings_save' || record.kind === 'profile_patch') &&
+          (record.kind === 'settings_save' ||
+            record.kind === 'profile_patch' ||
+            record.kind === 'run_add') &&
           record.phase === 'sending' &&
           sameContext(record.context, context),
       );
@@ -441,8 +456,9 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       notice('command_not_sent', 'destination_active');
       return;
     }
-    if (command.action.kind === 'profile_activate') {
-      // P5: activation only after a fresh read of that profile shows no problem.
+    // P5: activation only after a fresh read of that profile shows no problem. An unbind
+    // (F6-14 PE1, name null) names no profile to check; the server fences it by context.
+    if (command.action.kind === 'profile_activate' && command.action.name !== null) {
       const { name } = command.action;
       const check = await checkProfileSource(name);
       if (!fenced(command)) return;
@@ -861,7 +877,23 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       // still name the emulator, account and profile the page showed.
       recognitionChecking = true;
       let named: PageContext | null;
+      let savedEvidence: Readonly<Record<string, unknown>> | undefined;
       try {
+        const observations = ownPath(
+          answeredBody(store.getSnapshot(), 'calibrate'),
+          'state',
+          'player',
+        );
+        if (
+          command.apply.kind === 'saved' &&
+          command.context.profile !== null &&
+          observations !== undefined
+        ) {
+          savedEvidence = {
+            before: await savedApplyReadback.readProfile(command.context.profile),
+            observations,
+          };
+        }
         named = await readClickTimeContext();
       } finally {
         recognitionChecking = false;
@@ -892,7 +924,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
         notice('command_not_sent', offered?.reason ?? 'not_awaiting_apply');
         return;
       }
-      report(sendCalibrateApply(machine, command.apply, command.context));
+      report(sendCalibrateApply(machine, command.apply, named, command.context, savedEvidence));
     },
     recognitionStop: (command) => {
       if (!fenced(command)) return Promise.resolve();
@@ -972,6 +1004,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       activePoller.read('settings');
       activePoller.read('profileSource');
       activePoller.read('runTemplates');
+      activePoller.read('vocab');
     },
     saveSettings: async (command) => {
       if (!fenced(command)) return;
@@ -1002,6 +1035,76 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
         ),
       );
       await Promise.resolve();
+    },
+    checkRunAdd: () => {
+      const epoch = tracker.epoch();
+      void activePoller.readNow('profileSource').then(() => {
+        if (tracker.epoch() !== epoch) return;
+        const vm = selectRunsAdd(store.getSnapshot());
+        if (vm.baseRevision !== null)
+          store.dispatch({
+            type: 'draft_edit',
+            scope: vm.scope,
+            path: 'base_revision',
+            value: vm.baseRevision,
+          });
+        activePoller.read('runTemplates');
+      });
+    },
+    addRun: async (command) => {
+      if (!fenced(command)) return;
+      const clickedSeq = sequence.next();
+      const reservation = contextKey(command.context);
+      if (collectionChecks.has(reservation) || collectionWriteInFlight(command.context)) return;
+      collectionChecks.add(reservation);
+      try {
+        const named = await readClickTimeContext();
+        if (named === null || !fenced(command)) {
+          notice('command_not_sent', 'context_unconfirmed');
+          return;
+        }
+        if (
+          !sameContext(named, command.context) ||
+          !sameContext(tracker.current(), command.context)
+        ) {
+          await activePoller.readNow('config');
+          notice('command_not_sent', 'context_changed');
+          return;
+        }
+        // A read begun before the click may miss a taken id. Finish it, then read afresh.
+        let checked = await activePoller.readNow('profileSource');
+        if (checked !== null && checked.startedSeq <= clickedSeq)
+          checked = await activePoller.readNow('profileSource');
+        if (checked === null || checked.startedSeq <= clickedSeq) return;
+        if (!fenced(command) || !sameContext(tracker.current(), command.context)) return;
+        const read = store.getSnapshot().reads.profileSource.latest;
+        const body =
+          read?.outcome.kind === 'answered' && read.outcome.status === 200
+            ? read.outcome.body
+            : undefined;
+        const profile = command.context.profile;
+        if (
+          profile === null ||
+          !runAddSource(body, profile) ||
+          runIdCheck(command.runId, body) !== null
+        )
+          return;
+        const unresolved = machine
+          .snapshot()
+          .some(
+            (record) =>
+              record.kind === 'run_add' &&
+              sameContext(record.context, command.context) &&
+              (record.phase === 'sending' ||
+                (record.phase === 'unconfirmed' &&
+                  record.readSettlement === null &&
+                  record.accepted !== true)),
+          );
+        if (unresolved || collectionWriteInFlight(command.context)) return;
+        report(sendRunAdd(machine, command, named));
+      } finally {
+        collectionChecks.delete(reservation);
+      }
     },
     patchProfile: async (command) => {
       if (!fenced(command)) return;
@@ -1148,6 +1251,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       activePoller.start();
     },
     stop: () => {
+      savedApplyReadback.stop();
       activePoller.stop();
       machine.dispose();
       for (const undo of unsubscribe) undo();

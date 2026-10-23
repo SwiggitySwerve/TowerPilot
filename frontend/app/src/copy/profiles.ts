@@ -130,6 +130,22 @@ export const profiles = {
     checking: entry('Checking the profile'),
     ready: entry('Checked: no problems found'),
   },
+  /** F6-14 PE1: use no profile (classic "none - legacy constants"). */
+  unbind: {
+    title: entry('Use no profile'),
+    active: entry('Active profile:'),
+    none: entry('none - the scheduler runs its legacy rules'),
+    submit: entry(
+      'Use no profile',
+      'Unbinds the active profile from this account. The scheduler then runs its legacy rules. The profile file stays, and Activate binds it again.',
+    ),
+    confirm: entry('Use no profile?'),
+    effect: entry(
+      'The active profile is unbound; the scheduler runs its legacy rules from its next start. The profile file is kept. Nothing starts or stops now.',
+    ),
+    send: entry('Use no profile'),
+    cancel: entry('Cancel'),
+  },
   copy: {
     title: entry('Copy a profile'),
     from: entry('Copy from'),
@@ -172,6 +188,7 @@ export const profiles = {
       'Replacing the active profile in place would make an unchecked file the one automation uses. Write a new profile, then activate it after its check.',
     ),
     no_draft: entry('No scan draft to save'),
+    none_active: entry('No profile is active'),
     context_unknown: entry('The emulator is not known yet'),
   },
   notSent: {
@@ -222,6 +239,10 @@ export const profiles = {
       'The original request may still finish. Nothing is sent again. The accounts and profiles are read again; an absent result keeps this request unresolved.',
     ),
     applied: entry('A later read shows the requested result'),
+    /** F6-14 PE1: the server's receipt of an unbind. */
+    unbound: entry(
+      'No profile is active - the scheduler runs its legacy rules from its next start',
+    ),
     problems: (n: number) =>
       made(`Saved with ${plural(n, 'problem', 'problems')}; fix them before activating it`),
     abilitiesUnverified: entry('Abilities not verified'),

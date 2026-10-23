@@ -66,6 +66,11 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
     readonly key: string | null;
     readonly epoch: number;
   } | null>(null);
+  const [removeTarget, setRemoveTarget] = useState<{
+    readonly key: string | null;
+    readonly epoch: number;
+    readonly revision: string;
+  } | null>(null);
   const [focusRequest, setFocusRequest] = useState<{
     readonly id: string;
     readonly serial: number;
@@ -192,6 +197,21 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
         {entry?.busy === true ? <p role="status">{t.reading.short}</p> : null}
         {entry?.readError === true ? <p role="alert">{t.readError.short}</p> : null}
         {entry?.source !== undefined && !vm.hasDraftPlan ? <p>{t.missing.short}</p> : null}
+        {/* F6-11 RL8: once the plan is removed its editor is gone; its outcome stays here. */}
+        {!vm.hasDraftPlan && vm.outcome !== null ? (
+          <section
+            aria-label={t.validation.short}
+            className="tp-schedule__errors"
+            role={vm.outcome === 'refused' ? 'alert' : 'status'}
+          >
+            <p>{t[vm.outcome].short}</p>
+            {vm.error === null ? null : (
+              <p>
+                <ServerValue kind="message" value={vm.error} />
+              </p>
+            )}
+          </section>
+        ) : null}
         {vm.planMissing ? (
           <StartPlan
             runs={vm.runs}
@@ -479,6 +499,61 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
             </div>
           </>
         ) : null}
+        {vm.planSaved && entry !== null ? (
+          <div className="tp-schedule__remove">
+            <Button
+              id="schedule:remove"
+              tier="quiet"
+              label={t.removePlan.short}
+              {...(vm.removeBlocked === null
+                ? {}
+                : { disabled: true, reasonId: 'schedule:remove-reason' })}
+              onClick={() => {
+                const target = schedule.getSnapshot();
+                const revision = currentSchedule(target)?.baseRevision ?? null;
+                if (revision !== null)
+                  setRemoveTarget({ key: target.key, epoch: target.epoch, revision });
+              }}
+            />
+            {t.removePlan.why === undefined ? null : <Why why={t.removePlan.why} />}
+            {vm.removeBlocked === null ? null : (
+              <span id="schedule:remove-reason" className="tp-reason">
+                {t.removeUnavailable[vm.removeBlocked].short}
+              </span>
+            )}
+          </div>
+        ) : null}
+        <ConfirmDialog
+          // F6-11 RL8: open only for the target and revision it was asked for.
+          open={
+            removeTarget !== null &&
+            removeTarget.key === state.key &&
+            removeTarget.epoch === state.epoch &&
+            removeTarget.revision === entry?.baseRevision &&
+            vm.removeBlocked === null
+          }
+          title={t.removeTitle.short}
+          body={t.removeBody.short}
+          confirmLabel={t.removeConfirm.short}
+          cancelLabel={t.cancel.short}
+          tier="halt"
+          onCancel={() => {
+            setRemoveTarget(null);
+          }}
+          onConfirm={() => {
+            const target = schedule.getSnapshot();
+            if (
+              removeTarget !== null &&
+              removeTarget.key === target.key &&
+              removeTarget.epoch === target.epoch &&
+              schedule.removePlan(removeTarget.revision)
+            ) {
+              announce(t.removed.short);
+              focus('schedule:read');
+            }
+            setRemoveTarget(null);
+          }}
+        />
         <ConfirmDialog
           open={
             discardTarget !== null &&

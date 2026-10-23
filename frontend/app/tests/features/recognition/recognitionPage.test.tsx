@@ -503,7 +503,11 @@ describe('Recognition page R4 runs, readiness, apply and prepare', () => {
     await page.user.click(within(dialog()).getByRole('button', { name: 'Apply' }));
     await page.advance(1_000);
     expect(posts(page, '/api/calibrate/apply')).toEqual([
-      { operation_id: '000000df-0000-4000-8000-000000000000', expected_revision: 6 },
+      {
+        operation_id: '000000df-0000-4000-8000-000000000000',
+        expected_revision: 6,
+        expected_context: { instance: 'main', account: null, profile: 'mine', serial: 'fake:1' },
+      },
     ]);
     expect(operation.querySelector<HTMLElement>('[data-outcome]')?.dataset['outcome']).toBe(
       'applied',
@@ -979,7 +983,12 @@ describe('Recognition compliance round 1', () => {
     );
     await page.user.click(within(dialog()).getByRole('button', { name: 'Apply' }));
     await page.advance(2_000);
-    expect(posts(page, '/api/calibrate/apply')).toEqual([{ saved_observations: true }]);
+    expect(posts(page, '/api/calibrate/apply')).toEqual([
+      {
+        saved_observations: true,
+        expected_context: { instance: 'main', account: null, profile: 'mine', serial: 'fake:1' },
+      },
+    ]);
   });
 
   it('R1 R4 F6R10-R1-05 a failed capture keeps its discoveries applicable; the failure stays shown', async () => {
@@ -1008,7 +1017,11 @@ describe('Recognition compliance round 1', () => {
     await page.user.click(within(dialog()).getByRole('button', { name: 'Apply' }));
     await page.advance(1_000);
     expect(posts(page, '/api/calibrate/apply')).toEqual([
-      { operation_id: '00000094-0000-4000-8000-000000000000', expected_revision: 3 },
+      {
+        operation_id: '00000094-0000-4000-8000-000000000000',
+        expected_revision: 3,
+        expected_context: { instance: 'main', account: null, profile: 'mine', serial: 'fake:1' },
+      },
     ]);
     expect(
       operation.querySelector<HTMLElement>('[data-kind="calibrate_apply"]')?.dataset['outcome'],

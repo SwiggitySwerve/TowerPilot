@@ -21,6 +21,28 @@ export const schedule = {
   startRun: entry('Run for the first block'),
   startNoRun: entry('Add a run in Runs first: every plan block names a run.'),
   started: entry('Day plan started in your draft. Choose the block kind, then save.'),
+  /** F6-11 RL8 (classic Plan tab "remove"): delete the whole plan section. */
+  removePlan: entry(
+    'Remove the day plan',
+    'Deletes the whole plan from this profile. The scheduler then uses its legacy rules instead. Removing it never starts, stops or ends a battle; you can start a new day plan afterwards.',
+  ),
+  removeTitle: entry('Remove the day plan from this profile?'),
+  removeBody: entry(
+    'Every day plan and the weekday mapping are deleted from the saved profile. The scheduler then uses its legacy rules. Nothing starts or stops now.',
+  ),
+  removeConfirm: entry('Remove day plan'),
+  removeUnavailable: {
+    dirty: entry('Save or discard your changes first.'),
+    revision: entry('The profile revision has not been read.'),
+    reading: entry('Wait for the saved plan read.'),
+    sending: entry('Wait for this save answer.'),
+    unknown: entry('Check the unknown save before removing the plan.'),
+    reconcile: entry('Read and reconcile the saved revision first.'),
+  },
+  removed: entry(
+    'Day plan removed. The scheduler uses its legacy rules from its next load; this is not confirmation of that load.',
+  ),
+  readRemoved: entry('Readback confirms the day plan is removed.'),
   empty: entry(
     'This plan has no blocks. It is invalid; an empty plan does not enable fallback scheduling.',
   ),

@@ -13,7 +13,7 @@ function wording(outcome: ProfileOutcomeVM): CopyEntry {
     case 'sending':
       return t.outcomes.sending;
     case 'done':
-      return t.outcomes.done[outcome.kind];
+      return outcome.unbind ? t.outcomes.unbound : t.outcomes.done[outcome.kind];
     case 'refused':
       if (outcome.refusalCode === 'context_changed') return t.outcomes.contextChanged;
       return outcome.kind === 'account_create' ? t.outcomes.refusedCreate : t.outcomes.refused;

@@ -244,6 +244,8 @@ export interface SentProfileWrite {
   readonly profile?: string | null | undefined;
   /** The destination was listed when the person clicked (an overwrite cannot be told apart). */
   readonly existed?: boolean | undefined;
+  /** F6-14 PE1: the activation named no profile (unbind). */
+  readonly unbind?: boolean | undefined;
 }
 
 export type ProfileWriteAnswer =
@@ -289,7 +291,10 @@ function receipt(kind: ProfileWriteKind, body: unknown, sent: SentProfileWrite):
     case 'account_tier':
       return sent.maxTier !== undefined && own(body, 'max_tier') === sent.maxTier;
     case 'profile_activate':
-      return sent.name !== undefined && own(body, 'active') === sent.name;
+      // F6-14 PE1: an unbind's receipt names no active profile.
+      return sent.unbind === true
+        ? own(body, 'active') === null
+        : sent.name !== undefined && own(body, 'active') === sent.name;
     case 'profile_copy':
       return sent.name !== undefined && own(body, 'name') === sent.name;
     case 'profile_promote':
@@ -360,7 +365,11 @@ export function settleProfileWrite(
     }
     case 'profile_activate': {
       const view = profileFilesView(reads.files);
-      if (view === null || name === undefined) return null;
+      if (view === null) return null;
+      // F6-14 PE1: an unbind is proved by a list that names no active profile (it is offered
+      // only while one is active, and the read must follow the request).
+      if (sent.unbind === true) return view.active === null ? 'applied' : null;
+      if (name === undefined) return null;
       return view.active === name ? 'applied' : null;
     }
     case 'profile_copy':

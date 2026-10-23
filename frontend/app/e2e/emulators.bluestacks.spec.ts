@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { posts } from './helpers.ts';
-import { blueStacksCases, stoppedBlueStacks } from '../tests/support/emulatorsFixtures.ts';
+import { blueStacksCase, stoppedBlueStacks } from '../tests/support/emulatorsFixtures.ts';
 
 const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT = path.resolve('../../backend/logs/reviews/frontend-f6-screens');
@@ -63,7 +63,7 @@ for (const width of [1360, 1054, 390]) {
     await dialog.getByRole('button', { name: 'Write bluestacks.conf', exact: true }).click();
     const outcome = stopped.locator('[data-kind="prepare"]');
     await expect(outcome).toHaveAttribute('data-outcome', 'done');
-    const answer = blueStacksCases.prepare_the_stopped_instance_once_nothing_runs;
+    const answer = blueStacksCase('prepare_the_stopped_instance_once_nothing_runs');
     await expect(outcome).toContainText(answer.body.message);
     await expect(outcome).toContainText(answer.body.backup);
     expect(await posts(page)).toEqual([

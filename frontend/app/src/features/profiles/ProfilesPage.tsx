@@ -4,11 +4,13 @@ import type { CopyEntry, CopyNode } from '../../copy/text.ts';
 import {
   selectProfilesPage,
   type ProfileRowVM,
+  type ProfilesSectionVM,
   type ValidationVM,
 } from '../../store/selectors/profiles.ts';
 import type { ProfileWriteCommand } from '../../store/commands.ts';
 import type { CommandVM } from '../../store/viewModels.ts';
 import { Button } from '../../ui/Button.tsx';
+import { ConfirmDialog } from '../../ui/ConfirmDialog.tsx';
 import { Disclosure } from '../../ui/Disclosure.tsx';
 import { RegionBoundary } from '../../ui/RegionBoundary.tsx';
 import { Region, RegionBody, RegionEnd } from '../../ui/Region.tsx';
@@ -266,6 +268,83 @@ function ProfilesRegion({
       <FaultPoint part={id} />
       {children}
     </Region>
+  );
+}
+
+/**
+ * F6-14 PE1 (classic Active selector "none - legacy constants"): unbind the active profile,
+ * behind a confirmation. An explicit action beside Activate, never an empty picker option.
+ */
+function UnbindProfile({
+  unbind,
+  onSend,
+}: {
+  readonly unbind: NonNullable<ProfilesSectionVM['unbind']>;
+  readonly onSend: (command: ProfileWriteCommand) => void;
+}) {
+  const own = useId();
+  const [asking, setAsking] = useState<ProfileWriteCommand | null>(null);
+  const { command } = unbind.command;
+  // The confirmation applies only to the context it was opened in (a context change closes it).
+  const current =
+    asking !== null && command !== null && asking.epoch === command.epoch ? command : null;
+  if (asking !== null && current === null) setAsking(null);
+  return (
+    <fieldset className="tp-profiles__form" data-form="unbind">
+      <legend>{t.unbind.title.short}</legend>
+      <div className="tp-profiles__row">
+        <p className="tp-profiles__summary">
+          <span>{t.unbind.active.short}</span>
+          {unbind.active === null ? (
+            <span>{t.unbind.none.short}</span>
+          ) : (
+            <ServerValue kind="name" value={unbind.active} />
+          )}
+        </p>
+        {unbind.command.enabled && command !== null ? (
+          <Button
+            tier="quiet"
+            label={t.unbind.submit.short}
+            focusKey="profiles:unbind:submit"
+            onClick={() => {
+              setAsking(command);
+            }}
+          />
+        ) : (
+          <span className="tp-profiles__action">
+            <Button
+              tier="quiet"
+              label={t.unbind.submit.short}
+              focusKey="profiles:unbind:submit"
+              busy={unbind.command.sending}
+              disabled
+              reasonId={`${own}-reason`}
+              onClick={() => undefined}
+            />
+            <span id={`${own}-reason`} className="tp-reason">
+              {reasonOf(unbind.command.reason).short}
+            </span>
+          </span>
+        )}
+        {t.unbind.submit.why === undefined ? null : <Why why={t.unbind.submit.why} />}
+      </div>
+      {unbind.outcome === null ? null : <ProfileOutcome outcome={unbind.outcome} />}
+      <ConfirmDialog
+        open={current !== null}
+        tier="primary"
+        title={t.unbind.confirm.short}
+        body={<p>{t.unbind.effect.short}</p>}
+        confirmLabel={t.unbind.send.short}
+        cancelLabel={t.unbind.cancel.short}
+        onCancel={() => {
+          setAsking(null);
+        }}
+        onConfirm={() => {
+          setAsking(null);
+          if (current !== null) onSend(current);
+        }}
+      />
+    </fieldset>
   );
 }
 
@@ -631,6 +710,7 @@ function FilesSection() {
           <ProfileOutcome outcome={files.activate.outcome} />
         )}
       </fieldset>
+      {files.unbind === null ? null : <UnbindProfile unbind={files.unbind} onSend={send} />}
       <fieldset className="tp-profiles__form" data-form="copy">
         <legend>{t.copy.title.short}</legend>
         <div className="tp-profiles__row">

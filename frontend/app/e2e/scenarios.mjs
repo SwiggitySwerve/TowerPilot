@@ -150,8 +150,93 @@ const e0Samples = Object.fromEntries(
 
 /** @type {Readonly<Record<string, Scenario>>} */
 export const SCENARIOS = Object.freeze({
+  runs_entry_saved: {
+    description: 'RL3: one entry field saved, followed by the recorded saved profile.',
+    harvest: 'off',
+    get: {
+      config: 'run_templates_add_fenced.read_config_the_page_context_comes_from',
+      profileSource: 'run_entry_patch.read_before_the_first_save',
+    },
+    writes: {
+      profilePatch: {
+        case: 'run_entry_patch.saved_label',
+        reads: { profileSource: 'run_entry_patch.read_after_the_saves_holds_every_change' },
+      },
+    },
+  },
+  runs_entry_refused: {
+    description:
+      'RL3: the profile disappeared after drawing; its recorded refusal keeps the draft.',
+    harvest: 'off',
+    get: {
+      config: 'run_templates_add_fenced.read_config_the_page_context_comes_from',
+      profileSource: 'run_entry_patch.read_before_the_first_save',
+    },
+    writes: { profilePatch: { case: 'run_entry_patch.unknown_profile_404' } },
+  },
+  runs_add_coin: {
+    description: 'RL4: add a coin run with both guards, then read the returned profile.',
+    harvest: 'off',
+    get: {
+      config: 'run_templates_add_fenced.read_config_the_page_context_comes_from',
+      profileSource: 'run_templates_add_fenced.read_before_the_first_add',
+      runTemplates: 'run_templates_add.read_the_recipes_the_page_offers',
+    },
+    writes: {
+      runTemplatesAdd: {
+        case: 'run_templates_add_fenced.added_with_the_matching_revision_and_context',
+      },
+    },
+  },
+  runs_add_refused: {
+    description: 'RL4: recorded revision conflict, with the draft kept and a profile read offered.',
+    harvest: 'off',
+    get: {
+      config: 'run_templates_add_fenced.read_config_the_page_context_comes_from',
+      profileSource: 'run_templates_add_fenced.read_before_the_first_add',
+      runTemplates: 'run_templates_add.read_the_recipes_the_page_offers',
+    },
+    writes: {
+      runTemplatesAdd: { case: 'run_templates_add_fenced.stale_revision_409_nothing_written' },
+    },
+  },
   ...samples,
   ...e0Samples,
+  recognition_fence_saved_changed: {
+    description: 'R-FENCE: the four-field apply fence refuses the stale page; nothing applied.',
+    harvest: 'off',
+    get: {
+      ...recognitionGets,
+      config: 'recognition_context_fence.read_config_the_page_context_comes_from',
+      calibrate: 'recognition_reads.calibrate_status_shared_files_of_an_untracked_calibration',
+      profileRead:
+        'recognition_context_fence.read_the_profile_after_the_malformed_requests_nothing_was_applied',
+    },
+    writes: {
+      calibrateApply: {
+        case: 'recognition_context_fence.apply_saved_composed_for_alpha_is_refused_after_the_switch',
+      },
+    },
+  },
+  recognition_fence_saved_matching: {
+    description: 'R-FENCE: matching saved apply writes only the reviewed profile.',
+    harvest: 'off',
+    get: {
+      ...recognitionGets,
+      config: 'recognition_context_fence.read_config_the_page_context_comes_from',
+      calibrate: 'recognition_reads.calibrate_status_shared_files_of_an_untracked_calibration',
+      profileRead:
+        'recognition_context_fence.read_the_profile_after_the_malformed_requests_nothing_was_applied',
+    },
+    writes: {
+      calibrateApply: {
+        case: 'recognition_context_fence.apply_saved_with_the_matching_context_is_applied',
+        reads: {
+          profileRead: 'recognition_context_fence.read_the_profile_after_the_matching_apply',
+        },
+      },
+    },
+  },
   recognition: {
     description: 'Recognition idle with recorded capture, observation, analysis and crop writes.',
     harvest: 'off',
@@ -877,6 +962,32 @@ export const SCENARIOS = Object.freeze({
         },
       },
     },
+  },
+  runs_live_reset_all: {
+    description:
+      'Runs page (F6-11 RL2): a battle with two applied overrides; the reset of both is recorded (200) and the next read shows none left (r12 candidate run_controls_live_reset_all).',
+    harvest: 'off',
+    get: {
+      battlesActive: 'run_controls_live_reset_all.read_before_the_reset_two_overrides_are_in_force',
+    },
+    writes: {
+      liveControls: {
+        case: 'run_controls_live_reset_all.accepted_null_for_every_override_resets_them_together',
+        reads: { battlesActive: 'run_controls_live_reset_all.read_after_every_override_was_reset' },
+      },
+    },
+  },
+  runs_live_battle_details: {
+    description:
+      'Runs page (F6-11 RL7): a battle whose Ad gems offer was seen and whose claim failed (r12 candidate battle_details_runtime).',
+    harvest: 'off',
+    get: { battlesActive: 'battle_details_runtime.ad_gems_offer_seen_and_failed_attempt' },
+  },
+  runs_live_floating_refusal: {
+    description:
+      'Runs page (F6-11 RL7): a battle whose Floating gems routine recorded a refusal (r12 candidate battle_details_runtime).',
+    harvest: 'off',
+    get: { battlesActive: 'battle_details_runtime.floating_gems_refusal_recorded' },
   },
   runs_live_applied_after_change: {
     description:

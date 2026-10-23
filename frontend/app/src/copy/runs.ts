@@ -61,6 +61,14 @@ export const runs = {
       ),
       send: entry('Use starting value'),
       cancel: entry('Cancel'),
+      /** F6-11 RL2: every override of this battle in one request. */
+      resetAll: (count: number) =>
+        made(`Use the battle's starting values for all ${String(count)}`),
+      confirmAll: entry("Use the battle's starting values for all of these?"),
+      effectAll: entry(
+        'This battle goes back to the values it started with for each setting listed. They can differ from the saved settings below if those changed since the battle started. Nothing else changes.',
+      ),
+      sendAll: entry('Use starting values'),
     },
     marks: {
       changed: entry('Changed for this battle'),

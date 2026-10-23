@@ -12,4 +12,4 @@ export {
   recognitionConfigAnswerSchema,
   recognitionStatusAnswerSchema,
   recognitionStatusReadbackAnswerSchema,
-} from './generated/dashboard_contract_pages_v1_recognition.095ce739.ts';
+} from './generated/dashboard_contract_pages_v1_recognition.e0cc5344.ts';

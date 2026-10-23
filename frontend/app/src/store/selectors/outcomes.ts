@@ -239,6 +239,7 @@ export interface CodeDetailVM {
     | 'run_now'
     | 'reconnect'
     | 'run_save'
+    | 'run_add'
     | 'schedule_save'
     | 'settings_save'
     | 'profile_patch'
@@ -393,6 +394,7 @@ const SLOTS: Readonly<Record<IntentKindCode, OutcomeSlot>> = {
   reconnect: 'connection',
   run_now: 'battle',
   run_save: 'runs',
+  run_add: 'runs',
   schedule_save: 'runs',
   // Collection and Abilities pages word their own saves (slot `settings`).
   settings_save: 'settings',
@@ -695,6 +697,7 @@ function answerDetail(
     }
     case 'reconnect':
       return { kind: 'reconnect', class: record.phase, code: codeOf(own(raw.body, 'code')) };
+    case 'run_add':
     case 'schedule_save':
     case 'settings_save':
     case 'profile_patch':

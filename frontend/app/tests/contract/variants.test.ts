@@ -201,6 +201,9 @@ describe('R7-02 command schemas accept exactly the wire states of each kind', ()
       // The pages fixture's live changes: the POST answers and the reads that settle them.
       'run_controls_live.GET',
       'run_controls_live.POST',
+      // F6-11 RL2: a reset of every override and the reads that settle it (r12).
+      'run_controls_live_reset_all GET /api/battles/active',
+      'run_controls_live_reset_all POST /api/operations/',
     ]);
   });
   for (const { input, family, commands } of bearing)

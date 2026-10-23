@@ -61,17 +61,23 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
       ownPath(intent.answer.body, 'profile', 'plan'),
       own(JSON.parse(intent.request.body), 'value'),
     );
+  // F6-11 RL8: the newest request removed the whole plan section ({op:"delete"}).
+  const removal = intent !== null && own(JSON.parse(intent.request.body), 'op') === 'delete';
   const outcome:
     | 'readApplied'
+    | 'readRemoved'
     | 'readUnchanged'
     | 'sending'
     | 'unknown'
     | 'refused'
     | 'partial'
     | 'confirmed'
+    | 'removed'
     | null =
     intent?.readSettlement === 'applied'
-      ? 'readApplied'
+      ? removal
+        ? 'readRemoved'
+        : 'readApplied'
       : intent?.readSettlement === 'not_applied'
         ? 'readUnchanged'
         : intent?.phase === 'sending'
@@ -83,7 +89,9 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
               : partial
                 ? 'partial'
                 : intent?.phase === 'confirmed'
-                  ? 'confirmed'
+                  ? removal
+                    ? 'removed'
+                    : 'confirmed'
                   : null;
   const observationState:
     'unknownEmulator' | 'stale' | 'notRunning' | 'noWinner' | 'unavailable' | null =
@@ -187,6 +195,25 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
     warnings: messages(own(e?.source, 'warnings')),
     hasDraftPlan: draft !== null,
     /** F6-11 RL8: the read profile has no plan and no draft started one. */
+    /**
+     * F6-11 RL8: the read profile has a plan section the person may remove; `removeBlocked`
+     * says why Remove is unavailable now (unsaved changes first, then the Save reasons).
+     */
+    planSaved: own(sourceProfile, 'plan') !== undefined && draft !== null,
+    removeBlocked:
+      e === null || e.dirty
+        ? ('dirty' as const)
+        : e.baseRevision === null || e.readError
+          ? ('revision' as const)
+          : e.busy
+            ? ('reading' as const)
+            : intent?.phase === 'sending'
+              ? ('sending' as const)
+              : pending
+                ? ('unknown' as const)
+                : e.reconcile
+                  ? ('reconcile' as const)
+                  : null,
     planMissing:
       draft === null &&
       e !== null &&

@@ -11,7 +11,7 @@ import {
 import { sample, statusBody } from '../../support/fixture.ts';
 import { renderPage, type PageOptions } from '../dashboard/harness.tsx';
 import {
-  blueStacksCases,
+  blueStacksCase,
   blueStacksMixed,
   stoppedBlueStacks,
 } from '../../support/emulatorsFixtures.ts';
@@ -1028,7 +1028,7 @@ describe('M4 BlueStacks confirmation round from r11 recorded cases', () => {
     await page.user.click(prepare());
     await page.user.click(within(dialog()).getByRole('button', { name: 'Write bluestacks.conf' }));
     await page.advance(0);
-    const answer = blueStacksCases.prepare_the_stopped_instance_once_nothing_runs;
+    const answer = blueStacksCase('prepare_the_stopped_instance_once_nothing_runs');
     expect(posts(page, answer.request.path)).toEqual([answer.request.body]);
     page.fake.next(answer.request.path, 'POST').respond(answer.status, answer.body);
     await page.advance(1_000);
@@ -1036,7 +1036,7 @@ describe('M4 BlueStacks confirmation round from r11 recorded cases', () => {
     expect(outcome).toHaveAttribute('data-outcome', 'done');
     expect(outcome).toHaveTextContent(answer.body.message);
     expect(outcome).toHaveTextContent(answer.body.backup);
-    scan = blueStacksCases.read_after_the_prepare_display_ok_and_adb_on;
+    scan = blueStacksCase('read_after_the_prepare_display_ok_and_adb_on');
     await page.user.click(
       within(region('emulatorsDetected')).getByRole('button', { name: 'Scan again' }),
     );

@@ -19,6 +19,8 @@ import { RevocationFallback } from '../dashboard/shared/RevocationFallback.tsx';
 import { TopBar } from '../dashboard/topBar/TopBar.tsx';
 import { BattleDetails } from './BattleDetails.tsx';
 import { RunEditor } from './RunEditor.tsx';
+import { RunEntry } from './RunEntry.tsx';
+import { AddRun } from './AddRun.tsx';
 import { RunOutcome } from './RunOutcome.tsx';
 import './runs.css';
 
@@ -162,6 +164,7 @@ function SavedSection() {
           )}
           <a href={RECOGNITION}>{t.saved.prepare.short}</a>
         </div>
+        <AddRun />
         {saved.run !== null && !saved.runListed ? (
           <p className="tp-runs__note" data-run-unlisted="true">
             {t.saved.notListed.short}
@@ -211,6 +214,7 @@ function SavedSection() {
             }
           />
         )}
+        <RunEntry />
         {line === null ? null : <RunOutcome outcome={line} />}
         <p className="tp-runs__links">
           <a href={PREVIOUS_RUNS}>{t.saved.previousPage.short}</a>

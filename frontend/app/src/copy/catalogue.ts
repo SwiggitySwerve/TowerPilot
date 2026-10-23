@@ -11,6 +11,8 @@ import { thisBattle } from './dashboard/thisBattle.ts';
 import { topBar } from './dashboard/topBar.ts';
 import { entry, made } from './entry.ts';
 import { runs } from './runs.ts';
+import { runsAdd } from './runsAdd.ts';
+import { runEntry } from './runEntry.ts';
 import { history } from './history.ts';
 import { runtime } from './runtime.ts';
 import type { CopyEntry, CopyText } from './text.ts';
@@ -42,6 +44,8 @@ export const copy = {
   /** Spec 3.1: the eight status words (also under dashboard.shell.states). */
   states: shell.states,
   runs,
+  runsAdd,
+  runEntry,
   history,
   runtime,
   recognition,

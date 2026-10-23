@@ -3,7 +3,7 @@ import {
   DASHBOARD_PAGES_FIXTURE_PATH,
   loadJsonWithIdentity,
 } from '../../scripts/contract-fixture.mjs';
-import { familySchemas } from '../../src/contract/generated/dashboard_contract_pages_v1_recognition_advanced.1fb25c90.ts';
+import { familySchemas } from '../../src/contract/generated/dashboard_contract_pages_v1_recognition_advanced.39d80e69.ts';
 import { entries, own, ownPath, text } from '../../src/core/read.ts';
 import {
   analysisStatus,

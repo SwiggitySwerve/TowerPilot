@@ -26,11 +26,14 @@ import {
   scheduleProfileAnswerSchema,
 } from '../contract/schedule.ts';
 import { scheduleStatusAnswerSchema } from '../contract/dashboard.ts';
+import { planDeleteSourceAnswerSchema } from '../contract/r12Families.ts';
 
 const sourceSchemas = [
   scheduleProfileAnswerSchema,
   schedulePatchAnswerSchema,
   schedulePlanAnswerSchema,
+  // F6-11 RL8: the profile reads around a removal of the whole plan (r12 candidate).
+  planDeleteSourceAnswerSchema,
 ];
 const source: Endpoint = {
   id: 'config',
@@ -69,6 +72,27 @@ function intentStorage(storage: KeyValueStorage | null): KeyValueStorage | null 
       storage.removeItem(prefix + key);
     },
   };
+}
+
+/**
+ * F6-11 RL8: one explicit removal of the whole plan section ({op:"delete"} on ["plan"], r12
+ * candidate plan_section_delete), through the same record kind as a plan save: a later read
+ * without a plan settles it, as one holding a sent plan settles a save.
+ */
+export function sendScheduleRemove(machine: IntentMachine, context: PageContext, revision: string) {
+  return sendOnce(machine, `schedule:${contextKey(context)}`, context, () =>
+    machine.send({
+      kind: 'schedule_save',
+      target: `schedule:${contextKey(context)}`,
+      endpoint: 'profilePatch',
+      path: '/api/profile-patch',
+      body: { name: context.profile, path: ['plan'], op: 'delete', expected_revision: revision },
+      context,
+      key: null,
+      meta: { profileRevision: revision },
+      supersedes: [],
+    }),
+  );
 }
 
 /** One explicit whole-plan save, using the shared duplicate-submission guard. */
@@ -125,6 +149,8 @@ export function createScheduleApi(
       ),
     send: (context: PageContext, revision: string, plan: unknown) =>
       sendScheduleSave(machine, context, revision, plan),
+    remove: (context: PageContext, revision: string) =>
+      sendScheduleRemove(machine, context, revision),
     loadDraft: (key: string) => readJsonItem(storage, `tp.schedule.draft:${key}`),
     keepDraft: (key: string, draft: unknown) =>
       writeJsonItem(storage, `tp.schedule.draft:${key}`, draft),

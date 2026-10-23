@@ -8,6 +8,7 @@ import {
 } from '../../core/outcomes/start.ts';
 import { classifyStopAnswer } from '../../core/outcomes/stop.ts';
 import { own } from '../../core/read.ts';
+import { runAddAnswer } from '../../core/runAdd.ts';
 import { commandAnswer, runNowAnswer } from '../../core/routines.ts';
 import { profileWriteAnswer } from '../../core/profiles.ts';
 import { savedSaveAnswer } from '../../core/runControls.ts';
@@ -37,6 +38,8 @@ export function settledPhase(
 ): SettledPhase {
   const raw = { status: answer.status, body: answer.body };
   switch (kind) {
+    case 'run_add':
+      return runAddAnswer(raw, meta);
     case 'schedule_save':
     case 'profile_patch': {
       // POST /api/profile-patch: one owner of its answer rules (core/profilePatch.ts).

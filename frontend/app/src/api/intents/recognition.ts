@@ -1,5 +1,5 @@
 import { startFields, observeFields, type StartPlan } from '../../core/recognition.ts';
-import type { PageContext } from '../context.ts';
+import { expectedContext, type PageContext } from '../context.ts';
 import type { IntentMachine } from './machine.ts';
 import { sendOnce, type SendResult } from './send.ts';
 import type { ExpectedLaunchContext } from './start.ts';
@@ -92,11 +92,13 @@ export type ApplyTarget =
   /** Observations saved by no tracked operation (legacy); the server refuses tracked ones. */
   | { readonly kind: 'saved' };
 
-/** POST /api/calibrate/apply `{operation_id, expected_revision}` or `{saved_observations: true}`. */
+/** Both apply forms carry the four-field fence read for this click (never rendering). */
 export function sendCalibrateApply(
   machine: IntentMachine,
   apply: ApplyTarget,
+  expected: PageContext,
   context: PageContext,
+  evidence?: Readonly<Record<string, unknown>>,
 ): SendResult {
   const target =
     apply.kind === 'operation'
@@ -108,15 +110,17 @@ export function sendCalibrateApply(
       target,
       endpoint: 'calibrateApply',
       path: '/api/calibrate/apply',
-      body:
-        apply.kind === 'operation'
+      body: {
+        ...(apply.kind === 'operation'
           ? { operation_id: apply.operationId, expected_revision: apply.expectedRevision }
-          : { saved_observations: true },
+          : { saved_observations: true }),
+        expected_context: expectedContext(expected),
+      },
       key: null,
       meta:
         apply.kind === 'operation'
           ? { operationId: apply.operationId, expectedRevision: apply.expectedRevision }
-          : { action: 'saved' },
+          : { action: 'saved', ...(evidence === undefined ? {} : { values: evidence }) },
       context,
       supersedes: [],
     }),

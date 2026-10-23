@@ -25,6 +25,7 @@ export type StoredDrafts = Readonly<Record<string, Readonly<Record<string, strin
 const CONTEXT_SCOPED = [
   'profiles:',
   'collection:',
+  'runs:',
   'settings:',
   'abilities:',
   // R1, R5, R6: the followed operation, the scan choices and the watch length of a context.

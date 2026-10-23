@@ -438,6 +438,15 @@ export const recognition = {
       ),
       stop_answered: entry('Stop answered'),
       refused: entry('Refused: this request changed nothing'),
+      apply_context_changed: entry(
+        'Not applied: the emulator, account or profile changed',
+        'Nothing was applied by this request. Review the current context before applying again.',
+      ),
+      apply_invalid_request: entry(
+        'Not applied: this page sent an invalid request',
+        'This is a page bug. Nothing was applied by this request.',
+      ),
+      not_started: entry('Not started: this request changed nothing'),
       unknown: entry(
         'No answer: whether it was taken is unknown',
         'Nothing is sent again on its own. A later read that names this request settles the line.',
@@ -448,6 +457,14 @@ export const recognition = {
     operation: entry('Operation:'),
     code: entry('Code:'),
     serverSaid: entry('The server said:'),
+    currentContext: entry('Current context:'),
+    contextFields: {
+      instance: entry('Emulator:'),
+      account: entry('Account:'),
+      profile: entry('Profile:'),
+      serial: entry('Device:'),
+    },
+    contextUnknown: entry('Not reported'),
     missing: entry('Images still to capture:'),
     remaining: entry('Run checks still open:'),
     readyAfter: entry('The run reported ready after this apply'),

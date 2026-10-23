@@ -13,4 +13,4 @@ export {
   artworkImageAnswerSchema,
   advancedTemplatesReadbackAnswerSchema,
   advancedPlanReadbackAnswerSchema,
-} from './generated/dashboard_contract_pages_v1_recognition_advanced.1fb25c90.ts';
+} from './generated/dashboard_contract_pages_v1_recognition_advanced.39d80e69.ts';

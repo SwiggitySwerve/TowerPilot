@@ -9,6 +9,7 @@ import type {
 import type { SettingsSaveCommand } from './selectors/settingsModule.ts';
 import type { ReconnectCommand } from './selectors/topBar.ts';
 import type { ContextView } from './types.ts';
+import type { AddRunCommand } from './selectors/runsAdd.ts';
 
 /**
  * The page's commands (spec 7.1): declared in store/ and implemented in app/
@@ -157,6 +158,8 @@ export interface DashboardCommands {
   /** RUN-03: Discard every edit of the scope; sends nothing. */
   readonly discardDraft: (scope: string) => void;
   readonly saveRun: (command: SaveRunCommand) => Promise<void>;
+  readonly addRun: (command: AddRunCommand) => Promise<void>;
+  readonly checkRunAdd: () => void;
   readonly saveLive: (command: SaveLiveCommand) => Promise<void>;
   /** F6-11 RL1: send the reset the live editor offered (one POST, never resent on its own). */
   readonly resetLive: (command: ResetLiveCommand) => Promise<void>;

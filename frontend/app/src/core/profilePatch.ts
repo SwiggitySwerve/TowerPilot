@@ -1,4 +1,5 @@
-import { entries, id, list, own, stringList, text } from './read.ts';
+import { entries, id, own, stringList, text } from './read.ts';
+import { sameJson } from './json.ts';
 
 /**
  * `POST /api/profile-patch` (a path inside the active profile's source, a whole value or a
@@ -89,20 +90,6 @@ export function atPath(profile: unknown, path: readonly string[]): unknown {
     current = own(current, key);
   }
   return current;
-}
-
-function sameJson(a: unknown, b: unknown): boolean {
-  return JSON.stringify(canonical(a)) === JSON.stringify(canonical(b));
-}
-
-/** Key order is not meaning: compare objects by sorted keys, lists in order. */
-function canonical(value: unknown): unknown {
-  const items = list(value);
-  if (items !== undefined) return items.map(canonical);
-  if (typeof value !== 'object' || value === null) return value;
-  return Object.fromEntries(
-    [...entries(value)].sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, v]) => [k, canonical(v)]),
-  );
 }
 
 /**

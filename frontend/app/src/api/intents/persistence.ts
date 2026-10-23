@@ -159,6 +159,11 @@ function readMeta(value: unknown): IntentMeta | null {
     if (typeof existed !== 'boolean') return null;
     meta['existed'] = existed;
   }
+  const unbind = own(value, 'unbind');
+  if (unbind !== undefined) {
+    if (unbind !== true) return null;
+    meta['unbind'] = true;
+  }
   const draft = own(value, 'draft');
   if (draft !== undefined) {
     const valid = readRawDraft(draft);

@@ -288,6 +288,119 @@ describe('F6-11 RL1 reset one live override', () => {
   });
 });
 
+describe('F6-11 RL2 reset every override of this battle at once (r12 candidate run_controls_live_reset_all)', () => {
+  const all = (name: string) => dashboardPagesCase(`run_controls_live_reset_all.${name}`);
+  const RESET_ALL = all('accepted_null_for_every_override_resets_them_together');
+  const BEFORE = () => all('read_before_the_reset_two_overrides_are_in_force');
+  const AFTER = () => all('read_after_every_override_was_reset');
+  const resetAllButton = () =>
+    within(liveRegion()).getByRole('button', {
+      name: "Use the battle's starting values for all 2",
+    });
+
+  it('RL2 a battle with two overrides offers one reset of both; a battle with one does not', async () => {
+    const page = await openLive(BEFORE);
+    expect(resetAllButton()).toBeVisible();
+    page.view.unmount();
+    await openLive(() => all('read_after_the_partial_reset_one_override_remains'));
+    expect(resetRows().map((row) => row.dataset['path'])).toEqual(['routines.ad_gems.window_sec']);
+    expect(
+      within(liveRegion()).queryByRole('button', { name: /starting values for all/u }),
+    ).toBeNull();
+  });
+
+  it('RL2 Cancel sends nothing; a confirmed reset of all sends the recorded body once, then reads back applied', async () => {
+    let read = BEFORE;
+    const page = await openLive(() => read(), { newKey: () => 'rlr-2' });
+    await page.user.click(resetAllButton());
+    expect(
+      within(dialog())
+        .getAllByRole('listitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Ad gemsEvery', 'Floating gemsOn']);
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Cancel' }));
+    await page.advance(1_000);
+    expect(page.fake.writes()).toEqual([]);
+    page.fake.route('POST', /live-controls$/u, () => ({
+      status: RESET_ALL.status,
+      body: RESET_ALL.body,
+    }));
+    await page.user.click(resetAllButton());
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Use starting values' }));
+    await page.advance(100);
+    const writes = page.fake.writes();
+    expect(writes).toHaveLength(1);
+    expect(writes[0]?.path).toBe(RESET_ALL.request.path);
+    expect(JSON.parse(writes[0]?.body ?? 'null')).toEqual(RESET_ALL.request.body);
+    expect(within(liveRegion()).getByText('Sent to this battle - waiting to apply')).toBeVisible();
+    // The recorded read after it: empty routine mappings, no override left, the command applied.
+    read = AFTER;
+    await page.advance(5_000);
+    expect(resetRows()).toEqual([]);
+    expect(within(liveRegion()).getByText('Applied to this battle')).toBeVisible();
+    expect(within(liveRegion()).getByRole('textbox', { name: /^Ad gems Every$/u })).toHaveValue(
+      '720',
+    );
+    await page.advance(30_000);
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it('RL2 a reset of all whose answer is lost stays unknown, is never resent, and settles on the read listing its key', async () => {
+    let read = BEFORE;
+    const page = await openLive(() => read(), { newKey: () => 'rlr-2' });
+    page.fake.route('POST', /live-controls$/u, () => 'hold');
+    await page.user.click(resetAllButton());
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Use starting values' }));
+    await page.advance(100);
+    page.fake.next(/live-controls$/u, 'POST').lose();
+    await page.advance(10_000);
+    expect(within(liveRegion()).getByText('No reply - it may have been recorded')).toBeVisible();
+    expect(resetAllButton()).toHaveAttribute('aria-disabled', 'true');
+    read = AFTER;
+    await page.advance(5_000);
+    expect(within(liveRegion()).getByText('Applied to this battle')).toBeVisible();
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it('RL2 a refused reset of all keeps both overrides and is not resent', async () => {
+    const page = await openLive(() => all('read_after_the_refusals_both_overrides_remain'));
+    // The recorded 409 was produced for a request with the older control revision 0; the
+    // page sends the read's revision 1, and the recorded refusal answers it.
+    const stale = all('reset_all_with_a_stale_control_revision_refused');
+    page.fake.route('POST', /live-controls$/u, () => ({ status: stale.status, body: stale.body }));
+    await page.user.click(resetAllButton());
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Use starting values' }));
+    await page.advance(5_000);
+    expect(within(liveRegion()).getByText('Not sent - nothing was recorded')).toBeVisible();
+    expect(resetRows().map((row) => row.dataset['path'])).toEqual([
+      'routines.ad_gems.interval_sec',
+      'routines.floating_gems.enabled',
+    ]);
+    await page.advance(30_000);
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it('RL2 an open confirmation of all closes and sends nothing when another battle replaces it', async () => {
+    let read = BEFORE;
+    const page = await openLive(() => read());
+    await page.user.click(resetAllButton());
+    expect(dialog()).toBeVisible();
+    read = () => all('read_after_the_refusals_both_overrides_remain');
+    await page.advance(5_000);
+    expect(document.querySelector('dialog[open]')).toBeNull();
+    await page.advance(30_000);
+    expect(page.fake.writes()).toEqual([]);
+  });
+
+  it('RL2 the reset of all and its confirmation use catalogue words and pass axe', async () => {
+    const page = await openLive(BEFORE);
+    await page.user.click(resetAllButton());
+    expect(textOutsideCatalogue(page.view.container)).toEqual([]);
+    vi.useRealTimers();
+    expect(await axe(page.view.container)).toHaveNoViolations();
+  });
+});
+
 describe('F6-11-IR-01 a live change follows later reads of its own battle', () => {
   const SWITCH_OFF = live('accepted_switch_off');
   const outcomeText = () =>
@@ -482,44 +595,62 @@ describe('F6-11 RL7 battle details in the live section', () => {
     expect(within(liveRegion()).queryByText('Last known values')).toBeNull();
   });
 
-  it('RL7 a seen offer shows server dates with ages, the appearance interval to a tenth of a second, its failure and a refusal', async () => {
-    const NOW = 1_800_000_002;
-    // Modified recorded case: no recorded read has a seen offer, a failed attempt or a
-    // refusal yet (requested as battles_active.ad_gems_offer_seen_and_failed_attempt and
-    // floating_gems_refusal_recorded); the recorded routines get them in their own field names.
-    const seen = dashboardCase('battles_active.runtime_ad_orbit_shopping');
-    const routines = (
-      seen.body as { battle: { runtime: { routines: Record<string, Record<string, unknown>> } } }
-    ).battle.runtime.routines;
-    Object.assign(routines['ad_gems'] ?? {}, {
-      visibility: 'visible',
-      visibility_reason: null,
-      last_observed_at: NOW - 3,
-      first_seen_at: NOW - 10,
-      appearance_after_at: NOW - 12.5,
-      last_failed_attempt: { reason: 'claim_not_confirmed', observed_at: NOW - 4 },
-    });
-    Object.assign(routines['floating_gems'] ?? {}, {
-      last_refusal: { reason: 'human_owner', observed_at: NOW - 30 },
-    });
-    await openLive(() => seen);
+  it('RL7 the recorded seen offer shows server dates with ages, its appearance bounds, failure, counts and timing', async () => {
+    await openLive(() =>
+      dashboardPagesCase('battle_details_runtime.ad_gems_offer_seen_and_failed_attempt'),
+    );
     const rows = rowsOf('ad_gems');
-    const age = (date: string) => new RegExp(`^${escape(date)} \\(\\d+ s ago\\)$`, 'u');
+    const age = (at: number) => new RegExp(`^${escape(serverDateText(at))} \\(\\d+ s ago\\)$`, 'u');
     expect(rows['Offer']).toBe('Seen on the last battle screen');
-    expect(rows['First seen']).toMatch(age(serverDateText(NOW - 10)));
-    expect(rows['Last look at the battle']).toMatch(age(serverDateText(NOW - 3)));
+    expect(rows['First seen']).toMatch(age(1_799_999_991));
+    expect(rows['Last look at the battle']).toMatch(age(1_799_999_999));
     expect(rows['Appeared']).toMatch(
       new RegExp(
-        `^After ${escape(serverDateText(NOW - 12.5))} \\(\\d+ s ago\\), seen by ${escape(serverDateText(NOW - 10))} \\(\\d+ s ago\\); 2\\.5 s between looks$`,
+        `^After ${escape(serverDateText(1_799_999_986))} \\(\\d+ s ago\\), seen by ${escape(serverDateText(1_799_999_991))} \\(\\d+ s ago\\); 5 s between looks$`,
         'u',
       ),
     );
+    expect(rows['Collection']).toMatch(/^Next window /u);
     expect(rows['Latest failed attempt']).toMatch(
-      new RegExp(`^claim_not_confirmed${escape(serverDateText(NOW - 4))} \\(\\d+ s ago\\)$`, 'u'),
+      new RegExp(
+        `^offer_still_visible${escape(serverDateText(1_800_000_000))} \\(\\d+ s ago\\)$`,
+        'u',
+      ),
+    );
+    expect(rows['Counts']).toBe('Attempts 1, confirmed 0, skipped 0, windows missed 0');
+    expect(rows['Last timing']).toBe(
+      'Schedule wait not reported, response delay not reported, verification 2 s',
+    );
+    expect(
+      within(detailsOf('ad_gems')).getByRole('link', { name: 'Events of this battle on Runtime' }),
+    ).toHaveAttribute(
+      'href',
+      expect.stringMatching(/offer_id=bd_ad_offer_failed-offer&since=1799999931$/u),
+    );
+  });
+
+  it('RL7 the recorded Floating gems refusal shows its reason, server date and age', async () => {
+    await openLive(() =>
+      dashboardPagesCase('battle_details_runtime.floating_gems_refusal_recorded'),
     );
     expect(rowsOf('floating_gems')['Latest refusal']).toMatch(
-      new RegExp(`^human_owner${escape(serverDateText(NOW - 30))} \\(3\\d s ago\\)$`, 'u'),
+      new RegExp(
+        `^invalid_orbit_arc${escape(serverDateText(1_800_000_000))} \\(\\d+ s ago\\)$`,
+        'u',
+      ),
     );
+  });
+
+  // Modified recorded case: no recorded sighting has a fractional observation interval;
+  // the recorded offer's earlier look is moved half a second.
+  it('RL7 a fractional appearance interval is shown to a tenth of a second', async () => {
+    const seen = dashboardPagesCase('battle_details_runtime.ad_gems_offer_seen_and_failed_attempt');
+    const ad = (
+      seen.body as { battle: { runtime: { routines: Record<string, Record<string, unknown>> } } }
+    ).battle.runtime.routines['ad_gems'];
+    if (ad !== undefined) ad['appearance_after_at'] = 1_799_999_988.5;
+    await openLive(() => seen);
+    expect(rowsOf('ad_gems')['Appeared']).toMatch(/; 2\.5 s between looks$/u);
   });
 
   it('RL7 the opened details use catalogue words and pass axe', async () => {

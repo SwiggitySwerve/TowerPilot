@@ -810,3 +810,136 @@ describe('F6-11 RL8 start a day plan (backend/logs/reviews/ui-pages/f6-11-runs-l
     expect(await axe(document.body)).toHaveNoViolations();
   });
 });
+
+describe('F6-11 RL8 remove the whole plan (pages fixture plan_section_delete)', () => {
+  const BEFORE = 'plan_section_delete.read_before_the_plan_section_was_deleted';
+  const DELETED = 'plan_section_delete.saved_the_whole_plan_section_deleted';
+  const remove = () => screen.getByRole('button', { name: 'Remove the day plan' });
+  const dialog = () => {
+    const found = document.querySelector<HTMLElement>('dialog[open]');
+    if (found === null) throw new Error('no open dialog');
+    return found;
+  };
+  async function confirmRemove() {
+    await change(() => {
+      fireEvent.click(remove());
+    });
+    await change(() => {
+      fireEvent.click(within(dialog()).getByRole('button', { name: 'Remove day plan' }));
+    });
+  }
+
+  it('RL8 Cancel sends nothing; a confirmed removal sends the recorded delete once and the page offers a new start', async () => {
+    const s = await setup({ profile: BEFORE, save: DELETED });
+    await change(() => {
+      fireEvent.click(remove());
+    });
+    expect(within(dialog()).getByText(/The scheduler then uses its legacy rules/u)).toBeVisible();
+    await change(() => {
+      fireEvent.click(within(dialog()).getByRole('button', { name: 'Keep editing' }));
+    });
+    expect(s.fake.writes()).toHaveLength(0);
+    await confirmRemove();
+    expect(s.fake.writes()).toHaveLength(1);
+    expect(JSON.parse(s.fake.writes()[0]?.body ?? '{}')).toEqual(fixture(DELETED).request.body);
+    expect(
+      within(screen.getByRole('status', { name: 'Profile validation and save details' })).getByText(
+        /^Day plan removed\./u,
+      ),
+    ).toBeVisible();
+    expect(screen.getByText(/This saved profile has no plan/u)).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Start a day plan' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Remove the day plan' })).toBeNull();
+    expect(s.entry()?.draft).toBeNull();
+  });
+
+  it('RL8 unsaved changes block the removal with their reason; nothing is sent', async () => {
+    const s = await setup({ profile: BEFORE, save: DELETED });
+    fireEvent.change(firstCount(), { target: { value: '7' } });
+    expect(remove()).toHaveAttribute('aria-disabled', 'true');
+    expect(remove()).toHaveAccessibleDescription('Save or discard your changes first.');
+    await change(() => {
+      fireEvent.click(remove());
+    });
+    expect(document.querySelector('dialog[open]')).toBeNull();
+    expect(s.fake.writes()).toHaveLength(0);
+  });
+
+  it('RL8 a stale revision refuses the removal: the plan stays and nothing is resent', async () => {
+    const s = await setup({
+      profile: BEFORE,
+      save: 'plan_section_delete.plan_section_delete_stale_revision_409',
+    });
+    await confirmRemove();
+    expect(screen.getByText('Schedule save refused. Your draft is kept.')).toBeVisible();
+    expect(s.entry()?.draft).not.toBeNull();
+    expect(s.fake.writes()).toHaveLength(1);
+  });
+
+  it('RL8 a lost removal stays Unknown on an unchanged read and is settled only by a read without the plan; never resent', async () => {
+    const s = await setup({ profile: BEFORE, save: 'hold' });
+    await confirmRemove();
+    await change(() => {
+      s.fake.held.find((h) => h.request.method === 'POST')?.lose();
+    });
+    expect(screen.getByText(/Schedule save outcome unknown/u)).toBeVisible();
+    await act(async () => {
+      await s.schedule.refresh();
+    });
+    expect(screen.getByText(/Schedule save outcome unknown/u)).toBeVisible();
+    expect(s.entry()?.intent?.readSettlement).toBeNull();
+    s.readback('plan_section_delete.read_after_the_plan_section_was_deleted');
+    await act(async () => {
+      await s.schedule.refresh();
+    });
+    expect(screen.getByText('Readback confirms the day plan is removed.')).toBeVisible();
+    expect(s.entry()?.draft).toBeNull();
+    expect(screen.getByRole('button', { name: 'Start a day plan' })).toBeVisible();
+    expect(s.fake.writes()).toHaveLength(1);
+  });
+
+  it('RL8 a lost removal survives a reload; the read without the plan then settles it with nothing left to edit or save', async () => {
+    const storage = memoryStorage();
+    const first = await setup({ profile: BEFORE, save: 'hold', storage });
+    await confirmRemove();
+    await change(() => {
+      first.fake.held.find((h) => h.request.method === 'POST')?.lose();
+    });
+    for (const cleanup of cleanups.splice(0)) cleanup();
+    document.body.innerHTML = '';
+    const second = await setup({
+      profile: 'plan_section_delete.read_after_the_plan_section_was_deleted',
+      storage,
+    });
+    await act(async () => {
+      await second.schedule.refresh();
+    });
+    expect(screen.getByText('Readback confirms the day plan is removed.')).toBeVisible();
+    expect(second.entry()?.draft).toBeNull();
+    expect(second.entry()?.dirty).toBe(false);
+    expect(second.fake.writes()).toHaveLength(0);
+  });
+
+  it('RL8 an open confirmation closes and sends nothing when a read brings another revision', async () => {
+    const s = await setup({ profile: BEFORE, save: DELETED });
+    await change(() => {
+      fireEvent.click(remove());
+    });
+    expect(dialog()).toBeVisible();
+    s.readback('plan_section_delete.read_after_the_stale_refusal_the_plan_section_remains');
+    await act(async () => {
+      await s.schedule.refresh();
+    });
+    expect(document.querySelector('dialog[open]')).toBeNull();
+    expect(s.fake.writes()).toHaveLength(0);
+  });
+
+  it('RL8 the removal and its confirmation use catalogue words and pass axe', async () => {
+    await setup({ profile: BEFORE, save: DELETED });
+    await change(() => {
+      fireEvent.click(remove());
+    });
+    expect(textOutsideCatalogue(document.body)).toEqual([]);
+    expect(await axe(document.body)).toHaveNoViolations();
+  });
+});

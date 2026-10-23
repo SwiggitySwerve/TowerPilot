@@ -1,7 +1,13 @@
 import { useId, useState } from 'react';
 import { copy } from '../../copy/catalogue.ts';
 import type { CopyEntry, CopyNode } from '../../copy/text.ts';
-import type { EditorVM, LiveResetVM, RunFieldVM, RunGroupVM } from '../../store/selectors/runs.ts';
+import type {
+  EditorVM,
+  LiveResetAllVM,
+  LiveResetVM,
+  RunFieldVM,
+  RunGroupVM,
+} from '../../store/selectors/runs.ts';
 import { Button } from '../../ui/Button.tsx';
 import { ConfirmDialog } from '../../ui/ConfirmDialog.tsx';
 import { Why } from '../../ui/Why.tsx';
@@ -266,24 +272,54 @@ function ResetRow({
   );
 }
 
+/** The routine and field names of one override, as one line. */
+function OverrideName({ routine, field }: { readonly routine: string; readonly field: string }) {
+  return (
+    <>
+      <span>{entryOf(t.routines, routine, t.otherRoutine).short}</span>
+      <span>{entryOf(t.fields, field, t.otherField).short}</span>
+    </>
+  );
+}
+
+/** What an open confirmation was opened for: one override, or all of them (RL2). */
+type Asking =
+  | { readonly kind: 'one'; readonly target: string | null }
+  | { readonly kind: 'all'; readonly target: string | null };
+
 /**
- * F6-11 RL1 (spec F-060, RUN-15): this battle's overrides, each with "Use the battle's
- * starting value" behind a confirmation that says what that value is relative to.
+ * F6-11 RL1 and RL2 (spec F-060, RUN-15): this battle's overrides, each with "Use the battle's
+ * starting value", and with two or more a reset of all of them in one request, each behind a
+ * confirmation that says what that value is relative to.
  */
-function LiveResets({ resets }: { readonly resets: readonly LiveResetVM[] }) {
+function LiveResets({
+  resets,
+  resetAll,
+}: {
+  readonly resets: readonly LiveResetVM[];
+  readonly resetAll: LiveResetAllVM | null;
+}) {
   const { commands } = useDashboard();
-  const [asking, setAsking] = useState<LiveResetVM | null>(null);
+  const own = useId();
+  const [asking, setAsking] = useState<Asking | null>(null);
   const titleId = useId();
   // A confirmation applies only to the target it was opened for (review F6-11-R1-01): when the
-  // reset is no longer offered, or would now go to another battle, generation or revision, it
-  // closes and sends nothing.
+  // reset is no longer offered, or would now go to another battle, generation, revision or set
+  // of paths, it closes and sends nothing.
+  const offered = (target: string | null, reset: { readonly enabled: boolean }) =>
+    asking !== null && asking.target !== null && target === asking.target && reset.enabled;
   const current =
-    asking === null || asking.target === null
-      ? null
-      : (resets.find((item) => item.target === asking.target && item.reset.enabled) ?? null);
-  if (asking !== null && current === null) setAsking(null);
+    asking?.kind === 'one'
+      ? (resets.find((item) => offered(item.target, item.reset)) ?? null)
+      : null;
+  const all =
+    asking?.kind === 'all' && resetAll !== null && offered(resetAll.target, resetAll.reset)
+      ? resetAll
+      : null;
+  if (asking !== null && current === null && all === null) setAsking(null);
   if (resets.length === 0) return null;
   const o = t.live.overrides;
+  const command = current?.reset.command ?? all?.reset.command ?? null;
   return (
     <section className="tp-run-resets" aria-labelledby={titleId}>
       <h3 id={titleId} className="tp-run-resets__title">
@@ -292,37 +328,78 @@ function LiveResets({ resets }: { readonly resets: readonly LiveResetVM[] }) {
       </h3>
       <ul className="tp-run-resets__list">
         {resets.map((item) => (
-          <ResetRow key={item.path} item={item} onAsk={setAsking} />
+          <ResetRow
+            key={item.path}
+            item={item}
+            onAsk={(asked) => {
+              setAsking({ kind: 'one', target: asked.target });
+            }}
+          />
         ))}
       </ul>
+      {resetAll === null ? null : (
+        <div className="tp-run-reset tp-run-reset--all" data-reset-all="true">
+          {resetAll.reset.enabled ? (
+            <Button
+              tier="quiet"
+              label={o.resetAll(resetAll.items.length)}
+              focusKey="reset:all"
+              onClick={() => {
+                setAsking({ kind: 'all', target: resetAll.target });
+              }}
+            />
+          ) : (
+            <>
+              <Button
+                tier="quiet"
+                label={o.resetAll(resetAll.items.length)}
+                focusKey="reset:all"
+                busy={resetAll.reset.sending}
+                disabled
+                reasonId={`${own}-all-reason`}
+                onClick={() => undefined}
+              />
+              <span id={`${own}-all-reason`} className="tp-reason">
+                {
+                  entryOf(t.reasons, resetAll.reset.reason ?? 'no_changes', t.reasons.no_changes)
+                    .short
+                }
+              </span>
+            </>
+          )}
+        </div>
+      )}
       <ConfirmDialog
         open={asking !== null}
         tier="primary"
-        title={o.confirm.short}
+        title={all === null ? o.confirm.short : o.confirmAll.short}
         body={
           <>
             {current === null ? null : (
               <p className="tp-run-reset__name">
-                <span>{entryOf(t.routines, current.routine, t.otherRoutine).short}</span>
-                <span>{entryOf(t.fields, current.field, t.otherField).short}</span>
+                <OverrideName routine={current.routine} field={current.field} />
               </p>
             )}
-            <p>{o.effect.short}</p>
+            {all === null ? null : (
+              <ul className="tp-run-resets__confirm-list">
+                {all.items.map((item) => (
+                  <li key={item.path} className="tp-run-reset__name">
+                    <OverrideName routine={item.routine} field={item.field} />
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p>{all === null ? o.effect.short : o.effectAll.short}</p>
           </>
         }
-        confirmLabel={o.send.short}
+        confirmLabel={all === null ? o.send.short : o.sendAll.short}
         cancelLabel={o.cancel.short}
         onCancel={() => {
           setAsking(null);
         }}
         onConfirm={() => {
           setAsking(null);
-          const command = current?.reset.command;
-          if (
-            current?.target === asking?.target &&
-            current?.reset.enabled === true &&
-            command != null
-          )
+          if (command !== null && (current !== null || all !== null))
             void commands.resetLive(command);
         }}
       />
@@ -373,7 +450,7 @@ export function RunEditor<C>({
           <SwitchRow groups={editor.groups.filter(switchOnly)} scope={editor.scope} live={live} />
         ) : null}
       </ul>
-      {live ? <LiveResets resets={editor.resets} /> : null}
+      {live ? <LiveResets resets={editor.resets} resetAll={editor.resetAll} /> : null}
       <div className="tp-run-editor__actions">
         {save.enabled && command !== null ? (
           <Button

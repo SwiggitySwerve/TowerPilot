@@ -176,3 +176,12 @@
   gap: var(--tp-space-2);
   min-width: 0;
 }
+
+/* F6-11 RL8: remove the whole plan section. */
+.tp-schedule__remove {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-1) var(--tp-space-2);
+  min-width: 0;
+}

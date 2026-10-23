@@ -109,8 +109,11 @@ describe('Runs page: saved settings', () => {
     );
     const numbers = controls.filter((path) => !path.endsWith('.enabled'));
     const switches = controls.filter((path) => path.endsWith('.enabled'));
-    expect(within(region).getAllByRole('textbox')).toHaveLength(numbers.length);
-    expect(within(region).getAllByRole('checkbox')).toHaveLength(switches.length);
+    // RL4 adds a separate form below the picker. This assertion concerns only the saved routine editor.
+    const editor = region.querySelector<HTMLElement>('.tp-run-editor');
+    if (editor === null) throw new Error('saved routine editor missing');
+    expect(within(editor).getAllByRole('textbox')).toHaveLength(numbers.length);
+    expect(within(editor).getAllByRole('checkbox')).toHaveLength(switches.length);
     expect(savedInput(/^Ad gems Every$/u)).toHaveValue('720');
     expect(within(region).getAllByText('1 to 3600 s')[0]).toBeVisible();
     const row = region.querySelector('.tp-run-row--switches');

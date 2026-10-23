@@ -7,6 +7,7 @@ import { classifyHarvestAnswer, settleLostTurnOn } from '../core/outcomes/harves
 import { classifyInputAnswer } from '../core/outcomes/input.ts';
 import { classifyStopAnswer } from '../core/outcomes/stop.ts';
 import { own } from '../core/read.ts';
+import { runAddRecorded, runAddSource } from '../core/runAdd.ts';
 import { settleProfilePatch } from '../core/profilePatch.ts';
 import { settleSettingsSave } from '../core/settingsFields.ts';
 import { settleAdopt, settleInstall } from '../core/emulators.ts';
@@ -352,6 +353,28 @@ export function candidateSettlement(
         }
       }
       return null;
+    }
+    case 'run_add': {
+      const then = record.context;
+      if (
+        record.phase !== 'unconfirmed' ||
+        then === null ||
+        !sameEmulator(state, record) ||
+        state.context?.account !== then.account ||
+        state.context.profile !== then.profile
+      )
+        return null;
+      const read = state.reads.profileSource.latest;
+      const point = Math.max(after, record.answerSeq ?? record.lostSeq ?? 0);
+      return read !== null &&
+        read.startedSeq > point &&
+        read.outcome.kind === 'answered' &&
+        read.outcome.status === 200 &&
+        then.profile !== null &&
+        runAddSource(read.outcome.body, then.profile) &&
+        runAddRecorded(read.outcome.body, record.meta)
+        ? found('applied', read.startedSeq)
+        : null;
     }
     case 'settings_save':
     case 'profile_patch': {

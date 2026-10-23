@@ -1,9 +1,37 @@
-import r11 from '../../e2e/r11-candidate-samples.json' with { type: 'json' };
-import { dashboardPagesCase, type DashboardCase } from './dashboardFixture.ts';
+import {
+  dashboardPagesCase,
+  dashboardPagesCaseNames,
+  type DashboardCase,
+} from './dashboardFixture.ts';
 
-export const blueStacksCases = r11.cases.emulator_bluestacks_inventory;
-export const blueStacksMixed =
-  blueStacksCases.one_stopped_one_running_instance_adb_off_and_a_display_that_is_not_ok;
+/** The members these tests read of the pages fixture's emulator_bluestacks_inventory cases. */
+interface BlueStacksCase extends DashboardCase {
+  readonly request: { readonly method: string; readonly path: string; readonly body?: unknown };
+  readonly body: {
+    readonly message: string;
+    readonly backup: string;
+    readonly instances: readonly Record<string, unknown>[];
+    readonly [member: string]: unknown;
+  };
+}
+
+/** The pages fixture's emulator_bluestacks_inventory family (recorded in r12), by case name. */
+const blueStacksCases: Readonly<Record<string, BlueStacksCase>> = Object.fromEntries(
+  dashboardPagesCaseNames('emulator_bluestacks_inventory').map((name) => [
+    name,
+    dashboardPagesCase(`emulator_bluestacks_inventory.${name}`) as BlueStacksCase,
+  ]),
+);
+
+export function blueStacksCase(name: string): BlueStacksCase {
+  const found = blueStacksCases[name];
+  if (found === undefined) throw new Error(`No recorded emulator_bluestacks_inventory.${name}`);
+  return found;
+}
+
+export const blueStacksMixed = blueStacksCase(
+  'one_stopped_one_running_instance_adb_off_and_a_display_that_is_not_ok',
+);
 
 export function stoppedBlueStacks(): DashboardCase {
   // modified: no recorded case has every instance stopped (before Prepare is needed).

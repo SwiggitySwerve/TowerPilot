@@ -84,6 +84,22 @@ export interface EditorVM<C> {
    * battle's starting value (empty for the saved editor and for a battle with none).
    */
   readonly resets: readonly LiveResetVM[];
+  /**
+   * F6-11 RL2: every override of this battle reset in one request (null for each path), when
+   * it has two or more; null otherwise (one override uses its own reset).
+   */
+  readonly resetAll: LiveResetAllVM | null;
+}
+
+export interface LiveResetAllVM {
+  readonly items: readonly {
+    readonly path: string;
+    readonly routine: string;
+    readonly field: string;
+  }[];
+  /** The target the reset would be sent to (core liveResetKey), or null while it is not offered. */
+  readonly target: string | null;
+  readonly reset: CommandVM<ResetLiveCommand>;
 }
 
 export interface LiveResetVM {
@@ -577,6 +593,7 @@ function savedSection(state: DashboardState, lines: readonly OutcomeLineVM[]): S
       changeCount: Object.keys(review.changes).length,
       invalidCount: Object.keys(review.invalid).length,
       resets: [],
+      resetAll: null,
     },
   };
 }
@@ -716,6 +733,33 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
   const fresh = freshBattleReport(contextReadOf(last), shown, elapsed).kind === 'known';
   const request = requestOn(state, records, last?.startedSeq ?? 0);
   const gate = liveSaveGate(battle, fresh, review, request);
+  // F6-11 RL1/RL2: the applied overrides of this battle, and the reset of some of them (one
+  // path, or every path at once), bound to the target it would be sent to.
+  const changed = groups.flatMap((group) =>
+    group.fields.filter((field) => liveMark(battle, field) === 'changed'),
+  );
+  const resetOf = (paths: readonly string[]) => {
+    const reset = liveResetGate(battle, fresh, paths, request);
+    return reset.enabled
+      ? {
+          target: liveResetKey(reset.command),
+          reset: commandVM<ResetLiveCommand>(true, true, null, false, {
+            epoch: state.epoch,
+            ...reset.command,
+            battleLabel: text(own(battle, 'label')) ?? null,
+          }),
+        }
+      : {
+          target: null,
+          reset: commandVM<ResetLiveCommand>(
+            true,
+            false,
+            reset.reason,
+            request === 'sending',
+            null,
+          ),
+        };
+  };
   return {
     ...withDetails,
     boundsKnown: boundsBody !== undefined,
@@ -736,33 +780,19 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
       discard: Object.keys(draft).length > 0,
       changeCount: Object.keys(review.changes).length,
       invalidCount: Object.keys(review.invalid).length,
-      resets: groups.flatMap((group) =>
-        group.fields.flatMap((field): LiveResetVM[] => {
-          if (liveMark(battle, field) !== 'changed') return [];
-          const reset = liveResetGate(battle, fresh, [field.path], request);
-          return [
-            {
-              path: field.path,
-              routine: field.routine,
-              field: field.field,
-              target: reset.enabled ? liveResetKey(reset.command) : null,
-              reset: reset.enabled
-                ? commandVM<ResetLiveCommand>(true, true, null, false, {
-                    epoch: state.epoch,
-                    ...reset.command,
-                    battleLabel: text(own(battle, 'label')) ?? null,
-                  })
-                : commandVM<ResetLiveCommand>(
-                    true,
-                    false,
-                    reset.reason,
-                    request === 'sending',
-                    null,
-                  ),
+      resets: changed.map((field) => ({
+        path: field.path,
+        routine: field.routine,
+        field: field.field,
+        ...resetOf([field.path]),
+      })),
+      resetAll:
+        changed.length < 2
+          ? null
+          : {
+              items: changed.map(({ path, routine, field }) => ({ path, routine, field })),
+              ...resetOf(changed.map((field) => field.path)),
             },
-          ];
-        }),
-      ),
     },
   };
 }

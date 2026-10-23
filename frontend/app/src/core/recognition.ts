@@ -1,3 +1,4 @@
+import { sameJson } from './json.ts';
 import {
   entries,
   finite,
@@ -594,6 +595,10 @@ export interface Refusal {
   readonly kind: 'refused';
   readonly status: number;
   readonly code: string | null;
+  /** The mutation fence names the current target; the operation's frozen fence does not. */
+  readonly currentContext: Readonly<
+    Record<'instance' | 'account' | 'profile' | 'serial', string | null>
+  > | null;
   readonly error: string | null;
   /** navigation_images_missing: the images still to capture, as the server listed them. */
   readonly missing: readonly string[];
@@ -605,10 +610,20 @@ export interface Refusal {
 function refusal(answer: Answer): Refusal | null {
   if (answer.status < 400 || answer.status > 499 || record(answer.body) === undefined) return null;
   if (own(answer.body, 'ok') === true) return null;
+  const current = record(own(answer.body, 'current_context'));
   return {
     kind: 'refused',
     status: answer.status,
     code: id(own(answer.body, 'code')) ?? null,
+    currentContext:
+      own(answer.body, 'code') === 'context_changed' && current !== undefined
+        ? {
+            instance: text(own(current, 'instance')) ?? null,
+            account: text(own(current, 'account')) ?? null,
+            profile: text(own(current, 'profile')) ?? null,
+            serial: text(own(current, 'serial')) ?? null,
+          }
+        : null,
     error: text(own(answer.body, 'error')) ?? null,
     missing: stringList(own(answer.body, 'missing')) ?? [],
     operation: operationView(own(answer.body, 'operation')),
@@ -729,6 +744,37 @@ export function templateWriteAnswer(answer: Answer): TemplateWriteAnswer {
 }
 
 // ------------------------------------------------------------------ settlement by a later read
+
+/**
+ * Saved observations have no operation receipt. Only newly present discoveries in the
+ * original profile can settle their lost answer; an unchanged read never proves failure
+ * or success. wall_bar belongs to machine config, so it supplies no profile evidence.
+ * This compares observed values, without predicting the server's profile merge.
+ */
+export function savedApplyRecordedIn(
+  before: unknown,
+  observations: unknown,
+  after: unknown,
+): boolean {
+  const discoveries = Object.fromEntries(
+    entries(observations).filter(([key]) => key !== 'wall_bar'),
+  );
+  if (
+    record(before) === undefined ||
+    record(after) === undefined ||
+    entries(discoveries).length === 0 ||
+    sameJson(before, after)
+  )
+    return false;
+  const contains = (found: unknown, expected: unknown): boolean =>
+    record(expected) === undefined
+      ? sameJson(found, expected)
+      : record(found) !== undefined &&
+        entries(expected).every(([key, value]) => contains(own(found, key), value));
+  return (
+    !contains(own(before, 'player'), discoveries) && contains(own(after, 'player'), discoveries)
+  );
+}
 
 /**
  * A start or observe whose answer was lost: a later status read naming an operation that

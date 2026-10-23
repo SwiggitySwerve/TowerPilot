@@ -49,6 +49,7 @@ export function outcomeEntry(line: OutcomeLineVM): CopyEntry {
     case 'reconnect':
     case 'live_controls':
     case 'run_save':
+    case 'run_add':
     case 'schedule_save':
     case 'settings_save':
     case 'profile_patch':

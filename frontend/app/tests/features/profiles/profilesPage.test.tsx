@@ -1,4 +1,4 @@
-﻿import { within } from '@testing-library/react';
+import { within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { contextScopeKey } from '../../../src/store/intents.ts';
@@ -1127,5 +1127,117 @@ describe('P5 automation profiles', () => {
     vi.useRealTimers();
     expect(await axe(document.body)).toHaveNoViolations();
     expect(textOutsideCatalogue(document.body)).toEqual([]);
+  });
+});
+
+describe('F6-14 PE1 use no profile (r12 candidate profile_target, brief f6-14-profiles-brief.md)', () => {
+  const target = (name: string) => dashboardPagesCase(`profile_target.${name}`);
+  // The synthetic world of profile_target: Alpha on main/fake:1 with mine active, second inactive.
+  const world: Reads = {
+    config: () => target('inactive_editor_context_before_save'),
+    files: () => target('same_account_inactive_target_listed'),
+  };
+  const unbindForm = () => {
+    const found = document.querySelector<HTMLElement>('[data-form="unbind"]');
+    if (found === null) throw new Error('unbind form missing');
+    return found;
+  };
+  const useNone = () => within(unbindForm()).getByRole('button', { name: 'Use no profile' });
+  const openDialog = () => {
+    const found = document.querySelector<HTMLElement>('dialog[open]');
+    if (found === null) throw new Error('no open dialog');
+    return found;
+  };
+  async function confirmUnbind(page: Page) {
+    await page.user.click(useNone());
+    await page.user.click(within(openDialog()).getByRole('button', { name: 'Use no profile' }));
+    await page.advance(0);
+  }
+  async function answer(page: Page, name: string) {
+    const found = target(name);
+    page.fake.next('/api/profile-activate', 'POST').respond(found.status, found.body);
+    await page.advance(1_000);
+  }
+
+  it('PE1 offered beside Activate while a profile is active; Cancel sends nothing; a confirmed unbind sends the recorded body once', async () => {
+    const page = await openProfiles(world);
+    expect(unbindForm()).toHaveTextContent('Active profile:mine');
+    await page.user.click(useNone());
+    expect(within(openDialog()).getByText(/legacy rules/u)).toBeVisible();
+    await page.user.click(within(openDialog()).getByRole('button', { name: 'Cancel' }));
+    await page.advance(1_000);
+    expect(writesTo(page, '/api/profile-activate')).toEqual([]);
+    await confirmUnbind(page);
+    expect(writesTo(page, '/api/profile-activate')).toEqual([
+      target('unbind_with_matching_account_context').request.body,
+    ]);
+    await answer(page, 'unbind_with_matching_account_context');
+    expect(unbindForm()).toHaveTextContent(
+      'No profile is active - the scheduler runs its legacy rules from its next start',
+    );
+    // Never an empty option of the Activate picker; the Activate line is not this one's.
+    expect(form('activate')).not.toHaveTextContent('No profile is active');
+    await page.advance(30_000);
+    expect(writesTo(page, '/api/profile-activate')).toHaveLength(1);
+  });
+
+  it('PE1 a runner owning the device refuses the unbind with its reason; nothing is resent', async () => {
+    const page = await openProfiles(world);
+    await confirmUnbind(page);
+    await answer(page, 'unbind_refused_while_runner_listed');
+    expect(within(unbindForm()).getByText('Not done')).toBeVisible();
+    expect(unbindForm()).toHaveTextContent('runners alive - stop them first');
+    await page.advance(30_000);
+    expect(writesTo(page, '/api/profile-activate')).toHaveLength(1);
+  });
+
+  it.each([
+    ['unbind_refused_after_account_switch', ['main', 'beta', 'theirs', 'fake:1']],
+    ['unbind_refused_after_active_profile_switch', ['main', 'alpha', 'second', 'fake:1']],
+  ])('PE1 %s: not saved, the current context is named, nothing resent', async (name, current) => {
+    const page = await openProfiles(world);
+    await confirmUnbind(page);
+    await answer(page, name);
+    expect(
+      within(unbindForm()).getByText('Not saved: the account or profile changed'),
+    ).toBeVisible();
+    const shown = unbindForm().querySelector('[data-current-context="true"]');
+    for (const value of current) expect(shown).toHaveTextContent(value);
+    expect(writesTo(page, '/api/profile-activate')).toHaveLength(1);
+  });
+
+  it.each(['unbind_failed_before_write', 'unbind_written_then_answer_failed'])(
+    'PE1 %s (500): Unknown; an unchanged list keeps it Unknown; only a list naming no active profile settles it; never resent',
+    async (name) => {
+      let files = world.files ?? (() => target('same_account_inactive_target_listed'));
+      const page = await openProfiles({ ...world, files: () => files() });
+      await confirmUnbind(page);
+      await answer(page, name);
+      expect(within(unbindForm()).getByText(/^No confirmed reply/u)).toBeVisible();
+      page.data.poller.read('profileFiles');
+      await page.advance(1_000);
+      expect(within(unbindForm()).getByText(/^No confirmed reply/u)).toBeVisible();
+      // Modified pairing: profile_target records the settling read as GET /api/config; the
+      // profile list naming no active profile is profile_files_write's recorded list after an
+      // unbind (its own synthetic world).
+      files = () => pages('profile_files_write.files_after_unbinding_have_no_active_profile');
+      page.data.poller.read('profileFiles');
+      await page.advance(1_000);
+      expect(within(unbindForm()).queryByText(/^No confirmed reply/u)).toBeNull();
+      expect(
+        within(unbindForm()).getByText('A later read shows the requested result'),
+      ).toBeVisible();
+      expect(unbindForm()).toHaveTextContent('none - the scheduler runs its legacy rules');
+      expect(useNone()).toHaveAccessibleDescription('No profile is active');
+      expect(writesTo(page, '/api/profile-activate')).toHaveLength(1);
+    },
+  );
+
+  it('PE1 the unbind and its confirmation use catalogue words and pass axe', async () => {
+    const page = await openProfiles(world);
+    await page.user.click(useNone());
+    expect(textOutsideCatalogue(page.view.container)).toEqual([]);
+    vi.useRealTimers();
+    expect(await axe(page.view.container)).toHaveNoViolations();
   });
 });

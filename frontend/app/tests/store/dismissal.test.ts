@@ -12,6 +12,7 @@ import { sendCollect } from '../../src/api/intents/start.ts';
 import { sendLiveSave, sendSavedSave } from '../../src/api/intents/runs.ts';
 import { sendStop } from '../../src/api/intents/stop.ts';
 import { INTENT_KINDS, type IntentKind } from '../../src/api/intents/types.ts';
+import { sendRunAdd } from '../../src/api/intents/runAdd.ts';
 import { sendScheduleSave } from '../../src/api/schedule.ts';
 import { sendProfilePatch, sendSettingsSave } from '../../src/api/intents/collection.ts';
 import { sendEmulatorWrite } from '../../src/api/intents/emulators.ts';
@@ -208,6 +209,24 @@ const SENDERS: readonly (readonly [IntentKind, (machine: IntentMachine) => void]
     },
   ],
   [
+    'run_add',
+    (machine) => {
+      sendRunAdd(
+        machine,
+        {
+          runId: 'coin_two',
+          revision: 'r1',
+          template: 'farm',
+          kind: 'coin',
+          options: { label: 'Second coin run' },
+          scope: 'add-scope',
+          draft: { label: 'Second coin run' },
+        },
+        E0_CONTEXT,
+      );
+    },
+  ],
+  [
     'profile_patch',
     (machine) => {
       sendProfilePatch(
@@ -351,6 +370,7 @@ const SENDERS: readonly (readonly [IntentKind, (machine: IntentMachine) => void]
       sendCalibrateApply(
         machine,
         { kind: 'operation', operationId: OP, expectedRevision: 3 },
+        E0_CONTEXT,
         E0_CONTEXT,
       ),
   ],

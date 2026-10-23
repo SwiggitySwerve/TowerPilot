@@ -43,6 +43,7 @@ export const outcomes = {
     reconnect: entry('Reconnect'),
     run_now: entry('Run now'),
     run_save: entry('Save run settings'),
+    run_add: entry('Add a run'),
     schedule_save: entry('Save schedule'),
     live_controls: entry('Change this battle'),
     account_select: entry('Use this account'),

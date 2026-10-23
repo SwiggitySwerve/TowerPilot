@@ -72,7 +72,10 @@ test('RUN-12 the Pages menu opens the new Runs page, and the Dashboard links ope
     .click();
   await expect(page).toHaveURL(/#runs\/saved\/bp_farm$/u);
   await expect(page.locator('#runsSaved-title')).toBeFocused();
-  await expect(page.locator('[data-region="runsSaved"] select')).toHaveValue('bp_farm');
+  // The run picker itself: the saved section now also holds Add a run and entry-settings selects.
+  await expect(
+    page.locator('[data-region="runsSaved"] select[data-focus-key="runs:run"]'),
+  ).toHaveValue('bp_farm');
   expect(await posts(page)).toEqual([]);
 });
 

@@ -64,7 +64,7 @@ export function Analysis({
             {answer.kind === 'accepted'
               ? t.accepted.short
               : answer.kind === 'refused'
-                ? t.refused.short
+                ? t.notStarted.short
                 : answer.kind === 'sending'
                   ? t.sending.short
                   : t.unknown.short}

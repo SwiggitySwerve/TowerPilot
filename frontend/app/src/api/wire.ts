@@ -83,10 +83,30 @@ import {
 import {
   blueStacksInventoryAnswerSchema,
   blueStacksPrepareAnswerSchema,
+  battleDetailsReadAnswerSchema,
+  fenceCalibrateStatusAnswerSchema,
+  fenceConfigAnswerSchema,
+  fencedAddAnswerSchema,
+  fencedAddSourceAnswerSchema,
+  fencedAddConfigAnswerSchema,
+  fencedAnalysisStartAnswerSchema,
+  fencedApplyAnswerSchema,
+  fencedObserveAnswerSchema,
+  fencedStartAnswerSchema,
+  fencedStopAnswerSchema,
   firstPolicyPatchAnswerSchema,
   firstPolicySourceAnswerSchema,
+  planDeleteAnswerSchema,
+  planDeleteSourceAnswerSchema,
+  resetAllAnswerSchema,
+  resetAllReadAnswerSchema,
+  runEntryPatchAnswerSchema,
+  runEntrySourceAnswerSchema,
+  runTemplatesAddAnswerSchema,
+  runTemplatesAddSourceAnswerSchema,
   runTemplatesAnswerSchema,
-} from '../contract/r11Candidate.ts';
+  runTemplatesListAnswerSchema,
+} from '../contract/r12Families.ts';
 import {
   stopCancelAnswerSchema,
   stopConflictAnswerSchema,
@@ -306,6 +326,7 @@ export type WriteEndpointId =
   | 'actions'
   | 'runControlsSave'
   | 'profilePatch'
+  | 'runTemplatesAdd'
   | 'liveControls'
   | 'accountsWrite'
   | 'accountTier'
@@ -338,6 +359,7 @@ export const WRITE_ENDPOINT_IDS = [
   'actions',
   'runControlsSave',
   'profilePatch',
+  'runTemplatesAdd',
   'liveControls',
   'accountsWrite',
   'accountTier',
@@ -398,10 +420,12 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
   return Object.freeze({
     status: endpoint('status', 'GET', [status]),
     config: endpoint('config', 'GET', [
+      fencedAddConfigAnswerSchema,
       contract.config,
       profilesConfigReadAnswerSchema,
       emulatorsConfigAnswerSchema,
       recognitionConfigAnswerSchema,
+      fenceConfigAnswerSchema,
     ]),
     accounts: endpoint('accounts', 'GET', [contract.accounts, profilesAccountsReadAnswerSchema]),
     // Profiles page (profiles brief P1 to P5): the pages fixture's profile file list and the
@@ -417,18 +441,35 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       profilesSourceAfterPromoteAnswerSchema,
       collectionSourceAnswerSchema,
       firstPolicySourceAnswerSchema,
+      // F6-11 RL3, RL4, RL8 (r12 candidate): the profile reads around each write.
+      runEntrySourceAnswerSchema,
+      runTemplatesAddSourceAnswerSchema,
+      fencedAddSourceAnswerSchema,
+      planDeleteSourceAnswerSchema,
     ]),
     runs: endpoint('runs', 'GET', [contract.runs]),
     // C5, F6C-R1-04: the run templates carry the shipped default gathering policies.
-    runTemplates: endpoint('runTemplates', 'GET', [runTemplatesAnswerSchema]),
+    runTemplatesAdd: endpoint('runTemplatesAdd', 'POST', [
+      runTemplatesAddAnswerSchema,
+      fencedAddAnswerSchema,
+    ]),
+    runTemplates: endpoint('runTemplates', 'GET', [
+      runTemplatesAnswerSchema,
+      runTemplatesListAnswerSchema,
+    ]),
     calibrate: endpoint('calibrate', 'GET', [
       contract.calibrate,
       recognitionStatusAnswerSchema,
       recognitionStatusReadbackAnswerSchema,
+      fenceCalibrateStatusAnswerSchema,
     ]),
     battlesActive: endpoint('battlesActive', 'GET', [
       contract.battlesActive,
       contract.liveControlsRead,
+      // F6-11 RL2 and RL7 (r12 candidate): reads around a reset of every override, and a
+      // battle with a seen Ad gems offer, a failed attempt and a Floating gems refusal.
+      resetAllReadAnswerSchema,
+      battleDetailsReadAnswerSchema,
     ]),
     battles: endpoint('battles', 'GET', [contract.battlesHistory]),
     battleDetail: endpoint('battleDetail', 'GET', [contract.battleDetail]),
@@ -453,12 +494,30 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
     ]),
     toolsInstall: endpoint('toolsInstall', 'POST', [emulatorsInstallAnswerSchema]),
     // Recognition page (screens brief R1 to R8): the calibrator's launches, apply and stop.
-    calibrateStart: endpoint('calibrateStart', 'POST', [calibrateStartAnswerSchema]),
-    calibrateObserve: endpoint('calibrateObserve', 'POST', [calibrateObserveAnswerSchema]),
-    calibrateApply: endpoint('calibrateApply', 'POST', [calibrateApplyAnswerSchema]),
-    calibrateStop: endpoint('calibrateStop', 'POST', [calibrateStopAnswerSchema]),
+    // r12 candidate recognition_context_fence: apply takes expected_context (409
+    // context_changed + current_context, 400 invalid_request); start, observe and analysis
+    // start are refused by the operation's frozen context; Stop is never refused for one.
+    calibrateStart: endpoint('calibrateStart', 'POST', [
+      calibrateStartAnswerSchema,
+      fencedStartAnswerSchema,
+    ]),
+    calibrateObserve: endpoint('calibrateObserve', 'POST', [
+      calibrateObserveAnswerSchema,
+      fencedObserveAnswerSchema,
+    ]),
+    calibrateApply: endpoint('calibrateApply', 'POST', [
+      calibrateApplyAnswerSchema,
+      fencedApplyAnswerSchema,
+    ]),
+    calibrateStop: endpoint('calibrateStop', 'POST', [
+      calibrateStopAnswerSchema,
+      fencedStopAnswerSchema,
+    ]),
     // R9, R11: their strict schemas are the advanced repairs' own (api/recognitionAdvanced.ts).
-    analysisStart: endpoint('analysisStart', 'POST', [analysisStartAnswerSchema]),
+    analysisStart: endpoint('analysisStart', 'POST', [
+      analysisStartAnswerSchema,
+      fencedAnalysisStartAnswerSchema,
+    ]),
     templateWrite: endpoint('templateWrite', 'POST', [templateWriteAnswerSchema]),
     runControls: endpoint('runControls', 'GET', [
       contract.runControls,
@@ -495,6 +554,9 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       schedulePatchAnswerSchema,
       collectionPatchAnswerSchema,
       firstPolicyPatchAnswerSchema,
+      // F6-11 RL3 (one entry field of a run) and RL8 (the whole plan deleted), r12 candidate.
+      runEntryPatchAnswerSchema,
+      planDeleteAnswerSchema,
     ]),
     // Collection (C1 to C4) and every typed settings module: the read and its save.
     settings: endpoint('settings', 'GET', [settingsReadAnswerSchema]),
@@ -502,7 +564,12 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
     vocab: endpoint('vocab', 'GET', [vocabReadAnswerSchema]),
     // POST /api/operations/{id}/live-controls (RUN-08): pages fixture run_controls_live; the
     // Dashboard fixture's battle_actions records the same route's accepted change.
-    liveControls: endpoint('liveControls', 'POST', [contract.liveControls, contract.battleActions]),
+    liveControls: endpoint('liveControls', 'POST', [
+      contract.liveControls,
+      contract.battleActions,
+      // F6-11 RL2 (r12 candidate): several paths reset in one request.
+      resetAllAnswerSchema,
+    ]),
     // POST /api/accounts (select or create), /api/account-tier and the profile file writes.
     accountsWrite: endpoint('accountsWrite', 'POST', [profilesAccountsPostAnswerSchema]),
     accountTier: endpoint('accountTier', 'POST', [profilesTierPostAnswerSchema]),

@@ -1,0 +1,484 @@
+import { act, within } from '@testing-library/react';
+import { axe } from 'jest-axe';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { entries, own, stringList } from '../../../src/core/read.ts';
+import { selectRunEntry } from '../../../src/store/selectors/runEntry.ts';
+import {
+  dashboardPagesCase,
+  type DashboardCase,
+  dashboardPagesCaseNames,
+} from '../../support/dashboardFixture.ts';
+import { textOutsideCatalogue } from '../../copy/renderedText.ts';
+import { renderPage, type PageOptions } from '../dashboard/harness.tsx';
+
+const sample = (name: string) => dashboardPagesCase(`run_entry_patch.${name}`);
+const CONFIG = dashboardPagesCase(
+  'run_templates_add_fenced.read_config_the_page_context_comes_from',
+).body;
+const INITIAL = sample('read_before_the_first_save');
+const names = dashboardPagesCaseNames('run_entry_patch');
+const PATCH = '/api/profile-patch';
+const PROFILE = '/api/profile-src/mine';
+function root() {
+  const box = document.querySelector<HTMLElement>('[data-run-entry]');
+  if (box === null) throw new Error('missing entry editor');
+  return box;
+}
+const form = () => within(root());
+function row(key: string) {
+  const box = root().querySelector<HTMLElement>(`[data-entry-field="${key}"]`);
+  if (box === null) throw new Error(`missing field ${key}`);
+  return within(box);
+}
+async function open(
+  run = 'farm',
+  options: PageOptions = {},
+  source: () => DashboardCase = () => INITIAL,
+) {
+  window.location.hash = `#runs/saved/${run}`;
+  const page = await renderPage({
+    ...options,
+    config: options.config ?? (() => CONFIG),
+    before: (fake) => {
+      fake.route('GET', PROFILE, () => source());
+      fake.route('GET', '/api/vocab', () => dashboardPagesCase('profile_reads.vocab_ok'));
+      options.before?.(fake);
+    },
+  });
+  await page.advance(100);
+  return page;
+}
+async function save(page: Awaited<ReturnType<typeof open>>, field: string) {
+  await page.user.click(row(field).getByRole('button', { name: 'Save field' }));
+  await page.advance(100);
+}
+function sourceBefore(entry: DashboardCase): DashboardCase {
+  const expected = own(entry.request.body, 'expected_revision');
+  const prior = names
+    .map(sample)
+    .find(
+      (item) => own(item.body, 'revision') === expected && own(item.body, 'profile') !== undefined,
+    );
+  // No intermediate GET exists: put the preceding recorded receipt's exact profile and
+  // revision in the recorded GET envelope to test each field's exact request, without a model backend.
+  return prior === undefined
+    ? INITIAL
+    : {
+        ...INITIAL,
+        body: {
+          ...Object.fromEntries(entries(INITIAL.body)),
+          profile: own(prior.body, 'profile'),
+          revision: expected,
+        },
+      };
+}
+
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+afterEach(() => {
+  vi.useRealTimers();
+  window.location.hash = '';
+});
+
+describe('RL3 and RL6 saved entry editor', () => {
+  it.each(names.filter((name) => name.startsWith('saved_')))(
+    'RL3 one exact request per field: %s',
+    async (name) => {
+      const entry = sample(name);
+      const path = stringList(own(entry.request.body, 'path')) ?? [];
+      const field = path.slice(2).join('.');
+      let source = sourceBefore(entry);
+      const page = await open(
+        path[1],
+        {
+          before: (fake) => {
+            fake.route('POST', PATCH, () => {
+              // The receipt itself is recorded; its profile/revision are returned by the following GET.
+              source = {
+                ...INITIAL,
+                body: {
+                  ...Object.fromEntries(entries(INITIAL.body)),
+                  profile: own(entry.body, 'profile'),
+                  revision: own(entry.body, 'revision'),
+                },
+              };
+              return entry;
+            });
+          },
+        },
+        () => source,
+      );
+      const value = own(entry.request.body, 'value');
+      const control = root().querySelector<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >(
+        `[data-entry-field="${field}"] input:not([type="checkbox"]), [data-entry-field="${field}"] select, [data-entry-field="${field}"] textarea, [data-entry-field="${field}"] > input[type="checkbox"]`,
+      );
+      if (own(entry.request.body, 'op') === 'delete' && field === 'perk_bans')
+        await page.user.click(row(field).getByLabelText('Leave the game’s perk bans alone'));
+      else if (control instanceof HTMLSelectElement)
+        await page.user.selectOptions(control, typeof value === 'string' ? value : '');
+      else if (control instanceof HTMLInputElement && control.type === 'checkbox') {
+        if (control.checked !== value) await page.user.click(control);
+      } else if (control !== null) {
+        await page.user.clear(control);
+        const raw =
+          value === null
+            ? ''
+            : Array.isArray(value)
+              ? value.join('\n')
+              : typeof value === 'number' || typeof value === 'string'
+                ? String(value)
+                : '';
+        if (raw !== '') await page.user.type(control, raw);
+      }
+      await save(page, field);
+      expect(page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown)).toEqual([
+        entry.request.body,
+      ]);
+      await page.advance(10_000);
+      expect(page.fake.writes()).toHaveLength(1);
+      expect(
+        selectRunEntry(page.data.store.getSnapshot()).fields.find((item) => item.key === 'tier')
+          ?.revision,
+      ).toBe(own(entry.body, 'revision'));
+    },
+  );
+
+  it.each(names.filter((name) => sample(name).status === 400 || sample(name).status === 404))(
+    'RL3 server refusal keeps raw draft and exact text: %s',
+    async (name) => {
+      // Simulate server validation changing after the page drew: a locally valid edit receives
+      // each genuine recorded refusal. Local invalid inputs are separately checked below.
+      const entry = sample(name);
+      const page = await open('farm', {
+        before: (fake) => {
+          fake.route('POST', PATCH, () => entry);
+        },
+      });
+      await page.user.clear(row('tier').getByLabelText('Run tier'));
+      await page.user.type(row('tier').getByLabelText('Run tier'), '3');
+      await save(page, 'tier');
+      expect(row('tier').getByLabelText('Run tier')).toHaveValue('3');
+      expect(root().querySelector('[data-refusal]')?.textContent).toBe(own(entry.body, 'error'));
+      expect(page.fake.writes()).toHaveLength(1);
+    },
+  );
+
+  it.each(['0', '-1', '2.5', 'NaN', 'two', ''])(
+    'RL3 invalid raw tier %s sends nothing',
+    async (raw) => {
+      const page = await open();
+      const input = row('tier').getByLabelText('Run tier');
+      await page.user.clear(input);
+      if (raw !== '') await page.user.type(input, raw);
+      await save(page, 'tier');
+      expect(input).toHaveValue(raw);
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(page.fake.writes()).toEqual([]);
+    },
+  );
+
+  it('RL3 stale revision retains the draft until explicit continuation from the read', async () => {
+    let source = INITIAL;
+    const page = await open(
+      'farm',
+      {
+        before: (fake) => {
+          fake.route('POST', PATCH, () => {
+            source = sample('read_after_the_stale_refusals_holds_the_other_clients_save');
+            return sample('stale_revision_409');
+          });
+        },
+      },
+      () => source,
+    );
+    await page.user.type(row('tier').getByLabelText('Run tier'), '3');
+    await save(page, 'tier');
+    expect(row('tier').getByLabelText('Run tier')).toHaveValue('13');
+    expect(row('tier').getByRole('button', { name: 'Save field' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await page.user.click(form().getByRole('button', { name: 'Read entry settings' }));
+    await page.advance(100);
+    await page.user.click(row('tier').getByRole('button', { name: 'Continue from the read' }));
+    expect(row('tier').getByRole('button', { name: 'Save field' })).not.toHaveAttribute(
+      'aria-disabled',
+    );
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it.each(['starter_profile_refused_with_a_flag', 'scan_draft_refused'])(
+    'RL3 %s uses server refusal and Profiles link',
+    async (name) => {
+      const entry = sample(name);
+      const profile = own(entry.request.body, 'name');
+      // Recorded starter/draft refusals have no matching readable blueprint GET; retain the
+      // recorded editable profile shape under that identity to exercise a refusal after drawing.
+      const page = await open('farm', {
+        config: () => ({ ...Object.fromEntries(entries(CONFIG)), active_profile: profile }),
+        before: (fake) => {
+          fake.route('GET', `/api/profile-src/${String(profile)}`, () => ({
+            ...INITIAL,
+            body: { ...Object.fromEntries(entries(INITIAL.body)), name: profile },
+          }));
+          fake.route('POST', PATCH, () => entry);
+        },
+      });
+      await page.user.type(row('tier').getByLabelText('Run tier'), '3');
+      await save(page, 'tier');
+      expect(root().querySelector('[data-refusal]')?.textContent).toBe(own(entry.body, 'error'));
+      expect(row('tier').getByRole('link', { name: 'Open Profiles' })).toHaveAttribute(
+        'href',
+        '#profiles',
+      );
+    },
+  );
+
+  it.each([
+    'validator_unavailable_nothing_written_500',
+    'write_failed_nothing_saved_500',
+    'written_then_the_answer_failed_500',
+  ])('RL3 %s is Unknown, never resent, settled only by its recorded read', async (name) => {
+    let source = INITIAL;
+    const page = await open(
+      'farm',
+      {
+        before: (fake) => {
+          fake.route('POST', PATCH, () => sample(name));
+        },
+      },
+      () => source,
+    );
+    await page.user.clear(row('tier').getByLabelText('Run tier'));
+    await page.user.type(row('tier').getByLabelText('Run tier'), '3');
+    await save(page, 'tier');
+    expect(root().querySelector('[data-outcome="unknown"]')).not.toBeNull();
+    const record = page.data.machine.snapshot().at(-1);
+    expect(page.data.machine.resend(record?.id ?? '')).toBe('not_resendable');
+    source = sample(
+      name === 'written_then_the_answer_failed_500'
+        ? 'read_after_an_error_that_followed_the_write_holds_the_change'
+        : name === 'write_failed_nothing_saved_500'
+          ? 'read_after_the_failed_write_the_revision_is_unchanged'
+          : 'read_after_the_validator_failure_the_revision_is_unchanged',
+    );
+    await page.user.click(form().getByRole('button', { name: 'Read entry settings' }));
+    await page.advance(100);
+    expect(
+      root().querySelector(
+        `[data-outcome="${name === 'written_then_the_answer_failed_500' ? 'applied' : 'unknown'}"]`,
+      ),
+    ).not.toBeNull();
+    await page.advance(20_000);
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it('RL3 Unknown needs a newer read and explicit continuation, which sends nothing', async () => {
+    const page = await open('farm', {
+      before: (fake) => {
+        fake.route('POST', PATCH, () => sample('write_failed_nothing_saved_500'));
+      },
+    });
+    await page.user.clear(row('tier').getByLabelText('Run tier'));
+    await page.user.type(row('tier').getByLabelText('Run tier'), '3');
+    await save(page, 'tier');
+    await page.user.click(row('tier').getByRole('button', { name: 'Continue from the read' }));
+    expect(row('tier').getByRole('button', { name: 'Save field' })).not.toHaveAttribute(
+      'aria-disabled',
+    );
+    expect(root().querySelector('[data-outcome="unknown"]')).not.toBeNull();
+    expect(page.fake.writes()).toHaveLength(1);
+    expect(page.data.machine.snapshot().at(-1)?.accepted).toBe(true);
+  });
+
+  it('RL3 a held save blocks duplicate clicks and preserves newer typing after its receipt', async () => {
+    let source = INITIAL;
+    const entry = sample('saved_label');
+    const page = await open(
+      'farm',
+      {
+        before: (fake) => {
+          fake.route('POST', PATCH, () => 'hold');
+        },
+      },
+      () => source,
+    );
+    await page.user.type(row('label').getByLabelText('Run label'), 'Daily coin farm');
+    await save(page, 'label');
+    await save(page, 'label');
+    await page.user.type(row('label').getByLabelText('Run label'), ' later');
+    source = {
+      ...INITIAL,
+      body: {
+        ...Object.fromEntries(entries(INITIAL.body)),
+        profile: own(entry.body, 'profile'),
+        revision: own(entry.body, 'revision'),
+      },
+    };
+    await act(async () => {
+      page.fake.next(PATCH).respond(entry.status, entry.body);
+      await Promise.resolve();
+    });
+    await page.advance(100);
+    expect(row('label').getByLabelText('Run label')).toHaveValue('Daily coin farm later');
+    const newer = selectRunEntry(page.data.store.getSnapshot()).fields.find(
+      (field) => field.key === 'label',
+    );
+    expect(newer?.reason).toBe('revision');
+    expect(newer?.command).toBeNull();
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it('RL3 unchecking a pending perk-ban deletion retains the newer list after its receipt', async () => {
+    const entry = sample('saved_perk_bans_deleted_leaves_the_games_bans_alone');
+    let source = sourceBefore(entry);
+    const page = await open(
+      'farm',
+      {
+        before: (fake) => {
+          fake.route('POST', PATCH, () => 'hold');
+        },
+      },
+      () => source,
+    );
+    await page.user.type(row('perk_bans').getByLabelText('Perk bans (one per line)'), 'coins');
+    await page.user.click(row('perk_bans').getByLabelText('Leave the game’s perk bans alone'));
+    await save(page, 'perk_bans');
+    expect(JSON.parse(page.fake.writes()[0]?.body ?? '{}')).toEqual(entry.request.body);
+    await page.user.click(row('perk_bans').getByLabelText('Leave the game’s perk bans alone'));
+    source = {
+      ...INITIAL,
+      body: {
+        ...Object.fromEntries(entries(INITIAL.body)),
+        profile: own(entry.body, 'profile'),
+        revision: own(entry.body, 'revision'),
+      },
+    };
+    await act(async () => {
+      page.fake.next(PATCH).respond(entry.status, entry.body);
+      await Promise.resolve();
+    });
+    await page.advance(100);
+    expect(row('perk_bans').getByLabelText('Perk bans (one per line)')).toHaveValue('coins');
+    expect(row('perk_bans').getByLabelText('Leave the game’s perk bans alone')).not.toBeChecked();
+    expect(row('perk_bans').getByRole('button', { name: 'Save field' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await page.user.click(row('perk_bans').getByRole('button', { name: 'Continue from the read' }));
+    expect(
+      selectRunEntry(page.data.store.getSnapshot()).fields.find(
+        (field) => field.key === 'perk_bans',
+      )?.command,
+    ).toMatchObject({ value: ['coins'], remove: false, revision: own(entry.body, 'revision') });
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it('RL3 a confirmed field advances the revision for the next field', async () => {
+    let source = INITIAL;
+    let next = sample('saved_label');
+    const page = await open(
+      'farm',
+      {
+        before: (fake) => {
+          fake.route('POST', PATCH, () => {
+            const reply = next;
+            source = {
+              ...INITIAL,
+              body: {
+                ...Object.fromEntries(entries(INITIAL.body)),
+                profile: own(reply.body, 'profile'),
+                revision: own(reply.body, 'revision'),
+              },
+            };
+            return reply;
+          });
+        },
+      },
+      () => source,
+    );
+    await page.user.type(row('label').getByLabelText('Run label'), 'Daily coin farm');
+    await save(page, 'label');
+    next = sample('saved_tier');
+    await page.user.clear(row('tier').getByLabelText('Run tier'));
+    await page.user.type(row('tier').getByLabelText('Run tier'), '2');
+    await save(page, 'tier');
+    expect(page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown)).toEqual([
+      sample('saved_label').request.body,
+      next.request.body,
+    ]);
+  });
+
+  it('RL3 an explicit read retries failed vocabulary and restores the editor', async () => {
+    let ready = false;
+    const page = await open('farm', {
+      before: (fake) => {
+        // Transport loss is injected around the genuine vocabulary case; no new server data.
+        fake.route('GET', '/api/vocab', () =>
+          ready ? dashboardPagesCase('profile_reads.vocab_ok') : 'hold',
+        );
+      },
+    });
+    await act(async () => {
+      page.fake.next('/api/vocab').lose();
+      await Promise.resolve();
+    });
+    await page.advance(100);
+    expect(selectRunEntry(page.data.store.getSnapshot()).fields).toEqual([]);
+    ready = true;
+    await page.user.click(form().getByRole('button', { name: 'Read entry settings' }));
+    await page.advance(100);
+    expect(row('tier').getByLabelText('Run tier')).toHaveValue('1');
+    expect(page.fake.writes()).toEqual([]);
+  });
+
+  it('RL3 a changed click-time context sends nothing and keeps the original scoped draft', async () => {
+    let config = CONFIG;
+    const page = await open('farm', { config: () => config });
+    await page.user.type(row('label').getByLabelText('Run label'), 'Draft');
+    config = dashboardPagesCase(
+      'run_templates_add_fenced.read_config_after_another_client_switched_the_account',
+    ).body;
+    await save(page, 'label');
+    expect(page.fake.writes()).toEqual([]);
+    expect(
+      Object.values(page.data.store.getSnapshot().runDrafts).some(
+        (draft) => draft['value'] === 'Draft',
+      ),
+    ).toBe(true);
+  });
+
+  it('RL3 raw scoped drafts survive polls and reload', async () => {
+    const page = await open();
+    await page.user.clear(row('tier').getByLabelText('Run tier'));
+    await page.user.type(row('tier').getByLabelText('Run tier'), 'two');
+    await page.advance(10_000);
+    const storage = page.storage;
+    page.view.unmount();
+    page.data.stop();
+    await open('farm', { storage });
+    expect(row('tier').getByLabelText('Run tier')).toHaveValue('two');
+  });
+
+  it('RL6 exact policy editor targets, RL3 axe and catalogue', async () => {
+    const page = await open('farm_deep');
+    expect(
+      row('policies.gather').getByRole('link', { name: 'Edit gathering policy' }),
+    ).toHaveAttribute('href', '#collection/policy/gems_only');
+    for (const key of ['policies.uw', 'policies.rescue'])
+      expect(row(key).getByRole('link', { name: 'Open Abilities' })).toHaveAttribute(
+        'href',
+        '#abilities',
+      );
+    expect(row('shopping').queryByRole('link')).toBeNull();
+    expect(textOutsideCatalogue(root())).toEqual([]);
+    vi.useRealTimers();
+    expect(await axe(root())).toHaveNoViolations();
+    act(() => {
+      page.data.stop();
+    });
+  });
+});

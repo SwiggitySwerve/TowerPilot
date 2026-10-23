@@ -41,7 +41,6 @@ import {
 export { FIXTURE_PATH, loadFixture };
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-export const R11_FIXTURE_PATH = path.resolve(HERE, 'r11-candidate-samples.json');
 export const BUILD_DIR = path.resolve(HERE, '../../webui/app');
 export const DEFAULT_SCENARIO = 'collecting';
 
@@ -235,6 +234,11 @@ const GET_ROUTES = Object.freeze({
  * @type {Readonly<Record<string, readonly [string, string, string | null]>>}
  */
 const WRITE_CASES = Object.freeze({
+  runTemplatesAdd: [
+    'run_templates_add_fenced.added_with_the_matching_revision_and_context',
+    'run_templates_add_fenced.write_failed_nothing_saved',
+    'run_templates_add_fenced.written_then_the_answer_failed',
+  ],
   calibrateStart: [
     'calibrate_writes.start_bootstrap_with_the_action_capture_flows',
     'calibrate_writes.start_taps_off_409',
@@ -414,6 +418,8 @@ function writeRoute(pathname, body) {
     return { id: 'actions', key: `actions:${String(body['action'])}` };
   if (/^\/api\/operations\/[^/]+\/live-controls$/.test(pathname))
     return { id: 'liveControls', key: 'liveControls' };
+  if (pathname === '/api/run-templates/add')
+    return { id: 'runTemplatesAdd', key: 'runTemplatesAdd' };
   if (pathname === '/api/run-controls') return { id: 'runControlsSave', key: 'runControlsSave' };
   if (pathname === '/api/settings') return { id: 'settingsSave', key: 'settingsSave' };
   if (pathname === '/api/profile-patch') return { id: 'profilePatch', key: 'profilePatch' };
@@ -477,7 +483,6 @@ export function createApiHandler(fixture, options = {}) {
     options.pagesFixture ?? loadJsonWithIdentity(DASHBOARD_PAGES_FIXTURE_PATH).fixture,
   )['cases'];
   const equipment = record(loadJsonWithIdentity(EQUIPMENT_FIXTURE_PATH).fixture)['cases'];
-  const r11 = record(loadJsonWithIdentity(R11_FIXTURE_PATH).fixture)['cases'];
   // Supplemental ability worlds are large; unrelated fake scenarios never need to parse them.
   /** @type {unknown} */
   let abilities;
@@ -498,9 +503,7 @@ export function createApiHandler(fixture, options = {}) {
             ? abilityCases()
             : lookup(equipment, reference) !== undefined
               ? equipment
-              : lookup(r11, reference) !== undefined
-                ? r11
-                : fixture,
+              : fixture,
       reference,
     );
 
@@ -695,6 +698,7 @@ export function createApiHandler(fixture, options = {}) {
       (url.pathname.startsWith('/api/template/') ? 'templateImage' : undefined) ??
       (url.pathname.startsWith('/api/artwork/') ? 'artwork' : undefined) ??
       (/^\/api\/battles\/[^/]+$/.test(url.pathname) ? 'battleDetail' : undefined) ??
+      (/^\/api\/profile\/[^/]+\.yaml$/.test(url.pathname) ? 'profileRead' : undefined) ??
       (/^\/api\/profile-src\/[^/]+$/.test(url.pathname) ? 'profileSource' : undefined);
     if (id === undefined) {
       sendJson(res, 404, { ok: false, error: `${url.pathname} is not part of the fake backend` });

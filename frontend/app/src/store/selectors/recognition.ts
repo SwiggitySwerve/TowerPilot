@@ -235,6 +235,9 @@ export type RecognitionOutcomeCode =
   | 'released'
   | 'stop_answered'
   | 'refused'
+  | 'apply_context_changed'
+  | 'apply_invalid_request'
+  | 'not_started'
   | 'unknown'
   | 'recorded'
   | 'applied_by_read';
@@ -248,6 +251,9 @@ export interface RecognitionOutcomeVM {
   readonly word: StateWord | null;
   readonly operation: ServerText<'id'> | null;
   readonly refusalCode: ServerText<'id'> | null;
+  readonly currentContext: Readonly<
+    Record<'instance' | 'account' | 'profile' | 'serial', ServerText<'name'> | null>
+  > | null;
   readonly error: ServerText<'message'> | null;
   /** navigation_images_missing: the images still to capture, as the server listed them. */
   readonly missing: readonly ServerText<'id'>[];
@@ -550,6 +556,7 @@ function outcomeVM(
   let code: RecognitionOutcomeCode = record.phase === 'sending' ? 'sending' : 'unknown';
   let operation: unknown = record.meta.operationId ?? null;
   let refusalCode: unknown = null;
+  let currentContext: RecognitionOutcomeVM['currentContext'] = null;
   let error: unknown = null;
   let missing: readonly string[] = [];
   let remaining: readonly string[] = [];
@@ -562,7 +569,20 @@ function outcomeVM(
         remaining = answer.remaining;
         readinessReady = answer.readinessReady;
       } else if (answer.kind === 'refused') {
-        code = 'refused';
+        code =
+          answer.code === 'context_changed'
+            ? 'apply_context_changed'
+            : answer.code === 'invalid_request'
+              ? 'apply_invalid_request'
+              : 'refused';
+        const named = answer.currentContext;
+        if (named !== null)
+          currentContext = {
+            instance: fromServer('name', named.instance),
+            account: fromServer('name', named.account),
+            profile: fromServer('name', named.profile),
+            serial: fromServer('name', named.serial),
+          };
         refusalCode = answer.code;
         error = answer.error;
       }
@@ -587,7 +607,7 @@ function outcomeVM(
         code = 'accepted';
         operation = answer.operation.id;
       } else if (answer.kind === 'refused') {
-        code = 'refused';
+        code = answer.code === 'context_changed' ? 'not_started' : 'refused';
         refusalCode = answer.code;
         error = answer.error;
         missing = answer.missing;
@@ -609,13 +629,17 @@ function outcomeVM(
         ? 'waiting'
         : unknown
           ? 'unknown'
-          : code === 'refused'
+          : code === 'refused' ||
+              code === 'apply_context_changed' ||
+              code === 'apply_invalid_request' ||
+              code === 'not_started'
             ? 'blocked'
             : code === 'stopping'
               ? 'stopping'
               : null,
     operation: fromServer('id', operation),
     refusalCode: fromServer('id', refusalCode),
+    currentContext,
     error: fromServer('message', error),
     missing: ids(missing),
     remaining: messages(remaining),

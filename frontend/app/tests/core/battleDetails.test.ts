@@ -19,6 +19,11 @@ const routine = (body: unknown, name: string): Record<string, unknown> => {
 const live = (name: string) => dashboardPagesCase(`run_controls_live.${name}`).body;
 const NOW = 1_800_000_002;
 
+/** The recorded seen offer whose claim failed (r12 candidate battle_details_runtime). */
+const SEEN = dashboardPagesCase(
+  'battle_details_runtime.ad_gems_offer_seen_and_failed_attempt',
+).body;
+
 describe('F6-11 RL7 Ad gems details', () => {
   it('RL7 the recorded report: offer not observed, window open, counters and timing as sent', () => {
     expect(adGemsDetails(routine(RECORDED, 'ad_gems'), NOW)).toEqual({
@@ -47,31 +52,39 @@ describe('F6-11 RL7 Ad gems details', () => {
     });
   });
 
-  // Modified recorded case: no recorded read has a seen offer or a failed attempt yet
-  // (requested as battles_active.ad_gems_offer_seen_and_failed_attempt); the recorded
-  // collector gets an observation, a sighting and a failure in its own field names.
+  // Variations of the recorded seen offer: each modified copy says what it changes and why.
   function seen(overrides: Record<string, unknown>): Record<string, unknown> {
-    return {
-      ...routine(RECORDED, 'ad_gems'),
-      visibility: 'visible',
-      visibility_reason: null,
-      last_observed_at: NOW - 3,
-      first_seen_at: NOW - 10,
-      appearance_after_at: NOW - 12.5,
-      last_failed_attempt: { reason: 'claim_not_confirmed', observed_at: NOW - 4 },
-      ...overrides,
-    };
+    return { ...routine(SEEN, 'ad_gems'), ...overrides };
   }
 
-  it('RL7 a fresh observation shows the offer as seen, with its appearance bounds and failure', () => {
-    const details = adGemsDetails(seen({}), NOW);
-    expect(details.visibility).toBe('visible');
-    expect(details.visibilityReason).toBeNull();
-    expect(details.observationStale).toBe(false);
-    expect(details.appearance).toEqual({ afterAt: NOW - 12.5, byAt: NOW - 10, gapSec: 2.5 });
-    expect(details.failedAttempt).toEqual({ reason: 'claim_not_confirmed', observedAt: NOW - 4 });
+  it('RL7 the recorded seen offer: visible, its appearance bounds, its failed attempt, counters and timing', () => {
+    expect(adGemsDetails(routine(SEEN, 'ad_gems'), NOW)).toEqual({
+      visibility: 'visible',
+      visibilityReason: null,
+      observationStale: false,
+      firstSeenAt: 1_799_999_991,
+      appearance: { afterAt: 1_799_999_986, byAt: 1_799_999_991, gapSec: 5 },
+      lastObservedAt: 1_799_999_999,
+      collection: { kind: 'scheduled', nextDueAt: 1_800_000_002 },
+      nextCheckAt: 0,
+      failedAttempt: { reason: 'offer_still_visible', observedAt: 1_800_000_000 },
+      counters: { attempts: 1, confirmed: 0, skips: 0, windowsMissed: 0 },
+      durations: { schedulingWaitSec: null, responseDelaySec: null, verificationSec: 2 },
+    });
   });
 
+  // Modified recorded case: no recorded sighting has a fractional observation interval;
+  // the recorded offer's earlier look is moved half a second.
+  it('RL7 a fractional appearance interval is kept as reported', () => {
+    const details = adGemsDetails(seen({ appearance_after_at: 1_799_999_988.5 }), NOW);
+    expect(details.appearance).toEqual({
+      afterAt: 1_799_999_988.5,
+      byAt: 1_799_999_991,
+      gapSec: 2.5,
+    });
+  });
+
+  // Modified recorded case: the recorded observation made older than its own 8 s limit.
   it("RL7 an observation older than the collector's own limit is not trusted: visibility unknown", () => {
     const details = adGemsDetails(seen({ last_observed_at: NOW - 9 }), NOW);
     expect(details.visibility).toBe('unknown');
@@ -80,6 +93,7 @@ describe('F6-11 RL7 Ad gems details', () => {
     expect(adGemsDetails(seen({}), null).visibility).toBe('unknown');
   });
 
+  // Modified recorded case: the recorded collector without its own limit.
   it('RL7 without stale_after_sec the battle report limit applies', () => {
     const base = seen({ stale_after_sec: undefined });
     expect(
@@ -91,6 +105,8 @@ describe('F6-11 RL7 Ad gems details', () => {
     ).toBe('unknown');
   });
 
+  // Modified recorded case: no recorded failure lacks a reason and no recorded collector is
+  // switched off with a manual collection pending.
   it('RL7 a failed attempt without a reason names its outcome; a manual collection keeps its timing', () => {
     const details = adGemsDetails(
       seen({
@@ -116,14 +132,14 @@ describe('F6-11 RL7 Floating gems refusal and the Runtime link', () => {
     expect(floatingRefusal(routine(RECORDED, 'floating_gems'))).toBeNull();
   });
 
-  // Modified recorded case: no recorded read has a refusal yet (requested as
-  // battles_active.floating_gems_refusal_recorded).
   it('RL7 a recorded refusal is shown with its reason and time', () => {
-    const raw = {
-      ...routine(RECORDED, 'floating_gems'),
-      last_refusal: { reason: 'human_owner', observed_at: NOW - 30 },
-    };
-    expect(floatingRefusal(raw)).toEqual({ reason: 'human_owner', observedAt: NOW - 30 });
+    const refused = dashboardPagesCase(
+      'battle_details_runtime.floating_gems_refusal_recorded',
+    ).body;
+    expect(floatingRefusal(routine(refused, 'floating_gems'))).toEqual({
+      reason: 'invalid_orbit_arc',
+      observedAt: 1_800_000_000,
+    });
   });
 
   it("RL7 Inspect events filters Runtime by the battle, its operation and the routine's offer", () => {
@@ -138,12 +154,15 @@ describe('F6-11 RL7 Floating gems refusal and the Runtime link', () => {
     });
   });
 
-  // Modified recorded case: no recorded read has a sighted offer (first_seen_at) yet; the
-  // recorded Ad gems report gets one, and a bare report checks the clamp at zero.
   it('RL7 a sighted offer starts the Runtime filter a minute before its first sighting', () => {
-    const raw = { ...routine(RECORDED, 'ad_gems'), first_seen_at: NOW - 10 };
-    expect(routineEventsQuery(battleOf(RECORDED), raw)['since']).toBe(String(NOW - 70));
-    expect(routineEventsQuery(battleOf(RECORDED), { first_seen_at: 30 })['since']).toBe('0');
+    expect(routineEventsQuery(battleOf(SEEN), routine(SEEN, 'ad_gems'))).toEqual({
+      battle_id: '0000012a-0000-4000-8000-000000000000',
+      operation_id: String(ownPath(SEEN, 'battle', 'operation_id')),
+      offer_id: 'bd_ad_offer_failed-offer',
+      since: String(1_799_999_991 - 60),
+    });
+    // Modified recorded case: a bare report sighted in the first minute clamps at zero.
+    expect(routineEventsQuery(battleOf(SEEN), { first_seen_at: 30 })['since']).toBe('0');
   });
 
   it("RL7 the server clock is the read's server_time plus the time since it arrived", () => {

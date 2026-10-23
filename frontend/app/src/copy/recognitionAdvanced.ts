@@ -122,6 +122,7 @@ export const recognitionAdvanced = {
   size: entry('Written width / height'),
   secondBest: entry('Second-best match on the source frame'),
   refused: entry('Refused. The server reply follows. Nothing is resent.'),
+  notStarted: entry('Not started. The server reply follows. Nothing is resent.'),
   unknown: entry(
     'Unknown. The answer does not confirm whether the request was done. Nothing is resent.',
   ),
