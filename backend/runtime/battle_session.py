@@ -5,12 +5,14 @@ import time
 import uuid
 
 from player.run_controls import FIELDS, flatten, resolve
+from towerpilot_workflows.action_contract import shopping_interval
 from towerpilot_workflows.battles import Battles
 
 
 class BattleSession:
     def __init__(self, store, operation_id, preset, config, *, envelope=None, origin='started', previous_battle_id=None, prepared=None):
         self.store, self.operation_id = store, operation_id
+        self.actions = None            # the host's ActionSession, attached by ActionSession.for_battle
         self.generation = str(uuid.uuid4())
         self.battle = None
         self.base_preset = copy.deepcopy(preset)
@@ -144,6 +146,8 @@ class BattleSession:
     def finish(self, reason, outcome='unknown', evidence=None, status='ended'):
         self.battle = self.store.finish(self.battle['id'], self.generation, reason=reason,
                                         outcome=outcome, evidence=evidence, status=status)
+        if self.actions is not None:
+            self.actions.settle()      # what this driver left open is closed by its own normal finalization
         return self.battle
 
     def _apply_control(self, rs, path, value):
@@ -225,11 +229,14 @@ class BattleSession:
                     collector = rs.gems.ad_gems if action == 'ad_gems' else rs.gems.orbit
                     if not collector.request_now():
                         continue
+                    collector.manual_command_id = command['id']
                     self.manual = dict(id=command['id'], action=action, collector=collector, began=False, command=command)
                 else:
                     pieces = action.split(':')
+                    rs.shop.manual_command_id = command['id']
                     if not rs.shop.request_once(section=pieces[1] if len(pieces) > 1 else None,
                                                 upgrade=pieces[2] if len(pieces) > 2 else None):
+                        rs.shop.manual_command_id = None
                         continue
                     self.manual = dict(id=command['id'], action=action, began=True, command=command)
                     self.manual['command'] = self._acknowledge(command, state='started', evidence={'outcome': 'unknown'},
@@ -318,7 +325,7 @@ class BattleSession:
             rs.gems.ad_gems.mark_unknown('waiting_for_game_state')
             routines['ad_gems'] = rs.gems.ad_gems.status()
         epoch = time.time()
-        interval = (self.effective.get('shopping_plan') or {}).get('interval_sec', self.effective.get('shop_interval_sec', 90))
+        interval = shopping_interval(self.effective)
         if rs.shop is not None:
             shopping_status = rs.shop.status()
             routines['shopping'] = dict(enabled=rs.shopping_enabled,
@@ -336,12 +343,19 @@ class BattleSession:
         for state in routines.values():
             state.update(blocker=state.get('blocker') if battle_visible else 'waiting_for_game_state', server_time=epoch)
         collection = self._collection_evidence(routines, epoch)
-        self.store.update_status(self.battle['id'], self.generation, dict(routines=routines, server_time=epoch,
+        status = dict(routines=routines, server_time=epoch,
             collection_evidence=collection,
             observed_wave=rs.tracker.last, last_wave_provenance='observed',
             observed_duration_sec=self._observed_duration, observation_gaps=copy.deepcopy(self._observation_gaps),
             observation_gap_started_at=self._gap_started_at,
-            driver_generation=self.generation, observation_status='observing' if battle_visible else 'waiting_for_game_state'))
+            driver_generation=self.generation, observation_status='observing' if battle_visible else 'waiting_for_game_state')
+        if self.actions is not None:     # additive: `routines` above stays as the compatibility projection
+            try:
+                status['actions'] = self.actions.project(routines, observed_at=epoch, control_revision=self.battle.get('control_revision'))
+            except Exception as exc:     # noqa: BLE001 - a projection that cannot be built must never stop the driver
+                from runtime import logger
+                logger.event('action_projection_failed', error=str(exc), error_type=type(exc).__name__)
+        self.store.update_status(self.battle['id'], self.generation, status)
 
     def _collection_evidence(self, routines, epoch):
         """Count sampled, distinct confirmations inside this battle/segment.

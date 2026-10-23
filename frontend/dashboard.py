@@ -81,7 +81,7 @@ from towerpilot_workflows.harvest import gem_policy_revision
 _BUILD = build_info.snapshot(Path(ROOT).parent, 'dashboard')
 _CAPABILITIES = ['battle_controls', 'run_history', 'stream_backends', 'runtime_identity',
                  'process_refresh_status', 'schedule_status', 'revisioned_editor_saves',
-                 'setup_battle_guard', 'collection_handoff', 'gem_harvesting']
+                 'setup_battle_guard', 'collection_handoff', 'gem_harvesting', 'action_executions']
 
 
 @app.get('/api/runtime')
@@ -429,6 +429,30 @@ def _harvest_status(cfg=None, rows=None):
                     desired=None, source=None, operation=None, owner=None, overlay=None, collection_guard=None)
 
 
+_ACTION_HISTORY = {'unusable': 0, 'failure': None}   # what the last settlement reported: a standing condition is reported once
+
+
+def _settle_action_history():
+    """Close the action executions whose host is provably gone. The history is bookkeeping beside the lifecycle: whatever it
+    raises (a locked or unreadable ledger, a row nobody can read) is reported once and never stops the reconciliation that
+    follows in the same tick, and a damaged row is skipped and reported, never retried into a failure."""
+    from control import actions as actions_api
+    try:
+        seen = []
+        actions_api.settle(ROOT, event=lambda kind, **fields: seen.append(fields))
+        unusable = sum(fields['rows'] for fields in seen)
+        if unusable != _ACTION_HISTORY['unusable']:
+            _ACTION_HISTORY['unusable'] = unusable
+            if unusable:
+                _diagnostic_event('action_history_unusable', rows=unusable, where='settlement')
+        _ACTION_HISTORY['failure'] = None
+    except Exception as exc:                            # noqa: BLE001 - nothing here may reach the lifecycle
+        failure = (type(exc).__name__, str(exc))
+        if _ACTION_HISTORY['failure'] != failure:
+            _ACTION_HISTORY['failure'] = failure
+            app.logger.exception('Action history settlement failed')
+
+
 def _harvest_tick():
     """One reconciliation step on the process-refresher thread. Never from a GET
     or a browser tab. Skipped while a person's action holds the action lock.
@@ -442,8 +466,9 @@ def _harvest_tick():
         cfg = load_config()
         rows = operation_api.project_processes(ROOT, _procs_cached())
         battle_api.reconcile_existing(ROOT)
+        _settle_action_history()        # close the executions whose host is provably gone: never from a GET, never able to skip the tick below
         harvest_api.tick(
-            ROOT, cfg, processes=rows,
+            ROOT, cfg, processes=rows, actions=harvest_api.action_session(ROOT, cfg),
             resolve_source=_harvest_source, prepare=_gems_launch_plan,
             launch=lambda cfg_, body, cmd: _launch_operation(cfg_, 'gems', body, cmd),
             device_state=lambda identity: _device_state(cfg)['device_state'],
@@ -705,6 +730,20 @@ def api_schedule_status():
         return jsonify(ok=False, availability='unavailable', error=str(exc)), 400
 
 
+@app.get('/api/actions/executions')
+def api_action_executions():
+    """The recorded executions of every timed action of the selected emulator and account, newest first. Read-only:
+    nothing is created or settled here, and a checkout with no history answers an empty list."""
+    from control import actions as actions_api
+    try:
+        context = _battle_history_context()
+        return jsonify(actions_api.executions(
+            ROOT, context, action=request.args.get('action'), instance=request.args.get('action_instance'),
+            battle_id=request.args.get('battle_id'), before=request.args.get('before'), limit=request.args.get('limit')))
+    except ValueError as exc:
+        return jsonify(ok=False, code='invalid_request', error=str(exc)), 400
+
+
 @app.get('/api/battles/active')
 def api_battle_active():
     from control import battles
@@ -736,7 +775,9 @@ def api_battle_detail(battle_id):
         if any(row['context'].get(key) != value for key, value in context.items()):
             return jsonify(ok=False, error='Battle does not belong to the selected emulator and account'), 404
         events = [dict(event, t=event['timestamp']) for event in store.events(battle_id)]
-        return jsonify(battle=battles.public(store, row), events=events, context=context)
+        from control import actions as actions_api
+        return jsonify(battle=battles.public(store, row), events=events, context=context,
+                       executions=actions_api.for_battle(ROOT, row))
     except KeyError:
         return jsonify(ok=False, error='Unknown battle'), 404
     except ValueError as exc:

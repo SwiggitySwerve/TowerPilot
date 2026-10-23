@@ -8,6 +8,7 @@ from __future__ import annotations
 import copy
 
 from player import playerprofile, run_controls, shopping_plan
+from towerpilot_workflows.action_contract import DEFAULT_SHOPPING_INTERVAL_SEC
 
 
 def normalize_changes(patch: dict) -> dict:
@@ -62,7 +63,7 @@ def read(profile: dict, cfg: dict, run: str) -> dict:
     if source is not None and not (isinstance(source, dict) and source.get('version') == 2):
         directives = source if isinstance(source, list) else source.get('directives', [])
         conversion = shopping_plan.convert_legacy(copy.deepcopy(directives),
-                                                   interval_sec=preset.get('shop_interval_sec', 90))
+                                                   interval_sec=preset.get('shop_interval_sec', DEFAULT_SHOPPING_INTERVAL_SEC))
         if isinstance(source, dict):
             conversion['plan']['enabled'] = source.get('enabled', True)
         result['legacy_conversion'] = conversion

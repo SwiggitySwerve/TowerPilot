@@ -2,14 +2,12 @@
 import copy
 import math
 
-FIELDS = {
-    'ad_gems': {'enabled': bool, 'interval_sec': (1, 3600), 'window_sec': (5, 60)},
-    'floating_gems': {'enabled': bool, 'interval_sec': (1, 3600),
-                      'window_sec': (5, 60), 'tap_interval_sec': (0.5, 30)},
-    'shopping': {'enabled': bool, 'interval_sec': (1, 86400)},
-    'rewards': {'enabled': bool}, 'abilities': {'enabled': bool},
-    'rescue': {'enabled': bool}, 'repeat': {'enabled': bool},
-}
+from towerpilot_workflows.action_contract import CATALOG
+
+# The controls of every migrated action are generated from its catalog entry, so a range exists once. The four
+# gates below have no catalog entry yet (they are not timed actions of the pilot); each moves with its migration.
+_GATES = {'rewards': {'enabled': bool}, 'abilities': {'enabled': bool}, 'rescue': {'enabled': bool}, 'repeat': {'enabled': bool}}
+FIELDS = {**CATALOG.control_fields(), **_GATES}
 
 
 def flatten(value: dict, prefix: str = '') -> dict:

@@ -86,7 +86,8 @@ class Run:
         deadline = time.monotonic() + self.timeout
         off = 0
         wave = None
-        gems = shard.GemWatch()
+        from runtime.action_session import ActionSession
+        gems = shard.GemWatch(session=ActionSession.for_operation('harness'))
         while time.monotonic() < deadline:
             frame = capture.grab()
             w = wave_reader.read_wave(frame)

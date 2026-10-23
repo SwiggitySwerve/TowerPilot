@@ -84,7 +84,7 @@ def test_collection_only_waits_through_menus_and_stops_at_run_boundary(monkeypat
     events=[]
     monkeypatch.setattr(worker.settings, 'select_instance', lambda *a: None)
     monkeypatch.setattr(runners, 'other_runners', lambda: iter([]))
-    monkeypatch.setattr(worker, 'GemWatch', lambda gather=None: types.SimpleNamespace(
+    monkeypatch.setattr(worker, 'GemWatch', lambda gather=None, **kw: types.SimpleNamespace(
         ad_gems=types.SimpleNamespace(enabled=True), orbit=types.SimpleNamespace(enabled=True),
         poll=lambda f: collected.append(f)))
     monkeypatch.setattr(worker.capture, 'grab', lambda: next(frames))

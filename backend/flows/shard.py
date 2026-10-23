@@ -63,6 +63,7 @@ from vision import wave_reader
 from vision.ocr import gem_balance_crop, read_gem_balance
 from vision.orbit_gems import OrbitGem, field_region, find_orbit_gem, reference_geometry
 from player.gather_settings import ORBIT_TIMING_FIELDS, validate_orbit_timing
+from towerpilot_workflows.action_contract import AppearanceDriven
 import settings
 from settings import CONFIG
 
@@ -195,16 +196,21 @@ def _in_ability_row(pt, margin: int = 25) -> bool:
 class GemWatch:
     """Collect Ad Gems and orbiting diamonds using their separate policies."""
 
-    def __init__(self, gather=None, *, guard=None):
+    def __init__(self, gather=None, *, guard=None, session=None):
+        """session: the host's `ActionSession`. Every host passes one (or None when it runs outside a ledger
+        operation), so each window is recorded from one construction point."""
         self.guard = guard
+        self.session = session
         opts = {"guard": guard} if guard is not None else {}
-        self.orbit = GemOrbitTapper(**gem_orbit_opts(gather), **opts)
+        self.orbit = GemOrbitTapper(**gem_orbit_opts(gather), **opts,
+                                    recorder=None if session is None else session.recorder("floating_gems"))
         from interactions.ad_gems import AdGemCollector
         if gather is None:
             gather = (CONFIG.get("presets", {}).get(CONFIG.get("preset")) or {}).get("gather") or {}
         self.ad_gems = AdGemCollector(gather.get("ad_gems", True),
                                       delay=gather.get("gem_delay_sec", (3, 10)),
-                                      options=gather.get("ad_gem_options"), **opts)
+                                      options=gather.get("ad_gem_options"), **opts,
+                                      recorder=None if session is None else session.recorder("ad_gems"))
 
     def poll(self, frame):
         """Return the latest frame; callers must discard an older decision frame."""
@@ -319,8 +325,12 @@ class GemOrbitTapper:
                  interval=GEM_ORBIT_INTERVAL, taps=GEM_ORBIT_TAPS,
                  jitter=GEM_ORBIT_JITTER, spread=GEM_ORBIT_SPREAD,
                  retry_interval_sec=None, attempt_timeout_sec=None,
-                 retry_backoff_sec=None, guard=None):
+                 retry_backoff_sec=None, guard=None, recorder=None):
         self.guard = guard
+        self.recorder = recorder
+        self.manual_command_id = None
+        self._window_taps = 0
+        self._schedule = AppearanceDriven()
         timing = dict(interval_sec=interval, retry_interval_sec=retry_interval_sec,
                       attempt_timeout_sec=attempt_timeout_sec, retry_backoff_sec=retry_backoff_sec)
         timing = {key: ORBIT_TIMING_FIELDS[key]['default'] if value is None else value
@@ -370,7 +380,7 @@ class GemOrbitTapper:
         if values.get('window_sec') is not None:
             self.attempt_timeout = values['window_sec']
             if self.attempt_started is not None:
-                self.window_ends_at = min(self.window_ends_at, self.attempt_started+self.attempt_timeout)
+                self.window_ends_at = self._schedule.window_end(self.attempt_started, self.attempt_timeout, self.window_ends_at)
                 self.next_at = min(self.next_at, self.window_ends_at)
         if values.get('tap_interval_sec') is not None:
             self.retry_interval = values['tap_interval_sec']
@@ -391,6 +401,33 @@ class GemOrbitTapper:
                     window_id=self.window_id, attempt_id=self.attempt_id,
                     last_outcome=self.last_outcome, last_refusal=self.last_refusal,
                     server_time=epoch)
+
+    def _epoch(self, value):
+        return None if value is None else time.time() + value - time.monotonic()
+
+    def _record_open(self, manual, scheduled_for):
+        """Open this attempt's execution. Recording never changes what the tapper does."""
+        if self.recorder is None:
+            return
+        command_id, self.manual_command_id = (self.manual_command_id if manual else None), None
+        self._window_taps = 0
+        self.recorder.opened(trigger='manual' if manual else 'automatic', occurrence_key=f'window:{self.window_id}',
+                             scheduled_for=scheduled_for, command_id=command_id, refs=dict(window_id=self.window_id))
+
+    def _record_close(self, reason):
+        """A confirmed balance increase is a success; taps nobody could confirm are `failed/unconfirmed`; an attempt that
+        sent no tap is a no-op carrying the last refusal that stopped it."""
+        if self.recorder is None or self.recorder.execution_id is None:
+            return
+        taps, self._window_taps = self._window_taps, 0
+        refs = dict(window_id=self.window_id)
+        if reason == 'confirmed':
+            self.recorder.closed(result='succeeded', reason='balance_increased', effect='confirmed', attempts=taps,
+                                 confirmed=1, evidence=['balance_increased'], refs=refs)
+        elif taps:
+            self.recorder.closed(result='failed', reason='attempt_timeout', effect='unconfirmed', attempts=taps, refs=refs)
+        else:
+            self.recorder.closed(result='no_op', reason=(self.last_refusal or {}).get('reason') or 'no_taps', effect='none', refs=refs)
 
     def _reset_attempt(self):
         self.balance_before = None
@@ -492,19 +529,19 @@ class GemOrbitTapper:
                          before=self.balance_before, after=balance)
         self.last_outcome = dict(confirmed=False, reason='attempt_timeout', observed_at=time.time(),
                                  window_id=self.window_id, attempt_id=self.attempt_id)
-        self._failed_retry_anchor = self.attempt_started if self._attempt_had_input else None
+        self._failed_retry_anchor = self._schedule.retry_anchor(self.attempt_started, self._attempt_had_input)
         input_ready_at = self._input_ready_at
         self._reset_attempt()
         # Only real dispatched input consumes the long retry spacing. An
         # optical refusal still keeps safety backoff and prior input pacing.
-        self._timeout_ready_at = max(time.monotonic()+self.retry_backoff, input_ready_at)
+        self._timeout_ready_at = self._schedule.safety_floor(time.monotonic(), self.retry_backoff, input_ready_at)
         self._set_retry_spacing(self._failed_retry_anchor)
+        self._record_close('timeout')
         return True
 
     def _set_retry_spacing(self, anchor: float | None) -> None:
         """Keep the timeout safety floor separate from editable retry spacing."""
-        self.next_window_at = max(0.0 if anchor is None else anchor+self.interval,
-                                  self._timeout_ready_at)
+        self.next_window_at = self._schedule.spacing_floor(anchor, self.interval, self._timeout_ready_at)
         if self.attempt_started is None:
             self.next_at = self.next_window_at
 
@@ -530,12 +567,18 @@ class GemOrbitTapper:
             # UNKNOWN is not absence. It authorizes neither an attempt nor
             # more captures: inspect only the loop's already supplied pixels.
             # An explicit manual request retains its bounded seeking attempt.
-            if not manual and (
-                    find_orbit_gem(frame, layout_offset=capture.layout_offset) is None
-                    or wave_reader.read_wave(frame) is None
-                    or screen.identify(frame).name != 'battle'):
+            appearance = manual or (
+                find_orbit_gem(frame, layout_offset=capture.layout_offset) is not None
+                and wave_reader.read_wave(frame) is not None
+                and screen.identify(frame).name == 'battle')
+            decision, _ = self._schedule.evaluate(
+                time.monotonic(), dict(next_window_at=self.next_window_at, window_open=False),
+                dict(manual=manual, appearance=appearance))
+            if decision.kind != 'due':
                 return frame
-            self.attempt_started = time.monotonic()
+            scheduled_for = self._epoch(self.next_window_at) if self.next_window_at else None
+            window = self._schedule.open_window(time.monotonic(), self.attempt_timeout)
+            self.attempt_started = window['started_at']
             self._timeout_ready_at = 0.0
             self._failed_retry_anchor = None
             self.window_id = logger.current_context()['window_id']
@@ -543,9 +586,10 @@ class GemOrbitTapper:
             self.manual_requested = False
             self.manual_active = manual
             self._set_retry_spacing(self.attempt_started)
-            self.window_ends_at = self.attempt_started + self.attempt_timeout
-            logger.event("gem_orbit_window", duration_sec=self.attempt_timeout,
+            self.window_ends_at = window['deadline']
+            logger.event("gem_orbit_window", duration_sec=window['duration'],
                          interval_sec=self.interval)
+            self._record_open(manual, scheduled_for)
         self.attempt_id = logger.current_context()['attempt_id']
         if wave_reader.read_wave(frame) is None:
             self._backoff("no_wave")
@@ -589,7 +633,7 @@ class GemOrbitTapper:
                 if prior_balance == balance:
                     # A confirmed collectible is gone. Resume appearance
                     # sensing after input pacing, without another timed window.
-                    ready_at = max(time.monotonic(), self._input_ready_at)
+                    ready_at = self._schedule.resume_at(time.monotonic(), self._input_ready_at)
                     pause = ready_at - time.monotonic()
                     logger.event("gem_orbit_claim", confirmed=True,
                                  before=self.balance_before, after=balance, pause_sec=round(pause, 3))
@@ -597,6 +641,7 @@ class GemOrbitTapper:
                                              window_id=self.window_id, attempt_id=self.attempt_id)
                     self._reset_attempt()
                     self.next_at = self.next_window_at = ready_at
+                    self._record_close('confirmed')
                 else:
                     # Let the HUD settle, without sending another tap.
                     self._wait_to_retry()
@@ -683,6 +728,7 @@ class GemOrbitTapper:
                 dispatched = not event.get('dry_run', False)
                 self.sent_tap = self.sent_tap or dispatched
                 self._attempt_had_input = self._attempt_had_input or dispatched
+                self._window_taps += 1 if dispatched else 0
                 # Interrupted sets must retain pacing from their last input,
                 # while the remaining taps inside this guarded set stay paced
                 # by the shared input boundary as before.
@@ -1392,7 +1438,8 @@ def run(loops: int | None = None, do_setup: bool = True,
     if do_setup:
         setup(tier)
     adb_fails = 0
-    gems = GemWatch()   # preserve collection cadence across the batch
+    from runtime.action_session import ActionSession
+    gems = GemWatch(session=ActionSession.for_operation('shard'))   # preserve collection cadence across the batch
     n = 0
     while loops is None or n < loops:
         # Honour the scheduler's stop flag at the loop boundary (2026-08-17).

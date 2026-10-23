@@ -12,6 +12,7 @@ from vision import wave_reader, screen
 from runtime import logger
 from interactions.tourney import Abort
 from player.gather_settings import AD_GEM_FIELDS, resolve_ad_gem_options
+from towerpilot_workflows.action_contract import StartToStart
 import settings
 
 TEMPLATE = 'buttons/ad_gems_claim.png'
@@ -149,8 +150,12 @@ def _claim_point(rect, rng, edge_inset_px=EDGE_INSET_PX):
             rng.randint(top+margin, bottom-margin))
 
 class AdGemCollector:
-    def __init__(self, enabled=True, delay=(3.0, 10.0), rng=None, options=None, *, guard=None):
+    def __init__(self, enabled=True, delay=(3.0, 10.0), rng=None, options=None, *, guard=None, recorder=None):
         self.guard = guard
+        self.recorder = recorder
+        self.manual_command_id = None
+        self._window_marks = None
+        self._schedule = StartToStart()
         self.enabled=enabled
         self.next_at=0.0
         self.next_window_at = 0.0
@@ -303,13 +308,13 @@ class AdGemCollector:
             interval = values['interval_sec']
             self.options['confirmed_cooldown_sec'] = [interval, interval]
             if self.last_window_started_at is not None:
-                self.next_window_at = self.last_window_started_at + interval
+                self.next_window_at = StartToStart.reanchor(self.last_window_started_at, interval)
                 if self.window_deadline is None:
                     self.next_at = self.next_window_at
         if values.get('window_sec') is not None:
             self.options['attempt_timeout_sec'] = values['window_sec']
             if self.window_deadline is not None:
-                self.window_deadline = min(self.window_deadline, self.window_started_at + values['window_sec'])
+                self.window_deadline = StartToStart.window_end(self.window_started_at, values['window_sec'], self.window_deadline)
                 self.next_at = min(self.next_at, self.window_deadline)
         if self.window_deadline is not None and time.monotonic() >= self.window_deadline:
             self._close_window()
@@ -378,6 +383,38 @@ class AdGemCollector:
             self.last_outcome = dict(confirmed=False, reason=reason, observed_at=time.time(), **self._context())
         self._forget_offer()
         self.next_at = self.next_window_at
+        self._record_close(reason)
+
+    def _record_open(self, manual, scheduled_for):
+        """Open this window's execution. Recording never changes what the collector does."""
+        if self.recorder is None:
+            return
+        command_id, self.manual_command_id = (self.manual_command_id if manual else None), None
+        self._window_marks = dict(attempts=self.counters['attempts'], confirmed=self.counters['confirmed'],
+                                  seen=self.counters['seen'])
+        self.recorder.opened(trigger='manual' if manual else 'automatic', occurrence_key=f'window:{self.window_id}',
+                             scheduled_for=scheduled_for, command_id=command_id, refs=dict(window_id=self.window_id))
+
+    def _record_close(self, reason):
+        """Close it with what the window actually did: a confirmed claim, an attempt nobody could confirm, or
+        nothing to claim. A window that sent input and proved nothing is `failed/unconfirmed`, never a success."""
+        if self.recorder is None or self._window_marks is None:
+            return
+        marks, self._window_marks = self._window_marks, None
+        attempts = self.counters['attempts'] - marks['attempts']
+        confirmed = self.counters['confirmed'] - marks['confirmed']
+        refs = dict(window_id=self.window_id)
+        if confirmed or reason == 'confirmed':
+            self.recorder.closed(result='succeeded', reason=(self.last_outcome or {}).get('reason') or 'confirmed',
+                                 effect='confirmed', attempts=attempts, confirmed=max(confirmed, 1),
+                                 evidence=['offer_disappeared'], refs=refs)
+        elif attempts:
+            failure = self.last_failed_attempt or {}
+            self.recorder.closed(result='refused' if failure.get('outcome') == 'tap_refused' else 'failed',
+                                 reason=failure.get('reason') or reason, effect='unconfirmed', attempts=attempts, refs=refs)
+        else:
+            self.recorder.closed(result='no_op', reason='no_offer_seen' if self.counters['seen'] == marks['seen'] else 'offer_not_claimed',
+                                 effect='none', refs=refs)
 
     def _window_expired(self):
         if time.monotonic() >= self.window_deadline:
@@ -402,27 +439,30 @@ class AdGemCollector:
             return frame
         self._expire_observation(now)
         action_due = manual or now >= self.next_at
-        if action_due and self.window_deadline is None and (manual or now >= self.next_window_at):
-            # Pausing does not award a missed window on re-enable. Advance
-            # over wholly elapsed windows, preserving the previous anchor.
-            duration = min(self.options['attempt_timeout_sec'], self.options['confirmed_cooldown_sec'][0])
-            if not manual and self.next_window_at and now >= self.next_window_at + duration:
-                interval = self.options['confirmed_cooldown_sec'][0]
-                missed = math.floor((now-self.next_window_at)/interval)+1
-                self.next_window_at += missed*interval
+        if action_due and self.window_deadline is None:
+            # Pausing does not award a missed window on re-enable: the policy advances over wholly elapsed
+            # windows, preserving the previous anchor. The interval of a NEW window is drawn only when one opens.
+            lower = self.options['confirmed_cooldown_sec'][0]
+            decision, schedule = self._schedule.evaluate(
+                now, dict(next_window_at=self.next_window_at, window_open=False),
+                dict(manual=manual, interval=lower, skip_duration=min(self.options['attempt_timeout_sec'], lower)))
+            if decision.kind == 'skip_missed':
+                self.next_window_at = schedule['next_window_at']
                 self.next_at = self.next_window_at
-                self.counters['windows_missed'] += missed
-                logger.event('ad_gems_windows_missed', count=missed,
+                self.counters['windows_missed'] += decision.missed
+                logger.event('ad_gems_windows_missed', count=decision.missed,
                              next_window_at=self._epoch(self.next_window_at), **self._context())
                 action_due = False
-            else:
+            elif decision.kind == 'due':
+                scheduled_for = self._epoch(self.next_window_at) if self.next_window_at else None
                 interval = self.rng.uniform(*self.options['confirmed_cooldown_sec'])
+                window, schedule = self._schedule.open_window(now, schedule, interval, self.options['attempt_timeout_sec'])
                 self.window_started_at = self.last_window_started_at = now
                 self.manual_requested = False
                 self.manual_active = manual
-                self.next_window_at = now + interval
-                duration = min(self.options['attempt_timeout_sec'], interval)
-                self.window_deadline = now + duration
+                self.next_window_at = schedule['next_window_at']
+                duration = window['duration']
+                self.window_deadline = window['deadline']
                 self._window_count += 1
                 self.window_id = f'{self._trace_id}:window:{self._window_count}'
                 self.claim_attempt_id = None
@@ -430,6 +470,7 @@ class AdGemCollector:
                 logger.event('ad_gems_window', duration_sec=duration, interval_sec=interval,
                              window_deadline=self._epoch(self.window_deadline),
                              next_window_at=self._epoch(self.next_window_at), **self._context())
+                self._record_open(manual, scheduled_for)
         action_due = action_due and self.window_deadline is not None
         if not action_due and now < self.next_observation_at:
             return frame

@@ -11,7 +11,7 @@ def test_harness_never_calls_action_or_stop_after_collection_sees_modal(monkeypa
     callbacks = []
     monkeypatch.setattr(harness.capture, "grab", lambda: next(frames))
     monkeypatch.setattr(harness.wave_reader, "read_wave", lambda frame: 100 if frame is battle else None)
-    monkeypatch.setattr(harness.shard, "GemWatch", lambda: SimpleNamespace(poll=lambda frame: modal))
+    monkeypatch.setattr(harness.shard, "GemWatch", lambda **kw: SimpleNamespace(poll=lambda frame: modal))
     monkeypatch.setattr(harness.shard, "_in_run", lambda frame: False)
     monkeypatch.setattr(harness, "OFF_BATTLE_FRAMES", 1)
     monkeypatch.setattr(harness.logger, "shot", lambda *a: None)
@@ -28,7 +28,7 @@ def test_harness_keeps_callbacks_for_unchanged_frame(monkeypatch):
     callbacks = []
     monkeypatch.setattr(harness.capture, "grab", lambda: battle)
     monkeypatch.setattr(harness.wave_reader, "read_wave", lambda frame: 100)
-    monkeypatch.setattr(harness.shard, "GemWatch", lambda: SimpleNamespace(poll=lambda frame: frame))
+    monkeypatch.setattr(harness.shard, "GemWatch", lambda **kw: SimpleNamespace(poll=lambda frame: frame))
     run = harness.Run("synthetic", in_run=lambda frame, wave: callbacks.append((frame, wave)),
                       stop=lambda frame, wave: True)
     assert run.watch() == 100

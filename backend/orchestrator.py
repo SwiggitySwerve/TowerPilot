@@ -37,10 +37,12 @@ from interactions import shopper
 from interactions import missions
 from vision import screen
 from interactions import store
+from towerpilot_workflows.action_contract import shopping_interval
 from scheduling import runflag
 from runtime import runlog
 
 _battle_session = None
+_action_session = None      # the ActionSession of the tracked battle driver; None outside a ledger operation
 
 
 def preset() -> dict:
@@ -231,7 +233,7 @@ class RunState:
         self.cl_always_above: int | None = None   # rolled per run from a range
         self.cl_blocked_logged = False   # edge-log for "toggle wanted but gated"
         from flows import shard
-        self.gems = shard.GemWatch(preset().get("gather", {}))
+        self.gems = shard.GemWatch(preset().get("gather", {}), session=_action_session)
         self.last_shop = 0.0
         self.sprint_prev: bool | None = None
         self.no_wave = 0              # consecutive frames without a wave read
@@ -285,6 +287,8 @@ class RunState:
         self.in_run_tries: dict = {}          # id -> attempts (same ledger
                                               # shape as rule_cards_tries)
         self.shop = shopper.Shopper(preset())
+        if _action_session is not None:
+            self.shop.recorder = _action_session.recorder('shopping')
         from player.run_controls import resolve
         live = resolve(preset(), CONFIG)['routines']
         self.shopping_enabled = live['shopping']['enabled']
@@ -2362,8 +2366,9 @@ def advance_shopping(rs, frame, wave, sprint: bool, now: float, interval: float)
 
 
 def main():
-    global _battle_session
+    global _battle_session, _action_session
     _battle_session = None
+    _action_session = None
     from runtime.device_lease import ensure_current
     ensure_current()
     # Before the first frame and any adoption: an unresolved setup battle is
@@ -2375,6 +2380,9 @@ def main():
     initial = capture.grab()
     _battle_session = BattleSession.from_environment(preset(), CONFIG,
         origin='adopted' if wave_reader.read_wave(initial) is not None else 'started')
+    if _battle_session is not None:
+        from runtime.action_session import ActionSession
+        _action_session = ActionSession.for_battle(_battle_session, 'orchestrator')
     readiness.require(settings.ROOT, CONFIG, preset())
     rs = RunState()
     period = 1.0 / CONFIG["loop"]["fps"]
@@ -2940,7 +2948,7 @@ def main():
             if sprint != rs.sprint_prev and rs.sprint_prev is not None:
                 logger.event("sprint", active=sprint, wave=wave)
             rs.sprint_prev = sprint
-            interval = (preset().get('shopping_plan') or {}).get('interval_sec', preset()['shop_interval_sec']) if _battle_session is not None else 20 if sprint else preset()['shop_interval_sec']
+            interval = shopping_interval(preset(), tracked=_battle_session is not None, sprint=sprint)
             if not rs.shopping_enabled and not (_battle_session is not None and _battle_session.manual_shopping):
                 rs.shop.abort()
                 continue

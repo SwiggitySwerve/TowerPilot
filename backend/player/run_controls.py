@@ -7,6 +7,7 @@ import copy
 
 from player.gather_settings import resolve_ad_gem_options, ORBIT_TIMING_FIELDS
 
+from towerpilot_workflows.action_contract import shopping_interval
 from towerpilot_workflows.control_settings import FIELDS, flatten, validate_patch, merge_patch
 
 REWARD_GATHER_KEYS = ('free_store_gems', 'guild_store', 'quests_8h', 'quest_rewards', 'guild')
@@ -45,7 +46,7 @@ def resolve(preset: dict, config: dict) -> dict:
                           'window_sec': orbit.get('attempt_timeout_sec', ORBIT_TIMING_FIELDS['attempt_timeout_sec']['default']),
                           'tap_interval_sec': orbit.get('retry_interval_sec', ORBIT_TIMING_FIELDS['retry_interval_sec']['default'])},
         'shopping': {'enabled': ((preset['shopping_plan'].get('enabled', True)) if preset.get('shopping_plan') is not None else bool(preset.get('shopping'))),
-                     'interval_sec': (preset.get('shopping_plan') or {}).get('interval_sec', preset.get('shop_interval_sec', 90))},
+                     'interval_sec': shopping_interval(preset)},
         'rewards': {'enabled': any(gather.get(key, key in ('quests_8h', 'quest_rewards', 'guild')) for key in REWARD_GATHER_KEYS)
                     or any(global_rewards.get(key, False) for key in REWARD_GLOBAL_KEYS)},
         'abilities': {'enabled': True}, 'rescue': {'enabled': True},

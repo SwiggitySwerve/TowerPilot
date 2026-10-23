@@ -39,14 +39,16 @@ from towerpilot_workflows.harvest import (
     HarvestStale, automatic_operations, context_matches, freeze_key, launch_key, read_choice, read_receipt, read_runtime,
     valid_freeze, verify_overlay,
 )
+from towerpilot_workflows.action_contract import CATALOG
 from towerpilot_workflows.operations import ACTIVE, Conflict, digest, has_table, readonly
 
 VERSION = 1
 FRESH_SEC = 15           # same freshness the live controls use for routine timing
-MIN_SPACING_SEC = 10     # never launch the collector more often than this
-FAIL_WINDOW_SEC = 120    # an exit sooner than this counts as a failed attempt
-CIRCUIT = 5              # consecutive fast failures before relaunching stops
-REFUSAL_RETRY_SEC = 10   # recheck a launch refusal (taps, digits, guard) this often
+SCHEDULE = CATALOG.get('harvest_launch').schedule   # the Backoff policy: the one definition of every number below
+MIN_SPACING_SEC = SCHEDULE.min_spacing     # never launch the collector more often than this
+FAIL_WINDOW_SEC = SCHEDULE.window          # an exit sooner than this counts as a failed attempt
+CIRCUIT = SCHEDULE.circuit                 # consecutive fast failures before relaunching stops
+REFUSAL_RETRY_SEC = SCHEDULE.refusal_retry # recheck a launch refusal (taps, digits, guard) this often
 TRANSFER_HOLD_SEC = 20   # how long a run takeover holds off the collector
 TRANSFER_WAIT_SEC = 10   # how long a takeover waits for the collector to release the emulator
 TERMINAL = ('succeeded', 'failed', 'interrupted', 'cancelled', 'restoration_required', 'awaiting_apply')
@@ -85,7 +87,7 @@ class OwnersUnreadable(Conflict):
 
 
 def backoff(failures):
-    return 0 if failures <= 0 else min(900, 30 * 2 ** (failures - 1))
+    return SCHEDULE.delay(failures)
 
 
 def identity_for(cfg):
@@ -376,7 +378,7 @@ def _failures(autos):
                         message=str(error['message'])[:300] if error.get('message') else None,
                         ran_sec=round(ran, 1), at=op['updated_at'])
         refused = (op.get('error') or {}).get('code') == 'CollectorRefused'
-        if op['status'] in ('failed', 'interrupted') and ran < FAIL_WINDOW_SEC and not refused:
+        if SCHEDULE.fast_failure(op['status'], ran, refused):
             failures += 1
         else:
             break
@@ -424,19 +426,18 @@ def evaluate(root, cfg, *, processes, resolve_source, alive=None, now=None, host
         view['source'] = source_view(source, choice)
     plan['source'] = source
     failures, last = _failures(facts['automatic'])
-    view.update(failures=failures, circuit_open=failures >= CIRCUIT, attempts=len(facts['automatic']))
+    view.update(failures=failures, attempts=len(facts['automatic']))
     outcomes = [o for o in (last, runtime.get('last_outcome')) if isinstance(o, dict)]   # on a tie the exit is the later event
     view['last_outcome'] = max(outcomes, key=lambda o: o.get('at') if finite(o.get('at')) else 0) if outcomes else None
     transfer = runtime.get('transfer')
     holding = (isinstance(transfer, dict) and finite(transfer.get('until')) and transfer['until'] > now)
     view['transfer'] = dict(until=transfer['until'], reason=transfer.get('reason')) if holding else None
-    spacing = None
-    if facts['automatic'] and facts['automatic'][0]['status'] in TERMINAL:
-        newest = facts['automatic'][0]
-        spacing = max(newest['updated_at'] + backoff(failures), newest['created_at'] + MIN_SPACING_SEC)
+    newest = facts['automatic'][0] if facts['automatic'] and facts['automatic'][0]['status'] in TERMINAL else None
     refusal_at = runtime.get('next_attempt_at') if finite(runtime.get('next_attempt_at')) else None
-    waits = [t for t in (spacing, refusal_at) if t is not None and t > now]
-    view['next_attempt_at'] = max(waits) if waits else None
+    schedule, _ = SCHEDULE.evaluate(now, dict(
+        newest_created_at=None if newest is None else newest['created_at'],
+        newest_updated_at=None if newest is None else newest['updated_at'], failures=failures, refusal_at=refusal_at))
+    view.update(next_attempt_at=schedule.next_attempt_at, circuit_open=schedule.kind == 'blocked')
     enabled = bool(choice and choice['enabled'])
 
     def done(state, code, message):
@@ -689,7 +690,16 @@ def _record(root, identity, revision, **changes):
         pass
 
 
-def tick(root, cfg, *, processes, resolve_source, prepare, launch, device_state, alive=None, now=None, event=None):
+def action_session(root, cfg):
+    """The recorder of this dashboard's launch attempts, bound to the context a choice is made for."""
+    from runtime.action_session import ActionSession
+    identity = identity_for(cfg)
+    return ActionSession(operations.ledger_path(root), driver='dashboard',
+                         context={key: identity.get(key) for key in ('device_key', 'account', 'instance', 'serial', 'profile')})
+
+
+def tick(root, cfg, *, processes, resolve_source, prepare, launch, device_state, alive=None, now=None, event=None,
+         actions=None):
     """One reconciliation step. Only the lifecycle host calls this, never a GET.
 
     processes: runner rows projected through the ledger (operation_id set for
@@ -771,6 +781,9 @@ def tick(root, cfg, *, processes, resolve_source, prepare, launch, device_state,
         _record(root, identity, revision, next_attempt_at=current + REFUSAL_RETRY_SEC,
                 last_outcome=dict(kind='refused', code=code, message=message, at=current))
         event('harvest_launch_refused', code=code, message=message)
+        if actions is not None:       # a refusal precedes any operation: identical automatic ones share one counted row
+            actions.check('harvest_launch', result='refused', reason=code, config_revision=revision,
+                          policy_revision=source.get('policy_revision'))
         return finish('refused')
     state = device_state(identity)
     if state != 'device':
@@ -783,6 +796,9 @@ def tick(root, cfg, *, processes, resolve_source, prepare, launch, device_state,
         # The run's gem settings were edited between planning and preparing. Never
         # launch a hybrid of the two: drop this attempt and plan again next step.
         event('harvest_launch_replanned', planned=source['policy_revision'], prepared=prepared.policy_revision)
+        if actions is not None:
+            actions.check('harvest_launch', result='no_op', reason='replanned', config_revision=revision,
+                          policy_revision=prepared.policy_revision)
         return finish('replanned')
     attempt = len(plan['autos']) + 1
     body = dict(preset=choice['preset'], harvest=True, desire_revision=revision,
@@ -799,10 +815,19 @@ def tick(root, cfg, *, processes, resolve_source, prepare, launch, device_state,
     except (OSError, ValueError) as exc:   # the ledger already marked the operation failed; it counts toward the circuit
         _record(root, identity, revision, last_outcome=dict(kind='launch_failed', message=str(exc), at=current))
         event('harvest_launch_failed', error=str(exc))
+        if actions is not None:
+            actions.record('harvest_launch', result='failed', reason='launch_failed', effect='none',
+                           occurrence_key=f'launch:{revision}:{attempt}', request_key=body['idempotency_key'], attempts=1,
+                           config_revision=revision, policy_revision=prepared.policy_revision)
         return finish('launch_failed')
     _record(root, identity, revision, last_outcome=dict(kind='launched', operation_id=op['id'], at=current))
     event('harvest_collector_launched', operation_id=op['id'], preset=choice['preset'],
           desire_revision=revision, attempt=attempt)
+    if actions is not None:      # one row per durable launch key, whichever dashboard host made the attempt
+        actions.record('harvest_launch', result='succeeded', reason='launched', effect='confirmed', evidence=['launched'],
+                       occurrence_key=f'launch:{revision}:{attempt}', request_key=body['idempotency_key'], attempts=1,
+                       refs=dict(operation_id=op['id'], preset=choice['preset']), config_revision=revision,
+                       policy_revision=prepared.policy_revision)
     return finish('launched')
 
 

@@ -5323,7 +5323,12 @@
        "t": 1800000002.0,
        "timestamp": 1800000002.0
       }
-     ]
+     ],
+     "executions": {
+      "items": null,
+      "reason": "recorded_before_action_history",
+      "truncated": false
+     }
     },
     "request": {
      "method": "GET",
@@ -6134,7 +6139,12 @@
        "t": 1800000002.0,
        "timestamp": 1800000002.0
       }
-     ]
+     ],
+     "executions": {
+      "items": null,
+      "reason": "recorded_before_action_history",
+      "truncated": false
+     }
     },
     "request": {
      "method": "GET",

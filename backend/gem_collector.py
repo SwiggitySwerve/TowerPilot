@@ -57,7 +57,9 @@ def main(instance, preset):
     from orchestrator import preset as resolved_preset
     session = BattleSession.from_environment(resolved_preset(), settings.CONFIG, origin='adopted')
     body = session.effective_preset() if session is not None else resolved_preset()
-    gems=GemWatch(body.get('gather', {}))
+    from runtime.action_session import ActionSession
+    actions = ActionSession.for_battle(session, 'collector') if session is not None else None
+    gems=GemWatch(body.get('gather', {}), session=actions)
     state = SimpleNamespace(gems=gems, tracker=wave_reader.WaveTracker(), mission=None, shop=None)
     wave_hwm = None
     logger.event('gem_collector_started',preset=preset,ad_gems=gems.ad_gems.enabled,orbit=gems.orbit.enabled)
@@ -80,7 +82,7 @@ def main(instance, preset):
                 previous = session.battle['id']
                 session.finish('wave_went_backwards', evidence={'previous_wave': wave_hwm, 'observed_wave': wave})
                 session.prepare_next(origin='partial_adoption', previous_battle_id=previous)
-            gems = GemWatch(body.get('gather', {}))
+            gems = GemWatch(body.get('gather', {}), session=actions)
             state.gems = gems
             state.tracker = wave_reader.WaveTracker()
             wave_hwm = None
@@ -104,7 +106,7 @@ def main(instance, preset):
             if session is not None:
                 if session.battle['status'] not in ('prepared', 'active'):
                     session.prepare_next(origin='adopted')
-                    gems = GemWatch(body.get('gather', {}))
+                    gems = GemWatch(body.get('gather', {}), session=actions)
                     state.gems = gems
                     state.tracker = wave_reader.WaveTracker()
                     wave_hwm = None

@@ -263,7 +263,7 @@ def _patch_flows_shard(monkeypatch, mod):
                 pass
         mod.GemOrbitTapper = _InertOrbit
     if "GemWatch" not in mod.__dict__:
-        mod.GemWatch = lambda gather=None: types.SimpleNamespace(poll=lambda frame: frame)
+        mod.GemWatch = lambda gather=None, **kw: types.SimpleNamespace(poll=lambda frame: frame)
     monkeypatch.setitem(sys.modules, "shard", mod)
     monkeypatch.setitem(sys.modules, "flows.shard", mod)
     monkeypatch.setattr(flows, "shard", mod, raising=False)

@@ -28,7 +28,7 @@ def stop_requested(monkeypatch):
     s.close()
     seen = {"taps": [], "events": [], "cards": []}
     monkeypatch.setattr(shard.runflag, "requested", lambda: "phase switch")
-    monkeypatch.setattr(shard, "GemWatch", lambda: None)
+    monkeypatch.setattr(shard, "GemWatch", lambda **kw: None)
     monkeypatch.setattr(shard, "configured_loadout", lambda: "shard_farm")
     monkeypatch.setattr(loadout, "spec", lambda name: {"cards_restore": "farm"})
     monkeypatch.setattr(shard.logger, "event", lambda kind, **kw: seen["events"].append((kind, kw)))
