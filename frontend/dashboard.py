@@ -2563,9 +2563,17 @@ def api_stream():
         # thread a trivial amount of time.
         import socket
 
-        def multipart(jpg):
-            return (b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: " +
-                    str(len(jpg)).encode() + b"\r\n\r\n" + jpg.tobytes() + b"\r\n")
+        def multipart(jpg, kind, sequence, backend_name, source_age_ms):
+            """One part with the provenance of ITS OWN pixels: whether it is a frame or the error marker, how many successful frames the
+            stream had produced, which source made them and that source's own age estimate (unknown when it gave none). The caller
+            snapshots the four values under the stream lock, in the same step that counted the frame, so a fallback that happens
+            right after cannot relabel a part already made."""
+            usable = isinstance(source_age_ms, (int, float)) and not isinstance(source_age_ms, bool) and math.isfinite(source_age_ms)
+            age = f"{round(max(0.0, source_age_ms), 1):.1f}".rstrip("0").rstrip(".") if usable else "unknown"
+            return (b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: " + str(len(jpg)).encode() +
+                    f"\r\nX-Preview-Frame-Kind: {kind}\r\nX-Preview-Sequence: {sequence}\r\n"
+                    f"X-Preview-Backend: {backend_name or 'unknown'}\r\nX-Preview-Source-Age-Ms: {age}\r\n\r\n".encode() +
+                    jpg.tobytes() + b"\r\n")
 
         def _port_up() -> bool:
             # a ~1 ms TCP probe of the emulator's adb port; when the VM is
@@ -2622,9 +2630,10 @@ def api_stream():
                                      encode_ms=round((completed - captured) * 1000, 2))
                         stats.update(source.status())
                         stats["_frames"] = (stats["_frames"] + [completed])[-16:]
+                        part = ("frame", stats["frames"], stats["backend"], stats["frame_age_ms"])
                     if recovered:
                         event("stream_recovered")
-                    yield multipart(jpg)
+                    yield multipart(jpg, *part)
                 except GeneratorExit:
                     return
                 except Exception as exc:      # noqa: BLE001 - device/codec boundary
@@ -2633,6 +2642,7 @@ def api_stream():
                         first_failure = stats["last_error"] is None
                         stats.update(errors=stats["errors"] + 1, last_error=str(exc))
                         stats.update(source.status())
+                        part = ("error", stats["frames"], stats["backend"], None)     # the marker does not advance the sequence and has no source age
                     if first_failure:
                         event("stream_error", error=str(exc), error_type=type(exc).__name__)
                     canvas = np.zeros((96, 270, 3), np.uint8)
@@ -2641,7 +2651,7 @@ def api_stream():
                     ok, jpg = cv2.imencode(".jpg", canvas)
                     if not ok:
                         raise RuntimeError("Could not encode stream error marker") from exc
-                    yield multipart(jpg)
+                    yield multipart(jpg, *part)
                 # Capture/encoding/browser backpressure consume the period. A
                 # slow capture never queues catch-up work or adds another period.
                 wait = (3.0 if failed else 1.0 / source.effective_fps) - (time.monotonic() - t0)

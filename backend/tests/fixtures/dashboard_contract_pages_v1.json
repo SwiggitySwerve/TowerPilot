@@ -70548,6 +70548,2223 @@
     "status": 200
    }
   },
+  "preview_backends": {
+   "adb_available_transport_offline": {
+    "body": {
+     "adb": {
+      "available": true,
+      "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches; device connection not probed",
+      "state": "available"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": true,
+      "reason": null,
+      "target": {
+       "index": 0,
+       "install_dir": "<root>/MuMu"
+      }
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": true,
+      "decoder_available": true,
+      "installed": true,
+      "reason": "",
+      "server_path": "<root>/tools/scrcpy/5.0.1/scrcpy-server-v5.0.1",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   },
+   "all_available": {
+    "body": {
+     "adb": {
+      "available": true,
+      "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches; device connection not probed",
+      "state": "available"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": true,
+      "reason": null,
+      "target": {
+       "index": 0,
+       "install_dir": "<root>/MuMu"
+      }
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": true,
+      "decoder_available": true,
+      "installed": true,
+      "reason": "",
+      "server_path": "<root>/tools/scrcpy/5.0.1/scrcpy-server-v5.0.1",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   },
+   "invalid_saved_fps": {
+    "body": {
+     "error": "preview.fps must be between 0.5 and 30",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 400
+   },
+   "mumu_unavailable": {
+    "body": {
+     "adb": {
+      "available": true,
+      "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches; device connection not probed",
+      "state": "available"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": false,
+      "reason": "fixture mumu unavailable"
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": true,
+      "decoder_available": true,
+      "installed": true,
+      "reason": "",
+      "server_path": "<root>/tools/scrcpy/5.0.1/scrcpy-server-v5.0.1",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   },
+   "other_instance": {
+    "body": {
+     "adb": {
+      "available": true,
+      "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches; device connection not probed",
+      "state": "available"
+     },
+     "instance": "other",
+     "mumu": {
+      "available": true,
+      "reason": null,
+      "target": {
+       "index": 0,
+       "install_dir": "<root>/MuMu"
+      }
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": true,
+      "decoder_available": true,
+      "installed": true,
+      "reason": "",
+      "server_path": "<root>/tools/scrcpy/5.0.1/scrcpy-server-v5.0.1",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   },
+   "saved_scrcpy_fractional_fps": {
+    "body": {
+     "adb": {
+      "available": true,
+      "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches; device connection not probed",
+      "state": "available"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": true,
+      "reason": null,
+      "target": {
+       "index": 0,
+       "install_dir": "<root>/MuMu"
+      }
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": true,
+      "decoder_available": true,
+      "installed": true,
+      "reason": "",
+      "server_path": "<root>/tools/scrcpy/5.0.1/scrcpy-server-v5.0.1",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "scrcpy",
+      "fps": 12.5,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   },
+   "scrcpy_decoder_missing": {
+    "body": {
+     "adb": {
+      "available": true,
+      "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches; device connection not probed",
+      "state": "available"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": true,
+      "reason": null,
+      "target": {
+       "index": 0,
+       "install_dir": "<root>/MuMu"
+      }
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": false,
+      "decoder_available": false,
+      "installed": true,
+      "reason": "PyAV missing; install requirements-scrcpy.txt",
+      "server_path": "<root>/tools/scrcpy/5.0.1/scrcpy-server-v5.0.1",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   },
+   "scrcpy_package_and_decoder_missing": {
+    "body": {
+     "adb": {
+      "available": true,
+      "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches; device connection not probed",
+      "state": "available"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": true,
+      "reason": null,
+      "target": {
+       "index": 0,
+       "install_dir": "<root>/MuMu"
+      }
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": false,
+      "decoder_available": false,
+      "installed": false,
+      "reason": "scrcpy server missing or unreadable: <root>/tools/scrcpy/5.0.1/scrcpy-server-v5.0.1; PyAV missing; install requirements-scrcpy.txt",
+      "server_path": "<root>/tools/scrcpy/5.0.1/scrcpy-server-v5.0.1",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   },
+   "scrcpy_package_missing": {
+    "body": {
+     "adb": {
+      "available": true,
+      "basis": "tool_install.installed: local executable and required DLLs; pinned installer receipt matches; device connection not probed",
+      "state": "available"
+     },
+     "instance": "main",
+     "mumu": {
+      "available": true,
+      "reason": null,
+      "target": {
+       "index": 0,
+       "install_dir": "<root>/MuMu"
+      }
+     },
+     "ok": true,
+     "scrcpy": {
+      "available": false,
+      "decoder_available": true,
+      "installed": false,
+      "reason": "scrcpy server missing or unreadable: <root>/tools/scrcpy/5.0.1/scrcpy-server-v5.0.1",
+      "server_path": "<root>/tools/scrcpy/5.0.1/scrcpy-server-v5.0.1",
+      "version": "5.0.1"
+     },
+     "settings": {
+      "backend": "auto",
+      "fps": 15,
+      "mumu": {
+       "index": -1,
+       "install_dir": ""
+      },
+      "scrcpy": {
+       "bitrate": 8000000
+      }
+     }
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/backends"
+    },
+    "status": 200
+   }
+  },
+  "preview_frame_png": {
+   "frame_png_capture_failed_502": {
+    "body": {
+     "text": "capture failed: adb server unreachable"
+    },
+    "headers": {
+     "Content-Type": "text/html; charset=utf-8"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/frame.png?ts=t1"
+    },
+    "status": 502
+   },
+   "frame_png_display_that_is_not_a_number_400": {
+    "body": {
+     "error": "display: a whole number expected",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/frame.png?display=2;reboot"
+    },
+    "status": 400
+   },
+   "frame_png_that_is_not_a_png_502": {
+    "body": {
+     "text": "no PNG from adb (device offline?)"
+    },
+    "headers": {
+     "Content-Type": "text/html; charset=utf-8"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/frame.png?ts=t1"
+    },
+    "status": 502
+   },
+   "frame_png_without_a_token_is_not_remembered": {
+    "body": {
+     "binary": {
+      "content_type": "image/png",
+      "height": 2560,
+      "pixels_sha256": "38EA5CF71323482D71B735FADE90ABE944D9AD3FF2243FE755172617B4105B2C",
+      "width": 1080
+     }
+    },
+    "headers": {
+     "Content-Type": "image/png"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/frame.png"
+    },
+    "status": 200
+   }
+  },
+  "preview_status": {
+   "cleanup_failed": {
+    "body": {
+     "active": false,
+     "actual_fps": 15.0,
+     "backend": "mumu",
+     "backend_failures": [
+      {
+       "backend": "mumu",
+       "reason": "fixture cleanup failed",
+       "stage": "cleanup"
+      }
+     ],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 1,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": "Preview cleanup failed: fixture cleanup failed",
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "mumu",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "closed_adb": {
+    "body": {
+     "active": false,
+     "actual_fps": 4.0,
+     "backend": "adb",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 4,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "adb",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "closed_mumu": {
+    "body": {
+     "active": false,
+     "actual_fps": 15.0,
+     "backend": "mumu",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "mumu",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "closed_scrcpy": {
+    "body": {
+     "active": false,
+     "actual_fps": 15.0,
+     "backend": "scrcpy",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": 50.0,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "scrcpy",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "error_marker_status_after_recovery": {
+    "body": {
+     "active": true,
+     "actual_fps": null,
+     "backend": "adb",
+     "backend_failures": [
+      {
+       "backend": "adb",
+       "reason": "fixture adb failed",
+       "stage": "capture"
+      }
+     ],
+     "capture_ms": 10.0,
+     "effective_fps": 4,
+     "encode_ms": 2.0,
+     "errors": 1,
+     "frame_age_ms": null,
+     "frames": 1,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "adb",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "error_marker_status_before_recovery": {
+    "body": {
+     "active": true,
+     "actual_fps": null,
+     "backend": "adb",
+     "backend_failures": [
+      {
+       "backend": "adb",
+       "reason": "fixture adb failed",
+       "stage": "capture"
+      }
+     ],
+     "capture_ms": null,
+     "effective_fps": 4,
+     "encode_ms": null,
+     "errors": 1,
+     "frame_age_ms": null,
+     "frames": 0,
+     "height": null,
+     "instance": "main",
+     "jpeg_bytes": null,
+     "last_error": "Screenshot fallback failed: fixture adb failed",
+     "last_frame_age_s": null,
+     "quality": 90,
+     "requested_backend": "adb",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": null
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "evicted_session": {
+    "body": {
+     "error": "Stream session not found",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 404
+   },
+   "failed_adb": {
+    "body": {
+     "active": true,
+     "actual_fps": 0.0,
+     "backend": "adb",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 4,
+     "encode_ms": 2.0,
+     "errors": 1,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": "emulator port closed",
+     "last_frame_age_s": 4.0,
+     "quality": 90,
+     "requested_backend": "adb",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "failed_mumu": {
+    "body": {
+     "active": true,
+     "actual_fps": 0.0,
+     "backend": "mumu",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 1,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": "emulator port closed",
+     "last_frame_age_s": 4.0,
+     "quality": 90,
+     "requested_backend": "mumu",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "failed_scrcpy": {
+    "body": {
+     "active": true,
+     "actual_fps": 0.0,
+     "backend": "scrcpy",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 1,
+     "frame_age_ms": 4050.0,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": "emulator port closed",
+     "last_frame_age_s": 4.0,
+     "quality": 90,
+     "requested_backend": "scrcpy",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "fallback_mumu_scrcpy_to_adb": {
+    "body": {
+     "active": true,
+     "actual_fps": 4.0,
+     "backend": "adb",
+     "backend_failures": [
+      {
+       "backend": "mumu",
+       "reason": "fixture mumu unavailable",
+       "stage": "capture"
+      },
+      {
+       "backend": "scrcpy",
+       "reason": "fixture scrcpy unavailable",
+       "stage": "capture"
+      }
+     ],
+     "capture_ms": 10.0,
+     "effective_fps": 4,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "auto",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "fallback_mumu_to_scrcpy": {
+    "body": {
+     "active": true,
+     "actual_fps": 15.0,
+     "backend": "scrcpy",
+     "backend_failures": [
+      {
+       "backend": "mumu",
+       "reason": "fixture mumu unavailable",
+       "stage": "capture"
+      }
+     ],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": 50.0,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "auto",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "fallback_scrcpy_to_adb": {
+    "body": {
+     "active": true,
+     "actual_fps": 4.0,
+     "backend": "adb",
+     "backend_failures": [
+      {
+       "backend": "scrcpy",
+       "reason": "fixture scrcpy unavailable",
+       "stage": "capture"
+      }
+     ],
+     "capture_ms": 10.0,
+     "effective_fps": 4,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "scrcpy",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "first_frame_adb": {
+    "body": {
+     "active": true,
+     "actual_fps": null,
+     "backend": "adb",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 4,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 1,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "adb",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "first_frame_mumu": {
+    "body": {
+     "active": true,
+     "actual_fps": null,
+     "backend": "mumu",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 1,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "mumu",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "first_frame_scrcpy": {
+    "body": {
+     "active": true,
+     "actual_fps": null,
+     "backend": "scrcpy",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": 50.0,
+     "frames": 1,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "scrcpy",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "idle_reserved": {
+    "body": {
+     "active": true,
+     "actual_fps": null,
+     "backend": null,
+     "backend_failures": [],
+     "capture_ms": null,
+     "effective_fps": 15.0,
+     "encode_ms": null,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 0,
+     "height": null,
+     "instance": "main",
+     "jpeg_bytes": null,
+     "last_error": null,
+     "last_frame_age_s": null,
+     "quality": 90,
+     "requested_backend": "auto",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": null
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "missing_session": {
+    "body": {
+     "error": "Stream session not found",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=missing"
+    },
+    "status": 404
+   },
+   "requested_mumu_falls_back_to_scrcpy": {
+    "body": {
+     "active": true,
+     "actual_fps": 15.0,
+     "backend": "scrcpy",
+     "backend_failures": [
+      {
+       "backend": "mumu",
+       "reason": "fixture mumu unavailable",
+       "stage": "capture"
+      }
+     ],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": 50.0,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "mumu",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "stale_adb": {
+    "body": {
+     "active": true,
+     "actual_fps": 0.0,
+     "backend": "adb",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 4,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 4.0,
+     "quality": 90,
+     "requested_backend": "adb",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "stale_mumu": {
+    "body": {
+     "active": true,
+     "actual_fps": 0.0,
+     "backend": "mumu",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 4.0,
+     "quality": 90,
+     "requested_backend": "mumu",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "stale_scrcpy": {
+    "body": {
+     "active": true,
+     "actual_fps": 0.0,
+     "backend": "scrcpy",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": 50.0,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 4.0,
+     "quality": 90,
+     "requested_backend": "scrcpy",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "status_after_balanced": {
+    "body": {
+     "active": true,
+     "actual_fps": 15.0,
+     "backend": "mumu",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 1664,
+     "instance": "main",
+     "jpeg_bytes": 457887,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 85,
+     "requested_backend": "auto",
+     "scale": 0.65,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 702
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "status_after_fractional_fps": {
+    "body": {
+     "active": true,
+     "actual_fps": 0.5,
+     "backend": "mumu",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 0.5,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 2560,
+     "instance": "main",
+     "jpeg_bytes": 1206788,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "auto",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 0.5,
+     "width": 1080
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "status_after_low": {
+    "body": {
+     "active": true,
+     "actual_fps": 15.0,
+     "backend": "mumu",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 1024,
+     "instance": "main",
+     "jpeg_bytes": 151676,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 70,
+     "requested_backend": "auto",
+     "scale": 0.4,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 432
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "streaming_adb": {
+    "body": {
+     "active": true,
+     "actual_fps": 4.0,
+     "backend": "adb",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 4,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "adb",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "streaming_mumu": {
+    "body": {
+     "active": true,
+     "actual_fps": 15.0,
+     "backend": "mumu",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": null,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "mumu",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   },
+   "streaming_scrcpy": {
+    "body": {
+     "active": true,
+     "actual_fps": 15.0,
+     "backend": "scrcpy",
+     "backend_failures": [],
+     "capture_ms": 10.0,
+     "effective_fps": 15.0,
+     "encode_ms": 2.0,
+     "errors": 0,
+     "frame_age_ms": 50.0,
+     "frames": 2,
+     "height": 24,
+     "instance": "main",
+     "jpeg_bytes": 678,
+     "last_error": null,
+     "last_frame_age_s": 0.0,
+     "quality": 90,
+     "requested_backend": "scrcpy",
+     "scale": 1.0,
+     "stream_id": "pv1",
+     "target_fps": 15.0,
+     "width": 12
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream/status?stream_id=pv1"
+    },
+    "status": 200
+   }
+  },
+  "preview_stream": {
+   "balanced": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 458160,
+         "height": 1664,
+         "pixels_sha256": "D5F90053A0AE596E79DA5D10AB4142BE20627CFB685E2E3DFBFBC8A8D407B31A",
+         "width": 702
+        },
+        "headers": {
+         "Content-Length": "458160",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "mumu",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 457887,
+         "height": 1664,
+         "pixels_sha256": "C52A417536624DFB5CCFC756D4B5BD0DFC5090BF6D8C7AB8BF17DD75F2B27625",
+         "width": 702
+        },
+        "headers": {
+         "Content-Length": "457887",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "mumu",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "2",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=0.65&q=85&backend=auto"
+    },
+    "status": 200
+   },
+   "capacity_full": {
+    "body": {
+     "error": "Too many active streams",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=one_too_many&fps=15&scale=1&q=90&backend=auto"
+    },
+    "status": 429
+   },
+   "duplicate_active": {
+    "body": {
+     "error": "Stream session already active",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=auto"
+    },
+    "status": 409
+   },
+   "error_marker_then_recovery": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "height": 96,
+         "width": 270
+        },
+        "headers": {
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "adb",
+         "X-Preview-Frame-Kind": "error",
+         "X-Preview-Sequence": "0",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "F71CA7767276459FE9770CDA458CF27347AD99477AA1869A968C2DDCCDB83B76",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "adb",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=adb"
+    },
+    "status": 200
+   },
+   "fallback_mumu_scrcpy_to_adb": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "F71CA7767276459FE9770CDA458CF27347AD99477AA1869A968C2DDCCDB83B76",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "adb",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "B199EAACE3CA741C2A5583AF0A64C4D65DA7B43B978BEBB71E71B5215EAE6010",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "adb",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "2",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=auto"
+    },
+    "status": 200
+   },
+   "fallback_mumu_to_scrcpy": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "F71CA7767276459FE9770CDA458CF27347AD99477AA1869A968C2DDCCDB83B76",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "scrcpy",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "50"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "B199EAACE3CA741C2A5583AF0A64C4D65DA7B43B978BEBB71E71B5215EAE6010",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "scrcpy",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "2",
+         "X-Preview-Source-Age-Ms": "50"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=auto"
+    },
+    "status": 200
+   },
+   "fallback_scrcpy_to_adb": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "F71CA7767276459FE9770CDA458CF27347AD99477AA1869A968C2DDCCDB83B76",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "adb",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "B199EAACE3CA741C2A5583AF0A64C4D65DA7B43B978BEBB71E71B5215EAE6010",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "adb",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "2",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=scrcpy"
+    },
+    "status": 200
+   },
+   "fractional_fps": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 1210691,
+         "height": 2560,
+         "pixels_sha256": "E11DC79702C845EE94C9E0725A7A5DFBBC3AFF32404445DB6C8681BB02D1EA8B",
+         "width": 1080
+        },
+        "headers": {
+         "Content-Length": "1210691",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "mumu",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 1206788,
+         "height": 2560,
+         "pixels_sha256": "A74D7B8D8A36D64D7A5FC30B61FAE3074F84A763E27DAE50A3CFE78099D18049",
+         "width": 1080
+        },
+        "headers": {
+         "Content-Length": "1206788",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "mumu",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "2",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=0.5&scale=1&q=90&backend=auto"
+    },
+    "status": 200
+   },
+   "head_no_capture": {
+    "body": {
+     "text": ""
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "HEAD",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=auto"
+    },
+    "status": 200
+   },
+   "invalid_backend": {
+    "body": {
+     "error": "backend must be auto, mumu, scrcpy, or adb",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=other"
+    },
+    "status": 400
+   },
+   "invalid_display": {
+    "body": {
+     "error": "display: a whole number expected",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=auto&display=bad"
+    },
+    "status": 400
+   },
+   "invalid_fps": {
+    "body": {
+     "error": "fps must be between 0.5 and 30",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=0&scale=1&q=90&backend=auto"
+    },
+    "status": 400
+   },
+   "invalid_quality": {
+    "body": {
+     "error": "q must be between 30 and 90",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=29&backend=auto"
+    },
+    "status": 400
+   },
+   "invalid_saved_settings": {
+    "body": {
+     "error": "preview.fps must be between 0.5 and 30",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=auto"
+    },
+    "status": 400
+   },
+   "invalid_scale": {
+    "body": {
+     "error": "scale must be between 0.2 and 1",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=0.1&q=90&backend=auto"
+    },
+    "status": 400
+   },
+   "invalid_stream_id": {
+    "body": {
+     "error": "Invalid stream_id",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=bad!&fps=15&scale=1&q=90&backend=auto"
+    },
+    "status": 400
+   },
+   "low": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 150407,
+         "height": 1024,
+         "pixels_sha256": "50C045B8C465F40C9A222D2929668AAF532A3D624D44810EF4CB861B4059194E",
+         "width": 432
+        },
+        "headers": {
+         "Content-Length": "150407",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "mumu",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 151676,
+         "height": 1024,
+         "pixels_sha256": "F9A07E9459A44B358A3C3E83D20C9D6789FEB7165AABF71858B053D3F4DC5832",
+         "width": 432
+        },
+        "headers": {
+         "Content-Length": "151676",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "mumu",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "2",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=0.4&q=70&backend=auto"
+    },
+    "status": 200
+   },
+   "requested_mumu_falls_back_to_scrcpy": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "F71CA7767276459FE9770CDA458CF27347AD99477AA1869A968C2DDCCDB83B76",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "scrcpy",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "50"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "B199EAACE3CA741C2A5583AF0A64C4D65DA7B43B978BEBB71E71B5215EAE6010",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "scrcpy",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "2",
+         "X-Preview-Source-Age-Ms": "50"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=mumu"
+    },
+    "status": 200
+   },
+   "start_adb": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "F71CA7767276459FE9770CDA458CF27347AD99477AA1869A968C2DDCCDB83B76",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "adb",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "B199EAACE3CA741C2A5583AF0A64C4D65DA7B43B978BEBB71E71B5215EAE6010",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "adb",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "2",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=adb"
+    },
+    "status": 200
+   },
+   "start_auto": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "F71CA7767276459FE9770CDA458CF27347AD99477AA1869A968C2DDCCDB83B76",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "mumu",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "B199EAACE3CA741C2A5583AF0A64C4D65DA7B43B978BEBB71E71B5215EAE6010",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "mumu",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "2",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=auto"
+    },
+    "status": 200
+   },
+   "start_mumu": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "F71CA7767276459FE9770CDA458CF27347AD99477AA1869A968C2DDCCDB83B76",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "mumu",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "B199EAACE3CA741C2A5583AF0A64C4D65DA7B43B978BEBB71E71B5215EAE6010",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "mumu",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "2",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=mumu"
+    },
+    "status": 200
+   },
+   "start_scrcpy": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "F71CA7767276459FE9770CDA458CF27347AD99477AA1869A968C2DDCCDB83B76",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "scrcpy",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "50"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "B199EAACE3CA741C2A5583AF0A64C4D65DA7B43B978BEBB71E71B5215EAE6010",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "scrcpy",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "2",
+         "X-Preview-Source-Age-Ms": "50"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=scrcpy"
+    },
+    "status": 200
+   },
+   "start_while_automation_owns_screen": {
+    "body": {
+     "multipart": {
+      "boundary": "frame",
+      "parts": [
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "F71CA7767276459FE9770CDA458CF27347AD99477AA1869A968C2DDCCDB83B76",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "mumu",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "1",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       },
+       {
+        "binary": {
+         "content_type": "image/jpeg",
+         "encoded_bytes": 678,
+         "height": 24,
+         "pixels_sha256": "B199EAACE3CA741C2A5583AF0A64C4D65DA7B43B978BEBB71E71B5215EAE6010",
+         "width": 12
+        },
+        "headers": {
+         "Content-Length": "678",
+         "Content-Type": "image/jpeg",
+         "X-Preview-Backend": "mumu",
+         "X-Preview-Frame-Kind": "frame",
+         "X-Preview-Sequence": "2",
+         "X-Preview-Source-Age-Ms": "unknown"
+        }
+       }
+      ],
+      "termination": "recorder_closed"
+     }
+    },
+    "headers": {
+     "Cache-Control": "no-cache",
+     "Content-Type": "multipart/x-mixed-replace; boundary=frame"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=1&q=90&backend=auto"
+    },
+    "status": 200
+   },
+   "wrong_instance": {
+    "body": {
+     "error": "Active emulator changed; refresh the stream",
+     "ok": false
+    },
+    "headers": {
+     "Content-Type": "application/json"
+    },
+    "request": {
+     "method": "GET",
+     "path": "/api/stream.mjpg?instance=other&stream_id=pv1&fps=15&scale=1&q=90&backend=auto"
+    },
+    "status": 409
+   }
+  },
   "profile_files_write": {
    "activate_a_name_that_is_not_text": {
     "body": {
@@ -418399,6 +420616,10 @@
   "history_detail": "GET /api/battles/{id}?instance=. {battle, events, context}; a record of another emulator or account is a 404 \"Battle does not belong to the selected emulator and account\". Records are made by the real BattleSession; setup reports by interactions.loadout's builders, the stats capture by runtime.runlog.clipboard_provenance, collection evidence by BattleSession's own counting (what it does not count is a case). Evidence of another generation cannot be produced by any driver: collection_evidence_of_another_generation_written_through_the_ledger puts it there with the ledger's own writer to show the page that the record holds it.",
   "history_list": "GET /api/battles?instance=&limit=&offset=&status=. Newest record first (rowid descending); the filter is applied before the page; limit is 1..200 and offset >= 0 (400 \"Invalid battle pagination\"), a text that is not an integer is a 400 carrying Python's own message, status is one of prepared|active|ended|interrupted (an empty text means all). The list is scoped to the emulator and account the request names; there is no total count. Pages here use limit 2 over five records: the semantics (final page, past the end) are the same at limit 21.",
   "plan_section_delete": "POST /api/profile-patch {path:[plan], op:delete}: 200 and the profile without `plan`; deleting an absent plan section is also 200 (a new backup); a stale revision is 409.",
+  "preview_backends": "F6-13: GET /api/stream/backends reports local prerequisites only (MuMu native: a target or a reason; scrcpy: installed, decoder, reason, version, server_path; adb: the p10b report). Availability is not a connection: the transport-offline sample equals the available one, and the route talks to adb never. The scrcpy package states are produced from a synthetic server file and the real verification (a missing file reads \"scrcpy server missing or unreadable: <path>\", not the brief's proposed text). A saved preview setting that is invalid is 400 {ok:false, error}.",
+  "preview_frame_png": "F6-13: GET /api/frame.png with the headers it sends (the answers also exist in recognition_images, which records none): Content-Type only, no Cache-Control, and no age or source header; a failed capture is a text 502 (Flask's default text/html), an invalid display a 400 JSON.",
+  "preview_status": "F6-13: GET /api/stream/status?stream_id=. 200 WITHOUT an `ok` key (the session record: counters, timing, requested and actual backend, backend_failures [{backend, reason, stage}], frame_age_ms, active, last_error, last_frame_age_s, actual_fps); a session that never existed or was evicted is 404 {ok:false, error}. Sessions are made by the real stream route and read while its response is open, closed, stale or failing; the sources are synthetic (12x24 frames, 10 ms capture, 2 ms JPEG encode on the fixed clock, a scrcpy age of 50 ms when a frame completes) and fail or fall back through the real PreviewCapture. A status read between two parts is a snapshot: the part in flight is identified by its own headers, not by this record.",
+  "preview_stream": "F6-13: GET /api/stream.mjpg. 200 multipart/x-mixed-replace; boundary=frame, Cache-Control no-cache. Each part carries Content-Type, Content-Length and FOUR provenance headers made with the part's own pixels (added with this contract): X-Preview-Frame-Kind frame|error, X-Preview-Sequence (successful frames when the part was made; an error marker repeats the last number), X-Preview-Backend mumu|scrcpy|adb|unknown, X-Preview-Source-Age-Ms a number|unknown. A recorded stream is its response headers and its first parts, decoded (width, height, encoded_bytes and the sha256 of the decoded pixels; termination \"recorder_closed\" says the recorder ended it). The error marker is drawn text, so only its kind and size are recorded. HEAD validates and reserves nothing (empty body). Refusals are JSON {ok:false, error}: 400 invalid parameter or saved setting, 409 another emulator or an active duplicate id, 429 32 active sessions. There is no owner refusal: a stream starts while automation owns the screen and sends no input.",
   "profile_target": "F6-14: unbinding is POST /api/profile-activate {name: null} with the optional expected_context (device_owned first only after the context is judged); an inactive target of the same account is edited with POST /api/profile-patch naming that profile with expected_context of the ACTIVE context: the route has no idle check and no foreign-profile check; a context fence refuses after an active-profile, instance or serial change.",
   "recognition_context_fence": "POST /api/calibrate/apply takes the optional `expected_context` {instance, account, profile, serial} (the same fence as the Profiles writes): a mismatch is 409 context_changed + current_context and writes nothing, judged FIRST under the config write lock - before the owner refusal, the replay of an applied operation and the operation checks; a malformed field (null included) is 400 invalid_request; an absent field is the legacy request. An apply by operation_id is judged by the fence and then by the operation's own context check (409 context_changed without current_context). calibrate start / observe and screen-analysis start are refused by the operation's frozen five-field expected_context (no current_context); Stop is a revocation and is never refused for a context.",
   "recognition_images": "A route that answers pixels is recorded as {binary:{content_type, width, height, pixels_sha256}}: the PNG's bytes depend on the encoder, the decoded pixels do not. The device shows a synthetic 1080x2560 frame drawn in the generator (gradient, a button-like block of integer-exact bars, one flat grey block); nothing was captured. The artwork text badge is drawn with anti-aliased text, so only its size and Cache-Control are recorded. GET /api/frame.png remembers the frame under ?ts= (the last 8 tokens) together with the page it was fetched for (instance, account, profile, serial); POST /api/template/<rel> crops that exact frame and refuses 409 frame_expired (the token is gone) or 409 frame_context_changed (the page changed since: the token stays valid for the page it was fetched for). The cropper's other refusals keep {ok:false, error}. The provenance of a crop (report entry with the image hash, learned rectangle) is read from the file the route wrote, under the dashboard's account; it no longer consults the settings singleton. Screen recognition (OCR) is a controlled stand-in.",

@@ -51,6 +51,7 @@ from dashboard_contract_cases_recognition import run_recognition_cases
 from dashboard_contract_cases_screens import run_later_cases, run_screens_cases
 from dashboard_contract_cases_runtime import WRITER_PID, run_runtime_cases
 from dashboard_contract_cases_environment import RE as ENV, runtime_environment_cases
+from dashboard_contract_cases_preview import PB as PRB, PF as PRP, PM as PRM, PS as PRS, run_preview_cases
 from dashboard_contract_cases_profile import run_profile_cases, run_schedule_cases
 from dashboard_contract_cases_settings import run_settings_cases
 from dashboard_contract_cases_runs import run_controls_live_cases, run_controls_save_cases
@@ -69,7 +70,7 @@ FAMILIES = [run_controls_save_cases, run_controls_live_cases, run_history_cases,
             context_fence_cases, emulator_bluestacks_inventory_cases, collection_first_policy_cases,
             recognition_context_fence_cases, run_controls_live_reset_all_cases, run_entry_patch_cases, run_templates_add_cases,
             run_battle_details_cases, run_plan_section_delete_cases, run_templates_add_fenced_cases, shopping_queue_cases, profile_target_cases,
-            runtime_environment_cases]
+            runtime_environment_cases, run_preview_cases]
 UNNAMED_ALLOWED = 49      # cases no row names (the settling reads of one scenario); report.json lists them
 
 NOTES = dict(
@@ -1049,7 +1050,48 @@ COVERAGE.update({
         'probe_on_another_operating_system_needs_windows', 'probe_succeeds_after_the_failures_and_replaces_the_stored_result',
         'read_after_the_probe_that_replaced_the_failure'),
 })
-FAMILY_ROWS = {ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
+COVERAGE.update({
+    'F6-13 preview status: a session that never existed, one that was evicted, one that is reserved and not yet read': keys(
+        PRS, 'missing_session', 'evicted_session', 'idle_reserved'),
+    'F6-13 preview status per source (MuMu, scrcpy, ADB): first frame, streaming, port closed (error marker), stale, closed': keys(
+        PRS, 'closed_adb', 'closed_mumu', 'closed_scrcpy', 'failed_adb', 'failed_mumu', 'failed_scrcpy', 'first_frame_adb', 'first_frame_mumu', 'first_frame_scrcpy', 'stale_adb', 'stale_mumu', 'stale_scrcpy', 'streaming_adb', 'streaming_mumu', 'streaming_scrcpy'),
+    'F6-13 preview status: fallbacks (MuMu to scrcpy, MuMu and scrcpy to ADB, scrcpy to ADB, an explicit MuMu falling back) and the cleanup failure': keys(
+        PRS, 'fallback_mumu_to_scrcpy', 'fallback_mumu_scrcpy_to_adb', 'fallback_scrcpy_to_adb', 'requested_mumu_falls_back_to_scrcpy', 'cleanup_failed'),
+    'F6-13 preview status around an error marker and after the quality presets': keys(
+        PRS, 'error_marker_status_after_recovery', 'error_marker_status_before_recovery', 'status_after_balanced', 'status_after_fractional_fps', 'status_after_low'),
+    'F6-13 preview backends: all available, ADB transport offline, MuMu unavailable, scrcpy package and/or decoder missing, invalid saved fps, fractional fps, the other emulator': keys(
+        PRB, 'adb_available_transport_offline', 'all_available', 'invalid_saved_fps', 'mumu_unavailable', 'other_instance', 'saved_scrcpy_fractional_fps', 'scrcpy_decoder_missing', 'scrcpy_package_and_decoder_missing', 'scrcpy_package_missing'),
+    'F6-13 preview stream starts per source (MuMu native, scrcpy, ADB, Auto) with the provenance of every part': keys(
+        PRM, 'start_mumu', 'start_scrcpy', 'start_adb', 'start_auto'),
+    'F6-13 preview stream fallbacks and the error marker that recovers': keys(
+        PRM, 'fallback_mumu_to_scrcpy', 'fallback_mumu_scrcpy_to_adb', 'fallback_scrcpy_to_adb', 'requested_mumu_falls_back_to_scrcpy', 'error_marker_then_recovery'),
+    'F6-13 preview stream quality presets (Balanced, Low) and a fractional frame rate': keys(
+        PRM, 'balanced', 'low', 'fractional_fps'),
+    'F6-13 preview stream refusals (HEAD reserves nothing, wrong emulator, duplicate id, too many streams) and invalid parameters and saved settings': keys(
+        PRM, 'head_no_capture', 'wrong_instance', 'duplicate_active', 'capacity_full', 'invalid_backend', 'invalid_display', 'invalid_fps', 'invalid_quality', 'invalid_saved_settings', 'invalid_scale', 'invalid_stream_id'),
+    'F6-13 preview stream while automation owns the screen: a normal stream, no input': keys(
+        PRM, 'start_while_automation_owns_screen'),
+    'F6-13 frame.png with its headers: no token, a display that is not a number, not a PNG, capture failed': keys(
+        PRP, 'frame_png_capture_failed_502', 'frame_png_display_that_is_not_a_number_400', 'frame_png_that_is_not_a_png_502', 'frame_png_without_a_token_is_not_remembered'),
+})
+NOTES.update(
+    preview_status=('F6-13: GET /api/stream/status?stream_id=. 200 WITHOUT an `ok` key (the session record: counters, timing, requested and actual backend, backend_failures [{backend, reason, stage}], frame_age_ms, '
+                    'active, last_error, last_frame_age_s, actual_fps); a session that never existed or was evicted is 404 {ok:false, error}. Sessions are made by the real stream route and read while its response is open, '
+                    'closed, stale or failing; the sources are synthetic (12x24 frames, 10 ms capture, 2 ms JPEG encode on the fixed clock, a scrcpy age of 50 ms when a frame completes) and fail or fall back through the '
+                    'real PreviewCapture. A status read between two parts is a snapshot: the part in flight is identified by its own headers, not by this record.'),
+    preview_backends=('F6-13: GET /api/stream/backends reports local prerequisites only (MuMu native: a target or a reason; scrcpy: installed, decoder, reason, version, server_path; adb: the p10b report). '
+                      'Availability is not a connection: the transport-offline sample equals the available one, and the route talks to adb never. The scrcpy package states are produced from a synthetic server file '
+                      'and the real verification (a missing file reads "scrcpy server missing or unreadable: <path>", not the brief\'s proposed text). A saved preview setting that is invalid is 400 {ok:false, error}.'),
+    preview_stream=('F6-13: GET /api/stream.mjpg. 200 multipart/x-mixed-replace; boundary=frame, Cache-Control no-cache. Each part carries Content-Type, Content-Length and FOUR provenance headers made with the part\'s own '
+                    'pixels (added with this contract): X-Preview-Frame-Kind frame|error, X-Preview-Sequence (successful frames when the part was made; an error marker repeats the last number), X-Preview-Backend '
+                    'mumu|scrcpy|adb|unknown, X-Preview-Source-Age-Ms a number|unknown. A recorded stream is its response headers and its first parts, decoded (width, height, encoded_bytes and the sha256 of the decoded pixels; '
+                    'termination "recorder_closed" says the recorder ended it). The error marker is drawn text, so only its kind and size are recorded. HEAD validates and reserves nothing (empty body). '
+                    'Refusals are JSON {ok:false, error}: 400 invalid parameter or saved setting, 409 another emulator or an active duplicate id, 429 32 active sessions. There is no owner refusal: a stream starts '
+                    'while automation owns the screen and sends no input.'),
+    preview_frame_png=('F6-13: GET /api/frame.png with the headers it sends (the answers also exist in recognition_images, which records none): Content-Type only, no Cache-Control, and no age or source header; '
+                       'a failed capture is a text 502 (Flask\'s default text/html), an invalid display a 400 JSON.'),
+)
+FAMILY_ROWS = {PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
                RESET: 'F6-11 RL2 (6.1)', TF: 'F6-11 RL4 guarded (root decision: run-templates/add gains expected_revision and expected_context)', SQ: 'F6-12 (brief section 8)', PTG: 'F6-14 (brief section 6)', ENTRY: 'F6-11 RL3 (6.2)', TEMPLATES: 'F6-11 RL4 (6.3)', DETAILS: 'F6-11 RL7 (6.4)', PLAN_DELETE: 'F6-11 RL8 (6.5)', SAVE: 'RUN-04..07', LIVE: 'RUN-08..11', HL: 'H-01', HD: 'H-01, H-02', CFG: 'G-01', PR: 'G-02', PP: 'G-03', SP: 'S-01', ST: 'G-04', LO: 'E-01', CO: 'C-01', AB: 'A-01', AC: 'P-01', PF: 'P-02', EI: 'M-01', EA: 'M-02', ET: 'M-03', RS: 'T-01', RD: 'T-02', RR: 'R-01, R-02, R-06', CW: 'R-02', RI: 'R-03', SA: 'R-04', RL: 'R-05'}
 
 
@@ -1090,7 +1132,7 @@ PUBLISHED_ORDER = ['run_controls_save_cases', 'run_controls_live_cases', 'run_hi
                    'emulator_bluestacks_inventory_cases', 'collection_first_policy_cases', 'recognition_context_fence_cases',
                    'run_controls_live_reset_all_cases', 'run_entry_patch_cases', 'run_templates_add_cases', 'run_battle_details_cases',
                    'run_plan_section_delete_cases', 'run_templates_add_fenced_cases', 'shopping_queue_cases', 'profile_target_cases',
-                   'runtime_environment_cases']
+                   'runtime_environment_cases', 'run_preview_cases']
 
 
 CODED_PATHS = frozenset({'/api/calibrate/start', '/api/calibrate/observe', '/api/calibrate/apply', '/api/calibrate/stop', '/api/calibrate/status',
