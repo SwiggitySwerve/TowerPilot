@@ -7,366 +7,174 @@ export const fixtureVersionSchema = z.literal(1);
 export type FixtureVersion = z.infer<typeof fixtureVersionSchema>;
 /** Strict raw response path: answer.body.api_contract. */
 export const runtimeStateAnswer_Body_ApiContractSchema = z.number();
-/** Raw response path: answer.body.api_contract. */
-export type RuntimeStateAnswer_Body_ApiContract = z.infer<
-  typeof runtimeStateAnswer_Body_ApiContractSchema
->;
 /** Strict raw response path: answer.body.capabilities[]. */
 export const runtimeStateAnswer_Body_Capabilities_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.capabilities[]. */
-export type RuntimeStateAnswer_Body_Capabilities_ArrayElement = z.infer<
-  typeof runtimeStateAnswer_Body_Capabilities_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.capabilities. */
 export const runtimeStateAnswer_Body_CapabilitiesSchema = z.array(
   runtimeStateAnswer_Body_Capabilities_ArrayElementSchema,
 );
-/** Raw response path: answer.body.capabilities. */
-export type RuntimeStateAnswer_Body_Capabilities = z.infer<
-  typeof runtimeStateAnswer_Body_CapabilitiesSchema
->;
 /** Strict raw response path: answer.body.environment.app_build.basis. */
 export const runtimeStateAnswer_Body_Environment_AppBuild_BasisSchema = z.enum([
   'app index.html exists; integrity not checked',
 ]);
-/** Raw response path: answer.body.environment.app_build.basis. */
-export type RuntimeStateAnswer_Body_Environment_AppBuild_Basis = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_AppBuild_BasisSchema
->;
 /** Strict raw response path: answer.body.environment.app_build.state. */
 export const runtimeStateAnswer_Body_Environment_AppBuild_StateSchema = z.enum(['missing']);
-/** Raw response path: answer.body.environment.app_build.state. */
-export type RuntimeStateAnswer_Body_Environment_AppBuild_State = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_AppBuild_StateSchema
->;
 /** Strict raw response path: answer.body.environment.app_build. */
 export const runtimeStateAnswer_Body_Environment_AppBuildSchema = z.strictObject({
   basis: runtimeStateAnswer_Body_Environment_AppBuild_BasisSchema,
   state: runtimeStateAnswer_Body_Environment_AppBuild_StateSchema,
 });
-/** Raw response path: answer.body.environment.app_build. */
-export type RuntimeStateAnswer_Body_Environment_AppBuild = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_AppBuildSchema
->;
 /** Strict raw response path: answer.body.environment.emulators.bluestacks.basis. */
 export const runtimeStateAnswer_Body_Environment_Emulators_Bluestacks_BasisSchema = z.enum([
   'not found by wizard locator; alternate installs not checked',
 ]);
-/** Raw response path: answer.body.environment.emulators.bluestacks.basis. */
-export type RuntimeStateAnswer_Body_Environment_Emulators_Bluestacks_Basis = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_Emulators_Bluestacks_BasisSchema
->;
 /** Strict raw response path: answer.body.environment.emulators.bluestacks.state. */
 export const runtimeStateAnswer_Body_Environment_Emulators_Bluestacks_StateSchema = z.enum([
   'unknown',
 ]);
-/** Raw response path: answer.body.environment.emulators.bluestacks.state. */
-export type RuntimeStateAnswer_Body_Environment_Emulators_Bluestacks_State = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_Emulators_Bluestacks_StateSchema
->;
 /** Strict raw response path: answer.body.environment.emulators.bluestacks. */
 export const runtimeStateAnswer_Body_Environment_Emulators_BluestacksSchema = z.strictObject({
   basis: runtimeStateAnswer_Body_Environment_Emulators_Bluestacks_BasisSchema,
   state: runtimeStateAnswer_Body_Environment_Emulators_Bluestacks_StateSchema,
 });
-/** Raw response path: answer.body.environment.emulators.bluestacks. */
-export type RuntimeStateAnswer_Body_Environment_Emulators_Bluestacks = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_Emulators_BluestacksSchema
->;
 /** Strict raw response path: answer.body.environment.emulators.mumu.basis. */
 export const runtimeStateAnswer_Body_Environment_Emulators_Mumu_BasisSchema = z.enum([
   'wizard locator: local executable; not launched',
 ]);
-/** Raw response path: answer.body.environment.emulators.mumu.basis. */
-export type RuntimeStateAnswer_Body_Environment_Emulators_Mumu_Basis = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_Emulators_Mumu_BasisSchema
->;
 /** Strict raw response path: answer.body.environment.emulators.mumu.state. */
 export const runtimeStateAnswer_Body_Environment_Emulators_Mumu_StateSchema = z.enum(['available']);
-/** Raw response path: answer.body.environment.emulators.mumu.state. */
-export type RuntimeStateAnswer_Body_Environment_Emulators_Mumu_State = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_Emulators_Mumu_StateSchema
->;
 /** Strict raw response path: answer.body.environment.emulators.mumu. */
 export const runtimeStateAnswer_Body_Environment_Emulators_MumuSchema = z.strictObject({
   basis: runtimeStateAnswer_Body_Environment_Emulators_Mumu_BasisSchema,
   state: runtimeStateAnswer_Body_Environment_Emulators_Mumu_StateSchema,
 });
-/** Raw response path: answer.body.environment.emulators.mumu. */
-export type RuntimeStateAnswer_Body_Environment_Emulators_Mumu = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_Emulators_MumuSchema
->;
 /** Strict raw response path: answer.body.environment.emulators. */
 export const runtimeStateAnswer_Body_Environment_EmulatorsSchema = z.strictObject({
   bluestacks: runtimeStateAnswer_Body_Environment_Emulators_BluestacksSchema,
   mumu: runtimeStateAnswer_Body_Environment_Emulators_MumuSchema,
 });
-/** Raw response path: answer.body.environment.emulators. */
-export type RuntimeStateAnswer_Body_Environment_Emulators = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_EmulatorsSchema
->;
 /** Strict raw response path: answer.body.environment.os.architecture. */
 export const runtimeStateAnswer_Body_Environment_Os_ArchitectureSchema = z.string();
-/** Raw response path: answer.body.environment.os.architecture. */
-export type RuntimeStateAnswer_Body_Environment_Os_Architecture = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_Os_ArchitectureSchema
->;
 /** Strict raw response path: answer.body.environment.os.release. */
 export const runtimeStateAnswer_Body_Environment_Os_ReleaseSchema = z.string();
-/** Raw response path: answer.body.environment.os.release. */
-export type RuntimeStateAnswer_Body_Environment_Os_Release = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_Os_ReleaseSchema
->;
 /** Strict raw response path: answer.body.environment.os.system. */
 export const runtimeStateAnswer_Body_Environment_Os_SystemSchema = z.string();
-/** Raw response path: answer.body.environment.os.system. */
-export type RuntimeStateAnswer_Body_Environment_Os_System = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_Os_SystemSchema
->;
 /** Strict raw response path: answer.body.environment.os. */
 export const runtimeStateAnswer_Body_Environment_OsSchema = z.strictObject({
   architecture: runtimeStateAnswer_Body_Environment_Os_ArchitectureSchema,
   release: runtimeStateAnswer_Body_Environment_Os_ReleaseSchema,
   system: runtimeStateAnswer_Body_Environment_Os_SystemSchema,
 });
-/** Raw response path: answer.body.environment.os. */
-export type RuntimeStateAnswer_Body_Environment_Os = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_OsSchema
->;
 /** Strict raw response path: answer.body.environment.platform_tools.basis. */
 export const runtimeStateAnswer_Body_Environment_PlatformTools_BasisSchema = z.enum([
   'tool_install.installed: local executable and required DLLs',
 ]);
-/** Raw response path: answer.body.environment.platform_tools.basis. */
-export type RuntimeStateAnswer_Body_Environment_PlatformTools_Basis = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_PlatformTools_BasisSchema
->;
 /** Strict raw response path: answer.body.environment.platform_tools.state. */
 export const runtimeStateAnswer_Body_Environment_PlatformTools_StateSchema = z.enum(['missing']);
-/** Raw response path: answer.body.environment.platform_tools.state. */
-export type RuntimeStateAnswer_Body_Environment_PlatformTools_State = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_PlatformTools_StateSchema
->;
 /** Strict raw response path: answer.body.environment.platform_tools.version. */
 export const runtimeStateAnswer_Body_Environment_PlatformTools_VersionSchema = z.null();
-/** Raw response path: answer.body.environment.platform_tools.version. */
-export type RuntimeStateAnswer_Body_Environment_PlatformTools_Version = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_PlatformTools_VersionSchema
->;
 /** Strict raw response path: answer.body.environment.platform_tools. */
 export const runtimeStateAnswer_Body_Environment_PlatformToolsSchema = z.strictObject({
   basis: runtimeStateAnswer_Body_Environment_PlatformTools_BasisSchema,
   state: runtimeStateAnswer_Body_Environment_PlatformTools_StateSchema,
   version: runtimeStateAnswer_Body_Environment_PlatformTools_VersionSchema,
 });
-/** Raw response path: answer.body.environment.platform_tools. */
-export type RuntimeStateAnswer_Body_Environment_PlatformTools = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_PlatformToolsSchema
->;
 /** Strict raw response path: answer.body.environment.python.kind. */
 export const runtimeStateAnswer_Body_Environment_Python_KindSchema = z.enum(['source']);
-/** Raw response path: answer.body.environment.python.kind. */
-export type RuntimeStateAnswer_Body_Environment_Python_Kind = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_Python_KindSchema
->;
 /** Strict raw response path: answer.body.environment.python.version. */
 export const runtimeStateAnswer_Body_Environment_Python_VersionSchema = z.string();
-/** Raw response path: answer.body.environment.python.version. */
-export type RuntimeStateAnswer_Body_Environment_Python_Version = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_Python_VersionSchema
->;
 /** Strict raw response path: answer.body.environment.python. */
 export const runtimeStateAnswer_Body_Environment_PythonSchema = z.strictObject({
   kind: runtimeStateAnswer_Body_Environment_Python_KindSchema,
   version: runtimeStateAnswer_Body_Environment_Python_VersionSchema,
 });
-/** Raw response path: answer.body.environment.python. */
-export type RuntimeStateAnswer_Body_Environment_Python = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_PythonSchema
->;
 /** Strict raw response path: answer.body.environment.release.kind. */
 export const runtimeStateAnswer_Body_Environment_Release_KindSchema = z.enum(['checkout']);
-/** Raw response path: answer.body.environment.release.kind. */
-export type RuntimeStateAnswer_Body_Environment_Release_Kind = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_Release_KindSchema
->;
 /** Strict raw response path: answer.body.environment.release. */
 export const runtimeStateAnswer_Body_Environment_ReleaseSchema = z.strictObject({
   kind: runtimeStateAnswer_Body_Environment_Release_KindSchema,
 });
-/** Raw response path: answer.body.environment.release. */
-export type RuntimeStateAnswer_Body_Environment_Release = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_ReleaseSchema
->;
 /** Strict raw response path: answer.body.environment.scrcpy_decoder.basis. */
 export const runtimeStateAnswer_Body_Environment_ScrcpyDecoder_BasisSchema = z.enum([
   'scrcpy_package.status: PyAV module discovery',
 ]);
-/** Raw response path: answer.body.environment.scrcpy_decoder.basis. */
-export type RuntimeStateAnswer_Body_Environment_ScrcpyDecoder_Basis = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_ScrcpyDecoder_BasisSchema
->;
 /** Strict raw response path: answer.body.environment.scrcpy_decoder.state. */
 export const runtimeStateAnswer_Body_Environment_ScrcpyDecoder_StateSchema = z.enum(['available']);
-/** Raw response path: answer.body.environment.scrcpy_decoder.state. */
-export type RuntimeStateAnswer_Body_Environment_ScrcpyDecoder_State = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_ScrcpyDecoder_StateSchema
->;
 /** Strict raw response path: answer.body.environment.scrcpy_decoder. */
 export const runtimeStateAnswer_Body_Environment_ScrcpyDecoderSchema = z.strictObject({
   basis: runtimeStateAnswer_Body_Environment_ScrcpyDecoder_BasisSchema,
   state: runtimeStateAnswer_Body_Environment_ScrcpyDecoder_StateSchema,
 });
-/** Raw response path: answer.body.environment.scrcpy_decoder. */
-export type RuntimeStateAnswer_Body_Environment_ScrcpyDecoder = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_ScrcpyDecoderSchema
->;
 /** Strict raw response path: answer.body.environment.scrcpy_server.basis. */
 export const runtimeStateAnswer_Body_Environment_ScrcpyServer_BasisSchema = z.enum([
   'scrcpy_package.status: pinned server checksum',
 ]);
-/** Raw response path: answer.body.environment.scrcpy_server.basis. */
-export type RuntimeStateAnswer_Body_Environment_ScrcpyServer_Basis = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_ScrcpyServer_BasisSchema
->;
 /** Strict raw response path: answer.body.environment.scrcpy_server.state. */
 export const runtimeStateAnswer_Body_Environment_ScrcpyServer_StateSchema = z.enum(['missing']);
-/** Raw response path: answer.body.environment.scrcpy_server.state. */
-export type RuntimeStateAnswer_Body_Environment_ScrcpyServer_State = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_ScrcpyServer_StateSchema
->;
 /** Strict raw response path: answer.body.environment.scrcpy_server.version. */
 export const runtimeStateAnswer_Body_Environment_ScrcpyServer_VersionSchema = z.string();
-/** Raw response path: answer.body.environment.scrcpy_server.version. */
-export type RuntimeStateAnswer_Body_Environment_ScrcpyServer_Version = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_ScrcpyServer_VersionSchema
->;
 /** Strict raw response path: answer.body.environment.scrcpy_server. */
 export const runtimeStateAnswer_Body_Environment_ScrcpyServerSchema = z.strictObject({
   basis: runtimeStateAnswer_Body_Environment_ScrcpyServer_BasisSchema,
   state: runtimeStateAnswer_Body_Environment_ScrcpyServer_StateSchema,
   version: runtimeStateAnswer_Body_Environment_ScrcpyServer_VersionSchema,
 });
-/** Raw response path: answer.body.environment.scrcpy_server. */
-export type RuntimeStateAnswer_Body_Environment_ScrcpyServer = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_ScrcpyServerSchema
->;
 /** Strict raw response path: answer.body.environment.stream_backends.adb.available. */
 export const runtimeStateAnswer_Body_Environment_StreamBackends_Adb_AvailableSchema = z.boolean();
-/** Raw response path: answer.body.environment.stream_backends.adb.available. */
-export type RuntimeStateAnswer_Body_Environment_StreamBackends_Adb_Available = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_StreamBackends_Adb_AvailableSchema
->;
 /** Strict raw response path: answer.body.environment.stream_backends.adb.basis. */
 export const runtimeStateAnswer_Body_Environment_StreamBackends_Adb_BasisSchema = z.enum([
   'tool_install.installed: local executable and required DLLs; device connection not probed',
 ]);
-/** Raw response path: answer.body.environment.stream_backends.adb.basis. */
-export type RuntimeStateAnswer_Body_Environment_StreamBackends_Adb_Basis = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_StreamBackends_Adb_BasisSchema
->;
 /** Strict raw response path: answer.body.environment.stream_backends.adb.state. */
 export const runtimeStateAnswer_Body_Environment_StreamBackends_Adb_StateSchema = z.enum([
   'missing',
 ]);
-/** Raw response path: answer.body.environment.stream_backends.adb.state. */
-export type RuntimeStateAnswer_Body_Environment_StreamBackends_Adb_State = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_StreamBackends_Adb_StateSchema
->;
 /** Strict raw response path: answer.body.environment.stream_backends.adb. */
 export const runtimeStateAnswer_Body_Environment_StreamBackends_AdbSchema = z.strictObject({
   available: runtimeStateAnswer_Body_Environment_StreamBackends_Adb_AvailableSchema,
   basis: runtimeStateAnswer_Body_Environment_StreamBackends_Adb_BasisSchema,
   state: runtimeStateAnswer_Body_Environment_StreamBackends_Adb_StateSchema,
 });
-/** Raw response path: answer.body.environment.stream_backends.adb. */
-export type RuntimeStateAnswer_Body_Environment_StreamBackends_Adb = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_StreamBackends_AdbSchema
->;
 /** Strict raw response path: answer.body.environment.stream_backends.mumu.basis. */
 export const runtimeStateAnswer_Body_Environment_StreamBackends_Mumu_BasisSchema = z.enum([
   'configured VM mapping not checked; see /api/stream/backends',
 ]);
-/** Raw response path: answer.body.environment.stream_backends.mumu.basis. */
-export type RuntimeStateAnswer_Body_Environment_StreamBackends_Mumu_Basis = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_StreamBackends_Mumu_BasisSchema
->;
 /** Strict raw response path: answer.body.environment.stream_backends.mumu.state. */
 export const runtimeStateAnswer_Body_Environment_StreamBackends_Mumu_StateSchema = z.enum([
   'unknown',
 ]);
-/** Raw response path: answer.body.environment.stream_backends.mumu.state. */
-export type RuntimeStateAnswer_Body_Environment_StreamBackends_Mumu_State = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_StreamBackends_Mumu_StateSchema
->;
 /** Strict raw response path: answer.body.environment.stream_backends.mumu. */
 export const runtimeStateAnswer_Body_Environment_StreamBackends_MumuSchema = z.strictObject({
   basis: runtimeStateAnswer_Body_Environment_StreamBackends_Mumu_BasisSchema,
   state: runtimeStateAnswer_Body_Environment_StreamBackends_Mumu_StateSchema,
 });
-/** Raw response path: answer.body.environment.stream_backends.mumu. */
-export type RuntimeStateAnswer_Body_Environment_StreamBackends_Mumu = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_StreamBackends_MumuSchema
->;
 /** Strict raw response path: answer.body.environment.stream_backends.scrcpy.basis. */
 export const runtimeStateAnswer_Body_Environment_StreamBackends_Scrcpy_BasisSchema = z.enum([
   'scrcpy server and decoder prerequisites',
 ]);
-/** Raw response path: answer.body.environment.stream_backends.scrcpy.basis. */
-export type RuntimeStateAnswer_Body_Environment_StreamBackends_Scrcpy_Basis = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_StreamBackends_Scrcpy_BasisSchema
->;
 /** Strict raw response path: answer.body.environment.stream_backends.scrcpy.state. */
 export const runtimeStateAnswer_Body_Environment_StreamBackends_Scrcpy_StateSchema = z.enum([
   'missing',
 ]);
-/** Raw response path: answer.body.environment.stream_backends.scrcpy.state. */
-export type RuntimeStateAnswer_Body_Environment_StreamBackends_Scrcpy_State = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_StreamBackends_Scrcpy_StateSchema
->;
 /** Strict raw response path: answer.body.environment.stream_backends.scrcpy. */
 export const runtimeStateAnswer_Body_Environment_StreamBackends_ScrcpySchema = z.strictObject({
   basis: runtimeStateAnswer_Body_Environment_StreamBackends_Scrcpy_BasisSchema,
   state: runtimeStateAnswer_Body_Environment_StreamBackends_Scrcpy_StateSchema,
 });
-/** Raw response path: answer.body.environment.stream_backends.scrcpy. */
-export type RuntimeStateAnswer_Body_Environment_StreamBackends_Scrcpy = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_StreamBackends_ScrcpySchema
->;
 /** Strict raw response path: answer.body.environment.stream_backends. */
 export const runtimeStateAnswer_Body_Environment_StreamBackendsSchema = z.strictObject({
   adb: runtimeStateAnswer_Body_Environment_StreamBackends_AdbSchema,
   mumu: runtimeStateAnswer_Body_Environment_StreamBackends_MumuSchema,
   scrcpy: runtimeStateAnswer_Body_Environment_StreamBackends_ScrcpySchema,
 });
-/** Raw response path: answer.body.environment.stream_backends. */
-export type RuntimeStateAnswer_Body_Environment_StreamBackends = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_StreamBackendsSchema
->;
 /** Strict raw response path: answer.body.environment.windows_ocr.basis. */
 export const runtimeStateAnswer_Body_Environment_WindowsOcr_BasisSchema = z.enum(['not probed']);
-/** Raw response path: answer.body.environment.windows_ocr.basis. */
-export type RuntimeStateAnswer_Body_Environment_WindowsOcr_Basis = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_WindowsOcr_BasisSchema
->;
 /** Strict raw response path: answer.body.environment.windows_ocr.checked_at. */
 export const runtimeStateAnswer_Body_Environment_WindowsOcr_CheckedAtSchema = z.null();
-/** Raw response path: answer.body.environment.windows_ocr.checked_at. */
-export type RuntimeStateAnswer_Body_Environment_WindowsOcr_CheckedAt = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_WindowsOcr_CheckedAtSchema
->;
 /** Strict raw response path: answer.body.environment.windows_ocr.detail. */
 export const runtimeStateAnswer_Body_Environment_WindowsOcr_DetailSchema = z.string();
-/** Raw response path: answer.body.environment.windows_ocr.detail. */
-export type RuntimeStateAnswer_Body_Environment_WindowsOcr_Detail = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_WindowsOcr_DetailSchema
->;
 /** Strict raw response path: answer.body.environment.windows_ocr.state. */
 export const runtimeStateAnswer_Body_Environment_WindowsOcr_StateSchema = z.enum(['unknown']);
-/** Raw response path: answer.body.environment.windows_ocr.state. */
-export type RuntimeStateAnswer_Body_Environment_WindowsOcr_State = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_WindowsOcr_StateSchema
->;
 /** Strict raw response path: answer.body.environment.windows_ocr. */
 export const runtimeStateAnswer_Body_Environment_WindowsOcrSchema = z.strictObject({
   basis: runtimeStateAnswer_Body_Environment_WindowsOcr_BasisSchema,
@@ -374,33 +182,17 @@ export const runtimeStateAnswer_Body_Environment_WindowsOcrSchema = z.strictObje
   detail: runtimeStateAnswer_Body_Environment_WindowsOcr_DetailSchema,
   state: runtimeStateAnswer_Body_Environment_WindowsOcr_StateSchema,
 });
-/** Raw response path: answer.body.environment.windows_ocr. */
-export type RuntimeStateAnswer_Body_Environment_WindowsOcr = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_WindowsOcrSchema
->;
 /** Strict raw response path: answer.body.environment.windows_ocr_script.basis. */
 export const runtimeStateAnswer_Body_Environment_WindowsOcrScript_BasisSchema = z.enum([
   'local Windows OCR script',
 ]);
-/** Raw response path: answer.body.environment.windows_ocr_script.basis. */
-export type RuntimeStateAnswer_Body_Environment_WindowsOcrScript_Basis = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_WindowsOcrScript_BasisSchema
->;
 /** Strict raw response path: answer.body.environment.windows_ocr_script.state. */
 export const runtimeStateAnswer_Body_Environment_WindowsOcrScript_StateSchema = z.enum(['missing']);
-/** Raw response path: answer.body.environment.windows_ocr_script.state. */
-export type RuntimeStateAnswer_Body_Environment_WindowsOcrScript_State = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_WindowsOcrScript_StateSchema
->;
 /** Strict raw response path: answer.body.environment.windows_ocr_script. */
 export const runtimeStateAnswer_Body_Environment_WindowsOcrScriptSchema = z.strictObject({
   basis: runtimeStateAnswer_Body_Environment_WindowsOcrScript_BasisSchema,
   state: runtimeStateAnswer_Body_Environment_WindowsOcrScript_StateSchema,
 });
-/** Raw response path: answer.body.environment.windows_ocr_script. */
-export type RuntimeStateAnswer_Body_Environment_WindowsOcrScript = z.infer<
-  typeof runtimeStateAnswer_Body_Environment_WindowsOcrScriptSchema
->;
 /** Strict raw response path: answer.body.environment. */
 export const runtimeStateAnswer_Body_EnvironmentSchema = z.strictObject({
   app_build: runtimeStateAnswer_Body_Environment_AppBuildSchema,
@@ -415,113 +207,48 @@ export const runtimeStateAnswer_Body_EnvironmentSchema = z.strictObject({
   windows_ocr: runtimeStateAnswer_Body_Environment_WindowsOcrSchema,
   windows_ocr_script: runtimeStateAnswer_Body_Environment_WindowsOcrScriptSchema,
 });
-/** Raw response path: answer.body.environment. */
-export type RuntimeStateAnswer_Body_Environment = z.infer<
-  typeof runtimeStateAnswer_Body_EnvironmentSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].cancellable. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_CancellableSchema =
   z.boolean();
-/** Raw response path: answer.body.persistence_operations[].cancellable. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Cancellable = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_CancellableSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].context.account. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_AccountSchema =
   z.null();
-/** Raw response path: answer.body.persistence_operations[].context.account. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_Account = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].context.adb_host. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.persistence_operations[].context.adb_host. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_AdbHost = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].context.adb_port. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.persistence_operations[].context.adb_port. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_AdbPort = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].context.artifact_dir. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.persistence_operations[].context.artifact_dir. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ArtifactDir =
-  z.infer<
-    typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ArtifactDirSchema
-  >;
 /** Strict raw response path: answer.body.persistence_operations[].context.config_revision. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.persistence_operations[].context.config_revision. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ConfigRevision =
-  z.infer<
-    typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.persistence_operations[].context.device_key. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.persistence_operations[].context.device_key. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_DeviceKey = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].context.instance. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.persistence_operations[].context.instance. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_Instance = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].context.profile. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.persistence_operations[].context.profile. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_Profile = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].context.profile_path. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.persistence_operations[].context.profile_path. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ProfilePath =
-  z.infer<
-    typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ProfilePathSchema
-  >;
 /** Strict raw response path: answer.body.persistence_operations[].context.profile_revision. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.persistence_operations[].context.profile_revision. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ProfileRevision =
-  z.infer<
-    typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_ProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.persistence_operations[].context.rendering. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.persistence_operations[].context.rendering. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_Rendering = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].context.selected_run. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_SelectedRunSchema =
   z.null();
-/** Raw response path: answer.body.persistence_operations[].context.selected_run. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_SelectedRun =
-  z.infer<
-    typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_SelectedRunSchema
-  >;
 /** Strict raw response path: answer.body.persistence_operations[].context.serial. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.persistence_operations[].context.serial. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_Serial = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].context. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_ContextSchema =
   z.strictObject({
@@ -544,105 +271,45 @@ export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_ContextS
       runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_SelectedRunSchema,
     serial: runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context_SerialSchema,
   });
-/** Raw response path: answer.body.persistence_operations[].context. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Context = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_ContextSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].created_at. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_CreatedAtSchema =
   z.number();
-/** Raw response path: answer.body.persistence_operations[].created_at. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_CreatedAt = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].error. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_ErrorSchema = z.null();
-/** Raw response path: answer.body.persistence_operations[].error. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Error = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_ErrorSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].id. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_IdSchema = z.string();
-/** Raw response path: answer.body.persistence_operations[].id. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Id = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_IdSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].idempotency_key. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_IdempotencyKeySchema =
   z.string();
-/** Raw response path: answer.body.persistence_operations[].idempotency_key. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_IdempotencyKey = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].kind. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_KindSchema = z.enum([
   'profile_promote',
 ]);
-/** Raw response path: answer.body.persistence_operations[].kind. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Kind = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_KindSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].progress. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_ProgressSchema =
   z.strictObject({});
-/** Raw response path: answer.body.persistence_operations[].progress. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Progress = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_ProgressSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].recovery_action. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.persistence_operations[].recovery_action. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_RecoveryAction = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].request. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_RequestSchema =
   z.strictObject({});
-/** Raw response path: answer.body.persistence_operations[].request. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Request = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_RequestSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].result_refs. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_ResultRefsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.persistence_operations[].result_refs. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_ResultRefs = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].revision. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_RevisionSchema = z.number();
-/** Raw response path: answer.body.persistence_operations[].revision. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Revision = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_RevisionSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].status. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_StatusSchema = z.enum([
   'running',
 ]);
-/** Raw response path: answer.body.persistence_operations[].status. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Status = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_StatusSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].step. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_StepSchema = z.string();
-/** Raw response path: answer.body.persistence_operations[].step. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Step = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_StepSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].updated_at. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_UpdatedAtSchema =
   z.number();
-/** Raw response path: answer.body.persistence_operations[].updated_at. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_UpdatedAt = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[].worker. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_WorkerSchema = z.null();
-/** Raw response path: answer.body.persistence_operations[].worker. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement_Worker = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_WorkerSchema
->;
 /** Strict raw response path: answer.body.persistence_operations[]. */
 export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElementSchema = z.strictObject({
   cancellable: runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_CancellableSchema,
@@ -662,40 +329,18 @@ export const runtimeStateAnswer_Body_PersistenceOperations_ArrayElementSchema = 
   updated_at: runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_UpdatedAtSchema,
   worker: runtimeStateAnswer_Body_PersistenceOperations_ArrayElement_WorkerSchema,
 });
-/** Raw response path: answer.body.persistence_operations[]. */
-export type RuntimeStateAnswer_Body_PersistenceOperations_ArrayElement = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperations_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.persistence_operations. */
 export const runtimeStateAnswer_Body_PersistenceOperationsSchema = z.array(
   runtimeStateAnswer_Body_PersistenceOperations_ArrayElementSchema,
 );
-/** Raw response path: answer.body.persistence_operations. */
-export type RuntimeStateAnswer_Body_PersistenceOperations = z.infer<
-  typeof runtimeStateAnswer_Body_PersistenceOperationsSchema
->;
 /** Strict raw response path: answer.body.port. */
 export const runtimeStateAnswer_Body_PortSchema = z.number();
-/** Raw response path: answer.body.port. */
-export type RuntimeStateAnswer_Body_Port = z.infer<typeof runtimeStateAnswer_Body_PortSchema>;
 /** Strict raw response path: answer.body.process_refresh.age_sec. */
 export const runtimeStateAnswer_Body_ProcessRefresh_AgeSecSchema = z.number().nullable();
-/** Raw response path: answer.body.process_refresh.age_sec. */
-export type RuntimeStateAnswer_Body_ProcessRefresh_AgeSec = z.infer<
-  typeof runtimeStateAnswer_Body_ProcessRefresh_AgeSecSchema
->;
 /** Strict raw response path: answer.body.process_refresh.error.message. */
 export const runtimeStateAnswer_Body_ProcessRefresh_Error_MessageSchema = z.string();
-/** Raw response path: answer.body.process_refresh.error.message. */
-export type RuntimeStateAnswer_Body_ProcessRefresh_Error_Message = z.infer<
-  typeof runtimeStateAnswer_Body_ProcessRefresh_Error_MessageSchema
->;
 /** Strict raw response path: answer.body.process_refresh.error.type. */
 export const runtimeStateAnswer_Body_ProcessRefresh_Error_TypeSchema = z.string();
-/** Raw response path: answer.body.process_refresh.error.type. */
-export type RuntimeStateAnswer_Body_ProcessRefresh_Error_Type = z.infer<
-  typeof runtimeStateAnswer_Body_ProcessRefresh_Error_TypeSchema
->;
 /** Strict raw response path: answer.body.process_refresh.error. */
 export const runtimeStateAnswer_Body_ProcessRefresh_ErrorSchema = z
   .strictObject({
@@ -703,28 +348,12 @@ export const runtimeStateAnswer_Body_ProcessRefresh_ErrorSchema = z
     type: runtimeStateAnswer_Body_ProcessRefresh_Error_TypeSchema,
   })
   .nullable();
-/** Raw response path: answer.body.process_refresh.error. */
-export type RuntimeStateAnswer_Body_ProcessRefresh_Error = z.infer<
-  typeof runtimeStateAnswer_Body_ProcessRefresh_ErrorSchema
->;
 /** Strict raw response path: answer.body.process_refresh.last_attempt_at. */
 export const runtimeStateAnswer_Body_ProcessRefresh_LastAttemptAtSchema = z.number().nullable();
-/** Raw response path: answer.body.process_refresh.last_attempt_at. */
-export type RuntimeStateAnswer_Body_ProcessRefresh_LastAttemptAt = z.infer<
-  typeof runtimeStateAnswer_Body_ProcessRefresh_LastAttemptAtSchema
->;
 /** Strict raw response path: answer.body.process_refresh.last_success_at. */
 export const runtimeStateAnswer_Body_ProcessRefresh_LastSuccessAtSchema = z.number().nullable();
-/** Raw response path: answer.body.process_refresh.last_success_at. */
-export type RuntimeStateAnswer_Body_ProcessRefresh_LastSuccessAt = z.infer<
-  typeof runtimeStateAnswer_Body_ProcessRefresh_LastSuccessAtSchema
->;
 /** Strict raw response path: answer.body.process_refresh.state. */
 export const runtimeStateAnswer_Body_ProcessRefresh_StateSchema = z.enum(['stale', 'unknown']);
-/** Raw response path: answer.body.process_refresh.state. */
-export type RuntimeStateAnswer_Body_ProcessRefresh_State = z.infer<
-  typeof runtimeStateAnswer_Body_ProcessRefresh_StateSchema
->;
 /** Strict raw response path: answer.body.process_refresh. */
 export const runtimeStateAnswer_Body_ProcessRefreshSchema = z.strictObject({
   age_sec: runtimeStateAnswer_Body_ProcessRefresh_AgeSecSchema,
@@ -733,34 +362,14 @@ export const runtimeStateAnswer_Body_ProcessRefreshSchema = z.strictObject({
   last_success_at: runtimeStateAnswer_Body_ProcessRefresh_LastSuccessAtSchema,
   state: runtimeStateAnswer_Body_ProcessRefresh_StateSchema,
 });
-/** Raw response path: answer.body.process_refresh. */
-export type RuntimeStateAnswer_Body_ProcessRefresh = z.infer<
-  typeof runtimeStateAnswer_Body_ProcessRefreshSchema
->;
 /** Strict raw response path: answer.body.server.captured_at. */
 export const runtimeStateAnswer_Body_Server_CapturedAtSchema = z.number();
-/** Raw response path: answer.body.server.captured_at. */
-export type RuntimeStateAnswer_Body_Server_CapturedAt = z.infer<
-  typeof runtimeStateAnswer_Body_Server_CapturedAtSchema
->;
 /** Strict raw response path: answer.body.server.disk_source_fingerprint. */
 export const runtimeStateAnswer_Body_Server_DiskSourceFingerprintSchema = z.string().nullable();
-/** Raw response path: answer.body.server.disk_source_fingerprint. */
-export type RuntimeStateAnswer_Body_Server_DiskSourceFingerprint = z.infer<
-  typeof runtimeStateAnswer_Body_Server_DiskSourceFingerprintSchema
->;
 /** Strict raw response path: answer.body.server.error.message. */
 export const runtimeStateAnswer_Body_Server_Error_MessageSchema = z.string();
-/** Raw response path: answer.body.server.error.message. */
-export type RuntimeStateAnswer_Body_Server_Error_Message = z.infer<
-  typeof runtimeStateAnswer_Body_Server_Error_MessageSchema
->;
 /** Strict raw response path: answer.body.server.error.type. */
 export const runtimeStateAnswer_Body_Server_Error_TypeSchema = z.string();
-/** Raw response path: answer.body.server.error.type. */
-export type RuntimeStateAnswer_Body_Server_Error_Type = z.infer<
-  typeof runtimeStateAnswer_Body_Server_Error_TypeSchema
->;
 /** Strict raw response path: answer.body.server.error. */
 export const runtimeStateAnswer_Body_Server_ErrorSchema = z
   .strictObject({
@@ -768,46 +377,18 @@ export const runtimeStateAnswer_Body_Server_ErrorSchema = z
     type: runtimeStateAnswer_Body_Server_Error_TypeSchema,
   })
   .nullable();
-/** Raw response path: answer.body.server.error. */
-export type RuntimeStateAnswer_Body_Server_Error = z.infer<
-  typeof runtimeStateAnswer_Body_Server_ErrorSchema
->;
 /** Strict raw response path: answer.body.server.pid. */
 export const runtimeStateAnswer_Body_Server_PidSchema = z.number();
-/** Raw response path: answer.body.server.pid. */
-export type RuntimeStateAnswer_Body_Server_Pid = z.infer<
-  typeof runtimeStateAnswer_Body_Server_PidSchema
->;
 /** Strict raw response path: answer.body.server.role. */
 export const runtimeStateAnswer_Body_Server_RoleSchema = z.enum(['dashboard']);
-/** Raw response path: answer.body.server.role. */
-export type RuntimeStateAnswer_Body_Server_Role = z.infer<
-  typeof runtimeStateAnswer_Body_Server_RoleSchema
->;
 /** Strict raw response path: answer.body.server.session_id. */
 export const runtimeStateAnswer_Body_Server_SessionIdSchema = z.string();
-/** Raw response path: answer.body.server.session_id. */
-export type RuntimeStateAnswer_Body_Server_SessionId = z.infer<
-  typeof runtimeStateAnswer_Body_Server_SessionIdSchema
->;
 /** Strict raw response path: answer.body.server.source_changed. */
 export const runtimeStateAnswer_Body_Server_SourceChangedSchema = z.boolean().nullable();
-/** Raw response path: answer.body.server.source_changed. */
-export type RuntimeStateAnswer_Body_Server_SourceChanged = z.infer<
-  typeof runtimeStateAnswer_Body_Server_SourceChangedSchema
->;
 /** Strict raw response path: answer.body.server.source_fingerprint. */
 export const runtimeStateAnswer_Body_Server_SourceFingerprintSchema = z.string().nullable();
-/** Raw response path: answer.body.server.source_fingerprint. */
-export type RuntimeStateAnswer_Body_Server_SourceFingerprint = z.infer<
-  typeof runtimeStateAnswer_Body_Server_SourceFingerprintSchema
->;
 /** Strict raw response path: answer.body.server.source_revision. */
 export const runtimeStateAnswer_Body_Server_SourceRevisionSchema = z.null();
-/** Raw response path: answer.body.server.source_revision. */
-export type RuntimeStateAnswer_Body_Server_SourceRevision = z.infer<
-  typeof runtimeStateAnswer_Body_Server_SourceRevisionSchema
->;
 /** Strict raw response path: answer.body.server. */
 export const runtimeStateAnswer_Body_ServerSchema = z.strictObject({
   captured_at: runtimeStateAnswer_Body_Server_CapturedAtSchema,
@@ -820,53 +401,23 @@ export const runtimeStateAnswer_Body_ServerSchema = z.strictObject({
   source_fingerprint: runtimeStateAnswer_Body_Server_SourceFingerprintSchema,
   source_revision: runtimeStateAnswer_Body_Server_SourceRevisionSchema,
 });
-/** Raw response path: answer.body.server. */
-export type RuntimeStateAnswer_Body_Server = z.infer<typeof runtimeStateAnswer_Body_ServerSchema>;
 /** Strict raw response path: answer.body.workers[].alive. */
 export const runtimeStateAnswer_Body_Workers_ArrayElement_AliveSchema = z.boolean().nullable();
-/** Raw response path: answer.body.workers[].alive. */
-export type RuntimeStateAnswer_Body_Workers_ArrayElement_Alive = z.infer<
-  typeof runtimeStateAnswer_Body_Workers_ArrayElement_AliveSchema
->;
 /** Strict raw response path: answer.body.workers[].instance. */
 export const runtimeStateAnswer_Body_Workers_ArrayElement_InstanceSchema = z.string();
-/** Raw response path: answer.body.workers[].instance. */
-export type RuntimeStateAnswer_Body_Workers_ArrayElement_Instance = z.infer<
-  typeof runtimeStateAnswer_Body_Workers_ArrayElement_InstanceSchema
->;
 /** Strict raw response path: answer.body.workers[].kind. */
 export const runtimeStateAnswer_Body_Workers_ArrayElement_KindSchema = z.enum(['gems']);
-/** Raw response path: answer.body.workers[].kind. */
-export type RuntimeStateAnswer_Body_Workers_ArrayElement_Kind = z.infer<
-  typeof runtimeStateAnswer_Body_Workers_ArrayElement_KindSchema
->;
 /** Strict raw response path: answer.body.workers[].operation_id. */
 export const runtimeStateAnswer_Body_Workers_ArrayElement_OperationIdSchema = z.string();
-/** Raw response path: answer.body.workers[].operation_id. */
-export type RuntimeStateAnswer_Body_Workers_ArrayElement_OperationId = z.infer<
-  typeof runtimeStateAnswer_Body_Workers_ArrayElement_OperationIdSchema
->;
 /** Strict raw response path: answer.body.workers[].status. */
 export const runtimeStateAnswer_Body_Workers_ArrayElement_StatusSchema = z.enum([
   'accepted',
   'running',
 ]);
-/** Raw response path: answer.body.workers[].status. */
-export type RuntimeStateAnswer_Body_Workers_ArrayElement_Status = z.infer<
-  typeof runtimeStateAnswer_Body_Workers_ArrayElement_StatusSchema
->;
 /** Strict raw response path: answer.body.workers[].worker.creation_time. */
 export const runtimeStateAnswer_Body_Workers_ArrayElement_Worker_CreationTimeSchema = z.number();
-/** Raw response path: answer.body.workers[].worker.creation_time. */
-export type RuntimeStateAnswer_Body_Workers_ArrayElement_Worker_CreationTime = z.infer<
-  typeof runtimeStateAnswer_Body_Workers_ArrayElement_Worker_CreationTimeSchema
->;
 /** Strict raw response path: answer.body.workers[].worker.pid. */
 export const runtimeStateAnswer_Body_Workers_ArrayElement_Worker_PidSchema = z.number();
-/** Raw response path: answer.body.workers[].worker.pid. */
-export type RuntimeStateAnswer_Body_Workers_ArrayElement_Worker_Pid = z.infer<
-  typeof runtimeStateAnswer_Body_Workers_ArrayElement_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.workers[].worker. */
 export const runtimeStateAnswer_Body_Workers_ArrayElement_WorkerSchema = z
   .strictObject({
@@ -874,10 +425,6 @@ export const runtimeStateAnswer_Body_Workers_ArrayElement_WorkerSchema = z
     pid: runtimeStateAnswer_Body_Workers_ArrayElement_Worker_PidSchema,
   })
   .nullable();
-/** Raw response path: answer.body.workers[].worker. */
-export type RuntimeStateAnswer_Body_Workers_ArrayElement_Worker = z.infer<
-  typeof runtimeStateAnswer_Body_Workers_ArrayElement_WorkerSchema
->;
 /** Strict raw response path: answer.body.workers[]. */
 export const runtimeStateAnswer_Body_Workers_ArrayElementSchema = z.strictObject({
   alive: runtimeStateAnswer_Body_Workers_ArrayElement_AliveSchema,
@@ -887,16 +434,10 @@ export const runtimeStateAnswer_Body_Workers_ArrayElementSchema = z.strictObject
   status: runtimeStateAnswer_Body_Workers_ArrayElement_StatusSchema,
   worker: runtimeStateAnswer_Body_Workers_ArrayElement_WorkerSchema,
 });
-/** Raw response path: answer.body.workers[]. */
-export type RuntimeStateAnswer_Body_Workers_ArrayElement = z.infer<
-  typeof runtimeStateAnswer_Body_Workers_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.workers. */
 export const runtimeStateAnswer_Body_WorkersSchema = z.array(
   runtimeStateAnswer_Body_Workers_ArrayElementSchema,
 );
-/** Raw response path: answer.body.workers. */
-export type RuntimeStateAnswer_Body_Workers = z.infer<typeof runtimeStateAnswer_Body_WorkersSchema>;
 /** Strict raw response path: answer.body. */
 export const runtimeStateAnswer_BodySchema = z.strictObject({
   api_contract: runtimeStateAnswer_Body_ApiContractSchema,
@@ -908,12 +449,8 @@ export const runtimeStateAnswer_BodySchema = z.strictObject({
   server: runtimeStateAnswer_Body_ServerSchema,
   workers: runtimeStateAnswer_Body_WorkersSchema,
 });
-/** Raw response path: answer.body. */
-export type RuntimeStateAnswer_Body = z.infer<typeof runtimeStateAnswer_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const runtimeStateAnswer_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type RuntimeStateAnswer_Status = z.infer<typeof runtimeStateAnswer_StatusSchema>;
 /** Strict raw response path: answer. */
 export const runtimeStateAnswerSchema = z.strictObject({
   body: runtimeStateAnswer_BodySchema,
@@ -923,84 +460,36 @@ export const runtimeStateAnswerSchema = z.strictObject({
 export type RuntimeStateAnswer = z.infer<typeof runtimeStateAnswerSchema>;
 /** Strict raw response path: answer.body.coverage.bytes_read. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Coverage_BytesReadSchema = z.number();
-/** Raw response path: answer.body.coverage.bytes_read. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage_BytesRead = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Coverage_BytesReadSchema
->;
 /** Strict raw response path: answer.body.coverage.errors[].file. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Coverage_Errors_ArrayElement_FileSchema =
   z.string();
-/** Raw response path: answer.body.coverage.errors[].file. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage_Errors_ArrayElement_File = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Coverage_Errors_ArrayElement_FileSchema
->;
 /** Strict raw response path: answer.body.coverage.errors[].reason. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Coverage_Errors_ArrayElement_ReasonSchema =
   z.enum(['the file is locked by another process']);
-/** Raw response path: answer.body.coverage.errors[].reason. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage_Errors_ArrayElement_Reason = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Coverage_Errors_ArrayElement_ReasonSchema
->;
 /** Strict raw response path: answer.body.coverage.errors[]. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Coverage_Errors_ArrayElementSchema =
   z.strictObject({
     file: runtimeDiagnosticsAnswer_Status200_Body_Coverage_Errors_ArrayElement_FileSchema,
     reason: runtimeDiagnosticsAnswer_Status200_Body_Coverage_Errors_ArrayElement_ReasonSchema,
   });
-/** Raw response path: answer.body.coverage.errors[]. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage_Errors_ArrayElement = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Coverage_Errors_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.coverage.errors. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Coverage_ErrorsSchema = z.array(
   runtimeDiagnosticsAnswer_Status200_Body_Coverage_Errors_ArrayElementSchema,
 );
-/** Raw response path: answer.body.coverage.errors. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage_Errors = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Coverage_ErrorsSchema
->;
 /** Strict raw response path: answer.body.coverage.files_scanned. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Coverage_FilesScannedSchema = z.number();
-/** Raw response path: answer.body.coverage.files_scanned. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage_FilesScanned = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Coverage_FilesScannedSchema
->;
 /** Strict raw response path: answer.body.coverage.malformed_records. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Coverage_MalformedRecordsSchema = z.number();
-/** Raw response path: answer.body.coverage.malformed_records. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage_MalformedRecords = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Coverage_MalformedRecordsSchema
->;
 /** Strict raw response path: answer.body.coverage.matched_in_scan. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Coverage_MatchedInScanSchema = z.number();
-/** Raw response path: answer.body.coverage.matched_in_scan. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage_MatchedInScan = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Coverage_MatchedInScanSchema
->;
 /** Strict raw response path: answer.body.coverage.max_bytes. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Coverage_MaxBytesSchema = z.number();
-/** Raw response path: answer.body.coverage.max_bytes. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage_MaxBytes = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Coverage_MaxBytesSchema
->;
 /** Strict raw response path: answer.body.coverage.max_files. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Coverage_MaxFilesSchema = z.number();
-/** Raw response path: answer.body.coverage.max_files. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage_MaxFiles = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Coverage_MaxFilesSchema
->;
 /** Strict raw response path: answer.body.coverage.returned. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Coverage_ReturnedSchema = z.number();
-/** Raw response path: answer.body.coverage.returned. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage_Returned = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Coverage_ReturnedSchema
->;
 /** Strict raw response path: answer.body.coverage.truncated. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Coverage_TruncatedSchema = z.boolean();
-/** Raw response path: answer.body.coverage.truncated. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage_Truncated = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Coverage_TruncatedSchema
->;
 /** Strict raw response path: answer.body.coverage. */
 export const runtimeDiagnosticsAnswer_Status200_Body_CoverageSchema = z.strictObject({
   bytes_read: runtimeDiagnosticsAnswer_Status200_Body_Coverage_BytesReadSchema,
@@ -1013,34 +502,15 @@ export const runtimeDiagnosticsAnswer_Status200_Body_CoverageSchema = z.strictOb
   returned: runtimeDiagnosticsAnswer_Status200_Body_Coverage_ReturnedSchema,
   truncated: runtimeDiagnosticsAnswer_Status200_Body_Coverage_TruncatedSchema,
 });
-/** Raw response path: answer.body.coverage. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Coverage = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_CoverageSchema
->;
 /** Strict raw response path: answer.body.events[]._log.failure. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Log_FailureSchema =
   z.boolean();
-/** Raw response path: answer.body.events[]._log.failure. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Log_Failure =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Log_FailureSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.file. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Log_FileSchema =
   z.string();
-/** Raw response path: answer.body.events[]._log.file. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Log_File =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Log_FileSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.offset. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Log_OffsetSchema =
   z.number();
-/** Raw response path: answer.body.events[]._log.offset. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Log_Offset =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Log_OffsetSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_LogSchema =
   z.strictObject({
@@ -1050,123 +520,48 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdG
     offset:
       runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Log_OffsetSchema,
   });
-/** Raw response path: answer.body.events[]._log. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Log =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_LogSchema
-  >;
 /** Strict raw response path: answer.body.events[].battle_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_BattleIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].battle_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_BattleId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_BattleIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].claim_attempt_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_ClaimAttemptIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].claim_attempt_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_ClaimAttemptId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_ClaimAttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].event_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_EventIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].event_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_EventId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_EventIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].monotonic_ns. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_MonotonicNsSchema =
   z.number();
-/** Raw response path: answer.body.events[].monotonic_ns. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_MonotonicNs =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_MonotonicNsSchema
-  >;
 /** Strict raw response path: answer.body.events[].operation_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].operation_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_OperationId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_OperationIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].outcome. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_OutcomeSchema =
   z.string();
-/** Raw response path: answer.body.events[].outcome. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Outcome =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_OutcomeSchema
-  >;
 /** Strict raw response path: answer.body.events[].pid. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_PidSchema =
   z.number();
-/** Raw response path: answer.body.events[].pid. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Pid =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_PidSchema
-  >;
 /** Strict raw response path: answer.body.events[].process_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_ProcessIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].process_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_ProcessId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_ProcessIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].reason. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_ReasonSchema =
   z.enum(['timeout']);
-/** Raw response path: answer.body.events[].reason. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Reason =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.events[].seq. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_SeqSchema =
   z.number();
-/** Raw response path: answer.body.events[].seq. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_Seq =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_SeqSchema
-  >;
 /** Strict raw response path: answer.body.events[].session_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_SessionIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].session_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_SessionId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_SessionIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].t. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_TSchema =
   z.number();
-/** Raw response path: answer.body.events[].t. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_T =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_TSchema
-  >;
 /** Strict raw response path: answer.body.events[].trace_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_TraceIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].trace_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_TraceId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_TraceIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].wall_time. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_WallTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].wall_time. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_WallTime =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_WallTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[], variant: kind ad_gem_attempt_end. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEndSchema =
   z.strictObject({
@@ -1198,35 +593,15 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdG
     wall_time:
       runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd_WallTimeSchema,
   });
-/** Raw response path: answer.body.events[], variant: kind ad_gem_attempt_end. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEnd =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindAdGemAttemptEndSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.failure. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Log_FailureSchema =
   z.boolean();
-/** Raw response path: answer.body.events[]._log.failure. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Log_Failure =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Log_FailureSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.file. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Log_FileSchema =
   z.string();
-/** Raw response path: answer.body.events[]._log.file. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Log_File =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Log_FileSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.offset. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Log_OffsetSchema =
   z.number();
-/** Raw response path: answer.body.events[]._log.offset. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Log_Offset =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Log_OffsetSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_LogSchema =
   z.strictObject({
@@ -1236,123 +611,48 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBat
     offset:
       runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Log_OffsetSchema,
   });
-/** Raw response path: answer.body.events[]._log. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Log =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_LogSchema
-  >;
 /** Strict raw response path: answer.body.events[].battle_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_BattleIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].battle_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_BattleId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_BattleIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].command_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_CommandIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].command_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_CommandId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_CommandIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].event_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_EventIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].event_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_EventId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_EventIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].monotonic_ns. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_MonotonicNsSchema =
   z.number();
-/** Raw response path: answer.body.events[].monotonic_ns. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_MonotonicNs =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_MonotonicNsSchema
-  >;
 /** Strict raw response path: answer.body.events[].operation_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].operation_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_OperationId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_OperationIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].outcome. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_OutcomeSchema =
   z.string();
-/** Raw response path: answer.body.events[].outcome. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Outcome =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_OutcomeSchema
-  >;
 /** Strict raw response path: answer.body.events[].pid. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_PidSchema =
   z.number();
-/** Raw response path: answer.body.events[].pid. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Pid =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_PidSchema
-  >;
 /** Strict raw response path: answer.body.events[].process_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_ProcessIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].process_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_ProcessId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_ProcessIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].request_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_RequestIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].request_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_RequestId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_RequestIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].seq. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_SeqSchema =
   z.number();
-/** Raw response path: answer.body.events[].seq. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_Seq =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_SeqSchema
-  >;
 /** Strict raw response path: answer.body.events[].session_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_SessionIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].session_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_SessionId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_SessionIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].t. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_TSchema =
   z.number();
-/** Raw response path: answer.body.events[].t. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_T =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_TSchema
-  >;
 /** Strict raw response path: answer.body.events[].trace_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_TraceIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].trace_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_TraceId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_TraceIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].wall_time. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_WallTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].wall_time. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_WallTime =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_WallTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[], variant: kind battle_command_accepted. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAcceptedSchema =
   z.strictObject({
@@ -1384,35 +684,15 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBat
     wall_time:
       runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted_WallTimeSchema,
   });
-/** Raw response path: answer.body.events[], variant: kind battle_command_accepted. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAccepted =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindBattleCommandAcceptedSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.failure. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Log_FailureSchema =
   z.boolean();
-/** Raw response path: answer.body.events[]._log.failure. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Log_Failure =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Log_FailureSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.file. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Log_FileSchema =
   z.string();
-/** Raw response path: answer.body.events[]._log.file. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Log_File =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Log_FileSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.offset. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Log_OffsetSchema =
   z.number();
-/** Raw response path: answer.body.events[]._log.offset. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Log_Offset =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Log_OffsetSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_LogSchema =
   z.strictObject({
@@ -1422,106 +702,42 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHar
     offset:
       runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Log_OffsetSchema,
   });
-/** Raw response path: answer.body.events[]._log. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Log =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_LogSchema
-  >;
 /** Strict raw response path: answer.body.events[].event_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_EventIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].event_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_EventId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_EventIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].instance. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.events[].instance. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Instance =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.events[].monotonic_ns. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_MonotonicNsSchema =
   z.number();
-/** Raw response path: answer.body.events[].monotonic_ns. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_MonotonicNs =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_MonotonicNsSchema
-  >;
 /** Strict raw response path: answer.body.events[].offer_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_OfferIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].offer_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_OfferId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_OfferIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].outcome. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_OutcomeSchema =
   z.string();
-/** Raw response path: answer.body.events[].outcome. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Outcome =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_OutcomeSchema
-  >;
 /** Strict raw response path: answer.body.events[].pid. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_PidSchema =
   z.number();
-/** Raw response path: answer.body.events[].pid. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Pid =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_PidSchema
-  >;
 /** Strict raw response path: answer.body.events[].process_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_ProcessIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].process_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_ProcessId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_ProcessIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].seq. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_SeqSchema =
   z.number();
-/** Raw response path: answer.body.events[].seq. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_Seq =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_SeqSchema
-  >;
 /** Strict raw response path: answer.body.events[].session_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_SessionIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].session_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_SessionId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_SessionIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].t. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_TSchema =
   z.number();
-/** Raw response path: answer.body.events[].t. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_T = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_TSchema
->;
 /** Strict raw response path: answer.body.events[].trace_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_TraceIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].trace_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_TraceId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_TraceIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].wall_time. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_WallTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].wall_time. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_WallTime =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_WallTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[], variant: kind harvest_tick. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTickSchema =
   z.strictObject({
@@ -1549,34 +765,15 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHar
     wall_time:
       runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick_WallTimeSchema,
   });
-/** Raw response path: answer.body.events[], variant: kind harvest_tick. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTick = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindHarvestTickSchema
->;
 /** Strict raw response path: answer.body.events[]._log.failure. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Log_FailureSchema =
   z.boolean();
-/** Raw response path: answer.body.events[]._log.failure. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Log_Failure =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Log_FailureSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.file. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Log_FileSchema =
   z.string();
-/** Raw response path: answer.body.events[]._log.file. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Log_File =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Log_FileSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.offset. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Log_OffsetSchema =
   z.number();
-/** Raw response path: answer.body.events[]._log.offset. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Log_Offset =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Log_OffsetSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_LogSchema =
   z.strictObject({
@@ -1586,114 +783,45 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrb
     offset:
       runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Log_OffsetSchema,
   });
-/** Raw response path: answer.body.events[]._log. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Log =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_LogSchema
-  >;
 /** Strict raw response path: answer.body.events[].event_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_EventIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].event_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_EventId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_EventIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].monotonic_ns. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_MonotonicNsSchema =
   z.number();
-/** Raw response path: answer.body.events[].monotonic_ns. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_MonotonicNs =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_MonotonicNsSchema
-  >;
 /** Strict raw response path: answer.body.events[].operation_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].operation_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_OperationId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_OperationIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].outcome. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_OutcomeSchema =
   z.string();
-/** Raw response path: answer.body.events[].outcome. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Outcome =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_OutcomeSchema
-  >;
 /** Strict raw response path: answer.body.events[].pid. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_PidSchema =
   z.number();
-/** Raw response path: answer.body.events[].pid. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Pid =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_PidSchema
-  >;
 /** Strict raw response path: answer.body.events[].process_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_ProcessIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].process_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_ProcessId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_ProcessIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].seq. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_SeqSchema =
   z.number();
-/** Raw response path: answer.body.events[].seq. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_Seq =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_SeqSchema
-  >;
 /** Strict raw response path: answer.body.events[].session_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_SessionIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].session_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_SessionId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_SessionIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].sweep_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_SweepIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].sweep_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_SweepId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_SweepIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].t. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_TSchema =
   z.number();
-/** Raw response path: answer.body.events[].t. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_T = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_TSchema
->;
 /** Strict raw response path: answer.body.events[].trace_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_TraceIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].trace_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_TraceId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_TraceIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].wall_time. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_WallTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].wall_time. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_WallTime =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_WallTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[].window_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_WindowIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].window_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_WindowId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.events[], variant: kind orbit_sweep. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweepSchema =
   z.strictObject({
@@ -1723,34 +851,15 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrb
     window_id:
       runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep_WindowIdSchema,
   });
-/** Raw response path: answer.body.events[], variant: kind orbit_sweep. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweep = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindOrbitSweepSchema
->;
 /** Strict raw response path: answer.body.events[]._log.failure. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Log_FailureSchema =
   z.boolean();
-/** Raw response path: answer.body.events[]._log.failure. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Log_Failure =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Log_FailureSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.file. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Log_FileSchema =
   z.string();
-/** Raw response path: answer.body.events[]._log.file. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Log_File =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Log_FileSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.offset. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Log_OffsetSchema =
   z.number();
-/** Raw response path: answer.body.events[]._log.offset. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Log_Offset =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Log_OffsetSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_LogSchema =
   z.strictObject({
@@ -1760,147 +869,57 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindReq
     offset:
       runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Log_OffsetSchema,
   });
-/** Raw response path: answer.body.events[]._log. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Log =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_LogSchema
-  >;
 /** Strict raw response path: answer.body.events[].duration_ms. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_DurationMsSchema =
   z.number();
-/** Raw response path: answer.body.events[].duration_ms. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_DurationMs =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_DurationMsSchema
-  >;
 /** Strict raw response path: answer.body.events[].error. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_ErrorSchema =
   z.string();
-/** Raw response path: answer.body.events[].error. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Error =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_ErrorSchema
-  >;
 /** Strict raw response path: answer.body.events[].event_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_EventIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].event_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_EventId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_EventIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].method. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_MethodSchema =
   z.string();
-/** Raw response path: answer.body.events[].method. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Method =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_MethodSchema
-  >;
 /** Strict raw response path: answer.body.events[].monotonic_ns. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_MonotonicNsSchema =
   z.number();
-/** Raw response path: answer.body.events[].monotonic_ns. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_MonotonicNs =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_MonotonicNsSchema
-  >;
 /** Strict raw response path: answer.body.events[].outcome. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_OutcomeSchema =
   z.string();
-/** Raw response path: answer.body.events[].outcome. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Outcome =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_OutcomeSchema
-  >;
 /** Strict raw response path: answer.body.events[].pid. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_PidSchema =
   z.number();
-/** Raw response path: answer.body.events[].pid. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Pid =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_PidSchema
-  >;
 /** Strict raw response path: answer.body.events[].process_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_ProcessIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].process_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_ProcessId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_ProcessIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].request_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_RequestIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].request_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_RequestId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_RequestIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].route. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_RouteSchema =
   z.string();
-/** Raw response path: answer.body.events[].route. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Route =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_RouteSchema
-  >;
 /** Strict raw response path: answer.body.events[].seq. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_SeqSchema =
   z.number();
-/** Raw response path: answer.body.events[].seq. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Seq =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_SeqSchema
-  >;
 /** Strict raw response path: answer.body.events[].session_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_SessionIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].session_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_SessionId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_SessionIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].source. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_SourceSchema =
   z.string();
-/** Raw response path: answer.body.events[].source. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_Source =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_SourceSchema
-  >;
 /** Strict raw response path: answer.body.events[].status_code. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_StatusCodeSchema =
   z.number();
-/** Raw response path: answer.body.events[].status_code. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_StatusCode =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_StatusCodeSchema
-  >;
 /** Strict raw response path: answer.body.events[].t. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_TSchema =
   z.number();
-/** Raw response path: answer.body.events[].t. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_T =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_TSchema
-  >;
 /** Strict raw response path: answer.body.events[].trace_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_TraceIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].trace_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_TraceId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_TraceIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].wall_time. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_WallTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].wall_time. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_WallTime =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_WallTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[], variant: kind request_finished. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinishedSchema =
   z.strictObject({
@@ -1938,35 +957,15 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindReq
     wall_time:
       runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished_WallTimeSchema,
   });
-/** Raw response path: answer.body.events[], variant: kind request_finished. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinished =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRequestFinishedSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.failure. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Log_FailureSchema =
   z.boolean();
-/** Raw response path: answer.body.events[]._log.failure. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Log_Failure =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Log_FailureSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.file. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Log_FileSchema =
   z.string();
-/** Raw response path: answer.body.events[]._log.file. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Log_File =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Log_FileSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.offset. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Log_OffsetSchema =
   z.number();
-/** Raw response path: answer.body.events[]._log.offset. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Log_Offset =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Log_OffsetSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_LogSchema =
   z.strictObject({
@@ -1976,106 +975,42 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRun
     offset:
       runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Log_OffsetSchema,
   });
-/** Raw response path: answer.body.events[]._log. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Log =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_LogSchema
-  >;
 /** Strict raw response path: answer.body.events[].error. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_ErrorSchema =
   z.string();
-/** Raw response path: answer.body.events[].error. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Error =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_ErrorSchema
-  >;
 /** Strict raw response path: answer.body.events[].event_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_EventIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].event_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_EventId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_EventIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].level. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_LevelSchema =
   z.string();
-/** Raw response path: answer.body.events[].level. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Level =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_LevelSchema
-  >;
 /** Strict raw response path: answer.body.events[].monotonic_ns. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_MonotonicNsSchema =
   z.number();
-/** Raw response path: answer.body.events[].monotonic_ns. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_MonotonicNs =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_MonotonicNsSchema
-  >;
 /** Strict raw response path: answer.body.events[].operation_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].operation_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_OperationId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_OperationIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].pid. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_PidSchema =
   z.number();
-/** Raw response path: answer.body.events[].pid. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Pid =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_PidSchema
-  >;
 /** Strict raw response path: answer.body.events[].process_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_ProcessIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].process_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_ProcessId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_ProcessIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].seq. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_SeqSchema =
   z.number();
-/** Raw response path: answer.body.events[].seq. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_Seq =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_SeqSchema
-  >;
 /** Strict raw response path: answer.body.events[].session_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_SessionIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].session_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_SessionId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_SessionIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].t. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_TSchema =
   z.number();
-/** Raw response path: answer.body.events[].t. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_T = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_TSchema
->;
 /** Strict raw response path: answer.body.events[].trace_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_TraceIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].trace_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_TraceId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_TraceIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].wall_time. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_WallTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].wall_time. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_WallTime =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_WallTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[], variant: kind runner_error. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerErrorSchema =
   z.strictObject({
@@ -2101,33 +1036,15 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRun
     wall_time:
       runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError_WallTimeSchema,
   });
-/** Raw response path: answer.body.events[], variant: kind runner_error. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerError = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerErrorSchema
->;
 /** Strict raw response path: answer.body.events[]._log.failure. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Log_FailureSchema =
   z.boolean();
-/** Raw response path: answer.body.events[]._log.failure. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Log_Failure =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Log_FailureSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log.file. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Log_FileSchema =
   z.string();
-/** Raw response path: answer.body.events[]._log.file. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Log_File = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Log_FileSchema
->;
 /** Strict raw response path: answer.body.events[]._log.offset. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Log_OffsetSchema =
   z.number();
-/** Raw response path: answer.body.events[]._log.offset. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Log_Offset =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Log_OffsetSchema
-  >;
 /** Strict raw response path: answer.body.events[]._log. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_LogSchema =
   z.strictObject({
@@ -2135,98 +1052,42 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTic
     file: runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Log_FileSchema,
     offset: runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Log_OffsetSchema,
   });
-/** Raw response path: answer.body.events[]._log. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Log = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_LogSchema
->;
 /** Strict raw response path: answer.body.events[].event_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_EventIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].event_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_EventId = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_EventIdSchema
->;
 /** Strict raw response path: answer.body.events[].monotonic_ns. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_MonotonicNsSchema =
   z.number();
-/** Raw response path: answer.body.events[].monotonic_ns. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_MonotonicNs =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_MonotonicNsSchema
-  >;
 /** Strict raw response path: answer.body.events[].number. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_NumberSchema =
   z.number();
-/** Raw response path: answer.body.events[].number. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Number = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_NumberSchema
->;
 /** Strict raw response path: answer.body.events[].operation_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].operation_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_OperationId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_OperationIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].padding. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_PaddingSchema =
   z.string();
-/** Raw response path: answer.body.events[].padding. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Padding = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_PaddingSchema
->;
 /** Strict raw response path: answer.body.events[].pid. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_PidSchema =
   z.number();
-/** Raw response path: answer.body.events[].pid. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Pid = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_PidSchema
->;
 /** Strict raw response path: answer.body.events[].process_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_ProcessIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].process_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_ProcessId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_ProcessIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].seq. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_SeqSchema =
   z.number();
-/** Raw response path: answer.body.events[].seq. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_Seq = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_SeqSchema
->;
 /** Strict raw response path: answer.body.events[].session_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_SessionIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].session_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_SessionId =
-  z.infer<
-    typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_SessionIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].t. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_TSchema =
   z.number();
-/** Raw response path: answer.body.events[].t. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_T = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_TSchema
->;
 /** Strict raw response path: answer.body.events[].trace_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_TraceIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].trace_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_TraceId = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_TraceIdSchema
->;
 /** Strict raw response path: answer.body.events[].wall_time. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_WallTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].wall_time. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_WallTime = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_WallTimeSchema
->;
 /** Strict raw response path: answer.body.events[], variant: kind tick. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTickSchema =
   z.strictObject({
@@ -2250,10 +1111,6 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTic
     trace_id: runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_TraceIdSchema,
     wall_time: runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick_WallTimeSchema,
   });
-/** Raw response path: answer.body.events[], variant: kind tick. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTick = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTickSchema
->;
 /** Strict raw response path: answer.body.events[]. */
 export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElementSchema =
   z.discriminatedUnion('kind', [
@@ -2265,45 +1122,21 @@ export const runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElementSchema =
     runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindRunnerErrorSchema,
     runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement_KindTickSchema,
   ]);
-/** Raw response path: answer.body.events[]. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events_ArrayElement = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.events. */
 export const runtimeDiagnosticsAnswer_Status200_Body_EventsSchema = z.array(
   runtimeDiagnosticsAnswer_Status200_Body_Events_ArrayElementSchema,
 );
-/** Raw response path: answer.body.events. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_Events = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_EventsSchema
->;
 /** Strict raw response path: answer.body.writer_health.last_error.event_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_EventIdSchema =
   z.string();
-/** Raw response path: answer.body.writer_health.last_error.event_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_EventId = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_EventIdSchema
->;
 /** Strict raw response path: answer.body.writer_health.last_error.exception_type. */
 export const runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_ExceptionTypeSchema =
   z.string();
-/** Raw response path: answer.body.writer_health.last_error.exception_type. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_ExceptionType = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_ExceptionTypeSchema
->;
 /** Strict raw response path: answer.body.writer_health.last_error.message. */
 export const runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_MessageSchema =
   z.string();
-/** Raw response path: answer.body.writer_health.last_error.message. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_Message = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_MessageSchema
->;
 /** Strict raw response path: answer.body.writer_health.last_error.t. */
 export const runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_TSchema = z.number();
-/** Raw response path: answer.body.writer_health.last_error.t. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_T = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_TSchema
->;
 /** Strict raw response path: answer.body.writer_health.last_error. */
 export const runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastErrorSchema = z
   .strictObject({
@@ -2314,28 +1147,12 @@ export const runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastErrorSchem
     t: runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError_TSchema,
   })
   .nullable();
-/** Raw response path: answer.body.writer_health.last_error. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastError = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastErrorSchema
->;
 /** Strict raw response path: answer.body.writer_health.pid. */
 export const runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_PidSchema = z.number();
-/** Raw response path: answer.body.writer_health.pid. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_WriterHealth_Pid = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_PidSchema
->;
 /** Strict raw response path: answer.body.writer_health.process_id. */
 export const runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_ProcessIdSchema = z.string();
-/** Raw response path: answer.body.writer_health.process_id. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_WriterHealth_ProcessId = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_ProcessIdSchema
->;
 /** Strict raw response path: answer.body.writer_health.write_errors. */
 export const runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_WriteErrorsSchema = z.number();
-/** Raw response path: answer.body.writer_health.write_errors. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_WriterHealth_WriteErrors = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_WriteErrorsSchema
->;
 /** Strict raw response path: answer.body.writer_health. */
 export const runtimeDiagnosticsAnswer_Status200_Body_WriterHealthSchema = z.strictObject({
   last_error: runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_LastErrorSchema,
@@ -2343,71 +1160,35 @@ export const runtimeDiagnosticsAnswer_Status200_Body_WriterHealthSchema = z.stri
   process_id: runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_ProcessIdSchema,
   write_errors: runtimeDiagnosticsAnswer_Status200_Body_WriterHealth_WriteErrorsSchema,
 });
-/** Raw response path: answer.body.writer_health. */
-export type RuntimeDiagnosticsAnswer_Status200_Body_WriterHealth = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_Body_WriterHealthSchema
->;
 /** Strict raw response path: answer.body. */
 export const runtimeDiagnosticsAnswer_Status200_BodySchema = z.strictObject({
   coverage: runtimeDiagnosticsAnswer_Status200_Body_CoverageSchema,
   events: runtimeDiagnosticsAnswer_Status200_Body_EventsSchema,
   writer_health: runtimeDiagnosticsAnswer_Status200_Body_WriterHealthSchema,
 });
-/** Raw response path: answer.body. */
-export type RuntimeDiagnosticsAnswer_Status200_Body = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const runtimeDiagnosticsAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type RuntimeDiagnosticsAnswer_Status200_Status = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members coverage, events, writer_health. */
 export const runtimeDiagnosticsAnswer_Status200Schema = z.strictObject({
   body: runtimeDiagnosticsAnswer_Status200_BodySchema,
   status: runtimeDiagnosticsAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members coverage, events, writer_health. */
-export type RuntimeDiagnosticsAnswer_Status200 = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status200Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const runtimeDiagnosticsAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type RuntimeDiagnosticsAnswer_Status400_Body_Error = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const runtimeDiagnosticsAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RuntimeDiagnosticsAnswer_Status400_Body_Ok = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const runtimeDiagnosticsAnswer_Status400_BodySchema = z.strictObject({
   error: runtimeDiagnosticsAnswer_Status400_Body_ErrorSchema,
   ok: runtimeDiagnosticsAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type RuntimeDiagnosticsAnswer_Status400_Body = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const runtimeDiagnosticsAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type RuntimeDiagnosticsAnswer_Status400_Status = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const runtimeDiagnosticsAnswer_Status400Schema = z.strictObject({
   body: runtimeDiagnosticsAnswer_Status400_BodySchema,
   status: runtimeDiagnosticsAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type RuntimeDiagnosticsAnswer_Status400 = z.infer<
-  typeof runtimeDiagnosticsAnswer_Status400Schema
->;
 /** Strict raw response path: answer. */
 export const runtimeDiagnosticsAnswerSchema = z.union([
   runtimeDiagnosticsAnswer_Status200Schema,

@@ -7,52 +7,20 @@ export const fixtureVersionSchema = z.literal(1);
 export type FixtureVersion = z.infer<typeof fixtureVersionSchema>;
 /** Strict raw response path: answer.body.availability. */
 export const schedulePlanAnswer_Status200V1_Body_AvailabilitySchema = z.string();
-/** Raw response path: answer.body.availability. */
-export type SchedulePlanAnswer_Status200V1_Body_Availability = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_AvailabilitySchema
->;
 /** Strict raw response path: answer.body.available. */
 export const schedulePlanAnswer_Status200V1_Body_AvailableSchema = z.boolean();
-/** Raw response path: answer.body.available. */
-export type SchedulePlanAnswer_Status200V1_Body_Available = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_AvailableSchema
->;
 /** Strict raw response path: answer.body.context.account. */
 export const schedulePlanAnswer_Status200V1_Body_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.context.account. */
-export type SchedulePlanAnswer_Status200V1_Body_Context_Account = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.context.device_key. */
 export const schedulePlanAnswer_Status200V1_Body_Context_DeviceKeySchema = z.string();
-/** Raw response path: answer.body.context.device_key. */
-export type SchedulePlanAnswer_Status200V1_Body_Context_DeviceKey = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.context.instance. */
 export const schedulePlanAnswer_Status200V1_Body_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.context.instance. */
-export type SchedulePlanAnswer_Status200V1_Body_Context_Instance = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.context.profile. */
 export const schedulePlanAnswer_Status200V1_Body_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.context.profile. */
-export type SchedulePlanAnswer_Status200V1_Body_Context_Profile = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.context.profile_revision. */
 export const schedulePlanAnswer_Status200V1_Body_Context_ProfileRevisionSchema = z.string();
-/** Raw response path: answer.body.context.profile_revision. */
-export type SchedulePlanAnswer_Status200V1_Body_Context_ProfileRevision = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Context_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.context.serial. */
 export const schedulePlanAnswer_Status200V1_Body_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.context.serial. */
-export type SchedulePlanAnswer_Status200V1_Body_Context_Serial = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.context. */
 export const schedulePlanAnswer_Status200V1_Body_ContextSchema = z.strictObject({
   account: schedulePlanAnswer_Status200V1_Body_Context_AccountSchema,
@@ -62,61 +30,25 @@ export const schedulePlanAnswer_Status200V1_Body_ContextSchema = z.strictObject(
   profile_revision: schedulePlanAnswer_Status200V1_Body_Context_ProfileRevisionSchema,
   serial: schedulePlanAnswer_Status200V1_Body_Context_SerialSchema,
 });
-/** Raw response path: answer.body.context. */
-export type SchedulePlanAnswer_Status200V1_Body_Context = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ContextSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const schedulePlanAnswer_Status200V1_Body_ErrorSchema = z.null();
-/** Raw response path: answer.body.error. */
-export type SchedulePlanAnswer_Status200V1_Body_Error = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.fresh_for_sec. */
 export const schedulePlanAnswer_Status200V1_Body_FreshForSecSchema = z.number();
-/** Raw response path: answer.body.fresh_for_sec. */
-export type SchedulePlanAnswer_Status200V1_Body_FreshForSec = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_FreshForSecSchema
->;
 /** Strict raw response path: answer.body.handoff. */
 export const schedulePlanAnswer_Status200V1_Body_HandoffSchema = z.string();
-/** Raw response path: answer.body.handoff. */
-export type SchedulePlanAnswer_Status200V1_Body_Handoff = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_HandoffSchema
->;
 /** Strict raw response path: answer.body.local_time. */
 export const schedulePlanAnswer_Status200V1_Body_LocalTimeSchema = z.string();
-/** Raw response path: answer.body.local_time. */
-export type SchedulePlanAnswer_Status200V1_Body_LocalTime = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_LocalTimeSchema
->;
 /** Strict raw response path: answer.body.next_clock_boundary.at. */
 export const schedulePlanAnswer_Status200V1_Body_NextClockBoundary_AtSchema = z.number();
-/** Raw response path: answer.body.next_clock_boundary.at. */
-export type SchedulePlanAnswer_Status200V1_Body_NextClockBoundary_At = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_NextClockBoundary_AtSchema
->;
 /** Strict raw response path: answer.body.next_clock_boundary.guarantees_handoff. */
 export const schedulePlanAnswer_Status200V1_Body_NextClockBoundary_GuaranteesHandoffSchema =
   z.boolean();
-/** Raw response path: answer.body.next_clock_boundary.guarantees_handoff. */
-export type SchedulePlanAnswer_Status200V1_Body_NextClockBoundary_GuaranteesHandoff = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_NextClockBoundary_GuaranteesHandoffSchema
->;
 /** Strict raw response path: answer.body.next_clock_boundary.kind. */
 export const schedulePlanAnswer_Status200V1_Body_NextClockBoundary_KindSchema = z.enum([
   'clock_proposal',
 ]);
-/** Raw response path: answer.body.next_clock_boundary.kind. */
-export type SchedulePlanAnswer_Status200V1_Body_NextClockBoundary_Kind = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_NextClockBoundary_KindSchema
->;
 /** Strict raw response path: answer.body.next_clock_boundary.local_time. */
 export const schedulePlanAnswer_Status200V1_Body_NextClockBoundary_LocalTimeSchema = z.string();
-/** Raw response path: answer.body.next_clock_boundary.local_time. */
-export type SchedulePlanAnswer_Status200V1_Body_NextClockBoundary_LocalTime = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_NextClockBoundary_LocalTimeSchema
->;
 /** Strict raw response path: answer.body.next_clock_boundary. */
 export const schedulePlanAnswer_Status200V1_Body_NextClockBoundarySchema = z.strictObject({
   at: schedulePlanAnswer_Status200V1_Body_NextClockBoundary_AtSchema,
@@ -124,40 +56,16 @@ export const schedulePlanAnswer_Status200V1_Body_NextClockBoundarySchema = z.str
   kind: schedulePlanAnswer_Status200V1_Body_NextClockBoundary_KindSchema,
   local_time: schedulePlanAnswer_Status200V1_Body_NextClockBoundary_LocalTimeSchema,
 });
-/** Raw response path: answer.body.next_clock_boundary. */
-export type SchedulePlanAnswer_Status200V1_Body_NextClockBoundary = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_NextClockBoundarySchema
->;
 /** Strict raw response path: answer.body.observed_at. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedAtSchema = z.number();
-/** Raw response path: answer.body.observed_at. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedAt = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedAtSchema
->;
 /** Strict raw response path: answer.body.observed_winner.id. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_IdSchema = z.string();
-/** Raw response path: answer.body.observed_winner.id. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_Id = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_IdSchema
->;
 /** Strict raw response path: answer.body.observed_winner.label. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_LabelSchema = z.string();
-/** Raw response path: answer.body.observed_winner.label. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_Label = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_LabelSchema
->;
 /** Strict raw response path: answer.body.observed_winner.legacy. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_LegacySchema = z.boolean();
-/** Raw response path: answer.body.observed_winner.legacy. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_Legacy = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_LegacySchema
->;
 /** Strict raw response path: answer.body.observed_winner.preset. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_PresetSchema = z.string();
-/** Raw response path: answer.body.observed_winner.preset. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_Preset = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_PresetSchema
->;
 /** Strict raw response path: answer.body.observed_winner, variant: kind coin. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoinSchema = z.strictObject({
   id: schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_IdSchema,
@@ -166,35 +74,15 @@ export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoinSchema =
   legacy: schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_LegacySchema,
   preset: schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin_PresetSchema,
 });
-/** Raw response path: answer.body.observed_winner, variant: kind coin. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoin = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindCoinSchema
->;
 /** Strict raw response path: answer.body.observed_winner.id. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_IdSchema = z.string();
-/** Raw response path: answer.body.observed_winner.id. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_Id = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_IdSchema
->;
 /** Strict raw response path: answer.body.observed_winner.label. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_LabelSchema = z.string();
-/** Raw response path: answer.body.observed_winner.label. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_Label = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_LabelSchema
->;
 /** Strict raw response path: answer.body.observed_winner.legacy. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_LegacySchema =
   z.boolean();
-/** Raw response path: answer.body.observed_winner.legacy. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_Legacy = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_LegacySchema
->;
 /** Strict raw response path: answer.body.observed_winner.preset. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_PresetSchema = z.string();
-/** Raw response path: answer.body.observed_winner.preset. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_Preset = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_PresetSchema
->;
 /** Strict raw response path: answer.body.observed_winner, variant: kind shard. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShardSchema = z.strictObject({
   id: schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_IdSchema,
@@ -203,38 +91,18 @@ export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShardSchema 
   legacy: schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_LegacySchema,
   preset: schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard_PresetSchema,
 });
-/** Raw response path: answer.body.observed_winner, variant: kind shard. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShard = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindShardSchema
->;
 /** Strict raw response path: answer.body.observed_winner.id. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_IdSchema =
   z.string();
-/** Raw response path: answer.body.observed_winner.id. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_Id = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_IdSchema
->;
 /** Strict raw response path: answer.body.observed_winner.label. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_LabelSchema =
   z.string();
-/** Raw response path: answer.body.observed_winner.label. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_Label = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_LabelSchema
->;
 /** Strict raw response path: answer.body.observed_winner.legacy. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_LegacySchema =
   z.boolean();
-/** Raw response path: answer.body.observed_winner.legacy. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_Legacy = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_LegacySchema
->;
 /** Strict raw response path: answer.body.observed_winner.preset. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_PresetSchema =
   z.string();
-/** Raw response path: answer.body.observed_winner.preset. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_Preset = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_PresetSchema
->;
 /** Strict raw response path: answer.body.observed_winner, variant: kind tournament. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournamentSchema =
   z.strictObject({
@@ -244,10 +112,6 @@ export const schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournamentSc
     legacy: schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_LegacySchema,
     preset: schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament_PresetSchema,
   });
-/** Raw response path: answer.body.observed_winner, variant: kind tournament. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournament = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournamentSchema
->;
 /** Strict raw response path: answer.body.observed_winner. */
 export const schedulePlanAnswer_Status200V1_Body_ObservedWinnerSchema = z.discriminatedUnion(
   'kind',
@@ -257,82 +121,30 @@ export const schedulePlanAnswer_Status200V1_Body_ObservedWinnerSchema = z.discri
     schedulePlanAnswer_Status200V1_Body_ObservedWinner_KindTournamentSchema,
   ],
 );
-/** Raw response path: answer.body.observed_winner. */
-export type SchedulePlanAnswer_Status200V1_Body_ObservedWinner = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ObservedWinnerSchema
->;
 /** Strict raw response path: answer.body.operation_id. */
 export const schedulePlanAnswer_Status200V1_Body_OperationIdSchema = z.string();
-/** Raw response path: answer.body.operation_id. */
-export type SchedulePlanAnswer_Status200V1_Body_OperationId = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_OperationIdSchema
->;
 /** Strict raw response path: answer.body.operation_status. */
 export const schedulePlanAnswer_Status200V1_Body_OperationStatusSchema = z.string();
-/** Raw response path: answer.body.operation_status. */
-export type SchedulePlanAnswer_Status200V1_Body_OperationStatus = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_OperationStatusSchema
->;
 /** Strict raw response path: answer.body.reason. */
 export const schedulePlanAnswer_Status200V1_Body_ReasonSchema = z.enum(['first_eligible_block']);
-/** Raw response path: answer.body.reason. */
-export type SchedulePlanAnswer_Status200V1_Body_Reason = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ReasonSchema
->;
 /** Strict raw response path: answer.body.recovery_action. */
 export const schedulePlanAnswer_Status200V1_Body_RecoveryActionSchema = z.null();
-/** Raw response path: answer.body.recovery_action. */
-export type SchedulePlanAnswer_Status200V1_Body_RecoveryAction = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.server_time. */
 export const schedulePlanAnswer_Status200V1_Body_ServerTimeSchema = z.number();
-/** Raw response path: answer.body.server_time. */
-export type SchedulePlanAnswer_Status200V1_Body_ServerTime = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.step. */
 export const schedulePlanAnswer_Status200V1_Body_StepSchema = z.string();
-/** Raw response path: answer.body.step. */
-export type SchedulePlanAnswer_Status200V1_Body_Step = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_StepSchema
->;
 /** Strict raw response path: answer.body.timezone. */
 export const schedulePlanAnswer_Status200V1_Body_TimezoneSchema = z.string();
-/** Raw response path: answer.body.timezone. */
-export type SchedulePlanAnswer_Status200V1_Body_Timezone = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_TimezoneSchema
->;
 /** Strict raw response path: answer.body.utc_offset. */
 export const schedulePlanAnswer_Status200V1_Body_UtcOffsetSchema = z.string();
-/** Raw response path: answer.body.utc_offset. */
-export type SchedulePlanAnswer_Status200V1_Body_UtcOffset = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_UtcOffsetSchema
->;
 /** Strict raw response path: answer.body.winner.id. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindCoin_IdSchema = z.string();
-/** Raw response path: answer.body.winner.id. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindCoin_Id = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindCoin_IdSchema
->;
 /** Strict raw response path: answer.body.winner.label. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindCoin_LabelSchema = z.string();
-/** Raw response path: answer.body.winner.label. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindCoin_Label = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindCoin_LabelSchema
->;
 /** Strict raw response path: answer.body.winner.legacy. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindCoin_LegacySchema = z.boolean();
-/** Raw response path: answer.body.winner.legacy. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindCoin_Legacy = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindCoin_LegacySchema
->;
 /** Strict raw response path: answer.body.winner.preset. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindCoin_PresetSchema = z.string();
-/** Raw response path: answer.body.winner.preset. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindCoin_Preset = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindCoin_PresetSchema
->;
 /** Strict raw response path: answer.body.winner, variant: kind coin. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindCoinSchema = z.strictObject({
   id: schedulePlanAnswer_Status200V1_Body_Winner_KindCoin_IdSchema,
@@ -341,34 +153,14 @@ export const schedulePlanAnswer_Status200V1_Body_Winner_KindCoinSchema = z.stric
   legacy: schedulePlanAnswer_Status200V1_Body_Winner_KindCoin_LegacySchema,
   preset: schedulePlanAnswer_Status200V1_Body_Winner_KindCoin_PresetSchema,
 });
-/** Raw response path: answer.body.winner, variant: kind coin. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindCoin = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindCoinSchema
->;
 /** Strict raw response path: answer.body.winner.id. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindShard_IdSchema = z.string();
-/** Raw response path: answer.body.winner.id. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindShard_Id = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindShard_IdSchema
->;
 /** Strict raw response path: answer.body.winner.label. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindShard_LabelSchema = z.string();
-/** Raw response path: answer.body.winner.label. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindShard_Label = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindShard_LabelSchema
->;
 /** Strict raw response path: answer.body.winner.legacy. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindShard_LegacySchema = z.boolean();
-/** Raw response path: answer.body.winner.legacy. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindShard_Legacy = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindShard_LegacySchema
->;
 /** Strict raw response path: answer.body.winner.preset. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindShard_PresetSchema = z.string();
-/** Raw response path: answer.body.winner.preset. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindShard_Preset = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindShard_PresetSchema
->;
 /** Strict raw response path: answer.body.winner, variant: kind shard. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindShardSchema = z.strictObject({
   id: schedulePlanAnswer_Status200V1_Body_Winner_KindShard_IdSchema,
@@ -377,34 +169,14 @@ export const schedulePlanAnswer_Status200V1_Body_Winner_KindShardSchema = z.stri
   legacy: schedulePlanAnswer_Status200V1_Body_Winner_KindShard_LegacySchema,
   preset: schedulePlanAnswer_Status200V1_Body_Winner_KindShard_PresetSchema,
 });
-/** Raw response path: answer.body.winner, variant: kind shard. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindShard = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindShardSchema
->;
 /** Strict raw response path: answer.body.winner.id. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindTournament_IdSchema = z.string();
-/** Raw response path: answer.body.winner.id. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindTournament_Id = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindTournament_IdSchema
->;
 /** Strict raw response path: answer.body.winner.label. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindTournament_LabelSchema = z.string();
-/** Raw response path: answer.body.winner.label. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindTournament_Label = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindTournament_LabelSchema
->;
 /** Strict raw response path: answer.body.winner.legacy. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindTournament_LegacySchema = z.boolean();
-/** Raw response path: answer.body.winner.legacy. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindTournament_Legacy = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindTournament_LegacySchema
->;
 /** Strict raw response path: answer.body.winner.preset. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindTournament_PresetSchema = z.string();
-/** Raw response path: answer.body.winner.preset. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindTournament_Preset = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindTournament_PresetSchema
->;
 /** Strict raw response path: answer.body.winner, variant: kind tournament. */
 export const schedulePlanAnswer_Status200V1_Body_Winner_KindTournamentSchema = z.strictObject({
   id: schedulePlanAnswer_Status200V1_Body_Winner_KindTournament_IdSchema,
@@ -413,20 +185,12 @@ export const schedulePlanAnswer_Status200V1_Body_Winner_KindTournamentSchema = z
   legacy: schedulePlanAnswer_Status200V1_Body_Winner_KindTournament_LegacySchema,
   preset: schedulePlanAnswer_Status200V1_Body_Winner_KindTournament_PresetSchema,
 });
-/** Raw response path: answer.body.winner, variant: kind tournament. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner_KindTournament = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_Winner_KindTournamentSchema
->;
 /** Strict raw response path: answer.body.winner. */
 export const schedulePlanAnswer_Status200V1_Body_WinnerSchema = z.discriminatedUnion('kind', [
   schedulePlanAnswer_Status200V1_Body_Winner_KindCoinSchema,
   schedulePlanAnswer_Status200V1_Body_Winner_KindShardSchema,
   schedulePlanAnswer_Status200V1_Body_Winner_KindTournamentSchema,
 ]);
-/** Raw response path: answer.body.winner. */
-export type SchedulePlanAnswer_Status200V1_Body_Winner = z.infer<
-  typeof schedulePlanAnswer_Status200V1_Body_WinnerSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePlanAnswer_Status200V1_BodySchema = z.strictObject({
   availability: schedulePlanAnswer_Status200V1_Body_AvailabilitySchema,
@@ -449,59 +213,25 @@ export const schedulePlanAnswer_Status200V1_BodySchema = z.strictObject({
   utc_offset: schedulePlanAnswer_Status200V1_Body_UtcOffsetSchema,
   winner: schedulePlanAnswer_Status200V1_Body_WinnerSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePlanAnswer_Status200V1_Body = z.infer<
-  typeof schedulePlanAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePlanAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type SchedulePlanAnswer_Status200V1_Status = z.infer<
-  typeof schedulePlanAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members availability, available, context, error, fresh_for_sec, handoff, local_time, next_clock_boundary, observed_at, observed_winner, operation_id, operation_status, reason, recovery_action, server_time, step, timezone, utc_offset, winner. */
 export const schedulePlanAnswer_Status200V1Schema = z.strictObject({
   body: schedulePlanAnswer_Status200V1_BodySchema,
   status: schedulePlanAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members availability, available, context, error, fresh_for_sec, handoff, local_time, next_clock_boundary, observed_at, observed_winner, operation_id, operation_status, reason, recovery_action, server_time, step, timezone, utc_offset, winner. */
-export type SchedulePlanAnswer_Status200V1 = z.infer<typeof schedulePlanAnswer_Status200V1Schema>;
 /** Strict raw response path: answer.body.availability. */
 export const schedulePlanAnswer_Status200V2_Body_AvailabilitySchema = z.string();
-/** Raw response path: answer.body.availability. */
-export type SchedulePlanAnswer_Status200V2_Body_Availability = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_AvailabilitySchema
->;
 /** Strict raw response path: answer.body.available. */
 export const schedulePlanAnswer_Status200V2_Body_AvailableSchema = z.boolean();
-/** Raw response path: answer.body.available. */
-export type SchedulePlanAnswer_Status200V2_Body_Available = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_AvailableSchema
->;
 /** Strict raw response path: answer.body.context.account. */
 export const schedulePlanAnswer_Status200V2_Body_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.context.account. */
-export type SchedulePlanAnswer_Status200V2_Body_Context_Account = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.context.instance. */
 export const schedulePlanAnswer_Status200V2_Body_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.context.instance. */
-export type SchedulePlanAnswer_Status200V2_Body_Context_Instance = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.context.profile. */
 export const schedulePlanAnswer_Status200V2_Body_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.context.profile. */
-export type SchedulePlanAnswer_Status200V2_Body_Context_Profile = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.context.serial. */
 export const schedulePlanAnswer_Status200V2_Body_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.context.serial. */
-export type SchedulePlanAnswer_Status200V2_Body_Context_Serial = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.context. */
 export const schedulePlanAnswer_Status200V2_Body_ContextSchema = z.strictObject({
   account: schedulePlanAnswer_Status200V2_Body_Context_AccountSchema,
@@ -509,94 +239,34 @@ export const schedulePlanAnswer_Status200V2_Body_ContextSchema = z.strictObject(
   profile: schedulePlanAnswer_Status200V2_Body_Context_ProfileSchema,
   serial: schedulePlanAnswer_Status200V2_Body_Context_SerialSchema,
 });
-/** Raw response path: answer.body.context. */
-export type SchedulePlanAnswer_Status200V2_Body_Context = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_ContextSchema
->;
 /** Strict raw response path: answer.body.fresh_for_sec. */
 export const schedulePlanAnswer_Status200V2_Body_FreshForSecSchema = z.number();
-/** Raw response path: answer.body.fresh_for_sec. */
-export type SchedulePlanAnswer_Status200V2_Body_FreshForSec = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_FreshForSecSchema
->;
 /** Strict raw response path: answer.body.handoff. */
 export const schedulePlanAnswer_Status200V2_Body_HandoffSchema = z.string();
-/** Raw response path: answer.body.handoff. */
-export type SchedulePlanAnswer_Status200V2_Body_Handoff = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_HandoffSchema
->;
 /** Strict raw response path: answer.body.next_clock_boundary. */
 export const schedulePlanAnswer_Status200V2_Body_NextClockBoundarySchema = z.null();
-/** Raw response path: answer.body.next_clock_boundary. */
-export type SchedulePlanAnswer_Status200V2_Body_NextClockBoundary = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_NextClockBoundarySchema
->;
 /** Strict raw response path: answer.body.observed_at. */
 export const schedulePlanAnswer_Status200V2_Body_ObservedAtSchema = z.null();
-/** Raw response path: answer.body.observed_at. */
-export type SchedulePlanAnswer_Status200V2_Body_ObservedAt = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_ObservedAtSchema
->;
 /** Strict raw response path: answer.body.observed_winner. */
 export const schedulePlanAnswer_Status200V2_Body_ObservedWinnerSchema = z.null();
-/** Raw response path: answer.body.observed_winner. */
-export type SchedulePlanAnswer_Status200V2_Body_ObservedWinner = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_ObservedWinnerSchema
->;
 /** Strict raw response path: answer.body.operation_id. */
 export const schedulePlanAnswer_Status200V2_Body_OperationIdSchema = z.null();
-/** Raw response path: answer.body.operation_id. */
-export type SchedulePlanAnswer_Status200V2_Body_OperationId = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_OperationIdSchema
->;
 /** Strict raw response path: answer.body.operation_status. */
 export const schedulePlanAnswer_Status200V2_Body_OperationStatusSchema = z.null();
-/** Raw response path: answer.body.operation_status. */
-export type SchedulePlanAnswer_Status200V2_Body_OperationStatus = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_OperationStatusSchema
->;
 /** Strict raw response path: answer.body.reason. */
 export const schedulePlanAnswer_Status200V2_Body_ReasonSchema = z.enum(['scheduler_not_observed']);
-/** Raw response path: answer.body.reason. */
-export type SchedulePlanAnswer_Status200V2_Body_Reason = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_ReasonSchema
->;
 /** Strict raw response path: answer.body.recovery_action. */
 export const schedulePlanAnswer_Status200V2_Body_RecoveryActionSchema = z.null();
-/** Raw response path: answer.body.recovery_action. */
-export type SchedulePlanAnswer_Status200V2_Body_RecoveryAction = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.server_time. */
 export const schedulePlanAnswer_Status200V2_Body_ServerTimeSchema = z.number();
-/** Raw response path: answer.body.server_time. */
-export type SchedulePlanAnswer_Status200V2_Body_ServerTime = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.step. */
 export const schedulePlanAnswer_Status200V2_Body_StepSchema = z.null();
-/** Raw response path: answer.body.step. */
-export type SchedulePlanAnswer_Status200V2_Body_Step = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_StepSchema
->;
 /** Strict raw response path: answer.body.timezone. */
 export const schedulePlanAnswer_Status200V2_Body_TimezoneSchema = z.null();
-/** Raw response path: answer.body.timezone. */
-export type SchedulePlanAnswer_Status200V2_Body_Timezone = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_TimezoneSchema
->;
 /** Strict raw response path: answer.body.utc_offset. */
 export const schedulePlanAnswer_Status200V2_Body_UtcOffsetSchema = z.null();
-/** Raw response path: answer.body.utc_offset. */
-export type SchedulePlanAnswer_Status200V2_Body_UtcOffset = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_UtcOffsetSchema
->;
 /** Strict raw response path: answer.body.winner. */
 export const schedulePlanAnswer_Status200V2_Body_WinnerSchema = z.null();
-/** Raw response path: answer.body.winner. */
-export type SchedulePlanAnswer_Status200V2_Body_Winner = z.infer<
-  typeof schedulePlanAnswer_Status200V2_Body_WinnerSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePlanAnswer_Status200V2_BodySchema = z.strictObject({
   availability: schedulePlanAnswer_Status200V2_Body_AvailabilitySchema,
@@ -617,92 +287,42 @@ export const schedulePlanAnswer_Status200V2_BodySchema = z.strictObject({
   utc_offset: schedulePlanAnswer_Status200V2_Body_UtcOffsetSchema,
   winner: schedulePlanAnswer_Status200V2_Body_WinnerSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePlanAnswer_Status200V2_Body = z.infer<
-  typeof schedulePlanAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePlanAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type SchedulePlanAnswer_Status200V2_Status = z.infer<
-  typeof schedulePlanAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members availability, available, context, fresh_for_sec, handoff, next_clock_boundary, observed_at, observed_winner, operation_id, operation_status, reason, recovery_action, server_time, step, timezone, utc_offset, winner. */
 export const schedulePlanAnswer_Status200V2Schema = z.strictObject({
   body: schedulePlanAnswer_Status200V2_BodySchema,
   status: schedulePlanAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members availability, available, context, fresh_for_sec, handoff, next_clock_boundary, observed_at, observed_winner, operation_id, operation_status, reason, recovery_action, server_time, step, timezone, utc_offset, winner. */
-export type SchedulePlanAnswer_Status200V2 = z.infer<typeof schedulePlanAnswer_Status200V2Schema>;
 /** Strict raw response path: answer.body.name. */
 export const schedulePlanAnswer_Status200V3_Body_NameSchema = z.string();
-/** Raw response path: answer.body.name. */
-export type SchedulePlanAnswer_Status200V3_Body_Name = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_NameSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const schedulePlanAnswer_Status200V3_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type SchedulePlanAnswer_Status200V3_Body_Ok = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_OkSchema
->;
 /** Strict raw response path: answer.body.problems[]. */
 export const schedulePlanAnswer_Status200V3_Body_Problems_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.problems[]. */
-export type SchedulePlanAnswer_Status200V3_Body_Problems_ArrayElement = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Problems_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.problems. */
 export const schedulePlanAnswer_Status200V3_Body_ProblemsSchema = z.array(
   schedulePlanAnswer_Status200V3_Body_Problems_ArrayElementSchema,
 );
-/** Raw response path: answer.body.problems. */
-export type SchedulePlanAnswer_Status200V3_Body_Problems = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_ProblemsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.kind. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm.kind. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_Kind = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.loadout. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_LoadoutSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.loadout. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_Loadout = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies.gather. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.policies.gather. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_Policies_Gather = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_PoliciesSchema =
   z.strictObject({
     gather: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm.policies. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_Policies = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.shopping. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.shopping. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_Shopping = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.tier. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.farm.tier. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_Tier = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmSchema = z.strictObject({
   kind: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_KindSchema,
@@ -711,64 +331,30 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmSchema =
   shopping: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_ShoppingSchema,
   tier: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.farm. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Farm = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.kind. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm_deep.kind. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Kind = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Loadout = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Policies_Gather =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_PoliciesSchema =
   z.strictObject({
     gather: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Policies = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_RestartViaHome =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Shopping = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.tier. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.tier. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Tier = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeepSchema = z.strictObject(
   {
@@ -781,53 +367,25 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeepSche
     tier: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_TierSchema,
   },
 );
-/** Raw response path: answer.body.profile.blueprints.farm_deep. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmDeepSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.count. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_CountSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.count. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_Count = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_CountSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.kind. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_KindSchema = z.enum([
   'shard',
 ]);
-/** Raw response path: answer.body.profile.blueprints.shards.kind. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_Kind = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.loadout. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.loadout. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_Loadout = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies.gather. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.policies.gather. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_Policies_Gather = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_PoliciesSchema =
   z.strictObject({
     gather: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.shards.policies. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_Policies = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.tier. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.tier. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_Tier = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_ShardsSchema = z.strictObject({
   count: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_CountSchema,
@@ -836,55 +394,26 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_ShardsSchema
   policies: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_PoliciesSchema,
   tier: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.shards. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Shards = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_ShardsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_GemEntryMax = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.kind. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_KindSchema = z.enum([
   'tournament',
 ]);
-/** Raw response path: answer.body.profile.blueprints.tourney.kind. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Kind = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.loadout. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.loadout. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Loadout = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Policies_Gather =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_PoliciesSchema =
   z.strictObject({
     gather: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.tourney.policies. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Policies = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.tier. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.tier. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Tier = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_TourneySchema = z.strictObject({
   gem_entry_max: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema,
@@ -893,10 +422,6 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_TourneySchem
   policies: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_PoliciesSchema,
   tier: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.tourney. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints_Tourney = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_TourneySchema
->;
 /** Strict raw response path: answer.body.profile.blueprints. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_BlueprintsSchema = z.strictObject({
   farm: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_FarmSchema,
@@ -904,108 +429,49 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_BlueprintsSchema = z.st
   shards: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_ShardsSchema,
   tourney: schedulePlanAnswer_Status200V3_Body_Profile_Blueprints_TourneySchema,
 });
-/** Raw response path: answer.body.profile.blueprints. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Blueprints = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_BlueprintsSchema
->;
 /** Strict raw response path: answer.body.profile.plan. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_PlanSchema = z.strictObject({});
-/** Raw response path: answer.body.profile.plan. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Plan = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_PlanSchema
->;
 /** Strict raw response path: answer.body.profile.player. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_PlayerSchema = z.strictObject({});
-/** Raw response path: answer.body.profile.player. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Player = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_PlayerSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[].enabled. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.chores[].enabled. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_Enabled =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.chores[].name. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_NameSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.chores[].name. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_Name = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_NameSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[]. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElementSchema =
   z.strictObject({
     enabled: schedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema,
     name: schedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_NameSchema,
   });
-/** Raw response path: answer.body.profile.policies.chores[]. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ChoresSchema = z.array(
   schedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.policies.chores. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Chores = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ChoresSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_AdGems = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_FlyingGem = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema =
   z.array(
     schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySec = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.guild. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.guild. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_Guild = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_QuestRewards =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_Quests8h = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOnSchema =
   z.strictObject({
@@ -1018,65 +484,29 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOnSc
       schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema,
     quests_8h: schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.all_on. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOnSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_AdGems = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_FlyingGem =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema =
   z.array(
     schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.guild. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.guild. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_Guild = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_QuestRewards =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_Quests8h = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnlySchema =
   z.strictObject({
@@ -1090,65 +520,29 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnl
       schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema,
     quests_8h: schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.gems_only. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnlySchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_AdGems = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_FlyingGem =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema =
   z.array(
     schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySec =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.guild. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.guild. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_Guild = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_QuestRewards =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_Quests8h = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOffSchema =
   z.strictObject({
@@ -1162,36 +556,18 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOf
       schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema,
     quests_8h: schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.hands_off. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOffSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_GatherSchema = z.strictObject({
   all_on: schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_AllOnSchema,
   gems_only: schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnlySchema,
   hands_off: schedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOffSchema,
 });
-/** Raw response path: answer.body.profile.policies.gather. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_Gather = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_DailyMissions =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_FreeStoreGems =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviorsSchema =
   z.strictObject({
@@ -1200,60 +576,26 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_GlobalBehavior
     free_store_gems:
       schedulePlanAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema,
   });
-/** Raw response path: answer.body.profile.policies.global_behaviors. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviorsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Clicks =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Enabled =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Mode =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElement =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema =
   z.array(
     schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Tab =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema =
   z.strictObject({
@@ -1266,29 +608,14 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_
       schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema,
     tab: schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema =
   z.array(
     schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Enabled =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema =
   z.strictObject({
@@ -1297,67 +624,27 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_
     enabled:
       schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_CashReserve =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Enabled =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_IntervalSec =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Enabled =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWave =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Id =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimit =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema =
   z.strictObject({
@@ -1369,29 +656,14 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_
     tap_limit:
       schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema =
   z.array(
     schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Version =
-  z.infer<
-    typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainListSchema =
   z.strictObject({
@@ -1405,10 +677,6 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_
     version:
       schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainListSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingListsSchema =
   z.strictObject({
@@ -1416,10 +684,6 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingListsS
       schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema,
     main_list: schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainListSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingLists = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingListsSchema
->;
 /** Strict raw response path: answer.body.profile.policies. */
 export const schedulePlanAnswer_Status200V3_Body_Profile_PoliciesSchema = z.strictObject({
   chores: schedulePlanAnswer_Status200V3_Body_Profile_Policies_ChoresSchema,
@@ -1427,10 +691,6 @@ export const schedulePlanAnswer_Status200V3_Body_Profile_PoliciesSchema = z.stri
   global_behaviors: schedulePlanAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviorsSchema,
   shopping_lists: schedulePlanAnswer_Status200V3_Body_Profile_Policies_ShoppingListsSchema,
 });
-/** Raw response path: answer.body.profile.policies. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile_Policies = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_Profile_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile. */
 export const schedulePlanAnswer_Status200V3_Body_ProfileSchema = z.strictObject({
   blueprints: schedulePlanAnswer_Status200V3_Body_Profile_BlueprintsSchema,
@@ -1438,30 +698,14 @@ export const schedulePlanAnswer_Status200V3_Body_ProfileSchema = z.strictObject(
   player: schedulePlanAnswer_Status200V3_Body_Profile_PlayerSchema,
   policies: schedulePlanAnswer_Status200V3_Body_Profile_PoliciesSchema,
 });
-/** Raw response path: answer.body.profile. */
-export type SchedulePlanAnswer_Status200V3_Body_Profile = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_ProfileSchema
->;
 /** Strict raw response path: answer.body.revision. */
 export const schedulePlanAnswer_Status200V3_Body_RevisionSchema = z.string();
-/** Raw response path: answer.body.revision. */
-export type SchedulePlanAnswer_Status200V3_Body_Revision = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_RevisionSchema
->;
 /** Strict raw response path: answer.body.validator_error. */
 export const schedulePlanAnswer_Status200V3_Body_ValidatorErrorSchema = z.null();
-/** Raw response path: answer.body.validator_error. */
-export type SchedulePlanAnswer_Status200V3_Body_ValidatorError = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_ValidatorErrorSchema
->;
 /** Strict raw response path: answer.body.warnings. */
 export const schedulePlanAnswer_Status200V3_Body_WarningsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.warnings. */
-export type SchedulePlanAnswer_Status200V3_Body_Warnings = z.infer<
-  typeof schedulePlanAnswer_Status200V3_Body_WarningsSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePlanAnswer_Status200V3_BodySchema = z.strictObject({
   name: schedulePlanAnswer_Status200V3_Body_NameSchema,
@@ -1472,23 +716,13 @@ export const schedulePlanAnswer_Status200V3_BodySchema = z.strictObject({
   validator_error: schedulePlanAnswer_Status200V3_Body_ValidatorErrorSchema,
   warnings: schedulePlanAnswer_Status200V3_Body_WarningsSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePlanAnswer_Status200V3_Body = z.infer<
-  typeof schedulePlanAnswer_Status200V3_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePlanAnswer_Status200V3_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type SchedulePlanAnswer_Status200V3_Status = z.infer<
-  typeof schedulePlanAnswer_Status200V3_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members name, ok, problems, profile, revision, validator_error, warnings. */
 export const schedulePlanAnswer_Status200V3Schema = z.strictObject({
   body: schedulePlanAnswer_Status200V3_BodySchema,
   status: schedulePlanAnswer_Status200V3_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members name, ok, problems, profile, revision, validator_error, warnings. */
-export type SchedulePlanAnswer_Status200V3 = z.infer<typeof schedulePlanAnswer_Status200V3Schema>;
 /** Strict raw response path: answer. */
 export const schedulePlanAnswerSchema = z.union([
   schedulePlanAnswer_Status200V1Schema,
@@ -1499,188 +733,84 @@ export const schedulePlanAnswerSchema = z.union([
 export type SchedulePlanAnswer = z.infer<typeof schedulePlanAnswerSchema>;
 /** Strict raw response path: answer.body.accounts.alpha.active_profile. */
 export const scheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_ActiveProfileSchema = z.string();
-/** Raw response path: answer.body.accounts.alpha.active_profile. */
-export type ScheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_ActiveProfile = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.label. */
 export const scheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_LabelSchema = z.string();
-/** Raw response path: answer.body.accounts.alpha.label. */
-export type ScheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_Label = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_LabelSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.loadouts.plain. */
 export const scheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_PlainSchema =
   z.strictObject({});
-/** Raw response path: answer.body.accounts.alpha.loadouts.plain. */
-export type ScheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Plain = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.loadouts. */
 export const scheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_LoadoutsSchema = z.strictObject({
   plain: scheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_PlainSchema,
 });
-/** Raw response path: answer.body.accounts.alpha.loadouts. */
-export type ScheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha. */
 export const scheduleConfigAnswer_Status200V1_Body_Accounts_AlphaSchema = z.strictObject({
   active_profile: scheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_ActiveProfileSchema,
   label: scheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_LabelSchema,
   loadouts: scheduleConfigAnswer_Status200V1_Body_Accounts_Alpha_LoadoutsSchema,
 });
-/** Raw response path: answer.body.accounts.alpha. */
-export type ScheduleConfigAnswer_Status200V1_Body_Accounts_Alpha = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Accounts_AlphaSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.active_profile. */
 export const scheduleConfigAnswer_Status200V1_Body_Accounts_Beta_ActiveProfileSchema = z.string();
-/** Raw response path: answer.body.accounts.beta.active_profile. */
-export type ScheduleConfigAnswer_Status200V1_Body_Accounts_Beta_ActiveProfile = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Accounts_Beta_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.label. */
 export const scheduleConfigAnswer_Status200V1_Body_Accounts_Beta_LabelSchema = z.string();
-/** Raw response path: answer.body.accounts.beta.label. */
-export type ScheduleConfigAnswer_Status200V1_Body_Accounts_Beta_Label = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Accounts_Beta_LabelSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.loadouts.plain. */
 export const scheduleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_PlainSchema =
   z.strictObject({});
-/** Raw response path: answer.body.accounts.beta.loadouts.plain. */
-export type ScheduleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Plain = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.loadouts. */
 export const scheduleConfigAnswer_Status200V1_Body_Accounts_Beta_LoadoutsSchema = z.strictObject({
   plain: scheduleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_PlainSchema,
 });
-/** Raw response path: answer.body.accounts.beta.loadouts. */
-export type ScheduleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Accounts_Beta_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.accounts.beta. */
 export const scheduleConfigAnswer_Status200V1_Body_Accounts_BetaSchema = z.strictObject({
   active_profile: scheduleConfigAnswer_Status200V1_Body_Accounts_Beta_ActiveProfileSchema,
   label: scheduleConfigAnswer_Status200V1_Body_Accounts_Beta_LabelSchema,
   loadouts: scheduleConfigAnswer_Status200V1_Body_Accounts_Beta_LoadoutsSchema,
 });
-/** Raw response path: answer.body.accounts.beta. */
-export type ScheduleConfigAnswer_Status200V1_Body_Accounts_Beta = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Accounts_BetaSchema
->;
 /** Strict raw response path: answer.body.accounts. */
 export const scheduleConfigAnswer_Status200V1_Body_AccountsSchema = z.strictObject({
   alpha: scheduleConfigAnswer_Status200V1_Body_Accounts_AlphaSchema,
   beta: scheduleConfigAnswer_Status200V1_Body_Accounts_BetaSchema,
 });
-/** Raw response path: answer.body.accounts. */
-export type ScheduleConfigAnswer_Status200V1_Body_Accounts = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_AccountsSchema
->;
 /** Strict raw response path: answer.body.active_instance. */
 export const scheduleConfigAnswer_Status200V1_Body_ActiveInstanceSchema = z.string();
-/** Raw response path: answer.body.active_instance. */
-export type ScheduleConfigAnswer_Status200V1_Body_ActiveInstance = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_ActiveInstanceSchema
->;
 /** Strict raw response path: answer.body.active_profile. */
 export const scheduleConfigAnswer_Status200V1_Body_ActiveProfileSchema = z.string();
-/** Raw response path: answer.body.active_profile. */
-export type ScheduleConfigAnswer_Status200V1_Body_ActiveProfile = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.config_revision. */
 export const scheduleConfigAnswer_Status200V1_Body_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.config_revision. */
-export type ScheduleConfigAnswer_Status200V1_Body_ConfigRevision = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.instances.main.account. */
 export const scheduleConfigAnswer_Status200V1_Body_Instances_Main_AccountSchema = z.string();
-/** Raw response path: answer.body.instances.main.account. */
-export type ScheduleConfigAnswer_Status200V1_Body_Instances_Main_Account = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Instances_Main_AccountSchema
->;
 /** Strict raw response path: answer.body.instances.main.allow_taps. */
 export const scheduleConfigAnswer_Status200V1_Body_Instances_Main_AllowTapsSchema = z.boolean();
-/** Raw response path: answer.body.instances.main.allow_taps. */
-export type ScheduleConfigAnswer_Status200V1_Body_Instances_Main_AllowTaps = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Instances_Main_AllowTapsSchema
->;
 /** Strict raw response path: answer.body.instances.main.serial. */
 export const scheduleConfigAnswer_Status200V1_Body_Instances_Main_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.main.serial. */
-export type ScheduleConfigAnswer_Status200V1_Body_Instances_Main_Serial = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Instances_Main_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.main. */
 export const scheduleConfigAnswer_Status200V1_Body_Instances_MainSchema = z.strictObject({
   account: scheduleConfigAnswer_Status200V1_Body_Instances_Main_AccountSchema,
   allow_taps: scheduleConfigAnswer_Status200V1_Body_Instances_Main_AllowTapsSchema,
   serial: scheduleConfigAnswer_Status200V1_Body_Instances_Main_SerialSchema,
 });
-/** Raw response path: answer.body.instances.main. */
-export type ScheduleConfigAnswer_Status200V1_Body_Instances_Main = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Instances_MainSchema
->;
 /** Strict raw response path: answer.body.instances.other.serial. */
 export const scheduleConfigAnswer_Status200V1_Body_Instances_Other_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.other.serial. */
-export type ScheduleConfigAnswer_Status200V1_Body_Instances_Other_Serial = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Instances_Other_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.other. */
 export const scheduleConfigAnswer_Status200V1_Body_Instances_OtherSchema = z.strictObject({
   serial: scheduleConfigAnswer_Status200V1_Body_Instances_Other_SerialSchema,
 });
-/** Raw response path: answer.body.instances.other. */
-export type ScheduleConfigAnswer_Status200V1_Body_Instances_Other = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Instances_OtherSchema
->;
 /** Strict raw response path: answer.body.instances. */
 export const scheduleConfigAnswer_Status200V1_Body_InstancesSchema = z.strictObject({
   main: scheduleConfigAnswer_Status200V1_Body_Instances_MainSchema,
   other: scheduleConfigAnswer_Status200V1_Body_Instances_OtherSchema,
 });
-/** Raw response path: answer.body.instances. */
-export type ScheduleConfigAnswer_Status200V1_Body_Instances = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_InstancesSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain. */
 export const scheduleConfigAnswer_Status200V1_Body_Loadouts_PlainSchema = z.strictObject({});
-/** Raw response path: answer.body.loadouts.plain. */
-export type ScheduleConfigAnswer_Status200V1_Body_Loadouts_Plain = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.loadouts. */
 export const scheduleConfigAnswer_Status200V1_Body_LoadoutsSchema = z.strictObject({
   plain: scheduleConfigAnswer_Status200V1_Body_Loadouts_PlainSchema,
 });
-/** Raw response path: answer.body.loadouts. */
-export type ScheduleConfigAnswer_Status200V1_Body_Loadouts = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.preset. */
 export const scheduleConfigAnswer_Status200V1_Body_PresetSchema = z.string();
-/** Raw response path: answer.body.preset. */
-export type ScheduleConfigAnswer_Status200V1_Body_Preset = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_PresetSchema
->;
 /** Strict raw response path: answer.body.presets. */
 export const scheduleConfigAnswer_Status200V1_Body_PresetsSchema = z.strictObject({});
-/** Raw response path: answer.body.presets. */
-export type ScheduleConfigAnswer_Status200V1_Body_Presets = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_PresetsSchema
->;
 /** Strict raw response path: answer.body.tourney_card_tweaks. */
 export const scheduleConfigAnswer_Status200V1_Body_TourneyCardTweaksSchema = z.strictObject({});
-/** Raw response path: answer.body.tourney_card_tweaks. */
-export type ScheduleConfigAnswer_Status200V1_Body_TourneyCardTweaks = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_Body_TourneyCardTweaksSchema
->;
 /** Strict raw response path: answer.body. */
 export const scheduleConfigAnswer_Status200V1_BodySchema = z.strictObject({
   accounts: scheduleConfigAnswer_Status200V1_Body_AccountsSchema,
@@ -1693,113 +823,49 @@ export const scheduleConfigAnswer_Status200V1_BodySchema = z.strictObject({
   presets: scheduleConfigAnswer_Status200V1_Body_PresetsSchema,
   tourney_card_tweaks: scheduleConfigAnswer_Status200V1_Body_TourneyCardTweaksSchema,
 });
-/** Raw response path: answer.body. */
-export type ScheduleConfigAnswer_Status200V1_Body = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const scheduleConfigAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type ScheduleConfigAnswer_Status200V1_Status = z.infer<
-  typeof scheduleConfigAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members accounts, active_instance, active_profile, config_revision, instances, loadouts, preset, presets, tourney_card_tweaks. */
 export const scheduleConfigAnswer_Status200V1Schema = z.strictObject({
   body: scheduleConfigAnswer_Status200V1_BodySchema,
   status: scheduleConfigAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members accounts, active_instance, active_profile, config_revision, instances, loadouts, preset, presets, tourney_card_tweaks. */
-export type ScheduleConfigAnswer_Status200V1 = z.infer<
-  typeof scheduleConfigAnswer_Status200V1Schema
->;
 /** Strict raw response path: answer.body.active_instance. */
 export const scheduleConfigAnswer_Status200V2_Body_ActiveInstanceSchema = z.string();
-/** Raw response path: answer.body.active_instance. */
-export type ScheduleConfigAnswer_Status200V2_Body_ActiveInstance = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_ActiveInstanceSchema
->;
 /** Strict raw response path: answer.body.active_profile. */
 export const scheduleConfigAnswer_Status200V2_Body_ActiveProfileSchema = z.string();
-/** Raw response path: answer.body.active_profile. */
-export type ScheduleConfigAnswer_Status200V2_Body_ActiveProfile = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.config_revision. */
 export const scheduleConfigAnswer_Status200V2_Body_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.config_revision. */
-export type ScheduleConfigAnswer_Status200V2_Body_ConfigRevision = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.instances.main.allow_taps. */
 export const scheduleConfigAnswer_Status200V2_Body_Instances_Main_AllowTapsSchema = z.boolean();
-/** Raw response path: answer.body.instances.main.allow_taps. */
-export type ScheduleConfigAnswer_Status200V2_Body_Instances_Main_AllowTaps = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_Instances_Main_AllowTapsSchema
->;
 /** Strict raw response path: answer.body.instances.main.serial. */
 export const scheduleConfigAnswer_Status200V2_Body_Instances_Main_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.main.serial. */
-export type ScheduleConfigAnswer_Status200V2_Body_Instances_Main_Serial = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_Instances_Main_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.main. */
 export const scheduleConfigAnswer_Status200V2_Body_Instances_MainSchema = z.strictObject({
   allow_taps: scheduleConfigAnswer_Status200V2_Body_Instances_Main_AllowTapsSchema,
   serial: scheduleConfigAnswer_Status200V2_Body_Instances_Main_SerialSchema,
 });
-/** Raw response path: answer.body.instances.main. */
-export type ScheduleConfigAnswer_Status200V2_Body_Instances_Main = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_Instances_MainSchema
->;
 /** Strict raw response path: answer.body.instances.other.serial. */
 export const scheduleConfigAnswer_Status200V2_Body_Instances_Other_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.other.serial. */
-export type ScheduleConfigAnswer_Status200V2_Body_Instances_Other_Serial = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_Instances_Other_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.other. */
 export const scheduleConfigAnswer_Status200V2_Body_Instances_OtherSchema = z.strictObject({
   serial: scheduleConfigAnswer_Status200V2_Body_Instances_Other_SerialSchema,
 });
-/** Raw response path: answer.body.instances.other. */
-export type ScheduleConfigAnswer_Status200V2_Body_Instances_Other = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_Instances_OtherSchema
->;
 /** Strict raw response path: answer.body.instances. */
 export const scheduleConfigAnswer_Status200V2_Body_InstancesSchema = z.strictObject({
   main: scheduleConfigAnswer_Status200V2_Body_Instances_MainSchema,
   other: scheduleConfigAnswer_Status200V2_Body_Instances_OtherSchema,
 });
-/** Raw response path: answer.body.instances. */
-export type ScheduleConfigAnswer_Status200V2_Body_Instances = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_InstancesSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain. */
 export const scheduleConfigAnswer_Status200V2_Body_Loadouts_PlainSchema = z.strictObject({});
-/** Raw response path: answer.body.loadouts.plain. */
-export type ScheduleConfigAnswer_Status200V2_Body_Loadouts_Plain = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.loadouts. */
 export const scheduleConfigAnswer_Status200V2_Body_LoadoutsSchema = z.strictObject({
   plain: scheduleConfigAnswer_Status200V2_Body_Loadouts_PlainSchema.optional(),
 });
-/** Raw response path: answer.body.loadouts. */
-export type ScheduleConfigAnswer_Status200V2_Body_Loadouts = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.preset. */
 export const scheduleConfigAnswer_Status200V2_Body_PresetSchema = z.string();
-/** Raw response path: answer.body.preset. */
-export type ScheduleConfigAnswer_Status200V2_Body_Preset = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_PresetSchema
->;
 /** Strict raw response path: answer.body.presets. */
 export const scheduleConfigAnswer_Status200V2_Body_PresetsSchema = z.strictObject({});
-/** Raw response path: answer.body.presets. */
-export type ScheduleConfigAnswer_Status200V2_Body_Presets = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_Body_PresetsSchema
->;
 /** Strict raw response path: answer.body. */
 export const scheduleConfigAnswer_Status200V2_BodySchema = z.strictObject({
   active_instance: scheduleConfigAnswer_Status200V2_Body_ActiveInstanceSchema,
@@ -1810,153 +876,71 @@ export const scheduleConfigAnswer_Status200V2_BodySchema = z.strictObject({
   preset: scheduleConfigAnswer_Status200V2_Body_PresetSchema,
   presets: scheduleConfigAnswer_Status200V2_Body_PresetsSchema,
 });
-/** Raw response path: answer.body. */
-export type ScheduleConfigAnswer_Status200V2_Body = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const scheduleConfigAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type ScheduleConfigAnswer_Status200V2_Status = z.infer<
-  typeof scheduleConfigAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members active_instance, active_profile, config_revision, instances, loadouts, preset, presets. */
 export const scheduleConfigAnswer_Status200V2Schema = z.strictObject({
   body: scheduleConfigAnswer_Status200V2_BodySchema,
   status: scheduleConfigAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members active_instance, active_profile, config_revision, instances, loadouts, preset, presets. */
-export type ScheduleConfigAnswer_Status200V2 = z.infer<
-  typeof scheduleConfigAnswer_Status200V2Schema
->;
 /** Strict raw response path: answer.body.backup. */
 export const scheduleConfigAnswer_Status200V3_Body_BackupSchema = z.string();
-/** Raw response path: answer.body.backup. */
-export type ScheduleConfigAnswer_Status200V3_Body_Backup = z.infer<
-  typeof scheduleConfigAnswer_Status200V3_Body_BackupSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const scheduleConfigAnswer_Status200V3_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type ScheduleConfigAnswer_Status200V3_Body_Ok = z.infer<
-  typeof scheduleConfigAnswer_Status200V3_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const scheduleConfigAnswer_Status200V3_BodySchema = z.strictObject({
   backup: scheduleConfigAnswer_Status200V3_Body_BackupSchema,
   ok: scheduleConfigAnswer_Status200V3_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type ScheduleConfigAnswer_Status200V3_Body = z.infer<
-  typeof scheduleConfigAnswer_Status200V3_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const scheduleConfigAnswer_Status200V3_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type ScheduleConfigAnswer_Status200V3_Status = z.infer<
-  typeof scheduleConfigAnswer_Status200V3_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members backup, ok. */
 export const scheduleConfigAnswer_Status200V3Schema = z.strictObject({
   body: scheduleConfigAnswer_Status200V3_BodySchema,
   status: scheduleConfigAnswer_Status200V3_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members backup, ok. */
-export type ScheduleConfigAnswer_Status200V3 = z.infer<
-  typeof scheduleConfigAnswer_Status200V3Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const scheduleConfigAnswer_Status400V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type ScheduleConfigAnswer_Status400V1_Body_Error = z.infer<
-  typeof scheduleConfigAnswer_Status400V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const scheduleConfigAnswer_Status400V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type ScheduleConfigAnswer_Status400V1_Body_Ok = z.infer<
-  typeof scheduleConfigAnswer_Status400V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const scheduleConfigAnswer_Status400V1_BodySchema = z.strictObject({
   error: scheduleConfigAnswer_Status400V1_Body_ErrorSchema,
   ok: scheduleConfigAnswer_Status400V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type ScheduleConfigAnswer_Status400V1_Body = z.infer<
-  typeof scheduleConfigAnswer_Status400V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const scheduleConfigAnswer_Status400V1_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type ScheduleConfigAnswer_Status400V1_Status = z.infer<
-  typeof scheduleConfigAnswer_Status400V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const scheduleConfigAnswer_Status400V1Schema = z.strictObject({
   body: scheduleConfigAnswer_Status400V1_BodySchema,
   status: scheduleConfigAnswer_Status400V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type ScheduleConfigAnswer_Status400V1 = z.infer<
-  typeof scheduleConfigAnswer_Status400V1Schema
->;
 /** Strict raw response path: answer.body.text. */
 export const scheduleConfigAnswer_Status400V2_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type ScheduleConfigAnswer_Status400V2_Body_Text = z.infer<
-  typeof scheduleConfigAnswer_Status400V2_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const scheduleConfigAnswer_Status400V2_BodySchema = z.strictObject({
   text: scheduleConfigAnswer_Status400V2_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type ScheduleConfigAnswer_Status400V2_Body = z.infer<
-  typeof scheduleConfigAnswer_Status400V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const scheduleConfigAnswer_Status400V2_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type ScheduleConfigAnswer_Status400V2_Status = z.infer<
-  typeof scheduleConfigAnswer_Status400V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members text. */
 export const scheduleConfigAnswer_Status400V2Schema = z.strictObject({
   body: scheduleConfigAnswer_Status400V2_BodySchema,
   status: scheduleConfigAnswer_Status400V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members text. */
-export type ScheduleConfigAnswer_Status400V2 = z.infer<
-  typeof scheduleConfigAnswer_Status400V2Schema
->;
 /** Strict raw response path: answer.body.text. */
 export const scheduleConfigAnswer_Status500_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type ScheduleConfigAnswer_Status500_Body_Text = z.infer<
-  typeof scheduleConfigAnswer_Status500_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const scheduleConfigAnswer_Status500_BodySchema = z.strictObject({
   text: scheduleConfigAnswer_Status500_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type ScheduleConfigAnswer_Status500_Body = z.infer<
-  typeof scheduleConfigAnswer_Status500_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const scheduleConfigAnswer_Status500_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type ScheduleConfigAnswer_Status500_Status = z.infer<
-  typeof scheduleConfigAnswer_Status500_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members text. */
 export const scheduleConfigAnswer_Status500Schema = z.strictObject({
   body: scheduleConfigAnswer_Status500_BodySchema,
   status: scheduleConfigAnswer_Status500_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members text. */
-export type ScheduleConfigAnswer_Status500 = z.infer<typeof scheduleConfigAnswer_Status500Schema>;
 /** Strict raw response path: answer. */
 export const scheduleConfigAnswerSchema = z.union([
   scheduleConfigAnswer_Status200V1Schema,
@@ -1970,74 +954,34 @@ export const scheduleConfigAnswerSchema = z.union([
 export type ScheduleConfigAnswer = z.infer<typeof scheduleConfigAnswerSchema>;
 /** Strict raw response path: answer.body.name. */
 export const scheduleProfileAnswer_Status200_Body_NameSchema = z.string();
-/** Raw response path: answer.body.name. */
-export type ScheduleProfileAnswer_Status200_Body_Name = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_NameSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const scheduleProfileAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type ScheduleProfileAnswer_Status200_Body_Ok = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body.problems[]. */
 export const scheduleProfileAnswer_Status200_Body_Problems_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.problems[]. */
-export type ScheduleProfileAnswer_Status200_Body_Problems_ArrayElement = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Problems_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.problems. */
 export const scheduleProfileAnswer_Status200_Body_ProblemsSchema = z.array(
   scheduleProfileAnswer_Status200_Body_Problems_ArrayElementSchema,
 );
-/** Raw response path: answer.body.problems. */
-export type ScheduleProfileAnswer_Status200_Body_Problems = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_ProblemsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.kind. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm.kind. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Kind = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.loadout. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.loadout. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Loadout = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies.gather. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.policies.gather. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Policies_Gather = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_PoliciesSchema =
   z.strictObject({
     gather: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm.policies. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Policies = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.shopping. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.shopping. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Shopping = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.tier. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.farm.tier. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Tier = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmSchema = z.strictObject({
   kind: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_KindSchema,
@@ -2046,64 +990,30 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmSchema 
   shopping: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_ShoppingSchema,
   tier: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.farm. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Farm = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.kind. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm_deep.kind. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Kind = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Loadout = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_Gather =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_PoliciesSchema =
   z.strictObject({
     gather: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_RestartViaHome =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Shopping = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.tier. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.tier. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Tier = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeepSchema =
   z.strictObject({
@@ -2115,55 +1025,26 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeepSch
     shopping: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_ShoppingSchema,
     tier: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_TierSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm_deep. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeepSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.count. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.count. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Count = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_CountSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.kind. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_KindSchema = z.enum([
   'shard',
 ]);
-/** Raw response path: answer.body.profile.blueprints.shards.kind. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Kind = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.loadout. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.loadout. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Loadout = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies.gather. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.policies.gather. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Policies_Gather =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_PoliciesSchema =
   z.strictObject({
     gather: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.shards.policies. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Policies = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.tier. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.tier. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Tier = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_ShardsSchema = z.strictObject({
   count: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_CountSchema,
@@ -2172,56 +1053,27 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_ShardsSchem
   policies: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_PoliciesSchema,
   tier: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.shards. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Shards = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_ShardsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_GemEntryMax = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.kind. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_KindSchema = z.enum([
   'tournament',
 ]);
-/** Raw response path: answer.body.profile.blueprints.tourney.kind. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Kind = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.loadout. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.loadout. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Loadout = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_Gather =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_PoliciesSchema =
   z.strictObject({
     gather: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.tourney.policies. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.tier. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.tier. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Tier = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_TourneySchema = z.strictObject(
   {
@@ -2233,10 +1085,6 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Blueprints_TourneySche
     tier: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_TierSchema,
   },
 );
-/** Raw response path: answer.body.profile.blueprints.tourney. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints_Tourney = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Blueprints_TourneySchema
->;
 /** Strict raw response path: answer.body.profile.blueprints. */
 export const scheduleProfileAnswer_Status200_Body_Profile_BlueprintsSchema = z.strictObject({
   farm: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_FarmSchema.optional(),
@@ -2244,42 +1092,18 @@ export const scheduleProfileAnswer_Status200_Body_Profile_BlueprintsSchema = z.s
   shards: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_ShardsSchema.optional(),
   tourney: scheduleProfileAnswer_Status200_Body_Profile_Blueprints_TourneySchema.optional(),
 });
-/** Raw response path: answer.body.profile.blueprints. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Blueprints = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_BlueprintsSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].after. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].after. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_After =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].block. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].block. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_Block =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].count. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].count. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_Count =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[]. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema =
   z.strictObject({
@@ -2291,34 +1115,16 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_Arra
     count:
       scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.farm_day[]. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDaySchema = z.array(
   scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.farm_day. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.spare_day[].block. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.spare_day[].block. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_Block =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.spare_day[].blueprint. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.spare_day[].blueprint. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.spare_day[]. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElementSchema =
   z.strictObject({
@@ -2326,50 +1132,22 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_Arr
     blueprint:
       scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_BlueprintSchema,
   });
-/** Raw response path: answer.body.profile.plan.days.spare_day[]. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.spare_day. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDaySchema = z.array(
   scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.spare_day. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].after. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].after. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_After =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].block. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].block. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Block =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].count. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].count. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Count =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[]. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema =
   z.strictObject({
@@ -2382,89 +1160,42 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_A
     count:
       scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.tourney_day[]. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDaySchema = z.array(
   scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.tourney_day. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_DaysSchema = z.strictObject({
   farm_day: scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDaySchema,
   spare_day: scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDaySchema.optional(),
   tourney_day: scheduleProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDaySchema,
 });
-/** Raw response path: answer.body.profile.plan.days. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Days = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_DaysSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.default. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Week_DefaultSchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.default. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Week_Default = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Week_DefaultSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.saturday. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_Week_SaturdaySchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.saturday. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Week_Saturday = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_Week_SaturdaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.week. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Plan_WeekSchema = z.strictObject({
   default: scheduleProfileAnswer_Status200_Body_Profile_Plan_Week_DefaultSchema,
   saturday: scheduleProfileAnswer_Status200_Body_Profile_Plan_Week_SaturdaySchema,
 });
-/** Raw response path: answer.body.profile.plan.week. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan_Week = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Plan_WeekSchema
->;
 /** Strict raw response path: answer.body.profile.plan. */
 export const scheduleProfileAnswer_Status200_Body_Profile_PlanSchema = z.strictObject({
   days: scheduleProfileAnswer_Status200_Body_Profile_Plan_DaysSchema,
   week: scheduleProfileAnswer_Status200_Body_Profile_Plan_WeekSchema,
 });
-/** Raw response path: answer.body.profile.plan. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Plan = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_PlanSchema
->;
 /** Strict raw response path: answer.body.profile.player.seeded_from. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Player_SeededFromSchema = z.string();
-/** Raw response path: answer.body.profile.player.seeded_from. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Player_SeededFrom = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Player_SeededFromSchema
->;
 /** Strict raw response path: answer.body.profile.player. */
 export const scheduleProfileAnswer_Status200_Body_Profile_PlayerSchema = z.strictObject({
   seeded_from: scheduleProfileAnswer_Status200_Body_Profile_Player_SeededFromSchema.optional(),
 });
-/** Raw response path: answer.body.profile.player. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Player = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_PlayerSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[].enabled. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.chores[].enabled. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_Enabled =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.chores[].name. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_NameSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.chores[].name. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_Name =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_NameSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.chores[]. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElementSchema =
   z.strictObject({
@@ -2472,72 +1203,33 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayE
       scheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema,
     name: scheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_NameSchema,
   });
-/** Raw response path: answer.body.profile.policies.chores[]. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ChoresSchema = z.array(
   scheduleProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.policies.chores. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Chores = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ChoresSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_AdGems = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_FlyingGem = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema =
   z.array(
     scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.guild. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.guild. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Guild = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_QuestRewards =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Quests8h = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOnSchema =
   z.strictObject({
@@ -2550,66 +1242,29 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOnS
       scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema,
     quests_8h: scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.all_on. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOnSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_AdGems = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_FlyingGem =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema =
   z.array(
     scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.guild. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.guild. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Guild = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_QuestRewards =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Quests8h =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnlySchema =
   z.strictObject({
@@ -2623,66 +1278,29 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOn
       scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema,
     quests_8h: scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.gems_only. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnlySchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_AdGems = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_FlyingGem =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema =
   z.array(
     scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.guild. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.guild. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Guild = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_QuestRewards =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Quests8h =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOffSchema =
   z.strictObject({
@@ -2696,36 +1314,18 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsO
       scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema,
     quests_8h: scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.hands_off. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOffSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_GatherSchema = z.strictObject({
   all_on: scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOnSchema,
   gems_only: scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnlySchema,
   hands_off: scheduleProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOffSchema,
 });
-/** Raw response path: answer.body.profile.policies.gather. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_Gather = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_DailyMissions =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_FreeStoreGems =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviorsSchema =
   z.strictObject({
@@ -2734,60 +1334,26 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Policies_GlobalBehavio
     free_store_gems:
       scheduleProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema,
   });
-/** Raw response path: answer.body.profile.policies.global_behaviors. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviorsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Clicks =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Enabled =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Mode =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElement =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema =
   z.array(
     scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Tab =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema =
   z.strictObject({
@@ -2800,29 +1366,14 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists
       scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema,
     tab: scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema =
   z.array(
     scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Enabled =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema =
   z.strictObject({
@@ -2831,67 +1382,27 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists
     enabled:
       scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_CashReserve =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Enabled =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_IntervalSec =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Enabled =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWave =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Id =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimit =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema =
   z.strictObject({
@@ -2903,29 +1414,14 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists
     tap_limit:
       scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema =
   z.array(
     scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Version =
-  z.infer<
-    typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainListSchema =
   z.strictObject({
@@ -2939,10 +1435,6 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists
     version:
       scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainListSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists. */
 export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingListsSchema =
   z.strictObject({
@@ -2950,10 +1442,6 @@ export const scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists
       scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema,
     main_list: scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainListSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingListsSchema
->;
 /** Strict raw response path: answer.body.profile.policies. */
 export const scheduleProfileAnswer_Status200_Body_Profile_PoliciesSchema = z.strictObject({
   chores: scheduleProfileAnswer_Status200_Body_Profile_Policies_ChoresSchema,
@@ -2961,10 +1449,6 @@ export const scheduleProfileAnswer_Status200_Body_Profile_PoliciesSchema = z.str
   global_behaviors: scheduleProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviorsSchema,
   shopping_lists: scheduleProfileAnswer_Status200_Body_Profile_Policies_ShoppingListsSchema,
 });
-/** Raw response path: answer.body.profile.policies. */
-export type ScheduleProfileAnswer_Status200_Body_Profile_Policies = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Profile_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile. */
 export const scheduleProfileAnswer_Status200_Body_ProfileSchema = z.strictObject({
   blueprints: scheduleProfileAnswer_Status200_Body_Profile_BlueprintsSchema.optional(),
@@ -2972,36 +1456,16 @@ export const scheduleProfileAnswer_Status200_Body_ProfileSchema = z.strictObject
   player: scheduleProfileAnswer_Status200_Body_Profile_PlayerSchema,
   policies: scheduleProfileAnswer_Status200_Body_Profile_PoliciesSchema.optional(),
 });
-/** Raw response path: answer.body.profile. */
-export type ScheduleProfileAnswer_Status200_Body_Profile = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_ProfileSchema
->;
 /** Strict raw response path: answer.body.revision. */
 export const scheduleProfileAnswer_Status200_Body_RevisionSchema = z.string();
-/** Raw response path: answer.body.revision. */
-export type ScheduleProfileAnswer_Status200_Body_Revision = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_RevisionSchema
->;
 /** Strict raw response path: answer.body.validator_error. */
 export const scheduleProfileAnswer_Status200_Body_ValidatorErrorSchema = z.string().nullable();
-/** Raw response path: answer.body.validator_error. */
-export type ScheduleProfileAnswer_Status200_Body_ValidatorError = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_ValidatorErrorSchema
->;
 /** Strict raw response path: answer.body.warnings[]. */
 export const scheduleProfileAnswer_Status200_Body_Warnings_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.warnings[]. */
-export type ScheduleProfileAnswer_Status200_Body_Warnings_ArrayElement = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_Warnings_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.warnings. */
 export const scheduleProfileAnswer_Status200_Body_WarningsSchema = z.array(
   scheduleProfileAnswer_Status200_Body_Warnings_ArrayElementSchema,
 );
-/** Raw response path: answer.body.warnings. */
-export type ScheduleProfileAnswer_Status200_Body_Warnings = z.infer<
-  typeof scheduleProfileAnswer_Status200_Body_WarningsSchema
->;
 /** Strict raw response path: answer.body. */
 export const scheduleProfileAnswer_Status200_BodySchema = z.strictObject({
   name: scheduleProfileAnswer_Status200_Body_NameSchema,
@@ -3012,91 +1476,45 @@ export const scheduleProfileAnswer_Status200_BodySchema = z.strictObject({
   validator_error: scheduleProfileAnswer_Status200_Body_ValidatorErrorSchema,
   warnings: scheduleProfileAnswer_Status200_Body_WarningsSchema,
 });
-/** Raw response path: answer.body. */
-export type ScheduleProfileAnswer_Status200_Body = z.infer<
-  typeof scheduleProfileAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const scheduleProfileAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type ScheduleProfileAnswer_Status200_Status = z.infer<
-  typeof scheduleProfileAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members name, ok, problems, profile, revision, validator_error, warnings. */
 export const scheduleProfileAnswer_Status200Schema = z.strictObject({
   body: scheduleProfileAnswer_Status200_BodySchema,
   status: scheduleProfileAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members name, ok, problems, profile, revision, validator_error, warnings. */
-export type ScheduleProfileAnswer_Status200 = z.infer<typeof scheduleProfileAnswer_Status200Schema>;
 /** Strict raw response path: answer.body.error. */
 export const scheduleProfileAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type ScheduleProfileAnswer_Status400_Body_Error = z.infer<
-  typeof scheduleProfileAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const scheduleProfileAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type ScheduleProfileAnswer_Status400_Body_Ok = z.infer<
-  typeof scheduleProfileAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const scheduleProfileAnswer_Status400_BodySchema = z.strictObject({
   error: scheduleProfileAnswer_Status400_Body_ErrorSchema,
   ok: scheduleProfileAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type ScheduleProfileAnswer_Status400_Body = z.infer<
-  typeof scheduleProfileAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const scheduleProfileAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type ScheduleProfileAnswer_Status400_Status = z.infer<
-  typeof scheduleProfileAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const scheduleProfileAnswer_Status400Schema = z.strictObject({
   body: scheduleProfileAnswer_Status400_BodySchema,
   status: scheduleProfileAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type ScheduleProfileAnswer_Status400 = z.infer<typeof scheduleProfileAnswer_Status400Schema>;
 /** Strict raw response path: answer.body.error. */
 export const scheduleProfileAnswer_Status404_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type ScheduleProfileAnswer_Status404_Body_Error = z.infer<
-  typeof scheduleProfileAnswer_Status404_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const scheduleProfileAnswer_Status404_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type ScheduleProfileAnswer_Status404_Body_Ok = z.infer<
-  typeof scheduleProfileAnswer_Status404_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const scheduleProfileAnswer_Status404_BodySchema = z.strictObject({
   error: scheduleProfileAnswer_Status404_Body_ErrorSchema,
   ok: scheduleProfileAnswer_Status404_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type ScheduleProfileAnswer_Status404_Body = z.infer<
-  typeof scheduleProfileAnswer_Status404_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const scheduleProfileAnswer_Status404_StatusSchema = z.literal(404);
-/** Raw response path: answer.status. */
-export type ScheduleProfileAnswer_Status404_Status = z.infer<
-  typeof scheduleProfileAnswer_Status404_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 404, body members error, ok. */
 export const scheduleProfileAnswer_Status404Schema = z.strictObject({
   body: scheduleProfileAnswer_Status404_BodySchema,
   status: scheduleProfileAnswer_Status404_StatusSchema,
 });
-/** Raw response path: answer, variant: status 404, body members error, ok. */
-export type ScheduleProfileAnswer_Status404 = z.infer<typeof scheduleProfileAnswer_Status404Schema>;
 /** Strict raw response path: answer. */
 export const scheduleProfileAnswerSchema = z.union([
   scheduleProfileAnswer_Status200Schema,
@@ -3107,53 +1525,21 @@ export const scheduleProfileAnswerSchema = z.union([
 export type ScheduleProfileAnswer = z.infer<typeof scheduleProfileAnswerSchema>;
 /** Strict raw response path: answer.body.active. */
 export const schedulePatchAnswer_Status200V1_Body_ActiveSchema = z.string();
-/** Raw response path: answer.body.active. */
-export type SchedulePatchAnswer_Status200V1_Body_Active = z.infer<
-  typeof schedulePatchAnswer_Status200V1_Body_ActiveSchema
->;
 /** Strict raw response path: answer.body.profiles[].active. */
 export const schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_ActiveSchema = z.boolean();
-/** Raw response path: answer.body.profiles[].active. */
-export type SchedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_Active = z.infer<
-  typeof schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_ActiveSchema
->;
 /** Strict raw response path: answer.body.profiles[].draft. */
 export const schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_DraftSchema = z.boolean();
-/** Raw response path: answer.body.profiles[].draft. */
-export type SchedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_Draft = z.infer<
-  typeof schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_DraftSchema
->;
 /** Strict raw response path: answer.body.profiles[].file. */
 export const schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_FileSchema = z.string();
-/** Raw response path: answer.body.profiles[].file. */
-export type SchedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_File = z.infer<
-  typeof schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_FileSchema
->;
 /** Strict raw response path: answer.body.profiles[].mtime. */
 export const schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_MtimeSchema = z.number();
-/** Raw response path: answer.body.profiles[].mtime. */
-export type SchedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_Mtime = z.infer<
-  typeof schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_MtimeSchema
->;
 /** Strict raw response path: answer.body.profiles[].name. */
 export const schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_NameSchema = z.string();
-/** Raw response path: answer.body.profiles[].name. */
-export type SchedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_Name = z.infer<
-  typeof schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_NameSchema
->;
 /** Strict raw response path: answer.body.profiles[].note. */
 export const schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_NoteSchema = z.null();
-/** Raw response path: answer.body.profiles[].note. */
-export type SchedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_Note = z.infer<
-  typeof schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_NoteSchema
->;
 /** Strict raw response path: answer.body.profiles[].patchable. */
 export const schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_PatchableSchema =
   z.boolean();
-/** Raw response path: answer.body.profiles[].patchable. */
-export type SchedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_Patchable = z.infer<
-  typeof schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_PatchableSchema
->;
 /** Strict raw response path: answer.body.profiles[]. */
 export const schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElementSchema = z.strictObject({
   active: schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_ActiveSchema,
@@ -3164,96 +1550,46 @@ export const schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElementSchema = 
   note: schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_NoteSchema,
   patchable: schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement_PatchableSchema,
 });
-/** Raw response path: answer.body.profiles[]. */
-export type SchedulePatchAnswer_Status200V1_Body_Profiles_ArrayElement = z.infer<
-  typeof schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profiles. */
 export const schedulePatchAnswer_Status200V1_Body_ProfilesSchema = z.array(
   schedulePatchAnswer_Status200V1_Body_Profiles_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profiles. */
-export type SchedulePatchAnswer_Status200V1_Body_Profiles = z.infer<
-  typeof schedulePatchAnswer_Status200V1_Body_ProfilesSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status200V1_BodySchema = z.strictObject({
   active: schedulePatchAnswer_Status200V1_Body_ActiveSchema,
   profiles: schedulePatchAnswer_Status200V1_Body_ProfilesSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status200V1_Body = z.infer<
-  typeof schedulePatchAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status200V1_Status = z.infer<
-  typeof schedulePatchAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members active, profiles. */
 export const schedulePatchAnswer_Status200V1Schema = z.strictObject({
   body: schedulePatchAnswer_Status200V1_BodySchema,
   status: schedulePatchAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members active, profiles. */
-export type SchedulePatchAnswer_Status200V1 = z.infer<typeof schedulePatchAnswer_Status200V1Schema>;
 /** Strict raw response path: answer.body.backup. */
 export const schedulePatchAnswer_Status200V2_Body_BackupSchema = z.string();
-/** Raw response path: answer.body.backup. */
-export type SchedulePatchAnswer_Status200V2_Body_Backup = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_BackupSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const schedulePatchAnswer_Status200V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type SchedulePatchAnswer_Status200V2_Body_Ok = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.kind. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm.kind. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_Kind = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.loadout. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.loadout. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_Loadout = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies.gather. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.policies.gather. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_Policies_Gather = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_PoliciesSchema =
   z.strictObject({
     gather: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm.policies. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_Policies = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.shopping. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.shopping. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_Shopping = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.tier. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.farm.tier. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_Tier = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmSchema = z.strictObject({
   kind: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_KindSchema,
@@ -3262,64 +1598,30 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmSchema 
   shopping: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_ShoppingSchema,
   tier: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.farm. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Farm = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.kind. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm_deep.kind. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_Kind = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_Loadout = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_Policies_Gather =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_PoliciesSchema =
   z.strictObject({
     gather: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_Policies = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_RestartViaHome =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_Shopping = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.tier. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.tier. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_Tier = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeepSchema =
   z.strictObject({
@@ -3331,55 +1633,26 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeepSch
     shopping: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_ShoppingSchema,
     tier: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep_TierSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm_deep. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeep = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmDeepSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.count. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.count. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_Count = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_CountSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.kind. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_KindSchema = z.enum([
   'shard',
 ]);
-/** Raw response path: answer.body.profile.blueprints.shards.kind. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_Kind = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.loadout. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.loadout. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_Loadout = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies.gather. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.policies.gather. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_Policies_Gather =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_PoliciesSchema =
   z.strictObject({
     gather: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.shards.policies. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_Policies = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.tier. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.tier. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_Tier = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_ShardsSchema = z.strictObject({
   count: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_CountSchema,
@@ -3388,56 +1661,27 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_ShardsSchem
   policies: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_PoliciesSchema,
   tier: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.shards. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Shards = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_ShardsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_GemEntryMax = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.kind. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_KindSchema = z.enum([
   'tournament',
 ]);
-/** Raw response path: answer.body.profile.blueprints.tourney.kind. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_Kind = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.loadout. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.loadout. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_Loadout = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_Policies_Gather =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_PoliciesSchema =
   z.strictObject({
     gather: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.tourney.policies. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_Policies = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.tier. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.tier. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_Tier = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_TourneySchema = z.strictObject(
   {
@@ -3449,10 +1693,6 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_TourneySche
     tier: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney_TierSchema,
   },
 );
-/** Raw response path: answer.body.profile.blueprints.tourney. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints_Tourney = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_TourneySchema
->;
 /** Strict raw response path: answer.body.profile.blueprints. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_BlueprintsSchema = z.strictObject({
   farm: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_FarmSchema,
@@ -3460,42 +1700,18 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_BlueprintsSchema = z.s
   shards: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_ShardsSchema,
   tourney: schedulePatchAnswer_Status200V2_Body_Profile_Blueprints_TourneySchema,
 });
-/** Raw response path: answer.body.profile.blueprints. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Blueprints = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_BlueprintsSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].after. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].after. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_After =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].block. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].block. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_Block =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].count. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].count. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_Count =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[]. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema =
   z.strictObject({
@@ -3507,58 +1723,25 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_Arra
     count:
       schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.farm_day[]. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElement = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDaySchema = z.array(
   schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.farm_day. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDay = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.night[].after. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.night[].after. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_After =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.night[].block. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.night[].block. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_Block =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.night[].blueprint. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.night[].blueprint. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_Blueprint =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.night[].count. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.night[].count. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_Count =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.night[].until. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_UntilSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.night[].until. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_Until =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_UntilSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.night[]. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElementSchema =
   z.strictObject({
@@ -3572,50 +1755,22 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayE
     until:
       schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement_UntilSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.night[]. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElement = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.night. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_NightSchema = z.array(
   schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.night. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Night = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_NightSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].after. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].after. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_After =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].block. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].block. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Block =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].count. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].count. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Count =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[]. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema =
   z.strictObject({
@@ -3628,51 +1783,22 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_A
     count:
       schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.tourney_day[]. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDaySchema = z.array(
   schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.tourney_day. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDay = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.weekend[].after. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.weekend[].after. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_After =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.weekend[].block. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.weekend[].block. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_Block =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.weekend[].blueprint. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.weekend[].blueprint. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_Blueprint =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.weekend[].count. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.weekend[].count. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_Count =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.weekend[]. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElementSchema =
   z.strictObject({
@@ -3684,18 +1810,10 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_Arra
     count:
       schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.weekend[]. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElement = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.weekend. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_WeekendSchema = z.array(
   schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.weekend. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_Weekend = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_WeekendSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_DaysSchema = z.strictObject({
   farm_day: schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_FarmDaySchema.optional(),
@@ -3703,40 +1821,16 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_DaysSchema = z.st
   tourney_day: schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_TourneyDaySchema.optional(),
   weekend: schedulePatchAnswer_Status200V2_Body_Profile_Plan_Days_WeekendSchema.optional(),
 });
-/** Raw response path: answer.body.profile.plan.days. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Days = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_DaysSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.default. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_DefaultSchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.default. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_Default = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_DefaultSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.monday. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_MondaySchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.monday. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_Monday = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_MondaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.saturday. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_SaturdaySchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.saturday. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_Saturday = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_SaturdaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.sunday. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_SundaySchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.sunday. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_Sunday = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_SundaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.tuesday. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_TuesdaySchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.tuesday. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_Tuesday = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_TuesdaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.week. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_WeekSchema = z.strictObject({
   default: schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_DefaultSchema,
@@ -3745,41 +1839,19 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Plan_WeekSchema = z.st
   sunday: schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_SundaySchema.optional(),
   tuesday: schedulePatchAnswer_Status200V2_Body_Profile_Plan_Week_TuesdaySchema.optional(),
 });
-/** Raw response path: answer.body.profile.plan.week. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan_Week = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Plan_WeekSchema
->;
 /** Strict raw response path: answer.body.profile.plan. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_PlanSchema = z.strictObject({
   days: schedulePatchAnswer_Status200V2_Body_Profile_Plan_DaysSchema,
   week: schedulePatchAnswer_Status200V2_Body_Profile_Plan_WeekSchema,
 });
-/** Raw response path: answer.body.profile.plan. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Plan = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_PlanSchema
->;
 /** Strict raw response path: answer.body.profile.player. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_PlayerSchema = z.strictObject({});
-/** Raw response path: answer.body.profile.player. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Player = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_PlayerSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[].enabled. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.chores[].enabled. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayElement_Enabled =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.chores[].name. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayElement_NameSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.chores[].name. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayElement_Name =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayElement_NameSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.chores[]. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayElementSchema =
   z.strictObject({
@@ -3787,72 +1859,33 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayE
       schedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema,
     name: schedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayElement_NameSchema,
   });
-/** Raw response path: answer.body.profile.policies.chores[]. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayElement = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ChoresSchema = z.array(
   schedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.policies.chores. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Chores = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ChoresSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_AdGems = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_FlyingGem = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema =
   z.array(
     schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_GemDelaySec =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.guild. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.guild. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_Guild = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_QuestRewards =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_Quests8h = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOnSchema =
   z.strictObject({
@@ -3865,66 +1898,29 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOnS
       schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema,
     quests_8h: schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.all_on. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOn = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOnSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_AdGems = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_FlyingGem =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema =
   z.array(
     schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.guild. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.guild. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_Guild = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_QuestRewards =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_Quests8h =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnlySchema =
   z.strictObject({
@@ -3938,66 +1934,29 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOn
       schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema,
     quests_8h: schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.gems_only. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnly = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnlySchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_AdGems = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_FlyingGem =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema =
   z.array(
     schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_GemDelaySec =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.guild. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.guild. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_Guild = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_QuestRewards =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_Quests8h =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOffSchema =
   z.strictObject({
@@ -4011,36 +1970,18 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsO
       schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema,
     quests_8h: schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.hands_off. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOff = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOffSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_GatherSchema = z.strictObject({
   all_on: schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_AllOnSchema,
   gems_only: schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_GemsOnlySchema,
   hands_off: schedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather_HandsOffSchema,
 });
-/** Raw response path: answer.body.profile.policies.gather. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_Gather = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_GlobalBehaviors_DailyMissions =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_GlobalBehaviors_FreeStoreGems =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_GlobalBehaviorsSchema =
   z.strictObject({
@@ -4049,60 +1990,26 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_GlobalBehavio
     free_store_gems:
       schedulePatchAnswer_Status200V2_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema,
   });
-/** Raw response path: answer.body.profile.policies.global_behaviors. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_GlobalBehaviors = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_GlobalBehaviorsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Clicks =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Enabled =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Mode =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema =
   z.array(
     schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Tab =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema =
   z.strictObject({
@@ -4115,29 +2022,14 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists
       schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema,
     tab: schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema =
   z.array(
     schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_Enabled =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema =
   z.strictObject({
@@ -4146,67 +2038,27 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists
     enabled:
       schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweep =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_CashReserve =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Enabled =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_IntervalSec =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Enabled =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWave =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Id =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimit =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema =
   z.strictObject({
@@ -4218,29 +2070,14 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists
     tap_limit:
       schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema =
   z.array(
     schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Queue =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_Version =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainListSchema =
   z.strictObject({
@@ -4254,10 +2091,6 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists
     version:
       schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainList = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainListSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingListsSchema =
   z.strictObject({
@@ -4265,10 +2098,6 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists
       schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema,
     main_list: schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists_MainListSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingLists = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingListsSchema
->;
 /** Strict raw response path: answer.body.profile.policies. */
 export const schedulePatchAnswer_Status200V2_Body_Profile_PoliciesSchema = z.strictObject({
   chores: schedulePatchAnswer_Status200V2_Body_Profile_Policies_ChoresSchema,
@@ -4276,10 +2105,6 @@ export const schedulePatchAnswer_Status200V2_Body_Profile_PoliciesSchema = z.str
   global_behaviors: schedulePatchAnswer_Status200V2_Body_Profile_Policies_GlobalBehaviorsSchema,
   shopping_lists: schedulePatchAnswer_Status200V2_Body_Profile_Policies_ShoppingListsSchema,
 });
-/** Raw response path: answer.body.profile.policies. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile_Policies = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Profile_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile. */
 export const schedulePatchAnswer_Status200V2_Body_ProfileSchema = z.strictObject({
   blueprints: schedulePatchAnswer_Status200V2_Body_Profile_BlueprintsSchema,
@@ -4287,30 +2112,14 @@ export const schedulePatchAnswer_Status200V2_Body_ProfileSchema = z.strictObject
   player: schedulePatchAnswer_Status200V2_Body_Profile_PlayerSchema,
   policies: schedulePatchAnswer_Status200V2_Body_Profile_PoliciesSchema,
 });
-/** Raw response path: answer.body.profile. */
-export type SchedulePatchAnswer_Status200V2_Body_Profile = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_ProfileSchema
->;
 /** Strict raw response path: answer.body.revision. */
 export const schedulePatchAnswer_Status200V2_Body_RevisionSchema = z.string();
-/** Raw response path: answer.body.revision. */
-export type SchedulePatchAnswer_Status200V2_Body_Revision = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_RevisionSchema
->;
 /** Strict raw response path: answer.body.warnings[]. */
 export const schedulePatchAnswer_Status200V2_Body_Warnings_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.warnings[]. */
-export type SchedulePatchAnswer_Status200V2_Body_Warnings_ArrayElement = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_Warnings_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.warnings. */
 export const schedulePatchAnswer_Status200V2_Body_WarningsSchema = z.array(
   schedulePatchAnswer_Status200V2_Body_Warnings_ArrayElementSchema,
 );
-/** Raw response path: answer.body.warnings. */
-export type SchedulePatchAnswer_Status200V2_Body_Warnings = z.infer<
-  typeof schedulePatchAnswer_Status200V2_Body_WarningsSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status200V2_BodySchema = z.strictObject({
   backup: schedulePatchAnswer_Status200V2_Body_BackupSchema,
@@ -4319,87 +2128,41 @@ export const schedulePatchAnswer_Status200V2_BodySchema = z.strictObject({
   revision: schedulePatchAnswer_Status200V2_Body_RevisionSchema,
   warnings: schedulePatchAnswer_Status200V2_Body_WarningsSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status200V2_Body = z.infer<
-  typeof schedulePatchAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status200V2_Status = z.infer<
-  typeof schedulePatchAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members backup, ok, profile, revision, warnings. */
 export const schedulePatchAnswer_Status200V2Schema = z.strictObject({
   body: schedulePatchAnswer_Status200V2_BodySchema,
   status: schedulePatchAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members backup, ok, profile, revision, warnings. */
-export type SchedulePatchAnswer_Status200V2 = z.infer<typeof schedulePatchAnswer_Status200V2Schema>;
 /** Strict raw response path: answer.body.name. */
 export const schedulePatchAnswer_Status200V3_Body_NameSchema = z.string();
-/** Raw response path: answer.body.name. */
-export type SchedulePatchAnswer_Status200V3_Body_Name = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_NameSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const schedulePatchAnswer_Status200V3_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type SchedulePatchAnswer_Status200V3_Body_Ok = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_OkSchema
->;
 /** Strict raw response path: answer.body.problems. */
 export const schedulePatchAnswer_Status200V3_Body_ProblemsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.problems. */
-export type SchedulePatchAnswer_Status200V3_Body_Problems = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_ProblemsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.kind. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm.kind. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_Kind = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.loadout. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.loadout. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_Loadout = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies.gather. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.policies.gather. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_Policies_Gather = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_PoliciesSchema =
   z.strictObject({
     gather: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm.policies. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_Policies = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.shopping. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.shopping. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_Shopping = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.tier. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.farm.tier. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_Tier = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmSchema = z.strictObject({
   kind: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_KindSchema,
@@ -4408,64 +2171,30 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmSchema 
   shopping: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_ShoppingSchema,
   tier: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.farm. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Farm = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.kind. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm_deep.kind. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Kind = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Loadout = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Policies_Gather =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_PoliciesSchema =
   z.strictObject({
     gather: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Policies = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_RestartViaHome =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Shopping = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.tier. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.tier. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_Tier = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeepSchema =
   z.strictObject({
@@ -4477,55 +2206,26 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeepSch
     shopping: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_ShoppingSchema,
     tier: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep_TierSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm_deep. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeep = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmDeepSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.count. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.count. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_Count = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_CountSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.kind. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_KindSchema = z.enum([
   'shard',
 ]);
-/** Raw response path: answer.body.profile.blueprints.shards.kind. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_Kind = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.loadout. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.loadout. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_Loadout = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies.gather. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.policies.gather. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_Policies_Gather =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_PoliciesSchema =
   z.strictObject({
     gather: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.shards.policies. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_Policies = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.tier. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.tier. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_Tier = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_ShardsSchema = z.strictObject({
   count: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_CountSchema,
@@ -4534,56 +2234,27 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_ShardsSchem
   policies: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_PoliciesSchema,
   tier: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.shards. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Shards = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_ShardsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_GemEntryMax = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.kind. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_KindSchema = z.enum([
   'tournament',
 ]);
-/** Raw response path: answer.body.profile.blueprints.tourney.kind. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Kind = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.loadout. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.loadout. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Loadout = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Policies_Gather =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_PoliciesSchema =
   z.strictObject({
     gather: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.tourney.policies. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Policies = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.tier. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.tier. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_Tier = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_TourneySchema = z.strictObject(
   {
@@ -4595,10 +2266,6 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_TourneySche
     tier: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney_TierSchema,
   },
 );
-/** Raw response path: answer.body.profile.blueprints.tourney. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints_Tourney = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_TourneySchema
->;
 /** Strict raw response path: answer.body.profile.blueprints. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_BlueprintsSchema = z.strictObject({
   farm: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_FarmSchema,
@@ -4606,42 +2273,18 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_BlueprintsSchema = z.s
   shards: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_ShardsSchema,
   tourney: schedulePatchAnswer_Status200V3_Body_Profile_Blueprints_TourneySchema,
 });
-/** Raw response path: answer.body.profile.blueprints. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Blueprints = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_BlueprintsSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].after. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].after. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_After =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].block. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].block. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_Block =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].count. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].count. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_Count =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[]. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema =
   z.strictObject({
@@ -4653,50 +2296,22 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_Arra
     count:
       schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.farm_day[]. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElement = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDaySchema = z.array(
   schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.farm_day. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDay = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].after. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].after. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_After =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].block. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].block. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Block =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].count. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].count. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Count =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[]. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema =
   z.strictObject({
@@ -4709,51 +2324,22 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_A
     count:
       schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.tourney_day[]. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDaySchema = z.array(
   schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.tourney_day. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDay = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.weekend[].after. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.weekend[].after. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_After =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.weekend[].block. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.weekend[].block. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_Block =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.weekend[].blueprint. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.weekend[].blueprint. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_Blueprint =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.weekend[].count. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.weekend[].count. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_Count =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.weekend[]. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElementSchema =
   z.strictObject({
@@ -4765,52 +2351,24 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_Arra
     count:
       schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.weekend[]. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElement = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.weekend. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_WeekendSchema = z.array(
   schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.weekend. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_Weekend = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_WeekendSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_DaysSchema = z.strictObject({
   farm_day: schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_FarmDaySchema,
   tourney_day: schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_TourneyDaySchema.optional(),
   weekend: schedulePatchAnswer_Status200V3_Body_Profile_Plan_Days_WeekendSchema.optional(),
 });
-/** Raw response path: answer.body.profile.plan.days. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Days = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_DaysSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.default. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_DefaultSchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.default. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_Default = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_DefaultSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.monday. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_MondaySchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.monday. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_Monday = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_MondaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.saturday. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_SaturdaySchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.saturday. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_Saturday = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_SaturdaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.sunday. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_SundaySchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.sunday. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_Sunday = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_SundaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.week. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_WeekSchema = z.strictObject({
   default: schedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_DefaultSchema,
@@ -4818,41 +2376,19 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Plan_WeekSchema = z.st
   saturday: schedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_SaturdaySchema.optional(),
   sunday: schedulePatchAnswer_Status200V3_Body_Profile_Plan_Week_SundaySchema.optional(),
 });
-/** Raw response path: answer.body.profile.plan.week. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan_Week = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Plan_WeekSchema
->;
 /** Strict raw response path: answer.body.profile.plan. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_PlanSchema = z.strictObject({
   days: schedulePatchAnswer_Status200V3_Body_Profile_Plan_DaysSchema,
   week: schedulePatchAnswer_Status200V3_Body_Profile_Plan_WeekSchema,
 });
-/** Raw response path: answer.body.profile.plan. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Plan = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_PlanSchema
->;
 /** Strict raw response path: answer.body.profile.player. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_PlayerSchema = z.strictObject({});
-/** Raw response path: answer.body.profile.player. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Player = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_PlayerSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[].enabled. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.chores[].enabled. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_Enabled =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.chores[].name. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_NameSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.chores[].name. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_Name =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_NameSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.chores[]. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElementSchema =
   z.strictObject({
@@ -4860,72 +2396,33 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayE
       schedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema,
     name: schedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement_NameSchema,
   });
-/** Raw response path: answer.body.profile.policies.chores[]. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElement = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ChoresSchema = z.array(
   schedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.policies.chores. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Chores = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ChoresSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_AdGems = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_FlyingGem = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema =
   z.array(
     schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySec =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.guild. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.guild. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_Guild = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_QuestRewards =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_Quests8h = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOnSchema =
   z.strictObject({
@@ -4938,66 +2435,29 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOnS
       schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema,
     quests_8h: schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.all_on. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOn = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOnSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_AdGems = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_FlyingGem =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema =
   z.array(
     schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.guild. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.guild. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_Guild = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_QuestRewards =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_Quests8h =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnlySchema =
   z.strictObject({
@@ -5011,66 +2471,29 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOn
       schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema,
     quests_8h: schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.gems_only. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnly = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnlySchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_AdGems = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_FlyingGem =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema =
   z.array(
     schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySec =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.guild. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.guild. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_Guild = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_QuestRewards =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_Quests8h =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOffSchema =
   z.strictObject({
@@ -5084,36 +2507,18 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsO
       schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema,
     quests_8h: schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.hands_off. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOff = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOffSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_GatherSchema = z.strictObject({
   all_on: schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_AllOnSchema,
   gems_only: schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_GemsOnlySchema,
   hands_off: schedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather_HandsOffSchema,
 });
-/** Raw response path: answer.body.profile.policies.gather. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_Gather = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_DailyMissions =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_FreeStoreGems =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviorsSchema =
   z.strictObject({
@@ -5122,60 +2527,26 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_GlobalBehavio
     free_store_gems:
       schedulePatchAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema,
   });
-/** Raw response path: answer.body.profile.policies.global_behaviors. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviors = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviorsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Clicks =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Enabled =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Mode =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema =
   z.array(
     schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Tab =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema =
   z.strictObject({
@@ -5188,29 +2559,14 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists
       schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema,
     tab: schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema =
   z.array(
     schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_Enabled =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema =
   z.strictObject({
@@ -5219,67 +2575,27 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists
     enabled:
       schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweep =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_CashReserve =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Enabled =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_IntervalSec =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Enabled =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWave =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Id =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimit =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema =
   z.strictObject({
@@ -5291,29 +2607,14 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists
     tap_limit:
       schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema =
   z.array(
     schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Queue =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_Version =
-  z.infer<
-    typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainListSchema =
   z.strictObject({
@@ -5327,10 +2628,6 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists
     version:
       schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainList = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainListSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingListsSchema =
   z.strictObject({
@@ -5338,10 +2635,6 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists
       schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema,
     main_list: schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists_MainListSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingLists = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingListsSchema
->;
 /** Strict raw response path: answer.body.profile.policies. */
 export const schedulePatchAnswer_Status200V3_Body_Profile_PoliciesSchema = z.strictObject({
   chores: schedulePatchAnswer_Status200V3_Body_Profile_Policies_ChoresSchema,
@@ -5349,10 +2642,6 @@ export const schedulePatchAnswer_Status200V3_Body_Profile_PoliciesSchema = z.str
   global_behaviors: schedulePatchAnswer_Status200V3_Body_Profile_Policies_GlobalBehaviorsSchema,
   shopping_lists: schedulePatchAnswer_Status200V3_Body_Profile_Policies_ShoppingListsSchema,
 });
-/** Raw response path: answer.body.profile.policies. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile_Policies = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_Profile_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile. */
 export const schedulePatchAnswer_Status200V3_Body_ProfileSchema = z.strictObject({
   blueprints: schedulePatchAnswer_Status200V3_Body_Profile_BlueprintsSchema,
@@ -5360,30 +2649,14 @@ export const schedulePatchAnswer_Status200V3_Body_ProfileSchema = z.strictObject
   player: schedulePatchAnswer_Status200V3_Body_Profile_PlayerSchema,
   policies: schedulePatchAnswer_Status200V3_Body_Profile_PoliciesSchema,
 });
-/** Raw response path: answer.body.profile. */
-export type SchedulePatchAnswer_Status200V3_Body_Profile = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_ProfileSchema
->;
 /** Strict raw response path: answer.body.revision. */
 export const schedulePatchAnswer_Status200V3_Body_RevisionSchema = z.string();
-/** Raw response path: answer.body.revision. */
-export type SchedulePatchAnswer_Status200V3_Body_Revision = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_RevisionSchema
->;
 /** Strict raw response path: answer.body.validator_error. */
 export const schedulePatchAnswer_Status200V3_Body_ValidatorErrorSchema = z.null();
-/** Raw response path: answer.body.validator_error. */
-export type SchedulePatchAnswer_Status200V3_Body_ValidatorError = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_ValidatorErrorSchema
->;
 /** Strict raw response path: answer.body.warnings. */
 export const schedulePatchAnswer_Status200V3_Body_WarningsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.warnings. */
-export type SchedulePatchAnswer_Status200V3_Body_Warnings = z.infer<
-  typeof schedulePatchAnswer_Status200V3_Body_WarningsSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status200V3_BodySchema = z.strictObject({
   name: schedulePatchAnswer_Status200V3_Body_NameSchema,
@@ -5394,232 +2667,108 @@ export const schedulePatchAnswer_Status200V3_BodySchema = z.strictObject({
   validator_error: schedulePatchAnswer_Status200V3_Body_ValidatorErrorSchema,
   warnings: schedulePatchAnswer_Status200V3_Body_WarningsSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status200V3_Body = z.infer<
-  typeof schedulePatchAnswer_Status200V3_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status200V3_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status200V3_Status = z.infer<
-  typeof schedulePatchAnswer_Status200V3_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members name, ok, problems, profile, revision, validator_error, warnings. */
 export const schedulePatchAnswer_Status200V3Schema = z.strictObject({
   body: schedulePatchAnswer_Status200V3_BodySchema,
   status: schedulePatchAnswer_Status200V3_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members name, ok, problems, profile, revision, validator_error, warnings. */
-export type SchedulePatchAnswer_Status200V3 = z.infer<typeof schedulePatchAnswer_Status200V3Schema>;
 /** Strict raw response path: answer.body.error. */
 export const schedulePatchAnswer_Status400V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type SchedulePatchAnswer_Status400V1_Body_Error = z.infer<
-  typeof schedulePatchAnswer_Status400V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const schedulePatchAnswer_Status400V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type SchedulePatchAnswer_Status400V1_Body_Ok = z.infer<
-  typeof schedulePatchAnswer_Status400V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status400V1_BodySchema = z.strictObject({
   error: schedulePatchAnswer_Status400V1_Body_ErrorSchema,
   ok: schedulePatchAnswer_Status400V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status400V1_Body = z.infer<
-  typeof schedulePatchAnswer_Status400V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status400V1_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status400V1_Status = z.infer<
-  typeof schedulePatchAnswer_Status400V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const schedulePatchAnswer_Status400V1Schema = z.strictObject({
   body: schedulePatchAnswer_Status400V1_BodySchema,
   status: schedulePatchAnswer_Status400V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type SchedulePatchAnswer_Status400V1 = z.infer<typeof schedulePatchAnswer_Status400V1Schema>;
 /** Strict raw response path: answer.body.error. */
 export const schedulePatchAnswer_Status400V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type SchedulePatchAnswer_Status400V2_Body_Error = z.infer<
-  typeof schedulePatchAnswer_Status400V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const schedulePatchAnswer_Status400V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type SchedulePatchAnswer_Status400V2_Body_Ok = z.infer<
-  typeof schedulePatchAnswer_Status400V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.problems[]. */
 export const schedulePatchAnswer_Status400V2_Body_Problems_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.problems[]. */
-export type SchedulePatchAnswer_Status400V2_Body_Problems_ArrayElement = z.infer<
-  typeof schedulePatchAnswer_Status400V2_Body_Problems_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.problems. */
 export const schedulePatchAnswer_Status400V2_Body_ProblemsSchema = z.array(
   schedulePatchAnswer_Status400V2_Body_Problems_ArrayElementSchema,
 );
-/** Raw response path: answer.body.problems. */
-export type SchedulePatchAnswer_Status400V2_Body_Problems = z.infer<
-  typeof schedulePatchAnswer_Status400V2_Body_ProblemsSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status400V2_BodySchema = z.strictObject({
   error: schedulePatchAnswer_Status400V2_Body_ErrorSchema,
   ok: schedulePatchAnswer_Status400V2_Body_OkSchema,
   problems: schedulePatchAnswer_Status400V2_Body_ProblemsSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status400V2_Body = z.infer<
-  typeof schedulePatchAnswer_Status400V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status400V2_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status400V2_Status = z.infer<
-  typeof schedulePatchAnswer_Status400V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok, problems. */
 export const schedulePatchAnswer_Status400V2Schema = z.strictObject({
   body: schedulePatchAnswer_Status400V2_BodySchema,
   status: schedulePatchAnswer_Status400V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok, problems. */
-export type SchedulePatchAnswer_Status400V2 = z.infer<typeof schedulePatchAnswer_Status400V2Schema>;
 /** Strict raw response path: answer.body.text. */
 export const schedulePatchAnswer_Status400V3_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type SchedulePatchAnswer_Status400V3_Body_Text = z.infer<
-  typeof schedulePatchAnswer_Status400V3_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status400V3_BodySchema = z.strictObject({
   text: schedulePatchAnswer_Status400V3_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status400V3_Body = z.infer<
-  typeof schedulePatchAnswer_Status400V3_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status400V3_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status400V3_Status = z.infer<
-  typeof schedulePatchAnswer_Status400V3_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members text. */
 export const schedulePatchAnswer_Status400V3Schema = z.strictObject({
   body: schedulePatchAnswer_Status400V3_BodySchema,
   status: schedulePatchAnswer_Status400V3_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members text. */
-export type SchedulePatchAnswer_Status400V3 = z.infer<typeof schedulePatchAnswer_Status400V3Schema>;
 /** Strict raw response path: answer.body.error. */
 export const schedulePatchAnswer_Status404_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type SchedulePatchAnswer_Status404_Body_Error = z.infer<
-  typeof schedulePatchAnswer_Status404_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const schedulePatchAnswer_Status404_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type SchedulePatchAnswer_Status404_Body_Ok = z.infer<
-  typeof schedulePatchAnswer_Status404_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status404_BodySchema = z.strictObject({
   error: schedulePatchAnswer_Status404_Body_ErrorSchema,
   ok: schedulePatchAnswer_Status404_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status404_Body = z.infer<
-  typeof schedulePatchAnswer_Status404_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status404_StatusSchema = z.literal(404);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status404_Status = z.infer<
-  typeof schedulePatchAnswer_Status404_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 404, body members error, ok. */
 export const schedulePatchAnswer_Status404Schema = z.strictObject({
   body: schedulePatchAnswer_Status404_BodySchema,
   status: schedulePatchAnswer_Status404_StatusSchema,
 });
-/** Raw response path: answer, variant: status 404, body members error, ok. */
-export type SchedulePatchAnswer_Status404 = z.infer<typeof schedulePatchAnswer_Status404Schema>;
 /** Strict raw response path: answer.body.code. */
 export const schedulePatchAnswer_Status409V1_Body_CodeSchema = z.enum(['action_lock']);
-/** Raw response path: answer.body.code. */
-export type SchedulePatchAnswer_Status409V1_Body_Code = z.infer<
-  typeof schedulePatchAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const schedulePatchAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type SchedulePatchAnswer_Status409V1_Body_Error = z.infer<
-  typeof schedulePatchAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const schedulePatchAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type SchedulePatchAnswer_Status409V1_Body_Ok = z.infer<
-  typeof schedulePatchAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status409V1_BodySchema = z.strictObject({
   code: schedulePatchAnswer_Status409V1_Body_CodeSchema,
   error: schedulePatchAnswer_Status409V1_Body_ErrorSchema,
   ok: schedulePatchAnswer_Status409V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status409V1_Body = z.infer<
-  typeof schedulePatchAnswer_Status409V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status409V1_Status = z.infer<
-  typeof schedulePatchAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const schedulePatchAnswer_Status409V1Schema = z.strictObject({
   body: schedulePatchAnswer_Status409V1_BodySchema,
   status: schedulePatchAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type SchedulePatchAnswer_Status409V1 = z.infer<typeof schedulePatchAnswer_Status409V1Schema>;
 /** Strict raw response path: answer.body.code. */
 export const schedulePatchAnswer_Status409V2_Body_CodeSchema = z.enum(['revision_conflict']);
-/** Raw response path: answer.body.code. */
-export type SchedulePatchAnswer_Status409V2_Body_Code = z.infer<
-  typeof schedulePatchAnswer_Status409V2_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const schedulePatchAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type SchedulePatchAnswer_Status409V2_Body_Error = z.infer<
-  typeof schedulePatchAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const schedulePatchAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type SchedulePatchAnswer_Status409V2_Body_Ok = z.infer<
-  typeof schedulePatchAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.revision. */
 export const schedulePatchAnswer_Status409V2_Body_RevisionSchema = z.string();
-/** Raw response path: answer.body.revision. */
-export type SchedulePatchAnswer_Status409V2_Body_Revision = z.infer<
-  typeof schedulePatchAnswer_Status409V2_Body_RevisionSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status409V2_BodySchema = z.strictObject({
   code: schedulePatchAnswer_Status409V2_Body_CodeSchema,
@@ -5627,159 +2776,77 @@ export const schedulePatchAnswer_Status409V2_BodySchema = z.strictObject({
   ok: schedulePatchAnswer_Status409V2_Body_OkSchema,
   revision: schedulePatchAnswer_Status409V2_Body_RevisionSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status409V2_Body = z.infer<
-  typeof schedulePatchAnswer_Status409V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status409V2_Status = z.infer<
-  typeof schedulePatchAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, revision. */
 export const schedulePatchAnswer_Status409V2Schema = z.strictObject({
   body: schedulePatchAnswer_Status409V2_BodySchema,
   status: schedulePatchAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, revision. */
-export type SchedulePatchAnswer_Status409V2 = z.infer<typeof schedulePatchAnswer_Status409V2Schema>;
 /** Strict raw response path: answer.body.error. */
 export const schedulePatchAnswer_Status409V3_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type SchedulePatchAnswer_Status409V3_Body_Error = z.infer<
-  typeof schedulePatchAnswer_Status409V3_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const schedulePatchAnswer_Status409V3_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type SchedulePatchAnswer_Status409V3_Body_Ok = z.infer<
-  typeof schedulePatchAnswer_Status409V3_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status409V3_BodySchema = z.strictObject({
   error: schedulePatchAnswer_Status409V3_Body_ErrorSchema,
   ok: schedulePatchAnswer_Status409V3_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status409V3_Body = z.infer<
-  typeof schedulePatchAnswer_Status409V3_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status409V3_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status409V3_Status = z.infer<
-  typeof schedulePatchAnswer_Status409V3_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members error, ok. */
 export const schedulePatchAnswer_Status409V3Schema = z.strictObject({
   body: schedulePatchAnswer_Status409V3_BodySchema,
   status: schedulePatchAnswer_Status409V3_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members error, ok. */
-export type SchedulePatchAnswer_Status409V3 = z.infer<typeof schedulePatchAnswer_Status409V3Schema>;
 /** Strict raw response path: answer.body.error. */
 export const schedulePatchAnswer_Status409V4_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type SchedulePatchAnswer_Status409V4_Body_Error = z.infer<
-  typeof schedulePatchAnswer_Status409V4_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const schedulePatchAnswer_Status409V4_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type SchedulePatchAnswer_Status409V4_Body_Ok = z.infer<
-  typeof schedulePatchAnswer_Status409V4_Body_OkSchema
->;
 /** Strict raw response path: answer.body.starter. */
 export const schedulePatchAnswer_Status409V4_Body_StarterSchema = z.boolean();
-/** Raw response path: answer.body.starter. */
-export type SchedulePatchAnswer_Status409V4_Body_Starter = z.infer<
-  typeof schedulePatchAnswer_Status409V4_Body_StarterSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status409V4_BodySchema = z.strictObject({
   error: schedulePatchAnswer_Status409V4_Body_ErrorSchema,
   ok: schedulePatchAnswer_Status409V4_Body_OkSchema,
   starter: schedulePatchAnswer_Status409V4_Body_StarterSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status409V4_Body = z.infer<
-  typeof schedulePatchAnswer_Status409V4_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status409V4_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status409V4_Status = z.infer<
-  typeof schedulePatchAnswer_Status409V4_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members error, ok, starter. */
 export const schedulePatchAnswer_Status409V4Schema = z.strictObject({
   body: schedulePatchAnswer_Status409V4_BodySchema,
   status: schedulePatchAnswer_Status409V4_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members error, ok, starter. */
-export type SchedulePatchAnswer_Status409V4 = z.infer<typeof schedulePatchAnswer_Status409V4Schema>;
 /** Strict raw response path: answer.body.error. */
 export const schedulePatchAnswer_Status500V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type SchedulePatchAnswer_Status500V1_Body_Error = z.infer<
-  typeof schedulePatchAnswer_Status500V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const schedulePatchAnswer_Status500V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type SchedulePatchAnswer_Status500V1_Body_Ok = z.infer<
-  typeof schedulePatchAnswer_Status500V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status500V1_BodySchema = z.strictObject({
   error: schedulePatchAnswer_Status500V1_Body_ErrorSchema,
   ok: schedulePatchAnswer_Status500V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status500V1_Body = z.infer<
-  typeof schedulePatchAnswer_Status500V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status500V1_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status500V1_Status = z.infer<
-  typeof schedulePatchAnswer_Status500V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members error, ok. */
 export const schedulePatchAnswer_Status500V1Schema = z.strictObject({
   body: schedulePatchAnswer_Status500V1_BodySchema,
   status: schedulePatchAnswer_Status500V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members error, ok. */
-export type SchedulePatchAnswer_Status500V1 = z.infer<typeof schedulePatchAnswer_Status500V1Schema>;
 /** Strict raw response path: answer.body.text. */
 export const schedulePatchAnswer_Status500V2_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type SchedulePatchAnswer_Status500V2_Body_Text = z.infer<
-  typeof schedulePatchAnswer_Status500V2_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const schedulePatchAnswer_Status500V2_BodySchema = z.strictObject({
   text: schedulePatchAnswer_Status500V2_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type SchedulePatchAnswer_Status500V2_Body = z.infer<
-  typeof schedulePatchAnswer_Status500V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const schedulePatchAnswer_Status500V2_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type SchedulePatchAnswer_Status500V2_Status = z.infer<
-  typeof schedulePatchAnswer_Status500V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members text. */
 export const schedulePatchAnswer_Status500V2Schema = z.strictObject({
   body: schedulePatchAnswer_Status500V2_BodySchema,
   status: schedulePatchAnswer_Status500V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members text. */
-export type SchedulePatchAnswer_Status500V2 = z.infer<typeof schedulePatchAnswer_Status500V2Schema>;
 /** Strict raw response path: answer. */
 export const schedulePatchAnswerSchema = z.union([
   schedulePatchAnswer_Status200V1Schema,

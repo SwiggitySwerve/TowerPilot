@@ -7,52 +7,20 @@ export const fixtureVersionSchema = z.literal(1);
 export type FixtureVersion = z.infer<typeof fixtureVersionSchema>;
 /** Strict raw response path: answer.body.adb. */
 export const emulatorsAdoptAnswer_Status200_Body_AdbSchema = z.string();
-/** Raw response path: answer.body.adb. */
-export type EmulatorsAdoptAnswer_Status200_Body_Adb = z.infer<
-  typeof emulatorsAdoptAnswer_Status200_Body_AdbSchema
->;
 /** Strict raw response path: answer.body.backup. */
 export const emulatorsAdoptAnswer_Status200_Body_BackupSchema = z.string();
-/** Raw response path: answer.body.backup. */
-export type EmulatorsAdoptAnswer_Status200_Body_Backup = z.infer<
-  typeof emulatorsAdoptAnswer_Status200_Body_BackupSchema
->;
 /** Strict raw response path: answer.body.connected. */
 export const emulatorsAdoptAnswer_Status200_Body_ConnectedSchema = z.boolean();
-/** Raw response path: answer.body.connected. */
-export type EmulatorsAdoptAnswer_Status200_Body_Connected = z.infer<
-  typeof emulatorsAdoptAnswer_Status200_Body_ConnectedSchema
->;
 /** Strict raw response path: answer.body.instance. */
 export const emulatorsAdoptAnswer_Status200_Body_InstanceSchema = z.string();
-/** Raw response path: answer.body.instance. */
-export type EmulatorsAdoptAnswer_Status200_Body_Instance = z.infer<
-  typeof emulatorsAdoptAnswer_Status200_Body_InstanceSchema
->;
 /** Strict raw response path: answer.body.message. */
 export const emulatorsAdoptAnswer_Status200_Body_MessageSchema = z.string();
-/** Raw response path: answer.body.message. */
-export type EmulatorsAdoptAnswer_Status200_Body_Message = z.infer<
-  typeof emulatorsAdoptAnswer_Status200_Body_MessageSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsAdoptAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsAdoptAnswer_Status200_Body_Ok = z.infer<
-  typeof emulatorsAdoptAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body.serial. */
 export const emulatorsAdoptAnswer_Status200_Body_SerialSchema = z.string();
-/** Raw response path: answer.body.serial. */
-export type EmulatorsAdoptAnswer_Status200_Body_Serial = z.infer<
-  typeof emulatorsAdoptAnswer_Status200_Body_SerialSchema
->;
 /** Strict raw response path: answer.body.t. */
 export const emulatorsAdoptAnswer_Status200_Body_TSchema = z.number();
-/** Raw response path: answer.body.t. */
-export type EmulatorsAdoptAnswer_Status200_Body_T = z.infer<
-  typeof emulatorsAdoptAnswer_Status200_Body_TSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsAdoptAnswer_Status200_BodySchema = z.strictObject({
   adb: emulatorsAdoptAnswer_Status200_Body_AdbSchema,
@@ -64,245 +32,103 @@ export const emulatorsAdoptAnswer_Status200_BodySchema = z.strictObject({
   serial: emulatorsAdoptAnswer_Status200_Body_SerialSchema,
   t: emulatorsAdoptAnswer_Status200_Body_TSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsAdoptAnswer_Status200_Body = z.infer<
-  typeof emulatorsAdoptAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsAdoptAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EmulatorsAdoptAnswer_Status200_Status = z.infer<
-  typeof emulatorsAdoptAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members adb, backup, connected, instance, message, ok, serial, t. */
 export const emulatorsAdoptAnswer_Status200Schema = z.strictObject({
   body: emulatorsAdoptAnswer_Status200_BodySchema,
   status: emulatorsAdoptAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members adb, backup, connected, instance, message, ok, serial, t. */
-export type EmulatorsAdoptAnswer_Status200 = z.infer<typeof emulatorsAdoptAnswer_Status200Schema>;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsAdoptAnswer_Status400V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsAdoptAnswer_Status400V1_Body_Error = z.infer<
-  typeof emulatorsAdoptAnswer_Status400V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsAdoptAnswer_Status400V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsAdoptAnswer_Status400V1_Body_Ok = z.infer<
-  typeof emulatorsAdoptAnswer_Status400V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsAdoptAnswer_Status400V1_BodySchema = z.strictObject({
   error: emulatorsAdoptAnswer_Status400V1_Body_ErrorSchema,
   ok: emulatorsAdoptAnswer_Status400V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsAdoptAnswer_Status400V1_Body = z.infer<
-  typeof emulatorsAdoptAnswer_Status400V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsAdoptAnswer_Status400V1_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type EmulatorsAdoptAnswer_Status400V1_Status = z.infer<
-  typeof emulatorsAdoptAnswer_Status400V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const emulatorsAdoptAnswer_Status400V1Schema = z.strictObject({
   body: emulatorsAdoptAnswer_Status400V1_BodySchema,
   status: emulatorsAdoptAnswer_Status400V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type EmulatorsAdoptAnswer_Status400V1 = z.infer<
-  typeof emulatorsAdoptAnswer_Status400V1Schema
->;
 /** Strict raw response path: answer.body.text. */
 export const emulatorsAdoptAnswer_Status400V2_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type EmulatorsAdoptAnswer_Status400V2_Body_Text = z.infer<
-  typeof emulatorsAdoptAnswer_Status400V2_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsAdoptAnswer_Status400V2_BodySchema = z.strictObject({
   text: emulatorsAdoptAnswer_Status400V2_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsAdoptAnswer_Status400V2_Body = z.infer<
-  typeof emulatorsAdoptAnswer_Status400V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsAdoptAnswer_Status400V2_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type EmulatorsAdoptAnswer_Status400V2_Status = z.infer<
-  typeof emulatorsAdoptAnswer_Status400V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members text. */
 export const emulatorsAdoptAnswer_Status400V2Schema = z.strictObject({
   body: emulatorsAdoptAnswer_Status400V2_BodySchema,
   status: emulatorsAdoptAnswer_Status400V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members text. */
-export type EmulatorsAdoptAnswer_Status400V2 = z.infer<
-  typeof emulatorsAdoptAnswer_Status400V2Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const emulatorsAdoptAnswer_Status409V1_Body_CodeSchema = z.enum(['action_lock']);
-/** Raw response path: answer.body.code. */
-export type EmulatorsAdoptAnswer_Status409V1_Body_Code = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsAdoptAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsAdoptAnswer_Status409V1_Body_Error = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsAdoptAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsAdoptAnswer_Status409V1_Body_Ok = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsAdoptAnswer_Status409V1_BodySchema = z.strictObject({
   code: emulatorsAdoptAnswer_Status409V1_Body_CodeSchema,
   error: emulatorsAdoptAnswer_Status409V1_Body_ErrorSchema,
   ok: emulatorsAdoptAnswer_Status409V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsAdoptAnswer_Status409V1_Body = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsAdoptAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type EmulatorsAdoptAnswer_Status409V1_Status = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const emulatorsAdoptAnswer_Status409V1Schema = z.strictObject({
   body: emulatorsAdoptAnswer_Status409V1_BodySchema,
   status: emulatorsAdoptAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type EmulatorsAdoptAnswer_Status409V1 = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V1Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const emulatorsAdoptAnswer_Status409V2_Body_CodeSchema = z.enum(['device_owned']);
-/** Raw response path: answer.body.code. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Code = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsAdoptAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Error = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsAdoptAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Ok = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.owner.foreign. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_ForeignSchema = z.boolean();
-/** Raw response path: answer.body.owner.foreign. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_Foreign = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_ForeignSchema
->;
 /** Strict raw response path: answer.body.owner.gathers. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_GathersSchema = z.null();
-/** Raw response path: answer.body.owner.gathers. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_Gathers = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_GathersSchema
->;
 /** Strict raw response path: answer.body.owner.gems.ad_gems. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_Gems_AdGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.ad_gems. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_Gems_AdGems = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_Gems_AdGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems.basis. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_Gems_BasisSchema = z.enum([
   'not_reported',
 ]);
-/** Raw response path: answer.body.owner.gems.basis. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_Gems_Basis = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_Gems_BasisSchema
->;
 /** Strict raw response path: answer.body.owner.gems.floating_gems. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.floating_gems. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_Gems_FloatingGems = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_GemsSchema = z.strictObject({
   ad_gems: emulatorsAdoptAnswer_Status409V2_Body_Owner_Gems_AdGemsSchema,
   basis: emulatorsAdoptAnswer_Status409V2_Body_Owner_Gems_BasisSchema,
   floating_gems: emulatorsAdoptAnswer_Status409V2_Body_Owner_Gems_FloatingGemsSchema,
 });
-/** Raw response path: answer.body.owner.gems. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_Gems = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_GemsSchema
->;
 /** Strict raw response path: answer.body.owner.harvest_managed. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_HarvestManagedSchema = z.boolean();
-/** Raw response path: answer.body.owner.harvest_managed. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_HarvestManaged = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_HarvestManagedSchema
->;
 /** Strict raw response path: answer.body.owner.kind. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_KindSchema = z.enum(['process']);
-/** Raw response path: answer.body.owner.kind. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_Kind = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_KindSchema
->;
 /** Strict raw response path: answer.body.owner.operation_id. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_OperationIdSchema = z.null();
-/** Raw response path: answer.body.owner.operation_id. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_OperationId = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.operation_kind. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_OperationKindSchema = z.null();
-/** Raw response path: answer.body.owner.operation_kind. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_OperationKind = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_OperationKindSchema
->;
 /** Strict raw response path: answer.body.owner.pid. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_PidSchema = z.number();
-/** Raw response path: answer.body.owner.pid. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_Pid = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_PidSchema
->;
 /** Strict raw response path: answer.body.owner.recovery. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_RecoverySchema = z.null();
-/** Raw response path: answer.body.owner.recovery. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_Recovery = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_RecoverySchema
->;
 /** Strict raw response path: answer.body.owner.routines. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_RoutinesSchema = z.null();
-/** Raw response path: answer.body.owner.routines. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_Routines = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_RoutinesSchema
->;
 /** Strict raw response path: answer.body.owner.script. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_ScriptSchema = z.string();
-/** Raw response path: answer.body.owner.script. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_Script = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_ScriptSchema
->;
 /** Strict raw response path: answer.body.owner.status. */
 export const emulatorsAdoptAnswer_Status409V2_Body_Owner_StatusSchema = z.null();
-/** Raw response path: answer.body.owner.status. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner_Status = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_Owner_StatusSchema
->;
 /** Strict raw response path: answer.body.owner. */
 export const emulatorsAdoptAnswer_Status409V2_Body_OwnerSchema = z.strictObject({
   foreign: emulatorsAdoptAnswer_Status409V2_Body_Owner_ForeignSchema,
@@ -318,22 +144,10 @@ export const emulatorsAdoptAnswer_Status409V2_Body_OwnerSchema = z.strictObject(
   script: emulatorsAdoptAnswer_Status409V2_Body_Owner_ScriptSchema,
   status: emulatorsAdoptAnswer_Status409V2_Body_Owner_StatusSchema,
 });
-/** Raw response path: answer.body.owner. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Owner = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_OwnerSchema
->;
 /** Strict raw response path: answer.body.recovery. */
 export const emulatorsAdoptAnswer_Status409V2_Body_RecoverySchema = z.null();
-/** Raw response path: answer.body.recovery. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Recovery = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_RecoverySchema
->;
 /** Strict raw response path: answer.body.retry. */
 export const emulatorsAdoptAnswer_Status409V2_Body_RetrySchema = z.string();
-/** Raw response path: answer.body.retry. */
-export type EmulatorsAdoptAnswer_Status409V2_Body_Retry = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_Body_RetrySchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsAdoptAnswer_Status409V2_BodySchema = z.strictObject({
   code: emulatorsAdoptAnswer_Status409V2_Body_CodeSchema,
@@ -343,95 +157,45 @@ export const emulatorsAdoptAnswer_Status409V2_BodySchema = z.strictObject({
   recovery: emulatorsAdoptAnswer_Status409V2_Body_RecoverySchema,
   retry: emulatorsAdoptAnswer_Status409V2_Body_RetrySchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsAdoptAnswer_Status409V2_Body = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsAdoptAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type EmulatorsAdoptAnswer_Status409V2_Status = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
 export const emulatorsAdoptAnswer_Status409V2Schema = z.strictObject({
   body: emulatorsAdoptAnswer_Status409V2_BodySchema,
   status: emulatorsAdoptAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
-export type EmulatorsAdoptAnswer_Status409V2 = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V2Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsAdoptAnswer_Status409V3_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsAdoptAnswer_Status409V3_Body_Error = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V3_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsAdoptAnswer_Status409V3_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsAdoptAnswer_Status409V3_Body_Ok = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V3_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsAdoptAnswer_Status409V3_BodySchema = z.strictObject({
   error: emulatorsAdoptAnswer_Status409V3_Body_ErrorSchema,
   ok: emulatorsAdoptAnswer_Status409V3_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsAdoptAnswer_Status409V3_Body = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V3_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsAdoptAnswer_Status409V3_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type EmulatorsAdoptAnswer_Status409V3_Status = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V3_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members error, ok. */
 export const emulatorsAdoptAnswer_Status409V3Schema = z.strictObject({
   body: emulatorsAdoptAnswer_Status409V3_BodySchema,
   status: emulatorsAdoptAnswer_Status409V3_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members error, ok. */
-export type EmulatorsAdoptAnswer_Status409V3 = z.infer<
-  typeof emulatorsAdoptAnswer_Status409V3Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsAdoptAnswer_Status500_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsAdoptAnswer_Status500_Body_Error = z.infer<
-  typeof emulatorsAdoptAnswer_Status500_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsAdoptAnswer_Status500_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsAdoptAnswer_Status500_Body_Ok = z.infer<
-  typeof emulatorsAdoptAnswer_Status500_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsAdoptAnswer_Status500_BodySchema = z.strictObject({
   error: emulatorsAdoptAnswer_Status500_Body_ErrorSchema,
   ok: emulatorsAdoptAnswer_Status500_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsAdoptAnswer_Status500_Body = z.infer<
-  typeof emulatorsAdoptAnswer_Status500_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsAdoptAnswer_Status500_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type EmulatorsAdoptAnswer_Status500_Status = z.infer<
-  typeof emulatorsAdoptAnswer_Status500_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members error, ok. */
 export const emulatorsAdoptAnswer_Status500Schema = z.strictObject({
   body: emulatorsAdoptAnswer_Status500_BodySchema,
   status: emulatorsAdoptAnswer_Status500_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members error, ok. */
-export type EmulatorsAdoptAnswer_Status500 = z.infer<typeof emulatorsAdoptAnswer_Status500Schema>;
 /** Strict raw response path: answer. */
 export const emulatorsAdoptAnswerSchema = z.union([
   emulatorsAdoptAnswer_Status200Schema,
@@ -446,215 +210,89 @@ export const emulatorsAdoptAnswerSchema = z.union([
 export type EmulatorsAdoptAnswer = z.infer<typeof emulatorsAdoptAnswerSchema>;
 /** Strict raw response path: answer.body.message. */
 export const emulatorsLaunchAnswer_Status200_Body_MessageSchema = z.string();
-/** Raw response path: answer.body.message. */
-export type EmulatorsLaunchAnswer_Status200_Body_Message = z.infer<
-  typeof emulatorsLaunchAnswer_Status200_Body_MessageSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsLaunchAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsLaunchAnswer_Status200_Body_Ok = z.infer<
-  typeof emulatorsLaunchAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsLaunchAnswer_Status200_BodySchema = z.strictObject({
   message: emulatorsLaunchAnswer_Status200_Body_MessageSchema,
   ok: emulatorsLaunchAnswer_Status200_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsLaunchAnswer_Status200_Body = z.infer<
-  typeof emulatorsLaunchAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsLaunchAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EmulatorsLaunchAnswer_Status200_Status = z.infer<
-  typeof emulatorsLaunchAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members message, ok. */
 export const emulatorsLaunchAnswer_Status200Schema = z.strictObject({
   body: emulatorsLaunchAnswer_Status200_BodySchema,
   status: emulatorsLaunchAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members message, ok. */
-export type EmulatorsLaunchAnswer_Status200 = z.infer<typeof emulatorsLaunchAnswer_Status200Schema>;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsLaunchAnswer_Status400V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsLaunchAnswer_Status400V1_Body_Error = z.infer<
-  typeof emulatorsLaunchAnswer_Status400V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsLaunchAnswer_Status400V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsLaunchAnswer_Status400V1_Body_Ok = z.infer<
-  typeof emulatorsLaunchAnswer_Status400V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsLaunchAnswer_Status400V1_BodySchema = z.strictObject({
   error: emulatorsLaunchAnswer_Status400V1_Body_ErrorSchema,
   ok: emulatorsLaunchAnswer_Status400V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsLaunchAnswer_Status400V1_Body = z.infer<
-  typeof emulatorsLaunchAnswer_Status400V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsLaunchAnswer_Status400V1_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type EmulatorsLaunchAnswer_Status400V1_Status = z.infer<
-  typeof emulatorsLaunchAnswer_Status400V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const emulatorsLaunchAnswer_Status400V1Schema = z.strictObject({
   body: emulatorsLaunchAnswer_Status400V1_BodySchema,
   status: emulatorsLaunchAnswer_Status400V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type EmulatorsLaunchAnswer_Status400V1 = z.infer<
-  typeof emulatorsLaunchAnswer_Status400V1Schema
->;
 /** Strict raw response path: answer.body.text. */
 export const emulatorsLaunchAnswer_Status400V2_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type EmulatorsLaunchAnswer_Status400V2_Body_Text = z.infer<
-  typeof emulatorsLaunchAnswer_Status400V2_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsLaunchAnswer_Status400V2_BodySchema = z.strictObject({
   text: emulatorsLaunchAnswer_Status400V2_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsLaunchAnswer_Status400V2_Body = z.infer<
-  typeof emulatorsLaunchAnswer_Status400V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsLaunchAnswer_Status400V2_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type EmulatorsLaunchAnswer_Status400V2_Status = z.infer<
-  typeof emulatorsLaunchAnswer_Status400V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members text. */
 export const emulatorsLaunchAnswer_Status400V2Schema = z.strictObject({
   body: emulatorsLaunchAnswer_Status400V2_BodySchema,
   status: emulatorsLaunchAnswer_Status400V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members text. */
-export type EmulatorsLaunchAnswer_Status400V2 = z.infer<
-  typeof emulatorsLaunchAnswer_Status400V2Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const emulatorsLaunchAnswer_Status409_Body_CodeSchema = z.enum(['device_owned']);
-/** Raw response path: answer.body.code. */
-export type EmulatorsLaunchAnswer_Status409_Body_Code = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsLaunchAnswer_Status409_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsLaunchAnswer_Status409_Body_Error = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsLaunchAnswer_Status409_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsLaunchAnswer_Status409_Body_Ok = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_OkSchema
->;
 /** Strict raw response path: answer.body.owner.foreign. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_ForeignSchema = z.boolean();
-/** Raw response path: answer.body.owner.foreign. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_Foreign = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_ForeignSchema
->;
 /** Strict raw response path: answer.body.owner.gathers. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_GathersSchema = z.null();
-/** Raw response path: answer.body.owner.gathers. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_Gathers = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_GathersSchema
->;
 /** Strict raw response path: answer.body.owner.gems.ad_gems. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_Gems_AdGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.ad_gems. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_Gems_AdGems = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_Gems_AdGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems.basis. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_Gems_BasisSchema = z.enum(['not_reported']);
-/** Raw response path: answer.body.owner.gems.basis. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_Gems_Basis = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_Gems_BasisSchema
->;
 /** Strict raw response path: answer.body.owner.gems.floating_gems. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.floating_gems. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_Gems_FloatingGems = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_GemsSchema = z.strictObject({
   ad_gems: emulatorsLaunchAnswer_Status409_Body_Owner_Gems_AdGemsSchema,
   basis: emulatorsLaunchAnswer_Status409_Body_Owner_Gems_BasisSchema,
   floating_gems: emulatorsLaunchAnswer_Status409_Body_Owner_Gems_FloatingGemsSchema,
 });
-/** Raw response path: answer.body.owner.gems. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_Gems = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_GemsSchema
->;
 /** Strict raw response path: answer.body.owner.harvest_managed. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_HarvestManagedSchema = z.boolean();
-/** Raw response path: answer.body.owner.harvest_managed. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_HarvestManaged = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_HarvestManagedSchema
->;
 /** Strict raw response path: answer.body.owner.kind. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_KindSchema = z.enum(['process']);
-/** Raw response path: answer.body.owner.kind. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_Kind = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_KindSchema
->;
 /** Strict raw response path: answer.body.owner.operation_id. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_OperationIdSchema = z.null();
-/** Raw response path: answer.body.owner.operation_id. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_OperationId = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.operation_kind. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_OperationKindSchema = z.null();
-/** Raw response path: answer.body.owner.operation_kind. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_OperationKind = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_OperationKindSchema
->;
 /** Strict raw response path: answer.body.owner.pid. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_PidSchema = z.number();
-/** Raw response path: answer.body.owner.pid. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_Pid = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_PidSchema
->;
 /** Strict raw response path: answer.body.owner.recovery. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_RecoverySchema = z.null();
-/** Raw response path: answer.body.owner.recovery. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_Recovery = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_RecoverySchema
->;
 /** Strict raw response path: answer.body.owner.routines. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_RoutinesSchema = z.null();
-/** Raw response path: answer.body.owner.routines. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_Routines = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_RoutinesSchema
->;
 /** Strict raw response path: answer.body.owner.script. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_ScriptSchema = z.string();
-/** Raw response path: answer.body.owner.script. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_Script = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_ScriptSchema
->;
 /** Strict raw response path: answer.body.owner.status. */
 export const emulatorsLaunchAnswer_Status409_Body_Owner_StatusSchema = z.null();
-/** Raw response path: answer.body.owner.status. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner_Status = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_Owner_StatusSchema
->;
 /** Strict raw response path: answer.body.owner. */
 export const emulatorsLaunchAnswer_Status409_Body_OwnerSchema = z.strictObject({
   foreign: emulatorsLaunchAnswer_Status409_Body_Owner_ForeignSchema,
@@ -670,22 +308,10 @@ export const emulatorsLaunchAnswer_Status409_Body_OwnerSchema = z.strictObject({
   script: emulatorsLaunchAnswer_Status409_Body_Owner_ScriptSchema,
   status: emulatorsLaunchAnswer_Status409_Body_Owner_StatusSchema,
 });
-/** Raw response path: answer.body.owner. */
-export type EmulatorsLaunchAnswer_Status409_Body_Owner = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_OwnerSchema
->;
 /** Strict raw response path: answer.body.recovery. */
 export const emulatorsLaunchAnswer_Status409_Body_RecoverySchema = z.null();
-/** Raw response path: answer.body.recovery. */
-export type EmulatorsLaunchAnswer_Status409_Body_Recovery = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_RecoverySchema
->;
 /** Strict raw response path: answer.body.retry. */
 export const emulatorsLaunchAnswer_Status409_Body_RetrySchema = z.string();
-/** Raw response path: answer.body.retry. */
-export type EmulatorsLaunchAnswer_Status409_Body_Retry = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_Body_RetrySchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsLaunchAnswer_Status409_BodySchema = z.strictObject({
   code: emulatorsLaunchAnswer_Status409_Body_CodeSchema,
@@ -695,88 +321,42 @@ export const emulatorsLaunchAnswer_Status409_BodySchema = z.strictObject({
   recovery: emulatorsLaunchAnswer_Status409_Body_RecoverySchema,
   retry: emulatorsLaunchAnswer_Status409_Body_RetrySchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsLaunchAnswer_Status409_Body = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsLaunchAnswer_Status409_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type EmulatorsLaunchAnswer_Status409_Status = z.infer<
-  typeof emulatorsLaunchAnswer_Status409_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
 export const emulatorsLaunchAnswer_Status409Schema = z.strictObject({
   body: emulatorsLaunchAnswer_Status409_BodySchema,
   status: emulatorsLaunchAnswer_Status409_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
-export type EmulatorsLaunchAnswer_Status409 = z.infer<typeof emulatorsLaunchAnswer_Status409Schema>;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsLaunchAnswer_Status500V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsLaunchAnswer_Status500V1_Body_Error = z.infer<
-  typeof emulatorsLaunchAnswer_Status500V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsLaunchAnswer_Status500V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsLaunchAnswer_Status500V1_Body_Ok = z.infer<
-  typeof emulatorsLaunchAnswer_Status500V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsLaunchAnswer_Status500V1_BodySchema = z.strictObject({
   error: emulatorsLaunchAnswer_Status500V1_Body_ErrorSchema,
   ok: emulatorsLaunchAnswer_Status500V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsLaunchAnswer_Status500V1_Body = z.infer<
-  typeof emulatorsLaunchAnswer_Status500V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsLaunchAnswer_Status500V1_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type EmulatorsLaunchAnswer_Status500V1_Status = z.infer<
-  typeof emulatorsLaunchAnswer_Status500V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members error, ok. */
 export const emulatorsLaunchAnswer_Status500V1Schema = z.strictObject({
   body: emulatorsLaunchAnswer_Status500V1_BodySchema,
   status: emulatorsLaunchAnswer_Status500V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members error, ok. */
-export type EmulatorsLaunchAnswer_Status500V1 = z.infer<
-  typeof emulatorsLaunchAnswer_Status500V1Schema
->;
 /** Strict raw response path: answer.body.text. */
 export const emulatorsLaunchAnswer_Status500V2_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type EmulatorsLaunchAnswer_Status500V2_Body_Text = z.infer<
-  typeof emulatorsLaunchAnswer_Status500V2_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsLaunchAnswer_Status500V2_BodySchema = z.strictObject({
   text: emulatorsLaunchAnswer_Status500V2_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsLaunchAnswer_Status500V2_Body = z.infer<
-  typeof emulatorsLaunchAnswer_Status500V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsLaunchAnswer_Status500V2_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type EmulatorsLaunchAnswer_Status500V2_Status = z.infer<
-  typeof emulatorsLaunchAnswer_Status500V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members text. */
 export const emulatorsLaunchAnswer_Status500V2Schema = z.strictObject({
   body: emulatorsLaunchAnswer_Status500V2_BodySchema,
   status: emulatorsLaunchAnswer_Status500V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members text. */
-export type EmulatorsLaunchAnswer_Status500V2 = z.infer<
-  typeof emulatorsLaunchAnswer_Status500V2Schema
->;
 /** Strict raw response path: answer. */
 export const emulatorsLaunchAnswerSchema = z.union([
   emulatorsLaunchAnswer_Status200Schema,
@@ -790,119 +370,59 @@ export const emulatorsLaunchAnswerSchema = z.union([
 export type EmulatorsLaunchAnswer = z.infer<typeof emulatorsLaunchAnswerSchema>;
 /** Strict raw response path: answer.body.added[]. */
 export const emulatorsPrepareAnswer_Status200_Body_Added_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.added[]. */
-export type EmulatorsPrepareAnswer_Status200_Body_Added_ArrayElement = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Added_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.added. */
 export const emulatorsPrepareAnswer_Status200_Body_AddedSchema = z.array(
   emulatorsPrepareAnswer_Status200_Body_Added_ArrayElementSchema,
 );
-/** Raw response path: answer.body.added. */
-export type EmulatorsPrepareAnswer_Status200_Body_Added = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_AddedSchema
->;
 /** Strict raw response path: answer.body.backup. */
 export const emulatorsPrepareAnswer_Status200_Body_BackupSchema = z.string().nullable();
-/** Raw response path: answer.body.backup. */
-export type EmulatorsPrepareAnswer_Status200_Body_Backup = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_BackupSchema
->;
 /** Strict raw response path: answer.body.changed.bst.enable_adb_access.from. */
 export const emulatorsPrepareAnswer_Status200_Body_Changed_BstEnableAdbAccess_FromSchema =
   z.string();
-/** Raw response path: answer.body.changed.bst.enable_adb_access.from. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed_BstEnableAdbAccess_From = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Changed_BstEnableAdbAccess_FromSchema
->;
 /** Strict raw response path: answer.body.changed.bst.enable_adb_access.to. */
 export const emulatorsPrepareAnswer_Status200_Body_Changed_BstEnableAdbAccess_ToSchema = z.string();
-/** Raw response path: answer.body.changed.bst.enable_adb_access.to. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed_BstEnableAdbAccess_To = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Changed_BstEnableAdbAccess_ToSchema
->;
 /** Strict raw response path: answer.body.changed.bst.enable_adb_access. */
 export const emulatorsPrepareAnswer_Status200_Body_Changed_BstEnableAdbAccessSchema =
   z.strictObject({
     from: emulatorsPrepareAnswer_Status200_Body_Changed_BstEnableAdbAccess_FromSchema,
     to: emulatorsPrepareAnswer_Status200_Body_Changed_BstEnableAdbAccess_ToSchema,
   });
-/** Raw response path: answer.body.changed.bst.enable_adb_access. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed_BstEnableAdbAccess = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Changed_BstEnableAdbAccessSchema
->;
 /** Strict raw response path: answer.body.changed.bst.instance.Pie64.dpi.from. */
 export const emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64Dpi_FromSchema =
   z.string();
-/** Raw response path: answer.body.changed.bst.instance.Pie64.dpi.from. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64Dpi_From = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64Dpi_FromSchema
->;
 /** Strict raw response path: answer.body.changed.bst.instance.Pie64.dpi.to. */
 export const emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64Dpi_ToSchema =
   z.string();
-/** Raw response path: answer.body.changed.bst.instance.Pie64.dpi.to. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64Dpi_To = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64Dpi_ToSchema
->;
 /** Strict raw response path: answer.body.changed.bst.instance.Pie64.dpi. */
 export const emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64DpiSchema =
   z.strictObject({
     from: emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64Dpi_FromSchema,
     to: emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64Dpi_ToSchema,
   });
-/** Raw response path: answer.body.changed.bst.instance.Pie64.dpi. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64Dpi = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64DpiSchema
->;
 /** Strict raw response path: answer.body.changed.bst.instance.Pie64.fb_height.from. */
 export const emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbHeight_FromSchema =
   z.string();
-/** Raw response path: answer.body.changed.bst.instance.Pie64.fb_height.from. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbHeight_From = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbHeight_FromSchema
->;
 /** Strict raw response path: answer.body.changed.bst.instance.Pie64.fb_height.to. */
 export const emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbHeight_ToSchema =
   z.string();
-/** Raw response path: answer.body.changed.bst.instance.Pie64.fb_height.to. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbHeight_To = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbHeight_ToSchema
->;
 /** Strict raw response path: answer.body.changed.bst.instance.Pie64.fb_height. */
 export const emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbHeightSchema =
   z.strictObject({
     from: emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbHeight_FromSchema,
     to: emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbHeight_ToSchema,
   });
-/** Raw response path: answer.body.changed.bst.instance.Pie64.fb_height. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbHeight = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbHeightSchema
->;
 /** Strict raw response path: answer.body.changed.bst.instance.Pie64.fb_width.from. */
 export const emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbWidth_FromSchema =
   z.string();
-/** Raw response path: answer.body.changed.bst.instance.Pie64.fb_width.from. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbWidth_From = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbWidth_FromSchema
->;
 /** Strict raw response path: answer.body.changed.bst.instance.Pie64.fb_width.to. */
 export const emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbWidth_ToSchema =
   z.string();
-/** Raw response path: answer.body.changed.bst.instance.Pie64.fb_width.to. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbWidth_To = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbWidth_ToSchema
->;
 /** Strict raw response path: answer.body.changed.bst.instance.Pie64.fb_width. */
 export const emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbWidthSchema =
   z.strictObject({
     from: emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbWidth_FromSchema,
     to: emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbWidth_ToSchema,
   });
-/** Raw response path: answer.body.changed.bst.instance.Pie64.fb_width. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbWidth = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbWidthSchema
->;
 /** Strict raw response path: answer.body.changed. */
 export const emulatorsPrepareAnswer_Status200_Body_ChangedSchema = z.strictObject({
   'bst.enable_adb_access':
@@ -914,22 +434,10 @@ export const emulatorsPrepareAnswer_Status200_Body_ChangedSchema = z.strictObjec
   'bst.instance.Pie64.fb_width':
     emulatorsPrepareAnswer_Status200_Body_Changed_BstInstancePie64FbWidthSchema.optional(),
 });
-/** Raw response path: answer.body.changed. */
-export type EmulatorsPrepareAnswer_Status200_Body_Changed = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_ChangedSchema
->;
 /** Strict raw response path: answer.body.message. */
 export const emulatorsPrepareAnswer_Status200_Body_MessageSchema = z.string();
-/** Raw response path: answer.body.message. */
-export type EmulatorsPrepareAnswer_Status200_Body_Message = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_MessageSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsPrepareAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsPrepareAnswer_Status200_Body_Ok = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsPrepareAnswer_Status200_BodySchema = z.strictObject({
   added: emulatorsPrepareAnswer_Status200_Body_AddedSchema,
@@ -938,126 +446,58 @@ export const emulatorsPrepareAnswer_Status200_BodySchema = z.strictObject({
   message: emulatorsPrepareAnswer_Status200_Body_MessageSchema,
   ok: emulatorsPrepareAnswer_Status200_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsPrepareAnswer_Status200_Body = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsPrepareAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EmulatorsPrepareAnswer_Status200_Status = z.infer<
-  typeof emulatorsPrepareAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members added, backup, changed, message, ok. */
 export const emulatorsPrepareAnswer_Status200Schema = z.strictObject({
   body: emulatorsPrepareAnswer_Status200_BodySchema,
   status: emulatorsPrepareAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members added, backup, changed, message, ok. */
-export type EmulatorsPrepareAnswer_Status200 = z.infer<
-  typeof emulatorsPrepareAnswer_Status200Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsPrepareAnswer_Status400V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsPrepareAnswer_Status400V1_Body_Error = z.infer<
-  typeof emulatorsPrepareAnswer_Status400V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsPrepareAnswer_Status400V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsPrepareAnswer_Status400V1_Body_Ok = z.infer<
-  typeof emulatorsPrepareAnswer_Status400V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsPrepareAnswer_Status400V1_BodySchema = z.strictObject({
   error: emulatorsPrepareAnswer_Status400V1_Body_ErrorSchema,
   ok: emulatorsPrepareAnswer_Status400V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsPrepareAnswer_Status400V1_Body = z.infer<
-  typeof emulatorsPrepareAnswer_Status400V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsPrepareAnswer_Status400V1_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type EmulatorsPrepareAnswer_Status400V1_Status = z.infer<
-  typeof emulatorsPrepareAnswer_Status400V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const emulatorsPrepareAnswer_Status400V1Schema = z.strictObject({
   body: emulatorsPrepareAnswer_Status400V1_BodySchema,
   status: emulatorsPrepareAnswer_Status400V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type EmulatorsPrepareAnswer_Status400V1 = z.infer<
-  typeof emulatorsPrepareAnswer_Status400V1Schema
->;
 /** Strict raw response path: answer.body.text. */
 export const emulatorsPrepareAnswer_Status400V2_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type EmulatorsPrepareAnswer_Status400V2_Body_Text = z.infer<
-  typeof emulatorsPrepareAnswer_Status400V2_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsPrepareAnswer_Status400V2_BodySchema = z.strictObject({
   text: emulatorsPrepareAnswer_Status400V2_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsPrepareAnswer_Status400V2_Body = z.infer<
-  typeof emulatorsPrepareAnswer_Status400V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsPrepareAnswer_Status400V2_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type EmulatorsPrepareAnswer_Status400V2_Status = z.infer<
-  typeof emulatorsPrepareAnswer_Status400V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members text. */
 export const emulatorsPrepareAnswer_Status400V2Schema = z.strictObject({
   body: emulatorsPrepareAnswer_Status400V2_BodySchema,
   status: emulatorsPrepareAnswer_Status400V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members text. */
-export type EmulatorsPrepareAnswer_Status400V2 = z.infer<
-  typeof emulatorsPrepareAnswer_Status400V2Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsPrepareAnswer_Status409_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsPrepareAnswer_Status409_Body_Error = z.infer<
-  typeof emulatorsPrepareAnswer_Status409_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsPrepareAnswer_Status409_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsPrepareAnswer_Status409_Body_Ok = z.infer<
-  typeof emulatorsPrepareAnswer_Status409_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsPrepareAnswer_Status409_BodySchema = z.strictObject({
   error: emulatorsPrepareAnswer_Status409_Body_ErrorSchema,
   ok: emulatorsPrepareAnswer_Status409_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsPrepareAnswer_Status409_Body = z.infer<
-  typeof emulatorsPrepareAnswer_Status409_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsPrepareAnswer_Status409_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type EmulatorsPrepareAnswer_Status409_Status = z.infer<
-  typeof emulatorsPrepareAnswer_Status409_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members error, ok. */
 export const emulatorsPrepareAnswer_Status409Schema = z.strictObject({
   body: emulatorsPrepareAnswer_Status409_BodySchema,
   status: emulatorsPrepareAnswer_Status409_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members error, ok. */
-export type EmulatorsPrepareAnswer_Status409 = z.infer<
-  typeof emulatorsPrepareAnswer_Status409Schema
->;
 /** Strict raw response path: answer. */
 export const emulatorsPrepareAnswerSchema = z.union([
   emulatorsPrepareAnswer_Status200Schema,
@@ -1069,96 +509,42 @@ export const emulatorsPrepareAnswerSchema = z.union([
 export type EmulatorsPrepareAnswer = z.infer<typeof emulatorsPrepareAnswerSchema>;
 /** Strict raw response path: answer.body.active_instance. */
 export const emulatorsConfigAnswer_Body_ActiveInstanceSchema = z.string();
-/** Raw response path: answer.body.active_instance. */
-export type EmulatorsConfigAnswer_Body_ActiveInstance = z.infer<
-  typeof emulatorsConfigAnswer_Body_ActiveInstanceSchema
->;
 /** Strict raw response path: answer.body.active_profile. */
 export const emulatorsConfigAnswer_Body_ActiveProfileSchema = z.string();
-/** Raw response path: answer.body.active_profile. */
-export type EmulatorsConfigAnswer_Body_ActiveProfile = z.infer<
-  typeof emulatorsConfigAnswer_Body_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.adb.exe. */
 export const emulatorsConfigAnswer_Body_Adb_ExeSchema = z.string();
-/** Raw response path: answer.body.adb.exe. */
-export type EmulatorsConfigAnswer_Body_Adb_Exe = z.infer<
-  typeof emulatorsConfigAnswer_Body_Adb_ExeSchema
->;
 /** Strict raw response path: answer.body.adb. */
 export const emulatorsConfigAnswer_Body_AdbSchema = z.strictObject({
   exe: emulatorsConfigAnswer_Body_Adb_ExeSchema,
 });
-/** Raw response path: answer.body.adb. */
-export type EmulatorsConfigAnswer_Body_Adb = z.infer<typeof emulatorsConfigAnswer_Body_AdbSchema>;
 /** Strict raw response path: answer.body.config_revision. */
 export const emulatorsConfigAnswer_Body_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.config_revision. */
-export type EmulatorsConfigAnswer_Body_ConfigRevision = z.infer<
-  typeof emulatorsConfigAnswer_Body_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.instances.main.allow_taps. */
 export const emulatorsConfigAnswer_Body_Instances_Main_AllowTapsSchema = z.boolean();
-/** Raw response path: answer.body.instances.main.allow_taps. */
-export type EmulatorsConfigAnswer_Body_Instances_Main_AllowTaps = z.infer<
-  typeof emulatorsConfigAnswer_Body_Instances_Main_AllowTapsSchema
->;
 /** Strict raw response path: answer.body.instances.main.serial. */
 export const emulatorsConfigAnswer_Body_Instances_Main_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.main.serial. */
-export type EmulatorsConfigAnswer_Body_Instances_Main_Serial = z.infer<
-  typeof emulatorsConfigAnswer_Body_Instances_Main_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.main. */
 export const emulatorsConfigAnswer_Body_Instances_MainSchema = z.strictObject({
   allow_taps: emulatorsConfigAnswer_Body_Instances_Main_AllowTapsSchema,
   serial: emulatorsConfigAnswer_Body_Instances_Main_SerialSchema,
 });
-/** Raw response path: answer.body.instances.main. */
-export type EmulatorsConfigAnswer_Body_Instances_Main = z.infer<
-  typeof emulatorsConfigAnswer_Body_Instances_MainSchema
->;
 /** Strict raw response path: answer.body.instances.other.serial. */
 export const emulatorsConfigAnswer_Body_Instances_Other_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.other.serial. */
-export type EmulatorsConfigAnswer_Body_Instances_Other_Serial = z.infer<
-  typeof emulatorsConfigAnswer_Body_Instances_Other_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.other. */
 export const emulatorsConfigAnswer_Body_Instances_OtherSchema = z.strictObject({
   serial: emulatorsConfigAnswer_Body_Instances_Other_SerialSchema,
 });
-/** Raw response path: answer.body.instances.other. */
-export type EmulatorsConfigAnswer_Body_Instances_Other = z.infer<
-  typeof emulatorsConfigAnswer_Body_Instances_OtherSchema
->;
 /** Strict raw response path: answer.body.instances. */
 export const emulatorsConfigAnswer_Body_InstancesSchema = z.strictObject({
   main: emulatorsConfigAnswer_Body_Instances_MainSchema,
   other: emulatorsConfigAnswer_Body_Instances_OtherSchema,
 });
-/** Raw response path: answer.body.instances. */
-export type EmulatorsConfigAnswer_Body_Instances = z.infer<
-  typeof emulatorsConfigAnswer_Body_InstancesSchema
->;
 /** Strict raw response path: answer.body.loadouts. */
 export const emulatorsConfigAnswer_Body_LoadoutsSchema = z.strictObject({});
-/** Raw response path: answer.body.loadouts. */
-export type EmulatorsConfigAnswer_Body_Loadouts = z.infer<
-  typeof emulatorsConfigAnswer_Body_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.preset. */
 export const emulatorsConfigAnswer_Body_PresetSchema = z.string();
-/** Raw response path: answer.body.preset. */
-export type EmulatorsConfigAnswer_Body_Preset = z.infer<
-  typeof emulatorsConfigAnswer_Body_PresetSchema
->;
 /** Strict raw response path: answer.body.presets. */
 export const emulatorsConfigAnswer_Body_PresetsSchema = z.strictObject({});
-/** Raw response path: answer.body.presets. */
-export type EmulatorsConfigAnswer_Body_Presets = z.infer<
-  typeof emulatorsConfigAnswer_Body_PresetsSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsConfigAnswer_BodySchema = z.strictObject({
   active_instance: emulatorsConfigAnswer_Body_ActiveInstanceSchema,
@@ -1170,12 +556,8 @@ export const emulatorsConfigAnswer_BodySchema = z.strictObject({
   preset: emulatorsConfigAnswer_Body_PresetSchema,
   presets: emulatorsConfigAnswer_Body_PresetsSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsConfigAnswer_Body = z.infer<typeof emulatorsConfigAnswer_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const emulatorsConfigAnswer_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EmulatorsConfigAnswer_Status = z.infer<typeof emulatorsConfigAnswer_StatusSchema>;
 /** Strict raw response path: answer. */
 export const emulatorsConfigAnswerSchema = z.strictObject({
   body: emulatorsConfigAnswer_BodySchema,
@@ -1185,46 +567,18 @@ export const emulatorsConfigAnswerSchema = z.strictObject({
 export type EmulatorsConfigAnswer = z.infer<typeof emulatorsConfigAnswerSchema>;
 /** Strict raw response path: answer.body.adopt.adb. */
 export const emulatorsWizardStateAnswer_Body_Adopt_AdbSchema = z.string();
-/** Raw response path: answer.body.adopt.adb. */
-export type EmulatorsWizardStateAnswer_Body_Adopt_Adb = z.infer<
-  typeof emulatorsWizardStateAnswer_Body_Adopt_AdbSchema
->;
 /** Strict raw response path: answer.body.adopt.backup. */
 export const emulatorsWizardStateAnswer_Body_Adopt_BackupSchema = z.string();
-/** Raw response path: answer.body.adopt.backup. */
-export type EmulatorsWizardStateAnswer_Body_Adopt_Backup = z.infer<
-  typeof emulatorsWizardStateAnswer_Body_Adopt_BackupSchema
->;
 /** Strict raw response path: answer.body.adopt.connected. */
 export const emulatorsWizardStateAnswer_Body_Adopt_ConnectedSchema = z.boolean();
-/** Raw response path: answer.body.adopt.connected. */
-export type EmulatorsWizardStateAnswer_Body_Adopt_Connected = z.infer<
-  typeof emulatorsWizardStateAnswer_Body_Adopt_ConnectedSchema
->;
 /** Strict raw response path: answer.body.adopt.instance. */
 export const emulatorsWizardStateAnswer_Body_Adopt_InstanceSchema = z.string();
-/** Raw response path: answer.body.adopt.instance. */
-export type EmulatorsWizardStateAnswer_Body_Adopt_Instance = z.infer<
-  typeof emulatorsWizardStateAnswer_Body_Adopt_InstanceSchema
->;
 /** Strict raw response path: answer.body.adopt.message. */
 export const emulatorsWizardStateAnswer_Body_Adopt_MessageSchema = z.string();
-/** Raw response path: answer.body.adopt.message. */
-export type EmulatorsWizardStateAnswer_Body_Adopt_Message = z.infer<
-  typeof emulatorsWizardStateAnswer_Body_Adopt_MessageSchema
->;
 /** Strict raw response path: answer.body.adopt.serial. */
 export const emulatorsWizardStateAnswer_Body_Adopt_SerialSchema = z.string();
-/** Raw response path: answer.body.adopt.serial. */
-export type EmulatorsWizardStateAnswer_Body_Adopt_Serial = z.infer<
-  typeof emulatorsWizardStateAnswer_Body_Adopt_SerialSchema
->;
 /** Strict raw response path: answer.body.adopt.t. */
 export const emulatorsWizardStateAnswer_Body_Adopt_TSchema = z.number();
-/** Raw response path: answer.body.adopt.t. */
-export type EmulatorsWizardStateAnswer_Body_Adopt_T = z.infer<
-  typeof emulatorsWizardStateAnswer_Body_Adopt_TSchema
->;
 /** Strict raw response path: answer.body.adopt. */
 export const emulatorsWizardStateAnswer_Body_AdoptSchema = z.strictObject({
   adb: emulatorsWizardStateAnswer_Body_Adopt_AdbSchema,
@@ -1235,22 +589,12 @@ export const emulatorsWizardStateAnswer_Body_AdoptSchema = z.strictObject({
   serial: emulatorsWizardStateAnswer_Body_Adopt_SerialSchema,
   t: emulatorsWizardStateAnswer_Body_Adopt_TSchema,
 });
-/** Raw response path: answer.body.adopt. */
-export type EmulatorsWizardStateAnswer_Body_Adopt = z.infer<
-  typeof emulatorsWizardStateAnswer_Body_AdoptSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsWizardStateAnswer_BodySchema = z.strictObject({
   adopt: emulatorsWizardStateAnswer_Body_AdoptSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsWizardStateAnswer_Body = z.infer<typeof emulatorsWizardStateAnswer_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const emulatorsWizardStateAnswer_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EmulatorsWizardStateAnswer_Status = z.infer<
-  typeof emulatorsWizardStateAnswer_StatusSchema
->;
 /** Strict raw response path: answer. */
 export const emulatorsWizardStateAnswerSchema = z.strictObject({
   body: emulatorsWizardStateAnswer_BodySchema,
@@ -1260,102 +604,42 @@ export const emulatorsWizardStateAnswerSchema = z.strictObject({
 export type EmulatorsWizardStateAnswer = z.infer<typeof emulatorsWizardStateAnswerSchema>;
 /** Strict raw response path: answer.body.active_instance. */
 export const emulatorsInventoryAnswer_Body_ActiveInstanceSchema = z.string();
-/** Raw response path: answer.body.active_instance. */
-export type EmulatorsInventoryAnswer_Body_ActiveInstance = z.infer<
-  typeof emulatorsInventoryAnswer_Body_ActiveInstanceSchema
->;
 /** Strict raw response path: answer.body.config_serial_placeholder. */
 export const emulatorsInventoryAnswer_Body_ConfigSerialPlaceholderSchema = z.boolean();
-/** Raw response path: answer.body.config_serial_placeholder. */
-export type EmulatorsInventoryAnswer_Body_ConfigSerialPlaceholder = z.infer<
-  typeof emulatorsInventoryAnswer_Body_ConfigSerialPlaceholderSchema
->;
 /** Strict raw response path: answer.body.configured[].instance. */
 export const emulatorsInventoryAnswer_Body_Configured_ArrayElement_InstanceSchema = z.string();
-/** Raw response path: answer.body.configured[].instance. */
-export type EmulatorsInventoryAnswer_Body_Configured_ArrayElement_Instance = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Configured_ArrayElement_InstanceSchema
->;
 /** Strict raw response path: answer.body.configured[].port_open. */
 export const emulatorsInventoryAnswer_Body_Configured_ArrayElement_PortOpenSchema = z
   .boolean()
   .nullable();
-/** Raw response path: answer.body.configured[].port_open. */
-export type EmulatorsInventoryAnswer_Body_Configured_ArrayElement_PortOpen = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Configured_ArrayElement_PortOpenSchema
->;
 /** Strict raw response path: answer.body.configured[].serial. */
 export const emulatorsInventoryAnswer_Body_Configured_ArrayElement_SerialSchema = z.string();
-/** Raw response path: answer.body.configured[].serial. */
-export type EmulatorsInventoryAnswer_Body_Configured_ArrayElement_Serial = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Configured_ArrayElement_SerialSchema
->;
 /** Strict raw response path: answer.body.configured[]. */
 export const emulatorsInventoryAnswer_Body_Configured_ArrayElementSchema = z.strictObject({
   instance: emulatorsInventoryAnswer_Body_Configured_ArrayElement_InstanceSchema,
   port_open: emulatorsInventoryAnswer_Body_Configured_ArrayElement_PortOpenSchema,
   serial: emulatorsInventoryAnswer_Body_Configured_ArrayElement_SerialSchema,
 });
-/** Raw response path: answer.body.configured[]. */
-export type EmulatorsInventoryAnswer_Body_Configured_ArrayElement = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Configured_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.configured. */
 export const emulatorsInventoryAnswer_Body_ConfiguredSchema = z.array(
   emulatorsInventoryAnswer_Body_Configured_ArrayElementSchema,
 );
-/** Raw response path: answer.body.configured. */
-export type EmulatorsInventoryAnswer_Body_Configured = z.infer<
-  typeof emulatorsInventoryAnswer_Body_ConfiguredSchema
->;
 /** Strict raw response path: answer.body.instances[].adb_port. */
 export const emulatorsInventoryAnswer_Body_Instances_ArrayElement_AdbPortSchema = z.number();
-/** Raw response path: answer.body.instances[].adb_port. */
-export type EmulatorsInventoryAnswer_Body_Instances_ArrayElement_AdbPort = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Instances_ArrayElement_AdbPortSchema
->;
 /** Strict raw response path: answer.body.instances[].emulator. */
 export const emulatorsInventoryAnswer_Body_Instances_ArrayElement_EmulatorSchema = z.string();
-/** Raw response path: answer.body.instances[].emulator. */
-export type EmulatorsInventoryAnswer_Body_Instances_ArrayElement_Emulator = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Instances_ArrayElement_EmulatorSchema
->;
 /** Strict raw response path: answer.body.instances[].index. */
 export const emulatorsInventoryAnswer_Body_Instances_ArrayElement_IndexSchema = z.number();
-/** Raw response path: answer.body.instances[].index. */
-export type EmulatorsInventoryAnswer_Body_Instances_ArrayElement_Index = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Instances_ArrayElement_IndexSchema
->;
 /** Strict raw response path: answer.body.instances[].manager. */
 export const emulatorsInventoryAnswer_Body_Instances_ArrayElement_ManagerSchema = z.string();
-/** Raw response path: answer.body.instances[].manager. */
-export type EmulatorsInventoryAnswer_Body_Instances_ArrayElement_Manager = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Instances_ArrayElement_ManagerSchema
->;
 /** Strict raw response path: answer.body.instances[].name. */
 export const emulatorsInventoryAnswer_Body_Instances_ArrayElement_NameSchema = z.string();
-/** Raw response path: answer.body.instances[].name. */
-export type EmulatorsInventoryAnswer_Body_Instances_ArrayElement_Name = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Instances_ArrayElement_NameSchema
->;
 /** Strict raw response path: answer.body.instances[].port_source. */
 export const emulatorsInventoryAnswer_Body_Instances_ArrayElement_PortSourceSchema = z.string();
-/** Raw response path: answer.body.instances[].port_source. */
-export type EmulatorsInventoryAnswer_Body_Instances_ArrayElement_PortSource = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Instances_ArrayElement_PortSourceSchema
->;
 /** Strict raw response path: answer.body.instances[].process. */
 export const emulatorsInventoryAnswer_Body_Instances_ArrayElement_ProcessSchema = z.boolean();
-/** Raw response path: answer.body.instances[].process. */
-export type EmulatorsInventoryAnswer_Body_Instances_ArrayElement_Process = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Instances_ArrayElement_ProcessSchema
->;
 /** Strict raw response path: answer.body.instances[].running. */
 export const emulatorsInventoryAnswer_Body_Instances_ArrayElement_RunningSchema = z.boolean();
-/** Raw response path: answer.body.instances[].running. */
-export type EmulatorsInventoryAnswer_Body_Instances_ArrayElement_Running = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Instances_ArrayElement_RunningSchema
->;
 /** Strict raw response path: answer.body.instances[]. */
 export const emulatorsInventoryAnswer_Body_Instances_ArrayElementSchema = z.strictObject({
   adb_port: emulatorsInventoryAnswer_Body_Instances_ArrayElement_AdbPortSchema,
@@ -1367,80 +651,36 @@ export const emulatorsInventoryAnswer_Body_Instances_ArrayElementSchema = z.stri
   process: emulatorsInventoryAnswer_Body_Instances_ArrayElement_ProcessSchema,
   running: emulatorsInventoryAnswer_Body_Instances_ArrayElement_RunningSchema,
 });
-/** Raw response path: answer.body.instances[]. */
-export type EmulatorsInventoryAnswer_Body_Instances_ArrayElement = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Instances_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.instances. */
 export const emulatorsInventoryAnswer_Body_InstancesSchema = z.array(
   emulatorsInventoryAnswer_Body_Instances_ArrayElementSchema,
 );
-/** Raw response path: answer.body.instances. */
-export type EmulatorsInventoryAnswer_Body_Instances = z.infer<
-  typeof emulatorsInventoryAnswer_Body_InstancesSchema
->;
 /** Strict raw response path: answer.body.running[].emulator. */
 export const emulatorsInventoryAnswer_Body_Running_ArrayElement_EmulatorSchema = z.string();
-/** Raw response path: answer.body.running[].emulator. */
-export type EmulatorsInventoryAnswer_Body_Running_ArrayElement_Emulator = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Running_ArrayElement_EmulatorSchema
->;
 /** Strict raw response path: answer.body.running[].process. */
 export const emulatorsInventoryAnswer_Body_Running_ArrayElement_ProcessSchema = z.string();
-/** Raw response path: answer.body.running[].process. */
-export type EmulatorsInventoryAnswer_Body_Running_ArrayElement_Process = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Running_ArrayElement_ProcessSchema
->;
 /** Strict raw response path: answer.body.running[]. */
 export const emulatorsInventoryAnswer_Body_Running_ArrayElementSchema = z.strictObject({
   emulator: emulatorsInventoryAnswer_Body_Running_ArrayElement_EmulatorSchema,
   process: emulatorsInventoryAnswer_Body_Running_ArrayElement_ProcessSchema,
 });
-/** Raw response path: answer.body.running[]. */
-export type EmulatorsInventoryAnswer_Body_Running_ArrayElement = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Running_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.running. */
 export const emulatorsInventoryAnswer_Body_RunningSchema = z.array(
   emulatorsInventoryAnswer_Body_Running_ArrayElementSchema,
 );
-/** Raw response path: answer.body.running. */
-export type EmulatorsInventoryAnswer_Body_Running = z.infer<
-  typeof emulatorsInventoryAnswer_Body_RunningSchema
->;
 /** Strict raw response path: answer.body.scanned[].adb. */
 export const emulatorsInventoryAnswer_Body_Scanned_ArrayElement_AdbSchema = z.string();
-/** Raw response path: answer.body.scanned[].adb. */
-export type EmulatorsInventoryAnswer_Body_Scanned_ArrayElement_Adb = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Scanned_ArrayElement_AdbSchema
->;
 /** Strict raw response path: answer.body.scanned[].devices[]. */
 export const emulatorsInventoryAnswer_Body_Scanned_ArrayElement_Devices_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.scanned[].devices[]. */
-export type EmulatorsInventoryAnswer_Body_Scanned_ArrayElement_Devices_ArrayElement = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Scanned_ArrayElement_Devices_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.scanned[].devices. */
 export const emulatorsInventoryAnswer_Body_Scanned_ArrayElement_DevicesSchema = z.array(
   emulatorsInventoryAnswer_Body_Scanned_ArrayElement_Devices_ArrayElementSchema,
 );
-/** Raw response path: answer.body.scanned[].devices. */
-export type EmulatorsInventoryAnswer_Body_Scanned_ArrayElement_Devices = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Scanned_ArrayElement_DevicesSchema
->;
 /** Strict raw response path: answer.body.scanned[].emulator. */
 export const emulatorsInventoryAnswer_Body_Scanned_ArrayElement_EmulatorSchema = z.string();
-/** Raw response path: answer.body.scanned[].emulator. */
-export type EmulatorsInventoryAnswer_Body_Scanned_ArrayElement_Emulator = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Scanned_ArrayElement_EmulatorSchema
->;
 /** Strict raw response path: answer.body.scanned[].note. */
 export const emulatorsInventoryAnswer_Body_Scanned_ArrayElement_NoteSchema = z.string();
-/** Raw response path: answer.body.scanned[].note. */
-export type EmulatorsInventoryAnswer_Body_Scanned_ArrayElement_Note = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Scanned_ArrayElement_NoteSchema
->;
 /** Strict raw response path: answer.body.scanned[]. */
 export const emulatorsInventoryAnswer_Body_Scanned_ArrayElementSchema = z.strictObject({
   adb: emulatorsInventoryAnswer_Body_Scanned_ArrayElement_AdbSchema,
@@ -1448,56 +688,24 @@ export const emulatorsInventoryAnswer_Body_Scanned_ArrayElementSchema = z.strict
   emulator: emulatorsInventoryAnswer_Body_Scanned_ArrayElement_EmulatorSchema,
   note: emulatorsInventoryAnswer_Body_Scanned_ArrayElement_NoteSchema.optional(),
 });
-/** Raw response path: answer.body.scanned[]. */
-export type EmulatorsInventoryAnswer_Body_Scanned_ArrayElement = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Scanned_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.scanned. */
 export const emulatorsInventoryAnswer_Body_ScannedSchema = z.array(
   emulatorsInventoryAnswer_Body_Scanned_ArrayElementSchema,
 );
-/** Raw response path: answer.body.scanned. */
-export type EmulatorsInventoryAnswer_Body_Scanned = z.infer<
-  typeof emulatorsInventoryAnswer_Body_ScannedSchema
->;
 /** Strict raw response path: answer.body.suggestion.adb. */
 export const emulatorsInventoryAnswer_Body_Suggestion_AdbSchema = z.string();
-/** Raw response path: answer.body.suggestion.adb. */
-export type EmulatorsInventoryAnswer_Body_Suggestion_Adb = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Suggestion_AdbSchema
->;
 /** Strict raw response path: answer.body.suggestion.also_seen[]. */
 export const emulatorsInventoryAnswer_Body_Suggestion_AlsoSeen_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.suggestion.also_seen[]. */
-export type EmulatorsInventoryAnswer_Body_Suggestion_AlsoSeen_ArrayElement = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Suggestion_AlsoSeen_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.suggestion.also_seen. */
 export const emulatorsInventoryAnswer_Body_Suggestion_AlsoSeenSchema = z.array(
   emulatorsInventoryAnswer_Body_Suggestion_AlsoSeen_ArrayElementSchema,
 );
-/** Raw response path: answer.body.suggestion.also_seen. */
-export type EmulatorsInventoryAnswer_Body_Suggestion_AlsoSeen = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Suggestion_AlsoSeenSchema
->;
 /** Strict raw response path: answer.body.suggestion.emulator. */
 export const emulatorsInventoryAnswer_Body_Suggestion_EmulatorSchema = z.string();
-/** Raw response path: answer.body.suggestion.emulator. */
-export type EmulatorsInventoryAnswer_Body_Suggestion_Emulator = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Suggestion_EmulatorSchema
->;
 /** Strict raw response path: answer.body.suggestion.name. */
 export const emulatorsInventoryAnswer_Body_Suggestion_NameSchema = z.string();
-/** Raw response path: answer.body.suggestion.name. */
-export type EmulatorsInventoryAnswer_Body_Suggestion_Name = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Suggestion_NameSchema
->;
 /** Strict raw response path: answer.body.suggestion.serial. */
 export const emulatorsInventoryAnswer_Body_Suggestion_SerialSchema = z.string();
-/** Raw response path: answer.body.suggestion.serial. */
-export type EmulatorsInventoryAnswer_Body_Suggestion_Serial = z.infer<
-  typeof emulatorsInventoryAnswer_Body_Suggestion_SerialSchema
->;
 /** Strict raw response path: answer.body.suggestion. */
 export const emulatorsInventoryAnswer_Body_SuggestionSchema = z
   .strictObject({
@@ -1508,14 +716,8 @@ export const emulatorsInventoryAnswer_Body_SuggestionSchema = z
     serial: emulatorsInventoryAnswer_Body_Suggestion_SerialSchema,
   })
   .nullable();
-/** Raw response path: answer.body.suggestion. */
-export type EmulatorsInventoryAnswer_Body_Suggestion = z.infer<
-  typeof emulatorsInventoryAnswer_Body_SuggestionSchema
->;
 /** Strict raw response path: answer.body.t. */
 export const emulatorsInventoryAnswer_Body_TSchema = z.number();
-/** Raw response path: answer.body.t. */
-export type EmulatorsInventoryAnswer_Body_T = z.infer<typeof emulatorsInventoryAnswer_Body_TSchema>;
 /** Strict raw response path: answer.body. */
 export const emulatorsInventoryAnswer_BodySchema = z.strictObject({
   active_instance: emulatorsInventoryAnswer_Body_ActiveInstanceSchema,
@@ -1527,12 +729,8 @@ export const emulatorsInventoryAnswer_BodySchema = z.strictObject({
   suggestion: emulatorsInventoryAnswer_Body_SuggestionSchema,
   t: emulatorsInventoryAnswer_Body_TSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsInventoryAnswer_Body = z.infer<typeof emulatorsInventoryAnswer_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const emulatorsInventoryAnswer_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EmulatorsInventoryAnswer_Status = z.infer<typeof emulatorsInventoryAnswer_StatusSchema>;
 /** Strict raw response path: answer. */
 export const emulatorsInventoryAnswerSchema = z.strictObject({
   body: emulatorsInventoryAnswer_BodySchema,
@@ -1542,28 +740,12 @@ export const emulatorsInventoryAnswerSchema = z.strictObject({
 export type EmulatorsInventoryAnswer = z.infer<typeof emulatorsInventoryAnswerSchema>;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsResolutionAnswer_Status200V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsResolutionAnswer_Status200V1_Body_Error = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsResolutionAnswer_Status200V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsResolutionAnswer_Status200V1_Body_Ok = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body.serial. */
 export const emulatorsResolutionAnswer_Status200V1_Body_SerialSchema = z.string();
-/** Raw response path: answer.body.serial. */
-export type EmulatorsResolutionAnswer_Status200V1_Body_Serial = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V1_Body_SerialSchema
->;
 /** Strict raw response path: answer.body.t. */
 export const emulatorsResolutionAnswer_Status200V1_Body_TSchema = z.number();
-/** Raw response path: answer.body.t. */
-export type EmulatorsResolutionAnswer_Status200V1_Body_T = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V1_Body_TSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsResolutionAnswer_Status200V1_BodySchema = z.strictObject({
   error: emulatorsResolutionAnswer_Status200V1_Body_ErrorSchema,
@@ -1571,73 +753,29 @@ export const emulatorsResolutionAnswer_Status200V1_BodySchema = z.strictObject({
   serial: emulatorsResolutionAnswer_Status200V1_Body_SerialSchema,
   t: emulatorsResolutionAnswer_Status200V1_Body_TSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsResolutionAnswer_Status200V1_Body = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsResolutionAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EmulatorsResolutionAnswer_Status200V1_Status = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members error, ok, serial, t. */
 export const emulatorsResolutionAnswer_Status200V1Schema = z.strictObject({
   body: emulatorsResolutionAnswer_Status200V1_BodySchema,
   status: emulatorsResolutionAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members error, ok, serial, t. */
-export type EmulatorsResolutionAnswer_Status200V1 = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V1Schema
->;
 /** Strict raw response path: answer.body.expected. */
 export const emulatorsResolutionAnswer_Status200V2_Body_ExpectedSchema = z.boolean();
-/** Raw response path: answer.body.expected. */
-export type EmulatorsResolutionAnswer_Status200V2_Body_Expected = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V2_Body_ExpectedSchema
->;
 /** Strict raw response path: answer.body.height. */
 export const emulatorsResolutionAnswer_Status200V2_Body_HeightSchema = z.number();
-/** Raw response path: answer.body.height. */
-export type EmulatorsResolutionAnswer_Status200V2_Body_Height = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V2_Body_HeightSchema
->;
 /** Strict raw response path: answer.body.note. */
 export const emulatorsResolutionAnswer_Status200V2_Body_NoteSchema = z.string();
-/** Raw response path: answer.body.note. */
-export type EmulatorsResolutionAnswer_Status200V2_Body_Note = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V2_Body_NoteSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsResolutionAnswer_Status200V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsResolutionAnswer_Status200V2_Body_Ok = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.reference. */
 export const emulatorsResolutionAnswer_Status200V2_Body_ReferenceSchema = z.boolean();
-/** Raw response path: answer.body.reference. */
-export type EmulatorsResolutionAnswer_Status200V2_Body_Reference = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V2_Body_ReferenceSchema
->;
 /** Strict raw response path: answer.body.serial. */
 export const emulatorsResolutionAnswer_Status200V2_Body_SerialSchema = z.string();
-/** Raw response path: answer.body.serial. */
-export type EmulatorsResolutionAnswer_Status200V2_Body_Serial = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V2_Body_SerialSchema
->;
 /** Strict raw response path: answer.body.t. */
 export const emulatorsResolutionAnswer_Status200V2_Body_TSchema = z.number();
-/** Raw response path: answer.body.t. */
-export type EmulatorsResolutionAnswer_Status200V2_Body_T = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V2_Body_TSchema
->;
 /** Strict raw response path: answer.body.width. */
 export const emulatorsResolutionAnswer_Status200V2_Body_WidthSchema = z.number();
-/** Raw response path: answer.body.width. */
-export type EmulatorsResolutionAnswer_Status200V2_Body_Width = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V2_Body_WidthSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsResolutionAnswer_Status200V2_BodySchema = z.strictObject({
   expected: emulatorsResolutionAnswer_Status200V2_Body_ExpectedSchema,
@@ -1649,90 +787,42 @@ export const emulatorsResolutionAnswer_Status200V2_BodySchema = z.strictObject({
   t: emulatorsResolutionAnswer_Status200V2_Body_TSchema,
   width: emulatorsResolutionAnswer_Status200V2_Body_WidthSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsResolutionAnswer_Status200V2_Body = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsResolutionAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EmulatorsResolutionAnswer_Status200V2_Status = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members expected, height, note, ok, reference, serial, t, width. */
 export const emulatorsResolutionAnswer_Status200V2Schema = z.strictObject({
   body: emulatorsResolutionAnswer_Status200V2_BodySchema,
   status: emulatorsResolutionAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members expected, height, note, ok, reference, serial, t, width. */
-export type EmulatorsResolutionAnswer_Status200V2 = z.infer<
-  typeof emulatorsResolutionAnswer_Status200V2Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsResolutionAnswer_Status400V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsResolutionAnswer_Status400V1_Body_Error = z.infer<
-  typeof emulatorsResolutionAnswer_Status400V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsResolutionAnswer_Status400V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsResolutionAnswer_Status400V1_Body_Ok = z.infer<
-  typeof emulatorsResolutionAnswer_Status400V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsResolutionAnswer_Status400V1_BodySchema = z.strictObject({
   error: emulatorsResolutionAnswer_Status400V1_Body_ErrorSchema,
   ok: emulatorsResolutionAnswer_Status400V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsResolutionAnswer_Status400V1_Body = z.infer<
-  typeof emulatorsResolutionAnswer_Status400V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsResolutionAnswer_Status400V1_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type EmulatorsResolutionAnswer_Status400V1_Status = z.infer<
-  typeof emulatorsResolutionAnswer_Status400V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const emulatorsResolutionAnswer_Status400V1Schema = z.strictObject({
   body: emulatorsResolutionAnswer_Status400V1_BodySchema,
   status: emulatorsResolutionAnswer_Status400V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type EmulatorsResolutionAnswer_Status400V1 = z.infer<
-  typeof emulatorsResolutionAnswer_Status400V1Schema
->;
 /** Strict raw response path: answer.body.text. */
 export const emulatorsResolutionAnswer_Status400V2_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type EmulatorsResolutionAnswer_Status400V2_Body_Text = z.infer<
-  typeof emulatorsResolutionAnswer_Status400V2_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsResolutionAnswer_Status400V2_BodySchema = z.strictObject({
   text: emulatorsResolutionAnswer_Status400V2_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsResolutionAnswer_Status400V2_Body = z.infer<
-  typeof emulatorsResolutionAnswer_Status400V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsResolutionAnswer_Status400V2_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type EmulatorsResolutionAnswer_Status400V2_Status = z.infer<
-  typeof emulatorsResolutionAnswer_Status400V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members text. */
 export const emulatorsResolutionAnswer_Status400V2Schema = z.strictObject({
   body: emulatorsResolutionAnswer_Status400V2_BodySchema,
   status: emulatorsResolutionAnswer_Status400V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members text. */
-export type EmulatorsResolutionAnswer_Status400V2 = z.infer<
-  typeof emulatorsResolutionAnswer_Status400V2Schema
->;
 /** Strict raw response path: answer. */
 export const emulatorsResolutionAnswerSchema = z.union([
   emulatorsResolutionAnswer_Status200V1Schema,
@@ -1744,30 +834,14 @@ export const emulatorsResolutionAnswerSchema = z.union([
 export type EmulatorsResolutionAnswer = z.infer<typeof emulatorsResolutionAnswerSchema>;
 /** Strict raw response path: answer.body.installed. */
 export const emulatorsToolsAnswer_Body_InstalledSchema = z.boolean();
-/** Raw response path: answer.body.installed. */
-export type EmulatorsToolsAnswer_Body_Installed = z.infer<
-  typeof emulatorsToolsAnswer_Body_InstalledSchema
->;
 /** Strict raw response path: answer.body.message. */
 export const emulatorsToolsAnswer_Body_MessageSchema = z.string();
-/** Raw response path: answer.body.message. */
-export type EmulatorsToolsAnswer_Body_Message = z.infer<
-  typeof emulatorsToolsAnswer_Body_MessageSchema
->;
 /** Strict raw response path: answer.body.path. */
 export const emulatorsToolsAnswer_Body_PathSchema = z.string().nullable();
-/** Raw response path: answer.body.path. */
-export type EmulatorsToolsAnswer_Body_Path = z.infer<typeof emulatorsToolsAnswer_Body_PathSchema>;
 /** Strict raw response path: answer.body.percent. */
 export const emulatorsToolsAnswer_Body_PercentSchema = z.number();
-/** Raw response path: answer.body.percent. */
-export type EmulatorsToolsAnswer_Body_Percent = z.infer<
-  typeof emulatorsToolsAnswer_Body_PercentSchema
->;
 /** Strict raw response path: answer.body.stage. */
 export const emulatorsToolsAnswer_Body_StageSchema = z.string();
-/** Raw response path: answer.body.stage. */
-export type EmulatorsToolsAnswer_Body_Stage = z.infer<typeof emulatorsToolsAnswer_Body_StageSchema>;
 /** Strict raw response path: answer.body. */
 export const emulatorsToolsAnswer_BodySchema = z.strictObject({
   installed: emulatorsToolsAnswer_Body_InstalledSchema,
@@ -1776,12 +850,8 @@ export const emulatorsToolsAnswer_BodySchema = z.strictObject({
   percent: emulatorsToolsAnswer_Body_PercentSchema,
   stage: emulatorsToolsAnswer_Body_StageSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsToolsAnswer_Body = z.infer<typeof emulatorsToolsAnswer_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const emulatorsToolsAnswer_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EmulatorsToolsAnswer_Status = z.infer<typeof emulatorsToolsAnswer_StatusSchema>;
 /** Strict raw response path: answer. */
 export const emulatorsToolsAnswerSchema = z.strictObject({
   body: emulatorsToolsAnswer_BodySchema,
@@ -1791,28 +861,12 @@ export const emulatorsToolsAnswerSchema = z.strictObject({
 export type EmulatorsToolsAnswer = z.infer<typeof emulatorsToolsAnswerSchema>;
 /** Strict raw response path: answer.body.message. */
 export const emulatorsInstallAnswer_Status200_Body_MessageSchema = z.string();
-/** Raw response path: answer.body.message. */
-export type EmulatorsInstallAnswer_Status200_Body_Message = z.infer<
-  typeof emulatorsInstallAnswer_Status200_Body_MessageSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsInstallAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsInstallAnswer_Status200_Body_Ok = z.infer<
-  typeof emulatorsInstallAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body.percent. */
 export const emulatorsInstallAnswer_Status200_Body_PercentSchema = z.number();
-/** Raw response path: answer.body.percent. */
-export type EmulatorsInstallAnswer_Status200_Body_Percent = z.infer<
-  typeof emulatorsInstallAnswer_Status200_Body_PercentSchema
->;
 /** Strict raw response path: answer.body.stage. */
 export const emulatorsInstallAnswer_Status200_Body_StageSchema = z.string();
-/** Raw response path: answer.body.stage. */
-export type EmulatorsInstallAnswer_Status200_Body_Stage = z.infer<
-  typeof emulatorsInstallAnswer_Status200_Body_StageSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsInstallAnswer_Status200_BodySchema = z.strictObject({
   message: emulatorsInstallAnswer_Status200_Body_MessageSchema,
@@ -1820,276 +874,116 @@ export const emulatorsInstallAnswer_Status200_BodySchema = z.strictObject({
   percent: emulatorsInstallAnswer_Status200_Body_PercentSchema,
   stage: emulatorsInstallAnswer_Status200_Body_StageSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsInstallAnswer_Status200_Body = z.infer<
-  typeof emulatorsInstallAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsInstallAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EmulatorsInstallAnswer_Status200_Status = z.infer<
-  typeof emulatorsInstallAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members message, ok, percent, stage. */
 export const emulatorsInstallAnswer_Status200Schema = z.strictObject({
   body: emulatorsInstallAnswer_Status200_BodySchema,
   status: emulatorsInstallAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members message, ok, percent, stage. */
-export type EmulatorsInstallAnswer_Status200 = z.infer<
-  typeof emulatorsInstallAnswer_Status200Schema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsInstallAnswer_Status202_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsInstallAnswer_Status202_Body_Ok = z.infer<
-  typeof emulatorsInstallAnswer_Status202_Body_OkSchema
->;
 /** Strict raw response path: answer.body.stage. */
 export const emulatorsInstallAnswer_Status202_Body_StageSchema = z.string();
-/** Raw response path: answer.body.stage. */
-export type EmulatorsInstallAnswer_Status202_Body_Stage = z.infer<
-  typeof emulatorsInstallAnswer_Status202_Body_StageSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsInstallAnswer_Status202_BodySchema = z.strictObject({
   ok: emulatorsInstallAnswer_Status202_Body_OkSchema,
   stage: emulatorsInstallAnswer_Status202_Body_StageSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsInstallAnswer_Status202_Body = z.infer<
-  typeof emulatorsInstallAnswer_Status202_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsInstallAnswer_Status202_StatusSchema = z.literal(202);
-/** Raw response path: answer.status. */
-export type EmulatorsInstallAnswer_Status202_Status = z.infer<
-  typeof emulatorsInstallAnswer_Status202_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 202, body members ok, stage. */
 export const emulatorsInstallAnswer_Status202Schema = z.strictObject({
   body: emulatorsInstallAnswer_Status202_BodySchema,
   status: emulatorsInstallAnswer_Status202_StatusSchema,
 });
-/** Raw response path: answer, variant: status 202, body members ok, stage. */
-export type EmulatorsInstallAnswer_Status202 = z.infer<
-  typeof emulatorsInstallAnswer_Status202Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsInstallAnswer_Status400V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsInstallAnswer_Status400V1_Body_Error = z.infer<
-  typeof emulatorsInstallAnswer_Status400V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsInstallAnswer_Status400V1_BodySchema = z.strictObject({
   error: emulatorsInstallAnswer_Status400V1_Body_ErrorSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsInstallAnswer_Status400V1_Body = z.infer<
-  typeof emulatorsInstallAnswer_Status400V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsInstallAnswer_Status400V1_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type EmulatorsInstallAnswer_Status400V1_Status = z.infer<
-  typeof emulatorsInstallAnswer_Status400V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error. */
 export const emulatorsInstallAnswer_Status400V1Schema = z.strictObject({
   body: emulatorsInstallAnswer_Status400V1_BodySchema,
   status: emulatorsInstallAnswer_Status400V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error. */
-export type EmulatorsInstallAnswer_Status400V1 = z.infer<
-  typeof emulatorsInstallAnswer_Status400V1Schema
->;
 /** Strict raw response path: answer.body.text. */
 export const emulatorsInstallAnswer_Status400V2_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type EmulatorsInstallAnswer_Status400V2_Body_Text = z.infer<
-  typeof emulatorsInstallAnswer_Status400V2_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsInstallAnswer_Status400V2_BodySchema = z.strictObject({
   text: emulatorsInstallAnswer_Status400V2_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsInstallAnswer_Status400V2_Body = z.infer<
-  typeof emulatorsInstallAnswer_Status400V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsInstallAnswer_Status400V2_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type EmulatorsInstallAnswer_Status400V2_Status = z.infer<
-  typeof emulatorsInstallAnswer_Status400V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members text. */
 export const emulatorsInstallAnswer_Status400V2Schema = z.strictObject({
   body: emulatorsInstallAnswer_Status400V2_BodySchema,
   status: emulatorsInstallAnswer_Status400V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members text. */
-export type EmulatorsInstallAnswer_Status400V2 = z.infer<
-  typeof emulatorsInstallAnswer_Status400V2Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const emulatorsInstallAnswer_Status409V1_Body_CodeSchema = z.enum(['action_lock']);
-/** Raw response path: answer.body.code. */
-export type EmulatorsInstallAnswer_Status409V1_Body_Code = z.infer<
-  typeof emulatorsInstallAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsInstallAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsInstallAnswer_Status409V1_Body_Error = z.infer<
-  typeof emulatorsInstallAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsInstallAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsInstallAnswer_Status409V1_Body_Ok = z.infer<
-  typeof emulatorsInstallAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsInstallAnswer_Status409V1_BodySchema = z.strictObject({
   code: emulatorsInstallAnswer_Status409V1_Body_CodeSchema,
   error: emulatorsInstallAnswer_Status409V1_Body_ErrorSchema,
   ok: emulatorsInstallAnswer_Status409V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsInstallAnswer_Status409V1_Body = z.infer<
-  typeof emulatorsInstallAnswer_Status409V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsInstallAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type EmulatorsInstallAnswer_Status409V1_Status = z.infer<
-  typeof emulatorsInstallAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const emulatorsInstallAnswer_Status409V1Schema = z.strictObject({
   body: emulatorsInstallAnswer_Status409V1_BodySchema,
   status: emulatorsInstallAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type EmulatorsInstallAnswer_Status409V1 = z.infer<
-  typeof emulatorsInstallAnswer_Status409V1Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const emulatorsInstallAnswer_Status409V2_Body_CodeSchema = z.enum(['device_owned']);
-/** Raw response path: answer.body.code. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Code = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const emulatorsInstallAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Error = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const emulatorsInstallAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Ok = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.owner.foreign. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_ForeignSchema = z.boolean();
-/** Raw response path: answer.body.owner.foreign. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_Foreign = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_ForeignSchema
->;
 /** Strict raw response path: answer.body.owner.gathers. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_GathersSchema = z.null();
-/** Raw response path: answer.body.owner.gathers. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_Gathers = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_GathersSchema
->;
 /** Strict raw response path: answer.body.owner.gems.ad_gems. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_Gems_AdGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.ad_gems. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_Gems_AdGems = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_Gems_AdGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems.basis. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_Gems_BasisSchema = z.enum([
   'not_reported',
 ]);
-/** Raw response path: answer.body.owner.gems.basis. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_Gems_Basis = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_Gems_BasisSchema
->;
 /** Strict raw response path: answer.body.owner.gems.floating_gems. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.floating_gems. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_Gems_FloatingGems = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_GemsSchema = z.strictObject({
   ad_gems: emulatorsInstallAnswer_Status409V2_Body_Owner_Gems_AdGemsSchema,
   basis: emulatorsInstallAnswer_Status409V2_Body_Owner_Gems_BasisSchema,
   floating_gems: emulatorsInstallAnswer_Status409V2_Body_Owner_Gems_FloatingGemsSchema,
 });
-/** Raw response path: answer.body.owner.gems. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_Gems = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_GemsSchema
->;
 /** Strict raw response path: answer.body.owner.harvest_managed. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_HarvestManagedSchema = z.boolean();
-/** Raw response path: answer.body.owner.harvest_managed. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_HarvestManaged = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_HarvestManagedSchema
->;
 /** Strict raw response path: answer.body.owner.kind. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_KindSchema = z.enum(['process']);
-/** Raw response path: answer.body.owner.kind. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_Kind = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_KindSchema
->;
 /** Strict raw response path: answer.body.owner.operation_id. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_OperationIdSchema = z.null();
-/** Raw response path: answer.body.owner.operation_id. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_OperationId = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.operation_kind. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_OperationKindSchema = z.null();
-/** Raw response path: answer.body.owner.operation_kind. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_OperationKind = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_OperationKindSchema
->;
 /** Strict raw response path: answer.body.owner.pid. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_PidSchema = z.number();
-/** Raw response path: answer.body.owner.pid. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_Pid = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_PidSchema
->;
 /** Strict raw response path: answer.body.owner.recovery. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_RecoverySchema = z.null();
-/** Raw response path: answer.body.owner.recovery. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_Recovery = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_RecoverySchema
->;
 /** Strict raw response path: answer.body.owner.routines. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_RoutinesSchema = z.null();
-/** Raw response path: answer.body.owner.routines. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_Routines = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_RoutinesSchema
->;
 /** Strict raw response path: answer.body.owner.script. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_ScriptSchema = z.string();
-/** Raw response path: answer.body.owner.script. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_Script = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_ScriptSchema
->;
 /** Strict raw response path: answer.body.owner.status. */
 export const emulatorsInstallAnswer_Status409V2_Body_Owner_StatusSchema = z.null();
-/** Raw response path: answer.body.owner.status. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner_Status = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_Owner_StatusSchema
->;
 /** Strict raw response path: answer.body.owner. */
 export const emulatorsInstallAnswer_Status409V2_Body_OwnerSchema = z.strictObject({
   foreign: emulatorsInstallAnswer_Status409V2_Body_Owner_ForeignSchema,
@@ -2105,22 +999,10 @@ export const emulatorsInstallAnswer_Status409V2_Body_OwnerSchema = z.strictObjec
   script: emulatorsInstallAnswer_Status409V2_Body_Owner_ScriptSchema,
   status: emulatorsInstallAnswer_Status409V2_Body_Owner_StatusSchema,
 });
-/** Raw response path: answer.body.owner. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Owner = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_OwnerSchema
->;
 /** Strict raw response path: answer.body.recovery. */
 export const emulatorsInstallAnswer_Status409V2_Body_RecoverySchema = z.null();
-/** Raw response path: answer.body.recovery. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Recovery = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_RecoverySchema
->;
 /** Strict raw response path: answer.body.retry. */
 export const emulatorsInstallAnswer_Status409V2_Body_RetrySchema = z.string();
-/** Raw response path: answer.body.retry. */
-export type EmulatorsInstallAnswer_Status409V2_Body_Retry = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_Body_RetrySchema
->;
 /** Strict raw response path: answer.body. */
 export const emulatorsInstallAnswer_Status409V2_BodySchema = z.strictObject({
   code: emulatorsInstallAnswer_Status409V2_Body_CodeSchema,
@@ -2130,25 +1012,13 @@ export const emulatorsInstallAnswer_Status409V2_BodySchema = z.strictObject({
   recovery: emulatorsInstallAnswer_Status409V2_Body_RecoverySchema,
   retry: emulatorsInstallAnswer_Status409V2_Body_RetrySchema,
 });
-/** Raw response path: answer.body. */
-export type EmulatorsInstallAnswer_Status409V2_Body = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const emulatorsInstallAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type EmulatorsInstallAnswer_Status409V2_Status = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
 export const emulatorsInstallAnswer_Status409V2Schema = z.strictObject({
   body: emulatorsInstallAnswer_Status409V2_BodySchema,
   status: emulatorsInstallAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
-export type EmulatorsInstallAnswer_Status409V2 = z.infer<
-  typeof emulatorsInstallAnswer_Status409V2Schema
->;
 /** Strict raw response path: answer. */
 export const emulatorsInstallAnswerSchema = z.union([
   emulatorsInstallAnswer_Status200Schema,

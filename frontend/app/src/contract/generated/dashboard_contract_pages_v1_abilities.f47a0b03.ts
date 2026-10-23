@@ -7,64 +7,28 @@ export const fixtureVersionSchema = z.literal(1);
 export type FixtureVersion = z.infer<typeof fixtureVersionSchema>;
 /** Strict raw response path: answer.body.name. */
 export const abilitiesSourceAnswer_Body_NameSchema = z.string();
-/** Raw response path: answer.body.name. */
-export type AbilitiesSourceAnswer_Body_Name = z.infer<typeof abilitiesSourceAnswer_Body_NameSchema>;
 /** Strict raw response path: answer.body.ok. */
 export const abilitiesSourceAnswer_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type AbilitiesSourceAnswer_Body_Ok = z.infer<typeof abilitiesSourceAnswer_Body_OkSchema>;
 /** Strict raw response path: answer.body.problems[]. */
 export const abilitiesSourceAnswer_Body_Problems_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.problems[]. */
-export type AbilitiesSourceAnswer_Body_Problems_ArrayElement = z.infer<
-  typeof abilitiesSourceAnswer_Body_Problems_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.problems. */
 export const abilitiesSourceAnswer_Body_ProblemsSchema = z.array(
   abilitiesSourceAnswer_Body_Problems_ArrayElementSchema,
 );
-/** Raw response path: answer.body.problems. */
-export type AbilitiesSourceAnswer_Body_Problems = z.infer<
-  typeof abilitiesSourceAnswer_Body_ProblemsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.kind. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_KindSchema = z.enum(['coin']);
-/** Raw response path: answer.body.profile.blueprints.farm.kind. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Farm_Kind = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.loadout. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_LoadoutSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.loadout. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Farm_Loadout = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies.gather. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_Policies_GatherSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.policies.gather. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Farm_Policies_Gather = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_PoliciesSchema = z.strictObject({
   gather: abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_Policies_GatherSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.farm.policies. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Farm_Policies = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.shopping. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_ShoppingSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.shopping. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Farm_Shopping = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.tier. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.farm.tier. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Farm_Tier = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmSchema = z.strictObject({
   kind: abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_KindSchema,
@@ -73,42 +37,18 @@ export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmSchema = z.strict
   shopping: abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_ShoppingSchema,
   tier: abilitiesSourceAnswer_Body_Profile_Blueprints_Farm_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.farm. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Farm = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_FarmSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.kind. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_KindSchema = z.enum(['coin']);
-/** Raw response path: answer.body.profile.blueprints.farm_deep.kind. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Kind = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_LoadoutSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Loadout = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Policies_Gather = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.rescue. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Policies_RescueSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.rescue. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Policies_Rescue = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Policies_RescueSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.uw. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Policies_UwSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.uw. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Policies_Uw = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Policies_UwSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_PoliciesSchema = z.strictObject(
   {
@@ -117,29 +57,13 @@ export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_PoliciesSche
     uw: abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Policies_UwSchema,
   },
 );
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Policies = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_RestartViaHome = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_ShoppingSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Shopping = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.tier. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.tier. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_Tier = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeepSchema = z.strictObject({
   kind: abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_KindSchema,
@@ -149,49 +73,21 @@ export const abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeepSchema = z.st
   shopping: abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_ShoppingSchema,
   tier: abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.farm_deep. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeep = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_FarmDeepSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.count. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_CountSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.count. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Shards_Count = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_CountSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.kind. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_KindSchema = z.enum(['shard']);
-/** Raw response path: answer.body.profile.blueprints.shards.kind. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Shards_Kind = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.loadout. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_LoadoutSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.loadout. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Shards_Loadout = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies.gather. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.policies.gather. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Shards_Policies_Gather = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_PoliciesSchema = z.strictObject({
   gather: abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_Policies_GatherSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.shards.policies. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Shards_Policies = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.tier. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.tier. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Shards_Tier = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_ShardsSchema = z.strictObject({
   count: abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_CountSchema,
@@ -200,66 +96,30 @@ export const abilitiesSourceAnswer_Body_Profile_Blueprints_ShardsSchema = z.stri
   policies: abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_PoliciesSchema,
   tier: abilitiesSourceAnswer_Body_Profile_Blueprints_Shards_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.shards. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Shards = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_ShardsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_GemEntryMax = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.kind. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_KindSchema = z.enum([
   'tournament',
 ]);
-/** Raw response path: answer.body.profile.blueprints.tourney.kind. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Kind = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.loadout. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_LoadoutSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.loadout. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Loadout = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies_Gather = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.rescue. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies_RescueSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.rescue. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies_Rescue = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies_RescueSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.uw. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies_UwSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.uw. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies_Uw = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies_UwSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_PoliciesSchema = z.strictObject({
   gather: abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies_GatherSchema,
   rescue: abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies_RescueSchema,
   uw: abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies_UwSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.tourney.policies. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Policies = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.tier. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.tier. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_Tier = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney. */
 export const abilitiesSourceAnswer_Body_Profile_Blueprints_TourneySchema = z.strictObject({
   gem_entry_max: abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema,
@@ -268,10 +128,6 @@ export const abilitiesSourceAnswer_Body_Profile_Blueprints_TourneySchema = z.str
   policies: abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_PoliciesSchema,
   tier: abilitiesSourceAnswer_Body_Profile_Blueprints_Tourney_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.tourney. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints_Tourney = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Blueprints_TourneySchema
->;
 /** Strict raw response path: answer.body.profile.blueprints. */
 export const abilitiesSourceAnswer_Body_Profile_BlueprintsSchema = z.strictObject({
   farm: abilitiesSourceAnswer_Body_Profile_Blueprints_FarmSchema,
@@ -279,38 +135,18 @@ export const abilitiesSourceAnswer_Body_Profile_BlueprintsSchema = z.strictObjec
   shards: abilitiesSourceAnswer_Body_Profile_Blueprints_ShardsSchema,
   tourney: abilitiesSourceAnswer_Body_Profile_Blueprints_TourneySchema,
 });
-/** Raw response path: answer.body.profile.blueprints. */
-export type AbilitiesSourceAnswer_Body_Profile_Blueprints = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_BlueprintsSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].after. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].after. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_After = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].block. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].block. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_Block = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_Blueprint = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].count. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].count. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_Count = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[]. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema =
   z.strictObject({
@@ -319,47 +155,22 @@ export const abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElementSc
     blueprint: abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema,
     count: abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.farm_day[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDaySchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.farm_day. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDay = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].after. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].after. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_After = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].block. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].block. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Block = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].count. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].count. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Count = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[]. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema =
   z.strictObject({
@@ -370,161 +181,74 @@ export const abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElemen
     count:
       abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.tourney_day[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDaySchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.tourney_day. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDay = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_DaysSchema = z.strictObject({
   farm_day: abilitiesSourceAnswer_Body_Profile_Plan_Days_FarmDaySchema,
   tourney_day: abilitiesSourceAnswer_Body_Profile_Plan_Days_TourneyDaySchema,
 });
-/** Raw response path: answer.body.profile.plan.days. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Days = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_DaysSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.default. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Week_DefaultSchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.default. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Week_Default = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Week_DefaultSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.saturday. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_Week_SaturdaySchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.saturday. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Week_Saturday = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_Week_SaturdaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.week. */
 export const abilitiesSourceAnswer_Body_Profile_Plan_WeekSchema = z.strictObject({
   default: abilitiesSourceAnswer_Body_Profile_Plan_Week_DefaultSchema,
   saturday: abilitiesSourceAnswer_Body_Profile_Plan_Week_SaturdaySchema,
 });
-/** Raw response path: answer.body.profile.plan.week. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan_Week = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Plan_WeekSchema
->;
 /** Strict raw response path: answer.body.profile.plan. */
 export const abilitiesSourceAnswer_Body_Profile_PlanSchema = z.strictObject({
   days: abilitiesSourceAnswer_Body_Profile_Plan_DaysSchema,
   week: abilitiesSourceAnswer_Body_Profile_Plan_WeekSchema,
 });
-/** Raw response path: answer.body.profile.plan. */
-export type AbilitiesSourceAnswer_Body_Profile_Plan = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_PlanSchema
->;
 /** Strict raw response path: answer.body.profile.player.abilities.demon_mode. */
 export const abilitiesSourceAnswer_Body_Profile_Player_Abilities_DemonModeSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.abilities.demon_mode. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Abilities_DemonMode = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_Abilities_DemonModeSchema
->;
 /** Strict raw response path: answer.body.profile.player.abilities.nuke. */
 export const abilitiesSourceAnswer_Body_Profile_Player_Abilities_NukeSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.abilities.nuke. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Abilities_Nuke = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_Abilities_NukeSchema
->;
 /** Strict raw response path: answer.body.profile.player.abilities. */
 export const abilitiesSourceAnswer_Body_Profile_Player_AbilitiesSchema = z.strictObject({
   demon_mode: abilitiesSourceAnswer_Body_Profile_Player_Abilities_DemonModeSchema,
   nuke: abilitiesSourceAnswer_Body_Profile_Player_Abilities_NukeSchema,
 });
-/** Raw response path: answer.body.profile.player.abilities. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Abilities = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.profile.player.abilities_verified. */
 export const abilitiesSourceAnswer_Body_Profile_Player_AbilitiesVerifiedSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.abilities_verified. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_AbilitiesVerified = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_AbilitiesVerifiedSchema
->;
 /** Strict raw response path: answer.body.profile.player.card_presets[]. */
 export const abilitiesSourceAnswer_Body_Profile_Player_CardPresets_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.profile.player.card_presets[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_CardPresets_ArrayElement = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_CardPresets_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.player.card_presets. */
 export const abilitiesSourceAnswer_Body_Profile_Player_CardPresetsSchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Player_CardPresets_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.card_presets. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_CardPresets = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_CardPresetsSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.bots[]. */
 export const abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Bots_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.category_presets.bots[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Bots_ArrayElement = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Bots_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.bots. */
 export const abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_BotsSchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Bots_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.category_presets.bots. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Bots = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_BotsSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.guardians[]. */
 export const abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Guardians_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.category_presets.guardians[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Guardians_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Guardians_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.player.category_presets.guardians. */
 export const abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_GuardiansSchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Guardians_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.category_presets.guardians. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Guardians = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_GuardiansSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.modules[]. */
 export const abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Modules_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.category_presets.modules[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Modules_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Modules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.player.category_presets.modules. */
 export const abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_ModulesSchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Modules_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.category_presets.modules. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Modules = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_ModulesSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.workshop[]. */
 export const abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Workshop_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.category_presets.workshop[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Workshop_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Workshop_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.player.category_presets.workshop. */
 export const abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_WorkshopSchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Workshop_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.category_presets.workshop. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_Workshop = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_WorkshopSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets. */
 export const abilitiesSourceAnswer_Body_Profile_Player_CategoryPresetsSchema = z.strictObject({
   bots: abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_BotsSchema,
@@ -532,122 +256,50 @@ export const abilitiesSourceAnswer_Body_Profile_Player_CategoryPresetsSchema = z
   modules: abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_ModulesSchema,
   workshop: abilitiesSourceAnswer_Body_Profile_Player_CategoryPresets_WorkshopSchema,
 });
-/** Raw response path: answer.body.profile.player.category_presets. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_CategoryPresets = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_CategoryPresetsSchema
->;
 /** Strict raw response path: answer.body.profile.player.global_presets[]. */
 export const abilitiesSourceAnswer_Body_Profile_Player_GlobalPresets_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.global_presets[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_GlobalPresets_ArrayElement = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_GlobalPresets_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.player.global_presets. */
 export const abilitiesSourceAnswer_Body_Profile_Player_GlobalPresetsSchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Player_GlobalPresets_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.global_presets. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_GlobalPresets = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_GlobalPresetsSchema
->;
 /** Strict raw response path: answer.body.profile.player.guardians[]. */
 export const abilitiesSourceAnswer_Body_Profile_Player_Guardians_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.profile.player.guardians[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Guardians_ArrayElement = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_Guardians_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.player.guardians. */
 export const abilitiesSourceAnswer_Body_Profile_Player_GuardiansSchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Player_Guardians_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.guardians. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Guardians = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_GuardiansSchema
->;
 /** Strict raw response path: answer.body.profile.player.max_tier. */
 export const abilitiesSourceAnswer_Body_Profile_Player_MaxTierSchema = z.number();
-/** Raw response path: answer.body.profile.player.max_tier. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_MaxTier = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_MaxTierSchema
->;
 /** Strict raw response path: answer.body.profile.player.modules_equipped[]. */
 export const abilitiesSourceAnswer_Body_Profile_Player_ModulesEquipped_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.modules_equipped[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_ModulesEquipped_ArrayElement = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_ModulesEquipped_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.player.modules_equipped. */
 export const abilitiesSourceAnswer_Body_Profile_Player_ModulesEquippedSchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Player_ModulesEquipped_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.modules_equipped. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_ModulesEquipped = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_ModulesEquippedSchema
->;
 /** Strict raw response path: answer.body.profile.player.modules_in_grid. */
 export const abilitiesSourceAnswer_Body_Profile_Player_ModulesInGridSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.profile.player.modules_in_grid. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_ModulesInGrid = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_ModulesInGridSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.black_hole. */
 export const abilitiesSourceAnswer_Body_Profile_Player_Uws_BlackHoleSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.black_hole. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Uws_BlackHole = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_Uws_BlackHoleSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.chain_lightning. */
 export const abilitiesSourceAnswer_Body_Profile_Player_Uws_ChainLightningSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.chain_lightning. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Uws_ChainLightning = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_Uws_ChainLightningSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.chronofield. */
 export const abilitiesSourceAnswer_Body_Profile_Player_Uws_ChronofieldSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.chronofield. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Uws_Chronofield = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_Uws_ChronofieldSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.death_wave. */
 export const abilitiesSourceAnswer_Body_Profile_Player_Uws_DeathWaveSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.death_wave. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Uws_DeathWave = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_Uws_DeathWaveSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.golden_tower. */
 export const abilitiesSourceAnswer_Body_Profile_Player_Uws_GoldenTowerSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.golden_tower. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Uws_GoldenTower = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_Uws_GoldenTowerSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.inner_land_mines. */
 export const abilitiesSourceAnswer_Body_Profile_Player_Uws_InnerLandMinesSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.inner_land_mines. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Uws_InnerLandMines = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_Uws_InnerLandMinesSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.poison_swamp. */
 export const abilitiesSourceAnswer_Body_Profile_Player_Uws_PoisonSwampSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.poison_swamp. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Uws_PoisonSwamp = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_Uws_PoisonSwampSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.smart_missiles. */
 export const abilitiesSourceAnswer_Body_Profile_Player_Uws_SmartMissilesSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.smart_missiles. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Uws_SmartMissiles = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_Uws_SmartMissilesSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.spotlight. */
 export const abilitiesSourceAnswer_Body_Profile_Player_Uws_SpotlightSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.spotlight. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Uws_Spotlight = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_Uws_SpotlightSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws. */
 export const abilitiesSourceAnswer_Body_Profile_Player_UwsSchema = z.strictObject({
   black_hole: abilitiesSourceAnswer_Body_Profile_Player_Uws_BlackHoleSchema,
@@ -660,16 +312,8 @@ export const abilitiesSourceAnswer_Body_Profile_Player_UwsSchema = z.strictObjec
   smart_missiles: abilitiesSourceAnswer_Body_Profile_Player_Uws_SmartMissilesSchema,
   spotlight: abilitiesSourceAnswer_Body_Profile_Player_Uws_SpotlightSchema,
 });
-/** Raw response path: answer.body.profile.player.uws. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Uws = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_UwsSchema
->;
 /** Strict raw response path: answer.body.profile.player.wall. */
 export const abilitiesSourceAnswer_Body_Profile_Player_WallSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.wall. */
-export type AbilitiesSourceAnswer_Body_Profile_Player_Wall = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Player_WallSchema
->;
 /** Strict raw response path: answer.body.profile.player. */
 export const abilitiesSourceAnswer_Body_Profile_PlayerSchema = z.strictObject({
   abilities: abilitiesSourceAnswer_Body_Profile_Player_AbilitiesSchema,
@@ -684,24 +328,12 @@ export const abilitiesSourceAnswer_Body_Profile_PlayerSchema = z.strictObject({
   uws: abilitiesSourceAnswer_Body_Profile_Player_UwsSchema,
   wall: abilitiesSourceAnswer_Body_Profile_Player_WallSchema,
 });
-/** Raw response path: answer.body.profile.player. */
-export type AbilitiesSourceAnswer_Body_Profile_Player = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_PlayerSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[].enabled. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.chores[].enabled. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Chores_ArrayElement_Enabled = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[].name. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Chores_ArrayElement_NameSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.chores[].name. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Chores_ArrayElement_Name = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Chores_ArrayElement_NameSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Chores_ArrayElementSchema = z.strictObject(
   {
@@ -709,65 +341,28 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_Chores_ArrayElementSche
     name: abilitiesSourceAnswer_Body_Profile_Policies_Chores_ArrayElement_NameSchema,
   },
 );
-/** Raw response path: answer.body.profile.policies.chores[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Chores_ArrayElement = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Chores_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ChoresSchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Policies_Chores_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.policies.chores. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Chores = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_ChoresSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_AdGemsSchema = z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_AdGems = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema = z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_FlyingGem = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySec = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.guild. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_GuildSchema = z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.guild. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_Guild = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_QuestRewards = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_Quests8hSchema = z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_Quests8h = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOnSchema = z.strictObject({
   ad_gems: abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_AdGemsSchema,
@@ -777,60 +372,27 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOnSchema = z.
   quest_rewards: abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema,
   quests_8h: abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn_Quests8hSchema,
 });
-/** Raw response path: answer.body.profile.policies.gather.all_on. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOn = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOnSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema = z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_AdGems = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_FlyingGem = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema =
   z.array(
     abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.guild. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_GuildSchema = z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.guild. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_Guild = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_QuestRewards = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_Quests8h = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnlySchema = z.strictObject({
   ad_gems: abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema,
@@ -840,60 +402,27 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnlySchema =
   quest_rewards: abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema,
   quests_8h: abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema,
 });
-/** Raw response path: answer.body.profile.policies.gather.gems_only. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnly = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnlySchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema = z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_AdGems = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_FlyingGem = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema =
   z.array(
     abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySec = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.guild. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_GuildSchema = z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.guild. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_Guild = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_QuestRewards = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_Quests8h = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOffSchema = z.strictObject({
   ad_gems: abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema,
@@ -903,41 +432,21 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOffSchema =
   quest_rewards: abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema,
   quests_8h: abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema,
 });
-/** Raw response path: answer.body.profile.policies.gather.hands_off. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOff = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOffSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_GatherSchema = z.strictObject({
   all_on: abilitiesSourceAnswer_Body_Profile_Policies_Gather_AllOnSchema,
   gems_only: abilitiesSourceAnswer_Body_Profile_Policies_Gather_GemsOnlySchema,
   hands_off: abilitiesSourceAnswer_Body_Profile_Policies_Gather_HandsOffSchema,
 });
-/** Raw response path: answer.body.profile.policies.gather. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_Gather = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors_DailyMissions = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.demon_mode_always. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors_DemonModeAlwaysSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.demon_mode_always. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors_DemonModeAlways = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors_DemonModeAlwaysSchema
->;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors_FreeStoreGems = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviorsSchema = z.strictObject({
   daily_missions: abilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema,
@@ -945,33 +454,15 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviorsSchema =
     abilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors_DemonModeAlwaysSchema.optional(),
   free_store_gems: abilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema,
 });
-/** Raw response path: answer.body.profile.policies.global_behaviors. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviors = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_GlobalBehaviorsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.immunity_sec. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_ImmunitySecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.immunity_sec. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_ImmunitySec =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_ImmunitySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.on. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_OnSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.on. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_On = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_OnSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.watch_sec. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_WatchSecSchema =
   z.null();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.watch_sec. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_WatchSec =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_WatchSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_ArmSchema =
   z.strictObject({
@@ -981,42 +472,18 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalli
     watch_sec:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_WatchSecSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_ArmSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.end_sprint_after_sw. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_EndSprintAfterSwSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.end_sprint_after_sw. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_EndSprintAfterSw =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_EndSprintAfterSwSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.cancel_sprint. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_CancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.cancel_sprint. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_CancelSprint =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_CancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.fire. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_FireSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.fire. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_Fire =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_FireSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.retaps. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_RetapsSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.retaps. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_Retaps =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_RetapsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_BurstSchema =
   z.strictObject({
@@ -1026,73 +493,33 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalli
     retaps:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_RetapsSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_BurstSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_DoSchema =
   z.strictObject({
     burst:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_BurstSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_DoSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.bar. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_BarSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.bar. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_Bar =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_BarSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.below. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_BelowSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.below. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_Below =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_BelowSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.deadband. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_DeadbandSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.deadband. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_Deadband =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_DeadbandSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.falling_samples. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_FallingSamplesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.falling_samples. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_FallingSamples =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_FallingSamplesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.wall_collapse.from_above. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse_FromAboveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.wall_collapse.from_above. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse_FromAbove =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse_FromAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.wall_collapse. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapseSchema =
   z.strictObject({
     from_above:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse_FromAboveSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.wall_collapse. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapseSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_WhenSchema =
   z.strictObject({
@@ -1106,31 +533,17 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalli
     wall_collapse:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapseSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_WhenSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElementSchema =
   z.strictObject({
     do: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_DoSchema,
     when: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_WhenSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_RulesSchema =
   z.array(
     abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_RulesSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFallingSchema =
   z.strictObject({
@@ -1139,32 +552,15 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalli
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_EndSprintAfterSwSchema,
     rules: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_RulesSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFallingSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.arm.immunity_sec. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Arm_ImmunitySecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.arm.immunity_sec. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Arm_ImmunitySec =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Arm_ImmunitySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.arm.on. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Arm_OnSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.arm.on. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Arm_On = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Arm_OnSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.arm.watch_sec. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Arm_WatchSecSchema =
   z.null();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.arm.watch_sec. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Arm_WatchSec = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Arm_WatchSecSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.arm. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_ArmSchema =
   z.strictObject({
@@ -1173,42 +569,18 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Ar
     on: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Arm_OnSchema,
     watch_sec: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Arm_WatchSecSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.arm. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Arm = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_ArmSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.end_sprint_after_sw. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_EndSprintAfterSwSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.end_sprint_after_sw. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_EndSprintAfterSw =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_EndSprintAfterSwSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst.cancel_sprint. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_CancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst.cancel_sprint. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_CancelSprint =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_CancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst.fire. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_FireSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst.fire. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_Fire =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_FireSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst.retaps. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_RetapsSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst.retaps. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_Retaps =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_RetapsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_BurstSchema =
   z.strictObject({
@@ -1218,73 +590,33 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Ru
     retaps:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_RetapsSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_BurstSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_DoSchema =
   z.strictObject({
     burst:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_BurstSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_DoSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.bar. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_BarSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.bar. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_Bar =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_BarSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.below. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_BelowSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.below. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_Below =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_BelowSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.deadband. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_DeadbandSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.deadband. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_Deadband =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_DeadbandSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.falling_samples. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_FallingSamplesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.falling_samples. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_FallingSamples =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_FallingSamplesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.wall_collapse.from_above. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapse_FromAboveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.wall_collapse.from_above. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapse_FromAbove =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapse_FromAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.wall_collapse. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapseSchema =
   z.strictObject({
     from_above:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapse_FromAboveSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.wall_collapse. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapse =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapseSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_WhenSchema =
   z.strictObject({
@@ -1298,30 +630,16 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Ru
     wall_collapse:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapseSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_WhenSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElementSchema =
   z.strictObject({
     do: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_DoSchema,
     when: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_WhenSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_RulesSchema = z.array(
   abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_Rules = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_RulesSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_ExtraSchema =
   z.strictObject({
@@ -1330,33 +648,15 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_ExtraSch
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_EndSprintAfterSwSchema,
     rules: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra_RulesSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_Extra = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_ExtraSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.immunity_sec. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_ImmunitySecSchema =
   z.number().nullable();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.immunity_sec. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_ImmunitySec =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_ImmunitySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.on. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_OnSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.on. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_On = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_OnSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.watch_sec. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_WatchSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.watch_sec. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_WatchSec =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_WatchSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_ArmSchema =
   z.strictObject({
@@ -1366,49 +666,21 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrai
     watch_sec:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_WatchSecSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_ArmSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.end_sprint_after_sw. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_EndSprintAfterSwSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.end_sprint_after_sw. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_EndSprintAfterSw =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_EndSprintAfterSwSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.label. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_LabelSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.label. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Label = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_LabelSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.cancel_sprint. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_CancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.cancel_sprint. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_CancelSprint =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_CancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.fire. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_FireSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.fire. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_Fire =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_FireSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.retaps. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_RetapsSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.retaps. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_Retaps =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_RetapsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_BurstSchema =
   z.strictObject({
@@ -1418,27 +690,12 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrai
     retaps:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_RetapsSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_BurstSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire.button. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ButtonSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire.button. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_Button =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ButtonSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire.throttle_sec. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ThrottleSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire.throttle_sec. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ThrottleSec =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ThrottleSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_FireSchema =
   z.strictObject({
@@ -1447,19 +704,9 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrai
     throttle_sec:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ThrottleSecSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_FireSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.switch_cards. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_SwitchCardsSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.switch_cards. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_SwitchCards =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_SwitchCardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_DoSchema =
   z.strictObject({
@@ -1469,59 +716,24 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrai
     switch_cards:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_SwitchCardsSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_DoSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.bar. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_BarSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.bar. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_Bar =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_BarSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.below. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_BelowSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.below. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_Below =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_BelowSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.deadband. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_DeadbandSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.deadband. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_Deadband =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_DeadbandSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.falling_samples. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FallingSamplesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.falling_samples. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FallingSamples =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FallingSamplesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark.after_waves. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_AfterWavesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark.after_waves. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_AfterWaves =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_AfterWavesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark.window_waves. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_WindowWavesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark.window_waves. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_WindowWaves =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_WindowWavesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMarkSchema =
   z.strictObject({
@@ -1530,30 +742,15 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrai
     window_waves:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_WindowWavesSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMarkSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.wall_collapse.from_above. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse_FromAboveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.wall_collapse.from_above. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse_FromAbove =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse_FromAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.wall_collapse. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapseSchema =
   z.strictObject({
     from_above:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse_FromAboveSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.wall_collapse. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapseSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_WhenSchema =
   z.strictObject({
@@ -1569,31 +766,17 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrai
     wall_collapse:
       abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapseSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_WhenSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElementSchema =
   z.strictObject({
     do: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_DoSchema,
     when: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_WhenSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_RulesSchema =
   z.array(
     abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_RulesSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrainSchema =
   z.strictObject({
@@ -1603,70 +786,32 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrai
     label: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_LabelSchema,
     rules: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_RulesSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrain = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrainSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_RescuePoliciesSchema = z.strictObject({
   any_falling: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_AnyFallingSchema,
   extra: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_ExtraSchema.optional(),
   wall_drain: abilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies_WallDrainSchema,
 });
-/** Raw response path: answer.body.profile.policies.rescue_policies. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_RescuePolicies = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_RescuePoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Clicks =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Enabled =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Mode =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema =
   z.array(
     abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Tab =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema =
   z.strictObject({
@@ -1679,29 +824,14 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSw
       abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema,
     tab: abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema =
   z.array(
     abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Enabled =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema =
   z.strictObject({
@@ -1709,65 +839,27 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSw
       abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema,
     enabled: abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_CashReserve =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Enabled = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_IntervalSec =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Enabled =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWave =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Id =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimit =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema =
   z.strictObject({
@@ -1779,27 +871,14 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_
     tap_limit:
       abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema =
   z.array(
     abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_Version = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainListSchema =
   z.strictObject({
@@ -1811,75 +890,32 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainListS
     queue: abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema,
     version: abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainList = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainListSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_ShoppingListsSchema = z.strictObject({
   default_sweep: abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema,
   main_list: abilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists_MainListSchema,
 });
-/** Raw response path: answer.body.profile.policies.shopping_lists. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_ShoppingLists = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_ShoppingListsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.black_hole. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_BlackHoleSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.black_hole. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_BlackHole =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_BlackHoleSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.chronofield. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_ChronofieldSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.chronofield. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_Chronofield =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_ChronofieldSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.death_wave. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_DeathWaveSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.death_wave. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_DeathWave =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_DeathWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.golden_tower. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_GoldenTowerSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.golden_tower. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_GoldenTower =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_GoldenTowerSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.poison_swamp. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_PoisonSwampSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.poison_swamp. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_PoisonSwamp =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_PoisonSwampSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.smart_missiles. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SmartMissilesSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.smart_missiles. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SmartMissiles =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SmartMissilesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.spotlight. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SpotlightSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.spotlight. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_Spotlight =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SpotlightSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_BaselineSchema =
   z.strictObject({
@@ -1898,72 +934,33 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Basel
     spotlight:
       abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SpotlightSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_BaselineSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.always_on_above[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.always_on_above[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.always_on_above. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAboveSchema =
   z.array(
     abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.always_on_above. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.mode. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.mode. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_Mode =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.off_after_waves[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.off_after_waves[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.off_after_waves. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWavesSchema =
   z.array(
     abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.off_after_waves. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWavesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.pre_mark_waves[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.pre_mark_waves[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.pre_mark_waves. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWavesSchema =
   z.array(
     abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.pre_mark_waves. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWavesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightningSchema =
   z.strictObject({
@@ -1975,16 +972,8 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Chain
     pre_mark_waves:
       abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWavesSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightningSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.label. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_LabelSchema = z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.label. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Label = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_LabelSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmClSchema = z.strictObject({
   baseline: abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_BaselineSchema,
@@ -1992,66 +981,27 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmClSchema
     abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightningSchema,
   label: abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl_LabelSchema,
 });
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmCl = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmClSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.black_hole. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_BlackHoleSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.black_hole. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_BlackHole =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_BlackHoleSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.chronofield. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_ChronofieldSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.chronofield. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_Chronofield =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_ChronofieldSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.death_wave. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_DeathWaveSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.death_wave. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_DeathWave =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_DeathWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.golden_tower. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_GoldenTowerSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.golden_tower. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_GoldenTower =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_GoldenTowerSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.poison_swamp. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_PoisonSwampSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.poison_swamp. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_PoisonSwamp =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_PoisonSwampSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.smart_missiles. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SmartMissilesSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.smart_missiles. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SmartMissiles =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SmartMissilesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.spotlight. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SpotlightSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.spotlight. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_Spotlight =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SpotlightSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_BaselineSchema =
   z.strictObject({
@@ -2070,36 +1020,17 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Ba
     spotlight:
       abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SpotlightSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_BaselineSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.mode. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.mode. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_Mode =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.on_above[]. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.on_above[]. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove_ArrayElement =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.on_above. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAboveSchema =
   z.array(
     abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.on_above. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightningSchema =
   z.strictObject({
@@ -2107,18 +1038,9 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Ch
     on_above:
       abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAboveSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning =
-  z.infer<
-    typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightningSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.label. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_LabelSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.label. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Label = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_LabelSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyClSchema =
   z.strictObject({
@@ -2127,19 +1049,11 @@ export const abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyClSch
       abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightningSchema,
     label: abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_LabelSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyCl = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyClSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies. */
 export const abilitiesSourceAnswer_Body_Profile_Policies_UwPoliciesSchema = z.strictObject({
   farm_cl: abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_FarmClSchema,
   tourney_cl: abilitiesSourceAnswer_Body_Profile_Policies_UwPolicies_TourneyClSchema,
 });
-/** Raw response path: answer.body.profile.policies.uw_policies. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies_UwPolicies = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_Policies_UwPoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.policies. */
 export const abilitiesSourceAnswer_Body_Profile_PoliciesSchema = z.strictObject({
   chores: abilitiesSourceAnswer_Body_Profile_Policies_ChoresSchema,
@@ -2149,10 +1063,6 @@ export const abilitiesSourceAnswer_Body_Profile_PoliciesSchema = z.strictObject(
   shopping_lists: abilitiesSourceAnswer_Body_Profile_Policies_ShoppingListsSchema,
   uw_policies: abilitiesSourceAnswer_Body_Profile_Policies_UwPoliciesSchema,
 });
-/** Raw response path: answer.body.profile.policies. */
-export type AbilitiesSourceAnswer_Body_Profile_Policies = z.infer<
-  typeof abilitiesSourceAnswer_Body_Profile_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile. */
 export const abilitiesSourceAnswer_Body_ProfileSchema = z.strictObject({
   blueprints: abilitiesSourceAnswer_Body_Profile_BlueprintsSchema,
@@ -2160,36 +1070,16 @@ export const abilitiesSourceAnswer_Body_ProfileSchema = z.strictObject({
   player: abilitiesSourceAnswer_Body_Profile_PlayerSchema,
   policies: abilitiesSourceAnswer_Body_Profile_PoliciesSchema,
 });
-/** Raw response path: answer.body.profile. */
-export type AbilitiesSourceAnswer_Body_Profile = z.infer<
-  typeof abilitiesSourceAnswer_Body_ProfileSchema
->;
 /** Strict raw response path: answer.body.revision. */
 export const abilitiesSourceAnswer_Body_RevisionSchema = z.string();
-/** Raw response path: answer.body.revision. */
-export type AbilitiesSourceAnswer_Body_Revision = z.infer<
-  typeof abilitiesSourceAnswer_Body_RevisionSchema
->;
 /** Strict raw response path: answer.body.validator_error. */
 export const abilitiesSourceAnswer_Body_ValidatorErrorSchema = z.null();
-/** Raw response path: answer.body.validator_error. */
-export type AbilitiesSourceAnswer_Body_ValidatorError = z.infer<
-  typeof abilitiesSourceAnswer_Body_ValidatorErrorSchema
->;
 /** Strict raw response path: answer.body.warnings[]. */
 export const abilitiesSourceAnswer_Body_Warnings_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.warnings[]. */
-export type AbilitiesSourceAnswer_Body_Warnings_ArrayElement = z.infer<
-  typeof abilitiesSourceAnswer_Body_Warnings_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.warnings. */
 export const abilitiesSourceAnswer_Body_WarningsSchema = z.array(
   abilitiesSourceAnswer_Body_Warnings_ArrayElementSchema,
 );
-/** Raw response path: answer.body.warnings. */
-export type AbilitiesSourceAnswer_Body_Warnings = z.infer<
-  typeof abilitiesSourceAnswer_Body_WarningsSchema
->;
 /** Strict raw response path: answer.body. */
 export const abilitiesSourceAnswer_BodySchema = z.strictObject({
   name: abilitiesSourceAnswer_Body_NameSchema,
@@ -2200,12 +1090,8 @@ export const abilitiesSourceAnswer_BodySchema = z.strictObject({
   validator_error: abilitiesSourceAnswer_Body_ValidatorErrorSchema,
   warnings: abilitiesSourceAnswer_Body_WarningsSchema,
 });
-/** Raw response path: answer.body. */
-export type AbilitiesSourceAnswer_Body = z.infer<typeof abilitiesSourceAnswer_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const abilitiesSourceAnswer_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type AbilitiesSourceAnswer_Status = z.infer<typeof abilitiesSourceAnswer_StatusSchema>;
 /** Strict raw response path: answer. */
 export const abilitiesSourceAnswerSchema = z.strictObject({
   body: abilitiesSourceAnswer_BodySchema,
@@ -2215,59 +1101,27 @@ export const abilitiesSourceAnswerSchema = z.strictObject({
 export type AbilitiesSourceAnswer = z.infer<typeof abilitiesSourceAnswerSchema>;
 /** Strict raw response path: answer.body.backup. */
 export const abilitiesPatchAnswer_Status200_Body_BackupSchema = z.string();
-/** Raw response path: answer.body.backup. */
-export type AbilitiesPatchAnswer_Status200_Body_Backup = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_BackupSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const abilitiesPatchAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type AbilitiesPatchAnswer_Status200_Body_Ok = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.kind. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm.kind. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_Kind = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.loadout. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_LoadoutSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.loadout. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_Loadout = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies.gather. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.policies.gather. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_Policies_Gather = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_PoliciesSchema =
   z.strictObject({
     gather: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm.policies. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_Policies = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.shopping. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.shopping. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_Shopping = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.tier. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.farm.tier. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_Tier = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmSchema = z.strictObject({
   kind: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_KindSchema,
@@ -2276,48 +1130,22 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmSchema =
   shopping: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_ShoppingSchema,
   tier: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.farm. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Farm = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.kind. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm_deep.kind. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Kind = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Loadout = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_Gather =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.rescue. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_RescueSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.rescue. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_Rescue =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_RescueSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.uw. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_UwSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.uw. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_Uw = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_UwSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_PoliciesSchema =
   z.strictObject({
@@ -2325,32 +1153,15 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Pol
     rescue: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_RescueSchema,
     uw: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_UwSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_RestartViaHome =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Shopping = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.tier. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.tier. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Tier = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeepSchema = z.strictObject(
   {
@@ -2363,53 +1174,25 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeepSche
     tier: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep_TierSchema,
   },
 );
-/** Raw response path: answer.body.profile.blueprints.farm_deep. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeep = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmDeepSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.count. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_CountSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.count. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_Count = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_CountSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.kind. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_KindSchema = z.enum([
   'shard',
 ]);
-/** Raw response path: answer.body.profile.blueprints.shards.kind. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_Kind = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.loadout. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.loadout. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_Loadout = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies.gather. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.policies.gather. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_Policies_Gather = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_PoliciesSchema =
   z.strictObject({
     gather: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.shards.policies. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_Policies = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.tier. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.tier. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_Tier = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_ShardsSchema = z.strictObject({
   count: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_CountSchema,
@@ -2418,55 +1201,25 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_ShardsSchema
   policies: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_PoliciesSchema,
   tier: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.shards. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Shards = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_ShardsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_GemEntryMax = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.kind. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_KindSchema = z.enum([
   'tournament',
 ]);
-/** Raw response path: answer.body.profile.blueprints.tourney.kind. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Kind = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.loadout. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.loadout. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Loadout = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_Gather =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.rescue. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_RescueSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.rescue. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_Rescue =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_RescueSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.uw. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_UwSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.uw. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_Uw = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_UwSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_PoliciesSchema =
   z.strictObject({
@@ -2474,16 +1227,8 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Poli
     rescue: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_RescueSchema,
     uw: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_UwSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.tourney.policies. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.tier. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.tier. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_Tier = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_TourneySchema = z.strictObject({
   gem_entry_max: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema,
@@ -2492,10 +1237,6 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_TourneySchem
   policies: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_PoliciesSchema,
   tier: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.tourney. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints_Tourney = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_TourneySchema
->;
 /** Strict raw response path: answer.body.profile.blueprints. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_BlueprintsSchema = z.strictObject({
   farm: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_FarmSchema,
@@ -2503,42 +1244,18 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_BlueprintsSchema = z.st
   shards: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_ShardsSchema,
   tourney: abilitiesPatchAnswer_Status200_Body_Profile_Blueprints_TourneySchema,
 });
-/** Raw response path: answer.body.profile.blueprints. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Blueprints = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_BlueprintsSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].after. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].after. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_After =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].block. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].block. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_Block =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].count. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].count. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_Count =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema =
   z.strictObject({
@@ -2550,50 +1267,22 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_Array
     count:
       abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.farm_day[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDaySchema = z.array(
   abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.farm_day. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDay = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].after. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].after. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_After =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].block. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].block. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Block =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].count. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].count. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Count =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema =
   z.strictObject({
@@ -2606,169 +1295,81 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_Ar
     count:
       abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.tourney_day[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDaySchema = z.array(
   abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.tourney_day. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDay = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_DaysSchema = z.strictObject({
   farm_day: abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_FarmDaySchema,
   tourney_day: abilitiesPatchAnswer_Status200_Body_Profile_Plan_Days_TourneyDaySchema,
 });
-/** Raw response path: answer.body.profile.plan.days. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Days = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_DaysSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.default. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Week_DefaultSchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.default. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Week_Default = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Week_DefaultSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.saturday. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_Week_SaturdaySchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.saturday. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Week_Saturday = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_Week_SaturdaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.week. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Plan_WeekSchema = z.strictObject({
   default: abilitiesPatchAnswer_Status200_Body_Profile_Plan_Week_DefaultSchema,
   saturday: abilitiesPatchAnswer_Status200_Body_Profile_Plan_Week_SaturdaySchema,
 });
-/** Raw response path: answer.body.profile.plan.week. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan_Week = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Plan_WeekSchema
->;
 /** Strict raw response path: answer.body.profile.plan. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_PlanSchema = z.strictObject({
   days: abilitiesPatchAnswer_Status200_Body_Profile_Plan_DaysSchema,
   week: abilitiesPatchAnswer_Status200_Body_Profile_Plan_WeekSchema,
 });
-/** Raw response path: answer.body.profile.plan. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Plan = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_PlanSchema
->;
 /** Strict raw response path: answer.body.profile.player.abilities.demon_mode. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_Abilities_DemonModeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.player.abilities.demon_mode. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Abilities_DemonMode = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_Abilities_DemonModeSchema
->;
 /** Strict raw response path: answer.body.profile.player.abilities.nuke. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_Abilities_NukeSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.abilities.nuke. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Abilities_Nuke = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_Abilities_NukeSchema
->;
 /** Strict raw response path: answer.body.profile.player.abilities. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_AbilitiesSchema = z.strictObject({
   demon_mode: abilitiesPatchAnswer_Status200_Body_Profile_Player_Abilities_DemonModeSchema,
   nuke: abilitiesPatchAnswer_Status200_Body_Profile_Player_Abilities_NukeSchema,
 });
-/** Raw response path: answer.body.profile.player.abilities. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Abilities = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.profile.player.abilities_verified. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_AbilitiesVerifiedSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.player.abilities_verified. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_AbilitiesVerified = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_AbilitiesVerifiedSchema
->;
 /** Strict raw response path: answer.body.profile.player.card_presets[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_CardPresets_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.card_presets[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_CardPresets_ArrayElement = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_CardPresets_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.player.card_presets. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_CardPresetsSchema = z.array(
   abilitiesPatchAnswer_Status200_Body_Profile_Player_CardPresets_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.card_presets. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_CardPresets = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_CardPresetsSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.bots[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Bots_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.category_presets.bots[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Bots_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Bots_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.player.category_presets.bots. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_BotsSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Bots_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.player.category_presets.bots. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Bots = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_BotsSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.guardians[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Guardians_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.category_presets.guardians[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Guardians_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Guardians_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.player.category_presets.guardians. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_GuardiansSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Guardians_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.player.category_presets.guardians. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Guardians = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_GuardiansSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.modules[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Modules_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.category_presets.modules[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Modules_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Modules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.player.category_presets.modules. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_ModulesSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Modules_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.player.category_presets.modules. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Modules = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_ModulesSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.workshop[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Workshop_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.category_presets.workshop[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Workshop_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Workshop_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.player.category_presets.workshop. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_WorkshopSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Workshop_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.player.category_presets.workshop. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_Workshop = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_WorkshopSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresetsSchema =
   z.strictObject({
@@ -2777,127 +1378,54 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresetsS
     modules: abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_ModulesSchema,
     workshop: abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets_WorkshopSchema,
   });
-/** Raw response path: answer.body.profile.player.category_presets. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresets = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_CategoryPresetsSchema
->;
 /** Strict raw response path: answer.body.profile.player.global_presets[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_GlobalPresets_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.global_presets[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_GlobalPresets_ArrayElement = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_GlobalPresets_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.player.global_presets. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_GlobalPresetsSchema = z.array(
   abilitiesPatchAnswer_Status200_Body_Profile_Player_GlobalPresets_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.global_presets. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_GlobalPresets = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_GlobalPresetsSchema
->;
 /** Strict raw response path: answer.body.profile.player.guardians[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_Guardians_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.guardians[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Guardians_ArrayElement = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_Guardians_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.player.guardians. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_GuardiansSchema = z.array(
   abilitiesPatchAnswer_Status200_Body_Profile_Player_Guardians_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.guardians. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Guardians = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_GuardiansSchema
->;
 /** Strict raw response path: answer.body.profile.player.max_tier. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_MaxTierSchema = z.number();
-/** Raw response path: answer.body.profile.player.max_tier. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_MaxTier = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_MaxTierSchema
->;
 /** Strict raw response path: answer.body.profile.player.modules_equipped[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_ModulesEquipped_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.modules_equipped[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_ModulesEquipped_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_ModulesEquipped_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.player.modules_equipped. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_ModulesEquippedSchema = z.array(
   abilitiesPatchAnswer_Status200_Body_Profile_Player_ModulesEquipped_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.modules_equipped. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_ModulesEquipped = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_ModulesEquippedSchema
->;
 /** Strict raw response path: answer.body.profile.player.modules_in_grid. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_ModulesInGridSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.profile.player.modules_in_grid. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_ModulesInGrid = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_ModulesInGridSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.black_hole. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_BlackHoleSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.black_hole. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_BlackHole = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_BlackHoleSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.chain_lightning. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_ChainLightningSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.player.uws.chain_lightning. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_ChainLightning = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_ChainLightningSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.chronofield. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_ChronofieldSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.chronofield. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_Chronofield = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_ChronofieldSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.death_wave. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_DeathWaveSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.death_wave. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_DeathWave = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_DeathWaveSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.golden_tower. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_GoldenTowerSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.golden_tower. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_GoldenTower = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_GoldenTowerSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.inner_land_mines. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_InnerLandMinesSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.player.uws.inner_land_mines. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_InnerLandMines = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_InnerLandMinesSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.poison_swamp. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_PoisonSwampSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.poison_swamp. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_PoisonSwamp = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_PoisonSwampSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.smart_missiles. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_SmartMissilesSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.player.uws.smart_missiles. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_SmartMissiles = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_SmartMissilesSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.spotlight. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_SpotlightSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.spotlight. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_Spotlight = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_SpotlightSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_UwsSchema = z.strictObject({
   black_hole: abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_BlackHoleSchema,
@@ -2910,16 +1438,8 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Player_UwsSchema = z.st
   smart_missiles: abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_SmartMissilesSchema,
   spotlight: abilitiesPatchAnswer_Status200_Body_Profile_Player_Uws_SpotlightSchema,
 });
-/** Raw response path: answer.body.profile.player.uws. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Uws = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_UwsSchema
->;
 /** Strict raw response path: answer.body.profile.player.wall. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Player_WallSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.wall. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player_Wall = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Player_WallSchema
->;
 /** Strict raw response path: answer.body.profile.player. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_PlayerSchema = z.strictObject({
   abilities: abilitiesPatchAnswer_Status200_Body_Profile_Player_AbilitiesSchema,
@@ -2934,96 +1454,45 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_PlayerSchema = z.strict
   uws: abilitiesPatchAnswer_Status200_Body_Profile_Player_UwsSchema,
   wall: abilitiesPatchAnswer_Status200_Body_Profile_Player_WallSchema,
 });
-/** Raw response path: answer.body.profile.player. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Player = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_PlayerSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[].enabled. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.chores[].enabled. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_Enabled =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.chores[].name. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_NameSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.chores[].name. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_Name = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_NameSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores_ArrayElementSchema =
   z.strictObject({
     enabled: abilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema,
     name: abilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_NameSchema,
   });
-/** Raw response path: answer.body.profile.policies.chores[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ChoresSchema = z.array(
   abilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.policies.chores. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Chores = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ChoresSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_AdGems = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_FlyingGem = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.guild. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.guild. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Guild = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_QuestRewards =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Quests8h = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOnSchema =
   z.strictObject({
@@ -3036,65 +1505,29 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOnSc
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema,
     quests_8h: abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.all_on. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOn = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOnSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_AdGems = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_FlyingGem =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.guild. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.guild. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Guild = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_QuestRewards =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Quests8h = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnlySchema =
   z.strictObject({
@@ -3108,65 +1541,29 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnl
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema,
     quests_8h: abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.gems_only. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnlySchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_AdGems = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_FlyingGem =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.guild. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.guild. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Guild = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_QuestRewards =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Quests8h = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOffSchema =
   z.strictObject({
@@ -3180,44 +1577,21 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOf
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema,
     quests_8h: abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.hands_off. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOff = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOffSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_GatherSchema = z.strictObject({
   all_on: abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_AllOnSchema,
   gems_only: abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_GemsOnlySchema,
   hands_off: abilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather_HandsOffSchema,
 });
-/** Raw response path: answer.body.profile.policies.gather. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_Gather = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_DailyMissions =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.demon_mode_always. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_DemonModeAlwaysSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.demon_mode_always. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_DemonModeAlways =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_DemonModeAlwaysSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_FreeStoreGems =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviorsSchema =
   z.strictObject({
@@ -3228,34 +1602,15 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehavior
     free_store_gems:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema,
   });
-/** Raw response path: answer.body.profile.policies.global_behaviors. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviors = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_GlobalBehaviorsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.immunity_sec. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_ImmunitySecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.immunity_sec. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_ImmunitySec =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_ImmunitySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.on. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_OnSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.on. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_On =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_OnSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.watch_sec. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_WatchSecSchema =
   z.null();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.watch_sec. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_WatchSec =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_WatchSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_ArmSchema =
   z.strictObject({
@@ -3265,43 +1620,18 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     watch_sec:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_WatchSecSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_ArmSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.end_sprint_after_sw. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_EndSprintAfterSwSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.end_sprint_after_sw. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_EndSprintAfterSw =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_EndSprintAfterSwSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.cancel_sprint. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_CancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.cancel_sprint. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_CancelSprint =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_CancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.fire. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_FireSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.fire. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_Fire =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_FireSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.retaps. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_RetapsSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.retaps. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_Retaps =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_RetapsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_BurstSchema =
   z.strictObject({
@@ -3311,73 +1641,33 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     retaps:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_RetapsSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_BurstSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_DoSchema =
   z.strictObject({
     burst:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_BurstSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_DoSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.bar. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_BarSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.bar. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_Bar =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_BarSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.below. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_BelowSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.below. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_Below =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_BelowSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.deadband. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_DeadbandSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.deadband. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_Deadband =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_DeadbandSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.falling_samples. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_FallingSamplesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.falling_samples. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_FallingSamples =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_FallingSamplesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.wall_collapse.from_above. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse_FromAboveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.wall_collapse.from_above. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse_FromAbove =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse_FromAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.wall_collapse. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapseSchema =
   z.strictObject({
     from_above:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse_FromAboveSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.wall_collapse. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapseSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_WhenSchema =
   z.strictObject({
@@ -3391,32 +1681,17 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     wall_collapse:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapseSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_WhenSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElementSchema =
   z.strictObject({
     do: abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_DoSchema,
     when: abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_WhenSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_RulesSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_RulesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFallingSchema =
   z.strictObject({
@@ -3426,35 +1701,15 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     rules:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling_RulesSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFalling =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_AnyFallingSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.arm.immunity_sec. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Arm_ImmunitySecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.arm.immunity_sec. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Arm_ImmunitySec =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Arm_ImmunitySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.arm.on. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Arm_OnSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.arm.on. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Arm_On =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Arm_OnSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.arm.watch_sec. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Arm_WatchSecSchema =
   z.null();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.arm.watch_sec. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Arm_WatchSec =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Arm_WatchSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.arm. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_ArmSchema =
   z.strictObject({
@@ -3464,42 +1719,18 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     watch_sec:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Arm_WatchSecSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.arm. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Arm = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_ArmSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.end_sprint_after_sw. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_EndSprintAfterSwSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.end_sprint_after_sw. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_EndSprintAfterSw =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_EndSprintAfterSwSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst.cancel_sprint. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_CancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst.cancel_sprint. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_CancelSprint =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_CancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst.fire. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_FireSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst.fire. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_Fire =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_FireSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst.retaps. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_RetapsSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst.retaps. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_Retaps =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_RetapsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_BurstSchema =
   z.strictObject({
@@ -3509,73 +1740,33 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     retaps:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst_RetapsSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do.burst. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_Burst =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_BurstSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_DoSchema =
   z.strictObject({
     burst:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do_BurstSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].do. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_Do =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_DoSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.bar. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_BarSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.bar. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_Bar =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_BarSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.below. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_BelowSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.below. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_Below =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_BelowSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.deadband. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_DeadbandSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.deadband. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_Deadband =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_DeadbandSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.falling_samples. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_FallingSamplesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.falling_samples. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_FallingSamples =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_FallingSamplesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.wall_collapse.from_above. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapse_FromAboveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.wall_collapse.from_above. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapse_FromAbove =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapse_FromAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.wall_collapse. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapseSchema =
   z.strictObject({
     from_above:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapse_FromAboveSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when.wall_collapse. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapse =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapseSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_WhenSchema =
   z.strictObject({
@@ -3589,32 +1780,17 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     wall_collapse:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When_WallCollapseSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[].when. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_When =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_WhenSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElementSchema =
   z.strictObject({
     do: abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_DoSchema,
     when: abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement_WhenSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra.rules. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_RulesSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra.rules. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_Rules =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_RulesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.extra. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_ExtraSchema =
   z.strictObject({
@@ -3623,34 +1799,15 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_EndSprintAfterSwSchema,
     rules: abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra_RulesSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.extra. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_Extra = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_ExtraSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.immunity_sec. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_ImmunitySecSchema =
   z.number().nullable();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.immunity_sec. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_ImmunitySec =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_ImmunitySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.on. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_OnSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.on. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_On =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_OnSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.watch_sec. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_WatchSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.watch_sec. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_WatchSec =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_WatchSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_ArmSchema =
   z.strictObject({
@@ -3660,51 +1817,21 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     watch_sec:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_WatchSecSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Arm =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_ArmSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.end_sprint_after_sw. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_EndSprintAfterSwSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.end_sprint_after_sw. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_EndSprintAfterSw =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_EndSprintAfterSwSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.label. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_LabelSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.label. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Label =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_LabelSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.cancel_sprint. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_CancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.cancel_sprint. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_CancelSprint =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_CancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.fire. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_FireSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.fire. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_Fire =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_FireSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.retaps. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_RetapsSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.retaps. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_Retaps =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_RetapsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_BurstSchema =
   z.strictObject({
@@ -3714,27 +1841,12 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     retaps:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_RetapsSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_BurstSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire.button. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ButtonSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire.button. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_Button =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ButtonSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire.throttle_sec. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ThrottleSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire.throttle_sec. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ThrottleSec =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ThrottleSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_FireSchema =
   z.strictObject({
@@ -3743,11 +1855,6 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     throttle_sec:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ThrottleSecSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_FireSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_DoSchema =
   z.strictObject({
@@ -3755,59 +1862,24 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_BurstSchema.optional(),
     fire: abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_FireSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_DoSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.bar. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_BarSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.bar. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_Bar =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_BarSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.below. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_BelowSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.below. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_Below =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_BelowSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.deadband. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_DeadbandSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.deadband. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_Deadband =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_DeadbandSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.falling_samples. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FallingSamplesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.falling_samples. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FallingSamples =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FallingSamplesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark.after_waves. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_AfterWavesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark.after_waves. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_AfterWaves =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_AfterWavesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark.window_waves. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_WindowWavesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark.window_waves. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_WindowWaves =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_WindowWavesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMarkSchema =
   z.strictObject({
@@ -3816,30 +1888,15 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     window_waves:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_WindowWavesSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMarkSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.wall_collapse.from_above. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse_FromAboveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.wall_collapse.from_above. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse_FromAbove =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse_FromAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.wall_collapse. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapseSchema =
   z.strictObject({
     from_above:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse_FromAboveSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.wall_collapse. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapseSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_WhenSchema =
   z.strictObject({
@@ -3855,32 +1912,17 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     wall_collapse:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapseSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_WhenSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElementSchema =
   z.strictObject({
     do: abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_DoSchema,
     when: abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_WhenSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_RulesSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_Rules =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_RulesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrainSchema =
   z.strictObject({
@@ -3892,10 +1934,6 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
     rules:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain_RulesSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrain = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrainSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePoliciesSchema =
   z.strictObject({
@@ -3905,60 +1943,26 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_ExtraSchema.optional(),
     wall_drain: abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies_WallDrainSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePolicies = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_RescuePoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Clicks =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Enabled =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Mode =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Tab =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema =
   z.strictObject({
@@ -3971,29 +1975,14 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema,
     tab: abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Enabled =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema =
   z.strictObject({
@@ -4002,67 +1991,27 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_
     enabled:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_CashReserve =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Enabled =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_IntervalSec =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Enabled =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWave =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Id =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimit =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema =
   z.strictObject({
@@ -4074,29 +2023,14 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_
     tap_limit:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Version =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainListSchema =
   z.strictObject({
@@ -4110,10 +2044,6 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_
     version:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainListSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingListsSchema =
   z.strictObject({
@@ -4121,58 +2051,24 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingListsS
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema,
     main_list: abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainListSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingLists = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingListsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.calm.baseline.black_hole. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_BlackHoleSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.calm.baseline.black_hole. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_BlackHole =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_BlackHoleSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.calm.baseline.chronofield. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_ChronofieldSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.calm.baseline.chronofield. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_Chronofield =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_ChronofieldSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.calm.baseline.death_wave. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_DeathWaveSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.calm.baseline.death_wave. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_DeathWave =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_DeathWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.calm.baseline.golden_tower. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_GoldenTowerSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.calm.baseline.golden_tower. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_GoldenTower =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_GoldenTowerSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.calm.baseline.poison_swamp. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_PoisonSwampSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.calm.baseline.poison_swamp. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_PoisonSwamp =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_PoisonSwampSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.calm.baseline.spotlight. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_SpotlightSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.calm.baseline.spotlight. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_Spotlight =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_SpotlightSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.calm.baseline. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_BaselineSchema =
   z.strictObject({
@@ -4189,83 +2085,36 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Cal
     spotlight:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline_SpotlightSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.calm.baseline. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Baseline = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_BaselineSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.calm.label. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_LabelSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.calm.label. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_Label = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_LabelSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.calm. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_CalmSchema =
   z.strictObject({
     baseline: abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_BaselineSchema,
     label: abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm_LabelSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.calm. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Calm = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_CalmSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.black_hole. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_BlackHoleSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.black_hole. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_BlackHole =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_BlackHoleSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.chronofield. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_ChronofieldSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.chronofield. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_Chronofield =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_ChronofieldSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.death_wave. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_DeathWaveSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.death_wave. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_DeathWave =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_DeathWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.golden_tower. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_GoldenTowerSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.golden_tower. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_GoldenTower =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_GoldenTowerSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.poison_swamp. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_PoisonSwampSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.poison_swamp. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_PoisonSwamp =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_PoisonSwampSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.smart_missiles. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SmartMissilesSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.smart_missiles. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SmartMissiles =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SmartMissilesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.spotlight. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SpotlightSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.spotlight. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_Spotlight =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SpotlightSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_BaselineSchema =
   z.strictObject({
@@ -4284,73 +2133,33 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Far
     spotlight:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SpotlightSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Baseline =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_BaselineSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.always_on_above[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.always_on_above[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.always_on_above. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAboveSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.always_on_above. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.mode. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.mode. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_Mode =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.off_after_waves[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.off_after_waves[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.off_after_waves. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWavesSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.off_after_waves. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWavesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.pre_mark_waves[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.pre_mark_waves[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.pre_mark_waves. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWavesSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.pre_mark_waves. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWavesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightningSchema =
   z.strictObject({
@@ -4362,18 +2171,9 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Far
     pre_mark_waves:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWavesSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightningSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.label. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_LabelSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.label. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_Label = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_LabelSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmClSchema =
   z.strictObject({
@@ -4382,66 +2182,27 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Far
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightningSchema,
     label: abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl_LabelSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmCl = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_FarmClSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.black_hole. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_BlackHoleSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.black_hole. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_BlackHole =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_BlackHoleSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.chronofield. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_ChronofieldSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.chronofield. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_Chronofield =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_ChronofieldSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.death_wave. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_DeathWaveSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.death_wave. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_DeathWave =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_DeathWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.golden_tower. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_GoldenTowerSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.golden_tower. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_GoldenTower =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_GoldenTowerSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.poison_swamp. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_PoisonSwampSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.poison_swamp. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_PoisonSwamp =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_PoisonSwampSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.smart_missiles. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SmartMissilesSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.smart_missiles. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SmartMissiles =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SmartMissilesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.spotlight. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SpotlightSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.spotlight. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_Spotlight =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SpotlightSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_BaselineSchema =
   z.strictObject({
@@ -4460,37 +2221,17 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Tou
     spotlight:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SpotlightSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_BaselineSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.mode. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.mode. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_Mode =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.on_above[]. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.on_above[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove_ArrayElement =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.on_above. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAboveSchema =
   z.array(
     abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.on_above. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightningSchema =
   z.strictObject({
@@ -4498,19 +2239,9 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Tou
     on_above:
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAboveSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightningSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.label. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_LabelSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.label. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_Label =
-  z.infer<
-    typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_LabelSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyClSchema =
   z.strictObject({
@@ -4520,10 +2251,6 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_Tou
       abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightningSchema,
     label: abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl_LabelSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyCl = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyClSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPoliciesSchema = z.strictObject(
   {
@@ -4532,10 +2259,6 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPoliciesSche
     tourney_cl: abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies_TourneyClSchema,
   },
 );
-/** Raw response path: answer.body.profile.policies.uw_policies. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPolicies = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.policies. */
 export const abilitiesPatchAnswer_Status200_Body_Profile_PoliciesSchema = z.strictObject({
   chores: abilitiesPatchAnswer_Status200_Body_Profile_Policies_ChoresSchema,
@@ -4545,10 +2268,6 @@ export const abilitiesPatchAnswer_Status200_Body_Profile_PoliciesSchema = z.stri
   shopping_lists: abilitiesPatchAnswer_Status200_Body_Profile_Policies_ShoppingListsSchema,
   uw_policies: abilitiesPatchAnswer_Status200_Body_Profile_Policies_UwPoliciesSchema,
 });
-/** Raw response path: answer.body.profile.policies. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile_Policies = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Profile_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile. */
 export const abilitiesPatchAnswer_Status200_Body_ProfileSchema = z.strictObject({
   blueprints: abilitiesPatchAnswer_Status200_Body_Profile_BlueprintsSchema,
@@ -4556,30 +2275,14 @@ export const abilitiesPatchAnswer_Status200_Body_ProfileSchema = z.strictObject(
   player: abilitiesPatchAnswer_Status200_Body_Profile_PlayerSchema,
   policies: abilitiesPatchAnswer_Status200_Body_Profile_PoliciesSchema,
 });
-/** Raw response path: answer.body.profile. */
-export type AbilitiesPatchAnswer_Status200_Body_Profile = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_ProfileSchema
->;
 /** Strict raw response path: answer.body.revision. */
 export const abilitiesPatchAnswer_Status200_Body_RevisionSchema = z.string();
-/** Raw response path: answer.body.revision. */
-export type AbilitiesPatchAnswer_Status200_Body_Revision = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_RevisionSchema
->;
 /** Strict raw response path: answer.body.warnings[]. */
 export const abilitiesPatchAnswer_Status200_Body_Warnings_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.warnings[]. */
-export type AbilitiesPatchAnswer_Status200_Body_Warnings_ArrayElement = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_Warnings_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.warnings. */
 export const abilitiesPatchAnswer_Status200_Body_WarningsSchema = z.array(
   abilitiesPatchAnswer_Status200_Body_Warnings_ArrayElementSchema,
 );
-/** Raw response path: answer.body.warnings. */
-export type AbilitiesPatchAnswer_Status200_Body_Warnings = z.infer<
-  typeof abilitiesPatchAnswer_Status200_Body_WarningsSchema
->;
 /** Strict raw response path: answer.body. */
 export const abilitiesPatchAnswer_Status200_BodySchema = z.strictObject({
   backup: abilitiesPatchAnswer_Status200_Body_BackupSchema,
@@ -4588,72 +2291,36 @@ export const abilitiesPatchAnswer_Status200_BodySchema = z.strictObject({
   revision: abilitiesPatchAnswer_Status200_Body_RevisionSchema,
   warnings: abilitiesPatchAnswer_Status200_Body_WarningsSchema,
 });
-/** Raw response path: answer.body. */
-export type AbilitiesPatchAnswer_Status200_Body = z.infer<
-  typeof abilitiesPatchAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const abilitiesPatchAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type AbilitiesPatchAnswer_Status200_Status = z.infer<
-  typeof abilitiesPatchAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members backup, ok, profile, revision, warnings. */
 export const abilitiesPatchAnswer_Status200Schema = z.strictObject({
   body: abilitiesPatchAnswer_Status200_BodySchema,
   status: abilitiesPatchAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members backup, ok, profile, revision, warnings. */
-export type AbilitiesPatchAnswer_Status200 = z.infer<typeof abilitiesPatchAnswer_Status200Schema>;
 /** Strict raw response path: answer.body.error. */
 export const abilitiesPatchAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type AbilitiesPatchAnswer_Status400_Body_Error = z.infer<
-  typeof abilitiesPatchAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const abilitiesPatchAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type AbilitiesPatchAnswer_Status400_Body_Ok = z.infer<
-  typeof abilitiesPatchAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body.problems[]. */
 export const abilitiesPatchAnswer_Status400_Body_Problems_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.problems[]. */
-export type AbilitiesPatchAnswer_Status400_Body_Problems_ArrayElement = z.infer<
-  typeof abilitiesPatchAnswer_Status400_Body_Problems_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.problems. */
 export const abilitiesPatchAnswer_Status400_Body_ProblemsSchema = z.array(
   abilitiesPatchAnswer_Status400_Body_Problems_ArrayElementSchema,
 );
-/** Raw response path: answer.body.problems. */
-export type AbilitiesPatchAnswer_Status400_Body_Problems = z.infer<
-  typeof abilitiesPatchAnswer_Status400_Body_ProblemsSchema
->;
 /** Strict raw response path: answer.body. */
 export const abilitiesPatchAnswer_Status400_BodySchema = z.strictObject({
   error: abilitiesPatchAnswer_Status400_Body_ErrorSchema,
   ok: abilitiesPatchAnswer_Status400_Body_OkSchema,
   problems: abilitiesPatchAnswer_Status400_Body_ProblemsSchema,
 });
-/** Raw response path: answer.body. */
-export type AbilitiesPatchAnswer_Status400_Body = z.infer<
-  typeof abilitiesPatchAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const abilitiesPatchAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type AbilitiesPatchAnswer_Status400_Status = z.infer<
-  typeof abilitiesPatchAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok, problems. */
 export const abilitiesPatchAnswer_Status400Schema = z.strictObject({
   body: abilitiesPatchAnswer_Status400_BodySchema,
   status: abilitiesPatchAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok, problems. */
-export type AbilitiesPatchAnswer_Status400 = z.infer<typeof abilitiesPatchAnswer_Status400Schema>;
 /** Strict raw response path: answer. */
 export const abilitiesPatchAnswerSchema = z.union([
   abilitiesPatchAnswer_Status200Schema,
@@ -4663,74 +2330,34 @@ export const abilitiesPatchAnswerSchema = z.union([
 export type AbilitiesPatchAnswer = z.infer<typeof abilitiesPatchAnswerSchema>;
 /** Strict raw response path: answer.body.name. */
 export const abilitiesProfileAnswer_Status200_Body_NameSchema = z.string();
-/** Raw response path: answer.body.name. */
-export type AbilitiesProfileAnswer_Status200_Body_Name = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_NameSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const abilitiesProfileAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type AbilitiesProfileAnswer_Status200_Body_Ok = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body.problems[]. */
 export const abilitiesProfileAnswer_Status200_Body_Problems_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.problems[]. */
-export type AbilitiesProfileAnswer_Status200_Body_Problems_ArrayElement = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Problems_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.problems. */
 export const abilitiesProfileAnswer_Status200_Body_ProblemsSchema = z.array(
   abilitiesProfileAnswer_Status200_Body_Problems_ArrayElementSchema,
 );
-/** Raw response path: answer.body.problems. */
-export type AbilitiesProfileAnswer_Status200_Body_Problems = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_ProblemsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.kind. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm.kind. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Kind = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.loadout. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.loadout. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Loadout = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies.gather. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.policies.gather. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Policies_Gather = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_PoliciesSchema =
   z.strictObject({
     gather: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm.policies. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Policies = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.shopping. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.shopping. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Shopping = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.tier. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.farm.tier. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_Tier = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmSchema = z.strictObject({
   kind: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_KindSchema,
@@ -4739,64 +2366,30 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmSchema
   shopping: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_ShoppingSchema,
   tier: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.farm. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Farm = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.kind. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm_deep.kind. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Kind = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Loadout = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_Gather =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_PoliciesSchema =
   z.strictObject({
     gather: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Policies = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_RestartViaHome =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Shopping = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.tier. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.tier. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_Tier = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeepSchema =
   z.strictObject({
@@ -4808,56 +2401,27 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeepSc
     shopping: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_ShoppingSchema,
     tier: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep_TierSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm_deep. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeep = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmDeepSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.count. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.count. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Count = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_CountSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.kind. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_KindSchema = z.enum([
   'shard',
 ]);
-/** Raw response path: answer.body.profile.blueprints.shards.kind. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Kind = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.loadout. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.loadout. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Loadout = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies.gather. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.policies.gather. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Policies_Gather =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_PoliciesSchema =
   z.strictObject({
     gather: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.shards.policies. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Policies = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.tier. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.tier. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_Tier = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_ShardsSchema = z.strictObject(
   {
@@ -4868,56 +2432,27 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_ShardsSche
     tier: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards_TierSchema,
   },
 );
-/** Raw response path: answer.body.profile.blueprints.shards. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Shards = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_ShardsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_GemEntryMax = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.kind. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_KindSchema = z.enum([
   'tournament',
 ]);
-/** Raw response path: answer.body.profile.blueprints.tourney.kind. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Kind = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.loadout. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.loadout. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Loadout = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_Gather =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_PoliciesSchema =
   z.strictObject({
     gather: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.tourney.policies. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Policies = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.tier. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.tier. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_Tier = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_TourneySchema =
   z.strictObject({
@@ -4928,10 +2463,6 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_TourneySch
     policies: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_PoliciesSchema,
     tier: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney_TierSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.tourney. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints_Tourney = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_TourneySchema
->;
 /** Strict raw response path: answer.body.profile.blueprints. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_BlueprintsSchema = z.strictObject({
   farm: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_FarmSchema.optional(),
@@ -4939,42 +2470,18 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_BlueprintsSchema = z.
   shards: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_ShardsSchema.optional(),
   tourney: abilitiesProfileAnswer_Status200_Body_Profile_Blueprints_TourneySchema.optional(),
 });
-/** Raw response path: answer.body.profile.blueprints. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Blueprints = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_BlueprintsSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].after. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].after. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_After =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].block. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].block. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_Block =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].count. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].count. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_Count =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[]. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema =
   z.strictObject({
@@ -4986,34 +2493,16 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_Arr
     count:
       abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.farm_day[]. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElement = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDaySchema = z.array(
   abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.farm_day. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDay = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.spare_day[].block. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.spare_day[].block. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_Block =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.spare_day[].blueprint. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.spare_day[].blueprint. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.spare_day[]. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElementSchema =
   z.strictObject({
@@ -5022,50 +2511,22 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_Ar
     blueprint:
       abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement_BlueprintSchema,
   });
-/** Raw response path: answer.body.profile.plan.days.spare_day[]. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElement = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.spare_day. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDaySchema = z.array(
   abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.spare_day. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDay = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].after. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].after. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_After =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].block. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].block. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Block =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].count. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].count. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Count =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[]. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema =
   z.strictObject({
@@ -5078,89 +2539,42 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_
     count:
       abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.tourney_day[]. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElement =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDaySchema = z.array(
   abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.tourney_day. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDay = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_DaysSchema = z.strictObject({
   farm_day: abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_FarmDaySchema,
   spare_day: abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_SpareDaySchema.optional(),
   tourney_day: abilitiesProfileAnswer_Status200_Body_Profile_Plan_Days_TourneyDaySchema,
 });
-/** Raw response path: answer.body.profile.plan.days. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Days = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_DaysSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.default. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Week_DefaultSchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.default. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Week_Default = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Week_DefaultSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.saturday. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_Week_SaturdaySchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.saturday. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Week_Saturday = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_Week_SaturdaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.week. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Plan_WeekSchema = z.strictObject({
   default: abilitiesProfileAnswer_Status200_Body_Profile_Plan_Week_DefaultSchema,
   saturday: abilitiesProfileAnswer_Status200_Body_Profile_Plan_Week_SaturdaySchema,
 });
-/** Raw response path: answer.body.profile.plan.week. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan_Week = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Plan_WeekSchema
->;
 /** Strict raw response path: answer.body.profile.plan. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_PlanSchema = z.strictObject({
   days: abilitiesProfileAnswer_Status200_Body_Profile_Plan_DaysSchema,
   week: abilitiesProfileAnswer_Status200_Body_Profile_Plan_WeekSchema,
 });
-/** Raw response path: answer.body.profile.plan. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Plan = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_PlanSchema
->;
 /** Strict raw response path: answer.body.profile.player.seeded_from. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Player_SeededFromSchema = z.string();
-/** Raw response path: answer.body.profile.player.seeded_from. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Player_SeededFrom = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Player_SeededFromSchema
->;
 /** Strict raw response path: answer.body.profile.player. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_PlayerSchema = z.strictObject({
   seeded_from: abilitiesProfileAnswer_Status200_Body_Profile_Player_SeededFromSchema.optional(),
 });
-/** Raw response path: answer.body.profile.player. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Player = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_PlayerSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[].enabled. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.chores[].enabled. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_Enabled =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.chores[].name. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_NameSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.chores[].name. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_Name =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_NameSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.chores[]. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElementSchema =
   z.strictObject({
@@ -5168,72 +2582,33 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_Array
       abilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema,
     name: abilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement_NameSchema,
   });
-/** Raw response path: answer.body.profile.policies.chores[]. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElement = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ChoresSchema = z.array(
   abilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.policies.chores. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Chores = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ChoresSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_AdGems = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_FlyingGem = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema =
   z.array(
     abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySec =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.guild. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.guild. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Guild = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_QuestRewards =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Quests8h = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOnSchema =
   z.strictObject({
@@ -5246,66 +2621,29 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn
       abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema,
     quests_8h: abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.all_on. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOn = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOnSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_AdGems = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_FlyingGem =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema =
   z.array(
     abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.guild. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.guild. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Guild = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_QuestRewards =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Quests8h =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnlySchema =
   z.strictObject({
@@ -5320,66 +2658,29 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsO
     quests_8h:
       abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.gems_only. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnly = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnlySchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_AdGems = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_FlyingGem =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema =
   z.array(
     abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySec =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.guild. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.guild. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Guild = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_QuestRewards =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Quests8h =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOffSchema =
   z.strictObject({
@@ -5394,36 +2695,18 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_Hands
     quests_8h:
       abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.hands_off. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOff = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOffSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_GatherSchema = z.strictObject({
   all_on: abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_AllOnSchema,
   gems_only: abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_GemsOnlySchema,
   hands_off: abilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather_HandsOffSchema,
 });
-/** Raw response path: answer.body.profile.policies.gather. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_Gather = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_DailyMissions =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_FreeStoreGems =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviorsSchema =
   z.strictObject({
@@ -5432,60 +2715,26 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_GlobalBehavi
     free_store_gems:
       abilitiesProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema,
   });
-/** Raw response path: answer.body.profile.policies.global_behaviors. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviors = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviorsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Clicks =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Enabled =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Mode =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElement =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema =
   z.array(
     abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Tab =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema =
   z.strictObject({
@@ -5498,29 +2747,14 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingList
       abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema,
     tab: abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema =
   z.array(
     abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_Enabled =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema =
   z.strictObject({
@@ -5529,67 +2763,27 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingList
     enabled:
       abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweep =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_CashReserve =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Enabled =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_IntervalSec =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Enabled =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWave =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Id =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimit =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema =
   z.strictObject({
@@ -5601,29 +2795,14 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingList
     tap_limit:
       abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema =
   z.array(
     abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Queue =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_Version =
-  z.infer<
-    typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainListSchema =
   z.strictObject({
@@ -5638,10 +2817,6 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingList
     version:
       abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainList = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainListSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingListsSchema =
   z.strictObject({
@@ -5649,10 +2824,6 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingList
       abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema,
     main_list: abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists_MainListSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingLists = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingListsSchema
->;
 /** Strict raw response path: answer.body.profile.policies. */
 export const abilitiesProfileAnswer_Status200_Body_Profile_PoliciesSchema = z.strictObject({
   chores: abilitiesProfileAnswer_Status200_Body_Profile_Policies_ChoresSchema,
@@ -5660,10 +2831,6 @@ export const abilitiesProfileAnswer_Status200_Body_Profile_PoliciesSchema = z.st
   global_behaviors: abilitiesProfileAnswer_Status200_Body_Profile_Policies_GlobalBehaviorsSchema,
   shopping_lists: abilitiesProfileAnswer_Status200_Body_Profile_Policies_ShoppingListsSchema,
 });
-/** Raw response path: answer.body.profile.policies. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile_Policies = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Profile_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile. */
 export const abilitiesProfileAnswer_Status200_Body_ProfileSchema = z.strictObject({
   blueprints: abilitiesProfileAnswer_Status200_Body_Profile_BlueprintsSchema.optional(),
@@ -5671,36 +2838,16 @@ export const abilitiesProfileAnswer_Status200_Body_ProfileSchema = z.strictObjec
   player: abilitiesProfileAnswer_Status200_Body_Profile_PlayerSchema,
   policies: abilitiesProfileAnswer_Status200_Body_Profile_PoliciesSchema.optional(),
 });
-/** Raw response path: answer.body.profile. */
-export type AbilitiesProfileAnswer_Status200_Body_Profile = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_ProfileSchema
->;
 /** Strict raw response path: answer.body.revision. */
 export const abilitiesProfileAnswer_Status200_Body_RevisionSchema = z.string();
-/** Raw response path: answer.body.revision. */
-export type AbilitiesProfileAnswer_Status200_Body_Revision = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_RevisionSchema
->;
 /** Strict raw response path: answer.body.validator_error. */
 export const abilitiesProfileAnswer_Status200_Body_ValidatorErrorSchema = z.string().nullable();
-/** Raw response path: answer.body.validator_error. */
-export type AbilitiesProfileAnswer_Status200_Body_ValidatorError = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_ValidatorErrorSchema
->;
 /** Strict raw response path: answer.body.warnings[]. */
 export const abilitiesProfileAnswer_Status200_Body_Warnings_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.warnings[]. */
-export type AbilitiesProfileAnswer_Status200_Body_Warnings_ArrayElement = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_Warnings_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.warnings. */
 export const abilitiesProfileAnswer_Status200_Body_WarningsSchema = z.array(
   abilitiesProfileAnswer_Status200_Body_Warnings_ArrayElementSchema,
 );
-/** Raw response path: answer.body.warnings. */
-export type AbilitiesProfileAnswer_Status200_Body_Warnings = z.infer<
-  typeof abilitiesProfileAnswer_Status200_Body_WarningsSchema
->;
 /** Strict raw response path: answer.body. */
 export const abilitiesProfileAnswer_Status200_BodySchema = z.strictObject({
   name: abilitiesProfileAnswer_Status200_Body_NameSchema,
@@ -5711,97 +2858,45 @@ export const abilitiesProfileAnswer_Status200_BodySchema = z.strictObject({
   validator_error: abilitiesProfileAnswer_Status200_Body_ValidatorErrorSchema,
   warnings: abilitiesProfileAnswer_Status200_Body_WarningsSchema,
 });
-/** Raw response path: answer.body. */
-export type AbilitiesProfileAnswer_Status200_Body = z.infer<
-  typeof abilitiesProfileAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const abilitiesProfileAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type AbilitiesProfileAnswer_Status200_Status = z.infer<
-  typeof abilitiesProfileAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members name, ok, problems, profile, revision, validator_error, warnings. */
 export const abilitiesProfileAnswer_Status200Schema = z.strictObject({
   body: abilitiesProfileAnswer_Status200_BodySchema,
   status: abilitiesProfileAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members name, ok, problems, profile, revision, validator_error, warnings. */
-export type AbilitiesProfileAnswer_Status200 = z.infer<
-  typeof abilitiesProfileAnswer_Status200Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const abilitiesProfileAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type AbilitiesProfileAnswer_Status400_Body_Error = z.infer<
-  typeof abilitiesProfileAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const abilitiesProfileAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type AbilitiesProfileAnswer_Status400_Body_Ok = z.infer<
-  typeof abilitiesProfileAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const abilitiesProfileAnswer_Status400_BodySchema = z.strictObject({
   error: abilitiesProfileAnswer_Status400_Body_ErrorSchema,
   ok: abilitiesProfileAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type AbilitiesProfileAnswer_Status400_Body = z.infer<
-  typeof abilitiesProfileAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const abilitiesProfileAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type AbilitiesProfileAnswer_Status400_Status = z.infer<
-  typeof abilitiesProfileAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const abilitiesProfileAnswer_Status400Schema = z.strictObject({
   body: abilitiesProfileAnswer_Status400_BodySchema,
   status: abilitiesProfileAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type AbilitiesProfileAnswer_Status400 = z.infer<
-  typeof abilitiesProfileAnswer_Status400Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const abilitiesProfileAnswer_Status404_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type AbilitiesProfileAnswer_Status404_Body_Error = z.infer<
-  typeof abilitiesProfileAnswer_Status404_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const abilitiesProfileAnswer_Status404_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type AbilitiesProfileAnswer_Status404_Body_Ok = z.infer<
-  typeof abilitiesProfileAnswer_Status404_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const abilitiesProfileAnswer_Status404_BodySchema = z.strictObject({
   error: abilitiesProfileAnswer_Status404_Body_ErrorSchema,
   ok: abilitiesProfileAnswer_Status404_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type AbilitiesProfileAnswer_Status404_Body = z.infer<
-  typeof abilitiesProfileAnswer_Status404_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const abilitiesProfileAnswer_Status404_StatusSchema = z.literal(404);
-/** Raw response path: answer.status. */
-export type AbilitiesProfileAnswer_Status404_Status = z.infer<
-  typeof abilitiesProfileAnswer_Status404_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 404, body members error, ok. */
 export const abilitiesProfileAnswer_Status404Schema = z.strictObject({
   body: abilitiesProfileAnswer_Status404_BodySchema,
   status: abilitiesProfileAnswer_Status404_StatusSchema,
 });
-/** Raw response path: answer, variant: status 404, body members error, ok. */
-export type AbilitiesProfileAnswer_Status404 = z.infer<
-  typeof abilitiesProfileAnswer_Status404Schema
->;
 /** Strict raw response path: answer. */
 export const abilitiesProfileAnswerSchema = z.union([
   abilitiesProfileAnswer_Status200Schema,
@@ -5812,188 +2907,84 @@ export const abilitiesProfileAnswerSchema = z.union([
 export type AbilitiesProfileAnswer = z.infer<typeof abilitiesProfileAnswerSchema>;
 /** Strict raw response path: answer.body.accounts.alpha.active_profile. */
 export const abilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_ActiveProfileSchema = z.string();
-/** Raw response path: answer.body.accounts.alpha.active_profile. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_ActiveProfile = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.label. */
 export const abilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_LabelSchema = z.string();
-/** Raw response path: answer.body.accounts.alpha.label. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_Label = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_LabelSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.loadouts.plain. */
 export const abilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_PlainSchema =
   z.strictObject({});
-/** Raw response path: answer.body.accounts.alpha.loadouts.plain. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Plain = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.loadouts. */
 export const abilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_LoadoutsSchema = z.strictObject({
   plain: abilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_PlainSchema,
 });
-/** Raw response path: answer.body.accounts.alpha.loadouts. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha. */
 export const abilitiesConfigAnswer_Status200V1_Body_Accounts_AlphaSchema = z.strictObject({
   active_profile: abilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_ActiveProfileSchema,
   label: abilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_LabelSchema,
   loadouts: abilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha_LoadoutsSchema,
 });
-/** Raw response path: answer.body.accounts.alpha. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Accounts_Alpha = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Accounts_AlphaSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.active_profile. */
 export const abilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_ActiveProfileSchema = z.string();
-/** Raw response path: answer.body.accounts.beta.active_profile. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_ActiveProfile = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.label. */
 export const abilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_LabelSchema = z.string();
-/** Raw response path: answer.body.accounts.beta.label. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_Label = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_LabelSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.loadouts.plain. */
 export const abilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_PlainSchema =
   z.strictObject({});
-/** Raw response path: answer.body.accounts.beta.loadouts.plain. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Plain = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.loadouts. */
 export const abilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_LoadoutsSchema = z.strictObject({
   plain: abilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_PlainSchema,
 });
-/** Raw response path: answer.body.accounts.beta.loadouts. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.accounts.beta. */
 export const abilitiesConfigAnswer_Status200V1_Body_Accounts_BetaSchema = z.strictObject({
   active_profile: abilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_ActiveProfileSchema,
   label: abilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_LabelSchema,
   loadouts: abilitiesConfigAnswer_Status200V1_Body_Accounts_Beta_LoadoutsSchema,
 });
-/** Raw response path: answer.body.accounts.beta. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Accounts_Beta = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Accounts_BetaSchema
->;
 /** Strict raw response path: answer.body.accounts. */
 export const abilitiesConfigAnswer_Status200V1_Body_AccountsSchema = z.strictObject({
   alpha: abilitiesConfigAnswer_Status200V1_Body_Accounts_AlphaSchema,
   beta: abilitiesConfigAnswer_Status200V1_Body_Accounts_BetaSchema,
 });
-/** Raw response path: answer.body.accounts. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Accounts = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_AccountsSchema
->;
 /** Strict raw response path: answer.body.active_instance. */
 export const abilitiesConfigAnswer_Status200V1_Body_ActiveInstanceSchema = z.string();
-/** Raw response path: answer.body.active_instance. */
-export type AbilitiesConfigAnswer_Status200V1_Body_ActiveInstance = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_ActiveInstanceSchema
->;
 /** Strict raw response path: answer.body.active_profile. */
 export const abilitiesConfigAnswer_Status200V1_Body_ActiveProfileSchema = z.string();
-/** Raw response path: answer.body.active_profile. */
-export type AbilitiesConfigAnswer_Status200V1_Body_ActiveProfile = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.config_revision. */
 export const abilitiesConfigAnswer_Status200V1_Body_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.config_revision. */
-export type AbilitiesConfigAnswer_Status200V1_Body_ConfigRevision = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.instances.main.account. */
 export const abilitiesConfigAnswer_Status200V1_Body_Instances_Main_AccountSchema = z.string();
-/** Raw response path: answer.body.instances.main.account. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Instances_Main_Account = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Instances_Main_AccountSchema
->;
 /** Strict raw response path: answer.body.instances.main.allow_taps. */
 export const abilitiesConfigAnswer_Status200V1_Body_Instances_Main_AllowTapsSchema = z.boolean();
-/** Raw response path: answer.body.instances.main.allow_taps. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Instances_Main_AllowTaps = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Instances_Main_AllowTapsSchema
->;
 /** Strict raw response path: answer.body.instances.main.serial. */
 export const abilitiesConfigAnswer_Status200V1_Body_Instances_Main_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.main.serial. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Instances_Main_Serial = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Instances_Main_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.main. */
 export const abilitiesConfigAnswer_Status200V1_Body_Instances_MainSchema = z.strictObject({
   account: abilitiesConfigAnswer_Status200V1_Body_Instances_Main_AccountSchema,
   allow_taps: abilitiesConfigAnswer_Status200V1_Body_Instances_Main_AllowTapsSchema,
   serial: abilitiesConfigAnswer_Status200V1_Body_Instances_Main_SerialSchema,
 });
-/** Raw response path: answer.body.instances.main. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Instances_Main = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Instances_MainSchema
->;
 /** Strict raw response path: answer.body.instances.other.serial. */
 export const abilitiesConfigAnswer_Status200V1_Body_Instances_Other_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.other.serial. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Instances_Other_Serial = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Instances_Other_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.other. */
 export const abilitiesConfigAnswer_Status200V1_Body_Instances_OtherSchema = z.strictObject({
   serial: abilitiesConfigAnswer_Status200V1_Body_Instances_Other_SerialSchema,
 });
-/** Raw response path: answer.body.instances.other. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Instances_Other = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Instances_OtherSchema
->;
 /** Strict raw response path: answer.body.instances. */
 export const abilitiesConfigAnswer_Status200V1_Body_InstancesSchema = z.strictObject({
   main: abilitiesConfigAnswer_Status200V1_Body_Instances_MainSchema,
   other: abilitiesConfigAnswer_Status200V1_Body_Instances_OtherSchema,
 });
-/** Raw response path: answer.body.instances. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Instances = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_InstancesSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain. */
 export const abilitiesConfigAnswer_Status200V1_Body_Loadouts_PlainSchema = z.strictObject({});
-/** Raw response path: answer.body.loadouts.plain. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Loadouts_Plain = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.loadouts. */
 export const abilitiesConfigAnswer_Status200V1_Body_LoadoutsSchema = z.strictObject({
   plain: abilitiesConfigAnswer_Status200V1_Body_Loadouts_PlainSchema,
 });
-/** Raw response path: answer.body.loadouts. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Loadouts = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.preset. */
 export const abilitiesConfigAnswer_Status200V1_Body_PresetSchema = z.string();
-/** Raw response path: answer.body.preset. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Preset = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_PresetSchema
->;
 /** Strict raw response path: answer.body.presets. */
 export const abilitiesConfigAnswer_Status200V1_Body_PresetsSchema = z.strictObject({});
-/** Raw response path: answer.body.presets. */
-export type AbilitiesConfigAnswer_Status200V1_Body_Presets = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_PresetsSchema
->;
 /** Strict raw response path: answer.body.tourney_card_tweaks. */
 export const abilitiesConfigAnswer_Status200V1_Body_TourneyCardTweaksSchema = z.strictObject({});
-/** Raw response path: answer.body.tourney_card_tweaks. */
-export type AbilitiesConfigAnswer_Status200V1_Body_TourneyCardTweaks = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_Body_TourneyCardTweaksSchema
->;
 /** Strict raw response path: answer.body. */
 export const abilitiesConfigAnswer_Status200V1_BodySchema = z.strictObject({
   accounts: abilitiesConfigAnswer_Status200V1_Body_AccountsSchema,
@@ -6006,113 +2997,49 @@ export const abilitiesConfigAnswer_Status200V1_BodySchema = z.strictObject({
   presets: abilitiesConfigAnswer_Status200V1_Body_PresetsSchema,
   tourney_card_tweaks: abilitiesConfigAnswer_Status200V1_Body_TourneyCardTweaksSchema,
 });
-/** Raw response path: answer.body. */
-export type AbilitiesConfigAnswer_Status200V1_Body = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const abilitiesConfigAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type AbilitiesConfigAnswer_Status200V1_Status = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members accounts, active_instance, active_profile, config_revision, instances, loadouts, preset, presets, tourney_card_tweaks. */
 export const abilitiesConfigAnswer_Status200V1Schema = z.strictObject({
   body: abilitiesConfigAnswer_Status200V1_BodySchema,
   status: abilitiesConfigAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members accounts, active_instance, active_profile, config_revision, instances, loadouts, preset, presets, tourney_card_tweaks. */
-export type AbilitiesConfigAnswer_Status200V1 = z.infer<
-  typeof abilitiesConfigAnswer_Status200V1Schema
->;
 /** Strict raw response path: answer.body.active_instance. */
 export const abilitiesConfigAnswer_Status200V2_Body_ActiveInstanceSchema = z.string();
-/** Raw response path: answer.body.active_instance. */
-export type AbilitiesConfigAnswer_Status200V2_Body_ActiveInstance = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_ActiveInstanceSchema
->;
 /** Strict raw response path: answer.body.active_profile. */
 export const abilitiesConfigAnswer_Status200V2_Body_ActiveProfileSchema = z.string();
-/** Raw response path: answer.body.active_profile. */
-export type AbilitiesConfigAnswer_Status200V2_Body_ActiveProfile = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.config_revision. */
 export const abilitiesConfigAnswer_Status200V2_Body_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.config_revision. */
-export type AbilitiesConfigAnswer_Status200V2_Body_ConfigRevision = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.instances.main.allow_taps. */
 export const abilitiesConfigAnswer_Status200V2_Body_Instances_Main_AllowTapsSchema = z.boolean();
-/** Raw response path: answer.body.instances.main.allow_taps. */
-export type AbilitiesConfigAnswer_Status200V2_Body_Instances_Main_AllowTaps = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_Instances_Main_AllowTapsSchema
->;
 /** Strict raw response path: answer.body.instances.main.serial. */
 export const abilitiesConfigAnswer_Status200V2_Body_Instances_Main_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.main.serial. */
-export type AbilitiesConfigAnswer_Status200V2_Body_Instances_Main_Serial = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_Instances_Main_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.main. */
 export const abilitiesConfigAnswer_Status200V2_Body_Instances_MainSchema = z.strictObject({
   allow_taps: abilitiesConfigAnswer_Status200V2_Body_Instances_Main_AllowTapsSchema,
   serial: abilitiesConfigAnswer_Status200V2_Body_Instances_Main_SerialSchema,
 });
-/** Raw response path: answer.body.instances.main. */
-export type AbilitiesConfigAnswer_Status200V2_Body_Instances_Main = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_Instances_MainSchema
->;
 /** Strict raw response path: answer.body.instances.other.serial. */
 export const abilitiesConfigAnswer_Status200V2_Body_Instances_Other_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.other.serial. */
-export type AbilitiesConfigAnswer_Status200V2_Body_Instances_Other_Serial = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_Instances_Other_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.other. */
 export const abilitiesConfigAnswer_Status200V2_Body_Instances_OtherSchema = z.strictObject({
   serial: abilitiesConfigAnswer_Status200V2_Body_Instances_Other_SerialSchema,
 });
-/** Raw response path: answer.body.instances.other. */
-export type AbilitiesConfigAnswer_Status200V2_Body_Instances_Other = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_Instances_OtherSchema
->;
 /** Strict raw response path: answer.body.instances. */
 export const abilitiesConfigAnswer_Status200V2_Body_InstancesSchema = z.strictObject({
   main: abilitiesConfigAnswer_Status200V2_Body_Instances_MainSchema,
   other: abilitiesConfigAnswer_Status200V2_Body_Instances_OtherSchema,
 });
-/** Raw response path: answer.body.instances. */
-export type AbilitiesConfigAnswer_Status200V2_Body_Instances = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_InstancesSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain. */
 export const abilitiesConfigAnswer_Status200V2_Body_Loadouts_PlainSchema = z.strictObject({});
-/** Raw response path: answer.body.loadouts.plain. */
-export type AbilitiesConfigAnswer_Status200V2_Body_Loadouts_Plain = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.loadouts. */
 export const abilitiesConfigAnswer_Status200V2_Body_LoadoutsSchema = z.strictObject({
   plain: abilitiesConfigAnswer_Status200V2_Body_Loadouts_PlainSchema.optional(),
 });
-/** Raw response path: answer.body.loadouts. */
-export type AbilitiesConfigAnswer_Status200V2_Body_Loadouts = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.preset. */
 export const abilitiesConfigAnswer_Status200V2_Body_PresetSchema = z.string();
-/** Raw response path: answer.body.preset. */
-export type AbilitiesConfigAnswer_Status200V2_Body_Preset = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_PresetSchema
->;
 /** Strict raw response path: answer.body.presets. */
 export const abilitiesConfigAnswer_Status200V2_Body_PresetsSchema = z.strictObject({});
-/** Raw response path: answer.body.presets. */
-export type AbilitiesConfigAnswer_Status200V2_Body_Presets = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_Body_PresetsSchema
->;
 /** Strict raw response path: answer.body. */
 export const abilitiesConfigAnswer_Status200V2_BodySchema = z.strictObject({
   active_instance: abilitiesConfigAnswer_Status200V2_Body_ActiveInstanceSchema,
@@ -6123,52 +3050,26 @@ export const abilitiesConfigAnswer_Status200V2_BodySchema = z.strictObject({
   preset: abilitiesConfigAnswer_Status200V2_Body_PresetSchema,
   presets: abilitiesConfigAnswer_Status200V2_Body_PresetsSchema,
 });
-/** Raw response path: answer.body. */
-export type AbilitiesConfigAnswer_Status200V2_Body = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const abilitiesConfigAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type AbilitiesConfigAnswer_Status200V2_Status = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members active_instance, active_profile, config_revision, instances, loadouts, preset, presets. */
 export const abilitiesConfigAnswer_Status200V2Schema = z.strictObject({
   body: abilitiesConfigAnswer_Status200V2_BodySchema,
   status: abilitiesConfigAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members active_instance, active_profile, config_revision, instances, loadouts, preset, presets. */
-export type AbilitiesConfigAnswer_Status200V2 = z.infer<
-  typeof abilitiesConfigAnswer_Status200V2Schema
->;
 /** Strict raw response path: answer.body.text. */
 export const abilitiesConfigAnswer_Status500_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type AbilitiesConfigAnswer_Status500_Body_Text = z.infer<
-  typeof abilitiesConfigAnswer_Status500_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const abilitiesConfigAnswer_Status500_BodySchema = z.strictObject({
   text: abilitiesConfigAnswer_Status500_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type AbilitiesConfigAnswer_Status500_Body = z.infer<
-  typeof abilitiesConfigAnswer_Status500_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const abilitiesConfigAnswer_Status500_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type AbilitiesConfigAnswer_Status500_Status = z.infer<
-  typeof abilitiesConfigAnswer_Status500_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members text. */
 export const abilitiesConfigAnswer_Status500Schema = z.strictObject({
   body: abilitiesConfigAnswer_Status500_BodySchema,
   status: abilitiesConfigAnswer_Status500_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members text. */
-export type AbilitiesConfigAnswer_Status500 = z.infer<typeof abilitiesConfigAnswer_Status500Schema>;
 /** Strict raw response path: answer. */
 export const abilitiesConfigAnswerSchema = z.union([
   abilitiesConfigAnswer_Status200V1Schema,

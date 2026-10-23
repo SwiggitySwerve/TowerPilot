@@ -93,11 +93,16 @@ describe('raw-path generator inference', () => {
   });
   it('names and documents full raw response paths', () => {
     expect(source).toContain('response.battle.commands');
-    expect(source).toContain('BattleResponse_Battle_Commands');
+    expect(source).toContain('battleResponse_Battle_CommandsSchema');
     expect(source).toContain('response.battle.effective.shopping_plan');
-    expect(source).toContain('BattleResponse_Battle_Effective_ShoppingPlan');
+    expect(source).toContain('battleResponse_Battle_Effective_ShoppingPlanSchema');
     expect(source).toContain('response.battle.runtime.routines.shopping.last_outcome');
-    expect(source).toContain('BattleResponse_Battle_Runtime_Routines_Shopping_LastOutcome');
+    expect(source).toContain('battleResponse_Battle_Runtime_Routines_Shopping_LastOutcomeSchema');
+  });
+  it('exports a named type only for the family root, never per raw path', () => {
+    // Thousands of unused per-path aliases pushed typed lint past Node's default heap.
+    expect(source).toContain('export type BattleResponse = z.infer<typeof battleResponseSchema>;');
+    expect(source).not.toMatch(/export type BattleResponse_/u);
   });
   it('refuses unknown nested fields and unseen discriminator values', () => {
     expect(

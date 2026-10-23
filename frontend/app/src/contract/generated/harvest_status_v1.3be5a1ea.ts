@@ -6,12 +6,8 @@ export const fixtureVersionSchema = z.literal(1);
 export type FixtureVersion = z.infer<typeof fixtureVersionSchema>;
 /** Strict raw response path: harvest.attempts. */
 export const harvestStatus_V1_AttemptsSchema = z.number();
-/** Raw response path: harvest.attempts. */
-export type HarvestStatus_V1_Attempts = z.infer<typeof harvestStatus_V1_AttemptsSchema>;
 /** Strict raw response path: harvest.circuit_open. */
 export const harvestStatus_V1_CircuitOpenSchema = z.boolean();
-/** Raw response path: harvest.circuit_open. */
-export type HarvestStatus_V1_CircuitOpen = z.infer<typeof harvestStatus_V1_CircuitOpenSchema>;
 /** Strict raw response path: harvest.code. */
 export const harvestStatus_V1_CodeSchema = z.enum([
   'backing_off',
@@ -40,82 +36,32 @@ export const harvestStatus_V1_CodeSchema = z.enum([
   'worker_not_running',
   'worker_unverified',
 ]);
-/** Raw response path: harvest.code. */
-export type HarvestStatus_V1_Code = z.infer<typeof harvestStatus_V1_CodeSchema>;
 /** Strict raw response path: harvest.collection_guard.blocks_launch. */
 export const harvestStatus_V1_CollectionGuard_BlocksLaunchSchema = z.boolean();
-/** Raw response path: harvest.collection_guard.blocks_launch. */
-export type HarvestStatus_V1_CollectionGuard_BlocksLaunch = z.infer<
-  typeof harvestStatus_V1_CollectionGuard_BlocksLaunchSchema
->;
 /** Strict raw response path: harvest.collection_guard.code. */
 export const harvestStatus_V1_CollectionGuard_CodeSchema = z
   .enum(['setup_battle_unresolved'])
   .nullable();
-/** Raw response path: harvest.collection_guard.code. */
-export type HarvestStatus_V1_CollectionGuard_Code = z.infer<
-  typeof harvestStatus_V1_CollectionGuard_CodeSchema
->;
 /** Strict raw response path: harvest.collection_guard.evidence. */
 export const harvestStatus_V1_CollectionGuard_EvidenceSchema = z.string();
-/** Raw response path: harvest.collection_guard.evidence. */
-export type HarvestStatus_V1_CollectionGuard_Evidence = z.infer<
-  typeof harvestStatus_V1_CollectionGuard_EvidenceSchema
->;
 /** Strict raw response path: harvest.collection_guard.evidence_revision. */
 export const harvestStatus_V1_CollectionGuard_EvidenceRevisionSchema = z.string().nullable();
-/** Raw response path: harvest.collection_guard.evidence_revision. */
-export type HarvestStatus_V1_CollectionGuard_EvidenceRevision = z.infer<
-  typeof harvestStatus_V1_CollectionGuard_EvidenceRevisionSchema
->;
 /** Strict raw response path: harvest.collection_guard.handoff_id. */
 export const harvestStatus_V1_CollectionGuard_HandoffIdSchema = z.null();
-/** Raw response path: harvest.collection_guard.handoff_id. */
-export type HarvestStatus_V1_CollectionGuard_HandoffId = z.infer<
-  typeof harvestStatus_V1_CollectionGuard_HandoffIdSchema
->;
 /** Strict raw response path: harvest.collection_guard.instance. */
 export const harvestStatus_V1_CollectionGuard_InstanceSchema = z.string();
-/** Raw response path: harvest.collection_guard.instance. */
-export type HarvestStatus_V1_CollectionGuard_Instance = z.infer<
-  typeof harvestStatus_V1_CollectionGuard_InstanceSchema
->;
 /** Strict raw response path: harvest.collection_guard.message. */
 export const harvestStatus_V1_CollectionGuard_MessageSchema = z.string().nullable();
-/** Raw response path: harvest.collection_guard.message. */
-export type HarvestStatus_V1_CollectionGuard_Message = z.infer<
-  typeof harvestStatus_V1_CollectionGuard_MessageSchema
->;
 /** Strict raw response path: harvest.collection_guard.operation_id. */
 export const harvestStatus_V1_CollectionGuard_OperationIdSchema = z.string().nullable();
-/** Raw response path: harvest.collection_guard.operation_id. */
-export type HarvestStatus_V1_CollectionGuard_OperationId = z.infer<
-  typeof harvestStatus_V1_CollectionGuard_OperationIdSchema
->;
 /** Strict raw response path: harvest.collection_guard.recorded_status. */
 export const harvestStatus_V1_CollectionGuard_RecordedStatusSchema = z.string().nullable();
-/** Raw response path: harvest.collection_guard.recorded_status. */
-export type HarvestStatus_V1_CollectionGuard_RecordedStatus = z.infer<
-  typeof harvestStatus_V1_CollectionGuard_RecordedStatusSchema
->;
 /** Strict raw response path: harvest.collection_guard.scope. */
 export const harvestStatus_V1_CollectionGuard_ScopeSchema = z.string();
-/** Raw response path: harvest.collection_guard.scope. */
-export type HarvestStatus_V1_CollectionGuard_Scope = z.infer<
-  typeof harvestStatus_V1_CollectionGuard_ScopeSchema
->;
 /** Strict raw response path: harvest.collection_guard.serial. */
 export const harvestStatus_V1_CollectionGuard_SerialSchema = z.string();
-/** Raw response path: harvest.collection_guard.serial. */
-export type HarvestStatus_V1_CollectionGuard_Serial = z.infer<
-  typeof harvestStatus_V1_CollectionGuard_SerialSchema
->;
 /** Strict raw response path: harvest.collection_guard.setup_battle_id. */
 export const harvestStatus_V1_CollectionGuard_SetupBattleIdSchema = z.string().nullable();
-/** Raw response path: harvest.collection_guard.setup_battle_id. */
-export type HarvestStatus_V1_CollectionGuard_SetupBattleId = z.infer<
-  typeof harvestStatus_V1_CollectionGuard_SetupBattleIdSchema
->;
 /** Strict raw response path: harvest.collection_guard. */
 export const harvestStatus_V1_CollectionGuardSchema = z
   .strictObject({
@@ -133,40 +79,16 @@ export const harvestStatus_V1_CollectionGuardSchema = z
     setup_battle_id: harvestStatus_V1_CollectionGuard_SetupBattleIdSchema,
   })
   .nullable();
-/** Raw response path: harvest.collection_guard. */
-export type HarvestStatus_V1_CollectionGuard = z.infer<
-  typeof harvestStatus_V1_CollectionGuardSchema
->;
 /** Strict raw response path: harvest.desired.bound.account. */
 export const harvestStatus_V1_Desired_Bound_AccountSchema = z.null();
-/** Raw response path: harvest.desired.bound.account. */
-export type HarvestStatus_V1_Desired_Bound_Account = z.infer<
-  typeof harvestStatus_V1_Desired_Bound_AccountSchema
->;
 /** Strict raw response path: harvest.desired.bound.instance. */
 export const harvestStatus_V1_Desired_Bound_InstanceSchema = z.string();
-/** Raw response path: harvest.desired.bound.instance. */
-export type HarvestStatus_V1_Desired_Bound_Instance = z.infer<
-  typeof harvestStatus_V1_Desired_Bound_InstanceSchema
->;
 /** Strict raw response path: harvest.desired.bound.policy_revision. */
 export const harvestStatus_V1_Desired_Bound_PolicyRevisionSchema = z.string();
-/** Raw response path: harvest.desired.bound.policy_revision. */
-export type HarvestStatus_V1_Desired_Bound_PolicyRevision = z.infer<
-  typeof harvestStatus_V1_Desired_Bound_PolicyRevisionSchema
->;
 /** Strict raw response path: harvest.desired.bound.profile. */
 export const harvestStatus_V1_Desired_Bound_ProfileSchema = z.string();
-/** Raw response path: harvest.desired.bound.profile. */
-export type HarvestStatus_V1_Desired_Bound_Profile = z.infer<
-  typeof harvestStatus_V1_Desired_Bound_ProfileSchema
->;
 /** Strict raw response path: harvest.desired.bound.serial. */
 export const harvestStatus_V1_Desired_Bound_SerialSchema = z.string();
-/** Raw response path: harvest.desired.bound.serial. */
-export type HarvestStatus_V1_Desired_Bound_Serial = z.infer<
-  typeof harvestStatus_V1_Desired_Bound_SerialSchema
->;
 /** Strict raw response path: harvest.desired.bound. */
 export const harvestStatus_V1_Desired_BoundSchema = z
   .strictObject({
@@ -177,56 +99,26 @@ export const harvestStatus_V1_Desired_BoundSchema = z
     serial: harvestStatus_V1_Desired_Bound_SerialSchema,
   })
   .nullable();
-/** Raw response path: harvest.desired.bound. */
-export type HarvestStatus_V1_Desired_Bound = z.infer<typeof harvestStatus_V1_Desired_BoundSchema>;
 /** Strict raw response path: harvest.desired.changed_at. */
 export const harvestStatus_V1_Desired_ChangedAtSchema = z.number().nullable();
-/** Raw response path: harvest.desired.changed_at. */
-export type HarvestStatus_V1_Desired_ChangedAt = z.infer<
-  typeof harvestStatus_V1_Desired_ChangedAtSchema
->;
 /** Strict raw response path: harvest.desired.changed_by. */
 export const harvestStatus_V1_Desired_ChangedBySchema = z.enum(['person']).nullable();
-/** Raw response path: harvest.desired.changed_by. */
-export type HarvestStatus_V1_Desired_ChangedBy = z.infer<
-  typeof harvestStatus_V1_Desired_ChangedBySchema
->;
 /** Strict raw response path: harvest.desired.choice. */
 export const harvestStatus_V1_Desired_ChoiceSchema = z.enum(['off', 'on', 'unset']);
-/** Raw response path: harvest.desired.choice. */
-export type HarvestStatus_V1_Desired_Choice = z.infer<typeof harvestStatus_V1_Desired_ChoiceSchema>;
 /** Strict raw response path: harvest.desired.enabled. */
 export const harvestStatus_V1_Desired_EnabledSchema = z.boolean().nullable();
-/** Raw response path: harvest.desired.enabled. */
-export type HarvestStatus_V1_Desired_Enabled = z.infer<
-  typeof harvestStatus_V1_Desired_EnabledSchema
->;
 /** Strict raw response path: harvest.desired.label. */
 export const harvestStatus_V1_Desired_LabelSchema = z.string().nullable();
-/** Raw response path: harvest.desired.label. */
-export type HarvestStatus_V1_Desired_Label = z.infer<typeof harvestStatus_V1_Desired_LabelSchema>;
 /** Strict raw response path: harvest.desired.preset. */
 export const harvestStatus_V1_Desired_PresetSchema = z.string().nullable();
-/** Raw response path: harvest.desired.preset. */
-export type HarvestStatus_V1_Desired_Preset = z.infer<typeof harvestStatus_V1_Desired_PresetSchema>;
 /** Strict raw response path: harvest.desired.reason. */
 export const harvestStatus_V1_Desired_ReasonSchema = z
   .enum(['enabled_by_person', 'paused_by_person'])
   .nullable();
-/** Raw response path: harvest.desired.reason. */
-export type HarvestStatus_V1_Desired_Reason = z.infer<typeof harvestStatus_V1_Desired_ReasonSchema>;
 /** Strict raw response path: harvest.desired.request_key. */
 export const harvestStatus_V1_Desired_RequestKeySchema = z.string().nullable();
-/** Raw response path: harvest.desired.request_key. */
-export type HarvestStatus_V1_Desired_RequestKey = z.infer<
-  typeof harvestStatus_V1_Desired_RequestKeySchema
->;
 /** Strict raw response path: harvest.desired.revision. */
 export const harvestStatus_V1_Desired_RevisionSchema = z.number();
-/** Raw response path: harvest.desired.revision. */
-export type HarvestStatus_V1_Desired_Revision = z.infer<
-  typeof harvestStatus_V1_Desired_RevisionSchema
->;
 /** Strict raw response path: harvest.desired. */
 export const harvestStatus_V1_DesiredSchema = z.strictObject({
   bound: harvestStatus_V1_Desired_BoundSchema,
@@ -240,30 +132,14 @@ export const harvestStatus_V1_DesiredSchema = z.strictObject({
   request_key: harvestStatus_V1_Desired_RequestKeySchema,
   revision: harvestStatus_V1_Desired_RevisionSchema,
 });
-/** Raw response path: harvest.desired. */
-export type HarvestStatus_V1_Desired = z.infer<typeof harvestStatus_V1_DesiredSchema>;
 /** Strict raw response path: harvest.failures. */
 export const harvestStatus_V1_FailuresSchema = z.number();
-/** Raw response path: harvest.failures. */
-export type HarvestStatus_V1_Failures = z.infer<typeof harvestStatus_V1_FailuresSchema>;
 /** Strict raw response path: harvest.host.last_error.at. */
 export const harvestStatus_V1_Host_LastError_AtSchema = z.number();
-/** Raw response path: harvest.host.last_error.at. */
-export type HarvestStatus_V1_Host_LastError_At = z.infer<
-  typeof harvestStatus_V1_Host_LastError_AtSchema
->;
 /** Strict raw response path: harvest.host.last_error.message. */
 export const harvestStatus_V1_Host_LastError_MessageSchema = z.string();
-/** Raw response path: harvest.host.last_error.message. */
-export type HarvestStatus_V1_Host_LastError_Message = z.infer<
-  typeof harvestStatus_V1_Host_LastError_MessageSchema
->;
 /** Strict raw response path: harvest.host.last_error.type. */
 export const harvestStatus_V1_Host_LastError_TypeSchema = z.string();
-/** Raw response path: harvest.host.last_error.type. */
-export type HarvestStatus_V1_Host_LastError_Type = z.infer<
-  typeof harvestStatus_V1_Host_LastError_TypeSchema
->;
 /** Strict raw response path: harvest.host.last_error. */
 export const harvestStatus_V1_Host_LastErrorSchema = z
   .strictObject({
@@ -272,52 +148,24 @@ export const harvestStatus_V1_Host_LastErrorSchema = z
     type: harvestStatus_V1_Host_LastError_TypeSchema,
   })
   .nullable();
-/** Raw response path: harvest.host.last_error. */
-export type HarvestStatus_V1_Host_LastError = z.infer<typeof harvestStatus_V1_Host_LastErrorSchema>;
 /** Strict raw response path: harvest.host.last_tick_at. */
 export const harvestStatus_V1_Host_LastTickAtSchema = z.number().nullable();
-/** Raw response path: harvest.host.last_tick_at. */
-export type HarvestStatus_V1_Host_LastTickAt = z.infer<
-  typeof harvestStatus_V1_Host_LastTickAtSchema
->;
 /** Strict raw response path: harvest.host.reconciler. */
 export const harvestStatus_V1_Host_ReconcilerSchema = z.enum(['active', 'inactive']);
-/** Raw response path: harvest.host.reconciler. */
-export type HarvestStatus_V1_Host_Reconciler = z.infer<
-  typeof harvestStatus_V1_Host_ReconcilerSchema
->;
 /** Strict raw response path: harvest.host. */
 export const harvestStatus_V1_HostSchema = z.strictObject({
   last_error: harvestStatus_V1_Host_LastErrorSchema,
   last_tick_at: harvestStatus_V1_Host_LastTickAtSchema,
   reconciler: harvestStatus_V1_Host_ReconcilerSchema,
 });
-/** Raw response path: harvest.host. */
-export type HarvestStatus_V1_Host = z.infer<typeof harvestStatus_V1_HostSchema>;
 /** Strict raw response path: harvest.identity.account. */
 export const harvestStatus_V1_Identity_AccountSchema = z.null();
-/** Raw response path: harvest.identity.account. */
-export type HarvestStatus_V1_Identity_Account = z.infer<
-  typeof harvestStatus_V1_Identity_AccountSchema
->;
 /** Strict raw response path: harvest.identity.instance. */
 export const harvestStatus_V1_Identity_InstanceSchema = z.string();
-/** Raw response path: harvest.identity.instance. */
-export type HarvestStatus_V1_Identity_Instance = z.infer<
-  typeof harvestStatus_V1_Identity_InstanceSchema
->;
 /** Strict raw response path: harvest.identity.profile. */
 export const harvestStatus_V1_Identity_ProfileSchema = z.string();
-/** Raw response path: harvest.identity.profile. */
-export type HarvestStatus_V1_Identity_Profile = z.infer<
-  typeof harvestStatus_V1_Identity_ProfileSchema
->;
 /** Strict raw response path: harvest.identity.serial. */
 export const harvestStatus_V1_Identity_SerialSchema = z.string();
-/** Raw response path: harvest.identity.serial. */
-export type HarvestStatus_V1_Identity_Serial = z.infer<
-  typeof harvestStatus_V1_Identity_SerialSchema
->;
 /** Strict raw response path: harvest.identity. */
 export const harvestStatus_V1_IdentitySchema = z.strictObject({
   account: harvestStatus_V1_Identity_AccountSchema,
@@ -325,48 +173,20 @@ export const harvestStatus_V1_IdentitySchema = z.strictObject({
   profile: harvestStatus_V1_Identity_ProfileSchema,
   serial: harvestStatus_V1_Identity_SerialSchema,
 });
-/** Raw response path: harvest.identity. */
-export type HarvestStatus_V1_Identity = z.infer<typeof harvestStatus_V1_IdentitySchema>;
 /** Strict raw response path: harvest.input_revoked. */
 export const harvestStatus_V1_InputRevokedSchema = z.boolean();
-/** Raw response path: harvest.input_revoked. */
-export type HarvestStatus_V1_InputRevoked = z.infer<typeof harvestStatus_V1_InputRevokedSchema>;
 /** Strict raw response path: harvest.last_outcome.at. */
 export const harvestStatus_V1_LastOutcome_KindExited_AtSchema = z.number();
-/** Raw response path: harvest.last_outcome.at. */
-export type HarvestStatus_V1_LastOutcome_KindExited_At = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindExited_AtSchema
->;
 /** Strict raw response path: harvest.last_outcome.error. */
 export const harvestStatus_V1_LastOutcome_KindExited_ErrorSchema = z.null();
-/** Raw response path: harvest.last_outcome.error. */
-export type HarvestStatus_V1_LastOutcome_KindExited_Error = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindExited_ErrorSchema
->;
 /** Strict raw response path: harvest.last_outcome.message. */
 export const harvestStatus_V1_LastOutcome_KindExited_MessageSchema = z.null();
-/** Raw response path: harvest.last_outcome.message. */
-export type HarvestStatus_V1_LastOutcome_KindExited_Message = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindExited_MessageSchema
->;
 /** Strict raw response path: harvest.last_outcome.operation_id. */
 export const harvestStatus_V1_LastOutcome_KindExited_OperationIdSchema = z.string();
-/** Raw response path: harvest.last_outcome.operation_id. */
-export type HarvestStatus_V1_LastOutcome_KindExited_OperationId = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindExited_OperationIdSchema
->;
 /** Strict raw response path: harvest.last_outcome.ran_sec. */
 export const harvestStatus_V1_LastOutcome_KindExited_RanSecSchema = z.number();
-/** Raw response path: harvest.last_outcome.ran_sec. */
-export type HarvestStatus_V1_LastOutcome_KindExited_RanSec = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindExited_RanSecSchema
->;
 /** Strict raw response path: harvest.last_outcome.status. */
 export const harvestStatus_V1_LastOutcome_KindExited_StatusSchema = z.enum(['failed']);
-/** Raw response path: harvest.last_outcome.status. */
-export type HarvestStatus_V1_LastOutcome_KindExited_Status = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindExited_StatusSchema
->;
 /** Strict raw response path: harvest.last_outcome, variant: kind exited. */
 export const harvestStatus_V1_LastOutcome_KindExitedSchema = z.strictObject({
   at: harvestStatus_V1_LastOutcome_KindExited_AtSchema,
@@ -377,53 +197,25 @@ export const harvestStatus_V1_LastOutcome_KindExitedSchema = z.strictObject({
   ran_sec: harvestStatus_V1_LastOutcome_KindExited_RanSecSchema,
   status: harvestStatus_V1_LastOutcome_KindExited_StatusSchema,
 });
-/** Raw response path: harvest.last_outcome, variant: kind exited. */
-export type HarvestStatus_V1_LastOutcome_KindExited = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindExitedSchema
->;
 /** Strict raw response path: harvest.last_outcome.at. */
 export const harvestStatus_V1_LastOutcome_KindLaunched_AtSchema = z.number();
-/** Raw response path: harvest.last_outcome.at. */
-export type HarvestStatus_V1_LastOutcome_KindLaunched_At = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindLaunched_AtSchema
->;
 /** Strict raw response path: harvest.last_outcome.operation_id. */
 export const harvestStatus_V1_LastOutcome_KindLaunched_OperationIdSchema = z.string();
-/** Raw response path: harvest.last_outcome.operation_id. */
-export type HarvestStatus_V1_LastOutcome_KindLaunched_OperationId = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindLaunched_OperationIdSchema
->;
 /** Strict raw response path: harvest.last_outcome, variant: kind launched. */
 export const harvestStatus_V1_LastOutcome_KindLaunchedSchema = z.strictObject({
   at: harvestStatus_V1_LastOutcome_KindLaunched_AtSchema,
   kind: z.literal('launched'),
   operation_id: harvestStatus_V1_LastOutcome_KindLaunched_OperationIdSchema,
 });
-/** Raw response path: harvest.last_outcome, variant: kind launched. */
-export type HarvestStatus_V1_LastOutcome_KindLaunched = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindLaunchedSchema
->;
 /** Strict raw response path: harvest.last_outcome.at. */
 export const harvestStatus_V1_LastOutcome_KindRefused_AtSchema = z.number();
-/** Raw response path: harvest.last_outcome.at. */
-export type HarvestStatus_V1_LastOutcome_KindRefused_At = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindRefused_AtSchema
->;
 /** Strict raw response path: harvest.last_outcome.code. */
 export const harvestStatus_V1_LastOutcome_KindRefused_CodeSchema = z.enum([
   'digits_missing',
   'emulator_offline',
 ]);
-/** Raw response path: harvest.last_outcome.code. */
-export type HarvestStatus_V1_LastOutcome_KindRefused_Code = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindRefused_CodeSchema
->;
 /** Strict raw response path: harvest.last_outcome.message. */
 export const harvestStatus_V1_LastOutcome_KindRefused_MessageSchema = z.string();
-/** Raw response path: harvest.last_outcome.message. */
-export type HarvestStatus_V1_LastOutcome_KindRefused_Message = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindRefused_MessageSchema
->;
 /** Strict raw response path: harvest.last_outcome, variant: kind refused. */
 export const harvestStatus_V1_LastOutcome_KindRefusedSchema = z.strictObject({
   at: harvestStatus_V1_LastOutcome_KindRefused_AtSchema,
@@ -431,10 +223,6 @@ export const harvestStatus_V1_LastOutcome_KindRefusedSchema = z.strictObject({
   kind: z.literal('refused'),
   message: harvestStatus_V1_LastOutcome_KindRefused_MessageSchema,
 });
-/** Raw response path: harvest.last_outcome, variant: kind refused. */
-export type HarvestStatus_V1_LastOutcome_KindRefused = z.infer<
-  typeof harvestStatus_V1_LastOutcome_KindRefusedSchema
->;
 /** Strict raw response path: harvest.last_outcome. */
 export const harvestStatus_V1_LastOutcomeSchema = z
   .discriminatedUnion('kind', [
@@ -443,76 +231,30 @@ export const harvestStatus_V1_LastOutcomeSchema = z
     harvestStatus_V1_LastOutcome_KindRefusedSchema,
   ])
   .nullable();
-/** Raw response path: harvest.last_outcome. */
-export type HarvestStatus_V1_LastOutcome = z.infer<typeof harvestStatus_V1_LastOutcomeSchema>;
 /** Strict raw response path: harvest.message. */
 export const harvestStatus_V1_MessageSchema = z.string();
-/** Raw response path: harvest.message. */
-export type HarvestStatus_V1_Message = z.infer<typeof harvestStatus_V1_MessageSchema>;
 /** Strict raw response path: harvest.next_attempt_at. */
 export const harvestStatus_V1_NextAttemptAtSchema = z.number().nullable();
-/** Raw response path: harvest.next_attempt_at. */
-export type HarvestStatus_V1_NextAttemptAt = z.infer<typeof harvestStatus_V1_NextAttemptAtSchema>;
 /** Strict raw response path: harvest.operation.battle.control_revision. */
 export const harvestStatus_V1_Operation_Battle_ControlRevisionSchema = z.number();
-/** Raw response path: harvest.operation.battle.control_revision. */
-export type HarvestStatus_V1_Operation_Battle_ControlRevision = z.infer<
-  typeof harvestStatus_V1_Operation_Battle_ControlRevisionSchema
->;
 /** Strict raw response path: harvest.operation.battle.fresh. */
 export const harvestStatus_V1_Operation_Battle_FreshSchema = z.boolean();
-/** Raw response path: harvest.operation.battle.fresh. */
-export type HarvestStatus_V1_Operation_Battle_Fresh = z.infer<
-  typeof harvestStatus_V1_Operation_Battle_FreshSchema
->;
 /** Strict raw response path: harvest.operation.battle.generation. */
 export const harvestStatus_V1_Operation_Battle_GenerationSchema = z.string();
-/** Raw response path: harvest.operation.battle.generation. */
-export type HarvestStatus_V1_Operation_Battle_Generation = z.infer<
-  typeof harvestStatus_V1_Operation_Battle_GenerationSchema
->;
 /** Strict raw response path: harvest.operation.battle.id. */
 export const harvestStatus_V1_Operation_Battle_IdSchema = z.string();
-/** Raw response path: harvest.operation.battle.id. */
-export type HarvestStatus_V1_Operation_Battle_Id = z.infer<
-  typeof harvestStatus_V1_Operation_Battle_IdSchema
->;
 /** Strict raw response path: harvest.operation.battle.observation_age_sec. */
 export const harvestStatus_V1_Operation_Battle_ObservationAgeSecSchema = z.number();
-/** Raw response path: harvest.operation.battle.observation_age_sec. */
-export type HarvestStatus_V1_Operation_Battle_ObservationAgeSec = z.infer<
-  typeof harvestStatus_V1_Operation_Battle_ObservationAgeSecSchema
->;
 /** Strict raw response path: harvest.operation.battle.observation_status. */
 export const harvestStatus_V1_Operation_Battle_ObservationStatusSchema = z.enum(['observing']);
-/** Raw response path: harvest.operation.battle.observation_status. */
-export type HarvestStatus_V1_Operation_Battle_ObservationStatus = z.infer<
-  typeof harvestStatus_V1_Operation_Battle_ObservationStatusSchema
->;
 /** Strict raw response path: harvest.operation.battle.origin. */
 export const harvestStatus_V1_Operation_Battle_OriginSchema = z.enum(['adopted']);
-/** Raw response path: harvest.operation.battle.origin. */
-export type HarvestStatus_V1_Operation_Battle_Origin = z.infer<
-  typeof harvestStatus_V1_Operation_Battle_OriginSchema
->;
 /** Strict raw response path: harvest.operation.battle.publication_valid. */
 export const harvestStatus_V1_Operation_Battle_PublicationValidSchema = z.boolean();
-/** Raw response path: harvest.operation.battle.publication_valid. */
-export type HarvestStatus_V1_Operation_Battle_PublicationValid = z.infer<
-  typeof harvestStatus_V1_Operation_Battle_PublicationValidSchema
->;
 /** Strict raw response path: harvest.operation.battle.published_at. */
 export const harvestStatus_V1_Operation_Battle_PublishedAtSchema = z.number();
-/** Raw response path: harvest.operation.battle.published_at. */
-export type HarvestStatus_V1_Operation_Battle_PublishedAt = z.infer<
-  typeof harvestStatus_V1_Operation_Battle_PublishedAtSchema
->;
 /** Strict raw response path: harvest.operation.battle.status. */
 export const harvestStatus_V1_Operation_Battle_StatusSchema = z.enum(['active']);
-/** Raw response path: harvest.operation.battle.status. */
-export type HarvestStatus_V1_Operation_Battle_Status = z.infer<
-  typeof harvestStatus_V1_Operation_Battle_StatusSchema
->;
 /** Strict raw response path: harvest.operation.battle. */
 export const harvestStatus_V1_Operation_BattleSchema = z
   .strictObject({
@@ -528,88 +270,36 @@ export const harvestStatus_V1_Operation_BattleSchema = z
     status: harvestStatus_V1_Operation_Battle_StatusSchema,
   })
   .nullable();
-/** Raw response path: harvest.operation.battle. */
-export type HarvestStatus_V1_Operation_Battle = z.infer<
-  typeof harvestStatus_V1_Operation_BattleSchema
->;
 /** Strict raw response path: harvest.operation.desire_revision. */
 export const harvestStatus_V1_Operation_DesireRevisionSchema = z.number().nullable();
-/** Raw response path: harvest.operation.desire_revision. */
-export type HarvestStatus_V1_Operation_DesireRevision = z.infer<
-  typeof harvestStatus_V1_Operation_DesireRevisionSchema
->;
 /** Strict raw response path: harvest.operation.evidence.ad_claim_confirmations. */
 export const harvestStatus_V1_Operation_Evidence_AdClaimConfirmationsSchema = z.number();
-/** Raw response path: harvest.operation.evidence.ad_claim_confirmations. */
-export type HarvestStatus_V1_Operation_Evidence_AdClaimConfirmations = z.infer<
-  typeof harvestStatus_V1_Operation_Evidence_AdClaimConfirmationsSchema
->;
 /** Strict raw response path: harvest.operation.evidence.coverage. */
 export const harvestStatus_V1_Operation_Evidence_CoverageSchema = z.string();
-/** Raw response path: harvest.operation.evidence.coverage. */
-export type HarvestStatus_V1_Operation_Evidence_Coverage = z.infer<
-  typeof harvestStatus_V1_Operation_Evidence_CoverageSchema
->;
 /** Strict raw response path: harvest.operation.evidence.generation. */
 export const harvestStatus_V1_Operation_Evidence_GenerationSchema = z.string();
-/** Raw response path: harvest.operation.evidence.generation. */
-export type HarvestStatus_V1_Operation_Evidence_Generation = z.infer<
-  typeof harvestStatus_V1_Operation_Evidence_GenerationSchema
->;
 /** Strict raw response path: harvest.operation.evidence.latest_confirmations.ad_gems.id. */
 export const harvestStatus_V1_Operation_Evidence_LatestConfirmations_AdGems_IdSchema = z.string();
-/** Raw response path: harvest.operation.evidence.latest_confirmations.ad_gems.id. */
-export type HarvestStatus_V1_Operation_Evidence_LatestConfirmations_AdGems_Id = z.infer<
-  typeof harvestStatus_V1_Operation_Evidence_LatestConfirmations_AdGems_IdSchema
->;
 /** Strict raw response path: harvest.operation.evidence.latest_confirmations.ad_gems.observed_at. */
 export const harvestStatus_V1_Operation_Evidence_LatestConfirmations_AdGems_ObservedAtSchema =
   z.number();
-/** Raw response path: harvest.operation.evidence.latest_confirmations.ad_gems.observed_at. */
-export type HarvestStatus_V1_Operation_Evidence_LatestConfirmations_AdGems_ObservedAt = z.infer<
-  typeof harvestStatus_V1_Operation_Evidence_LatestConfirmations_AdGems_ObservedAtSchema
->;
 /** Strict raw response path: harvest.operation.evidence.latest_confirmations.ad_gems. */
 export const harvestStatus_V1_Operation_Evidence_LatestConfirmations_AdGemsSchema = z.strictObject({
   id: harvestStatus_V1_Operation_Evidence_LatestConfirmations_AdGems_IdSchema,
   observed_at: harvestStatus_V1_Operation_Evidence_LatestConfirmations_AdGems_ObservedAtSchema,
 });
-/** Raw response path: harvest.operation.evidence.latest_confirmations.ad_gems. */
-export type HarvestStatus_V1_Operation_Evidence_LatestConfirmations_AdGems = z.infer<
-  typeof harvestStatus_V1_Operation_Evidence_LatestConfirmations_AdGemsSchema
->;
 /** Strict raw response path: harvest.operation.evidence.latest_confirmations. */
 export const harvestStatus_V1_Operation_Evidence_LatestConfirmationsSchema = z.strictObject({
   ad_gems: harvestStatus_V1_Operation_Evidence_LatestConfirmations_AdGemsSchema,
 });
-/** Raw response path: harvest.operation.evidence.latest_confirmations. */
-export type HarvestStatus_V1_Operation_Evidence_LatestConfirmations = z.infer<
-  typeof harvestStatus_V1_Operation_Evidence_LatestConfirmationsSchema
->;
 /** Strict raw response path: harvest.operation.evidence.observed_through_at. */
 export const harvestStatus_V1_Operation_Evidence_ObservedThroughAtSchema = z.number();
-/** Raw response path: harvest.operation.evidence.observed_through_at. */
-export type HarvestStatus_V1_Operation_Evidence_ObservedThroughAt = z.infer<
-  typeof harvestStatus_V1_Operation_Evidence_ObservedThroughAtSchema
->;
 /** Strict raw response path: harvest.operation.evidence.orbit_balance_confirmations. */
 export const harvestStatus_V1_Operation_Evidence_OrbitBalanceConfirmationsSchema = z.number();
-/** Raw response path: harvest.operation.evidence.orbit_balance_confirmations. */
-export type HarvestStatus_V1_Operation_Evidence_OrbitBalanceConfirmations = z.infer<
-  typeof harvestStatus_V1_Operation_Evidence_OrbitBalanceConfirmationsSchema
->;
 /** Strict raw response path: harvest.operation.evidence.orbit_recorded_increase. */
 export const harvestStatus_V1_Operation_Evidence_OrbitRecordedIncreaseSchema = z.number();
-/** Raw response path: harvest.operation.evidence.orbit_recorded_increase. */
-export type HarvestStatus_V1_Operation_Evidence_OrbitRecordedIncrease = z.infer<
-  typeof harvestStatus_V1_Operation_Evidence_OrbitRecordedIncreaseSchema
->;
 /** Strict raw response path: harvest.operation.evidence.started_at. */
 export const harvestStatus_V1_Operation_Evidence_StartedAtSchema = z.number();
-/** Raw response path: harvest.operation.evidence.started_at. */
-export type HarvestStatus_V1_Operation_Evidence_StartedAt = z.infer<
-  typeof harvestStatus_V1_Operation_Evidence_StartedAtSchema
->;
 /** Strict raw response path: harvest.operation.evidence. */
 export const harvestStatus_V1_Operation_EvidenceSchema = z
   .strictObject({
@@ -624,72 +314,28 @@ export const harvestStatus_V1_Operation_EvidenceSchema = z
     started_at: harvestStatus_V1_Operation_Evidence_StartedAtSchema,
   })
   .nullable();
-/** Raw response path: harvest.operation.evidence. */
-export type HarvestStatus_V1_Operation_Evidence = z.infer<
-  typeof harvestStatus_V1_Operation_EvidenceSchema
->;
 /** Strict raw response path: harvest.operation.harvest_managed. */
 export const harvestStatus_V1_Operation_HarvestManagedSchema = z.boolean();
-/** Raw response path: harvest.operation.harvest_managed. */
-export type HarvestStatus_V1_Operation_HarvestManaged = z.infer<
-  typeof harvestStatus_V1_Operation_HarvestManagedSchema
->;
 /** Strict raw response path: harvest.operation.id. */
 export const harvestStatus_V1_Operation_IdSchema = z.string();
-/** Raw response path: harvest.operation.id. */
-export type HarvestStatus_V1_Operation_Id = z.infer<typeof harvestStatus_V1_Operation_IdSchema>;
 /** Strict raw response path: harvest.operation.kind. */
 export const harvestStatus_V1_Operation_KindSchema = z.enum(['gems']);
-/** Raw response path: harvest.operation.kind. */
-export type HarvestStatus_V1_Operation_Kind = z.infer<typeof harvestStatus_V1_Operation_KindSchema>;
 /** Strict raw response path: harvest.operation.revision. */
 export const harvestStatus_V1_Operation_RevisionSchema = z.number();
-/** Raw response path: harvest.operation.revision. */
-export type HarvestStatus_V1_Operation_Revision = z.infer<
-  typeof harvestStatus_V1_Operation_RevisionSchema
->;
 /** Strict raw response path: harvest.operation.routines.ad_gems.blocker. */
 export const harvestStatus_V1_Operation_Routines_AdGems_BlockerSchema = z.string().nullable();
-/** Raw response path: harvest.operation.routines.ad_gems.blocker. */
-export type HarvestStatus_V1_Operation_Routines_AdGems_Blocker = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_AdGems_BlockerSchema
->;
 /** Strict raw response path: harvest.operation.routines.ad_gems.enabled. */
 export const harvestStatus_V1_Operation_Routines_AdGems_EnabledSchema = z.boolean();
-/** Raw response path: harvest.operation.routines.ad_gems.enabled. */
-export type HarvestStatus_V1_Operation_Routines_AdGems_Enabled = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: harvest.operation.routines.ad_gems.last_outcome. */
 export const harvestStatus_V1_Operation_Routines_AdGems_LastOutcomeSchema = z.null();
-/** Raw response path: harvest.operation.routines.ad_gems.last_outcome. */
-export type HarvestStatus_V1_Operation_Routines_AdGems_LastOutcome = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_AdGems_LastOutcomeSchema
->;
 /** Strict raw response path: harvest.operation.routines.ad_gems.next_due_at. */
 export const harvestStatus_V1_Operation_Routines_AdGems_NextDueAtSchema = z.number().nullable();
-/** Raw response path: harvest.operation.routines.ad_gems.next_due_at. */
-export type HarvestStatus_V1_Operation_Routines_AdGems_NextDueAt = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_AdGems_NextDueAtSchema
->;
 /** Strict raw response path: harvest.operation.routines.ad_gems.server_time. */
 export const harvestStatus_V1_Operation_Routines_AdGems_ServerTimeSchema = z.number();
-/** Raw response path: harvest.operation.routines.ad_gems.server_time. */
-export type HarvestStatus_V1_Operation_Routines_AdGems_ServerTime = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_AdGems_ServerTimeSchema
->;
 /** Strict raw response path: harvest.operation.routines.ad_gems.state. */
 export const harvestStatus_V1_Operation_Routines_AdGems_StateSchema = z.enum(['off', 'scheduled']);
-/** Raw response path: harvest.operation.routines.ad_gems.state. */
-export type HarvestStatus_V1_Operation_Routines_AdGems_State = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_AdGems_StateSchema
->;
 /** Strict raw response path: harvest.operation.routines.ad_gems.window_ends_at. */
 export const harvestStatus_V1_Operation_Routines_AdGems_WindowEndsAtSchema = z.null();
-/** Raw response path: harvest.operation.routines.ad_gems.window_ends_at. */
-export type HarvestStatus_V1_Operation_Routines_AdGems_WindowEndsAt = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_AdGems_WindowEndsAtSchema
->;
 /** Strict raw response path: harvest.operation.routines.ad_gems. */
 export const harvestStatus_V1_Operation_Routines_AdGemsSchema = z.strictObject({
   blocker: harvestStatus_V1_Operation_Routines_AdGems_BlockerSchema,
@@ -700,52 +346,20 @@ export const harvestStatus_V1_Operation_Routines_AdGemsSchema = z.strictObject({
   state: harvestStatus_V1_Operation_Routines_AdGems_StateSchema,
   window_ends_at: harvestStatus_V1_Operation_Routines_AdGems_WindowEndsAtSchema,
 });
-/** Raw response path: harvest.operation.routines.ad_gems. */
-export type HarvestStatus_V1_Operation_Routines_AdGems = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_AdGemsSchema
->;
 /** Strict raw response path: harvest.operation.routines.floating_gems.blocker. */
 export const harvestStatus_V1_Operation_Routines_FloatingGems_BlockerSchema = z.string();
-/** Raw response path: harvest.operation.routines.floating_gems.blocker. */
-export type HarvestStatus_V1_Operation_Routines_FloatingGems_Blocker = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_FloatingGems_BlockerSchema
->;
 /** Strict raw response path: harvest.operation.routines.floating_gems.enabled. */
 export const harvestStatus_V1_Operation_Routines_FloatingGems_EnabledSchema = z.boolean();
-/** Raw response path: harvest.operation.routines.floating_gems.enabled. */
-export type HarvestStatus_V1_Operation_Routines_FloatingGems_Enabled = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_FloatingGems_EnabledSchema
->;
 /** Strict raw response path: harvest.operation.routines.floating_gems.last_outcome. */
 export const harvestStatus_V1_Operation_Routines_FloatingGems_LastOutcomeSchema = z.null();
-/** Raw response path: harvest.operation.routines.floating_gems.last_outcome. */
-export type HarvestStatus_V1_Operation_Routines_FloatingGems_LastOutcome = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_FloatingGems_LastOutcomeSchema
->;
 /** Strict raw response path: harvest.operation.routines.floating_gems.next_due_at. */
 export const harvestStatus_V1_Operation_Routines_FloatingGems_NextDueAtSchema = z.null();
-/** Raw response path: harvest.operation.routines.floating_gems.next_due_at. */
-export type HarvestStatus_V1_Operation_Routines_FloatingGems_NextDueAt = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_FloatingGems_NextDueAtSchema
->;
 /** Strict raw response path: harvest.operation.routines.floating_gems.server_time. */
 export const harvestStatus_V1_Operation_Routines_FloatingGems_ServerTimeSchema = z.number();
-/** Raw response path: harvest.operation.routines.floating_gems.server_time. */
-export type HarvestStatus_V1_Operation_Routines_FloatingGems_ServerTime = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_FloatingGems_ServerTimeSchema
->;
 /** Strict raw response path: harvest.operation.routines.floating_gems.state. */
 export const harvestStatus_V1_Operation_Routines_FloatingGems_StateSchema = z.enum(['off']);
-/** Raw response path: harvest.operation.routines.floating_gems.state. */
-export type HarvestStatus_V1_Operation_Routines_FloatingGems_State = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_FloatingGems_StateSchema
->;
 /** Strict raw response path: harvest.operation.routines.floating_gems.window_ends_at. */
 export const harvestStatus_V1_Operation_Routines_FloatingGems_WindowEndsAtSchema = z.null();
-/** Raw response path: harvest.operation.routines.floating_gems.window_ends_at. */
-export type HarvestStatus_V1_Operation_Routines_FloatingGems_WindowEndsAt = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_FloatingGems_WindowEndsAtSchema
->;
 /** Strict raw response path: harvest.operation.routines.floating_gems. */
 export const harvestStatus_V1_Operation_Routines_FloatingGemsSchema = z.strictObject({
   blocker: harvestStatus_V1_Operation_Routines_FloatingGems_BlockerSchema,
@@ -756,10 +370,6 @@ export const harvestStatus_V1_Operation_Routines_FloatingGemsSchema = z.strictOb
   state: harvestStatus_V1_Operation_Routines_FloatingGems_StateSchema,
   window_ends_at: harvestStatus_V1_Operation_Routines_FloatingGems_WindowEndsAtSchema,
 });
-/** Raw response path: harvest.operation.routines.floating_gems. */
-export type HarvestStatus_V1_Operation_Routines_FloatingGems = z.infer<
-  typeof harvestStatus_V1_Operation_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: harvest.operation.routines. */
 export const harvestStatus_V1_Operation_RoutinesSchema = z
   .strictObject({
@@ -767,26 +377,14 @@ export const harvestStatus_V1_Operation_RoutinesSchema = z
     floating_gems: harvestStatus_V1_Operation_Routines_FloatingGemsSchema,
   })
   .nullable();
-/** Raw response path: harvest.operation.routines. */
-export type HarvestStatus_V1_Operation_Routines = z.infer<
-  typeof harvestStatus_V1_Operation_RoutinesSchema
->;
 /** Strict raw response path: harvest.operation.status. */
 export const harvestStatus_V1_Operation_StatusSchema = z.enum([
   'accepted',
   'cancelling',
   'running',
 ]);
-/** Raw response path: harvest.operation.status. */
-export type HarvestStatus_V1_Operation_Status = z.infer<
-  typeof harvestStatus_V1_Operation_StatusSchema
->;
 /** Strict raw response path: harvest.operation.worker_alive. */
 export const harvestStatus_V1_Operation_WorkerAliveSchema = z.boolean().nullable();
-/** Raw response path: harvest.operation.worker_alive. */
-export type HarvestStatus_V1_Operation_WorkerAlive = z.infer<
-  typeof harvestStatus_V1_Operation_WorkerAliveSchema
->;
 /** Strict raw response path: harvest.operation. */
 export const harvestStatus_V1_OperationSchema = z
   .strictObject({
@@ -802,77 +400,33 @@ export const harvestStatus_V1_OperationSchema = z
     worker_alive: harvestStatus_V1_Operation_WorkerAliveSchema,
   })
   .nullable();
-/** Raw response path: harvest.operation. */
-export type HarvestStatus_V1_Operation = z.infer<typeof harvestStatus_V1_OperationSchema>;
 /** Strict raw response path: harvest.overlay.battle_id. */
 export const harvestStatus_V1_Overlay_BattleIdSchema = z.string();
-/** Raw response path: harvest.overlay.battle_id. */
-export type HarvestStatus_V1_Overlay_BattleId = z.infer<
-  typeof harvestStatus_V1_Overlay_BattleIdSchema
->;
 /** Strict raw response path: harvest.overlay.cadence_source. */
 export const harvestStatus_V1_Overlay_CadenceSourceSchema = z.enum(['current_battle']);
-/** Raw response path: harvest.overlay.cadence_source. */
-export type HarvestStatus_V1_Overlay_CadenceSource = z.infer<
-  typeof harvestStatus_V1_Overlay_CadenceSourceSchema
->;
 /** Strict raw response path: harvest.overlay.choice_revision. */
 export const harvestStatus_V1_Overlay_ChoiceRevisionSchema = z.number();
-/** Raw response path: harvest.overlay.choice_revision. */
-export type HarvestStatus_V1_Overlay_ChoiceRevision = z.infer<
-  typeof harvestStatus_V1_Overlay_ChoiceRevisionSchema
->;
 /** Strict raw response path: harvest.overlay.command_id. */
 export const harvestStatus_V1_Overlay_CommandIdSchema = z.string().nullable();
-/** Raw response path: harvest.overlay.command_id. */
-export type HarvestStatus_V1_Overlay_CommandId = z.infer<
-  typeof harvestStatus_V1_Overlay_CommandIdSchema
->;
 /** Strict raw response path: harvest.overlay.generation. */
 export const harvestStatus_V1_Overlay_GenerationSchema = z.string();
-/** Raw response path: harvest.overlay.generation. */
-export type HarvestStatus_V1_Overlay_Generation = z.infer<
-  typeof harvestStatus_V1_Overlay_GenerationSchema
->;
 /** Strict raw response path: harvest.overlay.paths[]. */
 export const harvestStatus_V1_Overlay_Paths_ArrayElementSchema = z.string();
-/** Raw response path: harvest.overlay.paths[]. */
-export type HarvestStatus_V1_Overlay_Paths_ArrayElement = z.infer<
-  typeof harvestStatus_V1_Overlay_Paths_ArrayElementSchema
->;
 /** Strict raw response path: harvest.overlay.paths. */
 export const harvestStatus_V1_Overlay_PathsSchema = z.array(
   harvestStatus_V1_Overlay_Paths_ArrayElementSchema,
 );
-/** Raw response path: harvest.overlay.paths. */
-export type HarvestStatus_V1_Overlay_Paths = z.infer<typeof harvestStatus_V1_Overlay_PathsSchema>;
 /** Strict raw response path: harvest.overlay.request_key. */
 export const harvestStatus_V1_Overlay_RequestKeySchema = z.string();
-/** Raw response path: harvest.overlay.request_key. */
-export type HarvestStatus_V1_Overlay_RequestKey = z.infer<
-  typeof harvestStatus_V1_Overlay_RequestKeySchema
->;
 /** Strict raw response path: harvest.overlay.skipped.ad_gems. */
 export const harvestStatus_V1_Overlay_Skipped_AdGemsSchema = z.string();
-/** Raw response path: harvest.overlay.skipped.ad_gems. */
-export type HarvestStatus_V1_Overlay_Skipped_AdGems = z.infer<
-  typeof harvestStatus_V1_Overlay_Skipped_AdGemsSchema
->;
 /** Strict raw response path: harvest.overlay.skipped.floating_gems. */
 export const harvestStatus_V1_Overlay_Skipped_FloatingGemsSchema = z.string();
-/** Raw response path: harvest.overlay.skipped.floating_gems. */
-export type HarvestStatus_V1_Overlay_Skipped_FloatingGems = z.infer<
-  typeof harvestStatus_V1_Overlay_Skipped_FloatingGemsSchema
->;
 /** Strict raw response path: harvest.overlay.skipped. */
 export const harvestStatus_V1_Overlay_SkippedSchema = z.strictObject({
   ad_gems: harvestStatus_V1_Overlay_Skipped_AdGemsSchema.optional(),
   floating_gems: harvestStatus_V1_Overlay_Skipped_FloatingGemsSchema.optional(),
 });
-/** Raw response path: harvest.overlay.skipped. */
-export type HarvestStatus_V1_Overlay_Skipped = z.infer<
-  typeof harvestStatus_V1_Overlay_SkippedSchema
->;
 /** Strict raw response path: harvest.overlay.state. */
 export const harvestStatus_V1_Overlay_StateSchema = z.enum([
   'applied',
@@ -882,29 +436,15 @@ export const harvestStatus_V1_Overlay_StateSchema = z.enum([
   'requested',
   'unsupported',
 ]);
-/** Raw response path: harvest.overlay.state. */
-export type HarvestStatus_V1_Overlay_State = z.infer<typeof harvestStatus_V1_Overlay_StateSchema>;
 /** Strict raw response path: harvest.overlay.targets.ad_gems. */
 export const harvestStatus_V1_Overlay_Targets_AdGemsSchema = z.boolean();
-/** Raw response path: harvest.overlay.targets.ad_gems. */
-export type HarvestStatus_V1_Overlay_Targets_AdGems = z.infer<
-  typeof harvestStatus_V1_Overlay_Targets_AdGemsSchema
->;
 /** Strict raw response path: harvest.overlay.targets.floating_gems. */
 export const harvestStatus_V1_Overlay_Targets_FloatingGemsSchema = z.boolean();
-/** Raw response path: harvest.overlay.targets.floating_gems. */
-export type HarvestStatus_V1_Overlay_Targets_FloatingGems = z.infer<
-  typeof harvestStatus_V1_Overlay_Targets_FloatingGemsSchema
->;
 /** Strict raw response path: harvest.overlay.targets. */
 export const harvestStatus_V1_Overlay_TargetsSchema = z.strictObject({
   ad_gems: harvestStatus_V1_Overlay_Targets_AdGemsSchema,
   floating_gems: harvestStatus_V1_Overlay_Targets_FloatingGemsSchema,
 });
-/** Raw response path: harvest.overlay.targets. */
-export type HarvestStatus_V1_Overlay_Targets = z.infer<
-  typeof harvestStatus_V1_Overlay_TargetsSchema
->;
 /** Strict raw response path: harvest.overlay. */
 export const harvestStatus_V1_OverlaySchema = z
   .strictObject({
@@ -920,70 +460,28 @@ export const harvestStatus_V1_OverlaySchema = z
     targets: harvestStatus_V1_Overlay_TargetsSchema,
   })
   .nullable();
-/** Raw response path: harvest.overlay. */
-export type HarvestStatus_V1_Overlay = z.infer<typeof harvestStatus_V1_OverlaySchema>;
 /** Strict raw response path: harvest.owner.battle.control_revision. */
 export const harvestStatus_V1_Owner_KindOperation_Battle_ControlRevisionSchema = z.number();
-/** Raw response path: harvest.owner.battle.control_revision. */
-export type HarvestStatus_V1_Owner_KindOperation_Battle_ControlRevision = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Battle_ControlRevisionSchema
->;
 /** Strict raw response path: harvest.owner.battle.fresh. */
 export const harvestStatus_V1_Owner_KindOperation_Battle_FreshSchema = z.boolean();
-/** Raw response path: harvest.owner.battle.fresh. */
-export type HarvestStatus_V1_Owner_KindOperation_Battle_Fresh = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Battle_FreshSchema
->;
 /** Strict raw response path: harvest.owner.battle.generation. */
 export const harvestStatus_V1_Owner_KindOperation_Battle_GenerationSchema = z.string();
-/** Raw response path: harvest.owner.battle.generation. */
-export type HarvestStatus_V1_Owner_KindOperation_Battle_Generation = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Battle_GenerationSchema
->;
 /** Strict raw response path: harvest.owner.battle.id. */
 export const harvestStatus_V1_Owner_KindOperation_Battle_IdSchema = z.string();
-/** Raw response path: harvest.owner.battle.id. */
-export type HarvestStatus_V1_Owner_KindOperation_Battle_Id = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Battle_IdSchema
->;
 /** Strict raw response path: harvest.owner.battle.observation_age_sec. */
 export const harvestStatus_V1_Owner_KindOperation_Battle_ObservationAgeSecSchema = z.number();
-/** Raw response path: harvest.owner.battle.observation_age_sec. */
-export type HarvestStatus_V1_Owner_KindOperation_Battle_ObservationAgeSec = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Battle_ObservationAgeSecSchema
->;
 /** Strict raw response path: harvest.owner.battle.observation_status. */
 export const harvestStatus_V1_Owner_KindOperation_Battle_ObservationStatusSchema = z.enum([
   'observing',
 ]);
-/** Raw response path: harvest.owner.battle.observation_status. */
-export type HarvestStatus_V1_Owner_KindOperation_Battle_ObservationStatus = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Battle_ObservationStatusSchema
->;
 /** Strict raw response path: harvest.owner.battle.origin. */
 export const harvestStatus_V1_Owner_KindOperation_Battle_OriginSchema = z.enum(['adopted']);
-/** Raw response path: harvest.owner.battle.origin. */
-export type HarvestStatus_V1_Owner_KindOperation_Battle_Origin = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Battle_OriginSchema
->;
 /** Strict raw response path: harvest.owner.battle.publication_valid. */
 export const harvestStatus_V1_Owner_KindOperation_Battle_PublicationValidSchema = z.boolean();
-/** Raw response path: harvest.owner.battle.publication_valid. */
-export type HarvestStatus_V1_Owner_KindOperation_Battle_PublicationValid = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Battle_PublicationValidSchema
->;
 /** Strict raw response path: harvest.owner.battle.published_at. */
 export const harvestStatus_V1_Owner_KindOperation_Battle_PublishedAtSchema = z.number();
-/** Raw response path: harvest.owner.battle.published_at. */
-export type HarvestStatus_V1_Owner_KindOperation_Battle_PublishedAt = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Battle_PublishedAtSchema
->;
 /** Strict raw response path: harvest.owner.battle.status. */
 export const harvestStatus_V1_Owner_KindOperation_Battle_StatusSchema = z.enum(['active']);
-/** Raw response path: harvest.owner.battle.status. */
-export type HarvestStatus_V1_Owner_KindOperation_Battle_Status = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Battle_StatusSchema
->;
 /** Strict raw response path: harvest.owner.battle. */
 export const harvestStatus_V1_Owner_KindOperation_BattleSchema = z
   .strictObject({
@@ -999,152 +497,64 @@ export const harvestStatus_V1_Owner_KindOperation_BattleSchema = z
     status: harvestStatus_V1_Owner_KindOperation_Battle_StatusSchema,
   })
   .nullable();
-/** Raw response path: harvest.owner.battle. */
-export type HarvestStatus_V1_Owner_KindOperation_Battle = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_BattleSchema
->;
 /** Strict raw response path: harvest.owner.foreign. */
 export const harvestStatus_V1_Owner_KindOperation_ForeignSchema = z.boolean();
-/** Raw response path: harvest.owner.foreign. */
-export type HarvestStatus_V1_Owner_KindOperation_Foreign = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_ForeignSchema
->;
 /** Strict raw response path: harvest.owner.gathers. */
 export const harvestStatus_V1_Owner_KindOperation_GathersSchema = z.boolean().nullable();
-/** Raw response path: harvest.owner.gathers. */
-export type HarvestStatus_V1_Owner_KindOperation_Gathers = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_GathersSchema
->;
 /** Strict raw response path: harvest.owner.gems.ad_gems. */
 export const harvestStatus_V1_Owner_KindOperation_Gems_AdGemsSchema = z.boolean().nullable();
-/** Raw response path: harvest.owner.gems.ad_gems. */
-export type HarvestStatus_V1_Owner_KindOperation_Gems_AdGems = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Gems_AdGemsSchema
->;
 /** Strict raw response path: harvest.owner.gems.basis. */
 export const harvestStatus_V1_Owner_KindOperation_Gems_BasisSchema = z.enum([
   'not_reported',
   'published_routines',
   'stale',
 ]);
-/** Raw response path: harvest.owner.gems.basis. */
-export type HarvestStatus_V1_Owner_KindOperation_Gems_Basis = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Gems_BasisSchema
->;
 /** Strict raw response path: harvest.owner.gems.floating_gems. */
 export const harvestStatus_V1_Owner_KindOperation_Gems_FloatingGemsSchema = z.boolean().nullable();
-/** Raw response path: harvest.owner.gems.floating_gems. */
-export type HarvestStatus_V1_Owner_KindOperation_Gems_FloatingGems = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: harvest.owner.gems. */
 export const harvestStatus_V1_Owner_KindOperation_GemsSchema = z.strictObject({
   ad_gems: harvestStatus_V1_Owner_KindOperation_Gems_AdGemsSchema,
   basis: harvestStatus_V1_Owner_KindOperation_Gems_BasisSchema,
   floating_gems: harvestStatus_V1_Owner_KindOperation_Gems_FloatingGemsSchema,
 });
-/** Raw response path: harvest.owner.gems. */
-export type HarvestStatus_V1_Owner_KindOperation_Gems = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_GemsSchema
->;
 /** Strict raw response path: harvest.owner.harvest_managed. */
 export const harvestStatus_V1_Owner_KindOperation_HarvestManagedSchema = z.boolean();
-/** Raw response path: harvest.owner.harvest_managed. */
-export type HarvestStatus_V1_Owner_KindOperation_HarvestManaged = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_HarvestManagedSchema
->;
 /** Strict raw response path: harvest.owner.operation_id. */
 export const harvestStatus_V1_Owner_KindOperation_OperationIdSchema = z.string();
-/** Raw response path: harvest.owner.operation_id. */
-export type HarvestStatus_V1_Owner_KindOperation_OperationId = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_OperationIdSchema
->;
 /** Strict raw response path: harvest.owner.operation_kind. */
 export const harvestStatus_V1_Owner_KindOperation_OperationKindSchema = z.enum(['run']);
-/** Raw response path: harvest.owner.operation_kind. */
-export type HarvestStatus_V1_Owner_KindOperation_OperationKind = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_OperationKindSchema
->;
 /** Strict raw response path: harvest.owner.pid. */
 export const harvestStatus_V1_Owner_KindOperation_PidSchema = z.number();
-/** Raw response path: harvest.owner.pid. */
-export type HarvestStatus_V1_Owner_KindOperation_Pid = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_PidSchema
->;
 /** Strict raw response path: harvest.owner.recovery.action. */
 export const harvestStatus_V1_Owner_KindOperation_Recovery_ActionSchema = z.enum([
   'stop_operation',
 ]);
-/** Raw response path: harvest.owner.recovery.action. */
-export type HarvestStatus_V1_Owner_KindOperation_Recovery_Action = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Recovery_ActionSchema
->;
 /** Strict raw response path: harvest.owner.recovery.expected_revision. */
 export const harvestStatus_V1_Owner_KindOperation_Recovery_ExpectedRevisionSchema = z.number();
-/** Raw response path: harvest.owner.recovery.expected_revision. */
-export type HarvestStatus_V1_Owner_KindOperation_Recovery_ExpectedRevision = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: harvest.owner.recovery.operation_id. */
 export const harvestStatus_V1_Owner_KindOperation_Recovery_OperationIdSchema = z.string();
-/** Raw response path: harvest.owner.recovery.operation_id. */
-export type HarvestStatus_V1_Owner_KindOperation_Recovery_OperationId = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Recovery_OperationIdSchema
->;
 /** Strict raw response path: harvest.owner.recovery. */
 export const harvestStatus_V1_Owner_KindOperation_RecoverySchema = z.strictObject({
   action: harvestStatus_V1_Owner_KindOperation_Recovery_ActionSchema,
   expected_revision: harvestStatus_V1_Owner_KindOperation_Recovery_ExpectedRevisionSchema,
   operation_id: harvestStatus_V1_Owner_KindOperation_Recovery_OperationIdSchema,
 });
-/** Raw response path: harvest.owner.recovery. */
-export type HarvestStatus_V1_Owner_KindOperation_Recovery = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_RecoverySchema
->;
 /** Strict raw response path: harvest.owner.routines.ad_gems.blocker. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_AdGems_BlockerSchema = z.null();
-/** Raw response path: harvest.owner.routines.ad_gems.blocker. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_AdGems_Blocker = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_AdGems_BlockerSchema
->;
 /** Strict raw response path: harvest.owner.routines.ad_gems.enabled. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_AdGems_EnabledSchema = z.boolean();
-/** Raw response path: harvest.owner.routines.ad_gems.enabled. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_AdGems_Enabled = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: harvest.owner.routines.ad_gems.last_outcome. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_AdGems_LastOutcomeSchema = z.null();
-/** Raw response path: harvest.owner.routines.ad_gems.last_outcome. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_AdGems_LastOutcome = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_AdGems_LastOutcomeSchema
->;
 /** Strict raw response path: harvest.owner.routines.ad_gems.next_due_at. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_AdGems_NextDueAtSchema = z.number();
-/** Raw response path: harvest.owner.routines.ad_gems.next_due_at. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_AdGems_NextDueAt = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_AdGems_NextDueAtSchema
->;
 /** Strict raw response path: harvest.owner.routines.ad_gems.server_time. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_AdGems_ServerTimeSchema = z.number();
-/** Raw response path: harvest.owner.routines.ad_gems.server_time. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_AdGems_ServerTime = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_AdGems_ServerTimeSchema
->;
 /** Strict raw response path: harvest.owner.routines.ad_gems.state. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_AdGems_StateSchema = z.enum([
   'scheduled',
 ]);
-/** Raw response path: harvest.owner.routines.ad_gems.state. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_AdGems_State = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_AdGems_StateSchema
->;
 /** Strict raw response path: harvest.owner.routines.ad_gems.window_ends_at. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_AdGems_WindowEndsAtSchema = z.null();
-/** Raw response path: harvest.owner.routines.ad_gems.window_ends_at. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_AdGems_WindowEndsAt = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_AdGems_WindowEndsAtSchema
->;
 /** Strict raw response path: harvest.owner.routines.ad_gems. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_AdGemsSchema = z.strictObject({
   blocker: harvestStatus_V1_Owner_KindOperation_Routines_AdGems_BlockerSchema.optional(),
@@ -1156,57 +566,25 @@ export const harvestStatus_V1_Owner_KindOperation_Routines_AdGemsSchema = z.stri
   window_ends_at:
     harvestStatus_V1_Owner_KindOperation_Routines_AdGems_WindowEndsAtSchema.optional(),
 });
-/** Raw response path: harvest.owner.routines.ad_gems. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_AdGems = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_AdGemsSchema
->;
 /** Strict raw response path: harvest.owner.routines.floating_gems.blocker. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_BlockerSchema = z.string();
-/** Raw response path: harvest.owner.routines.floating_gems.blocker. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_Blocker = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_BlockerSchema
->;
 /** Strict raw response path: harvest.owner.routines.floating_gems.enabled. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_EnabledSchema = z.boolean();
-/** Raw response path: harvest.owner.routines.floating_gems.enabled. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_Enabled = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_EnabledSchema
->;
 /** Strict raw response path: harvest.owner.routines.floating_gems.last_outcome. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_LastOutcomeSchema =
   z.null();
-/** Raw response path: harvest.owner.routines.floating_gems.last_outcome. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_LastOutcome = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_LastOutcomeSchema
->;
 /** Strict raw response path: harvest.owner.routines.floating_gems.next_due_at. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_NextDueAtSchema = z.null();
-/** Raw response path: harvest.owner.routines.floating_gems.next_due_at. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_NextDueAt = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_NextDueAtSchema
->;
 /** Strict raw response path: harvest.owner.routines.floating_gems.server_time. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_ServerTimeSchema =
   z.number();
-/** Raw response path: harvest.owner.routines.floating_gems.server_time. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_ServerTime = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_ServerTimeSchema
->;
 /** Strict raw response path: harvest.owner.routines.floating_gems.state. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_StateSchema = z.enum([
   'off',
 ]);
-/** Raw response path: harvest.owner.routines.floating_gems.state. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_State = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_StateSchema
->;
 /** Strict raw response path: harvest.owner.routines.floating_gems.window_ends_at. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_WindowEndsAtSchema =
   z.null();
-/** Raw response path: harvest.owner.routines.floating_gems.window_ends_at. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_WindowEndsAt = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_WindowEndsAtSchema
->;
 /** Strict raw response path: harvest.owner.routines.floating_gems. */
 export const harvestStatus_V1_Owner_KindOperation_Routines_FloatingGemsSchema = z.strictObject({
   blocker: harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_BlockerSchema.optional(),
@@ -1221,10 +599,6 @@ export const harvestStatus_V1_Owner_KindOperation_Routines_FloatingGemsSchema = 
   window_ends_at:
     harvestStatus_V1_Owner_KindOperation_Routines_FloatingGems_WindowEndsAtSchema.optional(),
 });
-/** Raw response path: harvest.owner.routines.floating_gems. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines_FloatingGems = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: harvest.owner.routines. */
 export const harvestStatus_V1_Owner_KindOperation_RoutinesSchema = z
   .strictObject({
@@ -1232,22 +606,10 @@ export const harvestStatus_V1_Owner_KindOperation_RoutinesSchema = z
     floating_gems: harvestStatus_V1_Owner_KindOperation_Routines_FloatingGemsSchema,
   })
   .nullable();
-/** Raw response path: harvest.owner.routines. */
-export type HarvestStatus_V1_Owner_KindOperation_Routines = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_RoutinesSchema
->;
 /** Strict raw response path: harvest.owner.script. */
 export const harvestStatus_V1_Owner_KindOperation_ScriptSchema = z.null();
-/** Raw response path: harvest.owner.script. */
-export type HarvestStatus_V1_Owner_KindOperation_Script = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_ScriptSchema
->;
 /** Strict raw response path: harvest.owner.status. */
 export const harvestStatus_V1_Owner_KindOperation_StatusSchema = z.enum(['running']);
-/** Raw response path: harvest.owner.status. */
-export type HarvestStatus_V1_Owner_KindOperation_Status = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperation_StatusSchema
->;
 /** Strict raw response path: harvest.owner, variant: kind operation. */
 export const harvestStatus_V1_Owner_KindOperationSchema = z.strictObject({
   battle: harvestStatus_V1_Owner_KindOperation_BattleSchema,
@@ -1264,98 +626,38 @@ export const harvestStatus_V1_Owner_KindOperationSchema = z.strictObject({
   script: harvestStatus_V1_Owner_KindOperation_ScriptSchema,
   status: harvestStatus_V1_Owner_KindOperation_StatusSchema,
 });
-/** Raw response path: harvest.owner, variant: kind operation. */
-export type HarvestStatus_V1_Owner_KindOperation = z.infer<
-  typeof harvestStatus_V1_Owner_KindOperationSchema
->;
 /** Strict raw response path: harvest.owner.foreign. */
 export const harvestStatus_V1_Owner_KindProcess_ForeignSchema = z.boolean();
-/** Raw response path: harvest.owner.foreign. */
-export type HarvestStatus_V1_Owner_KindProcess_Foreign = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_ForeignSchema
->;
 /** Strict raw response path: harvest.owner.gathers. */
 export const harvestStatus_V1_Owner_KindProcess_GathersSchema = z.null();
-/** Raw response path: harvest.owner.gathers. */
-export type HarvestStatus_V1_Owner_KindProcess_Gathers = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_GathersSchema
->;
 /** Strict raw response path: harvest.owner.gems.ad_gems. */
 export const harvestStatus_V1_Owner_KindProcess_Gems_AdGemsSchema = z.null();
-/** Raw response path: harvest.owner.gems.ad_gems. */
-export type HarvestStatus_V1_Owner_KindProcess_Gems_AdGems = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_Gems_AdGemsSchema
->;
 /** Strict raw response path: harvest.owner.gems.basis. */
 export const harvestStatus_V1_Owner_KindProcess_Gems_BasisSchema = z.enum(['not_reported']);
-/** Raw response path: harvest.owner.gems.basis. */
-export type HarvestStatus_V1_Owner_KindProcess_Gems_Basis = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_Gems_BasisSchema
->;
 /** Strict raw response path: harvest.owner.gems.floating_gems. */
 export const harvestStatus_V1_Owner_KindProcess_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: harvest.owner.gems.floating_gems. */
-export type HarvestStatus_V1_Owner_KindProcess_Gems_FloatingGems = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: harvest.owner.gems. */
 export const harvestStatus_V1_Owner_KindProcess_GemsSchema = z.strictObject({
   ad_gems: harvestStatus_V1_Owner_KindProcess_Gems_AdGemsSchema,
   basis: harvestStatus_V1_Owner_KindProcess_Gems_BasisSchema,
   floating_gems: harvestStatus_V1_Owner_KindProcess_Gems_FloatingGemsSchema,
 });
-/** Raw response path: harvest.owner.gems. */
-export type HarvestStatus_V1_Owner_KindProcess_Gems = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_GemsSchema
->;
 /** Strict raw response path: harvest.owner.harvest_managed. */
 export const harvestStatus_V1_Owner_KindProcess_HarvestManagedSchema = z.boolean();
-/** Raw response path: harvest.owner.harvest_managed. */
-export type HarvestStatus_V1_Owner_KindProcess_HarvestManaged = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_HarvestManagedSchema
->;
 /** Strict raw response path: harvest.owner.operation_id. */
 export const harvestStatus_V1_Owner_KindProcess_OperationIdSchema = z.null();
-/** Raw response path: harvest.owner.operation_id. */
-export type HarvestStatus_V1_Owner_KindProcess_OperationId = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_OperationIdSchema
->;
 /** Strict raw response path: harvest.owner.operation_kind. */
 export const harvestStatus_V1_Owner_KindProcess_OperationKindSchema = z.null();
-/** Raw response path: harvest.owner.operation_kind. */
-export type HarvestStatus_V1_Owner_KindProcess_OperationKind = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_OperationKindSchema
->;
 /** Strict raw response path: harvest.owner.pid. */
 export const harvestStatus_V1_Owner_KindProcess_PidSchema = z.number();
-/** Raw response path: harvest.owner.pid. */
-export type HarvestStatus_V1_Owner_KindProcess_Pid = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_PidSchema
->;
 /** Strict raw response path: harvest.owner.recovery. */
 export const harvestStatus_V1_Owner_KindProcess_RecoverySchema = z.null();
-/** Raw response path: harvest.owner.recovery. */
-export type HarvestStatus_V1_Owner_KindProcess_Recovery = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_RecoverySchema
->;
 /** Strict raw response path: harvest.owner.routines. */
 export const harvestStatus_V1_Owner_KindProcess_RoutinesSchema = z.null();
-/** Raw response path: harvest.owner.routines. */
-export type HarvestStatus_V1_Owner_KindProcess_Routines = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_RoutinesSchema
->;
 /** Strict raw response path: harvest.owner.script. */
 export const harvestStatus_V1_Owner_KindProcess_ScriptSchema = z.string();
-/** Raw response path: harvest.owner.script. */
-export type HarvestStatus_V1_Owner_KindProcess_Script = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_ScriptSchema
->;
 /** Strict raw response path: harvest.owner.status. */
 export const harvestStatus_V1_Owner_KindProcess_StatusSchema = z.null();
-/** Raw response path: harvest.owner.status. */
-export type HarvestStatus_V1_Owner_KindProcess_Status = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcess_StatusSchema
->;
 /** Strict raw response path: harvest.owner, variant: kind process. */
 export const harvestStatus_V1_Owner_KindProcessSchema = z.strictObject({
   foreign: harvestStatus_V1_Owner_KindProcess_ForeignSchema,
@@ -1371,10 +673,6 @@ export const harvestStatus_V1_Owner_KindProcessSchema = z.strictObject({
   script: harvestStatus_V1_Owner_KindProcess_ScriptSchema,
   status: harvestStatus_V1_Owner_KindProcess_StatusSchema,
 });
-/** Raw response path: harvest.owner, variant: kind process. */
-export type HarvestStatus_V1_Owner_KindProcess = z.infer<
-  typeof harvestStatus_V1_Owner_KindProcessSchema
->;
 /** Strict raw response path: harvest.owner. */
 export const harvestStatus_V1_OwnerSchema = z
   .discriminatedUnion('kind', [
@@ -1382,101 +680,45 @@ export const harvestStatus_V1_OwnerSchema = z
     harvestStatus_V1_Owner_KindProcessSchema,
   ])
   .nullable();
-/** Raw response path: harvest.owner. */
-export type HarvestStatus_V1_Owner = z.infer<typeof harvestStatus_V1_OwnerSchema>;
 /** Strict raw response path: harvest.server_time. */
 export const harvestStatus_V1_ServerTimeSchema = z.number();
-/** Raw response path: harvest.server_time. */
-export type HarvestStatus_V1_ServerTime = z.infer<typeof harvestStatus_V1_ServerTimeSchema>;
 /** Strict raw response path: harvest.source.changed_since_enable. */
 export const harvestStatus_V1_Source_ChangedSinceEnableSchema = z.boolean();
-/** Raw response path: harvest.source.changed_since_enable. */
-export type HarvestStatus_V1_Source_ChangedSinceEnable = z.infer<
-  typeof harvestStatus_V1_Source_ChangedSinceEnableSchema
->;
 /** Strict raw response path: harvest.source.code. */
 export const harvestStatus_V1_Source_CodeSchema = z.enum(['gathering_disabled']).nullable();
-/** Raw response path: harvest.source.code. */
-export type HarvestStatus_V1_Source_Code = z.infer<typeof harvestStatus_V1_Source_CodeSchema>;
 /** Strict raw response path: harvest.source.edit.blueprint. */
 export const harvestStatus_V1_Source_Edit_BlueprintSchema = z.string();
-/** Raw response path: harvest.source.edit.blueprint. */
-export type HarvestStatus_V1_Source_Edit_Blueprint = z.infer<
-  typeof harvestStatus_V1_Source_Edit_BlueprintSchema
->;
 /** Strict raw response path: harvest.source.edit.page. */
 export const harvestStatus_V1_Source_Edit_PageSchema = z.string();
-/** Raw response path: harvest.source.edit.page. */
-export type HarvestStatus_V1_Source_Edit_Page = z.infer<
-  typeof harvestStatus_V1_Source_Edit_PageSchema
->;
 /** Strict raw response path: harvest.source.edit. */
 export const harvestStatus_V1_Source_EditSchema = z.strictObject({
   blueprint: harvestStatus_V1_Source_Edit_BlueprintSchema,
   page: harvestStatus_V1_Source_Edit_PageSchema,
 });
-/** Raw response path: harvest.source.edit. */
-export type HarvestStatus_V1_Source_Edit = z.infer<typeof harvestStatus_V1_Source_EditSchema>;
 /** Strict raw response path: harvest.source.label. */
 export const harvestStatus_V1_Source_LabelSchema = z.string().nullable();
-/** Raw response path: harvest.source.label. */
-export type HarvestStatus_V1_Source_Label = z.infer<typeof harvestStatus_V1_Source_LabelSchema>;
 /** Strict raw response path: harvest.source.message. */
 export const harvestStatus_V1_Source_MessageSchema = z.string().nullable();
-/** Raw response path: harvest.source.message. */
-export type HarvestStatus_V1_Source_Message = z.infer<typeof harvestStatus_V1_Source_MessageSchema>;
 /** Strict raw response path: harvest.source.policy.ad_gems.enabled. */
 export const harvestStatus_V1_Source_Policy_AdGems_EnabledSchema = z.boolean();
-/** Raw response path: harvest.source.policy.ad_gems.enabled. */
-export type HarvestStatus_V1_Source_Policy_AdGems_Enabled = z.infer<
-  typeof harvestStatus_V1_Source_Policy_AdGems_EnabledSchema
->;
 /** Strict raw response path: harvest.source.policy.ad_gems.interval_sec. */
 export const harvestStatus_V1_Source_Policy_AdGems_IntervalSecSchema = z.number();
-/** Raw response path: harvest.source.policy.ad_gems.interval_sec. */
-export type HarvestStatus_V1_Source_Policy_AdGems_IntervalSec = z.infer<
-  typeof harvestStatus_V1_Source_Policy_AdGems_IntervalSecSchema
->;
 /** Strict raw response path: harvest.source.policy.ad_gems.window_sec. */
 export const harvestStatus_V1_Source_Policy_AdGems_WindowSecSchema = z.number();
-/** Raw response path: harvest.source.policy.ad_gems.window_sec. */
-export type HarvestStatus_V1_Source_Policy_AdGems_WindowSec = z.infer<
-  typeof harvestStatus_V1_Source_Policy_AdGems_WindowSecSchema
->;
 /** Strict raw response path: harvest.source.policy.ad_gems. */
 export const harvestStatus_V1_Source_Policy_AdGemsSchema = z.strictObject({
   enabled: harvestStatus_V1_Source_Policy_AdGems_EnabledSchema,
   interval_sec: harvestStatus_V1_Source_Policy_AdGems_IntervalSecSchema,
   window_sec: harvestStatus_V1_Source_Policy_AdGems_WindowSecSchema,
 });
-/** Raw response path: harvest.source.policy.ad_gems. */
-export type HarvestStatus_V1_Source_Policy_AdGems = z.infer<
-  typeof harvestStatus_V1_Source_Policy_AdGemsSchema
->;
 /** Strict raw response path: harvest.source.policy.floating_gems.enabled. */
 export const harvestStatus_V1_Source_Policy_FloatingGems_EnabledSchema = z.boolean();
-/** Raw response path: harvest.source.policy.floating_gems.enabled. */
-export type HarvestStatus_V1_Source_Policy_FloatingGems_Enabled = z.infer<
-  typeof harvestStatus_V1_Source_Policy_FloatingGems_EnabledSchema
->;
 /** Strict raw response path: harvest.source.policy.floating_gems.interval_sec. */
 export const harvestStatus_V1_Source_Policy_FloatingGems_IntervalSecSchema = z.number();
-/** Raw response path: harvest.source.policy.floating_gems.interval_sec. */
-export type HarvestStatus_V1_Source_Policy_FloatingGems_IntervalSec = z.infer<
-  typeof harvestStatus_V1_Source_Policy_FloatingGems_IntervalSecSchema
->;
 /** Strict raw response path: harvest.source.policy.floating_gems.tap_interval_sec. */
 export const harvestStatus_V1_Source_Policy_FloatingGems_TapIntervalSecSchema = z.number();
-/** Raw response path: harvest.source.policy.floating_gems.tap_interval_sec. */
-export type HarvestStatus_V1_Source_Policy_FloatingGems_TapIntervalSec = z.infer<
-  typeof harvestStatus_V1_Source_Policy_FloatingGems_TapIntervalSecSchema
->;
 /** Strict raw response path: harvest.source.policy.floating_gems.window_sec. */
 export const harvestStatus_V1_Source_Policy_FloatingGems_WindowSecSchema = z.number();
-/** Raw response path: harvest.source.policy.floating_gems.window_sec. */
-export type HarvestStatus_V1_Source_Policy_FloatingGems_WindowSec = z.infer<
-  typeof harvestStatus_V1_Source_Policy_FloatingGems_WindowSecSchema
->;
 /** Strict raw response path: harvest.source.policy.floating_gems. */
 export const harvestStatus_V1_Source_Policy_FloatingGemsSchema = z.strictObject({
   enabled: harvestStatus_V1_Source_Policy_FloatingGems_EnabledSchema,
@@ -1484,10 +726,6 @@ export const harvestStatus_V1_Source_Policy_FloatingGemsSchema = z.strictObject(
   tap_interval_sec: harvestStatus_V1_Source_Policy_FloatingGems_TapIntervalSecSchema,
   window_sec: harvestStatus_V1_Source_Policy_FloatingGems_WindowSecSchema,
 });
-/** Raw response path: harvest.source.policy.floating_gems. */
-export type HarvestStatus_V1_Source_Policy_FloatingGems = z.infer<
-  typeof harvestStatus_V1_Source_Policy_FloatingGemsSchema
->;
 /** Strict raw response path: harvest.source.policy. */
 export const harvestStatus_V1_Source_PolicySchema = z
   .strictObject({
@@ -1495,26 +733,14 @@ export const harvestStatus_V1_Source_PolicySchema = z
     floating_gems: harvestStatus_V1_Source_Policy_FloatingGemsSchema,
   })
   .nullable();
-/** Raw response path: harvest.source.policy. */
-export type HarvestStatus_V1_Source_Policy = z.infer<typeof harvestStatus_V1_Source_PolicySchema>;
 /** Strict raw response path: harvest.source.policy_revision. */
 export const harvestStatus_V1_Source_PolicyRevisionSchema = z.string().nullable();
-/** Raw response path: harvest.source.policy_revision. */
-export type HarvestStatus_V1_Source_PolicyRevision = z.infer<
-  typeof harvestStatus_V1_Source_PolicyRevisionSchema
->;
 /** Strict raw response path: harvest.source.preset. */
 export const harvestStatus_V1_Source_PresetSchema = z.string();
-/** Raw response path: harvest.source.preset. */
-export type HarvestStatus_V1_Source_Preset = z.infer<typeof harvestStatus_V1_Source_PresetSchema>;
 /** Strict raw response path: harvest.source.profile. */
 export const harvestStatus_V1_Source_ProfileSchema = z.string();
-/** Raw response path: harvest.source.profile. */
-export type HarvestStatus_V1_Source_Profile = z.infer<typeof harvestStatus_V1_Source_ProfileSchema>;
 /** Strict raw response path: harvest.source.valid. */
 export const harvestStatus_V1_Source_ValidSchema = z.boolean();
-/** Raw response path: harvest.source.valid. */
-export type HarvestStatus_V1_Source_Valid = z.infer<typeof harvestStatus_V1_Source_ValidSchema>;
 /** Strict raw response path: harvest.source. */
 export const harvestStatus_V1_SourceSchema = z
   .strictObject({
@@ -1530,8 +756,6 @@ export const harvestStatus_V1_SourceSchema = z
     valid: harvestStatus_V1_Source_ValidSchema,
   })
   .nullable();
-/** Raw response path: harvest.source. */
-export type HarvestStatus_V1_Source = z.infer<typeof harvestStatus_V1_SourceSchema>;
 /** Strict raw response path: harvest.state. */
 export const harvestStatus_V1_StateSchema = z.enum([
   'backing_off',
@@ -1546,18 +770,10 @@ export const harvestStatus_V1_StateSchema = z.enum([
   'unavailable',
   'waiting_for_battle',
 ]);
-/** Raw response path: harvest.state. */
-export type HarvestStatus_V1_State = z.infer<typeof harvestStatus_V1_StateSchema>;
 /** Strict raw response path: harvest.transfer.reason. */
 export const harvestStatus_V1_Transfer_ReasonSchema = z.enum(['run_start']);
-/** Raw response path: harvest.transfer.reason. */
-export type HarvestStatus_V1_Transfer_Reason = z.infer<
-  typeof harvestStatus_V1_Transfer_ReasonSchema
->;
 /** Strict raw response path: harvest.transfer.until. */
 export const harvestStatus_V1_Transfer_UntilSchema = z.number();
-/** Raw response path: harvest.transfer.until. */
-export type HarvestStatus_V1_Transfer_Until = z.infer<typeof harvestStatus_V1_Transfer_UntilSchema>;
 /** Strict raw response path: harvest.transfer. */
 export const harvestStatus_V1_TransferSchema = z
   .strictObject({
@@ -1565,12 +781,8 @@ export const harvestStatus_V1_TransferSchema = z
     until: harvestStatus_V1_Transfer_UntilSchema,
   })
   .nullable();
-/** Raw response path: harvest.transfer. */
-export type HarvestStatus_V1_Transfer = z.infer<typeof harvestStatus_V1_TransferSchema>;
 /** Strict raw response path: harvest.version. */
 export const harvestStatus_V1_VersionSchema = z.literal(1);
-/** Raw response path: harvest.version. */
-export type HarvestStatus_V1_Version = z.infer<typeof harvestStatus_V1_VersionSchema>;
 /** Strict raw response path: harvest, variant: members attempts, circuit_open, code, collection_guard, desired, failures, host, identity, input_revoked, last_outcome, message, next_attempt_at, operation, overlay, owner, server_time, source, state, transfer, version. */
 export const harvestStatus_V1Schema = z.strictObject({
   attempts: harvestStatus_V1_AttemptsSchema,
@@ -1594,78 +806,40 @@ export const harvestStatus_V1Schema = z.strictObject({
   transfer: harvestStatus_V1_TransferSchema,
   version: harvestStatus_V1_VersionSchema,
 });
-/** Raw response path: harvest, variant: members attempts, circuit_open, code, collection_guard, desired, failures, host, identity, input_revoked, last_outcome, message, next_attempt_at, operation, overlay, owner, server_time, source, state, transfer, version. */
-export type HarvestStatus_V1 = z.infer<typeof harvestStatus_V1Schema>;
 /** Strict raw response path: harvest.code. */
 export const harvestStatus_V2_CodeSchema = z.enum(['status_failed']);
-/** Raw response path: harvest.code. */
-export type HarvestStatus_V2_Code = z.infer<typeof harvestStatus_V2_CodeSchema>;
 /** Strict raw response path: harvest.collection_guard. */
 export const harvestStatus_V2_CollectionGuardSchema = z.null();
-/** Raw response path: harvest.collection_guard. */
-export type HarvestStatus_V2_CollectionGuard = z.infer<
-  typeof harvestStatus_V2_CollectionGuardSchema
->;
 /** Strict raw response path: harvest.desired. */
 export const harvestStatus_V2_DesiredSchema = z.null();
-/** Raw response path: harvest.desired. */
-export type HarvestStatus_V2_Desired = z.infer<typeof harvestStatus_V2_DesiredSchema>;
 /** Strict raw response path: harvest.host.last_error. */
 export const harvestStatus_V2_Host_LastErrorSchema = z.null();
-/** Raw response path: harvest.host.last_error. */
-export type HarvestStatus_V2_Host_LastError = z.infer<typeof harvestStatus_V2_Host_LastErrorSchema>;
 /** Strict raw response path: harvest.host.last_tick_at. */
 export const harvestStatus_V2_Host_LastTickAtSchema = z.null();
-/** Raw response path: harvest.host.last_tick_at. */
-export type HarvestStatus_V2_Host_LastTickAt = z.infer<
-  typeof harvestStatus_V2_Host_LastTickAtSchema
->;
 /** Strict raw response path: harvest.host.reconciler. */
 export const harvestStatus_V2_Host_ReconcilerSchema = z.enum(['inactive']);
-/** Raw response path: harvest.host.reconciler. */
-export type HarvestStatus_V2_Host_Reconciler = z.infer<
-  typeof harvestStatus_V2_Host_ReconcilerSchema
->;
 /** Strict raw response path: harvest.host. */
 export const harvestStatus_V2_HostSchema = z.strictObject({
   last_error: harvestStatus_V2_Host_LastErrorSchema,
   last_tick_at: harvestStatus_V2_Host_LastTickAtSchema,
   reconciler: harvestStatus_V2_Host_ReconcilerSchema,
 });
-/** Raw response path: harvest.host. */
-export type HarvestStatus_V2_Host = z.infer<typeof harvestStatus_V2_HostSchema>;
 /** Strict raw response path: harvest.message. */
 export const harvestStatus_V2_MessageSchema = z.string();
-/** Raw response path: harvest.message. */
-export type HarvestStatus_V2_Message = z.infer<typeof harvestStatus_V2_MessageSchema>;
 /** Strict raw response path: harvest.operation. */
 export const harvestStatus_V2_OperationSchema = z.null();
-/** Raw response path: harvest.operation. */
-export type HarvestStatus_V2_Operation = z.infer<typeof harvestStatus_V2_OperationSchema>;
 /** Strict raw response path: harvest.overlay. */
 export const harvestStatus_V2_OverlaySchema = z.null();
-/** Raw response path: harvest.overlay. */
-export type HarvestStatus_V2_Overlay = z.infer<typeof harvestStatus_V2_OverlaySchema>;
 /** Strict raw response path: harvest.owner. */
 export const harvestStatus_V2_OwnerSchema = z.null();
-/** Raw response path: harvest.owner. */
-export type HarvestStatus_V2_Owner = z.infer<typeof harvestStatus_V2_OwnerSchema>;
 /** Strict raw response path: harvest.server_time. */
 export const harvestStatus_V2_ServerTimeSchema = z.number();
-/** Raw response path: harvest.server_time. */
-export type HarvestStatus_V2_ServerTime = z.infer<typeof harvestStatus_V2_ServerTimeSchema>;
 /** Strict raw response path: harvest.source. */
 export const harvestStatus_V2_SourceSchema = z.null();
-/** Raw response path: harvest.source. */
-export type HarvestStatus_V2_Source = z.infer<typeof harvestStatus_V2_SourceSchema>;
 /** Strict raw response path: harvest.state. */
 export const harvestStatus_V2_StateSchema = z.enum(['unavailable']);
-/** Raw response path: harvest.state. */
-export type HarvestStatus_V2_State = z.infer<typeof harvestStatus_V2_StateSchema>;
 /** Strict raw response path: harvest.version. */
 export const harvestStatus_V2_VersionSchema = z.literal(1);
-/** Raw response path: harvest.version. */
-export type HarvestStatus_V2_Version = z.infer<typeof harvestStatus_V2_VersionSchema>;
 /** Strict raw response path: harvest, variant: members code, collection_guard, desired, host, message, operation, overlay, owner, server_time, source, state, version. */
 export const harvestStatus_V2Schema = z.strictObject({
   code: harvestStatus_V2_CodeSchema,
@@ -1681,44 +855,22 @@ export const harvestStatus_V2Schema = z.strictObject({
   state: harvestStatus_V2_StateSchema,
   version: harvestStatus_V2_VersionSchema,
 });
-/** Raw response path: harvest, variant: members code, collection_guard, desired, host, message, operation, overlay, owner, server_time, source, state, version. */
-export type HarvestStatus_V2 = z.infer<typeof harvestStatus_V2Schema>;
 /** Strict raw response path: harvest. */
 export const harvestStatusSchema = z.union([harvestStatus_V1Schema, harvestStatus_V2Schema]);
 /** Raw response path: harvest. */
 export type HarvestStatus = z.infer<typeof harvestStatusSchema>;
 /** Strict raw response path: answer.body.desired.bound.account. */
 export const postHarvestAnswer_Status200_Body_Desired_Bound_AccountSchema = z.null();
-/** Raw response path: answer.body.desired.bound.account. */
-export type PostHarvestAnswer_Status200_Body_Desired_Bound_Account = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_Bound_AccountSchema
->;
 /** Strict raw response path: answer.body.desired.bound.instance. */
 export const postHarvestAnswer_Status200_Body_Desired_Bound_InstanceSchema = z.string();
-/** Raw response path: answer.body.desired.bound.instance. */
-export type PostHarvestAnswer_Status200_Body_Desired_Bound_Instance = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_Bound_InstanceSchema
->;
 /** Strict raw response path: answer.body.desired.bound.policy_revision. */
 export const postHarvestAnswer_Status200_Body_Desired_Bound_PolicyRevisionSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.desired.bound.policy_revision. */
-export type PostHarvestAnswer_Status200_Body_Desired_Bound_PolicyRevision = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_Bound_PolicyRevisionSchema
->;
 /** Strict raw response path: answer.body.desired.bound.profile. */
 export const postHarvestAnswer_Status200_Body_Desired_Bound_ProfileSchema = z.string();
-/** Raw response path: answer.body.desired.bound.profile. */
-export type PostHarvestAnswer_Status200_Body_Desired_Bound_Profile = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_Bound_ProfileSchema
->;
 /** Strict raw response path: answer.body.desired.bound.serial. */
 export const postHarvestAnswer_Status200_Body_Desired_Bound_SerialSchema = z.string();
-/** Raw response path: answer.body.desired.bound.serial. */
-export type PostHarvestAnswer_Status200_Body_Desired_Bound_Serial = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_Bound_SerialSchema
->;
 /** Strict raw response path: answer.body.desired.bound. */
 export const postHarvestAnswer_Status200_Body_Desired_BoundSchema = z.strictObject({
   account: postHarvestAnswer_Status200_Body_Desired_Bound_AccountSchema,
@@ -1727,67 +879,27 @@ export const postHarvestAnswer_Status200_Body_Desired_BoundSchema = z.strictObje
   profile: postHarvestAnswer_Status200_Body_Desired_Bound_ProfileSchema,
   serial: postHarvestAnswer_Status200_Body_Desired_Bound_SerialSchema,
 });
-/** Raw response path: answer.body.desired.bound. */
-export type PostHarvestAnswer_Status200_Body_Desired_Bound = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_BoundSchema
->;
 /** Strict raw response path: answer.body.desired.changed_at. */
 export const postHarvestAnswer_Status200_Body_Desired_ChangedAtSchema = z.number();
-/** Raw response path: answer.body.desired.changed_at. */
-export type PostHarvestAnswer_Status200_Body_Desired_ChangedAt = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_ChangedAtSchema
->;
 /** Strict raw response path: answer.body.desired.changed_by. */
 export const postHarvestAnswer_Status200_Body_Desired_ChangedBySchema = z.enum(['person']);
-/** Raw response path: answer.body.desired.changed_by. */
-export type PostHarvestAnswer_Status200_Body_Desired_ChangedBy = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_ChangedBySchema
->;
 /** Strict raw response path: answer.body.desired.choice. */
 export const postHarvestAnswer_Status200_Body_Desired_ChoiceSchema = z.enum(['off', 'on']);
-/** Raw response path: answer.body.desired.choice. */
-export type PostHarvestAnswer_Status200_Body_Desired_Choice = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_ChoiceSchema
->;
 /** Strict raw response path: answer.body.desired.enabled. */
 export const postHarvestAnswer_Status200_Body_Desired_EnabledSchema = z.boolean();
-/** Raw response path: answer.body.desired.enabled. */
-export type PostHarvestAnswer_Status200_Body_Desired_Enabled = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_EnabledSchema
->;
 /** Strict raw response path: answer.body.desired.label. */
 export const postHarvestAnswer_Status200_Body_Desired_LabelSchema = z.string().nullable();
-/** Raw response path: answer.body.desired.label. */
-export type PostHarvestAnswer_Status200_Body_Desired_Label = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_LabelSchema
->;
 /** Strict raw response path: answer.body.desired.preset. */
 export const postHarvestAnswer_Status200_Body_Desired_PresetSchema = z.string().nullable();
-/** Raw response path: answer.body.desired.preset. */
-export type PostHarvestAnswer_Status200_Body_Desired_Preset = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_PresetSchema
->;
 /** Strict raw response path: answer.body.desired.reason. */
 export const postHarvestAnswer_Status200_Body_Desired_ReasonSchema = z.enum([
   'enabled_by_person',
   'paused_by_person',
 ]);
-/** Raw response path: answer.body.desired.reason. */
-export type PostHarvestAnswer_Status200_Body_Desired_Reason = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_ReasonSchema
->;
 /** Strict raw response path: answer.body.desired.request_key. */
 export const postHarvestAnswer_Status200_Body_Desired_RequestKeySchema = z.string();
-/** Raw response path: answer.body.desired.request_key. */
-export type PostHarvestAnswer_Status200_Body_Desired_RequestKey = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_RequestKeySchema
->;
 /** Strict raw response path: answer.body.desired.revision. */
 export const postHarvestAnswer_Status200_Body_Desired_RevisionSchema = z.number();
-/** Raw response path: answer.body.desired.revision. */
-export type PostHarvestAnswer_Status200_Body_Desired_Revision = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Desired_RevisionSchema
->;
 /** Strict raw response path: answer.body.desired. */
 export const postHarvestAnswer_Status200_Body_DesiredSchema = z.strictObject({
   bound: postHarvestAnswer_Status200_Body_Desired_BoundSchema,
@@ -1801,108 +913,44 @@ export const postHarvestAnswer_Status200_Body_DesiredSchema = z.strictObject({
   request_key: postHarvestAnswer_Status200_Body_Desired_RequestKeySchema,
   revision: postHarvestAnswer_Status200_Body_Desired_RevisionSchema,
 });
-/** Raw response path: answer.body.desired. */
-export type PostHarvestAnswer_Status200_Body_Desired = z.infer<
-  typeof postHarvestAnswer_Status200_Body_DesiredSchema
->;
 /** Strict raw response path: answer.body.harvest.attempts. */
 export const postHarvestAnswer_Status200_Body_Harvest_AttemptsSchema = z.number();
-/** Raw response path: answer.body.harvest.attempts. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Attempts = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_AttemptsSchema
->;
 /** Strict raw response path: answer.body.harvest.circuit_open. */
 export const postHarvestAnswer_Status200_Body_Harvest_CircuitOpenSchema = z.boolean();
-/** Raw response path: answer.body.harvest.circuit_open. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CircuitOpen = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CircuitOpenSchema
->;
 /** Strict raw response path: answer.body.harvest.code. */
 export const postHarvestAnswer_Status200_Body_Harvest_CodeSchema = z.enum([
   'collector_stopping',
   'launch_due',
   'paused',
 ]);
-/** Raw response path: answer.body.harvest.code. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Code = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CodeSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard.blocks_launch. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_BlocksLaunchSchema =
   z.boolean();
-/** Raw response path: answer.body.harvest.collection_guard.blocks_launch. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard_BlocksLaunch = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_BlocksLaunchSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard.code. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_CodeSchema = z.null();
-/** Raw response path: answer.body.harvest.collection_guard.code. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard_Code = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_CodeSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard.evidence. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_EvidenceSchema = z.string();
-/** Raw response path: answer.body.harvest.collection_guard.evidence. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard_Evidence = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_EvidenceSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard.evidence_revision. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_EvidenceRevisionSchema =
   z.null();
-/** Raw response path: answer.body.harvest.collection_guard.evidence_revision. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard_EvidenceRevision = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_EvidenceRevisionSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard.handoff_id. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_HandoffIdSchema = z.null();
-/** Raw response path: answer.body.harvest.collection_guard.handoff_id. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard_HandoffId = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_HandoffIdSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard.instance. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_InstanceSchema = z.string();
-/** Raw response path: answer.body.harvest.collection_guard.instance. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard_Instance = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_InstanceSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard.message. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_MessageSchema = z.null();
-/** Raw response path: answer.body.harvest.collection_guard.message. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard_Message = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_MessageSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard.operation_id. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_OperationIdSchema = z.null();
-/** Raw response path: answer.body.harvest.collection_guard.operation_id. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard_OperationId = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_OperationIdSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard.recorded_status. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_RecordedStatusSchema =
   z.null();
-/** Raw response path: answer.body.harvest.collection_guard.recorded_status. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard_RecordedStatus = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_RecordedStatusSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard.scope. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_ScopeSchema = z.string();
-/** Raw response path: answer.body.harvest.collection_guard.scope. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard_Scope = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_ScopeSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard.serial. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_SerialSchema = z.string();
-/** Raw response path: answer.body.harvest.collection_guard.serial. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard_Serial = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_SerialSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard.setup_battle_id. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_SetupBattleIdSchema =
   z.null();
-/** Raw response path: answer.body.harvest.collection_guard.setup_battle_id. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard_SetupBattleId = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_SetupBattleIdSchema
->;
 /** Strict raw response path: answer.body.harvest.collection_guard. */
 export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuardSchema = z
   .strictObject({
@@ -1921,42 +969,18 @@ export const postHarvestAnswer_Status200_Body_Harvest_CollectionGuardSchema = z
     setup_battle_id: postHarvestAnswer_Status200_Body_Harvest_CollectionGuard_SetupBattleIdSchema,
   })
   .nullable();
-/** Raw response path: answer.body.harvest.collection_guard. */
-export type PostHarvestAnswer_Status200_Body_Harvest_CollectionGuard = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_CollectionGuardSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.bound.account. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_AccountSchema = z.null();
-/** Raw response path: answer.body.harvest.desired.bound.account. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_Bound_Account = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_AccountSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.bound.instance. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_InstanceSchema = z.string();
-/** Raw response path: answer.body.harvest.desired.bound.instance. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_Bound_Instance = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_InstanceSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.bound.policy_revision. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_PolicyRevisionSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.harvest.desired.bound.policy_revision. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_Bound_PolicyRevision = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_PolicyRevisionSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.bound.profile. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_ProfileSchema = z.string();
-/** Raw response path: answer.body.harvest.desired.bound.profile. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_Bound_Profile = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_ProfileSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.bound.serial. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_SerialSchema = z.string();
-/** Raw response path: answer.body.harvest.desired.bound.serial. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_Bound_Serial = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_SerialSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.bound. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_BoundSchema = z.strictObject({
   account: postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_AccountSchema,
@@ -1965,67 +989,27 @@ export const postHarvestAnswer_Status200_Body_Harvest_Desired_BoundSchema = z.st
   profile: postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_ProfileSchema,
   serial: postHarvestAnswer_Status200_Body_Harvest_Desired_Bound_SerialSchema,
 });
-/** Raw response path: answer.body.harvest.desired.bound. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_Bound = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_BoundSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.changed_at. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_ChangedAtSchema = z.number();
-/** Raw response path: answer.body.harvest.desired.changed_at. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_ChangedAt = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_ChangedAtSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.changed_by. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_ChangedBySchema = z.enum(['person']);
-/** Raw response path: answer.body.harvest.desired.changed_by. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_ChangedBy = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_ChangedBySchema
->;
 /** Strict raw response path: answer.body.harvest.desired.choice. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_ChoiceSchema = z.enum(['off', 'on']);
-/** Raw response path: answer.body.harvest.desired.choice. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_Choice = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_ChoiceSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.enabled. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_EnabledSchema = z.boolean();
-/** Raw response path: answer.body.harvest.desired.enabled. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_Enabled = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_EnabledSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.label. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_LabelSchema = z.string().nullable();
-/** Raw response path: answer.body.harvest.desired.label. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_Label = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_LabelSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.preset. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_PresetSchema = z.string().nullable();
-/** Raw response path: answer.body.harvest.desired.preset. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_Preset = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_PresetSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.reason. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_ReasonSchema = z.enum([
   'enabled_by_person',
   'paused_by_person',
 ]);
-/** Raw response path: answer.body.harvest.desired.reason. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_Reason = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_ReasonSchema
->;
 /** Strict raw response path: answer.body.harvest.desired.request_key. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_RequestKeySchema = z.string();
-/** Raw response path: answer.body.harvest.desired.request_key. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_RequestKey = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_RequestKeySchema
->;
 /** Strict raw response path: answer.body.harvest.desired.revision. */
 export const postHarvestAnswer_Status200_Body_Harvest_Desired_RevisionSchema = z.number();
-/** Raw response path: answer.body.harvest.desired.revision. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired_Revision = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Desired_RevisionSchema
->;
 /** Strict raw response path: answer.body.harvest.desired. */
 export const postHarvestAnswer_Status200_Body_Harvest_DesiredSchema = z.strictObject({
   bound: postHarvestAnswer_Status200_Body_Harvest_Desired_BoundSchema,
@@ -2039,68 +1023,28 @@ export const postHarvestAnswer_Status200_Body_Harvest_DesiredSchema = z.strictOb
   request_key: postHarvestAnswer_Status200_Body_Harvest_Desired_RequestKeySchema,
   revision: postHarvestAnswer_Status200_Body_Harvest_Desired_RevisionSchema,
 });
-/** Raw response path: answer.body.harvest.desired. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Desired = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_DesiredSchema
->;
 /** Strict raw response path: answer.body.harvest.failures. */
 export const postHarvestAnswer_Status200_Body_Harvest_FailuresSchema = z.number();
-/** Raw response path: answer.body.harvest.failures. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Failures = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_FailuresSchema
->;
 /** Strict raw response path: answer.body.harvest.host.last_error. */
 export const postHarvestAnswer_Status200_Body_Harvest_Host_LastErrorSchema = z.null();
-/** Raw response path: answer.body.harvest.host.last_error. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Host_LastError = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Host_LastErrorSchema
->;
 /** Strict raw response path: answer.body.harvest.host.last_tick_at. */
 export const postHarvestAnswer_Status200_Body_Harvest_Host_LastTickAtSchema = z.number().nullable();
-/** Raw response path: answer.body.harvest.host.last_tick_at. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Host_LastTickAt = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Host_LastTickAtSchema
->;
 /** Strict raw response path: answer.body.harvest.host.reconciler. */
 export const postHarvestAnswer_Status200_Body_Harvest_Host_ReconcilerSchema = z.enum(['inactive']);
-/** Raw response path: answer.body.harvest.host.reconciler. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Host_Reconciler = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Host_ReconcilerSchema
->;
 /** Strict raw response path: answer.body.harvest.host. */
 export const postHarvestAnswer_Status200_Body_Harvest_HostSchema = z.strictObject({
   last_error: postHarvestAnswer_Status200_Body_Harvest_Host_LastErrorSchema,
   last_tick_at: postHarvestAnswer_Status200_Body_Harvest_Host_LastTickAtSchema,
   reconciler: postHarvestAnswer_Status200_Body_Harvest_Host_ReconcilerSchema,
 });
-/** Raw response path: answer.body.harvest.host. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Host = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_HostSchema
->;
 /** Strict raw response path: answer.body.harvest.identity.account. */
 export const postHarvestAnswer_Status200_Body_Harvest_Identity_AccountSchema = z.null();
-/** Raw response path: answer.body.harvest.identity.account. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Identity_Account = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Identity_AccountSchema
->;
 /** Strict raw response path: answer.body.harvest.identity.instance. */
 export const postHarvestAnswer_Status200_Body_Harvest_Identity_InstanceSchema = z.string();
-/** Raw response path: answer.body.harvest.identity.instance. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Identity_Instance = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Identity_InstanceSchema
->;
 /** Strict raw response path: answer.body.harvest.identity.profile. */
 export const postHarvestAnswer_Status200_Body_Harvest_Identity_ProfileSchema = z.string();
-/** Raw response path: answer.body.harvest.identity.profile. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Identity_Profile = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Identity_ProfileSchema
->;
 /** Strict raw response path: answer.body.harvest.identity.serial. */
 export const postHarvestAnswer_Status200_Body_Harvest_Identity_SerialSchema = z.string();
-/** Raw response path: answer.body.harvest.identity.serial. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Identity_Serial = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Identity_SerialSchema
->;
 /** Strict raw response path: answer.body.harvest.identity. */
 export const postHarvestAnswer_Status200_Body_Harvest_IdentitySchema = z.strictObject({
   account: postHarvestAnswer_Status200_Body_Harvest_Identity_AccountSchema,
@@ -2108,96 +1052,36 @@ export const postHarvestAnswer_Status200_Body_Harvest_IdentitySchema = z.strictO
   profile: postHarvestAnswer_Status200_Body_Harvest_Identity_ProfileSchema,
   serial: postHarvestAnswer_Status200_Body_Harvest_Identity_SerialSchema,
 });
-/** Raw response path: answer.body.harvest.identity. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Identity = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_IdentitySchema
->;
 /** Strict raw response path: answer.body.harvest.input_revoked. */
 export const postHarvestAnswer_Status200_Body_Harvest_InputRevokedSchema = z.boolean();
-/** Raw response path: answer.body.harvest.input_revoked. */
-export type PostHarvestAnswer_Status200_Body_Harvest_InputRevoked = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_InputRevokedSchema
->;
 /** Strict raw response path: answer.body.harvest.last_outcome. */
 export const postHarvestAnswer_Status200_Body_Harvest_LastOutcomeSchema = z.null();
-/** Raw response path: answer.body.harvest.last_outcome. */
-export type PostHarvestAnswer_Status200_Body_Harvest_LastOutcome = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_LastOutcomeSchema
->;
 /** Strict raw response path: answer.body.harvest.message. */
 export const postHarvestAnswer_Status200_Body_Harvest_MessageSchema = z.string();
-/** Raw response path: answer.body.harvest.message. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Message = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_MessageSchema
->;
 /** Strict raw response path: answer.body.harvest.next_attempt_at. */
 export const postHarvestAnswer_Status200_Body_Harvest_NextAttemptAtSchema = z.null();
-/** Raw response path: answer.body.harvest.next_attempt_at. */
-export type PostHarvestAnswer_Status200_Body_Harvest_NextAttemptAt = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_NextAttemptAtSchema
->;
 /** Strict raw response path: answer.body.harvest.operation.battle. */
 export const postHarvestAnswer_Status200_Body_Harvest_Operation_BattleSchema = z.null();
-/** Raw response path: answer.body.harvest.operation.battle. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Operation_Battle = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Operation_BattleSchema
->;
 /** Strict raw response path: answer.body.harvest.operation.desire_revision. */
 export const postHarvestAnswer_Status200_Body_Harvest_Operation_DesireRevisionSchema = z.number();
-/** Raw response path: answer.body.harvest.operation.desire_revision. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Operation_DesireRevision = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Operation_DesireRevisionSchema
->;
 /** Strict raw response path: answer.body.harvest.operation.evidence. */
 export const postHarvestAnswer_Status200_Body_Harvest_Operation_EvidenceSchema = z.null();
-/** Raw response path: answer.body.harvest.operation.evidence. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Operation_Evidence = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Operation_EvidenceSchema
->;
 /** Strict raw response path: answer.body.harvest.operation.harvest_managed. */
 export const postHarvestAnswer_Status200_Body_Harvest_Operation_HarvestManagedSchema = z.boolean();
-/** Raw response path: answer.body.harvest.operation.harvest_managed. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Operation_HarvestManaged = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Operation_HarvestManagedSchema
->;
 /** Strict raw response path: answer.body.harvest.operation.id. */
 export const postHarvestAnswer_Status200_Body_Harvest_Operation_IdSchema = z.string();
-/** Raw response path: answer.body.harvest.operation.id. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Operation_Id = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Operation_IdSchema
->;
 /** Strict raw response path: answer.body.harvest.operation.kind. */
 export const postHarvestAnswer_Status200_Body_Harvest_Operation_KindSchema = z.enum(['gems']);
-/** Raw response path: answer.body.harvest.operation.kind. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Operation_Kind = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Operation_KindSchema
->;
 /** Strict raw response path: answer.body.harvest.operation.revision. */
 export const postHarvestAnswer_Status200_Body_Harvest_Operation_RevisionSchema = z.number();
-/** Raw response path: answer.body.harvest.operation.revision. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Operation_Revision = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Operation_RevisionSchema
->;
 /** Strict raw response path: answer.body.harvest.operation.routines. */
 export const postHarvestAnswer_Status200_Body_Harvest_Operation_RoutinesSchema = z.null();
-/** Raw response path: answer.body.harvest.operation.routines. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Operation_Routines = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Operation_RoutinesSchema
->;
 /** Strict raw response path: answer.body.harvest.operation.status. */
 export const postHarvestAnswer_Status200_Body_Harvest_Operation_StatusSchema = z.enum([
   'cancelling',
 ]);
-/** Raw response path: answer.body.harvest.operation.status. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Operation_Status = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Operation_StatusSchema
->;
 /** Strict raw response path: answer.body.harvest.operation.worker_alive. */
 export const postHarvestAnswer_Status200_Body_Harvest_Operation_WorkerAliveSchema = z.boolean();
-/** Raw response path: answer.body.harvest.operation.worker_alive. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Operation_WorkerAlive = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Operation_WorkerAliveSchema
->;
 /** Strict raw response path: answer.body.harvest.operation. */
 export const postHarvestAnswer_Status200_Body_Harvest_OperationSchema = z
   .strictObject({
@@ -2213,134 +1097,56 @@ export const postHarvestAnswer_Status200_Body_Harvest_OperationSchema = z
     worker_alive: postHarvestAnswer_Status200_Body_Harvest_Operation_WorkerAliveSchema,
   })
   .nullable();
-/** Raw response path: answer.body.harvest.operation. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Operation = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_OperationSchema
->;
 /** Strict raw response path: answer.body.harvest.overlay. */
 export const postHarvestAnswer_Status200_Body_Harvest_OverlaySchema = z.null();
-/** Raw response path: answer.body.harvest.overlay. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Overlay = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_OverlaySchema
->;
 /** Strict raw response path: answer.body.harvest.owner. */
 export const postHarvestAnswer_Status200_Body_Harvest_OwnerSchema = z.null();
-/** Raw response path: answer.body.harvest.owner. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Owner = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_OwnerSchema
->;
 /** Strict raw response path: answer.body.harvest.server_time. */
 export const postHarvestAnswer_Status200_Body_Harvest_ServerTimeSchema = z.number();
-/** Raw response path: answer.body.harvest.server_time. */
-export type PostHarvestAnswer_Status200_Body_Harvest_ServerTime = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.harvest.source.changed_since_enable. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_ChangedSinceEnableSchema = z.boolean();
-/** Raw response path: answer.body.harvest.source.changed_since_enable. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_ChangedSinceEnable = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_ChangedSinceEnableSchema
->;
 /** Strict raw response path: answer.body.harvest.source.code. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_CodeSchema = z.null();
-/** Raw response path: answer.body.harvest.source.code. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Code = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_CodeSchema
->;
 /** Strict raw response path: answer.body.harvest.source.edit.blueprint. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_Edit_BlueprintSchema = z.string();
-/** Raw response path: answer.body.harvest.source.edit.blueprint. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Edit_Blueprint = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_Edit_BlueprintSchema
->;
 /** Strict raw response path: answer.body.harvest.source.edit.page. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_Edit_PageSchema = z.string();
-/** Raw response path: answer.body.harvest.source.edit.page. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Edit_Page = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_Edit_PageSchema
->;
 /** Strict raw response path: answer.body.harvest.source.edit. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_EditSchema = z.strictObject({
   blueprint: postHarvestAnswer_Status200_Body_Harvest_Source_Edit_BlueprintSchema,
   page: postHarvestAnswer_Status200_Body_Harvest_Source_Edit_PageSchema,
 });
-/** Raw response path: answer.body.harvest.source.edit. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Edit = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_EditSchema
->;
 /** Strict raw response path: answer.body.harvest.source.label. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_LabelSchema = z.string();
-/** Raw response path: answer.body.harvest.source.label. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Label = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_LabelSchema
->;
 /** Strict raw response path: answer.body.harvest.source.message. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_MessageSchema = z.null();
-/** Raw response path: answer.body.harvest.source.message. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Message = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_MessageSchema
->;
 /** Strict raw response path: answer.body.harvest.source.policy.ad_gems.enabled. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.harvest.source.policy.ad_gems.enabled. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems_Enabled = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.harvest.source.policy.ad_gems.interval_sec. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.harvest.source.policy.ad_gems.interval_sec. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems_IntervalSec = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems_IntervalSecSchema
->;
 /** Strict raw response path: answer.body.harvest.source.policy.ad_gems.window_sec. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.harvest.source.policy.ad_gems.window_sec. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems_WindowSec = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.harvest.source.policy.ad_gems. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGemsSchema = z.strictObject({
   enabled: postHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems_EnabledSchema,
   interval_sec: postHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems_IntervalSecSchema,
   window_sec: postHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems_WindowSecSchema,
 });
-/** Raw response path: answer.body.harvest.source.policy.ad_gems. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGems = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGemsSchema
->;
 /** Strict raw response path: answer.body.harvest.source.policy.floating_gems.enabled. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.harvest.source.policy.floating_gems.enabled. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_Enabled = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.harvest.source.policy.floating_gems.interval_sec. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.harvest.source.policy.floating_gems.interval_sec. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_IntervalSec =
-  z.infer<
-    typeof postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.harvest.source.policy.floating_gems.tap_interval_sec. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.harvest.source.policy.floating_gems.tap_interval_sec. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.harvest.source.policy.floating_gems.window_sec. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.harvest.source.policy.floating_gems.window_sec. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_WindowSec = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.harvest.source.policy.floating_gems. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGemsSchema =
   z.strictObject({
@@ -2351,43 +1157,19 @@ export const postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems
       postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_TapIntervalSecSchema,
     window_sec: postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.harvest.source.policy.floating_gems. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGems = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.harvest.source.policy. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_PolicySchema = z.strictObject({
   ad_gems: postHarvestAnswer_Status200_Body_Harvest_Source_Policy_AdGemsSchema,
   floating_gems: postHarvestAnswer_Status200_Body_Harvest_Source_Policy_FloatingGemsSchema,
 });
-/** Raw response path: answer.body.harvest.source.policy. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Policy = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_PolicySchema
->;
 /** Strict raw response path: answer.body.harvest.source.policy_revision. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_PolicyRevisionSchema = z.string();
-/** Raw response path: answer.body.harvest.source.policy_revision. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_PolicyRevision = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_PolicyRevisionSchema
->;
 /** Strict raw response path: answer.body.harvest.source.preset. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_PresetSchema = z.string();
-/** Raw response path: answer.body.harvest.source.preset. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Preset = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_PresetSchema
->;
 /** Strict raw response path: answer.body.harvest.source.profile. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_ProfileSchema = z.string();
-/** Raw response path: answer.body.harvest.source.profile. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Profile = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_ProfileSchema
->;
 /** Strict raw response path: answer.body.harvest.source.valid. */
 export const postHarvestAnswer_Status200_Body_Harvest_Source_ValidSchema = z.boolean();
-/** Raw response path: answer.body.harvest.source.valid. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source_Valid = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_Source_ValidSchema
->;
 /** Strict raw response path: answer.body.harvest.source. */
 export const postHarvestAnswer_Status200_Body_Harvest_SourceSchema = z
   .strictObject({
@@ -2403,32 +1185,16 @@ export const postHarvestAnswer_Status200_Body_Harvest_SourceSchema = z
     valid: postHarvestAnswer_Status200_Body_Harvest_Source_ValidSchema,
   })
   .nullable();
-/** Raw response path: answer.body.harvest.source. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Source = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_SourceSchema
->;
 /** Strict raw response path: answer.body.harvest.state. */
 export const postHarvestAnswer_Status200_Body_Harvest_StateSchema = z.enum([
   'off',
   'starting',
   'stopping',
 ]);
-/** Raw response path: answer.body.harvest.state. */
-export type PostHarvestAnswer_Status200_Body_Harvest_State = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_StateSchema
->;
 /** Strict raw response path: answer.body.harvest.transfer. */
 export const postHarvestAnswer_Status200_Body_Harvest_TransferSchema = z.null();
-/** Raw response path: answer.body.harvest.transfer. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Transfer = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_TransferSchema
->;
 /** Strict raw response path: answer.body.harvest.version. */
 export const postHarvestAnswer_Status200_Body_Harvest_VersionSchema = z.number();
-/** Raw response path: answer.body.harvest.version. */
-export type PostHarvestAnswer_Status200_Body_Harvest_Version = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Harvest_VersionSchema
->;
 /** Strict raw response path: answer.body.harvest. */
 export const postHarvestAnswer_Status200_Body_HarvestSchema = z.strictObject({
   attempts: postHarvestAnswer_Status200_Body_Harvest_AttemptsSchema,
@@ -2452,70 +1218,30 @@ export const postHarvestAnswer_Status200_Body_HarvestSchema = z.strictObject({
   transfer: postHarvestAnswer_Status200_Body_Harvest_TransferSchema,
   version: postHarvestAnswer_Status200_Body_Harvest_VersionSchema,
 });
-/** Raw response path: answer.body.harvest. */
-export type PostHarvestAnswer_Status200_Body_Harvest = z.infer<
-  typeof postHarvestAnswer_Status200_Body_HarvestSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const postHarvestAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type PostHarvestAnswer_Status200_Body_Ok = z.infer<
-  typeof postHarvestAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body.overlay. */
 export const postHarvestAnswer_Status200_Body_OverlaySchema = z.null();
-/** Raw response path: answer.body.overlay. */
-export type PostHarvestAnswer_Status200_Body_Overlay = z.infer<
-  typeof postHarvestAnswer_Status200_Body_OverlaySchema
->;
 /** Strict raw response path: answer.body.replayed. */
 export const postHarvestAnswer_Status200_Body_ReplayedSchema = z.boolean();
-/** Raw response path: answer.body.replayed. */
-export type PostHarvestAnswer_Status200_Body_Replayed = z.infer<
-  typeof postHarvestAnswer_Status200_Body_ReplayedSchema
->;
 /** Strict raw response path: answer.body.stop.errors. */
 export const postHarvestAnswer_Status200_Body_Stop_ErrorsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.stop.errors. */
-export type PostHarvestAnswer_Status200_Body_Stop_Errors = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Stop_ErrorsSchema
->;
 /** Strict raw response path: answer.body.stop.requested. */
 export const postHarvestAnswer_Status200_Body_Stop_RequestedSchema = z.boolean();
-/** Raw response path: answer.body.stop.requested. */
-export type PostHarvestAnswer_Status200_Body_Stop_Requested = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Stop_RequestedSchema
->;
 /** Strict raw response path: answer.body.stop.stopped[]. */
 export const postHarvestAnswer_Status200_Body_Stop_Stopped_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.stop.stopped[]. */
-export type PostHarvestAnswer_Status200_Body_Stop_Stopped_ArrayElement = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Stop_Stopped_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.stop.stopped. */
 export const postHarvestAnswer_Status200_Body_Stop_StoppedSchema = z.array(
   postHarvestAnswer_Status200_Body_Stop_Stopped_ArrayElementSchema,
 );
-/** Raw response path: answer.body.stop.stopped. */
-export type PostHarvestAnswer_Status200_Body_Stop_Stopped = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Stop_StoppedSchema
->;
 /** Strict raw response path: answer.body.stop.stopping[]. */
 export const postHarvestAnswer_Status200_Body_Stop_Stopping_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.stop.stopping[]. */
-export type PostHarvestAnswer_Status200_Body_Stop_Stopping_ArrayElement = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Stop_Stopping_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.stop.stopping. */
 export const postHarvestAnswer_Status200_Body_Stop_StoppingSchema = z.array(
   postHarvestAnswer_Status200_Body_Stop_Stopping_ArrayElementSchema,
 );
-/** Raw response path: answer.body.stop.stopping. */
-export type PostHarvestAnswer_Status200_Body_Stop_Stopping = z.infer<
-  typeof postHarvestAnswer_Status200_Body_Stop_StoppingSchema
->;
 /** Strict raw response path: answer.body.stop. */
 export const postHarvestAnswer_Status200_Body_StopSchema = z.strictObject({
   errors: postHarvestAnswer_Status200_Body_Stop_ErrorsSchema,
@@ -2523,10 +1249,6 @@ export const postHarvestAnswer_Status200_Body_StopSchema = z.strictObject({
   stopped: postHarvestAnswer_Status200_Body_Stop_StoppedSchema,
   stopping: postHarvestAnswer_Status200_Body_Stop_StoppingSchema,
 });
-/** Raw response path: answer.body.stop. */
-export type PostHarvestAnswer_Status200_Body_Stop = z.infer<
-  typeof postHarvestAnswer_Status200_Body_StopSchema
->;
 /** Strict raw response path: answer.body. */
 export const postHarvestAnswer_Status200_BodySchema = z.strictObject({
   desired: postHarvestAnswer_Status200_Body_DesiredSchema,
@@ -2536,100 +1258,44 @@ export const postHarvestAnswer_Status200_BodySchema = z.strictObject({
   replayed: postHarvestAnswer_Status200_Body_ReplayedSchema,
   stop: postHarvestAnswer_Status200_Body_StopSchema,
 });
-/** Raw response path: answer.body. */
-export type PostHarvestAnswer_Status200_Body = z.infer<
-  typeof postHarvestAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const postHarvestAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type PostHarvestAnswer_Status200_Status = z.infer<
-  typeof postHarvestAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members desired, harvest, ok, overlay, replayed, stop. */
 export const postHarvestAnswer_Status200Schema = z.strictObject({
   body: postHarvestAnswer_Status200_BodySchema,
   status: postHarvestAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members desired, harvest, ok, overlay, replayed, stop. */
-export type PostHarvestAnswer_Status200 = z.infer<typeof postHarvestAnswer_Status200Schema>;
 /** Strict raw response path: answer.body.code. */
 export const postHarvestAnswer_Status400_Body_CodeSchema = z.enum(['invalid_request']);
-/** Raw response path: answer.body.code. */
-export type PostHarvestAnswer_Status400_Body_Code = z.infer<
-  typeof postHarvestAnswer_Status400_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const postHarvestAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type PostHarvestAnswer_Status400_Body_Error = z.infer<
-  typeof postHarvestAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const postHarvestAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type PostHarvestAnswer_Status400_Body_Ok = z.infer<
-  typeof postHarvestAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const postHarvestAnswer_Status400_BodySchema = z.strictObject({
   code: postHarvestAnswer_Status400_Body_CodeSchema,
   error: postHarvestAnswer_Status400_Body_ErrorSchema,
   ok: postHarvestAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type PostHarvestAnswer_Status400_Body = z.infer<
-  typeof postHarvestAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const postHarvestAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type PostHarvestAnswer_Status400_Status = z.infer<
-  typeof postHarvestAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members code, error, ok. */
 export const postHarvestAnswer_Status400Schema = z.strictObject({
   body: postHarvestAnswer_Status400_BodySchema,
   status: postHarvestAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members code, error, ok. */
-export type PostHarvestAnswer_Status400 = z.infer<typeof postHarvestAnswer_Status400Schema>;
 /** Strict raw response path: answer.body.code. */
 export const postHarvestAnswer_Status409V1_Body_CodeSchema = z.enum(['harvest_revision_changed']);
-/** Raw response path: answer.body.code. */
-export type PostHarvestAnswer_Status409V1_Body_Code = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.desired.bound.account. */
 export const postHarvestAnswer_Status409V1_Body_Desired_Bound_AccountSchema = z.null();
-/** Raw response path: answer.body.desired.bound.account. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_Bound_Account = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_Bound_AccountSchema
->;
 /** Strict raw response path: answer.body.desired.bound.instance. */
 export const postHarvestAnswer_Status409V1_Body_Desired_Bound_InstanceSchema = z.string();
-/** Raw response path: answer.body.desired.bound.instance. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_Bound_Instance = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_Bound_InstanceSchema
->;
 /** Strict raw response path: answer.body.desired.bound.policy_revision. */
 export const postHarvestAnswer_Status409V1_Body_Desired_Bound_PolicyRevisionSchema = z.string();
-/** Raw response path: answer.body.desired.bound.policy_revision. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_Bound_PolicyRevision = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_Bound_PolicyRevisionSchema
->;
 /** Strict raw response path: answer.body.desired.bound.profile. */
 export const postHarvestAnswer_Status409V1_Body_Desired_Bound_ProfileSchema = z.string();
-/** Raw response path: answer.body.desired.bound.profile. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_Bound_Profile = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_Bound_ProfileSchema
->;
 /** Strict raw response path: answer.body.desired.bound.serial. */
 export const postHarvestAnswer_Status409V1_Body_Desired_Bound_SerialSchema = z.string();
-/** Raw response path: answer.body.desired.bound.serial. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_Bound_Serial = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_Bound_SerialSchema
->;
 /** Strict raw response path: answer.body.desired.bound. */
 export const postHarvestAnswer_Status409V1_Body_Desired_BoundSchema = z.strictObject({
   account: postHarvestAnswer_Status409V1_Body_Desired_Bound_AccountSchema,
@@ -2638,66 +1304,26 @@ export const postHarvestAnswer_Status409V1_Body_Desired_BoundSchema = z.strictOb
   profile: postHarvestAnswer_Status409V1_Body_Desired_Bound_ProfileSchema,
   serial: postHarvestAnswer_Status409V1_Body_Desired_Bound_SerialSchema,
 });
-/** Raw response path: answer.body.desired.bound. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_Bound = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_BoundSchema
->;
 /** Strict raw response path: answer.body.desired.changed_at. */
 export const postHarvestAnswer_Status409V1_Body_Desired_ChangedAtSchema = z.number();
-/** Raw response path: answer.body.desired.changed_at. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_ChangedAt = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_ChangedAtSchema
->;
 /** Strict raw response path: answer.body.desired.changed_by. */
 export const postHarvestAnswer_Status409V1_Body_Desired_ChangedBySchema = z.enum(['person']);
-/** Raw response path: answer.body.desired.changed_by. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_ChangedBy = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_ChangedBySchema
->;
 /** Strict raw response path: answer.body.desired.choice. */
 export const postHarvestAnswer_Status409V1_Body_Desired_ChoiceSchema = z.enum(['on']);
-/** Raw response path: answer.body.desired.choice. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_Choice = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_ChoiceSchema
->;
 /** Strict raw response path: answer.body.desired.enabled. */
 export const postHarvestAnswer_Status409V1_Body_Desired_EnabledSchema = z.boolean();
-/** Raw response path: answer.body.desired.enabled. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_Enabled = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_EnabledSchema
->;
 /** Strict raw response path: answer.body.desired.label. */
 export const postHarvestAnswer_Status409V1_Body_Desired_LabelSchema = z.string();
-/** Raw response path: answer.body.desired.label. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_Label = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_LabelSchema
->;
 /** Strict raw response path: answer.body.desired.preset. */
 export const postHarvestAnswer_Status409V1_Body_Desired_PresetSchema = z.string();
-/** Raw response path: answer.body.desired.preset. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_Preset = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_PresetSchema
->;
 /** Strict raw response path: answer.body.desired.reason. */
 export const postHarvestAnswer_Status409V1_Body_Desired_ReasonSchema = z.enum([
   'enabled_by_person',
 ]);
-/** Raw response path: answer.body.desired.reason. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_Reason = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_ReasonSchema
->;
 /** Strict raw response path: answer.body.desired.request_key. */
 export const postHarvestAnswer_Status409V1_Body_Desired_RequestKeySchema = z.string();
-/** Raw response path: answer.body.desired.request_key. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_RequestKey = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_RequestKeySchema
->;
 /** Strict raw response path: answer.body.desired.revision. */
 export const postHarvestAnswer_Status409V1_Body_Desired_RevisionSchema = z.number();
-/** Raw response path: answer.body.desired.revision. */
-export type PostHarvestAnswer_Status409V1_Body_Desired_Revision = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_Desired_RevisionSchema
->;
 /** Strict raw response path: answer.body.desired. */
 export const postHarvestAnswer_Status409V1_Body_DesiredSchema = z.strictObject({
   bound: postHarvestAnswer_Status409V1_Body_Desired_BoundSchema,
@@ -2711,22 +1337,10 @@ export const postHarvestAnswer_Status409V1_Body_DesiredSchema = z.strictObject({
   request_key: postHarvestAnswer_Status409V1_Body_Desired_RequestKeySchema,
   revision: postHarvestAnswer_Status409V1_Body_Desired_RevisionSchema,
 });
-/** Raw response path: answer.body.desired. */
-export type PostHarvestAnswer_Status409V1_Body_Desired = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_DesiredSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const postHarvestAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type PostHarvestAnswer_Status409V1_Body_Error = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const postHarvestAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type PostHarvestAnswer_Status409V1_Body_Ok = z.infer<
-  typeof postHarvestAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const postHarvestAnswer_Status409V1_BodySchema = z.strictObject({
   code: postHarvestAnswer_Status409V1_Body_CodeSchema,
@@ -2734,155 +1348,67 @@ export const postHarvestAnswer_Status409V1_BodySchema = z.strictObject({
   error: postHarvestAnswer_Status409V1_Body_ErrorSchema,
   ok: postHarvestAnswer_Status409V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type PostHarvestAnswer_Status409V1_Body = z.infer<
-  typeof postHarvestAnswer_Status409V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const postHarvestAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type PostHarvestAnswer_Status409V1_Status = z.infer<
-  typeof postHarvestAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, desired, error, ok. */
 export const postHarvestAnswer_Status409V1Schema = z.strictObject({
   body: postHarvestAnswer_Status409V1_BodySchema,
   status: postHarvestAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, desired, error, ok. */
-export type PostHarvestAnswer_Status409V1 = z.infer<typeof postHarvestAnswer_Status409V1Schema>;
 /** Strict raw response path: answer.body.code. */
 export const postHarvestAnswer_Status409V2_Body_CodeSchema = z.enum([
   'action_lock',
   'context_changed',
   'idempotency_key_reused',
 ]);
-/** Raw response path: answer.body.code. */
-export type PostHarvestAnswer_Status409V2_Body_Code = z.infer<
-  typeof postHarvestAnswer_Status409V2_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const postHarvestAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type PostHarvestAnswer_Status409V2_Body_Error = z.infer<
-  typeof postHarvestAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const postHarvestAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type PostHarvestAnswer_Status409V2_Body_Ok = z.infer<
-  typeof postHarvestAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const postHarvestAnswer_Status409V2_BodySchema = z.strictObject({
   code: postHarvestAnswer_Status409V2_Body_CodeSchema,
   error: postHarvestAnswer_Status409V2_Body_ErrorSchema,
   ok: postHarvestAnswer_Status409V2_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type PostHarvestAnswer_Status409V2_Body = z.infer<
-  typeof postHarvestAnswer_Status409V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const postHarvestAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type PostHarvestAnswer_Status409V2_Status = z.infer<
-  typeof postHarvestAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const postHarvestAnswer_Status409V2Schema = z.strictObject({
   body: postHarvestAnswer_Status409V2_BodySchema,
   status: postHarvestAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type PostHarvestAnswer_Status409V2 = z.infer<typeof postHarvestAnswer_Status409V2Schema>;
 /** Strict raw response path: answer.body.code. */
 export const postHarvestAnswer_Status409V3_Body_CodeSchema = z.enum(['policy_invalid']);
-/** Raw response path: answer.body.code. */
-export type PostHarvestAnswer_Status409V3_Body_Code = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const postHarvestAnswer_Status409V3_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type PostHarvestAnswer_Status409V3_Body_Error = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const postHarvestAnswer_Status409V3_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type PostHarvestAnswer_Status409V3_Body_Ok = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_OkSchema
->;
 /** Strict raw response path: answer.body.source.code. */
 export const postHarvestAnswer_Status409V3_Body_Source_CodeSchema = z.enum(['gathering_disabled']);
-/** Raw response path: answer.body.source.code. */
-export type PostHarvestAnswer_Status409V3_Body_Source_Code = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_Source_CodeSchema
->;
 /** Strict raw response path: answer.body.source.edit.blueprint. */
 export const postHarvestAnswer_Status409V3_Body_Source_Edit_BlueprintSchema = z.string();
-/** Raw response path: answer.body.source.edit.blueprint. */
-export type PostHarvestAnswer_Status409V3_Body_Source_Edit_Blueprint = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_Source_Edit_BlueprintSchema
->;
 /** Strict raw response path: answer.body.source.edit.page. */
 export const postHarvestAnswer_Status409V3_Body_Source_Edit_PageSchema = z.string();
-/** Raw response path: answer.body.source.edit.page. */
-export type PostHarvestAnswer_Status409V3_Body_Source_Edit_Page = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_Source_Edit_PageSchema
->;
 /** Strict raw response path: answer.body.source.edit. */
 export const postHarvestAnswer_Status409V3_Body_Source_EditSchema = z.strictObject({
   blueprint: postHarvestAnswer_Status409V3_Body_Source_Edit_BlueprintSchema,
   page: postHarvestAnswer_Status409V3_Body_Source_Edit_PageSchema,
 });
-/** Raw response path: answer.body.source.edit. */
-export type PostHarvestAnswer_Status409V3_Body_Source_Edit = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_Source_EditSchema
->;
 /** Strict raw response path: answer.body.source.label. */
 export const postHarvestAnswer_Status409V3_Body_Source_LabelSchema = z.string();
-/** Raw response path: answer.body.source.label. */
-export type PostHarvestAnswer_Status409V3_Body_Source_Label = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_Source_LabelSchema
->;
 /** Strict raw response path: answer.body.source.message. */
 export const postHarvestAnswer_Status409V3_Body_Source_MessageSchema = z.string();
-/** Raw response path: answer.body.source.message. */
-export type PostHarvestAnswer_Status409V3_Body_Source_Message = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_Source_MessageSchema
->;
 /** Strict raw response path: answer.body.source.policy. */
 export const postHarvestAnswer_Status409V3_Body_Source_PolicySchema = z.null();
-/** Raw response path: answer.body.source.policy. */
-export type PostHarvestAnswer_Status409V3_Body_Source_Policy = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_Source_PolicySchema
->;
 /** Strict raw response path: answer.body.source.policy_revision. */
 export const postHarvestAnswer_Status409V3_Body_Source_PolicyRevisionSchema = z.null();
-/** Raw response path: answer.body.source.policy_revision. */
-export type PostHarvestAnswer_Status409V3_Body_Source_PolicyRevision = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_Source_PolicyRevisionSchema
->;
 /** Strict raw response path: answer.body.source.preset. */
 export const postHarvestAnswer_Status409V3_Body_Source_PresetSchema = z.string();
-/** Raw response path: answer.body.source.preset. */
-export type PostHarvestAnswer_Status409V3_Body_Source_Preset = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_Source_PresetSchema
->;
 /** Strict raw response path: answer.body.source.profile. */
 export const postHarvestAnswer_Status409V3_Body_Source_ProfileSchema = z.string();
-/** Raw response path: answer.body.source.profile. */
-export type PostHarvestAnswer_Status409V3_Body_Source_Profile = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_Source_ProfileSchema
->;
 /** Strict raw response path: answer.body.source.valid. */
 export const postHarvestAnswer_Status409V3_Body_Source_ValidSchema = z.boolean();
-/** Raw response path: answer.body.source.valid. */
-export type PostHarvestAnswer_Status409V3_Body_Source_Valid = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_Source_ValidSchema
->;
 /** Strict raw response path: answer.body.source. */
 export const postHarvestAnswer_Status409V3_Body_SourceSchema = z.strictObject({
   code: postHarvestAnswer_Status409V3_Body_Source_CodeSchema,
@@ -2895,10 +1421,6 @@ export const postHarvestAnswer_Status409V3_Body_SourceSchema = z.strictObject({
   profile: postHarvestAnswer_Status409V3_Body_Source_ProfileSchema,
   valid: postHarvestAnswer_Status409V3_Body_Source_ValidSchema,
 });
-/** Raw response path: answer.body.source. */
-export type PostHarvestAnswer_Status409V3_Body_Source = z.infer<
-  typeof postHarvestAnswer_Status409V3_Body_SourceSchema
->;
 /** Strict raw response path: answer.body. */
 export const postHarvestAnswer_Status409V3_BodySchema = z.strictObject({
   code: postHarvestAnswer_Status409V3_Body_CodeSchema,
@@ -2906,53 +1428,23 @@ export const postHarvestAnswer_Status409V3_BodySchema = z.strictObject({
   ok: postHarvestAnswer_Status409V3_Body_OkSchema,
   source: postHarvestAnswer_Status409V3_Body_SourceSchema,
 });
-/** Raw response path: answer.body. */
-export type PostHarvestAnswer_Status409V3_Body = z.infer<
-  typeof postHarvestAnswer_Status409V3_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const postHarvestAnswer_Status409V3_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type PostHarvestAnswer_Status409V3_Status = z.infer<
-  typeof postHarvestAnswer_Status409V3_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, source. */
 export const postHarvestAnswer_Status409V3Schema = z.strictObject({
   body: postHarvestAnswer_Status409V3_BodySchema,
   status: postHarvestAnswer_Status409V3_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, source. */
-export type PostHarvestAnswer_Status409V3 = z.infer<typeof postHarvestAnswer_Status409V3Schema>;
 /** Strict raw response path: answer.body.code. */
 export const postHarvestAnswer_Status500_Body_CodeSchema = z.enum(['harvest_outcome_unknown']);
-/** Raw response path: answer.body.code. */
-export type PostHarvestAnswer_Status500_Body_Code = z.infer<
-  typeof postHarvestAnswer_Status500_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const postHarvestAnswer_Status500_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type PostHarvestAnswer_Status500_Body_Error = z.infer<
-  typeof postHarvestAnswer_Status500_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const postHarvestAnswer_Status500_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type PostHarvestAnswer_Status500_Body_Ok = z.infer<
-  typeof postHarvestAnswer_Status500_Body_OkSchema
->;
 /** Strict raw response path: answer.body.outcome. */
 export const postHarvestAnswer_Status500_Body_OutcomeSchema = z.string();
-/** Raw response path: answer.body.outcome. */
-export type PostHarvestAnswer_Status500_Body_Outcome = z.infer<
-  typeof postHarvestAnswer_Status500_Body_OutcomeSchema
->;
 /** Strict raw response path: answer.body.request_key. */
 export const postHarvestAnswer_Status500_Body_RequestKeySchema = z.string();
-/** Raw response path: answer.body.request_key. */
-export type PostHarvestAnswer_Status500_Body_RequestKey = z.infer<
-  typeof postHarvestAnswer_Status500_Body_RequestKeySchema
->;
 /** Strict raw response path: answer.body. */
 export const postHarvestAnswer_Status500_BodySchema = z.strictObject({
   code: postHarvestAnswer_Status500_Body_CodeSchema,
@@ -2961,23 +1453,13 @@ export const postHarvestAnswer_Status500_BodySchema = z.strictObject({
   outcome: postHarvestAnswer_Status500_Body_OutcomeSchema,
   request_key: postHarvestAnswer_Status500_Body_RequestKeySchema,
 });
-/** Raw response path: answer.body. */
-export type PostHarvestAnswer_Status500_Body = z.infer<
-  typeof postHarvestAnswer_Status500_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const postHarvestAnswer_Status500_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type PostHarvestAnswer_Status500_Status = z.infer<
-  typeof postHarvestAnswer_Status500_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members code, error, ok, outcome, request_key. */
 export const postHarvestAnswer_Status500Schema = z.strictObject({
   body: postHarvestAnswer_Status500_BodySchema,
   status: postHarvestAnswer_Status500_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members code, error, ok, outcome, request_key. */
-export type PostHarvestAnswer_Status500 = z.infer<typeof postHarvestAnswer_Status500Schema>;
 /** Strict raw response path: answer. */
 export const postHarvestAnswerSchema = z.union([
   postHarvestAnswer_Status200Schema,
@@ -2991,132 +1473,59 @@ export const postHarvestAnswerSchema = z.union([
 export type PostHarvestAnswer = z.infer<typeof postHarvestAnswerSchema>;
 /** Strict raw response path: answer.body.enabled. */
 export const automationAccessAnswer_Status200V1_Body_EnabledSchema = z.boolean();
-/** Raw response path: answer.body.enabled. */
-export type AutomationAccessAnswer_Status200V1_Body_Enabled = z.infer<
-  typeof automationAccessAnswer_Status200V1_Body_EnabledSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const automationAccessAnswer_Status200V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type AutomationAccessAnswer_Status200V1_Body_Ok = z.infer<
-  typeof automationAccessAnswer_Status200V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const automationAccessAnswer_Status200V1_BodySchema = z.strictObject({
   enabled: automationAccessAnswer_Status200V1_Body_EnabledSchema,
   ok: automationAccessAnswer_Status200V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type AutomationAccessAnswer_Status200V1_Body = z.infer<
-  typeof automationAccessAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const automationAccessAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type AutomationAccessAnswer_Status200V1_Status = z.infer<
-  typeof automationAccessAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members enabled, ok. */
 export const automationAccessAnswer_Status200V1Schema = z.strictObject({
   body: automationAccessAnswer_Status200V1_BodySchema,
   status: automationAccessAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members enabled, ok. */
-export type AutomationAccessAnswer_Status200V1 = z.infer<
-  typeof automationAccessAnswer_Status200V1Schema
->;
 /** Strict raw response path: answer.body.enabled. */
 export const automationAccessAnswer_Status200V2_Body_EnabledSchema = z.boolean();
-/** Raw response path: answer.body.enabled. */
-export type AutomationAccessAnswer_Status200V2_Body_Enabled = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_EnabledSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const automationAccessAnswer_Status200V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type AutomationAccessAnswer_Status200V2_Body_Ok = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.revocation.config_persisted. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_ConfigPersistedSchema = z.boolean();
-/** Raw response path: answer.body.revocation.config_persisted. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_ConfigPersisted = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_ConfigPersistedSchema
->;
 /** Strict raw response path: answer.body.revocation.errors[].message. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_Errors_ArrayElement_MessageSchema =
   z.string();
-/** Raw response path: answer.body.revocation.errors[].message. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Errors_ArrayElement_Message =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_Errors_ArrayElement_MessageSchema
-  >;
 /** Strict raw response path: answer.body.revocation.errors[].step. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_Errors_ArrayElement_StepSchema =
   z.string();
-/** Raw response path: answer.body.revocation.errors[].step. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Errors_ArrayElement_Step = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_Errors_ArrayElement_StepSchema
->;
 /** Strict raw response path: answer.body.revocation.errors[]. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_Errors_ArrayElementSchema =
   z.strictObject({
     message: automationAccessAnswer_Status200V2_Body_Revocation_Errors_ArrayElement_MessageSchema,
     step: automationAccessAnswer_Status200V2_Body_Revocation_Errors_ArrayElement_StepSchema,
   });
-/** Raw response path: answer.body.revocation.errors[]. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Errors_ArrayElement = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_Errors_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.revocation.errors. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_ErrorsSchema = z.array(
   automationAccessAnswer_Status200V2_Body_Revocation_Errors_ArrayElementSchema,
 );
-/** Raw response path: answer.body.revocation.errors. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Errors = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_ErrorsSchema
->;
 /** Strict raw response path: answer.body.revocation.fenced. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_FencedSchema = z.boolean();
-/** Raw response path: answer.body.revocation.fenced. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Fenced = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_FencedSchema
->;
 /** Strict raw response path: answer.body.revocation.harvest.paused. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_Harvest_PausedSchema = z.boolean();
-/** Raw response path: answer.body.revocation.harvest.paused. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Harvest_Paused = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_Harvest_PausedSchema
->;
 /** Strict raw response path: answer.body.revocation.harvest.revision. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_Harvest_RevisionSchema = z
   .number()
   .nullable();
-/** Raw response path: answer.body.revocation.harvest.revision. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Harvest_Revision = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_Harvest_RevisionSchema
->;
 /** Strict raw response path: answer.body.revocation.harvest. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_HarvestSchema = z.strictObject({
   paused: automationAccessAnswer_Status200V2_Body_Revocation_Harvest_PausedSchema,
   revision: automationAccessAnswer_Status200V2_Body_Revocation_Harvest_RevisionSchema,
 });
-/** Raw response path: answer.body.revocation.harvest. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Harvest = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_HarvestSchema
->;
 /** Strict raw response path: answer.body.revocation.latched. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_LatchedSchema = z.boolean();
-/** Raw response path: answer.body.revocation.latched. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Latched = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_LatchedSchema
->;
 /** Strict raw response path: answer.body.revocation.revoked_at. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_RevokedAtSchema = z.number();
-/** Raw response path: answer.body.revocation.revoked_at. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_RevokedAt = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_RevokedAtSchema
->;
 /** Strict raw response path: answer.body.revocation.state. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StateSchema = z.enum([
   'input_stopped',
@@ -3124,58 +1533,24 @@ export const automationAccessAnswer_Status200V2_Body_Revocation_StateSchema = z.
   'nothing_running',
   'stopping',
 ]);
-/** Raw response path: answer.body.revocation.state. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_State = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_StateSchema
->;
 /** Strict raw response path: answer.body.revocation.still_owned[].battle. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_BattleSchema =
   z.null();
-/** Raw response path: answer.body.revocation.still_owned[].battle. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Battle =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_BattleSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].foreign. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_ForeignSchema =
   z.boolean();
-/** Raw response path: answer.body.revocation.still_owned[].foreign. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Foreign =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_ForeignSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].gathers. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_GathersSchema =
   z.null();
-/** Raw response path: answer.body.revocation.still_owned[].gathers. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Gathers =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_GathersSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].gems.ad_gems. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Gems_AdGemsSchema =
   z.null();
-/** Raw response path: answer.body.revocation.still_owned[].gems.ad_gems. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Gems_AdGems =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Gems_AdGemsSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].gems.basis. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Gems_BasisSchema =
   z.enum(['not_reported']);
-/** Raw response path: answer.body.revocation.still_owned[].gems.basis. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Gems_Basis =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Gems_BasisSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].gems.floating_gems. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Gems_FloatingGemsSchema =
   z.null();
-/** Raw response path: answer.body.revocation.still_owned[].gems.floating_gems. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Gems_FloatingGems =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Gems_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].gems. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_GemsSchema =
   z.strictObject({
@@ -3186,83 +1561,33 @@ export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_Array
     floating_gems:
       automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Gems_FloatingGemsSchema,
   });
-/** Raw response path: answer.body.revocation.still_owned[].gems. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Gems =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_GemsSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].harvest_managed. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_HarvestManagedSchema =
   z.boolean();
-/** Raw response path: answer.body.revocation.still_owned[].harvest_managed. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_HarvestManaged =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_HarvestManagedSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].input. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_InputSchema =
   z.enum(['refused', 'unfenced']);
-/** Raw response path: answer.body.revocation.still_owned[].input. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Input =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_InputSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].kind. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_KindSchema =
   z.enum(['operation']);
-/** Raw response path: answer.body.revocation.still_owned[].kind. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Kind =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_KindSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].operation_id. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.revocation.still_owned[].operation_id. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_OperationId =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_OperationIdSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].operation_kind. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_OperationKindSchema =
   z.enum(['gems', 'run']);
-/** Raw response path: answer.body.revocation.still_owned[].operation_kind. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_OperationKind =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_OperationKindSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].pid. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_PidSchema =
   z.number();
-/** Raw response path: answer.body.revocation.still_owned[].pid. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Pid =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_PidSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].recovery.action. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Recovery_ActionSchema =
   z.enum(['pause_harvesting', 'stop_operation']);
-/** Raw response path: answer.body.revocation.still_owned[].recovery.action. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Recovery_Action =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Recovery_ActionSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].recovery.expected_revision. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Recovery_ExpectedRevisionSchema =
   z.number();
-/** Raw response path: answer.body.revocation.still_owned[].recovery.expected_revision. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Recovery_ExpectedRevision =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Recovery_ExpectedRevisionSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].recovery.operation_id. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Recovery_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.revocation.still_owned[].recovery.operation_id. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Recovery_OperationId =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Recovery_OperationIdSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].recovery. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_RecoverySchema =
   z.strictObject({
@@ -3273,35 +1598,15 @@ export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_Array
     operation_id:
       automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Recovery_OperationIdSchema,
   });
-/** Raw response path: answer.body.revocation.still_owned[].recovery. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Recovery =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_RecoverySchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].routines. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_RoutinesSchema =
   z.null();
-/** Raw response path: answer.body.revocation.still_owned[].routines. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Routines =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_RoutinesSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].script. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_ScriptSchema =
   z.null();
-/** Raw response path: answer.body.revocation.still_owned[].script. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Script =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_ScriptSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[].status. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_StatusSchema =
   z.enum(['cancelling', 'running']);
-/** Raw response path: answer.body.revocation.still_owned[].status. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_Status =
-  z.infer<
-    typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_StatusSchema
-  >;
 /** Strict raw response path: answer.body.revocation.still_owned[]. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElementSchema =
   z.strictObject({
@@ -3327,48 +1632,24 @@ export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_Array
     script: automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_ScriptSchema,
     status: automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement_StatusSchema,
   });
-/** Raw response path: answer.body.revocation.still_owned[]. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElement = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.revocation.still_owned. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StillOwnedSchema = z.array(
   automationAccessAnswer_Status200V2_Body_Revocation_StillOwned_ArrayElementSchema,
 );
-/** Raw response path: answer.body.revocation.still_owned. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_StillOwned = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_StillOwnedSchema
->;
 /** Strict raw response path: answer.body.revocation.stopped[]. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_Stopped_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.revocation.stopped[]. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Stopped_ArrayElement = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_Stopped_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.revocation.stopped. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StoppedSchema = z.array(
   automationAccessAnswer_Status200V2_Body_Revocation_Stopped_ArrayElementSchema,
 );
-/** Raw response path: answer.body.revocation.stopped. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Stopped = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_StoppedSchema
->;
 /** Strict raw response path: answer.body.revocation.stopping[]. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_Stopping_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.revocation.stopping[]. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Stopping_ArrayElement = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_Stopping_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.revocation.stopping. */
 export const automationAccessAnswer_Status200V2_Body_Revocation_StoppingSchema = z.array(
   automationAccessAnswer_Status200V2_Body_Revocation_Stopping_ArrayElementSchema,
 );
-/** Raw response path: answer.body.revocation.stopping. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation_Stopping = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_Revocation_StoppingSchema
->;
 /** Strict raw response path: answer.body.revocation. */
 export const automationAccessAnswer_Status200V2_Body_RevocationSchema = z.strictObject({
   config_persisted: automationAccessAnswer_Status200V2_Body_Revocation_ConfigPersistedSchema,
@@ -3382,223 +1663,95 @@ export const automationAccessAnswer_Status200V2_Body_RevocationSchema = z.strict
   stopped: automationAccessAnswer_Status200V2_Body_Revocation_StoppedSchema,
   stopping: automationAccessAnswer_Status200V2_Body_Revocation_StoppingSchema,
 });
-/** Raw response path: answer.body.revocation. */
-export type AutomationAccessAnswer_Status200V2_Body_Revocation = z.infer<
-  typeof automationAccessAnswer_Status200V2_Body_RevocationSchema
->;
 /** Strict raw response path: answer.body. */
 export const automationAccessAnswer_Status200V2_BodySchema = z.strictObject({
   enabled: automationAccessAnswer_Status200V2_Body_EnabledSchema,
   ok: automationAccessAnswer_Status200V2_Body_OkSchema,
   revocation: automationAccessAnswer_Status200V2_Body_RevocationSchema,
 });
-/** Raw response path: answer.body. */
-export type AutomationAccessAnswer_Status200V2_Body = z.infer<
-  typeof automationAccessAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const automationAccessAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type AutomationAccessAnswer_Status200V2_Status = z.infer<
-  typeof automationAccessAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members enabled, ok, revocation. */
 export const automationAccessAnswer_Status200V2Schema = z.strictObject({
   body: automationAccessAnswer_Status200V2_BodySchema,
   status: automationAccessAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members enabled, ok, revocation. */
-export type AutomationAccessAnswer_Status200V2 = z.infer<
-  typeof automationAccessAnswer_Status200V2Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const automationAccessAnswer_Status409V1_Body_CodeSchema = z.enum(['action_lock']);
-/** Raw response path: answer.body.code. */
-export type AutomationAccessAnswer_Status409V1_Body_Code = z.infer<
-  typeof automationAccessAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const automationAccessAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type AutomationAccessAnswer_Status409V1_Body_Error = z.infer<
-  typeof automationAccessAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const automationAccessAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type AutomationAccessAnswer_Status409V1_Body_Ok = z.infer<
-  typeof automationAccessAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const automationAccessAnswer_Status409V1_BodySchema = z.strictObject({
   code: automationAccessAnswer_Status409V1_Body_CodeSchema,
   error: automationAccessAnswer_Status409V1_Body_ErrorSchema,
   ok: automationAccessAnswer_Status409V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type AutomationAccessAnswer_Status409V1_Body = z.infer<
-  typeof automationAccessAnswer_Status409V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const automationAccessAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type AutomationAccessAnswer_Status409V1_Status = z.infer<
-  typeof automationAccessAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const automationAccessAnswer_Status409V1Schema = z.strictObject({
   body: automationAccessAnswer_Status409V1_BodySchema,
   status: automationAccessAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type AutomationAccessAnswer_Status409V1 = z.infer<
-  typeof automationAccessAnswer_Status409V1Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const automationAccessAnswer_Status409V2_Body_CodeSchema = z.enum(['device_owned']);
-/** Raw response path: answer.body.code. */
-export type AutomationAccessAnswer_Status409V2_Body_Code = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const automationAccessAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type AutomationAccessAnswer_Status409V2_Body_Error = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const automationAccessAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type AutomationAccessAnswer_Status409V2_Body_Ok = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.owner.battle. */
 export const automationAccessAnswer_Status409V2_Body_Owner_BattleSchema = z.null();
-/** Raw response path: answer.body.owner.battle. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Battle = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_BattleSchema
->;
 /** Strict raw response path: answer.body.owner.foreign. */
 export const automationAccessAnswer_Status409V2_Body_Owner_ForeignSchema = z.boolean();
-/** Raw response path: answer.body.owner.foreign. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Foreign = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_ForeignSchema
->;
 /** Strict raw response path: answer.body.owner.gathers. */
 export const automationAccessAnswer_Status409V2_Body_Owner_GathersSchema = z.null();
-/** Raw response path: answer.body.owner.gathers. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Gathers = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_GathersSchema
->;
 /** Strict raw response path: answer.body.owner.gems.ad_gems. */
 export const automationAccessAnswer_Status409V2_Body_Owner_Gems_AdGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.ad_gems. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Gems_AdGems = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_Gems_AdGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems.basis. */
 export const automationAccessAnswer_Status409V2_Body_Owner_Gems_BasisSchema = z.enum([
   'not_reported',
 ]);
-/** Raw response path: answer.body.owner.gems.basis. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Gems_Basis = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_Gems_BasisSchema
->;
 /** Strict raw response path: answer.body.owner.gems.floating_gems. */
 export const automationAccessAnswer_Status409V2_Body_Owner_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.floating_gems. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Gems_FloatingGems = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems. */
 export const automationAccessAnswer_Status409V2_Body_Owner_GemsSchema = z.strictObject({
   ad_gems: automationAccessAnswer_Status409V2_Body_Owner_Gems_AdGemsSchema,
   basis: automationAccessAnswer_Status409V2_Body_Owner_Gems_BasisSchema,
   floating_gems: automationAccessAnswer_Status409V2_Body_Owner_Gems_FloatingGemsSchema,
 });
-/** Raw response path: answer.body.owner.gems. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Gems = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_GemsSchema
->;
 /** Strict raw response path: answer.body.owner.harvest_managed. */
 export const automationAccessAnswer_Status409V2_Body_Owner_HarvestManagedSchema = z.boolean();
-/** Raw response path: answer.body.owner.harvest_managed. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_HarvestManaged = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_HarvestManagedSchema
->;
 /** Strict raw response path: answer.body.owner.kind. */
 export const automationAccessAnswer_Status409V2_Body_Owner_KindSchema = z.enum(['operation']);
-/** Raw response path: answer.body.owner.kind. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Kind = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_KindSchema
->;
 /** Strict raw response path: answer.body.owner.operation_id. */
 export const automationAccessAnswer_Status409V2_Body_Owner_OperationIdSchema = z.string();
-/** Raw response path: answer.body.owner.operation_id. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_OperationId = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.operation_kind. */
 export const automationAccessAnswer_Status409V2_Body_Owner_OperationKindSchema = z.enum(['run']);
-/** Raw response path: answer.body.owner.operation_kind. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_OperationKind = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_OperationKindSchema
->;
 /** Strict raw response path: answer.body.owner.pid. */
 export const automationAccessAnswer_Status409V2_Body_Owner_PidSchema = z.number();
-/** Raw response path: answer.body.owner.pid. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Pid = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_PidSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.action. */
 export const automationAccessAnswer_Status409V2_Body_Owner_Recovery_ActionSchema = z.enum([
   'stop_operation',
 ]);
-/** Raw response path: answer.body.owner.recovery.action. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Recovery_Action = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_Recovery_ActionSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.expected_revision. */
 export const automationAccessAnswer_Status409V2_Body_Owner_Recovery_ExpectedRevisionSchema =
   z.number();
-/** Raw response path: answer.body.owner.recovery.expected_revision. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Recovery_ExpectedRevision = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.operation_id. */
 export const automationAccessAnswer_Status409V2_Body_Owner_Recovery_OperationIdSchema = z.string();
-/** Raw response path: answer.body.owner.recovery.operation_id. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Recovery_OperationId = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_Recovery_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.recovery. */
 export const automationAccessAnswer_Status409V2_Body_Owner_RecoverySchema = z.strictObject({
   action: automationAccessAnswer_Status409V2_Body_Owner_Recovery_ActionSchema,
   expected_revision: automationAccessAnswer_Status409V2_Body_Owner_Recovery_ExpectedRevisionSchema,
   operation_id: automationAccessAnswer_Status409V2_Body_Owner_Recovery_OperationIdSchema,
 });
-/** Raw response path: answer.body.owner.recovery. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Recovery = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_RecoverySchema
->;
 /** Strict raw response path: answer.body.owner.routines. */
 export const automationAccessAnswer_Status409V2_Body_Owner_RoutinesSchema = z.null();
-/** Raw response path: answer.body.owner.routines. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Routines = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_RoutinesSchema
->;
 /** Strict raw response path: answer.body.owner.script. */
 export const automationAccessAnswer_Status409V2_Body_Owner_ScriptSchema = z.null();
-/** Raw response path: answer.body.owner.script. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Script = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_ScriptSchema
->;
 /** Strict raw response path: answer.body.owner.status. */
 export const automationAccessAnswer_Status409V2_Body_Owner_StatusSchema = z.enum(['running']);
-/** Raw response path: answer.body.owner.status. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner_Status = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Owner_StatusSchema
->;
 /** Strict raw response path: answer.body.owner. */
 export const automationAccessAnswer_Status409V2_Body_OwnerSchema = z.strictObject({
   battle: automationAccessAnswer_Status409V2_Body_Owner_BattleSchema,
@@ -3615,46 +1768,22 @@ export const automationAccessAnswer_Status409V2_Body_OwnerSchema = z.strictObjec
   script: automationAccessAnswer_Status409V2_Body_Owner_ScriptSchema,
   status: automationAccessAnswer_Status409V2_Body_Owner_StatusSchema,
 });
-/** Raw response path: answer.body.owner. */
-export type AutomationAccessAnswer_Status409V2_Body_Owner = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_OwnerSchema
->;
 /** Strict raw response path: answer.body.recovery.action. */
 export const automationAccessAnswer_Status409V2_Body_Recovery_ActionSchema = z.enum([
   'stop_operation',
 ]);
-/** Raw response path: answer.body.recovery.action. */
-export type AutomationAccessAnswer_Status409V2_Body_Recovery_Action = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Recovery_ActionSchema
->;
 /** Strict raw response path: answer.body.recovery.expected_revision. */
 export const automationAccessAnswer_Status409V2_Body_Recovery_ExpectedRevisionSchema = z.number();
-/** Raw response path: answer.body.recovery.expected_revision. */
-export type AutomationAccessAnswer_Status409V2_Body_Recovery_ExpectedRevision = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: answer.body.recovery.operation_id. */
 export const automationAccessAnswer_Status409V2_Body_Recovery_OperationIdSchema = z.string();
-/** Raw response path: answer.body.recovery.operation_id. */
-export type AutomationAccessAnswer_Status409V2_Body_Recovery_OperationId = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_Recovery_OperationIdSchema
->;
 /** Strict raw response path: answer.body.recovery. */
 export const automationAccessAnswer_Status409V2_Body_RecoverySchema = z.strictObject({
   action: automationAccessAnswer_Status409V2_Body_Recovery_ActionSchema,
   expected_revision: automationAccessAnswer_Status409V2_Body_Recovery_ExpectedRevisionSchema,
   operation_id: automationAccessAnswer_Status409V2_Body_Recovery_OperationIdSchema,
 });
-/** Raw response path: answer.body.recovery. */
-export type AutomationAccessAnswer_Status409V2_Body_Recovery = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_RecoverySchema
->;
 /** Strict raw response path: answer.body.retry. */
 export const automationAccessAnswer_Status409V2_Body_RetrySchema = z.string();
-/** Raw response path: answer.body.retry. */
-export type AutomationAccessAnswer_Status409V2_Body_Retry = z.infer<
-  typeof automationAccessAnswer_Status409V2_Body_RetrySchema
->;
 /** Strict raw response path: answer.body. */
 export const automationAccessAnswer_Status409V2_BodySchema = z.strictObject({
   code: automationAccessAnswer_Status409V2_Body_CodeSchema,
@@ -3664,157 +1793,69 @@ export const automationAccessAnswer_Status409V2_BodySchema = z.strictObject({
   recovery: automationAccessAnswer_Status409V2_Body_RecoverySchema,
   retry: automationAccessAnswer_Status409V2_Body_RetrySchema,
 });
-/** Raw response path: answer.body. */
-export type AutomationAccessAnswer_Status409V2_Body = z.infer<
-  typeof automationAccessAnswer_Status409V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const automationAccessAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type AutomationAccessAnswer_Status409V2_Status = z.infer<
-  typeof automationAccessAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
 export const automationAccessAnswer_Status409V2Schema = z.strictObject({
   body: automationAccessAnswer_Status409V2_BodySchema,
   status: automationAccessAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
-export type AutomationAccessAnswer_Status409V2 = z.infer<
-  typeof automationAccessAnswer_Status409V2Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const automationAccessAnswer_Status500_Body_CodeSchema = z.enum(['input_revocation_failed']);
-/** Raw response path: answer.body.code. */
-export type AutomationAccessAnswer_Status500_Body_Code = z.infer<
-  typeof automationAccessAnswer_Status500_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const automationAccessAnswer_Status500_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type AutomationAccessAnswer_Status500_Body_Error = z.infer<
-  typeof automationAccessAnswer_Status500_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const automationAccessAnswer_Status500_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type AutomationAccessAnswer_Status500_Body_Ok = z.infer<
-  typeof automationAccessAnswer_Status500_Body_OkSchema
->;
 /** Strict raw response path: answer.body.revocation.config_persisted. */
 export const automationAccessAnswer_Status500_Body_Revocation_ConfigPersistedSchema = z.boolean();
-/** Raw response path: answer.body.revocation.config_persisted. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_ConfigPersisted = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_ConfigPersistedSchema
->;
 /** Strict raw response path: answer.body.revocation.errors[].message. */
 export const automationAccessAnswer_Status500_Body_Revocation_Errors_ArrayElement_MessageSchema =
   z.string();
-/** Raw response path: answer.body.revocation.errors[].message. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_Errors_ArrayElement_Message = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_Errors_ArrayElement_MessageSchema
->;
 /** Strict raw response path: answer.body.revocation.errors[].step. */
 export const automationAccessAnswer_Status500_Body_Revocation_Errors_ArrayElement_StepSchema =
   z.string();
-/** Raw response path: answer.body.revocation.errors[].step. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_Errors_ArrayElement_Step = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_Errors_ArrayElement_StepSchema
->;
 /** Strict raw response path: answer.body.revocation.errors[]. */
 export const automationAccessAnswer_Status500_Body_Revocation_Errors_ArrayElementSchema =
   z.strictObject({
     message: automationAccessAnswer_Status500_Body_Revocation_Errors_ArrayElement_MessageSchema,
     step: automationAccessAnswer_Status500_Body_Revocation_Errors_ArrayElement_StepSchema,
   });
-/** Raw response path: answer.body.revocation.errors[]. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_Errors_ArrayElement = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_Errors_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.revocation.errors. */
 export const automationAccessAnswer_Status500_Body_Revocation_ErrorsSchema = z.array(
   automationAccessAnswer_Status500_Body_Revocation_Errors_ArrayElementSchema,
 );
-/** Raw response path: answer.body.revocation.errors. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_Errors = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_ErrorsSchema
->;
 /** Strict raw response path: answer.body.revocation.fenced. */
 export const automationAccessAnswer_Status500_Body_Revocation_FencedSchema = z.boolean();
-/** Raw response path: answer.body.revocation.fenced. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_Fenced = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_FencedSchema
->;
 /** Strict raw response path: answer.body.revocation.harvest.paused. */
 export const automationAccessAnswer_Status500_Body_Revocation_Harvest_PausedSchema = z.boolean();
-/** Raw response path: answer.body.revocation.harvest.paused. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_Harvest_Paused = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_Harvest_PausedSchema
->;
 /** Strict raw response path: answer.body.revocation.harvest.revision. */
 export const automationAccessAnswer_Status500_Body_Revocation_Harvest_RevisionSchema = z.number();
-/** Raw response path: answer.body.revocation.harvest.revision. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_Harvest_Revision = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_Harvest_RevisionSchema
->;
 /** Strict raw response path: answer.body.revocation.harvest. */
 export const automationAccessAnswer_Status500_Body_Revocation_HarvestSchema = z.strictObject({
   paused: automationAccessAnswer_Status500_Body_Revocation_Harvest_PausedSchema,
   revision: automationAccessAnswer_Status500_Body_Revocation_Harvest_RevisionSchema,
 });
-/** Raw response path: answer.body.revocation.harvest. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_Harvest = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_HarvestSchema
->;
 /** Strict raw response path: answer.body.revocation.latched. */
 export const automationAccessAnswer_Status500_Body_Revocation_LatchedSchema = z.boolean();
-/** Raw response path: answer.body.revocation.latched. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_Latched = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_LatchedSchema
->;
 /** Strict raw response path: answer.body.revocation.revoked_at. */
 export const automationAccessAnswer_Status500_Body_Revocation_RevokedAtSchema = z.null();
-/** Raw response path: answer.body.revocation.revoked_at. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_RevokedAt = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_RevokedAtSchema
->;
 /** Strict raw response path: answer.body.revocation.state. */
 export const automationAccessAnswer_Status500_Body_Revocation_StateSchema = z.enum(['failed']);
-/** Raw response path: answer.body.revocation.state. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_State = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_StateSchema
->;
 /** Strict raw response path: answer.body.revocation.still_owned. */
 export const automationAccessAnswer_Status500_Body_Revocation_StillOwnedSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.revocation.still_owned. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_StillOwned = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_StillOwnedSchema
->;
 /** Strict raw response path: answer.body.revocation.stopped[]. */
 export const automationAccessAnswer_Status500_Body_Revocation_Stopped_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.revocation.stopped[]. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_Stopped_ArrayElement = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_Stopped_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.revocation.stopped. */
 export const automationAccessAnswer_Status500_Body_Revocation_StoppedSchema = z.array(
   automationAccessAnswer_Status500_Body_Revocation_Stopped_ArrayElementSchema,
 );
-/** Raw response path: answer.body.revocation.stopped. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_Stopped = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_StoppedSchema
->;
 /** Strict raw response path: answer.body.revocation.stopping. */
 export const automationAccessAnswer_Status500_Body_Revocation_StoppingSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.revocation.stopping. */
-export type AutomationAccessAnswer_Status500_Body_Revocation_Stopping = z.infer<
-  typeof automationAccessAnswer_Status500_Body_Revocation_StoppingSchema
->;
 /** Strict raw response path: answer.body.revocation. */
 export const automationAccessAnswer_Status500_Body_RevocationSchema = z.strictObject({
   config_persisted: automationAccessAnswer_Status500_Body_Revocation_ConfigPersistedSchema,
@@ -3828,10 +1869,6 @@ export const automationAccessAnswer_Status500_Body_RevocationSchema = z.strictOb
   stopped: automationAccessAnswer_Status500_Body_Revocation_StoppedSchema,
   stopping: automationAccessAnswer_Status500_Body_Revocation_StoppingSchema,
 });
-/** Raw response path: answer.body.revocation. */
-export type AutomationAccessAnswer_Status500_Body_Revocation = z.infer<
-  typeof automationAccessAnswer_Status500_Body_RevocationSchema
->;
 /** Strict raw response path: answer.body. */
 export const automationAccessAnswer_Status500_BodySchema = z.strictObject({
   code: automationAccessAnswer_Status500_Body_CodeSchema,
@@ -3839,25 +1876,13 @@ export const automationAccessAnswer_Status500_BodySchema = z.strictObject({
   ok: automationAccessAnswer_Status500_Body_OkSchema,
   revocation: automationAccessAnswer_Status500_Body_RevocationSchema,
 });
-/** Raw response path: answer.body. */
-export type AutomationAccessAnswer_Status500_Body = z.infer<
-  typeof automationAccessAnswer_Status500_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const automationAccessAnswer_Status500_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type AutomationAccessAnswer_Status500_Status = z.infer<
-  typeof automationAccessAnswer_Status500_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members code, error, ok, revocation. */
 export const automationAccessAnswer_Status500Schema = z.strictObject({
   body: automationAccessAnswer_Status500_BodySchema,
   status: automationAccessAnswer_Status500_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members code, error, ok, revocation. */
-export type AutomationAccessAnswer_Status500 = z.infer<
-  typeof automationAccessAnswer_Status500Schema
->;
 /** Strict raw response path: answer. */
 export const automationAccessAnswerSchema = z.union([
   automationAccessAnswer_Status200V1Schema,
@@ -3870,200 +1895,96 @@ export const automationAccessAnswerSchema = z.union([
 export type AutomationAccessAnswer = z.infer<typeof automationAccessAnswerSchema>;
 /** Strict raw response path: answer.body.code. */
 export const refusalAnswer_Status400_Body_CodeSchema = z.enum(['invalid_request']);
-/** Raw response path: answer.body.code. */
-export type RefusalAnswer_Status400_Body_Code = z.infer<
-  typeof refusalAnswer_Status400_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const refusalAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type RefusalAnswer_Status400_Body_Error = z.infer<
-  typeof refusalAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const refusalAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RefusalAnswer_Status400_Body_Ok = z.infer<typeof refusalAnswer_Status400_Body_OkSchema>;
 /** Strict raw response path: answer.body. */
 export const refusalAnswer_Status400_BodySchema = z.strictObject({
   code: refusalAnswer_Status400_Body_CodeSchema,
   error: refusalAnswer_Status400_Body_ErrorSchema,
   ok: refusalAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type RefusalAnswer_Status400_Body = z.infer<typeof refusalAnswer_Status400_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const refusalAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type RefusalAnswer_Status400_Status = z.infer<typeof refusalAnswer_Status400_StatusSchema>;
 /** Strict raw response path: answer, variant: status 400, body members code, error, ok. */
 export const refusalAnswer_Status400Schema = z.strictObject({
   body: refusalAnswer_Status400_BodySchema,
   status: refusalAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members code, error, ok. */
-export type RefusalAnswer_Status400 = z.infer<typeof refusalAnswer_Status400Schema>;
 /** Strict raw response path: answer.body.code. */
 export const refusalAnswer_Status409V1_Body_CodeSchema = z.enum([
   'action_lock',
   'device_owner_unreadable',
 ]);
-/** Raw response path: answer.body.code. */
-export type RefusalAnswer_Status409V1_Body_Code = z.infer<
-  typeof refusalAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const refusalAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type RefusalAnswer_Status409V1_Body_Error = z.infer<
-  typeof refusalAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const refusalAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RefusalAnswer_Status409V1_Body_Ok = z.infer<
-  typeof refusalAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const refusalAnswer_Status409V1_BodySchema = z.strictObject({
   code: refusalAnswer_Status409V1_Body_CodeSchema,
   error: refusalAnswer_Status409V1_Body_ErrorSchema,
   ok: refusalAnswer_Status409V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type RefusalAnswer_Status409V1_Body = z.infer<typeof refusalAnswer_Status409V1_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const refusalAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type RefusalAnswer_Status409V1_Status = z.infer<
-  typeof refusalAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const refusalAnswer_Status409V1Schema = z.strictObject({
   body: refusalAnswer_Status409V1_BodySchema,
   status: refusalAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type RefusalAnswer_Status409V1 = z.infer<typeof refusalAnswer_Status409V1Schema>;
 /** Strict raw response path: answer.body.code. */
 export const refusalAnswer_Status409V2_Body_CodeSchema = z.enum([
   'collector_running',
   'device_owned',
 ]);
-/** Raw response path: answer.body.code. */
-export type RefusalAnswer_Status409V2_Body_Code = z.infer<
-  typeof refusalAnswer_Status409V2_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const refusalAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type RefusalAnswer_Status409V2_Body_Error = z.infer<
-  typeof refusalAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const refusalAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RefusalAnswer_Status409V2_Body_Ok = z.infer<
-  typeof refusalAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.owner.battle. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_BattleSchema = z.null();
-/** Raw response path: answer.body.owner.battle. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Battle = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_BattleSchema
->;
 /** Strict raw response path: answer.body.owner.foreign. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_ForeignSchema = z.boolean();
-/** Raw response path: answer.body.owner.foreign. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Foreign = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_ForeignSchema
->;
 /** Strict raw response path: answer.body.owner.gathers. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_GathersSchema = z.null();
-/** Raw response path: answer.body.owner.gathers. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Gathers = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_GathersSchema
->;
 /** Strict raw response path: answer.body.owner.gems.ad_gems. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_Gems_AdGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.ad_gems. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Gems_AdGems = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_Gems_AdGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems.basis. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_Gems_BasisSchema = z.enum([
   'not_reported',
 ]);
-/** Raw response path: answer.body.owner.gems.basis. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Gems_Basis = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_Gems_BasisSchema
->;
 /** Strict raw response path: answer.body.owner.gems.floating_gems. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.floating_gems. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Gems_FloatingGems = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_GemsSchema = z.strictObject({
   ad_gems: refusalAnswer_Status409V2_Body_Owner_KindOperation_Gems_AdGemsSchema,
   basis: refusalAnswer_Status409V2_Body_Owner_KindOperation_Gems_BasisSchema,
   floating_gems: refusalAnswer_Status409V2_Body_Owner_KindOperation_Gems_FloatingGemsSchema,
 });
-/** Raw response path: answer.body.owner.gems. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Gems = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_GemsSchema
->;
 /** Strict raw response path: answer.body.owner.harvest_managed. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_HarvestManagedSchema = z.boolean();
-/** Raw response path: answer.body.owner.harvest_managed. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_HarvestManaged = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_HarvestManagedSchema
->;
 /** Strict raw response path: answer.body.owner.operation_id. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_OperationIdSchema = z.string();
-/** Raw response path: answer.body.owner.operation_id. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_OperationId = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.operation_kind. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_OperationKindSchema = z.enum([
   'gems',
   'run',
 ]);
-/** Raw response path: answer.body.owner.operation_kind. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_OperationKind = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_OperationKindSchema
->;
 /** Strict raw response path: answer.body.owner.pid. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_PidSchema = z.number().nullable();
-/** Raw response path: answer.body.owner.pid. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Pid = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_PidSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.action. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery_ActionSchema = z.enum([
   'pause_harvesting',
   'stop_operation',
 ]);
-/** Raw response path: answer.body.owner.recovery.action. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery_Action = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery_ActionSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.expected_revision. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery_ExpectedRevisionSchema =
   z.number();
-/** Raw response path: answer.body.owner.recovery.expected_revision. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery_ExpectedRevision = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.operation_id. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.owner.recovery.operation_id. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery_OperationId = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.recovery. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_RecoverySchema = z.strictObject({
   action: refusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery_ActionSchema,
@@ -4071,31 +1992,15 @@ export const refusalAnswer_Status409V2_Body_Owner_KindOperation_RecoverySchema =
     refusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery_ExpectedRevisionSchema,
   operation_id: refusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery_OperationIdSchema,
 });
-/** Raw response path: answer.body.owner.recovery. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Recovery = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_RecoverySchema
->;
 /** Strict raw response path: answer.body.owner.routines. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_RoutinesSchema = z.null();
-/** Raw response path: answer.body.owner.routines. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Routines = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_RoutinesSchema
->;
 /** Strict raw response path: answer.body.owner.script. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_ScriptSchema = z.null();
-/** Raw response path: answer.body.owner.script. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Script = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_ScriptSchema
->;
 /** Strict raw response path: answer.body.owner.status. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperation_StatusSchema = z.enum([
   'accepted',
   'running',
 ]);
-/** Raw response path: answer.body.owner.status. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation_Status = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperation_StatusSchema
->;
 /** Strict raw response path: answer.body.owner, variant: kind operation. */
 export const refusalAnswer_Status409V2_Body_Owner_KindOperationSchema = z.strictObject({
   battle: refusalAnswer_Status409V2_Body_Owner_KindOperation_BattleSchema,
@@ -4112,110 +2017,48 @@ export const refusalAnswer_Status409V2_Body_Owner_KindOperationSchema = z.strict
   script: refusalAnswer_Status409V2_Body_Owner_KindOperation_ScriptSchema,
   status: refusalAnswer_Status409V2_Body_Owner_KindOperation_StatusSchema,
 });
-/** Raw response path: answer.body.owner, variant: kind operation. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindOperation = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindOperationSchema
->;
 /** Strict raw response path: answer.body.owner.foreign. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_ForeignSchema = z.boolean();
-/** Raw response path: answer.body.owner.foreign. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Foreign = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_ForeignSchema
->;
 /** Strict raw response path: answer.body.owner.gathers. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_GathersSchema = z.null();
-/** Raw response path: answer.body.owner.gathers. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Gathers = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_GathersSchema
->;
 /** Strict raw response path: answer.body.owner.gems.ad_gems. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_Gems_AdGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.ad_gems. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Gems_AdGems = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_Gems_AdGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems.basis. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_Gems_BasisSchema = z.enum([
   'not_reported',
 ]);
-/** Raw response path: answer.body.owner.gems.basis. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Gems_Basis = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_Gems_BasisSchema
->;
 /** Strict raw response path: answer.body.owner.gems.floating_gems. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.floating_gems. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Gems_FloatingGems = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_GemsSchema = z.strictObject({
   ad_gems: refusalAnswer_Status409V2_Body_Owner_KindProcess_Gems_AdGemsSchema,
   basis: refusalAnswer_Status409V2_Body_Owner_KindProcess_Gems_BasisSchema,
   floating_gems: refusalAnswer_Status409V2_Body_Owner_KindProcess_Gems_FloatingGemsSchema,
 });
-/** Raw response path: answer.body.owner.gems. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Gems = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_GemsSchema
->;
 /** Strict raw response path: answer.body.owner.harvest_managed. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_HarvestManagedSchema = z.boolean();
-/** Raw response path: answer.body.owner.harvest_managed. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_HarvestManaged = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_HarvestManagedSchema
->;
 /** Strict raw response path: answer.body.owner.lease.delegated. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_DelegatedSchema = z.boolean();
-/** Raw response path: answer.body.owner.lease.delegated. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Delegated = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_DelegatedSchema
->;
 /** Strict raw response path: answer.body.owner.lease.held. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_HeldSchema = z.boolean();
-/** Raw response path: answer.body.owner.lease.held. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Held = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_HeldSchema
->;
 /** Strict raw response path: answer.body.owner.lease.holders[].pid. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders_ArrayElement_PidSchema =
   z.number();
-/** Raw response path: answer.body.owner.lease.holders[].pid. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders_ArrayElement_Pid =
-  z.infer<
-    typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders_ArrayElement_PidSchema
-  >;
 /** Strict raw response path: answer.body.owner.lease.holders[].role. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders_ArrayElement_RoleSchema =
   z.enum(['primary']);
-/** Raw response path: answer.body.owner.lease.holders[].role. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders_ArrayElement_Role =
-  z.infer<
-    typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders_ArrayElement_RoleSchema
-  >;
 /** Strict raw response path: answer.body.owner.lease.holders[]. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders_ArrayElementSchema =
   z.strictObject({
     pid: refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders_ArrayElement_PidSchema,
     role: refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders_ArrayElement_RoleSchema,
   });
-/** Raw response path: answer.body.owner.lease.holders[]. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders_ArrayElement = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.owner.lease.holders. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_HoldersSchema = z.array(
   refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders_ArrayElementSchema,
 );
-/** Raw response path: answer.body.owner.lease.holders. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_Holders = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_HoldersSchema
->;
 /** Strict raw response path: answer.body.owner.lease.input_gate. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_InputGateSchema = z.string();
-/** Raw response path: answer.body.owner.lease.input_gate. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_InputGate = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_InputGateSchema
->;
 /** Strict raw response path: answer.body.owner.lease. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_LeaseSchema = z.strictObject({
   delegated: refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_DelegatedSchema,
@@ -4223,52 +2066,20 @@ export const refusalAnswer_Status409V2_Body_Owner_KindProcess_LeaseSchema = z.st
   holders: refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_HoldersSchema,
   input_gate: refusalAnswer_Status409V2_Body_Owner_KindProcess_Lease_InputGateSchema,
 });
-/** Raw response path: answer.body.owner.lease. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Lease = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_LeaseSchema
->;
 /** Strict raw response path: answer.body.owner.operation_id. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_OperationIdSchema = z.null();
-/** Raw response path: answer.body.owner.operation_id. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_OperationId = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.operation_kind. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_OperationKindSchema = z.null();
-/** Raw response path: answer.body.owner.operation_kind. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_OperationKind = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_OperationKindSchema
->;
 /** Strict raw response path: answer.body.owner.pid. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_PidSchema = z.number().nullable();
-/** Raw response path: answer.body.owner.pid. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Pid = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_PidSchema
->;
 /** Strict raw response path: answer.body.owner.recovery. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_RecoverySchema = z.null();
-/** Raw response path: answer.body.owner.recovery. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Recovery = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_RecoverySchema
->;
 /** Strict raw response path: answer.body.owner.routines. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_RoutinesSchema = z.null();
-/** Raw response path: answer.body.owner.routines. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Routines = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_RoutinesSchema
->;
 /** Strict raw response path: answer.body.owner.script. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_ScriptSchema = z.string().nullable();
-/** Raw response path: answer.body.owner.script. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Script = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_ScriptSchema
->;
 /** Strict raw response path: answer.body.owner.status. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcess_StatusSchema = z.null();
-/** Raw response path: answer.body.owner.status. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess_Status = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcess_StatusSchema
->;
 /** Strict raw response path: answer.body.owner, variant: kind process. */
 export const refusalAnswer_Status409V2_Body_Owner_KindProcessSchema = z.strictObject({
   foreign: refusalAnswer_Status409V2_Body_Owner_KindProcess_ForeignSchema,
@@ -4285,40 +2096,20 @@ export const refusalAnswer_Status409V2_Body_Owner_KindProcessSchema = z.strictOb
   script: refusalAnswer_Status409V2_Body_Owner_KindProcess_ScriptSchema,
   status: refusalAnswer_Status409V2_Body_Owner_KindProcess_StatusSchema,
 });
-/** Raw response path: answer.body.owner, variant: kind process. */
-export type RefusalAnswer_Status409V2_Body_Owner_KindProcess = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Owner_KindProcessSchema
->;
 /** Strict raw response path: answer.body.owner. */
 export const refusalAnswer_Status409V2_Body_OwnerSchema = z.discriminatedUnion('kind', [
   refusalAnswer_Status409V2_Body_Owner_KindOperationSchema,
   refusalAnswer_Status409V2_Body_Owner_KindProcessSchema,
 ]);
-/** Raw response path: answer.body.owner. */
-export type RefusalAnswer_Status409V2_Body_Owner = z.infer<
-  typeof refusalAnswer_Status409V2_Body_OwnerSchema
->;
 /** Strict raw response path: answer.body.recovery.action. */
 export const refusalAnswer_Status409V2_Body_Recovery_ActionSchema = z.enum([
   'pause_harvesting',
   'stop_operation',
 ]);
-/** Raw response path: answer.body.recovery.action. */
-export type RefusalAnswer_Status409V2_Body_Recovery_Action = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Recovery_ActionSchema
->;
 /** Strict raw response path: answer.body.recovery.expected_revision. */
 export const refusalAnswer_Status409V2_Body_Recovery_ExpectedRevisionSchema = z.number();
-/** Raw response path: answer.body.recovery.expected_revision. */
-export type RefusalAnswer_Status409V2_Body_Recovery_ExpectedRevision = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: answer.body.recovery.operation_id. */
 export const refusalAnswer_Status409V2_Body_Recovery_OperationIdSchema = z.string();
-/** Raw response path: answer.body.recovery.operation_id. */
-export type RefusalAnswer_Status409V2_Body_Recovery_OperationId = z.infer<
-  typeof refusalAnswer_Status409V2_Body_Recovery_OperationIdSchema
->;
 /** Strict raw response path: answer.body.recovery. */
 export const refusalAnswer_Status409V2_Body_RecoverySchema = z
   .strictObject({
@@ -4327,16 +2118,8 @@ export const refusalAnswer_Status409V2_Body_RecoverySchema = z
     operation_id: refusalAnswer_Status409V2_Body_Recovery_OperationIdSchema,
   })
   .nullable();
-/** Raw response path: answer.body.recovery. */
-export type RefusalAnswer_Status409V2_Body_Recovery = z.infer<
-  typeof refusalAnswer_Status409V2_Body_RecoverySchema
->;
 /** Strict raw response path: answer.body.retry. */
 export const refusalAnswer_Status409V2_Body_RetrySchema = z.string();
-/** Raw response path: answer.body.retry. */
-export type RefusalAnswer_Status409V2_Body_Retry = z.infer<
-  typeof refusalAnswer_Status409V2_Body_RetrySchema
->;
 /** Strict raw response path: answer.body. */
 export const refusalAnswer_Status409V2_BodySchema = z.strictObject({
   code: refusalAnswer_Status409V2_Body_CodeSchema,
@@ -4346,163 +2129,67 @@ export const refusalAnswer_Status409V2_BodySchema = z.strictObject({
   recovery: refusalAnswer_Status409V2_Body_RecoverySchema,
   retry: refusalAnswer_Status409V2_Body_RetrySchema,
 });
-/** Raw response path: answer.body. */
-export type RefusalAnswer_Status409V2_Body = z.infer<typeof refusalAnswer_Status409V2_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const refusalAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type RefusalAnswer_Status409V2_Status = z.infer<
-  typeof refusalAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
 export const refusalAnswer_Status409V2Schema = z.strictObject({
   body: refusalAnswer_Status409V2_BodySchema,
   status: refusalAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
-export type RefusalAnswer_Status409V2 = z.infer<typeof refusalAnswer_Status409V2Schema>;
 /** Strict raw response path: answer.body.code. */
 export const refusalAnswer_Status409V3_Body_CodeSchema = z.enum(['collector_stopping']);
-/** Raw response path: answer.body.code. */
-export type RefusalAnswer_Status409V3_Body_Code = z.infer<
-  typeof refusalAnswer_Status409V3_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const refusalAnswer_Status409V3_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type RefusalAnswer_Status409V3_Body_Error = z.infer<
-  typeof refusalAnswer_Status409V3_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const refusalAnswer_Status409V3_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RefusalAnswer_Status409V3_Body_Ok = z.infer<
-  typeof refusalAnswer_Status409V3_Body_OkSchema
->;
 /** Strict raw response path: answer.body.owner.battle. */
 export const refusalAnswer_Status409V3_Body_Owner_BattleSchema = z.null();
-/** Raw response path: answer.body.owner.battle. */
-export type RefusalAnswer_Status409V3_Body_Owner_Battle = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_BattleSchema
->;
 /** Strict raw response path: answer.body.owner.foreign. */
 export const refusalAnswer_Status409V3_Body_Owner_ForeignSchema = z.boolean();
-/** Raw response path: answer.body.owner.foreign. */
-export type RefusalAnswer_Status409V3_Body_Owner_Foreign = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_ForeignSchema
->;
 /** Strict raw response path: answer.body.owner.gathers. */
 export const refusalAnswer_Status409V3_Body_Owner_GathersSchema = z.null();
-/** Raw response path: answer.body.owner.gathers. */
-export type RefusalAnswer_Status409V3_Body_Owner_Gathers = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_GathersSchema
->;
 /** Strict raw response path: answer.body.owner.gems.ad_gems. */
 export const refusalAnswer_Status409V3_Body_Owner_Gems_AdGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.ad_gems. */
-export type RefusalAnswer_Status409V3_Body_Owner_Gems_AdGems = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_Gems_AdGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems.basis. */
 export const refusalAnswer_Status409V3_Body_Owner_Gems_BasisSchema = z.enum(['not_reported']);
-/** Raw response path: answer.body.owner.gems.basis. */
-export type RefusalAnswer_Status409V3_Body_Owner_Gems_Basis = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_Gems_BasisSchema
->;
 /** Strict raw response path: answer.body.owner.gems.floating_gems. */
 export const refusalAnswer_Status409V3_Body_Owner_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.floating_gems. */
-export type RefusalAnswer_Status409V3_Body_Owner_Gems_FloatingGems = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems. */
 export const refusalAnswer_Status409V3_Body_Owner_GemsSchema = z.strictObject({
   ad_gems: refusalAnswer_Status409V3_Body_Owner_Gems_AdGemsSchema,
   basis: refusalAnswer_Status409V3_Body_Owner_Gems_BasisSchema,
   floating_gems: refusalAnswer_Status409V3_Body_Owner_Gems_FloatingGemsSchema,
 });
-/** Raw response path: answer.body.owner.gems. */
-export type RefusalAnswer_Status409V3_Body_Owner_Gems = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_GemsSchema
->;
 /** Strict raw response path: answer.body.owner.harvest_managed. */
 export const refusalAnswer_Status409V3_Body_Owner_HarvestManagedSchema = z.boolean();
-/** Raw response path: answer.body.owner.harvest_managed. */
-export type RefusalAnswer_Status409V3_Body_Owner_HarvestManaged = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_HarvestManagedSchema
->;
 /** Strict raw response path: answer.body.owner.kind. */
 export const refusalAnswer_Status409V3_Body_Owner_KindSchema = z.enum(['operation']);
-/** Raw response path: answer.body.owner.kind. */
-export type RefusalAnswer_Status409V3_Body_Owner_Kind = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_KindSchema
->;
 /** Strict raw response path: answer.body.owner.operation_id. */
 export const refusalAnswer_Status409V3_Body_Owner_OperationIdSchema = z.string();
-/** Raw response path: answer.body.owner.operation_id. */
-export type RefusalAnswer_Status409V3_Body_Owner_OperationId = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.operation_kind. */
 export const refusalAnswer_Status409V3_Body_Owner_OperationKindSchema = z.enum(['gems']);
-/** Raw response path: answer.body.owner.operation_kind. */
-export type RefusalAnswer_Status409V3_Body_Owner_OperationKind = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_OperationKindSchema
->;
 /** Strict raw response path: answer.body.owner.pid. */
 export const refusalAnswer_Status409V3_Body_Owner_PidSchema = z.number();
-/** Raw response path: answer.body.owner.pid. */
-export type RefusalAnswer_Status409V3_Body_Owner_Pid = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_PidSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.action. */
 export const refusalAnswer_Status409V3_Body_Owner_Recovery_ActionSchema = z.enum([
   'pause_harvesting',
 ]);
-/** Raw response path: answer.body.owner.recovery.action. */
-export type RefusalAnswer_Status409V3_Body_Owner_Recovery_Action = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_Recovery_ActionSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.expected_revision. */
 export const refusalAnswer_Status409V3_Body_Owner_Recovery_ExpectedRevisionSchema = z.number();
-/** Raw response path: answer.body.owner.recovery.expected_revision. */
-export type RefusalAnswer_Status409V3_Body_Owner_Recovery_ExpectedRevision = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.operation_id. */
 export const refusalAnswer_Status409V3_Body_Owner_Recovery_OperationIdSchema = z.string();
-/** Raw response path: answer.body.owner.recovery.operation_id. */
-export type RefusalAnswer_Status409V3_Body_Owner_Recovery_OperationId = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_Recovery_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.recovery. */
 export const refusalAnswer_Status409V3_Body_Owner_RecoverySchema = z.strictObject({
   action: refusalAnswer_Status409V3_Body_Owner_Recovery_ActionSchema,
   expected_revision: refusalAnswer_Status409V3_Body_Owner_Recovery_ExpectedRevisionSchema,
   operation_id: refusalAnswer_Status409V3_Body_Owner_Recovery_OperationIdSchema,
 });
-/** Raw response path: answer.body.owner.recovery. */
-export type RefusalAnswer_Status409V3_Body_Owner_Recovery = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_RecoverySchema
->;
 /** Strict raw response path: answer.body.owner.routines. */
 export const refusalAnswer_Status409V3_Body_Owner_RoutinesSchema = z.null();
-/** Raw response path: answer.body.owner.routines. */
-export type RefusalAnswer_Status409V3_Body_Owner_Routines = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_RoutinesSchema
->;
 /** Strict raw response path: answer.body.owner.script. */
 export const refusalAnswer_Status409V3_Body_Owner_ScriptSchema = z.null();
-/** Raw response path: answer.body.owner.script. */
-export type RefusalAnswer_Status409V3_Body_Owner_Script = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_ScriptSchema
->;
 /** Strict raw response path: answer.body.owner.status. */
 export const refusalAnswer_Status409V3_Body_Owner_StatusSchema = z.enum(['running']);
-/** Raw response path: answer.body.owner.status. */
-export type RefusalAnswer_Status409V3_Body_Owner_Status = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Owner_StatusSchema
->;
 /** Strict raw response path: answer.body.owner. */
 export const refusalAnswer_Status409V3_Body_OwnerSchema = z.strictObject({
   battle: refusalAnswer_Status409V3_Body_Owner_BattleSchema,
@@ -4519,80 +2206,36 @@ export const refusalAnswer_Status409V3_Body_OwnerSchema = z.strictObject({
   script: refusalAnswer_Status409V3_Body_Owner_ScriptSchema,
   status: refusalAnswer_Status409V3_Body_Owner_StatusSchema,
 });
-/** Raw response path: answer.body.owner. */
-export type RefusalAnswer_Status409V3_Body_Owner = z.infer<
-  typeof refusalAnswer_Status409V3_Body_OwnerSchema
->;
 /** Strict raw response path: answer.body.recovery.action. */
 export const refusalAnswer_Status409V3_Body_Recovery_ActionSchema = z.enum(['pause_harvesting']);
-/** Raw response path: answer.body.recovery.action. */
-export type RefusalAnswer_Status409V3_Body_Recovery_Action = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Recovery_ActionSchema
->;
 /** Strict raw response path: answer.body.recovery.expected_revision. */
 export const refusalAnswer_Status409V3_Body_Recovery_ExpectedRevisionSchema = z.number();
-/** Raw response path: answer.body.recovery.expected_revision. */
-export type RefusalAnswer_Status409V3_Body_Recovery_ExpectedRevision = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: answer.body.recovery.operation_id. */
 export const refusalAnswer_Status409V3_Body_Recovery_OperationIdSchema = z.string();
-/** Raw response path: answer.body.recovery.operation_id. */
-export type RefusalAnswer_Status409V3_Body_Recovery_OperationId = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Recovery_OperationIdSchema
->;
 /** Strict raw response path: answer.body.recovery. */
 export const refusalAnswer_Status409V3_Body_RecoverySchema = z.strictObject({
   action: refusalAnswer_Status409V3_Body_Recovery_ActionSchema,
   expected_revision: refusalAnswer_Status409V3_Body_Recovery_ExpectedRevisionSchema,
   operation_id: refusalAnswer_Status409V3_Body_Recovery_OperationIdSchema,
 });
-/** Raw response path: answer.body.recovery. */
-export type RefusalAnswer_Status409V3_Body_Recovery = z.infer<
-  typeof refusalAnswer_Status409V3_Body_RecoverySchema
->;
 /** Strict raw response path: answer.body.retry. */
 export const refusalAnswer_Status409V3_Body_RetrySchema = z.string();
-/** Raw response path: answer.body.retry. */
-export type RefusalAnswer_Status409V3_Body_Retry = z.infer<
-  typeof refusalAnswer_Status409V3_Body_RetrySchema
->;
 /** Strict raw response path: answer.body.stop.errors. */
 export const refusalAnswer_Status409V3_Body_Stop_ErrorsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.stop.errors. */
-export type RefusalAnswer_Status409V3_Body_Stop_Errors = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Stop_ErrorsSchema
->;
 /** Strict raw response path: answer.body.stop.requested. */
 export const refusalAnswer_Status409V3_Body_Stop_RequestedSchema = z.boolean();
-/** Raw response path: answer.body.stop.requested. */
-export type RefusalAnswer_Status409V3_Body_Stop_Requested = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Stop_RequestedSchema
->;
 /** Strict raw response path: answer.body.stop.stopped. */
 export const refusalAnswer_Status409V3_Body_Stop_StoppedSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.stop.stopped. */
-export type RefusalAnswer_Status409V3_Body_Stop_Stopped = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Stop_StoppedSchema
->;
 /** Strict raw response path: answer.body.stop.stopping[]. */
 export const refusalAnswer_Status409V3_Body_Stop_Stopping_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.stop.stopping[]. */
-export type RefusalAnswer_Status409V3_Body_Stop_Stopping_ArrayElement = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Stop_Stopping_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.stop.stopping. */
 export const refusalAnswer_Status409V3_Body_Stop_StoppingSchema = z.array(
   refusalAnswer_Status409V3_Body_Stop_Stopping_ArrayElementSchema,
 );
-/** Raw response path: answer.body.stop.stopping. */
-export type RefusalAnswer_Status409V3_Body_Stop_Stopping = z.infer<
-  typeof refusalAnswer_Status409V3_Body_Stop_StoppingSchema
->;
 /** Strict raw response path: answer.body.stop. */
 export const refusalAnswer_Status409V3_Body_StopSchema = z.strictObject({
   errors: refusalAnswer_Status409V3_Body_Stop_ErrorsSchema,
@@ -4600,16 +2243,8 @@ export const refusalAnswer_Status409V3_Body_StopSchema = z.strictObject({
   stopped: refusalAnswer_Status409V3_Body_Stop_StoppedSchema,
   stopping: refusalAnswer_Status409V3_Body_Stop_StoppingSchema,
 });
-/** Raw response path: answer.body.stop. */
-export type RefusalAnswer_Status409V3_Body_Stop = z.infer<
-  typeof refusalAnswer_Status409V3_Body_StopSchema
->;
 /** Strict raw response path: answer.body.waited_sec. */
 export const refusalAnswer_Status409V3_Body_WaitedSecSchema = z.number();
-/** Raw response path: answer.body.waited_sec. */
-export type RefusalAnswer_Status409V3_Body_WaitedSec = z.infer<
-  typeof refusalAnswer_Status409V3_Body_WaitedSecSchema
->;
 /** Strict raw response path: answer.body. */
 export const refusalAnswer_Status409V3_BodySchema = z.strictObject({
   code: refusalAnswer_Status409V3_Body_CodeSchema,
@@ -4621,113 +2256,45 @@ export const refusalAnswer_Status409V3_BodySchema = z.strictObject({
   stop: refusalAnswer_Status409V3_Body_StopSchema,
   waited_sec: refusalAnswer_Status409V3_Body_WaitedSecSchema,
 });
-/** Raw response path: answer.body. */
-export type RefusalAnswer_Status409V3_Body = z.infer<typeof refusalAnswer_Status409V3_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const refusalAnswer_Status409V3_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type RefusalAnswer_Status409V3_Status = z.infer<
-  typeof refusalAnswer_Status409V3_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry, stop, waited_sec. */
 export const refusalAnswer_Status409V3Schema = z.strictObject({
   body: refusalAnswer_Status409V3_BodySchema,
   status: refusalAnswer_Status409V3_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry, stop, waited_sec. */
-export type RefusalAnswer_Status409V3 = z.infer<typeof refusalAnswer_Status409V3Schema>;
 /** Strict raw response path: answer.body.code. */
 export const refusalAnswer_Status409V4_Body_CodeSchema = z.enum(['setup_battle_unresolved']);
-/** Raw response path: answer.body.code. */
-export type RefusalAnswer_Status409V4_Body_Code = z.infer<
-  typeof refusalAnswer_Status409V4_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const refusalAnswer_Status409V4_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type RefusalAnswer_Status409V4_Body_Error = z.infer<
-  typeof refusalAnswer_Status409V4_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const refusalAnswer_Status409V4_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RefusalAnswer_Status409V4_Body_Ok = z.infer<
-  typeof refusalAnswer_Status409V4_Body_OkSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard.blocks_launch. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuard_BlocksLaunchSchema = z.boolean();
-/** Raw response path: answer.body.setup_battle_guard.blocks_launch. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard_BlocksLaunch = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuard_BlocksLaunchSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard.code. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuard_CodeSchema = z.enum([
   'setup_battle_unresolved',
 ]);
-/** Raw response path: answer.body.setup_battle_guard.code. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard_Code = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuard_CodeSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard.evidence. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuard_EvidenceSchema = z.string();
-/** Raw response path: answer.body.setup_battle_guard.evidence. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard_Evidence = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuard_EvidenceSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard.evidence_revision. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuard_EvidenceRevisionSchema = z.string();
-/** Raw response path: answer.body.setup_battle_guard.evidence_revision. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard_EvidenceRevision = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuard_EvidenceRevisionSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard.handoff_id. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuard_HandoffIdSchema = z.null();
-/** Raw response path: answer.body.setup_battle_guard.handoff_id. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard_HandoffId = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuard_HandoffIdSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard.instance. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuard_InstanceSchema = z.string();
-/** Raw response path: answer.body.setup_battle_guard.instance. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard_Instance = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuard_InstanceSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard.message. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuard_MessageSchema = z.string();
-/** Raw response path: answer.body.setup_battle_guard.message. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard_Message = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuard_MessageSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard.operation_id. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuard_OperationIdSchema = z.string();
-/** Raw response path: answer.body.setup_battle_guard.operation_id. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard_OperationId = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuard_OperationIdSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard.recorded_status. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuard_RecordedStatusSchema = z.string();
-/** Raw response path: answer.body.setup_battle_guard.recorded_status. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard_RecordedStatus = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuard_RecordedStatusSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard.scope. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuard_ScopeSchema = z.string();
-/** Raw response path: answer.body.setup_battle_guard.scope. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard_Scope = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuard_ScopeSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard.serial. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuard_SerialSchema = z.string();
-/** Raw response path: answer.body.setup_battle_guard.serial. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard_Serial = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuard_SerialSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard.setup_battle_id. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuard_SetupBattleIdSchema = z.string();
-/** Raw response path: answer.body.setup_battle_guard.setup_battle_id. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard_SetupBattleId = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuard_SetupBattleIdSchema
->;
 /** Strict raw response path: answer.body.setup_battle_guard. */
 export const refusalAnswer_Status409V4_Body_SetupBattleGuardSchema = z.strictObject({
   blocks_launch: refusalAnswer_Status409V4_Body_SetupBattleGuard_BlocksLaunchSchema,
@@ -4743,10 +2310,6 @@ export const refusalAnswer_Status409V4_Body_SetupBattleGuardSchema = z.strictObj
   serial: refusalAnswer_Status409V4_Body_SetupBattleGuard_SerialSchema,
   setup_battle_id: refusalAnswer_Status409V4_Body_SetupBattleGuard_SetupBattleIdSchema,
 });
-/** Raw response path: answer.body.setup_battle_guard. */
-export type RefusalAnswer_Status409V4_Body_SetupBattleGuard = z.infer<
-  typeof refusalAnswer_Status409V4_Body_SetupBattleGuardSchema
->;
 /** Strict raw response path: answer.body. */
 export const refusalAnswer_Status409V4_BodySchema = z.strictObject({
   code: refusalAnswer_Status409V4_Body_CodeSchema,
@@ -4754,21 +2317,13 @@ export const refusalAnswer_Status409V4_BodySchema = z.strictObject({
   ok: refusalAnswer_Status409V4_Body_OkSchema,
   setup_battle_guard: refusalAnswer_Status409V4_Body_SetupBattleGuardSchema,
 });
-/** Raw response path: answer.body. */
-export type RefusalAnswer_Status409V4_Body = z.infer<typeof refusalAnswer_Status409V4_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const refusalAnswer_Status409V4_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type RefusalAnswer_Status409V4_Status = z.infer<
-  typeof refusalAnswer_Status409V4_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, setup_battle_guard. */
 export const refusalAnswer_Status409V4Schema = z.strictObject({
   body: refusalAnswer_Status409V4_BodySchema,
   status: refusalAnswer_Status409V4_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, setup_battle_guard. */
-export type RefusalAnswer_Status409V4 = z.infer<typeof refusalAnswer_Status409V4Schema>;
 /** Strict raw response path: answer. */
 export const refusalAnswerSchema = z.union([
   refusalAnswer_Status400Schema,
@@ -4781,32 +2336,14 @@ export const refusalAnswerSchema = z.union([
 export type RefusalAnswer = z.infer<typeof refusalAnswerSchema>;
 /** Strict raw response path: answer.body.ok. */
 export const startTransferAnswer_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type StartTransferAnswer_Body_Ok = z.infer<typeof startTransferAnswer_Body_OkSchema>;
 /** Strict raw response path: answer.body.operation.id. */
 export const startTransferAnswer_Body_Operation_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type StartTransferAnswer_Body_Operation_Id = z.infer<
-  typeof startTransferAnswer_Body_Operation_IdSchema
->;
 /** Strict raw response path: answer.body.operation.kind. */
 export const startTransferAnswer_Body_Operation_KindSchema = z.enum(['run']);
-/** Raw response path: answer.body.operation.kind. */
-export type StartTransferAnswer_Body_Operation_Kind = z.infer<
-  typeof startTransferAnswer_Body_Operation_KindSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const startTransferAnswer_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type StartTransferAnswer_Body_Operation_Revision = z.infer<
-  typeof startTransferAnswer_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const startTransferAnswer_Body_Operation_StatusSchema = z.enum(['accepted']);
-/** Raw response path: answer.body.operation.status. */
-export type StartTransferAnswer_Body_Operation_Status = z.infer<
-  typeof startTransferAnswer_Body_Operation_StatusSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const startTransferAnswer_Body_OperationSchema = z.strictObject({
   id: startTransferAnswer_Body_Operation_IdSchema,
@@ -4814,54 +2351,26 @@ export const startTransferAnswer_Body_OperationSchema = z.strictObject({
   revision: startTransferAnswer_Body_Operation_RevisionSchema,
   status: startTransferAnswer_Body_Operation_StatusSchema,
 });
-/** Raw response path: answer.body.operation. */
-export type StartTransferAnswer_Body_Operation = z.infer<
-  typeof startTransferAnswer_Body_OperationSchema
->;
 /** Strict raw response path: answer.body.operation_id. */
 export const startTransferAnswer_Body_OperationIdSchema = z.string();
-/** Raw response path: answer.body.operation_id. */
-export type StartTransferAnswer_Body_OperationId = z.infer<
-  typeof startTransferAnswer_Body_OperationIdSchema
->;
 /** Strict raw response path: answer.body.transfer.stopped[]. */
 export const startTransferAnswer_Body_Transfer_Stopped_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.transfer.stopped[]. */
-export type StartTransferAnswer_Body_Transfer_Stopped_ArrayElement = z.infer<
-  typeof startTransferAnswer_Body_Transfer_Stopped_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.transfer.stopped. */
 export const startTransferAnswer_Body_Transfer_StoppedSchema = z.array(
   startTransferAnswer_Body_Transfer_Stopped_ArrayElementSchema,
 );
-/** Raw response path: answer.body.transfer.stopped. */
-export type StartTransferAnswer_Body_Transfer_Stopped = z.infer<
-  typeof startTransferAnswer_Body_Transfer_StoppedSchema
->;
 /** Strict raw response path: answer.body.transfer.stopping. */
 export const startTransferAnswer_Body_Transfer_StoppingSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.transfer.stopping. */
-export type StartTransferAnswer_Body_Transfer_Stopping = z.infer<
-  typeof startTransferAnswer_Body_Transfer_StoppingSchema
->;
 /** Strict raw response path: answer.body.transfer.waited_sec. */
 export const startTransferAnswer_Body_Transfer_WaitedSecSchema = z.number();
-/** Raw response path: answer.body.transfer.waited_sec. */
-export type StartTransferAnswer_Body_Transfer_WaitedSec = z.infer<
-  typeof startTransferAnswer_Body_Transfer_WaitedSecSchema
->;
 /** Strict raw response path: answer.body.transfer. */
 export const startTransferAnswer_Body_TransferSchema = z.strictObject({
   stopped: startTransferAnswer_Body_Transfer_StoppedSchema,
   stopping: startTransferAnswer_Body_Transfer_StoppingSchema,
   waited_sec: startTransferAnswer_Body_Transfer_WaitedSecSchema,
 });
-/** Raw response path: answer.body.transfer. */
-export type StartTransferAnswer_Body_Transfer = z.infer<
-  typeof startTransferAnswer_Body_TransferSchema
->;
 /** Strict raw response path: answer.body. */
 export const startTransferAnswer_BodySchema = z.strictObject({
   ok: startTransferAnswer_Body_OkSchema,
@@ -4869,12 +2378,8 @@ export const startTransferAnswer_BodySchema = z.strictObject({
   operation_id: startTransferAnswer_Body_OperationIdSchema,
   transfer: startTransferAnswer_Body_TransferSchema,
 });
-/** Raw response path: answer.body. */
-export type StartTransferAnswer_Body = z.infer<typeof startTransferAnswer_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const startTransferAnswer_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type StartTransferAnswer_Status = z.infer<typeof startTransferAnswer_StatusSchema>;
 /** Strict raw response path: answer. */
 export const startTransferAnswerSchema = z.strictObject({
   body: startTransferAnswer_BodySchema,
@@ -4884,23 +2389,13 @@ export const startTransferAnswerSchema = z.strictObject({
 export type StartTransferAnswer = z.infer<typeof startTransferAnswerSchema>;
 /** Strict raw response path: answer.body.ok. */
 export const stopCancelAnswer_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type StopCancelAnswer_Body_Ok = z.infer<typeof stopCancelAnswer_Body_OkSchema>;
 /** Strict raw response path: answer.body.operation.error.code. */
 export const stopCancelAnswer_Body_Operation_Error_CodeSchema = z.enum([
   'worker_lost',
   'worker_released',
 ]);
-/** Raw response path: answer.body.operation.error.code. */
-export type StopCancelAnswer_Body_Operation_Error_Code = z.infer<
-  typeof stopCancelAnswer_Body_Operation_Error_CodeSchema
->;
 /** Strict raw response path: answer.body.operation.error.message. */
 export const stopCancelAnswer_Body_Operation_Error_MessageSchema = z.string();
-/** Raw response path: answer.body.operation.error.message. */
-export type StopCancelAnswer_Body_Operation_Error_Message = z.infer<
-  typeof stopCancelAnswer_Body_Operation_Error_MessageSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const stopCancelAnswer_Body_Operation_ErrorSchema = z
   .strictObject({
@@ -4908,44 +2403,20 @@ export const stopCancelAnswer_Body_Operation_ErrorSchema = z
     message: stopCancelAnswer_Body_Operation_Error_MessageSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.error. */
-export type StopCancelAnswer_Body_Operation_Error = z.infer<
-  typeof stopCancelAnswer_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const stopCancelAnswer_Body_Operation_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type StopCancelAnswer_Body_Operation_Id = z.infer<
-  typeof stopCancelAnswer_Body_Operation_IdSchema
->;
 /** Strict raw response path: answer.body.operation.kind. */
 export const stopCancelAnswer_Body_Operation_KindSchema = z.enum(['gems']);
-/** Raw response path: answer.body.operation.kind. */
-export type StopCancelAnswer_Body_Operation_Kind = z.infer<
-  typeof stopCancelAnswer_Body_Operation_KindSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const stopCancelAnswer_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type StopCancelAnswer_Body_Operation_Revision = z.infer<
-  typeof stopCancelAnswer_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const stopCancelAnswer_Body_Operation_StatusSchema = z.enum([
   'cancelled',
   'cancelling',
   'interrupted',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type StopCancelAnswer_Body_Operation_Status = z.infer<
-  typeof stopCancelAnswer_Body_Operation_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const stopCancelAnswer_Body_Operation_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type StopCancelAnswer_Body_Operation_Step = z.infer<
-  typeof stopCancelAnswer_Body_Operation_StepSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const stopCancelAnswer_Body_OperationSchema = z.strictObject({
   error: stopCancelAnswer_Body_Operation_ErrorSchema,
@@ -4955,46 +2426,20 @@ export const stopCancelAnswer_Body_OperationSchema = z.strictObject({
   status: stopCancelAnswer_Body_Operation_StatusSchema,
   step: stopCancelAnswer_Body_Operation_StepSchema,
 });
-/** Raw response path: answer.body.operation. */
-export type StopCancelAnswer_Body_Operation = z.infer<typeof stopCancelAnswer_Body_OperationSchema>;
 /** Strict raw response path: answer.body.stop.by_this_request.family. */
 export const stopCancelAnswer_Body_Stop_ByThisRequest_FamilySchema = z.string().nullable();
-/** Raw response path: answer.body.stop.by_this_request.family. */
-export type StopCancelAnswer_Body_Stop_ByThisRequest_Family = z.infer<
-  typeof stopCancelAnswer_Body_Stop_ByThisRequest_FamilySchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.paused. */
 export const stopCancelAnswer_Body_Stop_ByThisRequest_PausedSchema = z.boolean();
-/** Raw response path: answer.body.stop.by_this_request.paused. */
-export type StopCancelAnswer_Body_Stop_ByThisRequest_Paused = z.infer<
-  typeof stopCancelAnswer_Body_Stop_ByThisRequest_PausedSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.released. */
 export const stopCancelAnswer_Body_Stop_ByThisRequest_ReleasedSchema = z.boolean();
-/** Raw response path: answer.body.stop.by_this_request.released. */
-export type StopCancelAnswer_Body_Stop_ByThisRequest_Released = z.infer<
-  typeof stopCancelAnswer_Body_Stop_ByThisRequest_ReleasedSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.requested. */
 export const stopCancelAnswer_Body_Stop_ByThisRequest_RequestedSchema = z.boolean();
-/** Raw response path: answer.body.stop.by_this_request.requested. */
-export type StopCancelAnswer_Body_Stop_ByThisRequest_Requested = z.infer<
-  typeof stopCancelAnswer_Body_Stop_ByThisRequest_RequestedSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.signalled[]. */
 export const stopCancelAnswer_Body_Stop_ByThisRequest_Signalled_ArrayElementSchema = z.number();
-/** Raw response path: answer.body.stop.by_this_request.signalled[]. */
-export type StopCancelAnswer_Body_Stop_ByThisRequest_Signalled_ArrayElement = z.infer<
-  typeof stopCancelAnswer_Body_Stop_ByThisRequest_Signalled_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.signalled. */
 export const stopCancelAnswer_Body_Stop_ByThisRequest_SignalledSchema = z.array(
   stopCancelAnswer_Body_Stop_ByThisRequest_Signalled_ArrayElementSchema,
 );
-/** Raw response path: answer.body.stop.by_this_request.signalled. */
-export type StopCancelAnswer_Body_Stop_ByThisRequest_Signalled = z.infer<
-  typeof stopCancelAnswer_Body_Stop_ByThisRequest_SignalledSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request. */
 export const stopCancelAnswer_Body_Stop_ByThisRequestSchema = z.strictObject({
   family: stopCancelAnswer_Body_Stop_ByThisRequest_FamilySchema,
@@ -5003,111 +2448,47 @@ export const stopCancelAnswer_Body_Stop_ByThisRequestSchema = z.strictObject({
   requested: stopCancelAnswer_Body_Stop_ByThisRequest_RequestedSchema,
   signalled: stopCancelAnswer_Body_Stop_ByThisRequest_SignalledSchema,
 });
-/** Raw response path: answer.body.stop.by_this_request. */
-export type StopCancelAnswer_Body_Stop_ByThisRequest = z.infer<
-  typeof stopCancelAnswer_Body_Stop_ByThisRequestSchema
->;
 /** Strict raw response path: answer.body.stop.holder.foreign. */
 export const stopCancelAnswer_Body_Stop_Holder_ForeignSchema = z.boolean();
-/** Raw response path: answer.body.stop.holder.foreign. */
-export type StopCancelAnswer_Body_Stop_Holder_Foreign = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_ForeignSchema
->;
 /** Strict raw response path: answer.body.stop.holder.gathers. */
 export const stopCancelAnswer_Body_Stop_Holder_GathersSchema = z.null();
-/** Raw response path: answer.body.stop.holder.gathers. */
-export type StopCancelAnswer_Body_Stop_Holder_Gathers = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_GathersSchema
->;
 /** Strict raw response path: answer.body.stop.holder.gems.ad_gems. */
 export const stopCancelAnswer_Body_Stop_Holder_Gems_AdGemsSchema = z.null();
-/** Raw response path: answer.body.stop.holder.gems.ad_gems. */
-export type StopCancelAnswer_Body_Stop_Holder_Gems_AdGems = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_Gems_AdGemsSchema
->;
 /** Strict raw response path: answer.body.stop.holder.gems.basis. */
 export const stopCancelAnswer_Body_Stop_Holder_Gems_BasisSchema = z.enum(['not_reported']);
-/** Raw response path: answer.body.stop.holder.gems.basis. */
-export type StopCancelAnswer_Body_Stop_Holder_Gems_Basis = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_Gems_BasisSchema
->;
 /** Strict raw response path: answer.body.stop.holder.gems.floating_gems. */
 export const stopCancelAnswer_Body_Stop_Holder_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: answer.body.stop.holder.gems.floating_gems. */
-export type StopCancelAnswer_Body_Stop_Holder_Gems_FloatingGems = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.stop.holder.gems. */
 export const stopCancelAnswer_Body_Stop_Holder_GemsSchema = z.strictObject({
   ad_gems: stopCancelAnswer_Body_Stop_Holder_Gems_AdGemsSchema,
   basis: stopCancelAnswer_Body_Stop_Holder_Gems_BasisSchema,
   floating_gems: stopCancelAnswer_Body_Stop_Holder_Gems_FloatingGemsSchema,
 });
-/** Raw response path: answer.body.stop.holder.gems. */
-export type StopCancelAnswer_Body_Stop_Holder_Gems = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_GemsSchema
->;
 /** Strict raw response path: answer.body.stop.holder.harvest_managed. */
 export const stopCancelAnswer_Body_Stop_Holder_HarvestManagedSchema = z.boolean();
-/** Raw response path: answer.body.stop.holder.harvest_managed. */
-export type StopCancelAnswer_Body_Stop_Holder_HarvestManaged = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_HarvestManagedSchema
->;
 /** Strict raw response path: answer.body.stop.holder.kind. */
 export const stopCancelAnswer_Body_Stop_Holder_KindSchema = z.enum(['process']);
-/** Raw response path: answer.body.stop.holder.kind. */
-export type StopCancelAnswer_Body_Stop_Holder_Kind = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_KindSchema
->;
 /** Strict raw response path: answer.body.stop.holder.lease.delegated. */
 export const stopCancelAnswer_Body_Stop_Holder_Lease_DelegatedSchema = z.boolean();
-/** Raw response path: answer.body.stop.holder.lease.delegated. */
-export type StopCancelAnswer_Body_Stop_Holder_Lease_Delegated = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_Lease_DelegatedSchema
->;
 /** Strict raw response path: answer.body.stop.holder.lease.held. */
 export const stopCancelAnswer_Body_Stop_Holder_Lease_HeldSchema = z.boolean();
-/** Raw response path: answer.body.stop.holder.lease.held. */
-export type StopCancelAnswer_Body_Stop_Holder_Lease_Held = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_Lease_HeldSchema
->;
 /** Strict raw response path: answer.body.stop.holder.lease.holders[].pid. */
 export const stopCancelAnswer_Body_Stop_Holder_Lease_Holders_ArrayElement_PidSchema = z.number();
-/** Raw response path: answer.body.stop.holder.lease.holders[].pid. */
-export type StopCancelAnswer_Body_Stop_Holder_Lease_Holders_ArrayElement_Pid = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_Lease_Holders_ArrayElement_PidSchema
->;
 /** Strict raw response path: answer.body.stop.holder.lease.holders[].role. */
 export const stopCancelAnswer_Body_Stop_Holder_Lease_Holders_ArrayElement_RoleSchema = z.enum([
   'primary',
 ]);
-/** Raw response path: answer.body.stop.holder.lease.holders[].role. */
-export type StopCancelAnswer_Body_Stop_Holder_Lease_Holders_ArrayElement_Role = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_Lease_Holders_ArrayElement_RoleSchema
->;
 /** Strict raw response path: answer.body.stop.holder.lease.holders[]. */
 export const stopCancelAnswer_Body_Stop_Holder_Lease_Holders_ArrayElementSchema = z.strictObject({
   pid: stopCancelAnswer_Body_Stop_Holder_Lease_Holders_ArrayElement_PidSchema,
   role: stopCancelAnswer_Body_Stop_Holder_Lease_Holders_ArrayElement_RoleSchema,
 });
-/** Raw response path: answer.body.stop.holder.lease.holders[]. */
-export type StopCancelAnswer_Body_Stop_Holder_Lease_Holders_ArrayElement = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_Lease_Holders_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.stop.holder.lease.holders. */
 export const stopCancelAnswer_Body_Stop_Holder_Lease_HoldersSchema = z.array(
   stopCancelAnswer_Body_Stop_Holder_Lease_Holders_ArrayElementSchema,
 );
-/** Raw response path: answer.body.stop.holder.lease.holders. */
-export type StopCancelAnswer_Body_Stop_Holder_Lease_Holders = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_Lease_HoldersSchema
->;
 /** Strict raw response path: answer.body.stop.holder.lease.input_gate. */
 export const stopCancelAnswer_Body_Stop_Holder_Lease_InputGateSchema = z.string();
-/** Raw response path: answer.body.stop.holder.lease.input_gate. */
-export type StopCancelAnswer_Body_Stop_Holder_Lease_InputGate = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_Lease_InputGateSchema
->;
 /** Strict raw response path: answer.body.stop.holder.lease. */
 export const stopCancelAnswer_Body_Stop_Holder_LeaseSchema = z.strictObject({
   delegated: stopCancelAnswer_Body_Stop_Holder_Lease_DelegatedSchema,
@@ -5115,52 +2496,20 @@ export const stopCancelAnswer_Body_Stop_Holder_LeaseSchema = z.strictObject({
   holders: stopCancelAnswer_Body_Stop_Holder_Lease_HoldersSchema,
   input_gate: stopCancelAnswer_Body_Stop_Holder_Lease_InputGateSchema,
 });
-/** Raw response path: answer.body.stop.holder.lease. */
-export type StopCancelAnswer_Body_Stop_Holder_Lease = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_LeaseSchema
->;
 /** Strict raw response path: answer.body.stop.holder.operation_id. */
 export const stopCancelAnswer_Body_Stop_Holder_OperationIdSchema = z.null();
-/** Raw response path: answer.body.stop.holder.operation_id. */
-export type StopCancelAnswer_Body_Stop_Holder_OperationId = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_OperationIdSchema
->;
 /** Strict raw response path: answer.body.stop.holder.operation_kind. */
 export const stopCancelAnswer_Body_Stop_Holder_OperationKindSchema = z.null();
-/** Raw response path: answer.body.stop.holder.operation_kind. */
-export type StopCancelAnswer_Body_Stop_Holder_OperationKind = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_OperationKindSchema
->;
 /** Strict raw response path: answer.body.stop.holder.pid. */
 export const stopCancelAnswer_Body_Stop_Holder_PidSchema = z.null();
-/** Raw response path: answer.body.stop.holder.pid. */
-export type StopCancelAnswer_Body_Stop_Holder_Pid = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_PidSchema
->;
 /** Strict raw response path: answer.body.stop.holder.recovery. */
 export const stopCancelAnswer_Body_Stop_Holder_RecoverySchema = z.null();
-/** Raw response path: answer.body.stop.holder.recovery. */
-export type StopCancelAnswer_Body_Stop_Holder_Recovery = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_RecoverySchema
->;
 /** Strict raw response path: answer.body.stop.holder.routines. */
 export const stopCancelAnswer_Body_Stop_Holder_RoutinesSchema = z.null();
-/** Raw response path: answer.body.stop.holder.routines. */
-export type StopCancelAnswer_Body_Stop_Holder_Routines = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_RoutinesSchema
->;
 /** Strict raw response path: answer.body.stop.holder.script. */
 export const stopCancelAnswer_Body_Stop_Holder_ScriptSchema = z.null();
-/** Raw response path: answer.body.stop.holder.script. */
-export type StopCancelAnswer_Body_Stop_Holder_Script = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_ScriptSchema
->;
 /** Strict raw response path: answer.body.stop.holder.status. */
 export const stopCancelAnswer_Body_Stop_Holder_StatusSchema = z.null();
-/** Raw response path: answer.body.stop.holder.status. */
-export type StopCancelAnswer_Body_Stop_Holder_Status = z.infer<
-  typeof stopCancelAnswer_Body_Stop_Holder_StatusSchema
->;
 /** Strict raw response path: answer.body.stop.holder. */
 export const stopCancelAnswer_Body_Stop_HolderSchema = z
   .strictObject({
@@ -5179,10 +2528,6 @@ export const stopCancelAnswer_Body_Stop_HolderSchema = z
     status: stopCancelAnswer_Body_Stop_Holder_StatusSchema,
   })
   .nullable();
-/** Raw response path: answer.body.stop.holder. */
-export type StopCancelAnswer_Body_Stop_Holder = z.infer<
-  typeof stopCancelAnswer_Body_Stop_HolderSchema
->;
 /** Strict raw response path: answer.body.stop.reason. */
 export const stopCancelAnswer_Body_Stop_ReasonSchema = z
   .enum([
@@ -5193,10 +2538,6 @@ export const stopCancelAnswer_Body_Stop_ReasonSchema = z
     'worker_not_verifiable_lease_unreadable',
   ])
   .nullable();
-/** Raw response path: answer.body.stop.reason. */
-export type StopCancelAnswer_Body_Stop_Reason = z.infer<
-  typeof stopCancelAnswer_Body_Stop_ReasonSchema
->;
 /** Strict raw response path: answer.body.stop.state. */
 export const stopCancelAnswer_Body_Stop_StateSchema = z.enum([
   'ended',
@@ -5205,10 +2546,6 @@ export const stopCancelAnswer_Body_Stop_StateSchema = z.enum([
   'stopping',
   'unverified',
 ]);
-/** Raw response path: answer.body.stop.state. */
-export type StopCancelAnswer_Body_Stop_State = z.infer<
-  typeof stopCancelAnswer_Body_Stop_StateSchema
->;
 /** Strict raw response path: answer.body.stop. */
 export const stopCancelAnswer_Body_StopSchema = z.strictObject({
   by_this_request: stopCancelAnswer_Body_Stop_ByThisRequestSchema,
@@ -5216,20 +2553,14 @@ export const stopCancelAnswer_Body_StopSchema = z.strictObject({
   reason: stopCancelAnswer_Body_Stop_ReasonSchema,
   state: stopCancelAnswer_Body_Stop_StateSchema,
 });
-/** Raw response path: answer.body.stop. */
-export type StopCancelAnswer_Body_Stop = z.infer<typeof stopCancelAnswer_Body_StopSchema>;
 /** Strict raw response path: answer.body. */
 export const stopCancelAnswer_BodySchema = z.strictObject({
   ok: stopCancelAnswer_Body_OkSchema,
   operation: stopCancelAnswer_Body_OperationSchema,
   stop: stopCancelAnswer_Body_StopSchema,
 });
-/** Raw response path: answer.body. */
-export type StopCancelAnswer_Body = z.infer<typeof stopCancelAnswer_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const stopCancelAnswer_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type StopCancelAnswer_Status = z.infer<typeof stopCancelAnswer_StatusSchema>;
 /** Strict raw response path: answer. */
 export const stopCancelAnswerSchema = z.strictObject({
   body: stopCancelAnswer_BodySchema,
@@ -5239,64 +2570,24 @@ export const stopCancelAnswerSchema = z.strictObject({
 export type StopCancelAnswer = z.infer<typeof stopCancelAnswerSchema>;
 /** Strict raw response path: answer.body.code. */
 export const stopConflictAnswer_Status409V1_Body_CodeSchema = z.enum(['stop_outcome_partial']);
-/** Raw response path: answer.body.code. */
-export type StopConflictAnswer_Status409V1_Body_Code = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.conflict. */
 export const stopConflictAnswer_Status409V1_Body_ConflictSchema = z.string();
-/** Raw response path: answer.body.conflict. */
-export type StopConflictAnswer_Status409V1_Body_Conflict = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_ConflictSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const stopConflictAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type StopConflictAnswer_Status409V1_Body_Error = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const stopConflictAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type StopConflictAnswer_Status409V1_Body_Ok = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const stopConflictAnswer_Status409V1_Body_Operation_ErrorSchema = z.null();
-/** Raw response path: answer.body.operation.error. */
-export type StopConflictAnswer_Status409V1_Body_Operation_Error = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const stopConflictAnswer_Status409V1_Body_Operation_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type StopConflictAnswer_Status409V1_Body_Operation_Id = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Operation_IdSchema
->;
 /** Strict raw response path: answer.body.operation.kind. */
 export const stopConflictAnswer_Status409V1_Body_Operation_KindSchema = z.enum(['gems']);
-/** Raw response path: answer.body.operation.kind. */
-export type StopConflictAnswer_Status409V1_Body_Operation_Kind = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Operation_KindSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const stopConflictAnswer_Status409V1_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type StopConflictAnswer_Status409V1_Body_Operation_Revision = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const stopConflictAnswer_Status409V1_Body_Operation_StatusSchema = z.enum(['running']);
-/** Raw response path: answer.body.operation.status. */
-export type StopConflictAnswer_Status409V1_Body_Operation_Status = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Operation_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const stopConflictAnswer_Status409V1_Body_Operation_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type StopConflictAnswer_Status409V1_Body_Operation_Step = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Operation_StepSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const stopConflictAnswer_Status409V1_Body_OperationSchema = z.strictObject({
   error: stopConflictAnswer_Status409V1_Body_Operation_ErrorSchema,
@@ -5306,42 +2597,18 @@ export const stopConflictAnswer_Status409V1_Body_OperationSchema = z.strictObjec
   status: stopConflictAnswer_Status409V1_Body_Operation_StatusSchema,
   step: stopConflictAnswer_Status409V1_Body_Operation_StepSchema,
 });
-/** Raw response path: answer.body.operation. */
-export type StopConflictAnswer_Status409V1_Body_Operation = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_OperationSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.family. */
 export const stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_FamilySchema = z.null();
-/** Raw response path: answer.body.stop.by_this_request.family. */
-export type StopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_Family = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_FamilySchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.paused. */
 export const stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_PausedSchema = z.boolean();
-/** Raw response path: answer.body.stop.by_this_request.paused. */
-export type StopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_Paused = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_PausedSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.released. */
 export const stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_ReleasedSchema = z.boolean();
-/** Raw response path: answer.body.stop.by_this_request.released. */
-export type StopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_Released = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_ReleasedSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.requested. */
 export const stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_RequestedSchema = z.boolean();
-/** Raw response path: answer.body.stop.by_this_request.requested. */
-export type StopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_Requested = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_RequestedSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.signalled. */
 export const stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_SignalledSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.stop.by_this_request.signalled. */
-export type StopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_Signalled = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_SignalledSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request. */
 export const stopConflictAnswer_Status409V1_Body_Stop_ByThisRequestSchema = z.strictObject({
   family: stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_FamilySchema,
@@ -5350,28 +2617,12 @@ export const stopConflictAnswer_Status409V1_Body_Stop_ByThisRequestSchema = z.st
   requested: stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_RequestedSchema,
   signalled: stopConflictAnswer_Status409V1_Body_Stop_ByThisRequest_SignalledSchema,
 });
-/** Raw response path: answer.body.stop.by_this_request. */
-export type StopConflictAnswer_Status409V1_Body_Stop_ByThisRequest = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Stop_ByThisRequestSchema
->;
 /** Strict raw response path: answer.body.stop.holder. */
 export const stopConflictAnswer_Status409V1_Body_Stop_HolderSchema = z.null();
-/** Raw response path: answer.body.stop.holder. */
-export type StopConflictAnswer_Status409V1_Body_Stop_Holder = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Stop_HolderSchema
->;
 /** Strict raw response path: answer.body.stop.reason. */
 export const stopConflictAnswer_Status409V1_Body_Stop_ReasonSchema = z.null();
-/** Raw response path: answer.body.stop.reason. */
-export type StopConflictAnswer_Status409V1_Body_Stop_Reason = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Stop_ReasonSchema
->;
 /** Strict raw response path: answer.body.stop.state. */
 export const stopConflictAnswer_Status409V1_Body_Stop_StateSchema = z.enum(['active']);
-/** Raw response path: answer.body.stop.state. */
-export type StopConflictAnswer_Status409V1_Body_Stop_State = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_Stop_StateSchema
->;
 /** Strict raw response path: answer.body.stop. */
 export const stopConflictAnswer_Status409V1_Body_StopSchema = z.strictObject({
   by_this_request: stopConflictAnswer_Status409V1_Body_Stop_ByThisRequestSchema,
@@ -5379,10 +2630,6 @@ export const stopConflictAnswer_Status409V1_Body_StopSchema = z.strictObject({
   reason: stopConflictAnswer_Status409V1_Body_Stop_ReasonSchema,
   state: stopConflictAnswer_Status409V1_Body_Stop_StateSchema,
 });
-/** Raw response path: answer.body.stop. */
-export type StopConflictAnswer_Status409V1_Body_Stop = z.infer<
-  typeof stopConflictAnswer_Status409V1_Body_StopSchema
->;
 /** Strict raw response path: answer.body. */
 export const stopConflictAnswer_Status409V1_BodySchema = z.strictObject({
   code: stopConflictAnswer_Status409V1_Body_CodeSchema,
@@ -5392,23 +2639,13 @@ export const stopConflictAnswer_Status409V1_BodySchema = z.strictObject({
   operation: stopConflictAnswer_Status409V1_Body_OperationSchema,
   stop: stopConflictAnswer_Status409V1_Body_StopSchema,
 });
-/** Raw response path: answer.body. */
-export type StopConflictAnswer_Status409V1_Body = z.infer<
-  typeof stopConflictAnswer_Status409V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const stopConflictAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type StopConflictAnswer_Status409V1_Status = z.infer<
-  typeof stopConflictAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, conflict, error, ok, operation, stop. */
 export const stopConflictAnswer_Status409V1Schema = z.strictObject({
   body: stopConflictAnswer_Status409V1_BodySchema,
   status: stopConflictAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, conflict, error, ok, operation, stop. */
-export type StopConflictAnswer_Status409V1 = z.infer<typeof stopConflictAnswer_Status409V1Schema>;
 /** Strict raw response path: answer.body.code. */
 export const stopConflictAnswer_Status409V2_Body_CodeSchema = z.enum([
   'not_cancellable',
@@ -5416,54 +2653,22 @@ export const stopConflictAnswer_Status409V2_Body_CodeSchema = z.enum([
   'operation_required',
   'operation_unknown',
 ]);
-/** Raw response path: answer.body.code. */
-export type StopConflictAnswer_Status409V2_Body_Code = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const stopConflictAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type StopConflictAnswer_Status409V2_Body_Error = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const stopConflictAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type StopConflictAnswer_Status409V2_Body_Ok = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const stopConflictAnswer_Status409V2_Body_Operation_KindGems_ErrorSchema = z.null();
-/** Raw response path: answer.body.operation.error. */
-export type StopConflictAnswer_Status409V2_Body_Operation_KindGems_Error = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_Operation_KindGems_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const stopConflictAnswer_Status409V2_Body_Operation_KindGems_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type StopConflictAnswer_Status409V2_Body_Operation_KindGems_Id = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_Operation_KindGems_IdSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const stopConflictAnswer_Status409V2_Body_Operation_KindGems_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type StopConflictAnswer_Status409V2_Body_Operation_KindGems_Revision = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_Operation_KindGems_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const stopConflictAnswer_Status409V2_Body_Operation_KindGems_StatusSchema = z.enum([
   'running',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type StopConflictAnswer_Status409V2_Body_Operation_KindGems_Status = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_Operation_KindGems_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const stopConflictAnswer_Status409V2_Body_Operation_KindGems_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type StopConflictAnswer_Status409V2_Body_Operation_KindGems_Step = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_Operation_KindGems_StepSchema
->;
 /** Strict raw response path: answer.body.operation, variant: kind gems. */
 export const stopConflictAnswer_Status409V2_Body_Operation_KindGemsSchema = z.strictObject({
   error: stopConflictAnswer_Status409V2_Body_Operation_KindGems_ErrorSchema,
@@ -5473,43 +2678,19 @@ export const stopConflictAnswer_Status409V2_Body_Operation_KindGemsSchema = z.st
   status: stopConflictAnswer_Status409V2_Body_Operation_KindGems_StatusSchema,
   step: stopConflictAnswer_Status409V2_Body_Operation_KindGems_StepSchema,
 });
-/** Raw response path: answer.body.operation, variant: kind gems. */
-export type StopConflictAnswer_Status409V2_Body_Operation_KindGems = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_Operation_KindGemsSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_ErrorSchema = z.null();
-/** Raw response path: answer.body.operation.error. */
-export type StopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_Error = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type StopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_Id = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_IdSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_RevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type StopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_Revision = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_StatusSchema = z.enum([
   'accepted',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type StopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_Status = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type StopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_Step = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_StepSchema
->;
 /** Strict raw response path: answer.body.operation, variant: kind profile_write. */
 export const stopConflictAnswer_Status409V2_Body_Operation_KindProfileWriteSchema = z.strictObject({
   error: stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_ErrorSchema,
@@ -5519,10 +2700,6 @@ export const stopConflictAnswer_Status409V2_Body_Operation_KindProfileWriteSchem
   status: stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_StatusSchema,
   step: stopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite_StepSchema,
 });
-/** Raw response path: answer.body.operation, variant: kind profile_write. */
-export type StopConflictAnswer_Status409V2_Body_Operation_KindProfileWrite = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_Operation_KindProfileWriteSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const stopConflictAnswer_Status409V2_Body_OperationSchema = z
   .discriminatedUnion('kind', [
@@ -5530,10 +2707,6 @@ export const stopConflictAnswer_Status409V2_Body_OperationSchema = z
     stopConflictAnswer_Status409V2_Body_Operation_KindProfileWriteSchema,
   ])
   .nullable();
-/** Raw response path: answer.body.operation. */
-export type StopConflictAnswer_Status409V2_Body_Operation = z.infer<
-  typeof stopConflictAnswer_Status409V2_Body_OperationSchema
->;
 /** Strict raw response path: answer.body. */
 export const stopConflictAnswer_Status409V2_BodySchema = z.strictObject({
   code: stopConflictAnswer_Status409V2_Body_CodeSchema,
@@ -5541,23 +2714,13 @@ export const stopConflictAnswer_Status409V2_BodySchema = z.strictObject({
   ok: stopConflictAnswer_Status409V2_Body_OkSchema,
   operation: stopConflictAnswer_Status409V2_Body_OperationSchema,
 });
-/** Raw response path: answer.body. */
-export type StopConflictAnswer_Status409V2_Body = z.infer<
-  typeof stopConflictAnswer_Status409V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const stopConflictAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type StopConflictAnswer_Status409V2_Status = z.infer<
-  typeof stopConflictAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, operation. */
 export const stopConflictAnswer_Status409V2Schema = z.strictObject({
   body: stopConflictAnswer_Status409V2_BodySchema,
   status: stopConflictAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, operation. */
-export type StopConflictAnswer_Status409V2 = z.infer<typeof stopConflictAnswer_Status409V2Schema>;
 /** Strict raw response path: answer. */
 export const stopConflictAnswerSchema = z.union([
   stopConflictAnswer_Status409V1Schema,
@@ -5567,108 +2730,58 @@ export const stopConflictAnswerSchema = z.union([
 export type StopConflictAnswer = z.infer<typeof stopConflictAnswerSchema>;
 /** Strict raw response path: answer.body.gone. */
 export const stopKillAnswer_Status200_Body_GoneSchema = z.boolean();
-/** Raw response path: answer.body.gone. */
-export type StopKillAnswer_Status200_Body_Gone = z.infer<
-  typeof stopKillAnswer_Status200_Body_GoneSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const stopKillAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type StopKillAnswer_Status200_Body_Ok = z.infer<
-  typeof stopKillAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const stopKillAnswer_Status200_BodySchema = z.strictObject({
   gone: stopKillAnswer_Status200_Body_GoneSchema,
   ok: stopKillAnswer_Status200_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type StopKillAnswer_Status200_Body = z.infer<typeof stopKillAnswer_Status200_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const stopKillAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type StopKillAnswer_Status200_Status = z.infer<typeof stopKillAnswer_Status200_StatusSchema>;
 /** Strict raw response path: answer, variant: status 200, body members gone, ok. */
 export const stopKillAnswer_Status200Schema = z.strictObject({
   body: stopKillAnswer_Status200_BodySchema,
   status: stopKillAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members gone, ok. */
-export type StopKillAnswer_Status200 = z.infer<typeof stopKillAnswer_Status200Schema>;
 /** Strict raw response path: answer.body.code. */
 export const stopKillAnswer_Status400_Body_CodeSchema = z.enum(['invalid_request', 'not_a_runner']);
-/** Raw response path: answer.body.code. */
-export type StopKillAnswer_Status400_Body_Code = z.infer<
-  typeof stopKillAnswer_Status400_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const stopKillAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type StopKillAnswer_Status400_Body_Error = z.infer<
-  typeof stopKillAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const stopKillAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type StopKillAnswer_Status400_Body_Ok = z.infer<
-  typeof stopKillAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const stopKillAnswer_Status400_BodySchema = z.strictObject({
   code: stopKillAnswer_Status400_Body_CodeSchema,
   error: stopKillAnswer_Status400_Body_ErrorSchema,
   ok: stopKillAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type StopKillAnswer_Status400_Body = z.infer<typeof stopKillAnswer_Status400_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const stopKillAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type StopKillAnswer_Status400_Status = z.infer<typeof stopKillAnswer_Status400_StatusSchema>;
 /** Strict raw response path: answer, variant: status 400, body members code, error, ok. */
 export const stopKillAnswer_Status400Schema = z.strictObject({
   body: stopKillAnswer_Status400_BodySchema,
   status: stopKillAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members code, error, ok. */
-export type StopKillAnswer_Status400 = z.infer<typeof stopKillAnswer_Status400Schema>;
 /** Strict raw response path: answer.body.code. */
 export const stopKillAnswer_Status409_Body_CodeSchema = z.enum(['process_identity_unverified']);
-/** Raw response path: answer.body.code. */
-export type StopKillAnswer_Status409_Body_Code = z.infer<
-  typeof stopKillAnswer_Status409_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const stopKillAnswer_Status409_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type StopKillAnswer_Status409_Body_Error = z.infer<
-  typeof stopKillAnswer_Status409_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const stopKillAnswer_Status409_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type StopKillAnswer_Status409_Body_Ok = z.infer<
-  typeof stopKillAnswer_Status409_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const stopKillAnswer_Status409_BodySchema = z.strictObject({
   code: stopKillAnswer_Status409_Body_CodeSchema,
   error: stopKillAnswer_Status409_Body_ErrorSchema,
   ok: stopKillAnswer_Status409_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type StopKillAnswer_Status409_Body = z.infer<typeof stopKillAnswer_Status409_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const stopKillAnswer_Status409_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type StopKillAnswer_Status409_Status = z.infer<typeof stopKillAnswer_Status409_StatusSchema>;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const stopKillAnswer_Status409Schema = z.strictObject({
   body: stopKillAnswer_Status409_BodySchema,
   status: stopKillAnswer_Status409_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type StopKillAnswer_Status409 = z.infer<typeof stopKillAnswer_Status409Schema>;
 /** Strict raw response path: answer. */
 export const stopKillAnswerSchema = z.union([
   stopKillAnswer_Status200Schema,
@@ -5679,20 +2792,12 @@ export const stopKillAnswerSchema = z.union([
 export type StopKillAnswer = z.infer<typeof stopKillAnswerSchema>;
 /** Strict raw response path: processes[].cmdline. */
 export const stopProcess_CmdlineSchema = z.string();
-/** Raw response path: processes[].cmdline. */
-export type StopProcess_Cmdline = z.infer<typeof stopProcess_CmdlineSchema>;
 /** Strict raw response path: processes[].created. */
 export const stopProcess_CreatedSchema = z.number().nullable();
-/** Raw response path: processes[].created. */
-export type StopProcess_Created = z.infer<typeof stopProcess_CreatedSchema>;
 /** Strict raw response path: processes[].pid. */
 export const stopProcess_PidSchema = z.number();
-/** Raw response path: processes[].pid. */
-export type StopProcess_Pid = z.infer<typeof stopProcess_PidSchema>;
 /** Strict raw response path: processes[].runner. */
 export const stopProcess_RunnerSchema = z.string();
-/** Raw response path: processes[].runner. */
-export type StopProcess_Runner = z.infer<typeof stopProcess_RunnerSchema>;
 /** Strict raw response path: processes[]. */
 export const stopProcessSchema = z.strictObject({
   cmdline: stopProcess_CmdlineSchema,
@@ -5704,104 +2809,44 @@ export const stopProcessSchema = z.strictObject({
 export type StopProcess = z.infer<typeof stopProcessSchema>;
 /** Strict raw response path: sequence.after_release.error.code. */
 export const stopRepeatSequence_V1_AfterRelease_Error_CodeSchema = z.enum(['worker_lost']);
-/** Raw response path: sequence.after_release.error.code. */
-export type StopRepeatSequence_V1_AfterRelease_Error_Code = z.infer<
-  typeof stopRepeatSequence_V1_AfterRelease_Error_CodeSchema
->;
 /** Strict raw response path: sequence.after_release.error.message. */
 export const stopRepeatSequence_V1_AfterRelease_Error_MessageSchema = z.string();
-/** Raw response path: sequence.after_release.error.message. */
-export type StopRepeatSequence_V1_AfterRelease_Error_Message = z.infer<
-  typeof stopRepeatSequence_V1_AfterRelease_Error_MessageSchema
->;
 /** Strict raw response path: sequence.after_release.error. */
 export const stopRepeatSequence_V1_AfterRelease_ErrorSchema = z.strictObject({
   code: stopRepeatSequence_V1_AfterRelease_Error_CodeSchema,
   message: stopRepeatSequence_V1_AfterRelease_Error_MessageSchema,
 });
-/** Raw response path: sequence.after_release.error. */
-export type StopRepeatSequence_V1_AfterRelease_Error = z.infer<
-  typeof stopRepeatSequence_V1_AfterRelease_ErrorSchema
->;
 /** Strict raw response path: sequence.after_release.status. */
 export const stopRepeatSequence_V1_AfterRelease_StatusSchema = z.enum(['interrupted']);
-/** Raw response path: sequence.after_release.status. */
-export type StopRepeatSequence_V1_AfterRelease_Status = z.infer<
-  typeof stopRepeatSequence_V1_AfterRelease_StatusSchema
->;
 /** Strict raw response path: sequence.after_release.stop.reason. */
 export const stopRepeatSequence_V1_AfterRelease_Stop_ReasonSchema = z.null();
-/** Raw response path: sequence.after_release.stop.reason. */
-export type StopRepeatSequence_V1_AfterRelease_Stop_Reason = z.infer<
-  typeof stopRepeatSequence_V1_AfterRelease_Stop_ReasonSchema
->;
 /** Strict raw response path: sequence.after_release.stop.state. */
 export const stopRepeatSequence_V1_AfterRelease_Stop_StateSchema = z.enum(['ended']);
-/** Raw response path: sequence.after_release.stop.state. */
-export type StopRepeatSequence_V1_AfterRelease_Stop_State = z.infer<
-  typeof stopRepeatSequence_V1_AfterRelease_Stop_StateSchema
->;
 /** Strict raw response path: sequence.after_release.stop. */
 export const stopRepeatSequence_V1_AfterRelease_StopSchema = z.strictObject({
   reason: stopRepeatSequence_V1_AfterRelease_Stop_ReasonSchema,
   state: stopRepeatSequence_V1_AfterRelease_Stop_StateSchema,
 });
-/** Raw response path: sequence.after_release.stop. */
-export type StopRepeatSequence_V1_AfterRelease_Stop = z.infer<
-  typeof stopRepeatSequence_V1_AfterRelease_StopSchema
->;
 /** Strict raw response path: sequence.after_release. */
 export const stopRepeatSequence_V1_AfterReleaseSchema = z.strictObject({
   error: stopRepeatSequence_V1_AfterRelease_ErrorSchema,
   status: stopRepeatSequence_V1_AfterRelease_StatusSchema,
   stop: stopRepeatSequence_V1_AfterRelease_StopSchema,
 });
-/** Raw response path: sequence.after_release. */
-export type StopRepeatSequence_V1_AfterRelease = z.infer<
-  typeof stopRepeatSequence_V1_AfterReleaseSchema
->;
 /** Strict raw response path: sequence.first.body.ok. */
 export const stopRepeatSequence_V1_First_Body_OkSchema = z.boolean();
-/** Raw response path: sequence.first.body.ok. */
-export type StopRepeatSequence_V1_First_Body_Ok = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_OkSchema
->;
 /** Strict raw response path: sequence.first.body.operation.error. */
 export const stopRepeatSequence_V1_First_Body_Operation_ErrorSchema = z.null();
-/** Raw response path: sequence.first.body.operation.error. */
-export type StopRepeatSequence_V1_First_Body_Operation_Error = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: sequence.first.body.operation.id. */
 export const stopRepeatSequence_V1_First_Body_Operation_IdSchema = z.string();
-/** Raw response path: sequence.first.body.operation.id. */
-export type StopRepeatSequence_V1_First_Body_Operation_Id = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Operation_IdSchema
->;
 /** Strict raw response path: sequence.first.body.operation.kind. */
 export const stopRepeatSequence_V1_First_Body_Operation_KindSchema = z.enum(['gems']);
-/** Raw response path: sequence.first.body.operation.kind. */
-export type StopRepeatSequence_V1_First_Body_Operation_Kind = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Operation_KindSchema
->;
 /** Strict raw response path: sequence.first.body.operation.revision. */
 export const stopRepeatSequence_V1_First_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: sequence.first.body.operation.revision. */
-export type StopRepeatSequence_V1_First_Body_Operation_Revision = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: sequence.first.body.operation.status. */
 export const stopRepeatSequence_V1_First_Body_Operation_StatusSchema = z.enum(['cancelling']);
-/** Raw response path: sequence.first.body.operation.status. */
-export type StopRepeatSequence_V1_First_Body_Operation_Status = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Operation_StatusSchema
->;
 /** Strict raw response path: sequence.first.body.operation.step. */
 export const stopRepeatSequence_V1_First_Body_Operation_StepSchema = z.string();
-/** Raw response path: sequence.first.body.operation.step. */
-export type StopRepeatSequence_V1_First_Body_Operation_Step = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Operation_StepSchema
->;
 /** Strict raw response path: sequence.first.body.operation. */
 export const stopRepeatSequence_V1_First_Body_OperationSchema = z.strictObject({
   error: stopRepeatSequence_V1_First_Body_Operation_ErrorSchema,
@@ -5811,49 +2856,21 @@ export const stopRepeatSequence_V1_First_Body_OperationSchema = z.strictObject({
   status: stopRepeatSequence_V1_First_Body_Operation_StatusSchema,
   step: stopRepeatSequence_V1_First_Body_Operation_StepSchema,
 });
-/** Raw response path: sequence.first.body.operation. */
-export type StopRepeatSequence_V1_First_Body_Operation = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_OperationSchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request.family. */
 export const stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_FamilySchema = z.string();
-/** Raw response path: sequence.first.body.stop.by_this_request.family. */
-export type StopRepeatSequence_V1_First_Body_Stop_ByThisRequest_Family = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_FamilySchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request.paused. */
 export const stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_PausedSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.by_this_request.paused. */
-export type StopRepeatSequence_V1_First_Body_Stop_ByThisRequest_Paused = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_PausedSchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request.released. */
 export const stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_ReleasedSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.by_this_request.released. */
-export type StopRepeatSequence_V1_First_Body_Stop_ByThisRequest_Released = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_ReleasedSchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request.requested. */
 export const stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_RequestedSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.by_this_request.requested. */
-export type StopRepeatSequence_V1_First_Body_Stop_ByThisRequest_Requested = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_RequestedSchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request.signalled[]. */
 export const stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_Signalled_ArrayElementSchema =
   z.number();
-/** Raw response path: sequence.first.body.stop.by_this_request.signalled[]. */
-export type StopRepeatSequence_V1_First_Body_Stop_ByThisRequest_Signalled_ArrayElement = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_Signalled_ArrayElementSchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request.signalled. */
 export const stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_SignalledSchema = z.array(
   stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_Signalled_ArrayElementSchema,
 );
-/** Raw response path: sequence.first.body.stop.by_this_request.signalled. */
-export type StopRepeatSequence_V1_First_Body_Stop_ByThisRequest_Signalled = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_SignalledSchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request. */
 export const stopRepeatSequence_V1_First_Body_Stop_ByThisRequestSchema = z.strictObject({
   family: stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_FamilySchema,
@@ -5862,114 +2879,50 @@ export const stopRepeatSequence_V1_First_Body_Stop_ByThisRequestSchema = z.stric
   requested: stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_RequestedSchema,
   signalled: stopRepeatSequence_V1_First_Body_Stop_ByThisRequest_SignalledSchema,
 });
-/** Raw response path: sequence.first.body.stop.by_this_request. */
-export type StopRepeatSequence_V1_First_Body_Stop_ByThisRequest = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_ByThisRequestSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.foreign. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_ForeignSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.holder.foreign. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Foreign = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_ForeignSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.gathers. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_GathersSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.gathers. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Gathers = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_GathersSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.gems.ad_gems. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_Gems_AdGemsSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.gems.ad_gems. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Gems_AdGems = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_Gems_AdGemsSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.gems.basis. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_Gems_BasisSchema = z.enum([
   'not_reported',
 ]);
-/** Raw response path: sequence.first.body.stop.holder.gems.basis. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Gems_Basis = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_Gems_BasisSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.gems.floating_gems. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.gems.floating_gems. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Gems_FloatingGems = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.gems. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_GemsSchema = z.strictObject({
   ad_gems: stopRepeatSequence_V1_First_Body_Stop_Holder_Gems_AdGemsSchema,
   basis: stopRepeatSequence_V1_First_Body_Stop_Holder_Gems_BasisSchema,
   floating_gems: stopRepeatSequence_V1_First_Body_Stop_Holder_Gems_FloatingGemsSchema,
 });
-/** Raw response path: sequence.first.body.stop.holder.gems. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Gems = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_GemsSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.harvest_managed. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_HarvestManagedSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.holder.harvest_managed. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_HarvestManaged = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_HarvestManagedSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.kind. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_KindSchema = z.enum(['process']);
-/** Raw response path: sequence.first.body.stop.holder.kind. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Kind = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_KindSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.delegated. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_DelegatedSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.holder.lease.delegated. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Delegated = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_DelegatedSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.held. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_HeldSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.holder.lease.held. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Held = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_HeldSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.holders[].pid. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders_ArrayElement_PidSchema =
   z.number();
-/** Raw response path: sequence.first.body.stop.holder.lease.holders[].pid. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders_ArrayElement_Pid = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders_ArrayElement_PidSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.holders[].role. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders_ArrayElement_RoleSchema =
   z.enum(['primary']);
-/** Raw response path: sequence.first.body.stop.holder.lease.holders[].role. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders_ArrayElement_Role = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders_ArrayElement_RoleSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.holders[]. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders_ArrayElementSchema =
   z.strictObject({
     pid: stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders_ArrayElement_PidSchema,
     role: stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders_ArrayElement_RoleSchema,
   });
-/** Raw response path: sequence.first.body.stop.holder.lease.holders[]. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders_ArrayElement = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders_ArrayElementSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.holders. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_HoldersSchema = z.array(
   stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders_ArrayElementSchema,
 );
-/** Raw response path: sequence.first.body.stop.holder.lease.holders. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Lease_Holders = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_HoldersSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.input_gate. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_InputGateSchema = z.string();
-/** Raw response path: sequence.first.body.stop.holder.lease.input_gate. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Lease_InputGate = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_InputGateSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_LeaseSchema = z.strictObject({
   delegated: stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_DelegatedSchema,
@@ -5977,52 +2930,20 @@ export const stopRepeatSequence_V1_First_Body_Stop_Holder_LeaseSchema = z.strict
   holders: stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_HoldersSchema,
   input_gate: stopRepeatSequence_V1_First_Body_Stop_Holder_Lease_InputGateSchema,
 });
-/** Raw response path: sequence.first.body.stop.holder.lease. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Lease = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_LeaseSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.operation_id. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_OperationIdSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.operation_id. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_OperationId = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_OperationIdSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.operation_kind. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_OperationKindSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.operation_kind. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_OperationKind = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_OperationKindSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.pid. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_PidSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.pid. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Pid = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_PidSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.recovery. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_RecoverySchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.recovery. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Recovery = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_RecoverySchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.routines. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_RoutinesSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.routines. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Routines = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_RoutinesSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.script. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_ScriptSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.script. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Script = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_ScriptSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.status. */
 export const stopRepeatSequence_V1_First_Body_Stop_Holder_StatusSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.status. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder_Status = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_Holder_StatusSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder. */
 export const stopRepeatSequence_V1_First_Body_Stop_HolderSchema = z.strictObject({
   foreign: stopRepeatSequence_V1_First_Body_Stop_Holder_ForeignSchema,
@@ -6039,22 +2960,10 @@ export const stopRepeatSequence_V1_First_Body_Stop_HolderSchema = z.strictObject
   script: stopRepeatSequence_V1_First_Body_Stop_Holder_ScriptSchema,
   status: stopRepeatSequence_V1_First_Body_Stop_Holder_StatusSchema,
 });
-/** Raw response path: sequence.first.body.stop.holder. */
-export type StopRepeatSequence_V1_First_Body_Stop_Holder = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_HolderSchema
->;
 /** Strict raw response path: sequence.first.body.stop.reason. */
 export const stopRepeatSequence_V1_First_Body_Stop_ReasonSchema = z.enum(['lease_held_after_stop']);
-/** Raw response path: sequence.first.body.stop.reason. */
-export type StopRepeatSequence_V1_First_Body_Stop_Reason = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_ReasonSchema
->;
 /** Strict raw response path: sequence.first.body.stop.state. */
 export const stopRepeatSequence_V1_First_Body_Stop_StateSchema = z.enum(['unverified']);
-/** Raw response path: sequence.first.body.stop.state. */
-export type StopRepeatSequence_V1_First_Body_Stop_State = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_Stop_StateSchema
->;
 /** Strict raw response path: sequence.first.body.stop. */
 export const stopRepeatSequence_V1_First_Body_StopSchema = z.strictObject({
   by_this_request: stopRepeatSequence_V1_First_Body_Stop_ByThisRequestSchema,
@@ -6062,104 +2971,46 @@ export const stopRepeatSequence_V1_First_Body_StopSchema = z.strictObject({
   reason: stopRepeatSequence_V1_First_Body_Stop_ReasonSchema,
   state: stopRepeatSequence_V1_First_Body_Stop_StateSchema,
 });
-/** Raw response path: sequence.first.body.stop. */
-export type StopRepeatSequence_V1_First_Body_Stop = z.infer<
-  typeof stopRepeatSequence_V1_First_Body_StopSchema
->;
 /** Strict raw response path: sequence.first.body. */
 export const stopRepeatSequence_V1_First_BodySchema = z.strictObject({
   ok: stopRepeatSequence_V1_First_Body_OkSchema,
   operation: stopRepeatSequence_V1_First_Body_OperationSchema,
   stop: stopRepeatSequence_V1_First_Body_StopSchema,
 });
-/** Raw response path: sequence.first.body. */
-export type StopRepeatSequence_V1_First_Body = z.infer<
-  typeof stopRepeatSequence_V1_First_BodySchema
->;
 /** Strict raw response path: sequence.first.status. */
 export const stopRepeatSequence_V1_First_StatusSchema = z.literal(200);
-/** Raw response path: sequence.first.status. */
-export type StopRepeatSequence_V1_First_Status = z.infer<
-  typeof stopRepeatSequence_V1_First_StatusSchema
->;
 /** Strict raw response path: sequence.first. */
 export const stopRepeatSequence_V1_FirstSchema = z.strictObject({
   body: stopRepeatSequence_V1_First_BodySchema,
   status: stopRepeatSequence_V1_First_StatusSchema,
 });
-/** Raw response path: sequence.first. */
-export type StopRepeatSequence_V1_First = z.infer<typeof stopRepeatSequence_V1_FirstSchema>;
 /** Strict raw response path: sequence.stale_stop.body.code. */
 export const stopRepeatSequence_V1_StaleStop_Body_CodeSchema = z.enum(['operation_changed']);
-/** Raw response path: sequence.stale_stop.body.code. */
-export type StopRepeatSequence_V1_StaleStop_Body_Code = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_Body_CodeSchema
->;
 /** Strict raw response path: sequence.stale_stop.body.error. */
 export const stopRepeatSequence_V1_StaleStop_Body_ErrorSchema = z.string();
-/** Raw response path: sequence.stale_stop.body.error. */
-export type StopRepeatSequence_V1_StaleStop_Body_Error = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_Body_ErrorSchema
->;
 /** Strict raw response path: sequence.stale_stop.body.ok. */
 export const stopRepeatSequence_V1_StaleStop_Body_OkSchema = z.boolean();
-/** Raw response path: sequence.stale_stop.body.ok. */
-export type StopRepeatSequence_V1_StaleStop_Body_Ok = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_Body_OkSchema
->;
 /** Strict raw response path: sequence.stale_stop.body.operation.error.code. */
 export const stopRepeatSequence_V1_StaleStop_Body_Operation_Error_CodeSchema = z.enum([
   'worker_lost',
 ]);
-/** Raw response path: sequence.stale_stop.body.operation.error.code. */
-export type StopRepeatSequence_V1_StaleStop_Body_Operation_Error_Code = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_Body_Operation_Error_CodeSchema
->;
 /** Strict raw response path: sequence.stale_stop.body.operation.error.message. */
 export const stopRepeatSequence_V1_StaleStop_Body_Operation_Error_MessageSchema = z.string();
-/** Raw response path: sequence.stale_stop.body.operation.error.message. */
-export type StopRepeatSequence_V1_StaleStop_Body_Operation_Error_Message = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_Body_Operation_Error_MessageSchema
->;
 /** Strict raw response path: sequence.stale_stop.body.operation.error. */
 export const stopRepeatSequence_V1_StaleStop_Body_Operation_ErrorSchema = z.strictObject({
   code: stopRepeatSequence_V1_StaleStop_Body_Operation_Error_CodeSchema,
   message: stopRepeatSequence_V1_StaleStop_Body_Operation_Error_MessageSchema,
 });
-/** Raw response path: sequence.stale_stop.body.operation.error. */
-export type StopRepeatSequence_V1_StaleStop_Body_Operation_Error = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: sequence.stale_stop.body.operation.id. */
 export const stopRepeatSequence_V1_StaleStop_Body_Operation_IdSchema = z.string();
-/** Raw response path: sequence.stale_stop.body.operation.id. */
-export type StopRepeatSequence_V1_StaleStop_Body_Operation_Id = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_Body_Operation_IdSchema
->;
 /** Strict raw response path: sequence.stale_stop.body.operation.kind. */
 export const stopRepeatSequence_V1_StaleStop_Body_Operation_KindSchema = z.enum(['gems']);
-/** Raw response path: sequence.stale_stop.body.operation.kind. */
-export type StopRepeatSequence_V1_StaleStop_Body_Operation_Kind = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_Body_Operation_KindSchema
->;
 /** Strict raw response path: sequence.stale_stop.body.operation.revision. */
 export const stopRepeatSequence_V1_StaleStop_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: sequence.stale_stop.body.operation.revision. */
-export type StopRepeatSequence_V1_StaleStop_Body_Operation_Revision = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: sequence.stale_stop.body.operation.status. */
 export const stopRepeatSequence_V1_StaleStop_Body_Operation_StatusSchema = z.enum(['interrupted']);
-/** Raw response path: sequence.stale_stop.body.operation.status. */
-export type StopRepeatSequence_V1_StaleStop_Body_Operation_Status = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_Body_Operation_StatusSchema
->;
 /** Strict raw response path: sequence.stale_stop.body.operation.step. */
 export const stopRepeatSequence_V1_StaleStop_Body_Operation_StepSchema = z.string();
-/** Raw response path: sequence.stale_stop.body.operation.step. */
-export type StopRepeatSequence_V1_StaleStop_Body_Operation_Step = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_Body_Operation_StepSchema
->;
 /** Strict raw response path: sequence.stale_stop.body.operation. */
 export const stopRepeatSequence_V1_StaleStop_Body_OperationSchema = z.strictObject({
   error: stopRepeatSequence_V1_StaleStop_Body_Operation_ErrorSchema,
@@ -6169,10 +3020,6 @@ export const stopRepeatSequence_V1_StaleStop_Body_OperationSchema = z.strictObje
   status: stopRepeatSequence_V1_StaleStop_Body_Operation_StatusSchema,
   step: stopRepeatSequence_V1_StaleStop_Body_Operation_StepSchema,
 });
-/** Raw response path: sequence.stale_stop.body.operation. */
-export type StopRepeatSequence_V1_StaleStop_Body_Operation = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_Body_OperationSchema
->;
 /** Strict raw response path: sequence.stale_stop.body. */
 export const stopRepeatSequence_V1_StaleStop_BodySchema = z.strictObject({
   code: stopRepeatSequence_V1_StaleStop_Body_CodeSchema,
@@ -6180,65 +3027,27 @@ export const stopRepeatSequence_V1_StaleStop_BodySchema = z.strictObject({
   ok: stopRepeatSequence_V1_StaleStop_Body_OkSchema,
   operation: stopRepeatSequence_V1_StaleStop_Body_OperationSchema,
 });
-/** Raw response path: sequence.stale_stop.body. */
-export type StopRepeatSequence_V1_StaleStop_Body = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_BodySchema
->;
 /** Strict raw response path: sequence.stale_stop.status. */
 export const stopRepeatSequence_V1_StaleStop_StatusSchema = z.literal(409);
-/** Raw response path: sequence.stale_stop.status. */
-export type StopRepeatSequence_V1_StaleStop_Status = z.infer<
-  typeof stopRepeatSequence_V1_StaleStop_StatusSchema
->;
 /** Strict raw response path: sequence.stale_stop. */
 export const stopRepeatSequence_V1_StaleStopSchema = z.strictObject({
   body: stopRepeatSequence_V1_StaleStop_BodySchema,
   status: stopRepeatSequence_V1_StaleStop_StatusSchema,
 });
-/** Raw response path: sequence.stale_stop. */
-export type StopRepeatSequence_V1_StaleStop = z.infer<typeof stopRepeatSequence_V1_StaleStopSchema>;
 /** Strict raw response path: sequence.still_held.body.ok. */
 export const stopRepeatSequence_V1_StillHeld_Body_OkSchema = z.boolean();
-/** Raw response path: sequence.still_held.body.ok. */
-export type StopRepeatSequence_V1_StillHeld_Body_Ok = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_OkSchema
->;
 /** Strict raw response path: sequence.still_held.body.operation.error. */
 export const stopRepeatSequence_V1_StillHeld_Body_Operation_ErrorSchema = z.null();
-/** Raw response path: sequence.still_held.body.operation.error. */
-export type StopRepeatSequence_V1_StillHeld_Body_Operation_Error = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: sequence.still_held.body.operation.id. */
 export const stopRepeatSequence_V1_StillHeld_Body_Operation_IdSchema = z.string();
-/** Raw response path: sequence.still_held.body.operation.id. */
-export type StopRepeatSequence_V1_StillHeld_Body_Operation_Id = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Operation_IdSchema
->;
 /** Strict raw response path: sequence.still_held.body.operation.kind. */
 export const stopRepeatSequence_V1_StillHeld_Body_Operation_KindSchema = z.enum(['gems']);
-/** Raw response path: sequence.still_held.body.operation.kind. */
-export type StopRepeatSequence_V1_StillHeld_Body_Operation_Kind = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Operation_KindSchema
->;
 /** Strict raw response path: sequence.still_held.body.operation.revision. */
 export const stopRepeatSequence_V1_StillHeld_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: sequence.still_held.body.operation.revision. */
-export type StopRepeatSequence_V1_StillHeld_Body_Operation_Revision = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: sequence.still_held.body.operation.status. */
 export const stopRepeatSequence_V1_StillHeld_Body_Operation_StatusSchema = z.enum(['cancelling']);
-/** Raw response path: sequence.still_held.body.operation.status. */
-export type StopRepeatSequence_V1_StillHeld_Body_Operation_Status = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Operation_StatusSchema
->;
 /** Strict raw response path: sequence.still_held.body.operation.step. */
 export const stopRepeatSequence_V1_StillHeld_Body_Operation_StepSchema = z.string();
-/** Raw response path: sequence.still_held.body.operation.step. */
-export type StopRepeatSequence_V1_StillHeld_Body_Operation_Step = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Operation_StepSchema
->;
 /** Strict raw response path: sequence.still_held.body.operation. */
 export const stopRepeatSequence_V1_StillHeld_Body_OperationSchema = z.strictObject({
   error: stopRepeatSequence_V1_StillHeld_Body_Operation_ErrorSchema,
@@ -6248,42 +3057,18 @@ export const stopRepeatSequence_V1_StillHeld_Body_OperationSchema = z.strictObje
   status: stopRepeatSequence_V1_StillHeld_Body_Operation_StatusSchema,
   step: stopRepeatSequence_V1_StillHeld_Body_Operation_StepSchema,
 });
-/** Raw response path: sequence.still_held.body.operation. */
-export type StopRepeatSequence_V1_StillHeld_Body_Operation = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_OperationSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.by_this_request.family. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_FamilySchema = z.null();
-/** Raw response path: sequence.still_held.body.stop.by_this_request.family. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_Family = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_FamilySchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.by_this_request.paused. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_PausedSchema = z.boolean();
-/** Raw response path: sequence.still_held.body.stop.by_this_request.paused. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_Paused = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_PausedSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.by_this_request.released. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_ReleasedSchema = z.boolean();
-/** Raw response path: sequence.still_held.body.stop.by_this_request.released. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_Released = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_ReleasedSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.by_this_request.requested. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_RequestedSchema = z.boolean();
-/** Raw response path: sequence.still_held.body.stop.by_this_request.requested. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_Requested = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_RequestedSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.by_this_request.signalled. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_SignalledSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: sequence.still_held.body.stop.by_this_request.signalled. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_Signalled = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_SignalledSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.by_this_request. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequestSchema = z.strictObject({
   family: stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_FamilySchema,
@@ -6292,116 +3077,50 @@ export const stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequestSchema = z.s
   requested: stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_RequestedSchema,
   signalled: stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest_SignalledSchema,
 });
-/** Raw response path: sequence.still_held.body.stop.by_this_request. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequest = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequestSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.foreign. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_ForeignSchema = z.boolean();
-/** Raw response path: sequence.still_held.body.stop.holder.foreign. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Foreign = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_ForeignSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.gathers. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_GathersSchema = z.null();
-/** Raw response path: sequence.still_held.body.stop.holder.gathers. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gathers = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_GathersSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.gems.ad_gems. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems_AdGemsSchema = z.null();
-/** Raw response path: sequence.still_held.body.stop.holder.gems.ad_gems. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems_AdGems = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems_AdGemsSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.gems.basis. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems_BasisSchema = z.enum([
   'not_reported',
 ]);
-/** Raw response path: sequence.still_held.body.stop.holder.gems.basis. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems_Basis = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems_BasisSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.gems.floating_gems. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: sequence.still_held.body.stop.holder.gems.floating_gems. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems_FloatingGems = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.gems. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_GemsSchema = z.strictObject({
   ad_gems: stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems_AdGemsSchema,
   basis: stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems_BasisSchema,
   floating_gems: stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems_FloatingGemsSchema,
 });
-/** Raw response path: sequence.still_held.body.stop.holder.gems. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Gems = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_GemsSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.harvest_managed. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_HarvestManagedSchema = z.boolean();
-/** Raw response path: sequence.still_held.body.stop.holder.harvest_managed. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_HarvestManaged = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_HarvestManagedSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.kind. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_KindSchema = z.enum(['process']);
-/** Raw response path: sequence.still_held.body.stop.holder.kind. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Kind = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_KindSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.lease.delegated. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_DelegatedSchema = z.boolean();
-/** Raw response path: sequence.still_held.body.stop.holder.lease.delegated. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Delegated = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_DelegatedSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.lease.held. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_HeldSchema = z.boolean();
-/** Raw response path: sequence.still_held.body.stop.holder.lease.held. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Held = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_HeldSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.lease.holders[].pid. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders_ArrayElement_PidSchema =
   z.number();
-/** Raw response path: sequence.still_held.body.stop.holder.lease.holders[].pid. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders_ArrayElement_Pid =
-  z.infer<
-    typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders_ArrayElement_PidSchema
-  >;
 /** Strict raw response path: sequence.still_held.body.stop.holder.lease.holders[].role. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders_ArrayElement_RoleSchema =
   z.enum(['primary']);
-/** Raw response path: sequence.still_held.body.stop.holder.lease.holders[].role. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders_ArrayElement_Role =
-  z.infer<
-    typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders_ArrayElement_RoleSchema
-  >;
 /** Strict raw response path: sequence.still_held.body.stop.holder.lease.holders[]. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders_ArrayElementSchema =
   z.strictObject({
     pid: stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders_ArrayElement_PidSchema,
     role: stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders_ArrayElement_RoleSchema,
   });
-/** Raw response path: sequence.still_held.body.stop.holder.lease.holders[]. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders_ArrayElement = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders_ArrayElementSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.lease.holders. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_HoldersSchema = z.array(
   stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders_ArrayElementSchema,
 );
-/** Raw response path: sequence.still_held.body.stop.holder.lease.holders. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_Holders = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_HoldersSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.lease.input_gate. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_InputGateSchema = z.string();
-/** Raw response path: sequence.still_held.body.stop.holder.lease.input_gate. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_InputGate = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_InputGateSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.lease. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_LeaseSchema = z.strictObject({
   delegated: stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_DelegatedSchema,
@@ -6409,52 +3128,20 @@ export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_LeaseSchema = z.st
   holders: stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_HoldersSchema,
   input_gate: stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease_InputGateSchema,
 });
-/** Raw response path: sequence.still_held.body.stop.holder.lease. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Lease = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_LeaseSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.operation_id. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_OperationIdSchema = z.null();
-/** Raw response path: sequence.still_held.body.stop.holder.operation_id. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_OperationId = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_OperationIdSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.operation_kind. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_OperationKindSchema = z.null();
-/** Raw response path: sequence.still_held.body.stop.holder.operation_kind. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_OperationKind = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_OperationKindSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.pid. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_PidSchema = z.null();
-/** Raw response path: sequence.still_held.body.stop.holder.pid. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Pid = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_PidSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.recovery. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_RecoverySchema = z.null();
-/** Raw response path: sequence.still_held.body.stop.holder.recovery. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Recovery = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_RecoverySchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.routines. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_RoutinesSchema = z.null();
-/** Raw response path: sequence.still_held.body.stop.holder.routines. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Routines = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_RoutinesSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.script. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_ScriptSchema = z.null();
-/** Raw response path: sequence.still_held.body.stop.holder.script. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Script = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_ScriptSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder.status. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_StatusSchema = z.null();
-/** Raw response path: sequence.still_held.body.stop.holder.status. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder_Status = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_StatusSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.holder. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_HolderSchema = z.strictObject({
   foreign: stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_ForeignSchema,
@@ -6471,24 +3158,12 @@ export const stopRepeatSequence_V1_StillHeld_Body_Stop_HolderSchema = z.strictOb
   script: stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_ScriptSchema,
   status: stopRepeatSequence_V1_StillHeld_Body_Stop_Holder_StatusSchema,
 });
-/** Raw response path: sequence.still_held.body.stop.holder. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Holder = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_HolderSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.reason. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_ReasonSchema = z.enum([
   'lease_held_after_stop',
 ]);
-/** Raw response path: sequence.still_held.body.stop.reason. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_Reason = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_ReasonSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop.state. */
 export const stopRepeatSequence_V1_StillHeld_Body_Stop_StateSchema = z.enum(['unverified']);
-/** Raw response path: sequence.still_held.body.stop.state. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop_State = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_Stop_StateSchema
->;
 /** Strict raw response path: sequence.still_held.body.stop. */
 export const stopRepeatSequence_V1_StillHeld_Body_StopSchema = z.strictObject({
   by_this_request: stopRepeatSequence_V1_StillHeld_Body_Stop_ByThisRequestSchema,
@@ -6496,33 +3171,19 @@ export const stopRepeatSequence_V1_StillHeld_Body_StopSchema = z.strictObject({
   reason: stopRepeatSequence_V1_StillHeld_Body_Stop_ReasonSchema,
   state: stopRepeatSequence_V1_StillHeld_Body_Stop_StateSchema,
 });
-/** Raw response path: sequence.still_held.body.stop. */
-export type StopRepeatSequence_V1_StillHeld_Body_Stop = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_Body_StopSchema
->;
 /** Strict raw response path: sequence.still_held.body. */
 export const stopRepeatSequence_V1_StillHeld_BodySchema = z.strictObject({
   ok: stopRepeatSequence_V1_StillHeld_Body_OkSchema,
   operation: stopRepeatSequence_V1_StillHeld_Body_OperationSchema,
   stop: stopRepeatSequence_V1_StillHeld_Body_StopSchema,
 });
-/** Raw response path: sequence.still_held.body. */
-export type StopRepeatSequence_V1_StillHeld_Body = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_BodySchema
->;
 /** Strict raw response path: sequence.still_held.status. */
 export const stopRepeatSequence_V1_StillHeld_StatusSchema = z.literal(200);
-/** Raw response path: sequence.still_held.status. */
-export type StopRepeatSequence_V1_StillHeld_Status = z.infer<
-  typeof stopRepeatSequence_V1_StillHeld_StatusSchema
->;
 /** Strict raw response path: sequence.still_held. */
 export const stopRepeatSequence_V1_StillHeldSchema = z.strictObject({
   body: stopRepeatSequence_V1_StillHeld_BodySchema,
   status: stopRepeatSequence_V1_StillHeld_StatusSchema,
 });
-/** Raw response path: sequence.still_held. */
-export type StopRepeatSequence_V1_StillHeld = z.infer<typeof stopRepeatSequence_V1_StillHeldSchema>;
 /** Strict raw response path: sequence, variant: members after_release, first, stale_stop, still_held. */
 export const stopRepeatSequence_V1Schema = z.strictObject({
   after_release: stopRepeatSequence_V1_AfterReleaseSchema,
@@ -6530,50 +3191,20 @@ export const stopRepeatSequence_V1Schema = z.strictObject({
   stale_stop: stopRepeatSequence_V1_StaleStopSchema,
   still_held: stopRepeatSequence_V1_StillHeldSchema,
 });
-/** Raw response path: sequence, variant: members after_release, first, stale_stop, still_held. */
-export type StopRepeatSequence_V1 = z.infer<typeof stopRepeatSequence_V1Schema>;
 /** Strict raw response path: sequence.first.body.ok. */
 export const stopRepeatSequence_V2_First_Body_OkSchema = z.boolean();
-/** Raw response path: sequence.first.body.ok. */
-export type StopRepeatSequence_V2_First_Body_Ok = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_OkSchema
->;
 /** Strict raw response path: sequence.first.body.operation.error. */
 export const stopRepeatSequence_V2_First_Body_Operation_ErrorSchema = z.null();
-/** Raw response path: sequence.first.body.operation.error. */
-export type StopRepeatSequence_V2_First_Body_Operation_Error = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: sequence.first.body.operation.id. */
 export const stopRepeatSequence_V2_First_Body_Operation_IdSchema = z.string();
-/** Raw response path: sequence.first.body.operation.id. */
-export type StopRepeatSequence_V2_First_Body_Operation_Id = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Operation_IdSchema
->;
 /** Strict raw response path: sequence.first.body.operation.kind. */
 export const stopRepeatSequence_V2_First_Body_Operation_KindSchema = z.enum(['gems']);
-/** Raw response path: sequence.first.body.operation.kind. */
-export type StopRepeatSequence_V2_First_Body_Operation_Kind = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Operation_KindSchema
->;
 /** Strict raw response path: sequence.first.body.operation.revision. */
 export const stopRepeatSequence_V2_First_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: sequence.first.body.operation.revision. */
-export type StopRepeatSequence_V2_First_Body_Operation_Revision = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: sequence.first.body.operation.status. */
 export const stopRepeatSequence_V2_First_Body_Operation_StatusSchema = z.enum(['cancelling']);
-/** Raw response path: sequence.first.body.operation.status. */
-export type StopRepeatSequence_V2_First_Body_Operation_Status = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Operation_StatusSchema
->;
 /** Strict raw response path: sequence.first.body.operation.step. */
 export const stopRepeatSequence_V2_First_Body_Operation_StepSchema = z.string();
-/** Raw response path: sequence.first.body.operation.step. */
-export type StopRepeatSequence_V2_First_Body_Operation_Step = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Operation_StepSchema
->;
 /** Strict raw response path: sequence.first.body.operation. */
 export const stopRepeatSequence_V2_First_Body_OperationSchema = z.strictObject({
   error: stopRepeatSequence_V2_First_Body_Operation_ErrorSchema,
@@ -6583,51 +3214,23 @@ export const stopRepeatSequence_V2_First_Body_OperationSchema = z.strictObject({
   status: stopRepeatSequence_V2_First_Body_Operation_StatusSchema,
   step: stopRepeatSequence_V2_First_Body_Operation_StepSchema,
 });
-/** Raw response path: sequence.first.body.operation. */
-export type StopRepeatSequence_V2_First_Body_Operation = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_OperationSchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request.family. */
 export const stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_FamilySchema = z
   .string()
   .nullable();
-/** Raw response path: sequence.first.body.stop.by_this_request.family. */
-export type StopRepeatSequence_V2_First_Body_Stop_ByThisRequest_Family = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_FamilySchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request.paused. */
 export const stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_PausedSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.by_this_request.paused. */
-export type StopRepeatSequence_V2_First_Body_Stop_ByThisRequest_Paused = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_PausedSchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request.released. */
 export const stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_ReleasedSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.by_this_request.released. */
-export type StopRepeatSequence_V2_First_Body_Stop_ByThisRequest_Released = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_ReleasedSchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request.requested. */
 export const stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_RequestedSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.by_this_request.requested. */
-export type StopRepeatSequence_V2_First_Body_Stop_ByThisRequest_Requested = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_RequestedSchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request.signalled[]. */
 export const stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_Signalled_ArrayElementSchema =
   z.number();
-/** Raw response path: sequence.first.body.stop.by_this_request.signalled[]. */
-export type StopRepeatSequence_V2_First_Body_Stop_ByThisRequest_Signalled_ArrayElement = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_Signalled_ArrayElementSchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request.signalled. */
 export const stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_SignalledSchema = z.array(
   stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_Signalled_ArrayElementSchema,
 );
-/** Raw response path: sequence.first.body.stop.by_this_request.signalled. */
-export type StopRepeatSequence_V2_First_Body_Stop_ByThisRequest_Signalled = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_SignalledSchema
->;
 /** Strict raw response path: sequence.first.body.stop.by_this_request. */
 export const stopRepeatSequence_V2_First_Body_Stop_ByThisRequestSchema = z.strictObject({
   family: stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_FamilySchema,
@@ -6636,114 +3239,50 @@ export const stopRepeatSequence_V2_First_Body_Stop_ByThisRequestSchema = z.stric
   requested: stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_RequestedSchema,
   signalled: stopRepeatSequence_V2_First_Body_Stop_ByThisRequest_SignalledSchema,
 });
-/** Raw response path: sequence.first.body.stop.by_this_request. */
-export type StopRepeatSequence_V2_First_Body_Stop_ByThisRequest = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_ByThisRequestSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.foreign. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_ForeignSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.holder.foreign. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Foreign = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_ForeignSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.gathers. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_GathersSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.gathers. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Gathers = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_GathersSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.gems.ad_gems. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_Gems_AdGemsSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.gems.ad_gems. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Gems_AdGems = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_Gems_AdGemsSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.gems.basis. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_Gems_BasisSchema = z.enum([
   'not_reported',
 ]);
-/** Raw response path: sequence.first.body.stop.holder.gems.basis. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Gems_Basis = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_Gems_BasisSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.gems.floating_gems. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.gems.floating_gems. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Gems_FloatingGems = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.gems. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_GemsSchema = z.strictObject({
   ad_gems: stopRepeatSequence_V2_First_Body_Stop_Holder_Gems_AdGemsSchema,
   basis: stopRepeatSequence_V2_First_Body_Stop_Holder_Gems_BasisSchema,
   floating_gems: stopRepeatSequence_V2_First_Body_Stop_Holder_Gems_FloatingGemsSchema,
 });
-/** Raw response path: sequence.first.body.stop.holder.gems. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Gems = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_GemsSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.harvest_managed. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_HarvestManagedSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.holder.harvest_managed. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_HarvestManaged = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_HarvestManagedSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.kind. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_KindSchema = z.enum(['process']);
-/** Raw response path: sequence.first.body.stop.holder.kind. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Kind = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_KindSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.delegated. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_DelegatedSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.holder.lease.delegated. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Delegated = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_DelegatedSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.held. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_HeldSchema = z.boolean();
-/** Raw response path: sequence.first.body.stop.holder.lease.held. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Held = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_HeldSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.holders[].pid. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders_ArrayElement_PidSchema =
   z.number();
-/** Raw response path: sequence.first.body.stop.holder.lease.holders[].pid. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders_ArrayElement_Pid = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders_ArrayElement_PidSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.holders[].role. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders_ArrayElement_RoleSchema =
   z.enum(['primary']);
-/** Raw response path: sequence.first.body.stop.holder.lease.holders[].role. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders_ArrayElement_Role = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders_ArrayElement_RoleSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.holders[]. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders_ArrayElementSchema =
   z.strictObject({
     pid: stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders_ArrayElement_PidSchema,
     role: stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders_ArrayElement_RoleSchema,
   });
-/** Raw response path: sequence.first.body.stop.holder.lease.holders[]. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders_ArrayElement = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders_ArrayElementSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.holders. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_HoldersSchema = z.array(
   stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders_ArrayElementSchema,
 );
-/** Raw response path: sequence.first.body.stop.holder.lease.holders. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Lease_Holders = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_HoldersSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease.input_gate. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_InputGateSchema = z.string();
-/** Raw response path: sequence.first.body.stop.holder.lease.input_gate. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Lease_InputGate = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_InputGateSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.lease. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_LeaseSchema = z.strictObject({
   delegated: stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_DelegatedSchema,
@@ -6751,52 +3290,20 @@ export const stopRepeatSequence_V2_First_Body_Stop_Holder_LeaseSchema = z.strict
   holders: stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_HoldersSchema,
   input_gate: stopRepeatSequence_V2_First_Body_Stop_Holder_Lease_InputGateSchema,
 });
-/** Raw response path: sequence.first.body.stop.holder.lease. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Lease = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_LeaseSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.operation_id. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_OperationIdSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.operation_id. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_OperationId = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_OperationIdSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.operation_kind. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_OperationKindSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.operation_kind. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_OperationKind = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_OperationKindSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.pid. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_PidSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.pid. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Pid = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_PidSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.recovery. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_RecoverySchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.recovery. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Recovery = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_RecoverySchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.routines. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_RoutinesSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.routines. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Routines = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_RoutinesSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.script. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_ScriptSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.script. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Script = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_ScriptSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder.status. */
 export const stopRepeatSequence_V2_First_Body_Stop_Holder_StatusSchema = z.null();
-/** Raw response path: sequence.first.body.stop.holder.status. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder_Status = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_Holder_StatusSchema
->;
 /** Strict raw response path: sequence.first.body.stop.holder. */
 export const stopRepeatSequence_V2_First_Body_Stop_HolderSchema = z
   .strictObject({
@@ -6815,24 +3322,12 @@ export const stopRepeatSequence_V2_First_Body_Stop_HolderSchema = z
     status: stopRepeatSequence_V2_First_Body_Stop_Holder_StatusSchema,
   })
   .nullable();
-/** Raw response path: sequence.first.body.stop.holder. */
-export type StopRepeatSequence_V2_First_Body_Stop_Holder = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_HolderSchema
->;
 /** Strict raw response path: sequence.first.body.stop.reason. */
 export const stopRepeatSequence_V2_First_Body_Stop_ReasonSchema = z
   .enum(['worker_not_verifiable_lease_held'])
   .nullable();
-/** Raw response path: sequence.first.body.stop.reason. */
-export type StopRepeatSequence_V2_First_Body_Stop_Reason = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_ReasonSchema
->;
 /** Strict raw response path: sequence.first.body.stop.state. */
 export const stopRepeatSequence_V2_First_Body_Stop_StateSchema = z.enum(['stopping', 'unverified']);
-/** Raw response path: sequence.first.body.stop.state. */
-export type StopRepeatSequence_V2_First_Body_Stop_State = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_Stop_StateSchema
->;
 /** Strict raw response path: sequence.first.body.stop. */
 export const stopRepeatSequence_V2_First_Body_StopSchema = z.strictObject({
   by_this_request: stopRepeatSequence_V2_First_Body_Stop_ByThisRequestSchema,
@@ -6840,53 +3335,27 @@ export const stopRepeatSequence_V2_First_Body_StopSchema = z.strictObject({
   reason: stopRepeatSequence_V2_First_Body_Stop_ReasonSchema,
   state: stopRepeatSequence_V2_First_Body_Stop_StateSchema,
 });
-/** Raw response path: sequence.first.body.stop. */
-export type StopRepeatSequence_V2_First_Body_Stop = z.infer<
-  typeof stopRepeatSequence_V2_First_Body_StopSchema
->;
 /** Strict raw response path: sequence.first.body. */
 export const stopRepeatSequence_V2_First_BodySchema = z.strictObject({
   ok: stopRepeatSequence_V2_First_Body_OkSchema,
   operation: stopRepeatSequence_V2_First_Body_OperationSchema,
   stop: stopRepeatSequence_V2_First_Body_StopSchema,
 });
-/** Raw response path: sequence.first.body. */
-export type StopRepeatSequence_V2_First_Body = z.infer<
-  typeof stopRepeatSequence_V2_First_BodySchema
->;
 /** Strict raw response path: sequence.first.status. */
 export const stopRepeatSequence_V2_First_StatusSchema = z.literal(200);
-/** Raw response path: sequence.first.status. */
-export type StopRepeatSequence_V2_First_Status = z.infer<
-  typeof stopRepeatSequence_V2_First_StatusSchema
->;
 /** Strict raw response path: sequence.first. */
 export const stopRepeatSequence_V2_FirstSchema = z.strictObject({
   body: stopRepeatSequence_V2_First_BodySchema,
   status: stopRepeatSequence_V2_First_StatusSchema,
 });
-/** Raw response path: sequence.first. */
-export type StopRepeatSequence_V2_First = z.infer<typeof stopRepeatSequence_V2_FirstSchema>;
 /** Strict raw response path: sequence.second.body.ok. */
 export const stopRepeatSequence_V2_Second_Body_OkSchema = z.boolean();
-/** Raw response path: sequence.second.body.ok. */
-export type StopRepeatSequence_V2_Second_Body_Ok = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_OkSchema
->;
 /** Strict raw response path: sequence.second.body.operation.error.code. */
 export const stopRepeatSequence_V2_Second_Body_Operation_Error_CodeSchema = z.enum([
   'worker_released',
 ]);
-/** Raw response path: sequence.second.body.operation.error.code. */
-export type StopRepeatSequence_V2_Second_Body_Operation_Error_Code = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Operation_Error_CodeSchema
->;
 /** Strict raw response path: sequence.second.body.operation.error.message. */
 export const stopRepeatSequence_V2_Second_Body_Operation_Error_MessageSchema = z.string();
-/** Raw response path: sequence.second.body.operation.error.message. */
-export type StopRepeatSequence_V2_Second_Body_Operation_Error_Message = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Operation_Error_MessageSchema
->;
 /** Strict raw response path: sequence.second.body.operation.error. */
 export const stopRepeatSequence_V2_Second_Body_Operation_ErrorSchema = z
   .strictObject({
@@ -6894,43 +3363,19 @@ export const stopRepeatSequence_V2_Second_Body_Operation_ErrorSchema = z
     message: stopRepeatSequence_V2_Second_Body_Operation_Error_MessageSchema,
   })
   .nullable();
-/** Raw response path: sequence.second.body.operation.error. */
-export type StopRepeatSequence_V2_Second_Body_Operation_Error = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: sequence.second.body.operation.id. */
 export const stopRepeatSequence_V2_Second_Body_Operation_IdSchema = z.string();
-/** Raw response path: sequence.second.body.operation.id. */
-export type StopRepeatSequence_V2_Second_Body_Operation_Id = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Operation_IdSchema
->;
 /** Strict raw response path: sequence.second.body.operation.kind. */
 export const stopRepeatSequence_V2_Second_Body_Operation_KindSchema = z.enum(['gems']);
-/** Raw response path: sequence.second.body.operation.kind. */
-export type StopRepeatSequence_V2_Second_Body_Operation_Kind = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Operation_KindSchema
->;
 /** Strict raw response path: sequence.second.body.operation.revision. */
 export const stopRepeatSequence_V2_Second_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: sequence.second.body.operation.revision. */
-export type StopRepeatSequence_V2_Second_Body_Operation_Revision = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: sequence.second.body.operation.status. */
 export const stopRepeatSequence_V2_Second_Body_Operation_StatusSchema = z.enum([
   'cancelled',
   'interrupted',
 ]);
-/** Raw response path: sequence.second.body.operation.status. */
-export type StopRepeatSequence_V2_Second_Body_Operation_Status = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Operation_StatusSchema
->;
 /** Strict raw response path: sequence.second.body.operation.step. */
 export const stopRepeatSequence_V2_Second_Body_Operation_StepSchema = z.string();
-/** Raw response path: sequence.second.body.operation.step. */
-export type StopRepeatSequence_V2_Second_Body_Operation_Step = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Operation_StepSchema
->;
 /** Strict raw response path: sequence.second.body.operation. */
 export const stopRepeatSequence_V2_Second_Body_OperationSchema = z.strictObject({
   error: stopRepeatSequence_V2_Second_Body_Operation_ErrorSchema,
@@ -6940,51 +3385,23 @@ export const stopRepeatSequence_V2_Second_Body_OperationSchema = z.strictObject(
   status: stopRepeatSequence_V2_Second_Body_Operation_StatusSchema,
   step: stopRepeatSequence_V2_Second_Body_Operation_StepSchema,
 });
-/** Raw response path: sequence.second.body.operation. */
-export type StopRepeatSequence_V2_Second_Body_Operation = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_OperationSchema
->;
 /** Strict raw response path: sequence.second.body.stop.by_this_request.family. */
 export const stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_FamilySchema = z
   .string()
   .nullable();
-/** Raw response path: sequence.second.body.stop.by_this_request.family. */
-export type StopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_Family = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_FamilySchema
->;
 /** Strict raw response path: sequence.second.body.stop.by_this_request.paused. */
 export const stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_PausedSchema = z.boolean();
-/** Raw response path: sequence.second.body.stop.by_this_request.paused. */
-export type StopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_Paused = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_PausedSchema
->;
 /** Strict raw response path: sequence.second.body.stop.by_this_request.released. */
 export const stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_ReleasedSchema = z.boolean();
-/** Raw response path: sequence.second.body.stop.by_this_request.released. */
-export type StopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_Released = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_ReleasedSchema
->;
 /** Strict raw response path: sequence.second.body.stop.by_this_request.requested. */
 export const stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_RequestedSchema = z.boolean();
-/** Raw response path: sequence.second.body.stop.by_this_request.requested. */
-export type StopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_Requested = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_RequestedSchema
->;
 /** Strict raw response path: sequence.second.body.stop.by_this_request.signalled[]. */
 export const stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_Signalled_ArrayElementSchema =
   z.number();
-/** Raw response path: sequence.second.body.stop.by_this_request.signalled[]. */
-export type StopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_Signalled_ArrayElement = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_Signalled_ArrayElementSchema
->;
 /** Strict raw response path: sequence.second.body.stop.by_this_request.signalled. */
 export const stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_SignalledSchema = z.array(
   stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_Signalled_ArrayElementSchema,
 );
-/** Raw response path: sequence.second.body.stop.by_this_request.signalled. */
-export type StopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_Signalled = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_SignalledSchema
->;
 /** Strict raw response path: sequence.second.body.stop.by_this_request. */
 export const stopRepeatSequence_V2_Second_Body_Stop_ByThisRequestSchema = z.strictObject({
   family: stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_FamilySchema,
@@ -6993,28 +3410,12 @@ export const stopRepeatSequence_V2_Second_Body_Stop_ByThisRequestSchema = z.stri
   requested: stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_RequestedSchema,
   signalled: stopRepeatSequence_V2_Second_Body_Stop_ByThisRequest_SignalledSchema,
 });
-/** Raw response path: sequence.second.body.stop.by_this_request. */
-export type StopRepeatSequence_V2_Second_Body_Stop_ByThisRequest = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Stop_ByThisRequestSchema
->;
 /** Strict raw response path: sequence.second.body.stop.holder. */
 export const stopRepeatSequence_V2_Second_Body_Stop_HolderSchema = z.null();
-/** Raw response path: sequence.second.body.stop.holder. */
-export type StopRepeatSequence_V2_Second_Body_Stop_Holder = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Stop_HolderSchema
->;
 /** Strict raw response path: sequence.second.body.stop.reason. */
 export const stopRepeatSequence_V2_Second_Body_Stop_ReasonSchema = z.null();
-/** Raw response path: sequence.second.body.stop.reason. */
-export type StopRepeatSequence_V2_Second_Body_Stop_Reason = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Stop_ReasonSchema
->;
 /** Strict raw response path: sequence.second.body.stop.state. */
 export const stopRepeatSequence_V2_Second_Body_Stop_StateSchema = z.enum(['released', 'stopped']);
-/** Raw response path: sequence.second.body.stop.state. */
-export type StopRepeatSequence_V2_Second_Body_Stop_State = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_Stop_StateSchema
->;
 /** Strict raw response path: sequence.second.body.stop. */
 export const stopRepeatSequence_V2_Second_Body_StopSchema = z.strictObject({
   by_this_request: stopRepeatSequence_V2_Second_Body_Stop_ByThisRequestSchema,
@@ -7022,40 +3423,24 @@ export const stopRepeatSequence_V2_Second_Body_StopSchema = z.strictObject({
   reason: stopRepeatSequence_V2_Second_Body_Stop_ReasonSchema,
   state: stopRepeatSequence_V2_Second_Body_Stop_StateSchema,
 });
-/** Raw response path: sequence.second.body.stop. */
-export type StopRepeatSequence_V2_Second_Body_Stop = z.infer<
-  typeof stopRepeatSequence_V2_Second_Body_StopSchema
->;
 /** Strict raw response path: sequence.second.body. */
 export const stopRepeatSequence_V2_Second_BodySchema = z.strictObject({
   ok: stopRepeatSequence_V2_Second_Body_OkSchema,
   operation: stopRepeatSequence_V2_Second_Body_OperationSchema,
   stop: stopRepeatSequence_V2_Second_Body_StopSchema,
 });
-/** Raw response path: sequence.second.body. */
-export type StopRepeatSequence_V2_Second_Body = z.infer<
-  typeof stopRepeatSequence_V2_Second_BodySchema
->;
 /** Strict raw response path: sequence.second.status. */
 export const stopRepeatSequence_V2_Second_StatusSchema = z.literal(200);
-/** Raw response path: sequence.second.status. */
-export type StopRepeatSequence_V2_Second_Status = z.infer<
-  typeof stopRepeatSequence_V2_Second_StatusSchema
->;
 /** Strict raw response path: sequence.second. */
 export const stopRepeatSequence_V2_SecondSchema = z.strictObject({
   body: stopRepeatSequence_V2_Second_BodySchema,
   status: stopRepeatSequence_V2_Second_StatusSchema,
 });
-/** Raw response path: sequence.second. */
-export type StopRepeatSequence_V2_Second = z.infer<typeof stopRepeatSequence_V2_SecondSchema>;
 /** Strict raw response path: sequence, variant: members first, second. */
 export const stopRepeatSequence_V2Schema = z.strictObject({
   first: stopRepeatSequence_V2_FirstSchema,
   second: stopRepeatSequence_V2_SecondSchema,
 });
-/** Raw response path: sequence, variant: members first, second. */
-export type StopRepeatSequence_V2 = z.infer<typeof stopRepeatSequence_V2Schema>;
 /** Strict raw response path: sequence. */
 export const stopRepeatSequenceSchema = z.union([
   stopRepeatSequence_V1Schema,

@@ -8,69 +8,34 @@ export type FixtureVersion = z.infer<typeof fixtureVersionSchema>;
 /** Strict raw response path: answer.body.accounts.alpha.active_profile. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_ActiveProfileSchema =
   z.string();
-/** Raw response path: answer.body.accounts.alpha.active_profile. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_ActiveProfile = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.label. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_LabelSchema = z.string();
-/** Raw response path: answer.body.accounts.alpha.label. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Label = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_LabelSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.loadouts.later.defined. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Later_DefinedSchema =
   z.boolean();
-/** Raw response path: answer.body.accounts.alpha.loadouts.later.defined. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Later_Defined =
-  z.infer<
-    typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Later_DefinedSchema
-  >;
 /** Strict raw response path: answer.body.accounts.alpha.loadouts.later. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_LaterSchema =
   z.strictObject({
     defined:
       equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Later_DefinedSchema,
   });
-/** Raw response path: answer.body.accounts.alpha.loadouts.later. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Later = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_LaterSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.loadouts.plain.global_preset. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Plain_GlobalPresetSchema =
   z.string();
-/** Raw response path: answer.body.accounts.alpha.loadouts.plain.global_preset. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Plain_GlobalPreset =
-  z.infer<
-    typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Plain_GlobalPresetSchema
-  >;
 /** Strict raw response path: answer.body.accounts.alpha.loadouts.plain. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_PlainSchema =
   z.strictObject({
     global_preset:
       equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Plain_GlobalPresetSchema.optional(),
   });
-/** Raw response path: answer.body.accounts.alpha.loadouts.plain. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Plain = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.loadouts.spare.cards. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Spare_CardsSchema =
   z.string();
-/** Raw response path: answer.body.accounts.alpha.loadouts.spare.cards. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Spare_Cards =
-  z.infer<
-    typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Spare_CardsSchema
-  >;
 /** Strict raw response path: answer.body.accounts.alpha.loadouts.spare. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_SpareSchema =
   z.strictObject({
     cards: equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Spare_CardsSchema,
   });
-/** Raw response path: answer.body.accounts.alpha.loadouts.spare. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_Spare = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_SpareSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.loadouts. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_LoadoutsSchema =
   z.strictObject({
@@ -78,33 +43,16 @@ export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadout
     plain: equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_PlainSchema,
     spare: equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts_SpareSchema,
   });
-/** Raw response path: answer.body.accounts.alpha.loadouts. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Loadouts = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.profiles[]. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Profiles_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.accounts.alpha.profiles[]. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Profiles_ArrayElement =
-  z.infer<
-    typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Profiles_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.accounts.alpha.profiles. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_ProfilesSchema = z.array(
   equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Profiles_ArrayElementSchema,
 );
-/** Raw response path: answer.body.accounts.alpha.profiles. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_Profiles = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_ProfilesSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha.tourney_card_tweaks. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_TourneyCardTweaksSchema =
   z.strictObject({});
-/** Raw response path: answer.body.accounts.alpha.tourney_card_tweaks. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_TourneyCardTweaks = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_TourneyCardTweaksSchema
->;
 /** Strict raw response path: answer.body.accounts.alpha. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_AlphaSchema = z.strictObject({
   active_profile: equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_ActiveProfileSchema,
@@ -114,65 +62,31 @@ export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_AlphaSchema =
   tourney_card_tweaks:
     equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha_TourneyCardTweaksSchema.optional(),
 });
-/** Raw response path: answer.body.accounts.alpha. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Alpha = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_AlphaSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.active_profile. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_ActiveProfileSchema =
   z.string();
-/** Raw response path: answer.body.accounts.beta.active_profile. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_ActiveProfile = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.label. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_LabelSchema = z.string();
-/** Raw response path: answer.body.accounts.beta.label. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Label = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_LabelSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.loadouts.later.defined. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Later_DefinedSchema =
   z.boolean();
-/** Raw response path: answer.body.accounts.beta.loadouts.later.defined. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Later_Defined =
-  z.infer<
-    typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Later_DefinedSchema
-  >;
 /** Strict raw response path: answer.body.accounts.beta.loadouts.later. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_LaterSchema =
   z.strictObject({
     defined:
       equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Later_DefinedSchema,
   });
-/** Raw response path: answer.body.accounts.beta.loadouts.later. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Later = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_LaterSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.loadouts.plain. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_PlainSchema =
   z.strictObject({});
-/** Raw response path: answer.body.accounts.beta.loadouts.plain. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Plain = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.loadouts.spare.cards. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Spare_CardsSchema =
   z.string();
-/** Raw response path: answer.body.accounts.beta.loadouts.spare.cards. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Spare_Cards =
-  z.infer<
-    typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Spare_CardsSchema
-  >;
 /** Strict raw response path: answer.body.accounts.beta.loadouts.spare. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_SpareSchema =
   z.strictObject({
     cards: equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Spare_CardsSchema,
   });
-/** Raw response path: answer.body.accounts.beta.loadouts.spare. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_Spare = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_SpareSchema
->;
 /** Strict raw response path: answer.body.accounts.beta.loadouts. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_LoadoutsSchema =
   z.strictObject({
@@ -180,174 +94,82 @@ export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts
     plain: equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_PlainSchema,
     spare: equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts_SpareSchema,
   });
-/** Raw response path: answer.body.accounts.beta.loadouts. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_Loadouts = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.accounts.beta. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Accounts_BetaSchema = z.strictObject({
   active_profile: equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_ActiveProfileSchema,
   label: equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_LabelSchema,
   loadouts: equipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta_LoadoutsSchema,
 });
-/** Raw response path: answer.body.accounts.beta. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts_Beta = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Accounts_BetaSchema
->;
 /** Strict raw response path: answer.body.accounts. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_AccountsSchema = z.strictObject({
   alpha: equipmentSampleConfigAnswer_Status200V1_Body_Accounts_AlphaSchema,
   beta: equipmentSampleConfigAnswer_Status200V1_Body_Accounts_BetaSchema,
 });
-/** Raw response path: answer.body.accounts. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Accounts = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_AccountsSchema
->;
 /** Strict raw response path: answer.body.active_instance. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_ActiveInstanceSchema = z.string();
-/** Raw response path: answer.body.active_instance. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_ActiveInstance = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_ActiveInstanceSchema
->;
 /** Strict raw response path: answer.body.active_profile. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_ActiveProfileSchema = z.string();
-/** Raw response path: answer.body.active_profile. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_ActiveProfile = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.config_revision. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.config_revision. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_ConfigRevision = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.instances.main.account. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Instances_Main_AccountSchema = z.string();
-/** Raw response path: answer.body.instances.main.account. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Instances_Main_Account = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Instances_Main_AccountSchema
->;
 /** Strict raw response path: answer.body.instances.main.allow_taps. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Instances_Main_AllowTapsSchema =
   z.boolean();
-/** Raw response path: answer.body.instances.main.allow_taps. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Instances_Main_AllowTaps = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Instances_Main_AllowTapsSchema
->;
 /** Strict raw response path: answer.body.instances.main.serial. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Instances_Main_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.main.serial. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Instances_Main_Serial = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Instances_Main_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.main. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Instances_MainSchema = z.strictObject({
   account: equipmentSampleConfigAnswer_Status200V1_Body_Instances_Main_AccountSchema,
   allow_taps: equipmentSampleConfigAnswer_Status200V1_Body_Instances_Main_AllowTapsSchema,
   serial: equipmentSampleConfigAnswer_Status200V1_Body_Instances_Main_SerialSchema,
 });
-/** Raw response path: answer.body.instances.main. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Instances_Main = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Instances_MainSchema
->;
 /** Strict raw response path: answer.body.instances.other.serial. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Instances_Other_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.other.serial. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Instances_Other_Serial = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Instances_Other_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.other. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Instances_OtherSchema = z.strictObject({
   serial: equipmentSampleConfigAnswer_Status200V1_Body_Instances_Other_SerialSchema,
 });
-/** Raw response path: answer.body.instances.other. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Instances_Other = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Instances_OtherSchema
->;
 /** Strict raw response path: answer.body.instances. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_InstancesSchema = z.strictObject({
   main: equipmentSampleConfigAnswer_Status200V1_Body_Instances_MainSchema,
   other: equipmentSampleConfigAnswer_Status200V1_Body_Instances_OtherSchema,
 });
-/** Raw response path: answer.body.instances. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Instances = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_InstancesSchema
->;
 /** Strict raw response path: answer.body.loadouts.later.defined. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Later_DefinedSchema =
   z.boolean();
-/** Raw response path: answer.body.loadouts.later.defined. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Later_Defined = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Later_DefinedSchema
->;
 /** Strict raw response path: answer.body.loadouts.later. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_LaterSchema = z.strictObject({
   defined: equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Later_DefinedSchema,
 });
-/** Raw response path: answer.body.loadouts.later. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Later = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_LaterSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.global_preset. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Plain_GlobalPresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.plain.global_preset. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Plain_GlobalPreset = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Plain_GlobalPresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_PlainSchema = z.strictObject({
   global_preset:
     equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Plain_GlobalPresetSchema.optional(),
 });
-/** Raw response path: answer.body.loadouts.plain. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Plain = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.loadouts.spare.cards. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Spare_CardsSchema = z.string();
-/** Raw response path: answer.body.loadouts.spare.cards. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Spare_Cards = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Spare_CardsSchema
->;
 /** Strict raw response path: answer.body.loadouts.spare. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_SpareSchema = z.strictObject({
   cards: equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Spare_CardsSchema,
 });
-/** Raw response path: answer.body.loadouts.spare. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Loadouts_Spare = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_SpareSchema
->;
 /** Strict raw response path: answer.body.loadouts. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_LoadoutsSchema = z.strictObject({
   later: equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_LaterSchema,
   plain: equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_PlainSchema,
   spare: equipmentSampleConfigAnswer_Status200V1_Body_Loadouts_SpareSchema,
 });
-/** Raw response path: answer.body.loadouts. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Loadouts = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.preset. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_PresetSchema = z.string();
-/** Raw response path: answer.body.preset. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Preset = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_PresetSchema
->;
 /** Strict raw response path: answer.body.presets. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_PresetsSchema = z.strictObject({});
-/** Raw response path: answer.body.presets. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_Presets = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_PresetsSchema
->;
 /** Strict raw response path: answer.body.tourney_card_tweaks. */
 export const equipmentSampleConfigAnswer_Status200V1_Body_TourneyCardTweaksSchema = z.strictObject(
   {},
 );
-/** Raw response path: answer.body.tourney_card_tweaks. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body_TourneyCardTweaks = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_Body_TourneyCardTweaksSchema
->;
 /** Strict raw response path: answer.body. */
 export const equipmentSampleConfigAnswer_Status200V1_BodySchema = z.strictObject({
   accounts: equipmentSampleConfigAnswer_Status200V1_Body_AccountsSchema,
@@ -360,103 +182,46 @@ export const equipmentSampleConfigAnswer_Status200V1_BodySchema = z.strictObject
   presets: equipmentSampleConfigAnswer_Status200V1_Body_PresetsSchema,
   tourney_card_tweaks: equipmentSampleConfigAnswer_Status200V1_Body_TourneyCardTweaksSchema,
 });
-/** Raw response path: answer.body. */
-export type EquipmentSampleConfigAnswer_Status200V1_Body = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const equipmentSampleConfigAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EquipmentSampleConfigAnswer_Status200V1_Status = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members accounts, active_instance, active_profile, config_revision, instances, loadouts, preset, presets, tourney_card_tweaks. */
 export const equipmentSampleConfigAnswer_Status200V1Schema = z.strictObject({
   body: equipmentSampleConfigAnswer_Status200V1_BodySchema,
   status: equipmentSampleConfigAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members accounts, active_instance, active_profile, config_revision, instances, loadouts, preset, presets, tourney_card_tweaks. */
-export type EquipmentSampleConfigAnswer_Status200V1 = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V1Schema
->;
 /** Strict raw response path: answer.body.active_instance. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_ActiveInstanceSchema = z.string();
-/** Raw response path: answer.body.active_instance. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_ActiveInstance = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_ActiveInstanceSchema
->;
 /** Strict raw response path: answer.body.active_profile. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_ActiveProfileSchema = z.string();
-/** Raw response path: answer.body.active_profile. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_ActiveProfile = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.config_revision. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.config_revision. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_ConfigRevision = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.instances.main.allow_taps. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Instances_Main_AllowTapsSchema =
   z.boolean();
-/** Raw response path: answer.body.instances.main.allow_taps. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Instances_Main_AllowTaps = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Instances_Main_AllowTapsSchema
->;
 /** Strict raw response path: answer.body.instances.main.serial. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Instances_Main_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.main.serial. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Instances_Main_Serial = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Instances_Main_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.main. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Instances_MainSchema = z.strictObject({
   allow_taps: equipmentSampleConfigAnswer_Status200V2_Body_Instances_Main_AllowTapsSchema,
   serial: equipmentSampleConfigAnswer_Status200V2_Body_Instances_Main_SerialSchema,
 });
-/** Raw response path: answer.body.instances.main. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Instances_Main = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Instances_MainSchema
->;
 /** Strict raw response path: answer.body.instances.other.serial. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Instances_Other_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.other.serial. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Instances_Other_Serial = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Instances_Other_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.other. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Instances_OtherSchema = z.strictObject({
   serial: equipmentSampleConfigAnswer_Status200V2_Body_Instances_Other_SerialSchema,
 });
-/** Raw response path: answer.body.instances.other. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Instances_Other = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Instances_OtherSchema
->;
 /** Strict raw response path: answer.body.instances. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_InstancesSchema = z.strictObject({
   main: equipmentSampleConfigAnswer_Status200V2_Body_Instances_MainSchema,
   other: equipmentSampleConfigAnswer_Status200V2_Body_Instances_OtherSchema,
 });
-/** Raw response path: answer.body.instances. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Instances = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_InstancesSchema
->;
 /** Strict raw response path: answer.body.loadouts.categories.guardian_preset. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Categories_GuardianPresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.categories.guardian_preset. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Categories_GuardianPreset =
-  z.infer<
-    typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Categories_GuardianPresetSchema
-  >;
 /** Strict raw response path: answer.body.loadouts.categories.module_preset. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Categories_ModulePresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.categories.module_preset. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Categories_ModulePreset = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Categories_ModulePresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.categories. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_CategoriesSchema =
   z.strictObject({
@@ -465,126 +230,58 @@ export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_CategoriesSch
     module_preset:
       equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Categories_ModulePresetSchema,
   });
-/** Raw response path: answer.body.loadouts.categories. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Categories = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_CategoriesSchema
->;
 /** Strict raw response path: answer.body.loadouts.global_choice.global_preset. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_GlobalChoice_GlobalPresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.global_choice.global_preset. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_GlobalChoice_GlobalPreset =
-  z.infer<
-    typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_GlobalChoice_GlobalPresetSchema
-  >;
 /** Strict raw response path: answer.body.loadouts.global_choice. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_GlobalChoiceSchema =
   z.strictObject({
     global_preset:
       equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_GlobalChoice_GlobalPresetSchema,
   });
-/** Raw response path: answer.body.loadouts.global_choice. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_GlobalChoice = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_GlobalChoiceSchema
->;
 /** Strict raw response path: answer.body.loadouts.later.defined. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Later_DefinedSchema =
   z.boolean();
-/** Raw response path: answer.body.loadouts.later.defined. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Later_Defined = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Later_DefinedSchema
->;
 /** Strict raw response path: answer.body.loadouts.later. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_LaterSchema = z.strictObject({
   defined: equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Later_DefinedSchema,
 });
-/** Raw response path: answer.body.loadouts.later. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Later = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_LaterSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.bot_preset. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_BotPresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.plain.bot_preset. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_BotPreset = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_BotPresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.cards. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_CardsSchema = z.string();
-/** Raw response path: answer.body.loadouts.plain.cards. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Cards = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_CardsSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.global_preset. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_GlobalPresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.plain.global_preset. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_GlobalPreset = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_GlobalPresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.guardian_preset. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_GuardianPresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.plain.guardian_preset. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_GuardianPreset = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_GuardianPresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.guardians[]. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Guardians_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.plain.guardians[]. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Guardians_ArrayElement =
-  z.infer<
-    typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Guardians_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.loadouts.plain.guardians. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_GuardiansSchema = z.array(
   equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Guardians_ArrayElementSchema,
 );
-/** Raw response path: answer.body.loadouts.plain.guardians. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Guardians = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_GuardiansSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.module_preset. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_ModulePresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.plain.module_preset. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_ModulePreset = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_ModulePresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.modules[][]. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Modules_ArrayElement_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.plain.modules[][]. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Modules_ArrayElement_ArrayElement =
-  z.infer<
-    typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Modules_ArrayElement_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.loadouts.plain.modules[]. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Modules_ArrayElementSchema =
   z.array(
     equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Modules_ArrayElement_ArrayElementSchema,
   );
-/** Raw response path: answer.body.loadouts.plain.modules[]. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Modules_ArrayElement =
-  z.infer<
-    typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Modules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.loadouts.plain.modules. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_ModulesSchema = z.array(
   equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Modules_ArrayElementSchema,
 );
-/** Raw response path: answer.body.loadouts.plain.modules. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_Modules = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_ModulesSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.workshop_preset. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_WorkshopPresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.plain.workshop_preset. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_WorkshopPreset = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_WorkshopPresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_PlainSchema = z.strictObject({
   bot_preset:
@@ -601,32 +298,16 @@ export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_PlainSchema =
   workshop_preset:
     equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain_WorkshopPresetSchema.optional(),
 });
-/** Raw response path: answer.body.loadouts.plain. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Plain = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.loadouts.spare.cards. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Spare_CardsSchema = z.string();
-/** Raw response path: answer.body.loadouts.spare.cards. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Spare_Cards = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Spare_CardsSchema
->;
 /** Strict raw response path: answer.body.loadouts.spare. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_SpareSchema = z.strictObject({
   cards: equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Spare_CardsSchema,
 });
-/** Raw response path: answer.body.loadouts.spare. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Spare = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_SpareSchema
->;
 /** Strict raw response path: answer.body.loadouts.untouched. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_UntouchedSchema = z.strictObject(
   {},
 );
-/** Raw response path: answer.body.loadouts.untouched. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts_Untouched = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_UntouchedSchema
->;
 /** Strict raw response path: answer.body.loadouts. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_LoadoutsSchema = z.strictObject({
   categories: equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_CategoriesSchema.optional(),
@@ -637,22 +318,10 @@ export const equipmentSampleConfigAnswer_Status200V2_Body_LoadoutsSchema = z.str
   spare: equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_SpareSchema.optional(),
   untouched: equipmentSampleConfigAnswer_Status200V2_Body_Loadouts_UntouchedSchema.optional(),
 });
-/** Raw response path: answer.body.loadouts. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Loadouts = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.preset. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_PresetSchema = z.string();
-/** Raw response path: answer.body.preset. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Preset = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_PresetSchema
->;
 /** Strict raw response path: answer.body.presets. */
 export const equipmentSampleConfigAnswer_Status200V2_Body_PresetsSchema = z.strictObject({});
-/** Raw response path: answer.body.presets. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body_Presets = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_Body_PresetsSchema
->;
 /** Strict raw response path: answer.body. */
 export const equipmentSampleConfigAnswer_Status200V2_BodySchema = z.strictObject({
   active_instance: equipmentSampleConfigAnswer_Status200V2_Body_ActiveInstanceSchema,
@@ -663,25 +332,13 @@ export const equipmentSampleConfigAnswer_Status200V2_BodySchema = z.strictObject
   preset: equipmentSampleConfigAnswer_Status200V2_Body_PresetSchema,
   presets: equipmentSampleConfigAnswer_Status200V2_Body_PresetsSchema,
 });
-/** Raw response path: answer.body. */
-export type EquipmentSampleConfigAnswer_Status200V2_Body = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const equipmentSampleConfigAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EquipmentSampleConfigAnswer_Status200V2_Status = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members active_instance, active_profile, config_revision, instances, loadouts, preset, presets. */
 export const equipmentSampleConfigAnswer_Status200V2Schema = z.strictObject({
   body: equipmentSampleConfigAnswer_Status200V2_BodySchema,
   status: equipmentSampleConfigAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members active_instance, active_profile, config_revision, instances, loadouts, preset, presets. */
-export type EquipmentSampleConfigAnswer_Status200V2 = z.infer<
-  typeof equipmentSampleConfigAnswer_Status200V2Schema
->;
 /** Strict raw response path: answer. */
 export const equipmentSampleConfigAnswerSchema = z.union([
   equipmentSampleConfigAnswer_Status200V1Schema,
@@ -691,89 +348,38 @@ export const equipmentSampleConfigAnswerSchema = z.union([
 export type EquipmentSampleConfigAnswer = z.infer<typeof equipmentSampleConfigAnswerSchema>;
 /** Strict raw response path: answer.body.name. */
 export const equipmentSampleProfileAnswer_Body_NameSchema = z.string();
-/** Raw response path: answer.body.name. */
-export type EquipmentSampleProfileAnswer_Body_Name = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_NameSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const equipmentSampleProfileAnswer_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EquipmentSampleProfileAnswer_Body_Ok = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_OkSchema
->;
 /** Strict raw response path: answer.body.problems[]. */
 export const equipmentSampleProfileAnswer_Body_Problems_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.problems[]. */
-export type EquipmentSampleProfileAnswer_Body_Problems_ArrayElement = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Problems_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.problems. */
 export const equipmentSampleProfileAnswer_Body_ProblemsSchema = z.array(
   equipmentSampleProfileAnswer_Body_Problems_ArrayElementSchema,
 );
-/** Raw response path: answer.body.problems. */
-export type EquipmentSampleProfileAnswer_Body_Problems = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_ProblemsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .kind. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_KindSchema =
   z.enum(['coin']);
-/** Raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .kind. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_Kind =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_KindSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .loadout. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .loadout. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_Loadout =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_LoadoutSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .policies.gather. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .policies.gather. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_Policies_Gather =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .policies. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_PoliciesSchema =
   z.strictObject({
     gather:
       equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .policies. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_Policies =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_PoliciesSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .restart_via_home. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .restart_via_home. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_RestartViaHome =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_RestartViaHomeSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .shopping. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .shopping. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_Shopping =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_ShoppingSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .tier. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label .tier. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_Tier =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_TierSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label . */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelSchema =
   z.strictObject({
@@ -788,70 +394,30 @@ export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunL
       equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_ShoppingSchema,
     tier: equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel_TierSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label . */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabel =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_ALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelALongSavedRunLabelSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.kind. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_KindSchema =
   z.enum(['coin']);
-/** Raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.kind. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_Kind =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_KindSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.loadout. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.loadout. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_Loadout =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_LoadoutSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.policies.gather. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.policies.gather. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_Policies_Gather =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.policies. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_PoliciesSchema =
   z.strictObject({
     gather:
       equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.policies. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_Policies =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_PoliciesSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.restart_via_home. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.restart_via_home. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_RestartViaHome =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_RestartViaHomeSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.shopping. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.shopping. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_Shopping =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_ShoppingSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.tier. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-.tier. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_Tier =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_TierSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLSchema =
   z.strictObject({
@@ -866,53 +432,24 @@ export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRT
       equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_ShoppingSchema,
     tier: equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL_TierSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-RTL-مثال-. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTL =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_RTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLRTLSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.farm.kind. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm.kind. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_Kind = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.loadout. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_LoadoutSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.loadout. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_Loadout = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies.gather. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.policies.gather. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_Policies_Gather = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.policies. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_PoliciesSchema =
   z.strictObject({
     gather: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.farm.policies. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_Policies = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.shopping. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_ShoppingSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.farm.shopping. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_Shopping = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm.tier. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.farm.tier. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_Tier = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmSchema = z.strictObject({
   kind: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_KindSchema,
@@ -921,46 +458,22 @@ export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmSchema = z
   shopping: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_ShoppingSchema,
   tier: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.farm. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Farm = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.kind. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.profile.blueprints.farm_deep.kind. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Kind = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.loadout. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Loadout = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.gather. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Policies_Gather = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.rescue. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Policies_RescueSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.rescue. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Policies_Rescue = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Policies_RescueSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies.uw. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Policies_UwSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies.uw. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Policies_Uw = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Policies_UwSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.policies. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_PoliciesSchema =
   z.strictObject({
@@ -969,30 +482,14 @@ export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Polic
       equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Policies_RescueSchema.optional(),
     uw: equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Policies_UwSchema.optional(),
   });
-/** Raw response path: answer.body.profile.blueprints.farm_deep.policies. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Policies = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.restart_via_home. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_RestartViaHome = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_RestartViaHomeSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.shopping. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Shopping = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep.tier. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.farm_deep.tier. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_Tier = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.farm_deep. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeepSchema = z.strictObject({
   kind: equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_KindSchema,
@@ -1003,52 +500,24 @@ export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeepSchema
   shopping: equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_ShoppingSchema,
   tier: equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.farm_deep. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeep = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_FarmDeepSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.count. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_CountSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.count. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_Count = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_CountSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.kind. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_KindSchema = z.enum([
   'shard',
 ]);
-/** Raw response path: answer.body.profile.blueprints.shards.kind. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_Kind = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.loadout. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_LoadoutSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.loadout. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_Loadout = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies.gather. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.shards.policies.gather. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_Policies_Gather = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.policies. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_PoliciesSchema =
   z.strictObject({
     gather: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.shards.policies. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_Policies = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards.tier. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.shards.tier. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_Tier = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.shards. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_ShardsSchema = z.strictObject({
   count: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_CountSchema,
@@ -1057,53 +526,25 @@ export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_ShardsSchema =
   policies: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_PoliciesSchema,
   tier: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.shards. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Shards = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_ShardsSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.gem_entry_max. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_GemEntryMax = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.kind. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_KindSchema = z.enum([
   'tournament',
 ]);
-/** Raw response path: answer.body.profile.blueprints.tourney.kind. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Kind = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.loadout. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.loadout. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Loadout = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.gather. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Policies_Gather = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.rescue. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Policies_RescueSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.rescue. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Policies_Rescue = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Policies_RescueSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies.uw. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Policies_UwSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.tourney.policies.uw. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Policies_Uw = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Policies_UwSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.policies. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_PoliciesSchema =
   z.strictObject({
@@ -1112,16 +553,8 @@ export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Polici
       equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Policies_RescueSchema.optional(),
     uw: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Policies_UwSchema.optional(),
   });
-/** Raw response path: answer.body.profile.blueprints.tourney.policies. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Policies = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney.tier. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.tourney.tier. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_Tier = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.tourney. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_TourneySchema = z.strictObject({
   gem_entry_max: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_GemEntryMaxSchema,
@@ -1130,69 +563,30 @@ export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_TourneySchema 
   policies: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_PoliciesSchema,
   tier: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.tourney. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Tourney = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_TourneySchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.kind. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_KindSchema =
   z.enum(['coin']);
-/** Raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.kind. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_Kind =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_KindSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.loadout. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_LoadoutSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.loadout. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_Loadout =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_LoadoutSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.policies.gather. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.policies.gather. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_Policies_Gather =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_Policies_GatherSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.policies. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_PoliciesSchema =
   z.strictObject({
     gather:
       equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_Policies_GatherSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.policies. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_Policies =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_PoliciesSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.restart_via_home. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.restart_via_home. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_RestartViaHome =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_RestartViaHomeSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.shopping. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_ShoppingSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.shopping. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_Shopping =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_ShoppingSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.tier. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_TierSchema =
   z.number();
-/** Raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable.tier. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_Tier =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_TierSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_UnbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableSchema =
   z.strictObject({
@@ -1207,57 +601,24 @@ export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunb
       equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_ShoppingSchema,
     tier: equipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable_TierSchema,
   });
-/** Raw response path: answer.body.profile.blueprints.unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_Unbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakable =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_UnbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableSchema
-  >;
 /** Strict raw response path: answer.body.profile.blueprints.x.kind. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_KindSchema = z.enum(['coin']);
-/** Raw response path: answer.body.profile.blueprints.x.kind. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_X_Kind = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_KindSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.x.loadout. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_LoadoutSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.x.loadout. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_X_Loadout = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_LoadoutSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.x.policies.gather. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_Policies_GatherSchema =
   z.string();
-/** Raw response path: answer.body.profile.blueprints.x.policies.gather. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_X_Policies_Gather = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.x.policies. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_PoliciesSchema = z.strictObject(
   { gather: equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_Policies_GatherSchema },
 );
-/** Raw response path: answer.body.profile.blueprints.x.policies. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_X_Policies = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.x.restart_via_home. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.blueprints.x.restart_via_home. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_X_RestartViaHome = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_RestartViaHomeSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.x.shopping. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_ShoppingSchema = z.string();
-/** Raw response path: answer.body.profile.blueprints.x.shopping. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_X_Shopping = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_ShoppingSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.x.tier. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_TierSchema = z.number();
-/** Raw response path: answer.body.profile.blueprints.x.tier. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_X_Tier = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_TierSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints.x. */
 export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_XSchema = z.strictObject({
   kind: equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_KindSchema,
@@ -1267,10 +628,6 @@ export const equipmentSampleProfileAnswer_Body_Profile_Blueprints_XSchema = z.st
   shopping: equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_ShoppingSchema,
   tier: equipmentSampleProfileAnswer_Body_Profile_Blueprints_X_TierSchema,
 });
-/** Raw response path: answer.body.profile.blueprints.x. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints_X = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Blueprints_XSchema
->;
 /** Strict raw response path: answer.body.profile.blueprints. */
 export const equipmentSampleProfileAnswer_Body_Profile_BlueprintsSchema = z.strictObject({
   'A long saved run label A long saved run label A long saved run label A long saved run label A long saved run label ':
@@ -1285,42 +642,18 @@ export const equipmentSampleProfileAnswer_Body_Profile_BlueprintsSchema = z.stri
     equipmentSampleProfileAnswer_Body_Profile_Blueprints_UnbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableunbreakableSchema.optional(),
   x: equipmentSampleProfileAnswer_Body_Profile_Blueprints_XSchema.optional(),
 });
-/** Raw response path: answer.body.profile.blueprints. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Blueprints = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_BlueprintsSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].after. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].after. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_After =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].block. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].block. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_Block =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].blueprint. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[].count. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.farm_day[].count. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_Count =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema =
   z.strictObject({
@@ -1332,50 +665,22 @@ export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayEl
     count:
       equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.farm_day[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElement = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.farm_day. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDaySchema = z.array(
   equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.farm_day. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDay = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].after. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].after. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_After =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_AfterSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].block. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].block. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Block =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlockSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].blueprint. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Blueprint =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[].count. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema =
   z.number();
-/** Raw response path: answer.body.profile.plan.days.tourney_day[].count. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_Count =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema
-  >;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema =
   z.strictObject({
@@ -1387,167 +692,79 @@ export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_Arra
     count:
       equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement_CountSchema.optional(),
   });
-/** Raw response path: answer.body.profile.plan.days.tourney_day[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElement = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.plan.days.tourney_day. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDaySchema = z.array(
   equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.plan.days.tourney_day. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDay = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.days. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_DaysSchema = z.strictObject({
   farm_day: equipmentSampleProfileAnswer_Body_Profile_Plan_Days_FarmDaySchema,
   tourney_day: equipmentSampleProfileAnswer_Body_Profile_Plan_Days_TourneyDaySchema,
 });
-/** Raw response path: answer.body.profile.plan.days. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Days = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Plan_DaysSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.default. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Week_DefaultSchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.default. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Week_Default = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Week_DefaultSchema
->;
 /** Strict raw response path: answer.body.profile.plan.week.saturday. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_Week_SaturdaySchema = z.string();
-/** Raw response path: answer.body.profile.plan.week.saturday. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Week_Saturday = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Plan_Week_SaturdaySchema
->;
 /** Strict raw response path: answer.body.profile.plan.week. */
 export const equipmentSampleProfileAnswer_Body_Profile_Plan_WeekSchema = z.strictObject({
   default: equipmentSampleProfileAnswer_Body_Profile_Plan_Week_DefaultSchema,
   saturday: equipmentSampleProfileAnswer_Body_Profile_Plan_Week_SaturdaySchema,
 });
-/** Raw response path: answer.body.profile.plan.week. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan_Week = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Plan_WeekSchema
->;
 /** Strict raw response path: answer.body.profile.plan. */
 export const equipmentSampleProfileAnswer_Body_Profile_PlanSchema = z.strictObject({
   days: equipmentSampleProfileAnswer_Body_Profile_Plan_DaysSchema,
   week: equipmentSampleProfileAnswer_Body_Profile_Plan_WeekSchema,
 });
-/** Raw response path: answer.body.profile.plan. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Plan = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_PlanSchema
->;
 /** Strict raw response path: answer.body.profile.player.abilities.demon_mode. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_Abilities_DemonModeSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.player.abilities.demon_mode. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Abilities_DemonMode = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_Abilities_DemonModeSchema
->;
 /** Strict raw response path: answer.body.profile.player.abilities.nuke. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_Abilities_NukeSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.abilities.nuke. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Abilities_Nuke = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_Abilities_NukeSchema
->;
 /** Strict raw response path: answer.body.profile.player.abilities. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_AbilitiesSchema = z.strictObject({
   demon_mode: equipmentSampleProfileAnswer_Body_Profile_Player_Abilities_DemonModeSchema,
   nuke: equipmentSampleProfileAnswer_Body_Profile_Player_Abilities_NukeSchema,
 });
-/** Raw response path: answer.body.profile.player.abilities. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Abilities = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.profile.player.abilities_verified. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_AbilitiesVerifiedSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.abilities_verified. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_AbilitiesVerified = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_AbilitiesVerifiedSchema
->;
 /** Strict raw response path: answer.body.profile.player.card_presets[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_CardPresets_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.card_presets[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_CardPresets_ArrayElement = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_CardPresets_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.player.card_presets. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_CardPresetsSchema = z.array(
   equipmentSampleProfileAnswer_Body_Profile_Player_CardPresets_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.card_presets. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_CardPresets = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_CardPresetsSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.bots[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Bots_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.category_presets.bots[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Bots_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Bots_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.player.category_presets.bots. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_BotsSchema = z.array(
   equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Bots_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.category_presets.bots. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Bots = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_BotsSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.guardians[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Guardians_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.category_presets.guardians[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Guardians_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Guardians_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.player.category_presets.guardians. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_GuardiansSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Guardians_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.player.category_presets.guardians. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Guardians = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_GuardiansSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.modules[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Modules_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.category_presets.modules[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Modules_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Modules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.player.category_presets.modules. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_ModulesSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Modules_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.player.category_presets.modules. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Modules = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_ModulesSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets.workshop[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Workshop_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.category_presets.workshop[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Workshop_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Workshop_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.player.category_presets.workshop. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_WorkshopSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Workshop_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.player.category_presets.workshop. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_Workshop = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_WorkshopSchema
->;
 /** Strict raw response path: answer.body.profile.player.category_presets. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresetsSchema =
   z.strictObject({
@@ -1556,125 +773,53 @@ export const equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresetsSch
     modules: equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_ModulesSchema,
     workshop: equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets_WorkshopSchema,
   });
-/** Raw response path: answer.body.profile.player.category_presets. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresets = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_CategoryPresetsSchema
->;
 /** Strict raw response path: answer.body.profile.player.global_presets[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_GlobalPresets_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.global_presets[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_GlobalPresets_ArrayElement = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_GlobalPresets_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.player.global_presets. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_GlobalPresetsSchema = z.array(
   equipmentSampleProfileAnswer_Body_Profile_Player_GlobalPresets_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.global_presets. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_GlobalPresets = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_GlobalPresetsSchema
->;
 /** Strict raw response path: answer.body.profile.player.guardians[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_Guardians_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.guardians[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Guardians_ArrayElement = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_Guardians_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.player.guardians. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_GuardiansSchema = z.array(
   equipmentSampleProfileAnswer_Body_Profile_Player_Guardians_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.guardians. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Guardians = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_GuardiansSchema
->;
 /** Strict raw response path: answer.body.profile.player.max_tier. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_MaxTierSchema = z.number();
-/** Raw response path: answer.body.profile.player.max_tier. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_MaxTier = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_MaxTierSchema
->;
 /** Strict raw response path: answer.body.profile.player.modules_equipped[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_ModulesEquipped_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.player.modules_equipped[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_ModulesEquipped_ArrayElement = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_ModulesEquipped_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.player.modules_equipped. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_ModulesEquippedSchema = z.array(
   equipmentSampleProfileAnswer_Body_Profile_Player_ModulesEquipped_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.player.modules_equipped. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_ModulesEquipped = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_ModulesEquippedSchema
->;
 /** Strict raw response path: answer.body.profile.player.modules_in_grid. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_ModulesInGridSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.profile.player.modules_in_grid. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_ModulesInGrid = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_ModulesInGridSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.black_hole. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_Uws_BlackHoleSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.black_hole. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Uws_BlackHole = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_Uws_BlackHoleSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.chain_lightning. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_Uws_ChainLightningSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.player.uws.chain_lightning. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Uws_ChainLightning = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_Uws_ChainLightningSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.chronofield. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_Uws_ChronofieldSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.chronofield. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Uws_Chronofield = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_Uws_ChronofieldSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.death_wave. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_Uws_DeathWaveSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.death_wave. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Uws_DeathWave = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_Uws_DeathWaveSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.golden_tower. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_Uws_GoldenTowerSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.golden_tower. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Uws_GoldenTower = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_Uws_GoldenTowerSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.inner_land_mines. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_Uws_InnerLandMinesSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.player.uws.inner_land_mines. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Uws_InnerLandMines = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_Uws_InnerLandMinesSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.poison_swamp. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_Uws_PoisonSwampSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.poison_swamp. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Uws_PoisonSwamp = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_Uws_PoisonSwampSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.smart_missiles. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_Uws_SmartMissilesSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.smart_missiles. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Uws_SmartMissiles = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_Uws_SmartMissilesSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws.spotlight. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_Uws_SpotlightSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.uws.spotlight. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Uws_Spotlight = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_Uws_SpotlightSchema
->;
 /** Strict raw response path: answer.body.profile.player.uws. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_UwsSchema = z.strictObject({
   black_hole: equipmentSampleProfileAnswer_Body_Profile_Player_Uws_BlackHoleSchema,
@@ -1687,16 +832,8 @@ export const equipmentSampleProfileAnswer_Body_Profile_Player_UwsSchema = z.stri
   smart_missiles: equipmentSampleProfileAnswer_Body_Profile_Player_Uws_SmartMissilesSchema,
   spotlight: equipmentSampleProfileAnswer_Body_Profile_Player_Uws_SpotlightSchema,
 });
-/** Raw response path: answer.body.profile.player.uws. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Uws = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_UwsSchema
->;
 /** Strict raw response path: answer.body.profile.player.wall. */
 export const equipmentSampleProfileAnswer_Body_Profile_Player_WallSchema = z.boolean();
-/** Raw response path: answer.body.profile.player.wall. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player_Wall = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Player_WallSchema
->;
 /** Strict raw response path: answer.body.profile.player. */
 export const equipmentSampleProfileAnswer_Body_Profile_PlayerSchema = z.strictObject({
   abilities: equipmentSampleProfileAnswer_Body_Profile_Player_AbilitiesSchema,
@@ -1711,95 +848,45 @@ export const equipmentSampleProfileAnswer_Body_Profile_PlayerSchema = z.strictOb
   uws: equipmentSampleProfileAnswer_Body_Profile_Player_UwsSchema,
   wall: equipmentSampleProfileAnswer_Body_Profile_Player_WallSchema,
 });
-/** Raw response path: answer.body.profile.player. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Player = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_PlayerSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[].enabled. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.chores[].enabled. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Chores_ArrayElement_Enabled =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.chores[].name. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Chores_ArrayElement_NameSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.chores[].name. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Chores_ArrayElement_Name = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Chores_ArrayElement_NameSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Chores_ArrayElementSchema =
   z.strictObject({
     enabled: equipmentSampleProfileAnswer_Body_Profile_Policies_Chores_ArrayElement_EnabledSchema,
     name: equipmentSampleProfileAnswer_Body_Profile_Policies_Chores_ArrayElement_NameSchema,
   });
-/** Raw response path: answer.body.profile.policies.chores[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Chores_ArrayElement = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Chores_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.profile.policies.chores. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ChoresSchema = z.array(
   equipmentSampleProfileAnswer_Body_Profile_Policies_Chores_ArrayElementSchema,
 );
-/** Raw response path: answer.body.profile.policies.chores. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Chores = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ChoresSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.ad_gems. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_AdGems = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.flying_gem. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_FlyingGem = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_FlyingGemSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.all_on.gem_delay_sec. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySec = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_GemDelaySecSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.guild. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.guild. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_Guild = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quest_rewards. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_QuestRewards = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_QuestRewardsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.all_on.quests_8h. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_Quests8h = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.all_on. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOnSchema = z.strictObject(
   {
@@ -1813,64 +900,29 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOnSche
     quests_8h: equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn_Quests8hSchema,
   },
 );
-/** Raw response path: answer.body.profile.policies.gather.all_on. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOn = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOnSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.ad_gems. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_AdGems = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.flying_gem. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_FlyingGem = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_FlyingGemSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.gems_only.gem_delay_sec. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySec =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.guild. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.guild. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_Guild = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quest_rewards. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_QuestRewards =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.gems_only.quests_8h. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_Quests8h = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.gems_only. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnlySchema =
   z.strictObject({
@@ -1883,64 +935,29 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnlyS
       equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_QuestRewardsSchema,
     quests_8h: equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.gems_only. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnly = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnlySchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.ad_gems. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_AdGems = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_AdGemsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.flying_gem. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_FlyingGem = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_FlyingGemSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.gather.hands_off.gem_delay_sec. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySec =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.guild. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_GuildSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.guild. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_Guild = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_GuildSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quest_rewards. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_QuestRewards =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.gather.hands_off.quests_8h. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_Quests8h = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather.hands_off. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOffSchema =
   z.strictObject({
@@ -1953,36 +970,18 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOffS
       equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_QuestRewardsSchema,
     quests_8h: equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff_Quests8hSchema,
   });
-/** Raw response path: answer.body.profile.policies.gather.hands_off. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOff = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOffSchema
->;
 /** Strict raw response path: answer.body.profile.policies.gather. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_GatherSchema = z.strictObject({
   all_on: equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_AllOnSchema,
   gems_only: equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_GemsOnlySchema,
   hands_off: equipmentSampleProfileAnswer_Body_Profile_Policies_Gather_HandsOffSchema,
 });
-/** Raw response path: answer.body.profile.policies.gather. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_Gather = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_GatherSchema
->;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.daily_missions. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_GlobalBehaviors_DailyMissions =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_GlobalBehaviors_DailyMissionsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.global_behaviors.free_store_gems. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_GlobalBehaviors_FreeStoreGems =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.global_behaviors. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_GlobalBehaviorsSchema =
   z.strictObject({
@@ -1991,34 +990,15 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_GlobalBehaviorsS
     free_store_gems:
       equipmentSampleProfileAnswer_Body_Profile_Policies_GlobalBehaviors_FreeStoreGemsSchema,
   });
-/** Raw response path: answer.body.profile.policies.global_behaviors. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_GlobalBehaviors = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_GlobalBehaviorsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.immunity_sec. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_ImmunitySecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.immunity_sec. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_ImmunitySec =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_ImmunitySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.on. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_OnSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.on. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_On =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_OnSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.watch_sec. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_WatchSecSchema =
   z.null();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm.watch_sec. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_WatchSec =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_WatchSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_ArmSchema =
   z.strictObject({
@@ -2028,43 +1008,18 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_A
     watch_sec:
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm_WatchSecSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.arm. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Arm =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_ArmSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.end_sprint_after_sw. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_EndSprintAfterSwSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.end_sprint_after_sw. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_EndSprintAfterSw =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_EndSprintAfterSwSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.cancel_sprint. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_CancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.cancel_sprint. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_CancelSprint =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_CancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.fire. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_FireSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.fire. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_Fire =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_FireSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.retaps. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_RetapsSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst.retaps. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_Retaps =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_RetapsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_BurstSchema =
   z.strictObject({
@@ -2074,73 +1029,33 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_A
     retaps:
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst_RetapsSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do.burst. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_Burst =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_BurstSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_DoSchema =
   z.strictObject({
     burst:
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do_BurstSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].do. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_Do =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_DoSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.bar. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_BarSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.bar. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_Bar =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_BarSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.below. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_BelowSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.below. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_Below =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_BelowSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.deadband. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_DeadbandSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.deadband. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_Deadband =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_DeadbandSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.falling_samples. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_FallingSamplesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.falling_samples. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_FallingSamples =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_FallingSamplesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.wall_collapse.from_above. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse_FromAboveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.wall_collapse.from_above. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse_FromAbove =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse_FromAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.wall_collapse. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapseSchema =
   z.strictObject({
     from_above:
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse_FromAboveSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when.wall_collapse. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapse =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapseSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_WhenSchema =
   z.strictObject({
@@ -2154,32 +1069,17 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_A
     wall_collapse:
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When_WallCollapseSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[].when. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_When =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_WhenSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElementSchema =
   z.strictObject({
     do: equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_DoSchema,
     when: equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement_WhenSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_RulesSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling.rules. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_Rules =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_RulesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.any_falling. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFallingSchema =
   z.strictObject({
@@ -2188,34 +1088,15 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_A
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_EndSprintAfterSwSchema,
     rules: equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling_RulesSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.any_falling. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFalling = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFallingSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.immunity_sec. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_ImmunitySecSchema =
   z.null();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.immunity_sec. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_ImmunitySec =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_ImmunitySecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.on. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_OnSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.on. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_On =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_OnSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.watch_sec. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_WatchSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm.watch_sec. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_WatchSec =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_WatchSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_ArmSchema =
   z.strictObject({
@@ -2225,51 +1106,21 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_W
     watch_sec:
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm_WatchSecSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.arm. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Arm =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_ArmSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.end_sprint_after_sw. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_EndSprintAfterSwSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.end_sprint_after_sw. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_EndSprintAfterSw =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_EndSprintAfterSwSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.label. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_LabelSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.label. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Label =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_LabelSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.cancel_sprint. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_CancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.cancel_sprint. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_CancelSprint =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_CancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.fire. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_FireSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.fire. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_Fire =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_FireSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.retaps. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_RetapsSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst.retaps. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_Retaps =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_RetapsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_BurstSchema =
   z.strictObject({
@@ -2279,27 +1130,12 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_W
     retaps:
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst_RetapsSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.burst. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Burst =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_BurstSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire.button. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ButtonSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire.button. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_Button =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ButtonSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire.throttle_sec. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ThrottleSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire.throttle_sec. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ThrottleSec =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ThrottleSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_FireSchema =
   z.strictObject({
@@ -2308,11 +1144,6 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_W
     throttle_sec:
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire_ThrottleSecSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do.fire. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_Fire =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_FireSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_DoSchema =
   z.strictObject({
@@ -2320,59 +1151,24 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_W
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_BurstSchema.optional(),
     fire: equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do_FireSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].do. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_Do =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_DoSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.bar. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_BarSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.bar. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_Bar =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_BarSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.below. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_BelowSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.below. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_Below =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_BelowSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.deadband. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_DeadbandSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.deadband. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_Deadband =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_DeadbandSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.falling_samples. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FallingSamplesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.falling_samples. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FallingSamples =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FallingSamplesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark.after_waves. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_AfterWavesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark.after_waves. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_AfterWaves =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_AfterWavesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark.window_waves. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_WindowWavesSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark.window_waves. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_WindowWaves =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_WindowWavesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMarkSchema =
   z.strictObject({
@@ -2381,30 +1177,15 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_W
     window_waves:
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark_WindowWavesSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.fleet_mark. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMark =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_FleetMarkSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.wall_collapse.from_above. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse_FromAboveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.wall_collapse.from_above. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse_FromAbove =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse_FromAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.wall_collapse. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapseSchema =
   z.strictObject({
     from_above:
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse_FromAboveSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when.wall_collapse. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapse =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapseSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_WhenSchema =
   z.strictObject({
@@ -2420,32 +1201,17 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_W
     wall_collapse:
       equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When_WallCollapseSchema.optional(),
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[].when. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_When =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_WhenSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElementSchema =
   z.strictObject({
     do: equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_DoSchema,
     when: equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement_WhenSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_RulesSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain.rules. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_Rules =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_RulesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies.wall_drain. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrainSchema =
   z.strictObject({
@@ -2455,70 +1221,32 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_W
     label: equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_LabelSchema,
     rules: equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain_RulesSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies.wall_drain. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrain = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrainSchema
->;
 /** Strict raw response path: answer.body.profile.policies.rescue_policies. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePoliciesSchema =
   z.strictObject({
     any_falling: equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_AnyFallingSchema,
     wall_drain: equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies_WallDrainSchema,
   });
-/** Raw response path: answer.body.profile.policies.rescue_policies. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_RescuePolicies = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_RescuePoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].clicks. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Clicks =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ClicksSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].enabled. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Enabled =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].mode. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Mode =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].stats. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Stats =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[].tab. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_Tab =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema =
   z.strictObject({
@@ -2531,29 +1259,14 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_De
       equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_StatsSchema,
     tab: equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement_TabSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.directives. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Directives =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_DirectivesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep.enabled. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_Enabled =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema =
   z.strictObject({
@@ -2562,66 +1275,27 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_De
     enabled:
       equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep_EnabledSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.default_sweep. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweep = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.cash_reserve. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_CashReserve =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.enabled. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Enabled =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.interval_sec. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_IntervalSec =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].enabled. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Enabled =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].from_wave. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWave =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_FromWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].id. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_Id =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_IdSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[].tap_limit. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimit =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema =
   z.strictObject({
@@ -2633,29 +1307,14 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_Ma
     tap_limit:
       equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement_TapLimitSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.queue. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Queue =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_QueueSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list.version. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_Version =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists.main_list. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainListSchema =
   z.strictObject({
@@ -2669,10 +1328,6 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_Ma
     version:
       equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList_VersionSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists.main_list. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainList = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainListSchema
->;
 /** Strict raw response path: answer.body.profile.policies.shopping_lists. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingListsSchema =
   z.strictObject({
@@ -2680,58 +1335,24 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingListsSch
       equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_DefaultSweepSchema,
     main_list: equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists_MainListSchema,
   });
-/** Raw response path: answer.body.profile.policies.shopping_lists. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingLists = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingListsSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.black_hole. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_BlackHoleSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.black_hole. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_BlackHole =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_BlackHoleSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.chronofield. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_ChronofieldSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.chronofield. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_Chronofield =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_ChronofieldSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.death_wave. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_DeathWaveSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.death_wave. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_DeathWave =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_DeathWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.golden_tower. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_GoldenTowerSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.golden_tower. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_GoldenTower =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_GoldenTowerSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.poison_swamp. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_PoisonSwampSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.poison_swamp. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_PoisonSwamp =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_PoisonSwampSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.spotlight. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SpotlightSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline.spotlight. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_Spotlight =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SpotlightSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_BaselineSchema =
   z.strictObject({
@@ -2748,72 +1369,33 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmC
     spotlight:
       equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline_SpotlightSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.baseline. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Baseline = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_BaselineSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.always_on_above[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.always_on_above[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.always_on_above. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAboveSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.always_on_above. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAbove =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_AlwaysOnAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.mode. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.mode. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_Mode =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.off_after_waves[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.off_after_waves[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.off_after_waves. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWavesSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.off_after_waves. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWaves =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_OffAfterWavesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.pre_mark_waves[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.pre_mark_waves[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.pre_mark_waves. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWavesSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning.pre_mark_waves. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWaves =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWavesSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightningSchema =
   z.strictObject({
@@ -2825,18 +1407,9 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmC
     pre_mark_waves:
       equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning_PreMarkWavesSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.chain_lightning. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightning =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightningSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl.label. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_LabelSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl.label. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_Label = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_LabelSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.farm_cl. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmClSchema =
   z.strictObject({
@@ -2845,58 +1418,24 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmC
       equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_ChainLightningSchema,
     label: equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl_LabelSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.farm_cl. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmCl = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmClSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.black_hole. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_BlackHoleSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.black_hole. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_BlackHole =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_BlackHoleSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.chronofield. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_ChronofieldSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.chronofield. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_Chronofield =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_ChronofieldSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.death_wave. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_DeathWaveSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.death_wave. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_DeathWave =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_DeathWaveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.golden_tower. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_GoldenTowerSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.golden_tower. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_GoldenTower =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_GoldenTowerSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.poison_swamp. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_PoisonSwampSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.poison_swamp. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_PoisonSwamp =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_PoisonSwampSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.spotlight. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SpotlightSchema =
   z.boolean();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline.spotlight. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_Spotlight =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SpotlightSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_BaselineSchema =
   z.strictObject({
@@ -2913,37 +1452,17 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_Tourn
     spotlight:
       equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline_SpotlightSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.baseline. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Baseline =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_BaselineSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.mode. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_ModeSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.mode. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_Mode =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_ModeSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.on_above[]. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.on_above[]. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove_ArrayElement =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.on_above. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAboveSchema =
   z.array(
     equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove_ArrayElementSchema,
   );
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning.on_above. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAbove =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAboveSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightningSchema =
   z.strictObject({
@@ -2951,18 +1470,9 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_Tourn
     on_above:
       equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning_OnAboveSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.chain_lightning. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightning =
-  z.infer<
-    typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightningSchema
-  >;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl.label. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_LabelSchema =
   z.string();
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl.label. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_Label = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_LabelSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies.tourney_cl. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyClSchema =
   z.strictObject({
@@ -2972,19 +1482,11 @@ export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_Tourn
       equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_ChainLightningSchema,
     label: equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl_LabelSchema,
   });
-/** Raw response path: answer.body.profile.policies.uw_policies.tourney_cl. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyCl = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyClSchema
->;
 /** Strict raw response path: answer.body.profile.policies.uw_policies. */
 export const equipmentSampleProfileAnswer_Body_Profile_Policies_UwPoliciesSchema = z.strictObject({
   farm_cl: equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_FarmClSchema,
   tourney_cl: equipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies_TourneyClSchema,
 });
-/** Raw response path: answer.body.profile.policies.uw_policies. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies_UwPolicies = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_Policies_UwPoliciesSchema
->;
 /** Strict raw response path: answer.body.profile.policies. */
 export const equipmentSampleProfileAnswer_Body_Profile_PoliciesSchema = z.strictObject({
   chores: equipmentSampleProfileAnswer_Body_Profile_Policies_ChoresSchema,
@@ -2995,10 +1497,6 @@ export const equipmentSampleProfileAnswer_Body_Profile_PoliciesSchema = z.strict
   shopping_lists: equipmentSampleProfileAnswer_Body_Profile_Policies_ShoppingListsSchema,
   uw_policies: equipmentSampleProfileAnswer_Body_Profile_Policies_UwPoliciesSchema.optional(),
 });
-/** Raw response path: answer.body.profile.policies. */
-export type EquipmentSampleProfileAnswer_Body_Profile_Policies = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Profile_PoliciesSchema
->;
 /** Strict raw response path: answer.body.profile. */
 export const equipmentSampleProfileAnswer_Body_ProfileSchema = z.strictObject({
   blueprints: equipmentSampleProfileAnswer_Body_Profile_BlueprintsSchema,
@@ -3006,36 +1504,16 @@ export const equipmentSampleProfileAnswer_Body_ProfileSchema = z.strictObject({
   player: equipmentSampleProfileAnswer_Body_Profile_PlayerSchema,
   policies: equipmentSampleProfileAnswer_Body_Profile_PoliciesSchema,
 });
-/** Raw response path: answer.body.profile. */
-export type EquipmentSampleProfileAnswer_Body_Profile = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_ProfileSchema
->;
 /** Strict raw response path: answer.body.revision. */
 export const equipmentSampleProfileAnswer_Body_RevisionSchema = z.string();
-/** Raw response path: answer.body.revision. */
-export type EquipmentSampleProfileAnswer_Body_Revision = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_RevisionSchema
->;
 /** Strict raw response path: answer.body.validator_error. */
 export const equipmentSampleProfileAnswer_Body_ValidatorErrorSchema = z.null();
-/** Raw response path: answer.body.validator_error. */
-export type EquipmentSampleProfileAnswer_Body_ValidatorError = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_ValidatorErrorSchema
->;
 /** Strict raw response path: answer.body.warnings[]. */
 export const equipmentSampleProfileAnswer_Body_Warnings_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.warnings[]. */
-export type EquipmentSampleProfileAnswer_Body_Warnings_ArrayElement = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_Warnings_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.warnings. */
 export const equipmentSampleProfileAnswer_Body_WarningsSchema = z.array(
   equipmentSampleProfileAnswer_Body_Warnings_ArrayElementSchema,
 );
-/** Raw response path: answer.body.warnings. */
-export type EquipmentSampleProfileAnswer_Body_Warnings = z.infer<
-  typeof equipmentSampleProfileAnswer_Body_WarningsSchema
->;
 /** Strict raw response path: answer.body. */
 export const equipmentSampleProfileAnswer_BodySchema = z.strictObject({
   name: equipmentSampleProfileAnswer_Body_NameSchema,
@@ -3046,16 +1524,8 @@ export const equipmentSampleProfileAnswer_BodySchema = z.strictObject({
   validator_error: equipmentSampleProfileAnswer_Body_ValidatorErrorSchema,
   warnings: equipmentSampleProfileAnswer_Body_WarningsSchema,
 });
-/** Raw response path: answer.body. */
-export type EquipmentSampleProfileAnswer_Body = z.infer<
-  typeof equipmentSampleProfileAnswer_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const equipmentSampleProfileAnswer_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EquipmentSampleProfileAnswer_Status = z.infer<
-  typeof equipmentSampleProfileAnswer_StatusSchema
->;
 /** Strict raw response path: answer. */
 export const equipmentSampleProfileAnswerSchema = z.strictObject({
   body: equipmentSampleProfileAnswer_BodySchema,
@@ -3065,47 +1535,23 @@ export const equipmentSampleProfileAnswerSchema = z.strictObject({
 export type EquipmentSampleProfileAnswer = z.infer<typeof equipmentSampleProfileAnswerSchema>;
 /** Strict raw response path: answer.body.backup. */
 export const equipmentSamplePatchAnswer_Status200_Body_BackupSchema = z.string();
-/** Raw response path: answer.body.backup. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Backup = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_BackupSchema
->;
 /** Strict raw response path: answer.body.config_revision. */
 export const equipmentSamplePatchAnswer_Status200_Body_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.config_revision. */
-export type EquipmentSamplePatchAnswer_Status200_Body_ConfigRevision = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.loadouts.categories.guardian_preset. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_Categories_GuardianPresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.categories.guardian_preset. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Categories_GuardianPreset = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_Categories_GuardianPresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.categories.module_preset. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_Categories_ModulePresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.categories.module_preset. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Categories_ModulePreset = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_Categories_ModulePresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.categories. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_CategoriesSchema = z.strictObject({
   guardian_preset:
     equipmentSamplePatchAnswer_Status200_Body_Loadouts_Categories_GuardianPresetSchema,
   module_preset: equipmentSamplePatchAnswer_Status200_Body_Loadouts_Categories_ModulePresetSchema,
 });
-/** Raw response path: answer.body.loadouts.categories. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Categories = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_CategoriesSchema
->;
 /** Strict raw response path: answer.body.loadouts.global_choice.global_preset. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_GlobalChoice_GlobalPresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.global_choice.global_preset. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_GlobalChoice_GlobalPreset = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_GlobalChoice_GlobalPresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.global_choice. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_GlobalChoiceSchema = z.strictObject(
   {
@@ -3113,64 +1559,28 @@ export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_GlobalChoiceSche
       equipmentSamplePatchAnswer_Status200_Body_Loadouts_GlobalChoice_GlobalPresetSchema,
   },
 );
-/** Raw response path: answer.body.loadouts.global_choice. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_GlobalChoice = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_GlobalChoiceSchema
->;
 /** Strict raw response path: answer.body.loadouts.later.defined. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_Later_DefinedSchema = z.boolean();
-/** Raw response path: answer.body.loadouts.later.defined. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Later_Defined = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_Later_DefinedSchema
->;
 /** Strict raw response path: answer.body.loadouts.later. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_LaterSchema = z.strictObject({
   defined: equipmentSamplePatchAnswer_Status200_Body_Loadouts_Later_DefinedSchema,
 });
-/** Raw response path: answer.body.loadouts.later. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Later = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_LaterSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.bot_preset. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_BotPresetSchema = z.string();
-/** Raw response path: answer.body.loadouts.plain.bot_preset. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_BotPreset = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_BotPresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.cards. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_CardsSchema = z.string();
-/** Raw response path: answer.body.loadouts.plain.cards. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_Cards = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_CardsSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.global_preset. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_GlobalPresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.plain.global_preset. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_GlobalPreset = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_GlobalPresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.guardian_preset. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_GuardianPresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.plain.guardian_preset. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_GuardianPreset = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_GuardianPresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.module_preset. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_ModulePresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.plain.module_preset. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_ModulePreset = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_ModulePresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain.workshop_preset. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_WorkshopPresetSchema =
   z.string();
-/** Raw response path: answer.body.loadouts.plain.workshop_preset. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_WorkshopPreset = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_WorkshopPresetSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_PlainSchema = z.strictObject({
   bot_preset: equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_BotPresetSchema.optional(),
@@ -3184,32 +1594,16 @@ export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_PlainSchema = z.
   workshop_preset:
     equipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain_WorkshopPresetSchema.optional(),
 });
-/** Raw response path: answer.body.loadouts.plain. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Plain = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.loadouts.spare.cards. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_Spare_CardsSchema = z.string();
-/** Raw response path: answer.body.loadouts.spare.cards. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Spare_Cards = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_Spare_CardsSchema
->;
 /** Strict raw response path: answer.body.loadouts.spare. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_SpareSchema = z.strictObject({
   cards: equipmentSamplePatchAnswer_Status200_Body_Loadouts_Spare_CardsSchema,
 });
-/** Raw response path: answer.body.loadouts.spare. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Spare = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_SpareSchema
->;
 /** Strict raw response path: answer.body.loadouts.untouched. */
 export const equipmentSamplePatchAnswer_Status200_Body_Loadouts_UntouchedSchema = z.strictObject(
   {},
 );
-/** Raw response path: answer.body.loadouts.untouched. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts_Untouched = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_Loadouts_UntouchedSchema
->;
 /** Strict raw response path: answer.body.loadouts. */
 export const equipmentSamplePatchAnswer_Status200_Body_LoadoutsSchema = z.strictObject({
   categories: equipmentSamplePatchAnswer_Status200_Body_Loadouts_CategoriesSchema.optional(),
@@ -3219,24 +1613,12 @@ export const equipmentSamplePatchAnswer_Status200_Body_LoadoutsSchema = z.strict
   spare: equipmentSamplePatchAnswer_Status200_Body_Loadouts_SpareSchema,
   untouched: equipmentSamplePatchAnswer_Status200_Body_Loadouts_UntouchedSchema.optional(),
 });
-/** Raw response path: answer.body.loadouts. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Loadouts = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const equipmentSamplePatchAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Ok = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body.warnings. */
 export const equipmentSamplePatchAnswer_Status200_Body_WarningsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.warnings. */
-export type EquipmentSamplePatchAnswer_Status200_Body_Warnings = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_Body_WarningsSchema
->;
 /** Strict raw response path: answer.body. */
 export const equipmentSamplePatchAnswer_Status200_BodySchema = z.strictObject({
   backup: equipmentSamplePatchAnswer_Status200_Body_BackupSchema,
@@ -3245,92 +1627,40 @@ export const equipmentSamplePatchAnswer_Status200_BodySchema = z.strictObject({
   ok: equipmentSamplePatchAnswer_Status200_Body_OkSchema,
   warnings: equipmentSamplePatchAnswer_Status200_Body_WarningsSchema,
 });
-/** Raw response path: answer.body. */
-export type EquipmentSamplePatchAnswer_Status200_Body = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const equipmentSamplePatchAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type EquipmentSamplePatchAnswer_Status200_Status = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members backup, config_revision, loadouts, ok, warnings. */
 export const equipmentSamplePatchAnswer_Status200Schema = z.strictObject({
   body: equipmentSamplePatchAnswer_Status200_BodySchema,
   status: equipmentSamplePatchAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members backup, config_revision, loadouts, ok, warnings. */
-export type EquipmentSamplePatchAnswer_Status200 = z.infer<
-  typeof equipmentSamplePatchAnswer_Status200Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const equipmentSamplePatchAnswer_Status400_Body_CodeSchema = z.enum(['invalid_request']);
-/** Raw response path: answer.body.code. */
-export type EquipmentSamplePatchAnswer_Status400_Body_Code = z.infer<
-  typeof equipmentSamplePatchAnswer_Status400_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const equipmentSamplePatchAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EquipmentSamplePatchAnswer_Status400_Body_Error = z.infer<
-  typeof equipmentSamplePatchAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const equipmentSamplePatchAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EquipmentSamplePatchAnswer_Status400_Body_Ok = z.infer<
-  typeof equipmentSamplePatchAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const equipmentSamplePatchAnswer_Status400_BodySchema = z.strictObject({
   code: equipmentSamplePatchAnswer_Status400_Body_CodeSchema,
   error: equipmentSamplePatchAnswer_Status400_Body_ErrorSchema,
   ok: equipmentSamplePatchAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EquipmentSamplePatchAnswer_Status400_Body = z.infer<
-  typeof equipmentSamplePatchAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const equipmentSamplePatchAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type EquipmentSamplePatchAnswer_Status400_Status = z.infer<
-  typeof equipmentSamplePatchAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members code, error, ok. */
 export const equipmentSamplePatchAnswer_Status400Schema = z.strictObject({
   body: equipmentSamplePatchAnswer_Status400_BodySchema,
   status: equipmentSamplePatchAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members code, error, ok. */
-export type EquipmentSamplePatchAnswer_Status400 = z.infer<
-  typeof equipmentSamplePatchAnswer_Status400Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const equipmentSamplePatchAnswer_Status409V1_Body_CodeSchema = z.enum(['revision_conflict']);
-/** Raw response path: answer.body.code. */
-export type EquipmentSamplePatchAnswer_Status409V1_Body_Code = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.config_revision. */
 export const equipmentSamplePatchAnswer_Status409V1_Body_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.config_revision. */
-export type EquipmentSamplePatchAnswer_Status409V1_Body_ConfigRevision = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V1_Body_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const equipmentSamplePatchAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EquipmentSamplePatchAnswer_Status409V1_Body_Error = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const equipmentSamplePatchAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EquipmentSamplePatchAnswer_Status409V1_Body_Ok = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const equipmentSamplePatchAnswer_Status409V1_BodySchema = z.strictObject({
   code: equipmentSamplePatchAnswer_Status409V1_Body_CodeSchema,
@@ -3338,55 +1668,23 @@ export const equipmentSamplePatchAnswer_Status409V1_BodySchema = z.strictObject(
   error: equipmentSamplePatchAnswer_Status409V1_Body_ErrorSchema,
   ok: equipmentSamplePatchAnswer_Status409V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EquipmentSamplePatchAnswer_Status409V1_Body = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const equipmentSamplePatchAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type EquipmentSamplePatchAnswer_Status409V1_Status = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, config_revision, error, ok. */
 export const equipmentSamplePatchAnswer_Status409V1Schema = z.strictObject({
   body: equipmentSamplePatchAnswer_Status409V1_BodySchema,
   status: equipmentSamplePatchAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, config_revision, error, ok. */
-export type EquipmentSamplePatchAnswer_Status409V1 = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V1Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const equipmentSamplePatchAnswer_Status409V2_Body_CodeSchema = z.enum(['context_changed']);
-/** Raw response path: answer.body.code. */
-export type EquipmentSamplePatchAnswer_Status409V2_Body_Code = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V2_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.current_context.account. */
 export const equipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_AccountSchema = z.string();
-/** Raw response path: answer.body.current_context.account. */
-export type EquipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_Account = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_AccountSchema
->;
 /** Strict raw response path: answer.body.current_context.instance. */
 export const equipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_InstanceSchema = z.string();
-/** Raw response path: answer.body.current_context.instance. */
-export type EquipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_Instance = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_InstanceSchema
->;
 /** Strict raw response path: answer.body.current_context.profile. */
 export const equipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_ProfileSchema = z.string();
-/** Raw response path: answer.body.current_context.profile. */
-export type EquipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_Profile = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_ProfileSchema
->;
 /** Strict raw response path: answer.body.current_context.serial. */
 export const equipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_SerialSchema = z.string();
-/** Raw response path: answer.body.current_context.serial. */
-export type EquipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_Serial = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_SerialSchema
->;
 /** Strict raw response path: answer.body.current_context. */
 export const equipmentSamplePatchAnswer_Status409V2_Body_CurrentContextSchema = z
   .strictObject({
@@ -3396,22 +1694,10 @@ export const equipmentSamplePatchAnswer_Status409V2_Body_CurrentContextSchema = 
     serial: equipmentSamplePatchAnswer_Status409V2_Body_CurrentContext_SerialSchema,
   })
   .nullable();
-/** Raw response path: answer.body.current_context. */
-export type EquipmentSamplePatchAnswer_Status409V2_Body_CurrentContext = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V2_Body_CurrentContextSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const equipmentSamplePatchAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type EquipmentSamplePatchAnswer_Status409V2_Body_Error = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const equipmentSamplePatchAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type EquipmentSamplePatchAnswer_Status409V2_Body_Ok = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const equipmentSamplePatchAnswer_Status409V2_BodySchema = z.strictObject({
   code: equipmentSamplePatchAnswer_Status409V2_Body_CodeSchema,
@@ -3419,25 +1705,13 @@ export const equipmentSamplePatchAnswer_Status409V2_BodySchema = z.strictObject(
   error: equipmentSamplePatchAnswer_Status409V2_Body_ErrorSchema,
   ok: equipmentSamplePatchAnswer_Status409V2_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type EquipmentSamplePatchAnswer_Status409V2_Body = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const equipmentSamplePatchAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type EquipmentSamplePatchAnswer_Status409V2_Status = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, current_context, error, ok. */
 export const equipmentSamplePatchAnswer_Status409V2Schema = z.strictObject({
   body: equipmentSamplePatchAnswer_Status409V2_BodySchema,
   status: equipmentSamplePatchAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, current_context, error, ok. */
-export type EquipmentSamplePatchAnswer_Status409V2 = z.infer<
-  typeof equipmentSamplePatchAnswer_Status409V2Schema
->;
 /** Strict raw response path: answer. */
 export const equipmentSamplePatchAnswerSchema = z.union([
   equipmentSamplePatchAnswer_Status200Schema,

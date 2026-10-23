@@ -8,46 +8,21 @@ export type FixtureVersion = z.infer<typeof fixtureVersionSchema>;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.abilities.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].applied_controls.routines.abilities.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Abilities_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.abilities. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AbilitiesSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].applied_controls.routines.abilities. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Abilities =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AbilitiesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.ad_gems.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].applied_controls.routines.ad_gems.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGems_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.ad_gems.interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].applied_controls.routines.ad_gems.interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.ad_gems.window_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].applied_controls.routines.ad_gems.window_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.ad_gems. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGemsSchema =
   z.strictObject({
@@ -58,43 +33,18 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedContro
     window_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battles[].applied_controls.routines.ad_gems. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGems =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_AdGemsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.floating_gems.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].applied_controls.routines.floating_gems.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.floating_gems.interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].applied_controls.routines.floating_gems.interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.floating_gems.tap_interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].applied_controls.routines.floating_gems.tap_interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.floating_gems.window_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].applied_controls.routines.floating_gems.window_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.floating_gems. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -107,84 +57,39 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedContro
     window_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battles[].applied_controls.routines.floating_gems. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGems =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.repeat.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].applied_controls.routines.repeat.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Repeat_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Repeat_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.repeat. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_RepeatSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].applied_controls.routines.repeat. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Repeat =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_RepeatSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.rescue.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].applied_controls.routines.rescue.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Rescue_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Rescue_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.rescue. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_RescueSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].applied_controls.routines.rescue. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Rescue =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_RescueSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.rewards.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].applied_controls.routines.rewards.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Rewards_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.rewards. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_RewardsSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].applied_controls.routines.rewards. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Rewards =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_RewardsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.shopping.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].applied_controls.routines.shopping.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Shopping_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.shopping.interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].applied_controls.routines.shopping.interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines.shopping. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_ShoppingSchema =
   z.strictObject({
@@ -193,11 +98,6 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedContro
     interval_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battles[].applied_controls.routines.shopping. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_Shopping =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_ShoppingSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.routines. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_RoutinesSchema =
   z.strictObject({
@@ -216,19 +116,9 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedContro
     shopping:
       historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines_ShoppingSchema,
   });
-/** Raw response path: answer.body.battles[].applied_controls.routines. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_Routines =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_RoutinesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls.shopping_plan. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_ShoppingPlanSchema =
   z.null();
-/** Raw response path: answer.body.battles[].applied_controls.shopping_plan. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_ShoppingPlan =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_ShoppingPlanSchema
-  >;
 /** Strict raw response path: answer.body.battles[].applied_controls. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControlsSchema =
   z.strictObject({
@@ -236,46 +126,20 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedContro
     shopping_plan:
       historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls_ShoppingPlanSchema,
   });
-/** Raw response path: answer.body.battles[].applied_controls. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedControls = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControlsSchema
->;
 /** Strict raw response path: answer.body.battles[].applied_overrides. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedOverridesSchema =
   z.strictObject({});
-/** Raw response path: answer.body.battles[].applied_overrides. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedOverrides = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedOverridesSchema
->;
 /** Strict raw response path: answer.body.battles[].applied_revision. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedRevisionSchema =
   z.number();
-/** Raw response path: answer.body.battles[].applied_revision. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_AppliedRevision = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedRevisionSchema
->;
 /** Strict raw response path: answer.body.battles[].blueprint. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_BlueprintSchema = z.string();
-/** Raw response path: answer.body.battles[].blueprint. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Blueprint = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_BlueprintSchema
->;
 /** Strict raw response path: answer.body.battles[].boundary_evidence.last_observed_wave. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_BoundaryEvidence_LastObservedWaveSchema =
   z.number();
-/** Raw response path: answer.body.battles[].boundary_evidence.last_observed_wave. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_BoundaryEvidence_LastObservedWave =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_BoundaryEvidence_LastObservedWaveSchema
-  >;
 /** Strict raw response path: answer.body.battles[].boundary_evidence.operation_status. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_BoundaryEvidence_OperationStatusSchema =
   z.string();
-/** Raw response path: answer.body.battles[].boundary_evidence.operation_status. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_BoundaryEvidence_OperationStatus =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_BoundaryEvidence_OperationStatusSchema
-  >;
 /** Strict raw response path: answer.body.battles[].boundary_evidence. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_BoundaryEvidenceSchema = z
   .strictObject({
@@ -285,154 +149,72 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_BoundaryEvide
       historyListAnswer_Status200_Body_Battles_ArrayElement_BoundaryEvidence_OperationStatusSchema.optional(),
   })
   .nullable();
-/** Raw response path: answer.body.battles[].boundary_evidence. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_BoundaryEvidence = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_BoundaryEvidenceSchema
->;
 /** Strict raw response path: answer.body.battles[].capabilities.actions[]. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_Actions_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.battles[].capabilities.actions[]. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_Actions_ArrayElement =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_Actions_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battles[].capabilities.actions. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_ActionsSchema =
   z.array(
     historyListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_Actions_ArrayElementSchema,
   );
-/** Raw response path: answer.body.battles[].capabilities.actions. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_Actions = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_ActionsSchema
->;
 /** Strict raw response path: answer.body.battles[].capabilities.controls[]. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_Controls_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.battles[].capabilities.controls[]. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_Controls_ArrayElement =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_Controls_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battles[].capabilities.controls. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_ControlsSchema =
   z.array(
     historyListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_Controls_ArrayElementSchema,
   );
-/** Raw response path: answer.body.battles[].capabilities.controls. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_Controls = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_ControlsSchema
->;
 /** Strict raw response path: answer.body.battles[].capabilities. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_CapabilitiesSchema =
   z.strictObject({
     actions: historyListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_ActionsSchema,
     controls: historyListAnswer_Status200_Body_Battles_ArrayElement_Capabilities_ControlsSchema,
   });
-/** Raw response path: answer.body.battles[].capabilities. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Capabilities = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_CapabilitiesSchema
->;
 /** Strict raw response path: answer.body.battles[].commands. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_CommandsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battles[].commands. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Commands = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_CommandsSchema
->;
 /** Strict raw response path: answer.body.battles[].context.account. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_AccountSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battles[].context.account. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_Account = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.battles[].context.adb_host. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.battles[].context.adb_host. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_AdbHost = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.battles[].context.adb_port. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.battles[].context.adb_port. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_AdbPort = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.battles[].context.artifact_dir. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.battles[].context.artifact_dir. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_ArtifactDir = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_ArtifactDirSchema
->;
 /** Strict raw response path: answer.body.battles[].context.config_revision. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.battles[].context.config_revision. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_ConfigRevision = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.battles[].context.device_key. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.battles[].context.device_key. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_DeviceKey = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.battles[].context.instance. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.battles[].context.instance. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_Instance = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.battles[].context.profile. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.battles[].context.profile. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_Profile = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.battles[].context.profile_path. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.battles[].context.profile_path. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_ProfilePath = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_ProfilePathSchema
->;
 /** Strict raw response path: answer.body.battles[].context.profile_revision. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.battles[].context.profile_revision. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_ProfileRevision = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.battles[].context.rendering. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.battles[].context.rendering. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_Rendering = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.battles[].context.selected_run. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_SelectedRunSchema =
   z.string();
-/** Raw response path: answer.body.battles[].context.selected_run. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_SelectedRun = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.battles[].context.serial. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.battles[].context.serial. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context_Serial = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.battles[].context. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_ContextSchema = z.strictObject({
   account: historyListAnswer_Status200_Body_Battles_ArrayElement_Context_AccountSchema,
@@ -451,66 +233,29 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_ContextSchema
   selected_run: historyListAnswer_Status200_Body_Battles_ArrayElement_Context_SelectedRunSchema,
   serial: historyListAnswer_Status200_Body_Battles_ArrayElement_Context_SerialSchema,
 });
-/** Raw response path: answer.body.battles[].context. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Context = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_ContextSchema
->;
 /** Strict raw response path: answer.body.battles[].control_revision. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_ControlRevisionSchema =
   z.number();
-/** Raw response path: answer.body.battles[].control_revision. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_ControlRevision = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_ControlRevisionSchema
->;
 /** Strict raw response path: answer.body.battles[].created_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_CreatedAtSchema = z.number();
-/** Raw response path: answer.body.battles[].created_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_CreatedAt = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.battles[].effective.routines.abilities.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].effective.routines.abilities.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Abilities_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.abilities. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AbilitiesSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].effective.routines.abilities. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Abilities =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AbilitiesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.ad_gems.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].effective.routines.ad_gems.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGems_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.ad_gems.interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].effective.routines.ad_gems.interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.ad_gems.window_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].effective.routines.ad_gems.window_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.ad_gems. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGemsSchema =
   z.strictObject({
@@ -521,43 +266,18 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Rou
     window_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battles[].effective.routines.ad_gems. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGems =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_AdGemsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.floating_gems.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].effective.routines.floating_gems.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.floating_gems.interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].effective.routines.floating_gems.interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.floating_gems.tap_interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].effective.routines.floating_gems.tap_interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.floating_gems.window_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].effective.routines.floating_gems.window_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.floating_gems. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -570,84 +290,39 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Rou
     window_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battles[].effective.routines.floating_gems. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGems =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.repeat.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].effective.routines.repeat.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Repeat_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Repeat_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.repeat. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_RepeatSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].effective.routines.repeat. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Repeat =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_RepeatSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.rescue.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].effective.routines.rescue.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Rescue_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Rescue_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.rescue. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_RescueSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].effective.routines.rescue. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Rescue =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_RescueSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.rewards.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].effective.routines.rewards.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Rewards_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.rewards. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_RewardsSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].effective.routines.rewards. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Rewards =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_RewardsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.shopping.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].effective.routines.shopping.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Shopping_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.shopping.interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].effective.routines.shopping.interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines.shopping. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_ShoppingSchema =
   z.strictObject({
@@ -656,11 +331,6 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Rou
     interval_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battles[].effective.routines.shopping. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_Shopping =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_ShoppingSchema
-  >;
 /** Strict raw response path: answer.body.battles[].effective.routines. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_RoutinesSchema =
   z.strictObject({
@@ -675,17 +345,9 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Rou
     shopping:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines_ShoppingSchema,
   });
-/** Raw response path: answer.body.battles[].effective.routines. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_Routines = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battles[].effective.shopping_plan. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_ShoppingPlanSchema =
   z.null();
-/** Raw response path: answer.body.battles[].effective.shopping_plan. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective_ShoppingPlan = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battles[].effective. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_EffectiveSchema = z.strictObject(
   {
@@ -694,69 +356,32 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_EffectiveSche
       historyListAnswer_Status200_Body_Battles_ArrayElement_Effective_ShoppingPlanSchema,
   },
 );
-/** Raw response path: answer.body.battles[].effective. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Effective = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_EffectiveSchema
->;
 /** Strict raw response path: answer.body.battles[].end_reason. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_EndReasonSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battles[].end_reason. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_EndReason = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_EndReasonSchema
->;
 /** Strict raw response path: answer.body.battles[].ended_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_EndedAtSchema = z
   .number()
   .nullable();
-/** Raw response path: answer.body.battles[].ended_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_EndedAt = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_EndedAtSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.abilities.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.abilities.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Abilities_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.abilities. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AbilitiesSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.controls.routines.abilities. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Abilities =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AbilitiesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.ad_gems.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.ad_gems.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGems_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.ad_gems.interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.ad_gems.interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.ad_gems.window_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.ad_gems.window_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.ad_gems. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGemsSchema =
   z.strictObject({
@@ -767,43 +392,18 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Cont
     window_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.controls.routines.ad_gems. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGems =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_AdGemsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.floating_gems.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.floating_gems.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.floating_gems.interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.floating_gems.interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.floating_gems.tap_interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.floating_gems.tap_interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.floating_gems.window_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.floating_gems.window_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.floating_gems. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -816,84 +416,39 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Cont
     window_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.controls.routines.floating_gems. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGems =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.repeat.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.repeat.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Repeat_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Repeat_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.repeat. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_RepeatSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.controls.routines.repeat. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Repeat =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_RepeatSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.rescue.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.rescue.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Rescue_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Rescue_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.rescue. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_RescueSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.controls.routines.rescue. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Rescue =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_RescueSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.rewards.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.rewards.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Rewards_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.rewards. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_RewardsSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.controls.routines.rewards. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Rewards =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_RewardsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.shopping.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.shopping.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Shopping_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.shopping.interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.controls.routines.shopping.interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines.shopping. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_ShoppingSchema =
   z.strictObject({
@@ -902,11 +457,6 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Cont
     interval_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.controls.routines.shopping. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_Shopping =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_ShoppingSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.routines. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_RoutinesSchema =
   z.strictObject({
@@ -925,19 +475,9 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Cont
     shopping:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines_ShoppingSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.controls.routines. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_Routines =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_RoutinesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls.shopping_plan. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_ShoppingPlanSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.controls.shopping_plan. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_ShoppingPlan =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_ShoppingPlanSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.controls. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_ControlsSchema =
   z.strictObject({
@@ -946,26 +486,12 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Cont
     shopping_plan:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls_ShoppingPlanSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.controls. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Controls = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_ControlsSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.preset._source.blueprint. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Source_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.battles[].envelope.preset._source.blueprint. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Source_Blueprint =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Source_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset._source.profile. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Source_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.battles[].envelope.preset._source.profile. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Source_Profile =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Source_ProfileSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset._source. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_SourceSchema =
   z.strictObject({
@@ -974,146 +500,57 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Pres
     profile:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Source_ProfileSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.preset._source. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Source = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_SourceSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.burst_cancel_sprint. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_BurstCancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.burst_cancel_sprint. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_BurstCancelSprint =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_BurstCancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.burst_require_match. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_BurstRequireMatchSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.burst_require_match. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_BurstRequireMatch =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_BurstRequireMatchSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.burst_require_ready. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_BurstRequireReadySchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.burst_require_ready. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_BurstRequireReady =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_BurstRequireReadySchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.burst_retaps. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_BurstRetapsSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.burst_retaps. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_BurstRetaps =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_BurstRetapsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.collapse_from. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_CollapseFromSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.collapse_from. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_CollapseFrom =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_CollapseFromSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.deadband. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_DeadbandSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.deadband. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_Deadband =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_DeadbandSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.dm_below. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_DmBelowSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.dm_below. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_DmBelow =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_DmBelowSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.end_sprint_after_sw. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_EndSprintAfterSwSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.end_sprint_after_sw. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_EndSprintAfterSw =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_EndSprintAfterSwSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.falling_samples. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_FallingSamplesSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.falling_samples. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_FallingSamples =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_FallingSamplesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.hold_until_second_wind. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_HoldUntilSecondWindSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.hold_until_second_wind. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_HoldUntilSecondWind =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_HoldUntilSecondWindSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.hp_nuke_require_ready. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_HpNukeRequireReadySchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.hp_nuke_require_ready. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_HpNukeRequireReady =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_HpNukeRequireReadySchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.nuke_below. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_NukeBelowSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.nuke_below. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_NukeBelow =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_NukeBelowSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.nuke_on_fleet. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_NukeOnFleetSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.nuke_on_fleet. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_NukeOnFleet =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_NukeOnFleetSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.post_sw_watch_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_PostSwWatchSecSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.post_sw_watch_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_PostSwWatchSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_PostSwWatchSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.refire_guard_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_RefireGuardSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.refire_guard_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_RefireGuardSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_RefireGuardSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.rescue_bar. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_RescueBarSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.rescue_bar. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_RescueBar =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_RescueBarSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities.sw_immunity_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_SwImmunitySecSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.abilities.sw_immunity_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_SwImmunitySec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_SwImmunitySecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.abilities. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_AbilitiesSchema =
   z.strictObject({
@@ -1152,59 +589,24 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Pres
     sw_immunity_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities_SwImmunitySecSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.preset.abilities. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Abilities =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_AbilitiesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.cancel_sprint. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_CancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.preset.cancel_sprint. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_CancelSprint =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_CancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.chain_lightning.always_on. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_AlwaysOnSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.preset.chain_lightning.always_on. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_AlwaysOn =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_AlwaysOnSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.chain_lightning.always_on_above. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_AlwaysOnAboveSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.chain_lightning.always_on_above. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_AlwaysOnAbove =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_AlwaysOnAboveSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.chain_lightning.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.preset.chain_lightning.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.chain_lightning.off_after_waves. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_OffAfterWavesSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.chain_lightning.off_after_waves. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_OffAfterWaves =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_OffAfterWavesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.chain_lightning.pre_mark_waves. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_PreMarkWavesSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.chain_lightning.pre_mark_waves. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_PreMarkWaves =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_PreMarkWavesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.chain_lightning. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightningSchema =
   z.strictObject({
@@ -1219,45 +621,20 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Pres
     pre_mark_waves:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning_PreMarkWavesSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.preset.chain_lightning. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightning =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ChainLightningSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.dissonant_tab. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_DissonantTabSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.dissonant_tab. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_DissonantTab =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_DissonantTabSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.gather.ad_gems. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Gather_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.preset.gather.ad_gems. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Gather_AdGems =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Gather_AdGemsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.gather.gem_delay_sec[]. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Gather_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.preset.gather.gem_delay_sec[]. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Gather_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Gather_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.gather.gem_delay_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Gather_GemDelaySecSchema =
   z.array(
     historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Gather_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.battles[].envelope.preset.gather.gem_delay_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Gather_GemDelaySec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Gather_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.gather. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_GatherSchema =
   z.strictObject({
@@ -1266,125 +643,53 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Pres
     gem_delay_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Gather_GemDelaySecSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.preset.gather. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Gather = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_GatherSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.preset.gem_delay_sec[]. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.preset.gem_delay_sec[]. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.gem_delay_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_GemDelaySecSchema =
   z.array(
     historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.battles[].envelope.preset.gem_delay_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_GemDelaySec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_GemDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.kind. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_KindSchema =
   z.enum(['coin']);
-/** Raw response path: answer.body.battles[].envelope.preset.kind. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Kind = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_KindSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.preset.label. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_LabelSchema =
   z.string();
-/** Raw response path: answer.body.battles[].envelope.preset.label. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Label = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_LabelSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.preset.loadout. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_LoadoutSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.loadout. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Loadout = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_LoadoutSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.preset.max_wave. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_MaxWaveSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.max_wave. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_MaxWave = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_MaxWaveSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.preset.perk_bans. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_PerkBansSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.perk_bans. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_PerkBans =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_PerkBansSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.restart_via_home. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].envelope.preset.restart_via_home. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_RestartViaHome =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_RestartViaHomeSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.rules. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_RulesSchema =
   z.array(z.unknown()); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battles[].envelope.preset.rules. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Rules = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_RulesSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.preset.runner. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_RunnerSchema =
   z.string();
-/** Raw response path: answer.body.battles[].envelope.preset.runner. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Runner = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_RunnerSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.preset.runner_args. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_RunnerArgsSchema =
   z.null();
-/** Raw response path: answer.body.battles[].envelope.preset.runner_args. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_RunnerArgs =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_RunnerArgsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.shop_interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ShopIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.preset.shop_interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ShopIntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ShopIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.shopping. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ShoppingSchema =
   z.array(z.unknown()); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battles[].envelope.preset.shopping. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Shopping =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_ShoppingSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset.tier. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_TierSchema =
   z.number();
-/** Raw response path: answer.body.battles[].envelope.preset.tier. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_Tier = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_TierSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.preset.uw_wanted. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_UwWantedSchema =
   z.strictObject({});
-/** Raw response path: answer.body.battles[].envelope.preset.uw_wanted. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_UwWanted =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_UwWantedSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.preset. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_PresetSchema =
   z.strictObject({
@@ -1417,32 +722,15 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Pres
     tier: historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_TierSchema,
     uw_wanted: historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset_UwWantedSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.preset. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Preset = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_PresetSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.preset_key. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_PresetKeySchema =
   z.string();
-/** Raw response path: answer.body.battles[].envelope.preset_key. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_PresetKey = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_PresetKeySchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.source.blueprint. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Source_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.battles[].envelope.source.blueprint. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Source_Blueprint =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Source_BlueprintSchema
-  >;
 /** Strict raw response path: answer.body.battles[].envelope.source.profile. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Source_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.battles[].envelope.source.profile. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Source_Profile = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Source_ProfileSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.source. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_SourceSchema =
   z.strictObject({
@@ -1450,18 +738,10 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Sour
       historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Source_BlueprintSchema,
     profile: historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Source_ProfileSchema,
   });
-/** Raw response path: answer.body.battles[].envelope.source. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_Source = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_SourceSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope.source_revision. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_SourceRevisionSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battles[].envelope.source_revision. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope_SourceRevision = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_SourceRevisionSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_EnvelopeSchema = z.strictObject({
   controls: historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_ControlsSchema,
@@ -1472,151 +752,66 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_EnvelopeSchem
   source_revision:
     historyListAnswer_Status200_Body_Battles_ArrayElement_Envelope_SourceRevisionSchema,
 });
-/** Raw response path: answer.body.battles[].envelope. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Envelope = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_EnvelopeSchema
->;
 /** Strict raw response path: answer.body.battles[].envelope_hash. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_EnvelopeHashSchema = z.string();
-/** Raw response path: answer.body.battles[].envelope_hash. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_EnvelopeHash = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_EnvelopeHashSchema
->;
 /** Strict raw response path: answer.body.battles[].final_wave. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_FinalWaveSchema = z
   .number()
   .nullable();
-/** Raw response path: answer.body.battles[].final_wave. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_FinalWave = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_FinalWaveSchema
->;
 /** Strict raw response path: answer.body.battles[].finalization_fingerprint. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_FinalizationFingerprintSchema =
   z.string();
-/** Raw response path: answer.body.battles[].finalization_fingerprint. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_FinalizationFingerprint = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_FinalizationFingerprintSchema
->;
 /** Strict raw response path: answer.body.battles[].generation. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_GenerationSchema = z.string();
-/** Raw response path: answer.body.battles[].generation. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Generation = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_GenerationSchema
->;
 /** Strict raw response path: answer.body.battles[].id. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_IdSchema = z.string();
-/** Raw response path: answer.body.battles[].id. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Id = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_IdSchema
->;
 /** Strict raw response path: answer.body.battles[].label. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_LabelSchema = z.string();
-/** Raw response path: answer.body.battles[].label. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Label = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_LabelSchema
->;
 /** Strict raw response path: answer.body.battles[].observed_started_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_ObservedStartedAtSchema =
   z.number();
-/** Raw response path: answer.body.battles[].observed_started_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_ObservedStartedAt = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_ObservedStartedAtSchema
->;
 /** Strict raw response path: answer.body.battles[].operation_id. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_OperationIdSchema = z.string();
-/** Raw response path: answer.body.battles[].operation_id. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_OperationId = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_OperationIdSchema
->;
 /** Strict raw response path: answer.body.battles[].origin. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_OriginSchema = z.enum([
   'adopted',
   'partial_adoption',
   'started',
 ]);
-/** Raw response path: answer.body.battles[].origin. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Origin = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_OriginSchema
->;
 /** Strict raw response path: answer.body.battles[].outcome. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_OutcomeSchema = z.string();
-/** Raw response path: answer.body.battles[].outcome. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Outcome = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_OutcomeSchema
->;
 /** Strict raw response path: answer.body.battles[].overrides. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_OverridesSchema = z.strictObject(
   {},
 );
-/** Raw response path: answer.body.battles[].overrides. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Overrides = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_OverridesSchema
->;
 /** Strict raw response path: answer.body.battles[].prepared_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_PreparedAtSchema = z.number();
-/** Raw response path: answer.body.battles[].prepared_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_PreparedAt = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_PreparedAtSchema
->;
 /** Strict raw response path: answer.body.battles[].previous_battle_id. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_PreviousBattleIdSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battles[].previous_battle_id. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_PreviousBattleId = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_PreviousBattleIdSchema
->;
 /** Strict raw response path: answer.body.battles[].reason. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_ReasonSchema = z
   .enum(['driver_observation_lost', 'driver_operation_ended', 'observed_results'])
   .nullable();
-/** Raw response path: answer.body.battles[].reason. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Reason = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_ReasonSchema
->;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.abilities.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].requested_controls.routines.abilities.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Abilities_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.abilities. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AbilitiesSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].requested_controls.routines.abilities. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Abilities =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AbilitiesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.ad_gems.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].requested_controls.routines.ad_gems.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGems_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.ad_gems.interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].requested_controls.routines.ad_gems.interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.ad_gems.window_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].requested_controls.routines.ad_gems.window_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.ad_gems. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGemsSchema =
   z.strictObject({
@@ -1627,43 +822,18 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedCont
     window_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battles[].requested_controls.routines.ad_gems. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGems =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_AdGemsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.floating_gems.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].requested_controls.routines.floating_gems.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.floating_gems.interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].requested_controls.routines.floating_gems.interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.floating_gems.tap_interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].requested_controls.routines.floating_gems.tap_interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.floating_gems.window_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].requested_controls.routines.floating_gems.window_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.floating_gems. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -1676,84 +846,39 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedCont
     window_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battles[].requested_controls.routines.floating_gems. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGems =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.repeat.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].requested_controls.routines.repeat.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Repeat_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Repeat_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.repeat. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_RepeatSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].requested_controls.routines.repeat. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Repeat =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_RepeatSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.rescue.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].requested_controls.routines.rescue.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Rescue_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Rescue_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.rescue. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_RescueSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].requested_controls.routines.rescue. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Rescue =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_RescueSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.rewards.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].requested_controls.routines.rewards.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Rewards_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.rewards. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_RewardsSchema =
   z.strictObject({
     enabled:
       historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battles[].requested_controls.routines.rewards. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Rewards =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_RewardsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.shopping.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].requested_controls.routines.shopping.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Shopping_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.shopping.interval_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].requested_controls.routines.shopping.interval_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines.shopping. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_ShoppingSchema =
   z.strictObject({
@@ -1762,11 +887,6 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedCont
     interval_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battles[].requested_controls.routines.shopping. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_Shopping =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_ShoppingSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.routines. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_RoutinesSchema =
   z.strictObject({
@@ -1785,19 +905,9 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedCont
     shopping:
       historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines_ShoppingSchema,
   });
-/** Raw response path: answer.body.battles[].requested_controls.routines. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_Routines =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_RoutinesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls.shopping_plan. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_ShoppingPlanSchema =
   z.null();
-/** Raw response path: answer.body.battles[].requested_controls.shopping_plan. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_ShoppingPlan =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_ShoppingPlanSchema
-  >;
 /** Strict raw response path: answer.body.battles[].requested_controls. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControlsSchema =
   z.strictObject({
@@ -1806,80 +916,32 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedCont
     shopping_plan:
       historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls_ShoppingPlanSchema,
   });
-/** Raw response path: answer.body.battles[].requested_controls. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_RequestedControls = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RequestedControlsSchema
->;
 /** Strict raw response path: answer.body.battles[].result. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_ResultSchema = z.string();
-/** Raw response path: answer.body.battles[].result. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Result = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_ResultSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.collection_evidence.ad_claim_confirmations. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_AdClaimConfirmationsSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.collection_evidence.ad_claim_confirmations. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_AdClaimConfirmations =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_AdClaimConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.collection_evidence.coverage. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_CoverageSchema =
   z.string();
-/** Raw response path: answer.body.battles[].runtime.collection_evidence.coverage. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_Coverage =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_CoverageSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.collection_evidence.generation. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.battles[].runtime.collection_evidence.generation. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_Generation =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_GenerationSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.collection_evidence.latest_confirmations. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_LatestConfirmationsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.battles[].runtime.collection_evidence.latest_confirmations. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_LatestConfirmations =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_LatestConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.collection_evidence.observed_through_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_ObservedThroughAtSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.collection_evidence.observed_through_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_ObservedThroughAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_ObservedThroughAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.collection_evidence.orbit_balance_confirmations. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_OrbitBalanceConfirmationsSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.collection_evidence.orbit_balance_confirmations. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_OrbitBalanceConfirmations =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_OrbitBalanceConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.collection_evidence.orbit_recorded_increase. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_OrbitRecordedIncreaseSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.collection_evidence.orbit_recorded_increase. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_OrbitRecordedIncrease =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_OrbitRecordedIncreaseSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.collection_evidence.started_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_StartedAtSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.collection_evidence.started_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_StartedAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_StartedAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.collection_evidence. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidenceSchema =
   z.strictObject({
@@ -1900,113 +962,45 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Colle
     started_at:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence_StartedAtSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.collection_evidence. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidence =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_CollectionEvidenceSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.driver_generation. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_DriverGenerationSchema =
   z.string();
-/** Raw response path: answer.body.battles[].runtime.driver_generation. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_DriverGeneration =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_DriverGenerationSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.last_wave_provenance. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_LastWaveProvenanceSchema =
   z.string();
-/** Raw response path: answer.body.battles[].runtime.last_wave_provenance. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_LastWaveProvenance =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_LastWaveProvenanceSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.observation_gap_started_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservationGapStartedAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.observation_gap_started_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservationGapStartedAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservationGapStartedAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.observation_gaps. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservationGapsSchema =
   z.array(z.unknown()); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battles[].runtime.observation_gaps. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservationGaps = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservationGapsSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.observation_status. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservationStatusSchema =
   z.enum(['observing']);
-/** Raw response path: answer.body.battles[].runtime.observation_status. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservationStatus =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservationStatusSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.observed_duration_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservedDurationSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.observed_duration_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservedDurationSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservedDurationSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.observed_wave. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservedWaveSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.observed_wave. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservedWave = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ObservedWaveSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.routines.abilities.blocker. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.abilities.blocker. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_Blocker =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.abilities.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.abilities.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.abilities.next_due_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.abilities.next_due_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_NextDueAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.abilities.server_time. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.abilities.server_time. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_ServerTime =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.abilities.state. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_StateSchema =
   z.enum(['watching']);
-/** Raw response path: answer.body.battles[].runtime.routines.abilities.state. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_State =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_StateSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.abilities.window_ends_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.abilities.window_ends_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_WindowEndsAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.abilities. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AbilitiesSchema =
   z.strictObject({
@@ -2023,91 +1017,36 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     window_ends_at:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines.abilities. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Abilities =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AbilitiesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.appearance_after_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_AppearanceAfterAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.appearance_after_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_AppearanceAfterAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_AppearanceAfterAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.blocker. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_BlockerSchema =
   z.string();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.blocker. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Blocker =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.claim_attempt_id. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ClaimAttemptIdSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.claim_attempt_id. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ClaimAttemptId =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ClaimAttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.claim_rect. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ClaimRectSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.claim_rect. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ClaimRect =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ClaimRectSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.counters.attempts. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_AttemptsSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.counters.attempts. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_Attempts =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_AttemptsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.counters.checks. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_ChecksSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.counters.checks. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_Checks =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_ChecksSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.counters.confirmed. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_ConfirmedSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.counters.confirmed. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_Confirmed =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_ConfirmedSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.counters.seen. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_SeenSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.counters.seen. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_Seen =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_SeenSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.counters.skips. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_SkipsSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.counters.skips. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_Skips =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_SkipsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.counters.windows_missed. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_WindowsMissedSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.counters.windows_missed. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_WindowsMissed =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_WindowsMissedSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.counters. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_CountersSchema =
   z.strictObject({
@@ -2123,43 +1062,18 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     windows_missed:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters_WindowsMissedSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.counters. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Counters =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_CountersSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.durations.observed_wait_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_ObservedWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.durations.observed_wait_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_ObservedWaitSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_ObservedWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.durations.response_delay_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_ResponseDelaySecSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.durations.response_delay_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_ResponseDelaySec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_ResponseDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.durations.scheduling_wait_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_SchedulingWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.durations.scheduling_wait_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_SchedulingWaitSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_SchedulingWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.durations.verification_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_VerificationSecSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.durations.verification_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_VerificationSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_VerificationSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.durations. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_DurationsSchema =
   z.strictObject({
@@ -2172,195 +1086,75 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     verification_sec:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations_VerificationSecSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.durations. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Durations =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_DurationsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.first_seen_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_FirstSeenAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.first_seen_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_FirstSeenAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_FirstSeenAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.last_absent_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastAbsentAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.last_absent_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastAbsentAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastAbsentAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.last_failed_attempt. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastFailedAttemptSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.last_failed_attempt. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastFailedAttempt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastFailedAttemptSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.last_observed_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastObservedAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.last_observed_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastObservedAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.last_outcome. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastOutcomeSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.last_outcome. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastOutcome =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.last_seen_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastSeenAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.last_seen_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastSeenAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_LastSeenAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.manual_active. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ManualActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.manual_active. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ManualActive =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ManualActiveSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.manual_pending. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ManualPendingSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.manual_pending. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ManualPending =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ManualPendingSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.next_check_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_NextCheckAtSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.next_check_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_NextCheckAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_NextCheckAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.next_due_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.next_due_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_NextDueAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.observation_age_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ObservationAgeSecSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.observation_age_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ObservationAgeSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ObservationAgeSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.offer_id. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_OfferIdSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.offer_id. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_OfferId =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_OfferIdSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.response_due_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ResponseDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.response_due_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ResponseDueAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ResponseDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.response_started_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ResponseStartedAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.response_started_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ResponseStartedAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ResponseStartedAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.server_time. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.server_time. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ServerTime =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.stale_after_sec. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_StaleAfterSecSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.stale_after_sec. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_StaleAfterSec =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_StaleAfterSecSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.state. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_StateSchema =
   z.enum(['scheduled']);
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.state. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_State =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_StateSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.visibility. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_VisibilitySchema =
   z.string();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.visibility. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_Visibility =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_VisibilitySchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.visibility_reason. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_VisibilityReasonSchema =
   z.string();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.visibility_reason. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_VisibilityReason =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_VisibilityReasonSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.window_ends_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.window_ends_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_WindowEndsAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.window_id. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_WindowIdSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.window_id. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_WindowId =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems.window_started_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_WindowStartedAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems.window_started_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_WindowStartedAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_WindowStartedAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.ad_gems. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGemsSchema =
   z.strictObject({
@@ -2423,106 +1217,42 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     window_started_at:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems_WindowStartedAtSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines.ad_gems. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGems = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems.attempt_id. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_AttemptIdSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems.attempt_id. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_AttemptId =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_AttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems.blocker. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems.blocker. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_Blocker =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems.last_outcome. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_LastOutcomeSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems.last_outcome. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_LastOutcome =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_LastOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems.last_refusal. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_LastRefusalSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems.last_refusal. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_LastRefusal =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_LastRefusalSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems.manual_active. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_ManualActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems.manual_active. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_ManualActive =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_ManualActiveSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems.manual_pending. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_ManualPendingSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems.manual_pending. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_ManualPending =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_ManualPendingSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems.next_due_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems.next_due_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_NextDueAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems.server_time. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems.server_time. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_ServerTime =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems.state. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_StateSchema =
   z.enum(['off']);
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems.state. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_State =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_StateSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems.window_ends_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems.window_ends_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_WindowEndsAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems.window_id. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_WindowIdSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems.window_id. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_WindowId =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.floating_gems. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -2551,59 +1281,24 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     window_id:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems_WindowIdSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines.floating_gems. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGems =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.repeat.blocker. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.repeat.blocker. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_Blocker =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.repeat.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.repeat.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.repeat.next_due_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.repeat.next_due_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_NextDueAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.repeat.server_time. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.repeat.server_time. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_ServerTime =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.repeat.state. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_StateSchema =
   z.enum(['boundary_wait']);
-/** Raw response path: answer.body.battles[].runtime.routines.repeat.state. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_State =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_StateSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.repeat.window_ends_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.repeat.window_ends_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_WindowEndsAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.repeat. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_RepeatSchema =
   z.strictObject({
@@ -2620,58 +1315,24 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     window_ends_at:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines.repeat. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Repeat = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rescue.blocker. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.rescue.blocker. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_Blocker =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rescue.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.rescue.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rescue.next_due_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.rescue.next_due_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_NextDueAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rescue.server_time. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.rescue.server_time. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_ServerTime =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rescue.state. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_StateSchema =
   z.enum(['watching']);
-/** Raw response path: answer.body.battles[].runtime.routines.rescue.state. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_State =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_StateSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rescue.window_ends_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.rescue.window_ends_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_WindowEndsAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rescue. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_RescueSchema =
   z.strictObject({
@@ -2688,58 +1349,24 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     window_ends_at:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines.rescue. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rescue = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rewards.blocker. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.rewards.blocker. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_Blocker =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rewards.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.rewards.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rewards.next_due_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.rewards.next_due_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_NextDueAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rewards.server_time. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.rewards.server_time. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_ServerTime =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rewards.state. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_StateSchema =
   z.enum(['watching']);
-/** Raw response path: answer.body.battles[].runtime.routines.rewards.state. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_State =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_StateSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rewards.window_ends_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.rewards.window_ends_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_WindowEndsAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.rewards. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_RewardsSchema =
   z.strictObject({
@@ -2756,83 +1383,33 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     window_ends_at:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines.rewards. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Rewards =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_RewardsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.blocker. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.blocker. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_Blocker =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.enabled. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.enabled. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_Enabled =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.active. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.active. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Active =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ActiveSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.attempts. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_AttemptsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.attempts. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Attempts =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_AttemptsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.cadence. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_CadenceSchema =
   z.string();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.cadence. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Cadence =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_CadenceSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.cash_reserve. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_CashReserveSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.cash_reserve. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_CashReserve =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.confirmed_purchases. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ConfirmedPurchasesSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.confirmed_purchases. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ConfirmedPurchases =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ConfirmedPurchasesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.continuation_budget.purchases. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_PurchasesSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.continuation_budget.purchases. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_Purchases =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_PurchasesSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.continuation_budget.seconds. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.continuation_budget.seconds. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_Seconds =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.continuation_budget. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationBudgetSchema =
   z.strictObject({
@@ -2841,43 +1418,18 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     seconds:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.continuation_budget. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationBudgetSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.continuation_ready. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationReadySchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.continuation_ready. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationReady =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ContinuationReadySchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.count_semantics. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_CountSemanticsSchema =
   z.string();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.count_semantics. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_CountSemantics =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_CountSemanticsSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.decision.action. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Decision_ActionSchema =
   z.enum(['wait']);
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.decision.action. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Decision_Action =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Decision_ActionSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.decision.reason. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Decision_ReasonSchema =
   z.enum(['not_started']);
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.decision.reason. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Decision_Reason =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Decision_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.decision. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_DecisionSchema =
   z.strictObject({
@@ -2886,83 +1438,33 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     reason:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Decision_ReasonSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.decision. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Decision =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_DecisionSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.last_confirmation. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_LastConfirmationSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.last_confirmation. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_LastConfirmation =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_LastConfirmationSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.last_sweep. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_LastSweepSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.last_sweep. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_LastSweep =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_LastSweepSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.manual. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ManualSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.manual. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Manual =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ManualSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.pending_confirmation. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_PendingConfirmationSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.pending_confirmation. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_PendingConfirmation =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_PendingConfirmationSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.quantity_observation_supported. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_QuantityObservationSupportedSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.quantity_observation_supported. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_QuantityObservationSupported =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_QuantityObservationSupportedSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.reserve_enforcement. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ReserveEnforcementSchema =
   z.string();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.reserve_enforcement. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ReserveEnforcement =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ReserveEnforcementSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.reserve_supported. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ReserveSupportedSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.reserve_supported. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ReserveSupported =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_ReserveSupportedSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.sweep_id. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_SweepIdSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.sweep_id. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_SweepId =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_SweepIdSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.version. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_VersionSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome.version. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_Version =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_VersionSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcomeSchema =
   z.strictObject({
@@ -3003,43 +1505,18 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     version:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome_VersionSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.last_outcome. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcome =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_LastOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.next_due_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.next_due_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_NextDueAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.server_time. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.server_time. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_ServerTime =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.state. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_StateSchema =
   z.enum(['scheduled']);
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.state. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_State =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_StateSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping.window_ends_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.routines.shopping.window_ends_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_WindowEndsAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines.shopping. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_ShoppingSchema =
   z.strictObject({
@@ -3058,11 +1535,6 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     window_ends_at:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines.shopping. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_Shopping =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_ShoppingSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.routines. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_RoutinesSchema =
   z.strictObject({
@@ -3076,60 +1548,27 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routi
     rewards: historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_RewardsSchema,
     shopping: historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines_ShoppingSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.routines. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Routines = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.server_time. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battles[].runtime.server_time. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ServerTime = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.setup.continued_with_partial. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_ContinuedWithPartialSchema =
   z.boolean();
-/** Raw response path: answer.body.battles[].runtime.setup.continued_with_partial. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_ContinuedWithPartial =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_ContinuedWithPartialSchema
-  >;
 /** Strict raw response path: answer.body.battles[].runtime.setup.detail. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_DetailSchema =
   z.string();
-/** Raw response path: answer.body.battles[].runtime.setup.detail. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_Detail = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_DetailSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.setup.loadout. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_LoadoutSchema =
   z.null();
-/** Raw response path: answer.body.battles[].runtime.setup.loadout. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_Loadout = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_LoadoutSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.setup.modules. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_ModulesSchema =
   z.array(z.unknown()); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battles[].runtime.setup.modules. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_Modules = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_ModulesSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.setup.reason. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_ReasonSchema =
   z.enum(['Setup has not been verified for this battle']);
-/** Raw response path: answer.body.battles[].runtime.setup.reason. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_Reason = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_ReasonSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.setup.state. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_StateSchema =
   z.enum(['unknown']);
-/** Raw response path: answer.body.battles[].runtime.setup.state. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_State = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_StateSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime.setup. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_SetupSchema =
   z.strictObject({
@@ -3141,10 +1580,6 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup
     reason: historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_ReasonSchema,
     state: historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup_StateSchema,
   });
-/** Raw response path: answer.body.battles[].runtime.setup. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime_Setup = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_SetupSchema
->;
 /** Strict raw response path: answer.body.battles[].runtime. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_RuntimeSchema = z.strictObject({
   collection_evidence:
@@ -3166,42 +1601,18 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_RuntimeSchema
   server_time: historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_ServerTimeSchema,
   setup: historyListAnswer_Status200_Body_Battles_ArrayElement_Runtime_SetupSchema,
 });
-/** Raw response path: answer.body.battles[].runtime. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Runtime = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_RuntimeSchema
->;
 /** Strict raw response path: answer.body.battles[].segments[].ended_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_EndedAtSchema =
   z.number().nullable();
-/** Raw response path: answer.body.battles[].segments[].ended_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_EndedAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_EndedAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].segments[].generation. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.battles[].segments[].generation. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_Generation =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_GenerationSchema
-  >;
 /** Strict raw response path: answer.body.battles[].segments[].operation_id. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.battles[].segments[].operation_id. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_OperationId =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_OperationIdSchema
-  >;
 /** Strict raw response path: answer.body.battles[].segments[].started_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_StartedAtSchema =
   z.number();
-/** Raw response path: answer.body.battles[].segments[].started_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_StartedAt =
-  z.infer<
-    typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_StartedAtSchema
-  >;
 /** Strict raw response path: answer.body.battles[].segments[]. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElementSchema =
   z.strictObject({
@@ -3214,66 +1625,30 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_Arra
     started_at:
       historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement_StartedAtSchema,
   });
-/** Raw response path: answer.body.battles[].segments[]. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElement = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battles[].segments. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_SegmentsSchema = z.array(
   historyListAnswer_Status200_Body_Battles_ArrayElement_Segments_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battles[].segments. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Segments = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_SegmentsSchema
->;
 /** Strict raw response path: answer.body.battles[].start_certainty. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_StartCertaintySchema =
   z.string();
-/** Raw response path: answer.body.battles[].start_certainty. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_StartCertainty = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_StartCertaintySchema
->;
 /** Strict raw response path: answer.body.battles[].started_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_StartedAtSchema = z.number();
-/** Raw response path: answer.body.battles[].started_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_StartedAt = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_StartedAtSchema
->;
 /** Strict raw response path: answer.body.battles[].status. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_StatusSchema = z.enum([
   'active',
   'ended',
   'interrupted',
 ]);
-/** Raw response path: answer.body.battles[].status. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Status = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_StatusSchema
->;
 /** Strict raw response path: answer.body.battles[].tier. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_TierSchema = z.number();
-/** Raw response path: answer.body.battles[].tier. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Tier = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_TierSchema
->;
 /** Strict raw response path: answer.body.battles[].updated_at. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.battles[].updated_at. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_UpdatedAt = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.battles[].wave. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_WaveSchema = z.number();
-/** Raw response path: answer.body.battles[].wave. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_Wave = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_WaveSchema
->;
 /** Strict raw response path: answer.body.battles[].wave_provenance. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElement_WaveProvenanceSchema =
   z.string();
-/** Raw response path: answer.body.battles[].wave_provenance. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement_WaveProvenance = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElement_WaveProvenanceSchema
->;
 /** Strict raw response path: answer.body.battles[]. */
 export const historyListAnswer_Status200_Body_Battles_ArrayElementSchema = z.strictObject({
   applied_controls: historyListAnswer_Status200_Body_Battles_ArrayElement_AppliedControlsSchema,
@@ -3319,42 +1694,18 @@ export const historyListAnswer_Status200_Body_Battles_ArrayElementSchema = z.str
   wave: historyListAnswer_Status200_Body_Battles_ArrayElement_WaveSchema,
   wave_provenance: historyListAnswer_Status200_Body_Battles_ArrayElement_WaveProvenanceSchema,
 });
-/** Raw response path: answer.body.battles[]. */
-export type HistoryListAnswer_Status200_Body_Battles_ArrayElement = z.infer<
-  typeof historyListAnswer_Status200_Body_Battles_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battles. */
 export const historyListAnswer_Status200_Body_BattlesSchema = z.array(
   historyListAnswer_Status200_Body_Battles_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battles. */
-export type HistoryListAnswer_Status200_Body_Battles = z.infer<
-  typeof historyListAnswer_Status200_Body_BattlesSchema
->;
 /** Strict raw response path: answer.body.context.account. */
 export const historyListAnswer_Status200_Body_Context_AccountSchema = z.string().nullable();
-/** Raw response path: answer.body.context.account. */
-export type HistoryListAnswer_Status200_Body_Context_Account = z.infer<
-  typeof historyListAnswer_Status200_Body_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.context.device_key. */
 export const historyListAnswer_Status200_Body_Context_DeviceKeySchema = z.string();
-/** Raw response path: answer.body.context.device_key. */
-export type HistoryListAnswer_Status200_Body_Context_DeviceKey = z.infer<
-  typeof historyListAnswer_Status200_Body_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.context.instance. */
 export const historyListAnswer_Status200_Body_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.context.instance. */
-export type HistoryListAnswer_Status200_Body_Context_Instance = z.infer<
-  typeof historyListAnswer_Status200_Body_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.context.serial. */
 export const historyListAnswer_Status200_Body_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.context.serial. */
-export type HistoryListAnswer_Status200_Body_Context_Serial = z.infer<
-  typeof historyListAnswer_Status200_Body_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.context. */
 export const historyListAnswer_Status200_Body_ContextSchema = z.strictObject({
   account: historyListAnswer_Status200_Body_Context_AccountSchema,
@@ -3362,93 +1713,47 @@ export const historyListAnswer_Status200_Body_ContextSchema = z.strictObject({
   instance: historyListAnswer_Status200_Body_Context_InstanceSchema,
   serial: historyListAnswer_Status200_Body_Context_SerialSchema,
 });
-/** Raw response path: answer.body.context. */
-export type HistoryListAnswer_Status200_Body_Context = z.infer<
-  typeof historyListAnswer_Status200_Body_ContextSchema
->;
 /** Strict raw response path: answer.body. */
 export const historyListAnswer_Status200_BodySchema = z.strictObject({
   battles: historyListAnswer_Status200_Body_BattlesSchema,
   context: historyListAnswer_Status200_Body_ContextSchema,
 });
-/** Raw response path: answer.body. */
-export type HistoryListAnswer_Status200_Body = z.infer<
-  typeof historyListAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const historyListAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type HistoryListAnswer_Status200_Status = z.infer<
-  typeof historyListAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members battles, context. */
 export const historyListAnswer_Status200Schema = z.strictObject({
   body: historyListAnswer_Status200_BodySchema,
   status: historyListAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members battles, context. */
-export type HistoryListAnswer_Status200 = z.infer<typeof historyListAnswer_Status200Schema>;
 /** Strict raw response path: answer.body.error. */
 export const historyListAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type HistoryListAnswer_Status400_Body_Error = z.infer<
-  typeof historyListAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const historyListAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type HistoryListAnswer_Status400_Body_Ok = z.infer<
-  typeof historyListAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const historyListAnswer_Status400_BodySchema = z.strictObject({
   error: historyListAnswer_Status400_Body_ErrorSchema,
   ok: historyListAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type HistoryListAnswer_Status400_Body = z.infer<
-  typeof historyListAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const historyListAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type HistoryListAnswer_Status400_Status = z.infer<
-  typeof historyListAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const historyListAnswer_Status400Schema = z.strictObject({
   body: historyListAnswer_Status400_BodySchema,
   status: historyListAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type HistoryListAnswer_Status400 = z.infer<typeof historyListAnswer_Status400Schema>;
 /** Strict raw response path: answer.body.text. */
 export const historyListAnswer_Status500_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type HistoryListAnswer_Status500_Body_Text = z.infer<
-  typeof historyListAnswer_Status500_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const historyListAnswer_Status500_BodySchema = z.strictObject({
   text: historyListAnswer_Status500_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type HistoryListAnswer_Status500_Body = z.infer<
-  typeof historyListAnswer_Status500_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const historyListAnswer_Status500_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type HistoryListAnswer_Status500_Status = z.infer<
-  typeof historyListAnswer_Status500_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members text. */
 export const historyListAnswer_Status500Schema = z.strictObject({
   body: historyListAnswer_Status500_BodySchema,
   status: historyListAnswer_Status500_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members text. */
-export type HistoryListAnswer_Status500 = z.infer<typeof historyListAnswer_Status500Schema>;
 /** Strict raw response path: answer. */
 export const historyListAnswerSchema = z.union([
   historyListAnswer_Status200Schema,
@@ -3460,45 +1765,21 @@ export type HistoryListAnswer = z.infer<typeof historyListAnswerSchema>;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.abilities.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.abilities.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Abilities_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.abilities. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AbilitiesSchema =
   z.strictObject({
     enabled:
       historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.abilities. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Abilities = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.ad_gems.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.ad_gems.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.ad_gems.interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.ad_gems.interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.ad_gems.window_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.ad_gems.window_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.ad_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGemsSchema =
   z.strictObject({
@@ -3509,42 +1790,18 @@ export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_
     window_sec:
       historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.ad_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems.interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems.interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems.tap_interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems.tap_interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems.window_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems.window_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -3557,81 +1814,39 @@ export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_
     window_sec:
       historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.repeat.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.repeat.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Repeat_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Repeat_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.repeat. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_RepeatSchema =
   z.strictObject({
     enabled:
       historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.repeat. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Repeat = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.rescue.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.rescue.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Rescue_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Rescue_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.rescue. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_RescueSchema =
   z.strictObject({
     enabled:
       historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.rescue. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Rescue = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.rewards.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.rewards.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Rewards_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.rewards. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_RewardsSchema =
   z.strictObject({
     enabled:
       historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.rewards. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Rewards = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.shopping.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.shopping.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.shopping.interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.shopping.interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.shopping. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_ShoppingSchema =
   z.strictObject({
@@ -3640,10 +1855,6 @@ export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_
     interval_sec:
       historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.shopping. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_RoutinesSchema =
   z.strictObject({
@@ -3656,64 +1867,28 @@ export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_RoutinesS
     rewards: historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_RewardsSchema,
     shopping: historyDetailAnswer_Status200_Body_Battle_AppliedControls_Routines_ShoppingSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_Routines = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.shopping_plan. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControls_ShoppingPlanSchema =
   z.null();
-/** Raw response path: answer.body.battle.applied_controls.shopping_plan. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls_ShoppingPlan = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_AppliedControls_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedControlsSchema = z.strictObject({
   routines: historyDetailAnswer_Status200_Body_Battle_AppliedControls_RoutinesSchema,
   shopping_plan: historyDetailAnswer_Status200_Body_Battle_AppliedControls_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.battle.applied_controls. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedControls = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_AppliedControlsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedOverridesSchema = z.strictObject({});
-/** Raw response path: answer.body.battle.applied_overrides. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedOverrides = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_AppliedOverridesSchema
->;
 /** Strict raw response path: answer.body.battle.applied_revision. */
 export const historyDetailAnswer_Status200_Body_Battle_AppliedRevisionSchema = z.number();
-/** Raw response path: answer.body.battle.applied_revision. */
-export type HistoryDetailAnswer_Status200_Body_Battle_AppliedRevision = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_AppliedRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.blueprint. */
 export const historyDetailAnswer_Status200_Body_Battle_BlueprintSchema = z.string();
-/** Raw response path: answer.body.battle.blueprint. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Blueprint = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_BlueprintSchema
->;
 /** Strict raw response path: answer.body.battle.boundary_evidence.last_observed_wave. */
 export const historyDetailAnswer_Status200_Body_Battle_BoundaryEvidence_LastObservedWaveSchema =
   z.number();
-/** Raw response path: answer.body.battle.boundary_evidence.last_observed_wave. */
-export type HistoryDetailAnswer_Status200_Body_Battle_BoundaryEvidence_LastObservedWave = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_BoundaryEvidence_LastObservedWaveSchema
->;
 /** Strict raw response path: answer.body.battle.boundary_evidence.note. */
 export const historyDetailAnswer_Status200_Body_Battle_BoundaryEvidence_NoteSchema = z.string();
-/** Raw response path: answer.body.battle.boundary_evidence.note. */
-export type HistoryDetailAnswer_Status200_Body_Battle_BoundaryEvidence_Note = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_BoundaryEvidence_NoteSchema
->;
 /** Strict raw response path: answer.body.battle.boundary_evidence.outcome_certainty. */
 export const historyDetailAnswer_Status200_Body_Battle_BoundaryEvidence_OutcomeCertaintySchema =
   z.string();
-/** Raw response path: answer.body.battle.boundary_evidence.outcome_certainty. */
-export type HistoryDetailAnswer_Status200_Body_Battle_BoundaryEvidence_OutcomeCertainty = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_BoundaryEvidence_OutcomeCertaintySchema
->;
 /** Strict raw response path: answer.body.battle.boundary_evidence. */
 export const historyDetailAnswer_Status200_Body_Battle_BoundaryEvidenceSchema = z
   .strictObject({
@@ -3724,137 +1899,57 @@ export const historyDetailAnswer_Status200_Body_Battle_BoundaryEvidenceSchema = 
       historyDetailAnswer_Status200_Body_Battle_BoundaryEvidence_OutcomeCertaintySchema.optional(),
   })
   .nullable();
-/** Raw response path: answer.body.battle.boundary_evidence. */
-export type HistoryDetailAnswer_Status200_Body_Battle_BoundaryEvidence = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_BoundaryEvidenceSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities.actions[]. */
 export const historyDetailAnswer_Status200_Body_Battle_Capabilities_Actions_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.battle.capabilities.actions[]. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Capabilities_Actions_ArrayElement = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Capabilities_Actions_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities.actions. */
 export const historyDetailAnswer_Status200_Body_Battle_Capabilities_ActionsSchema = z.array(
   historyDetailAnswer_Status200_Body_Battle_Capabilities_Actions_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.capabilities.actions. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Capabilities_Actions = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Capabilities_ActionsSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities.controls[]. */
 export const historyDetailAnswer_Status200_Body_Battle_Capabilities_Controls_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.battle.capabilities.controls[]. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Capabilities_Controls_ArrayElement = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Capabilities_Controls_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities.controls. */
 export const historyDetailAnswer_Status200_Body_Battle_Capabilities_ControlsSchema = z.array(
   historyDetailAnswer_Status200_Body_Battle_Capabilities_Controls_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.capabilities.controls. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Capabilities_Controls = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Capabilities_ControlsSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities. */
 export const historyDetailAnswer_Status200_Body_Battle_CapabilitiesSchema = z.strictObject({
   actions: historyDetailAnswer_Status200_Body_Battle_Capabilities_ActionsSchema,
   controls: historyDetailAnswer_Status200_Body_Battle_Capabilities_ControlsSchema,
 });
-/** Raw response path: answer.body.battle.capabilities. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Capabilities = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_CapabilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.commands. */
 export const historyDetailAnswer_Status200_Body_Battle_CommandsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battle.commands. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Commands = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_CommandsSchema
->;
 /** Strict raw response path: answer.body.battle.context.account. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_AccountSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battle.context.account. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_Account = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.battle.context.adb_host. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_AdbHostSchema = z.string();
-/** Raw response path: answer.body.battle.context.adb_host. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_AdbHost = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.battle.context.adb_port. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_AdbPortSchema = z.number();
-/** Raw response path: answer.body.battle.context.adb_port. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_AdbPort = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.battle.context.artifact_dir. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_ArtifactDirSchema = z.string();
-/** Raw response path: answer.body.battle.context.artifact_dir. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_ArtifactDir = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_ArtifactDirSchema
->;
 /** Strict raw response path: answer.body.battle.context.config_revision. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.battle.context.config_revision. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_ConfigRevision = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.context.device_key. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_DeviceKeySchema = z.string();
-/** Raw response path: answer.body.battle.context.device_key. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_DeviceKey = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.battle.context.instance. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.battle.context.instance. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_Instance = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.battle.context.profile. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.battle.context.profile. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_Profile = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.battle.context.profile_path. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_ProfilePathSchema = z.string();
-/** Raw response path: answer.body.battle.context.profile_path. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_ProfilePath = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_ProfilePathSchema
->;
 /** Strict raw response path: answer.body.battle.context.profile_revision. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_ProfileRevisionSchema = z.string();
-/** Raw response path: answer.body.battle.context.profile_revision. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_ProfileRevision = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.context.rendering. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_RenderingSchema = z.null();
-/** Raw response path: answer.body.battle.context.rendering. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_Rendering = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.battle.context.selected_run. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_SelectedRunSchema = z.string();
-/** Raw response path: answer.body.battle.context.selected_run. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_SelectedRun = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.battle.context.serial. */
 export const historyDetailAnswer_Status200_Body_Battle_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.battle.context.serial. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context_Serial = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.battle.context. */
 export const historyDetailAnswer_Status200_Body_Battle_ContextSchema = z.strictObject({
   account: historyDetailAnswer_Status200_Body_Battle_Context_AccountSchema,
@@ -3871,61 +1966,27 @@ export const historyDetailAnswer_Status200_Body_Battle_ContextSchema = z.strictO
   selected_run: historyDetailAnswer_Status200_Body_Battle_Context_SelectedRunSchema,
   serial: historyDetailAnswer_Status200_Body_Battle_Context_SerialSchema,
 });
-/** Raw response path: answer.body.battle.context. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Context = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_ContextSchema
->;
 /** Strict raw response path: answer.body.battle.control_revision. */
 export const historyDetailAnswer_Status200_Body_Battle_ControlRevisionSchema = z.number();
-/** Raw response path: answer.body.battle.control_revision. */
-export type HistoryDetailAnswer_Status200_Body_Battle_ControlRevision = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_ControlRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.created_at. */
 export const historyDetailAnswer_Status200_Body_Battle_CreatedAtSchema = z.number();
-/** Raw response path: answer.body.battle.created_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_CreatedAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.abilities.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.abilities.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_Abilities_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.abilities. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AbilitiesSchema =
   z.strictObject({
     enabled: historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.abilities. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_Abilities = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.ad_gems.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.ad_gems.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems_Enabled = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.ad_gems.interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.ad_gems.interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.ad_gems.window_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.ad_gems.window_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems_WindowSec = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.ad_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGemsSchema =
   z.strictObject({
@@ -3934,42 +1995,18 @@ export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems
       historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems_IntervalSecSchema,
     window_sec: historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.ad_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGems = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.floating_gems.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems.interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.floating_gems.interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems.tap_interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.floating_gems.tap_interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems.window_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.floating_gems.window_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -3982,73 +2019,36 @@ export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Floati
     window_sec:
       historyDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.floating_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.repeat.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.repeat.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_Repeat_Enabled = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.repeat. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_RepeatSchema =
   z.strictObject({
     enabled: historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.repeat. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_Repeat = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.rescue.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.rescue.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_Rescue_Enabled = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.rescue. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_RescueSchema =
   z.strictObject({
     enabled: historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.rescue. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_Rescue = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.rewards.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.rewards.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_Rewards_Enabled = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.rewards. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_RewardsSchema =
   z.strictObject({
     enabled: historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.rewards. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_Rewards = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.shopping.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.shopping.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_Shopping_Enabled = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.shopping.interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.shopping.interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.shopping. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_ShoppingSchema =
   z.strictObject({
@@ -4056,10 +2056,6 @@ export const historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Shoppi
     interval_sec:
       historyDetailAnswer_Status200_Body_Battle_Effective_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.shopping. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines_Shopping = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_RoutinesSchema = z.strictObject({
   abilities: historyDetailAnswer_Status200_Body_Battle_Effective_Routines_AbilitiesSchema,
@@ -4070,80 +2066,35 @@ export const historyDetailAnswer_Status200_Body_Battle_Effective_RoutinesSchema 
   rewards: historyDetailAnswer_Status200_Body_Battle_Effective_Routines_RewardsSchema,
   shopping: historyDetailAnswer_Status200_Body_Battle_Effective_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.battle.effective.routines. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_Routines = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.effective.shopping_plan. */
 export const historyDetailAnswer_Status200_Body_Battle_Effective_ShoppingPlanSchema = z.null();
-/** Raw response path: answer.body.battle.effective.shopping_plan. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective_ShoppingPlan = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Effective_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battle.effective. */
 export const historyDetailAnswer_Status200_Body_Battle_EffectiveSchema = z.strictObject({
   routines: historyDetailAnswer_Status200_Body_Battle_Effective_RoutinesSchema,
   shopping_plan: historyDetailAnswer_Status200_Body_Battle_Effective_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.battle.effective. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Effective = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_EffectiveSchema
->;
 /** Strict raw response path: answer.body.battle.end_reason. */
 export const historyDetailAnswer_Status200_Body_Battle_EndReasonSchema = z.string().nullable();
-/** Raw response path: answer.body.battle.end_reason. */
-export type HistoryDetailAnswer_Status200_Body_Battle_EndReason = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_EndReasonSchema
->;
 /** Strict raw response path: answer.body.battle.ended_at. */
 export const historyDetailAnswer_Status200_Body_Battle_EndedAtSchema = z.number().nullable();
-/** Raw response path: answer.body.battle.ended_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_EndedAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_EndedAtSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.abilities.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.abilities.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Abilities_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.abilities. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AbilitiesSchema =
   z.strictObject({
     enabled:
       historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.abilities. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Abilities =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AbilitiesSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.ad_gems.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.ad_gems.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.ad_gems.interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.ad_gems.interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.ad_gems.window_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.ad_gems.window_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.ad_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGemsSchema =
   z.strictObject({
@@ -4154,42 +2105,18 @@ export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routine
     window_sec:
       historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.ad_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems.interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems.interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems.tap_interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems.tap_interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems.window_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems.window_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -4202,81 +2129,39 @@ export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routine
     window_sec:
       historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.repeat.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.repeat.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Repeat_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Repeat_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.repeat. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RepeatSchema =
   z.strictObject({
     enabled:
       historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.repeat. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Repeat = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.rescue.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.rescue.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rescue_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rescue_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.rescue. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RescueSchema =
   z.strictObject({
     enabled:
       historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.rescue. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rescue = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.rewards.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.rewards.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rewards_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.rewards. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RewardsSchema =
   z.strictObject({
     enabled:
       historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.rewards. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rewards = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.shopping.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.shopping.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.shopping.interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.shopping.interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.shopping. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_ShoppingSchema =
   z.strictObject({
@@ -4285,10 +2170,6 @@ export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routine
     interval_sec:
       historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.shopping. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_RoutinesSchema =
   z.strictObject({
@@ -4301,182 +2182,77 @@ export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routine
     rewards: historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RewardsSchema,
     shopping: historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines_ShoppingSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_Routines = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.shopping_plan. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_ShoppingPlanSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.controls.shopping_plan. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls_ShoppingPlan = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_ControlsSchema = z.strictObject({
   routines: historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_RoutinesSchema,
   shopping_plan: historyDetailAnswer_Status200_Body_Battle_Envelope_Controls_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.battle.envelope.controls. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Controls = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_ControlsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset._source.blueprint. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Source_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.battle.envelope.preset._source.blueprint. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Source_Blueprint = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Source_BlueprintSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset._source.profile. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Source_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.battle.envelope.preset._source.profile. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Source_Profile = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Source_ProfileSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset._source. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_SourceSchema =
   z.strictObject({
     blueprint: historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Source_BlueprintSchema,
     profile: historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Source_ProfileSchema,
   });
-/** Raw response path: answer.body.battle.envelope.preset._source. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Source = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_SourceSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.burst_cancel_sprint. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstCancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.burst_cancel_sprint. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstCancelSprint =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstCancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.burst_require_match. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRequireMatchSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.burst_require_match. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRequireMatch =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRequireMatchSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.burst_require_ready. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRequireReadySchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.burst_require_ready. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRequireReady =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRequireReadySchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.burst_retaps. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRetapsSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.burst_retaps. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRetaps =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRetapsSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.collapse_from. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_CollapseFromSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.collapse_from. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_CollapseFrom =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_CollapseFromSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.deadband. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_DeadbandSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.deadband. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_Deadband = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_DeadbandSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.dm_below. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_DmBelowSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.dm_below. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_DmBelow = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_DmBelowSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.end_sprint_after_sw. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_EndSprintAfterSwSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.end_sprint_after_sw. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_EndSprintAfterSw =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_EndSprintAfterSwSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.falling_samples. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_FallingSamplesSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.falling_samples. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_FallingSamples =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_FallingSamplesSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.hold_until_second_wind. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_HoldUntilSecondWindSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.hold_until_second_wind. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_HoldUntilSecondWind =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_HoldUntilSecondWindSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.hp_nuke_require_ready. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_HpNukeRequireReadySchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.hp_nuke_require_ready. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_HpNukeRequireReady =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_HpNukeRequireReadySchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.nuke_below. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_NukeBelowSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.nuke_below. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_NukeBelow = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_NukeBelowSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.nuke_on_fleet. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_NukeOnFleetSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.nuke_on_fleet. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_NukeOnFleet =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_NukeOnFleetSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.post_sw_watch_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_PostSwWatchSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.post_sw_watch_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_PostSwWatchSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_PostSwWatchSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.refire_guard_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_RefireGuardSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.refire_guard_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_RefireGuardSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_RefireGuardSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.rescue_bar. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_RescueBarSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.rescue_bar. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_RescueBar = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_RescueBarSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.sw_immunity_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_SwImmunitySecSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.sw_immunity_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_SwImmunitySec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_SwImmunitySecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_AbilitiesSchema =
   z.strictObject({
@@ -4511,57 +2287,24 @@ export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities
     sw_immunity_sec:
       historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_SwImmunitySecSchema,
   });
-/** Raw response path: answer.body.battle.envelope.preset.abilities. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Abilities = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.cancel_sprint. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_CancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.cancel_sprint. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_CancelSprint = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_CancelSprintSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.always_on. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.always_on. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOn =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.always_on_above. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnAboveSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.always_on_above. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnAbove =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnAboveSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.off_after_waves. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_OffAfterWavesSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.off_after_waves. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_OffAfterWaves =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_OffAfterWavesSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.pre_mark_waves. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_PreMarkWavesSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.pre_mark_waves. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_PreMarkWaves =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_PreMarkWavesSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightningSchema =
   z.strictObject({
@@ -4575,41 +2318,20 @@ export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLigh
     pre_mark_waves:
       historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_PreMarkWavesSchema,
   });
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightningSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.dissonant_tab. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_DissonantTabSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.dissonant_tab. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_DissonantTab = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_DissonantTabSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gather.ad_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Gather_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.gather.ad_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Gather_AdGems = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Gather_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gather.gem_delay_sec[]. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.gather.gem_delay_sec[]. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.gather.gem_delay_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySecSchema =
   z.array(
     historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.battle.envelope.preset.gather.gem_delay_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySec = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySecSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gather. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_GatherSchema =
   z.strictObject({
@@ -4617,113 +2339,48 @@ export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_GatherSch
     gem_delay_sec:
       historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySecSchema,
   });
-/** Raw response path: answer.body.battle.envelope.preset.gather. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Gather = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_GatherSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gem_delay_sec[]. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.gem_delay_sec[]. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.gem_delay_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySecSchema = z.array(
   historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySec_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.envelope.preset.gem_delay_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySec = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySecSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.kind. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_KindSchema = z.enum([
   'coin',
 ]);
-/** Raw response path: answer.body.battle.envelope.preset.kind. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Kind = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_KindSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.label. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_LabelSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.preset.label. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Label = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_LabelSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.loadout. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_LoadoutSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.loadout. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Loadout = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_LoadoutSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.max_wave. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_MaxWaveSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.max_wave. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_MaxWave = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_MaxWaveSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.perk_bans. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_PerkBansSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.perk_bans. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_PerkBans = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_PerkBansSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.restart_via_home. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.restart_via_home. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_RestartViaHome = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_RestartViaHomeSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.rules. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_RulesSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battle.envelope.preset.rules. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Rules = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_RulesSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.runner. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_RunnerSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.preset.runner. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Runner = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_RunnerSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.runner_args. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_RunnerArgsSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.runner_args. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_RunnerArgs = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_RunnerArgsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.shop_interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ShopIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.shop_interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_ShopIntervalSec = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ShopIntervalSecSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.shopping. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ShoppingSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battle.envelope.preset.shopping. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Shopping = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.tier. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_TierSchema = z.number();
-/** Raw response path: answer.body.battle.envelope.preset.tier. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_Tier = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_TierSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.uw_wanted. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_UwWantedSchema =
   z.strictObject({});
-/** Raw response path: answer.body.battle.envelope.preset.uw_wanted. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset_UwWanted = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_UwWantedSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_PresetSchema = z.strictObject({
   _source: historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_SourceSchema,
@@ -4748,45 +2405,21 @@ export const historyDetailAnswer_Status200_Body_Battle_Envelope_PresetSchema = z
   tier: historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_TierSchema,
   uw_wanted: historyDetailAnswer_Status200_Body_Battle_Envelope_Preset_UwWantedSchema,
 });
-/** Raw response path: answer.body.battle.envelope.preset. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Preset = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_PresetSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset_key. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_PresetKeySchema = z.string();
-/** Raw response path: answer.body.battle.envelope.preset_key. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_PresetKey = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_PresetKeySchema
->;
 /** Strict raw response path: answer.body.battle.envelope.source.blueprint. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Source_BlueprintSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.source.blueprint. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Source_Blueprint = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Source_BlueprintSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.source.profile. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_Source_ProfileSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.source.profile. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Source_Profile = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_Source_ProfileSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.source. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_SourceSchema = z.strictObject({
   blueprint: historyDetailAnswer_Status200_Body_Battle_Envelope_Source_BlueprintSchema,
   profile: historyDetailAnswer_Status200_Body_Battle_Envelope_Source_ProfileSchema,
 });
-/** Raw response path: answer.body.battle.envelope.source. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_Source = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_SourceSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.source_revision. */
 export const historyDetailAnswer_Status200_Body_Battle_Envelope_SourceRevisionSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battle.envelope.source_revision. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope_SourceRevision = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Envelope_SourceRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.envelope. */
 export const historyDetailAnswer_Status200_Body_Battle_EnvelopeSchema = z.strictObject({
   controls: historyDetailAnswer_Status200_Body_Battle_Envelope_ControlsSchema,
@@ -4795,96 +2428,40 @@ export const historyDetailAnswer_Status200_Body_Battle_EnvelopeSchema = z.strict
   source: historyDetailAnswer_Status200_Body_Battle_Envelope_SourceSchema,
   source_revision: historyDetailAnswer_Status200_Body_Battle_Envelope_SourceRevisionSchema,
 });
-/** Raw response path: answer.body.battle.envelope. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Envelope = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_EnvelopeSchema
->;
 /** Strict raw response path: answer.body.battle.envelope_hash. */
 export const historyDetailAnswer_Status200_Body_Battle_EnvelopeHashSchema = z.string();
-/** Raw response path: answer.body.battle.envelope_hash. */
-export type HistoryDetailAnswer_Status200_Body_Battle_EnvelopeHash = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_EnvelopeHashSchema
->;
 /** Strict raw response path: answer.body.battle.final_wave. */
 export const historyDetailAnswer_Status200_Body_Battle_FinalWaveSchema = z.number().nullable();
-/** Raw response path: answer.body.battle.final_wave. */
-export type HistoryDetailAnswer_Status200_Body_Battle_FinalWave = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_FinalWaveSchema
->;
 /** Strict raw response path: answer.body.battle.finalization_fingerprint. */
 export const historyDetailAnswer_Status200_Body_Battle_FinalizationFingerprintSchema = z.string();
-/** Raw response path: answer.body.battle.finalization_fingerprint. */
-export type HistoryDetailAnswer_Status200_Body_Battle_FinalizationFingerprint = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_FinalizationFingerprintSchema
->;
 /** Strict raw response path: answer.body.battle.generation. */
 export const historyDetailAnswer_Status200_Body_Battle_GenerationSchema = z.string();
-/** Raw response path: answer.body.battle.generation. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Generation = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_GenerationSchema
->;
 /** Strict raw response path: answer.body.battle.id. */
 export const historyDetailAnswer_Status200_Body_Battle_IdSchema = z.string();
-/** Raw response path: answer.body.battle.id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Id = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_IdSchema
->;
 /** Strict raw response path: answer.body.battle.label. */
 export const historyDetailAnswer_Status200_Body_Battle_LabelSchema = z.string();
-/** Raw response path: answer.body.battle.label. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Label = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_LabelSchema
->;
 /** Strict raw response path: answer.body.battle.observed_started_at. */
 export const historyDetailAnswer_Status200_Body_Battle_ObservedStartedAtSchema = z
   .number()
   .nullable();
-/** Raw response path: answer.body.battle.observed_started_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_ObservedStartedAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_ObservedStartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.operation_id. */
 export const historyDetailAnswer_Status200_Body_Battle_OperationIdSchema = z.string();
-/** Raw response path: answer.body.battle.operation_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_OperationId = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_OperationIdSchema
->;
 /** Strict raw response path: answer.body.battle.origin. */
 export const historyDetailAnswer_Status200_Body_Battle_OriginSchema = z.enum([
   'adopted',
   'partial_adoption',
   'started',
 ]);
-/** Raw response path: answer.body.battle.origin. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Origin = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_OriginSchema
->;
 /** Strict raw response path: answer.body.battle.outcome. */
 export const historyDetailAnswer_Status200_Body_Battle_OutcomeSchema = z.string();
-/** Raw response path: answer.body.battle.outcome. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Outcome = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_OutcomeSchema
->;
 /** Strict raw response path: answer.body.battle.overrides. */
 export const historyDetailAnswer_Status200_Body_Battle_OverridesSchema = z.strictObject({});
-/** Raw response path: answer.body.battle.overrides. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Overrides = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_OverridesSchema
->;
 /** Strict raw response path: answer.body.battle.prepared_at. */
 export const historyDetailAnswer_Status200_Body_Battle_PreparedAtSchema = z.number();
-/** Raw response path: answer.body.battle.prepared_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_PreparedAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_PreparedAtSchema
->;
 /** Strict raw response path: answer.body.battle.previous_battle_id. */
 export const historyDetailAnswer_Status200_Body_Battle_PreviousBattleIdSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battle.previous_battle_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_PreviousBattleId = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_PreviousBattleIdSchema
->;
 /** Strict raw response path: answer.body.battle.reason. */
 export const historyDetailAnswer_Status200_Body_Battle_ReasonSchema = z
   .enum([
@@ -4895,53 +2472,24 @@ export const historyDetailAnswer_Status200_Body_Battle_ReasonSchema = z
     'results_without_observed_entry',
   ])
   .nullable();
-/** Raw response path: answer.body.battle.reason. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Reason = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_ReasonSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.abilities.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.abilities.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Abilities_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.abilities. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AbilitiesSchema =
   z.strictObject({
     enabled:
       historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.abilities. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Abilities =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AbilitiesSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.ad_gems.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.ad_gems.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.ad_gems.interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.ad_gems.interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.ad_gems.window_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.ad_gems.window_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.ad_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGemsSchema =
   z.strictObject({
@@ -4952,42 +2500,18 @@ export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routine
     window_sec:
       historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.ad_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems.interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems.interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems.tap_interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems.tap_interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems.window_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems.window_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -5000,81 +2524,39 @@ export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routine
     window_sec:
       historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.repeat.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.repeat.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Repeat_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Repeat_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.repeat. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_RepeatSchema =
   z.strictObject({
     enabled:
       historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.repeat. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Repeat = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.rescue.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.rescue.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Rescue_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Rescue_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.rescue. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_RescueSchema =
   z.strictObject({
     enabled:
       historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.rescue. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Rescue = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.rewards.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.rewards.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Rewards_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.rewards. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_RewardsSchema =
   z.strictObject({
     enabled:
       historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.rewards. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Rewards = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.shopping.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.shopping.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.shopping.interval_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.shopping.interval_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.shopping. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_ShoppingSchema =
   z.strictObject({
@@ -5083,10 +2565,6 @@ export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routine
     interval_sec:
       historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.shopping. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_RoutinesSchema =
   z.strictObject({
@@ -5099,71 +2577,31 @@ export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routine
     rewards: historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_RewardsSchema,
     shopping: historyDetailAnswer_Status200_Body_Battle_RequestedControls_Routines_ShoppingSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_Routines = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.shopping_plan. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControls_ShoppingPlanSchema =
   z.null();
-/** Raw response path: answer.body.battle.requested_controls.shopping_plan. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls_ShoppingPlan = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_RequestedControls_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls. */
 export const historyDetailAnswer_Status200_Body_Battle_RequestedControlsSchema = z.strictObject({
   routines: historyDetailAnswer_Status200_Body_Battle_RequestedControls_RoutinesSchema,
   shopping_plan: historyDetailAnswer_Status200_Body_Battle_RequestedControls_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.battle.requested_controls. */
-export type HistoryDetailAnswer_Status200_Body_Battle_RequestedControls = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_RequestedControlsSchema
->;
 /** Strict raw response path: answer.body.battle.result. */
 export const historyDetailAnswer_Status200_Body_Battle_ResultSchema = z.string();
-/** Raw response path: answer.body.battle.result. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Result = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_ResultSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.ad_claim_confirmations. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_AdClaimConfirmationsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.ad_claim_confirmations. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_AdClaimConfirmations =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_AdClaimConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.coverage. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_CoverageSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.coverage. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_Coverage = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_CoverageSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.generation. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.generation. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_Generation =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_GenerationSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations.ad_gems.id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_AdGems_IdSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations.ad_gems.id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_AdGems_Id =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_AdGems_IdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations.ad_gems.observed_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_AdGems_ObservedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations.ad_gems.observed_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_AdGems_ObservedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_AdGems_ObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations.ad_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_AdGemsSchema =
   z.strictObject({
@@ -5171,27 +2609,12 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidenc
     observed_at:
       historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_AdGems_ObservedAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations.ad_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_AdGems =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_AdGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations.floating_gems.id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_FloatingGems_IdSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations.floating_gems.id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_FloatingGems_Id =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_FloatingGems_IdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations.floating_gems.observed_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_FloatingGems_ObservedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations.floating_gems.observed_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_FloatingGems_ObservedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_FloatingGems_ObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations.floating_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_FloatingGemsSchema =
   z.strictObject({
@@ -5199,11 +2622,6 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidenc
     observed_at:
       historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_FloatingGems_ObservedAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations.floating_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_FloatingGems =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmationsSchema =
   z.strictObject({
@@ -5212,43 +2630,18 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidenc
     floating_gems:
       historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations_FloatingGemsSchema.optional(),
   });
-/** Raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.observed_through_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_ObservedThroughAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.observed_through_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_ObservedThroughAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_ObservedThroughAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.orbit_balance_confirmations. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitBalanceConfirmationsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.orbit_balance_confirmations. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitBalanceConfirmations =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitBalanceConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.orbit_recorded_increase. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitRecordedIncreaseSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.orbit_recorded_increase. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitRecordedIncrease =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitRecordedIncreaseSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.started_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_StartedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.started_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_StartedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_StartedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidenceSchema =
   z.strictObject({
@@ -5268,47 +2661,21 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidenc
     started_at:
       historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_StartedAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.collection_evidence. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidence = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_CollectionEvidenceSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.driver_generation. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_DriverGenerationSchema = z.string();
-/** Raw response path: answer.body.battle.runtime.driver_generation. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_DriverGeneration = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_DriverGenerationSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.last_wave_provenance. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_LastWaveProvenanceSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.last_wave_provenance. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_LastWaveProvenance = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_LastWaveProvenanceSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observation_gap_started_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGapStartedAtSchema = z
   .number()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.observation_gap_started_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_ObservationGapStartedAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGapStartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observation_gaps[].ended_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps_ArrayElement_EndedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.observation_gaps[].ended_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps_ArrayElement_EndedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps_ArrayElement_EndedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.observation_gaps[].started_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps_ArrayElement_StartedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.observation_gaps[].started_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps_ArrayElement_StartedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps_ArrayElement_StartedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.observation_gaps[]. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps_ArrayElementSchema =
   z.strictObject({
@@ -5317,87 +2684,39 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps_A
     started_at:
       historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps_ArrayElement_StartedAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.observation_gaps[]. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps_ArrayElement =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.observation_gaps. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGapsSchema = z.array(
   historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.runtime.observation_gaps. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_ObservationGaps = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationGapsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observation_status. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationStatusSchema = z.enum([
   'observing',
   'waiting_for_game_state',
 ]);
-/** Raw response path: answer.body.battle.runtime.observation_status. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_ObservationStatus = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_ObservationStatusSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observed_duration_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_ObservedDurationSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.observed_duration_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_ObservedDurationSec = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_ObservedDurationSecSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observed_wave. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_ObservedWaveSchema = z.number();
-/** Raw response path: answer.body.battle.runtime.observed_wave. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_ObservedWave = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_ObservedWaveSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.blocker. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_BlockerSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_Blocker = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_Enabled = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_NextDueAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.server_time. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_ServerTime =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.state. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_StateSchema =
   z.enum(['watching']);
-/** Raw response path: answer.body.battle.runtime.routines.abilities.state. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_State = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AbilitiesSchema =
   z.strictObject({
@@ -5411,88 +2730,36 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilitie
     window_ends_at:
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.abilities. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Abilities = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.appearance_after_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_AppearanceAfterAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.appearance_after_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_AppearanceAfterAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_AppearanceAfterAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.blocker. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_BlockerSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Blocker = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.claim_attempt_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ClaimAttemptIdSchema =
   z.string().nullable();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.claim_attempt_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ClaimAttemptId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ClaimAttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.claim_rect. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ClaimRectSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.claim_rect. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ClaimRect = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ClaimRectSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.attempts. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_AttemptsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.attempts. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_Attempts =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_AttemptsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.checks. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_ChecksSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.checks. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_Checks =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_ChecksSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.confirmed. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_ConfirmedSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.confirmed. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_Confirmed =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_ConfirmedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.seen. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_SeenSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.seen. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_Seen =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_SeenSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.skips. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_SkipsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.skips. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_Skips =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_SkipsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.windows_missed. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_WindowsMissedSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.windows_missed. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_WindowsMissed =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_WindowsMissedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_CountersSchema =
   z.strictObject({
@@ -5506,42 +2773,18 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_C
     windows_missed:
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_WindowsMissedSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_CountersSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations.observed_wait_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_ObservedWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations.observed_wait_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_ObservedWaitSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_ObservedWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations.response_delay_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_ResponseDelaySecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations.response_delay_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_ResponseDelaySec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_ResponseDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations.scheduling_wait_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_SchedulingWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations.scheduling_wait_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_SchedulingWaitSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_SchedulingWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations.verification_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_VerificationSecSchema =
   z.number().nullable();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations.verification_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_VerificationSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_VerificationSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_DurationsSchema =
   z.strictObject({
@@ -5554,120 +2797,48 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_D
     verification_sec:
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_VerificationSecSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_DurationsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Enabled = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.first_seen_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_FirstSeenAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.first_seen_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_FirstSeenAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_FirstSeenAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_absent_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastAbsentAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_absent_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastAbsentAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastAbsentAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.claim_attempt_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ClaimAttemptIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.claim_attempt_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ClaimAttemptId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ClaimAttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.confirmed. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ConfirmedSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.confirmed. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_Confirmed =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ConfirmedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.observed_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ObservedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.observed_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ObservedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.observed_wait_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ObservedWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.observed_wait_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ObservedWaitSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ObservedWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.offer_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_OfferIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.offer_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_OfferId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_OfferIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.outcome. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_OutcomeSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.outcome. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_Outcome =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_OutcomeSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.reason. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ReasonSchema =
   z.enum(['offer_still_visible']);
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.reason. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_Reason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.response_delay_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ResponseDelaySecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.response_delay_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ResponseDelaySec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_ResponseDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.scheduling_wait_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_SchedulingWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.scheduling_wait_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_SchedulingWaitSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_SchedulingWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.verification_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_VerificationSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.verification_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_VerificationSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_VerificationSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.window_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_WindowIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt.window_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_WindowId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttemptSchema =
   z
@@ -5696,107 +2867,42 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_L
         historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt_WindowIdSchema,
     })
     .nullable();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttemptSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_observed_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastObservedAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_observed_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastObservedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.claim_attempt_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ClaimAttemptIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.claim_attempt_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ClaimAttemptId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ClaimAttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.confirmed. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ConfirmedSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.confirmed. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_Confirmed =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ConfirmedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.observed_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ObservedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.observed_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ObservedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.observed_wait_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ObservedWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.observed_wait_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ObservedWaitSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ObservedWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.offer_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_OfferIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.offer_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_OfferId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_OfferIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.outcome. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_OutcomeSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.outcome. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_Outcome =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_OutcomeSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.reason. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ReasonSchema =
   z.enum(['offer_disappeared', 'offer_still_visible']);
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.reason. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_Reason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.response_delay_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ResponseDelaySecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.response_delay_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ResponseDelaySec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_ResponseDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.scheduling_wait_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_SchedulingWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.scheduling_wait_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_SchedulingWaitSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_SchedulingWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.verification_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_VerificationSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.verification_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_VerificationSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_VerificationSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.window_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_WindowIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome.window_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_WindowId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcomeSchema = z
   .strictObject({
@@ -5824,141 +2930,60 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_L
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome_WindowIdSchema,
   })
   .nullable();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcomeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_seen_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastSeenAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_seen_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastSeenAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastSeenAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.manual_active. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ManualActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.manual_active. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ManualActive =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ManualActiveSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.manual_pending. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ManualPendingSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.manual_pending. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ManualPending =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ManualPendingSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.next_check_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_NextCheckAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.next_check_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_NextCheckAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_NextCheckAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_NextDueAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.observation_age_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ObservationAgeSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.observation_age_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ObservationAgeSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ObservationAgeSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.offer_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_OfferIdSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.offer_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_OfferId = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_OfferIdSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.response_due_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ResponseDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.response_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ResponseDueAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ResponseDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.response_started_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ResponseStartedAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.response_started_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ResponseStartedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ResponseStartedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.server_time. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ServerTime = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.stale_after_sec. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_StaleAfterSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.stale_after_sec. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_StaleAfterSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_StaleAfterSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.state. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_StateSchema = z.enum(
   ['scheduled'],
 );
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.state. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_State = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.visibility. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_VisibilitySchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.visibility. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Visibility = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_VisibilitySchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.visibility_reason. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_VisibilityReasonSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.visibility_reason. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_VisibilityReason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_VisibilityReasonSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.window_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowIdSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.window_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowId = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowIdSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.window_started_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowStartedAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.window_started_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowStartedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowStartedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGemsSchema =
   z.strictObject({
@@ -6010,74 +3035,30 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGemsSc
     window_started_at:
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowStartedAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGems = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.attempt_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_AttemptIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.attempt_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_AttemptId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_AttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.blocker. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_BlockerSchema =
   z.string().nullable();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_Blocker =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome.attempt_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_AttemptIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome.attempt_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_AttemptId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_AttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome.confirmed. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_ConfirmedSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome.confirmed. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_Confirmed =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_ConfirmedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome.observed_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_ObservedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome.observed_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_ObservedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_ObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome.reason. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_ReasonSchema =
   z.enum(['attempt_timeout', 'balance_increased']);
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome.reason. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_Reason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome.window_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_WindowIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome.window_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_WindowId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcomeSchema =
   z
@@ -6094,74 +3075,30 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Floating
         historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome_WindowIdSchema,
     })
     .nullable();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.last_refusal. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastRefusalSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.last_refusal. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastRefusal =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastRefusalSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.manual_active. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ManualActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.manual_active. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ManualActive =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ManualActiveSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.manual_pending. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ManualPendingSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.manual_pending. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ManualPending =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ManualPendingSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_NextDueAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.server_time. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ServerTime =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.state. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_StateSchema =
   z.enum(['off']);
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.state. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_State = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.window_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.window_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -6187,55 +3124,26 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Floating
     window_id:
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowIdSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.blocker. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_BlockerSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_Blocker = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_Enabled = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_NextDueAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.server_time. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_ServerTime = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.state. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_StateSchema = z.enum(
   ['boundary_wait'],
 );
-/** Raw response path: answer.body.battle.runtime.routines.repeat.state. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_State = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_RepeatSchema =
   z.strictObject({
@@ -6247,55 +3155,26 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_RepeatSc
     window_ends_at:
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.repeat. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Repeat = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.blocker. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_BlockerSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_Blocker = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_Enabled = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_NextDueAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.server_time. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_ServerTime = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.state. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_StateSchema = z.enum(
   ['watching'],
 );
-/** Raw response path: answer.body.battle.runtime.routines.rescue.state. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_State = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_RescueSchema =
   z.strictObject({
@@ -6307,54 +3186,25 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_RescueSc
     window_ends_at:
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.rescue. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rescue = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.blocker. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_BlockerSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_Blocker = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_Enabled = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_NextDueAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.server_time. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_ServerTime = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.state. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_StateSchema =
   z.enum(['watching']);
-/** Raw response path: answer.body.battle.runtime.routines.rewards.state. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_State = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_RewardsSchema =
   z.strictObject({
@@ -6367,81 +3217,34 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_RewardsS
     window_ends_at:
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.rewards. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Rewards = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.blocker. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_BlockerSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_Blocker = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.enabled. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_Enabled = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.active. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.active. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Active =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ActiveSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.attempts. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_AttemptsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.attempts. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Attempts =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_AttemptsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.cadence. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CadenceSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.cadence. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Cadence =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CadenceSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.cash_reserve. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CashReserveSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.cash_reserve. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CashReserve =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.confirmed_purchases. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ConfirmedPurchasesSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.confirmed_purchases. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ConfirmedPurchases =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ConfirmedPurchasesSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget.purchases. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_PurchasesSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget.purchases. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_Purchases =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_PurchasesSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget.seconds. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget.seconds. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_Seconds =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudgetSchema =
   z.strictObject({
@@ -6450,43 +3253,18 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping
     seconds:
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudgetSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_ready. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationReadySchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_ready. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationReady =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationReadySchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.count_semantics. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CountSemanticsSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.count_semantics. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CountSemantics =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CountSemanticsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision.action. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ActionSchema =
   z.enum(['wait']);
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision.action. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_Action =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ActionSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision.reason. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ReasonSchema =
   z.enum(['not_started']);
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision.reason. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_Reason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_DecisionSchema =
   z.strictObject({
@@ -6495,83 +3273,33 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping
     reason:
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ReasonSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_DecisionSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.last_confirmation. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastConfirmationSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.last_confirmation. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastConfirmation =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastConfirmationSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.last_sweep. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastSweepSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.last_sweep. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastSweep =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastSweepSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.manual. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ManualSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.manual. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Manual =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ManualSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.pending_confirmation. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_PendingConfirmationSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.pending_confirmation. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_PendingConfirmation =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_PendingConfirmationSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.quantity_observation_supported. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_QuantityObservationSupportedSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.quantity_observation_supported. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_QuantityObservationSupported =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_QuantityObservationSupportedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.reserve_enforcement. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveEnforcementSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.reserve_enforcement. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveEnforcement =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveEnforcementSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.reserve_supported. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveSupportedSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.reserve_supported. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveSupported =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveSupportedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.sweep_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_SweepIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.sweep_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_SweepId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_SweepIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.version. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_VersionSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.version. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Version =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_VersionSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcomeSchema =
   z.strictObject({
@@ -6612,41 +3340,18 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping
     version:
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_VersionSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_NextDueAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.server_time. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_ServerTime =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.state. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_StateSchema =
   z.enum(['scheduled']);
-/** Raw response path: answer.body.battle.runtime.routines.shopping.state. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_State = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_ShoppingSchema =
   z.strictObject({
@@ -6662,10 +3367,6 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping
     window_ends_at:
       historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.shopping. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines_Shopping = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_RoutinesSchema = z.strictObject({
   abilities: historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_AbilitiesSchema,
@@ -6676,77 +3377,32 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_RoutinesSchema = 
   rewards: historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_RewardsSchema,
   shopping: historyDetailAnswer_Status200_Body_Battle_Runtime_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.battle.runtime.routines. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Routines = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.server_time. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_ServerTimeSchema = z.number();
-/** Raw response path: answer.body.battle.runtime.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_ServerTime = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.continued_with_partial. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_ContinuedWithPartialSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.setup.continued_with_partial. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup_ContinuedWithPartial = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_ContinuedWithPartialSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.detail. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_DetailSchema = z.string();
-/** Raw response path: answer.body.battle.runtime.setup.detail. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup_Detail = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_DetailSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.loadout. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_LoadoutSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.setup.loadout. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup_Loadout = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_LoadoutSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.modules[].detail. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_DetailSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.setup.modules[].detail. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_Detail =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_DetailSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.setup.modules[].module. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_ModuleSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.setup.modules[].module. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_Module =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_ModuleSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.setup.modules[].reason. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_ReasonSchema =
   z.enum(['module_not_positively_equipped']).nullable();
-/** Raw response path: answer.body.battle.runtime.setup.modules[].reason. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_Reason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.setup.modules[].role. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_RoleSchema =
   z.enum(['category']);
-/** Raw response path: answer.body.battle.runtime.setup.modules[].role. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_Role =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_RoleSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.setup.modules[].state. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_StateSchema =
   z.enum(['unknown', 'verified']);
-/** Raw response path: answer.body.battle.runtime.setup.modules[].state. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_State =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_StateSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.setup.modules[]. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElementSchema =
   z.strictObject({
@@ -6759,18 +3415,10 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_Arr
     role: historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_RoleSchema,
     state: historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement_StateSchema,
   });
-/** Raw response path: answer.body.battle.runtime.setup.modules[]. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElement = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.modules. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_ModulesSchema = z.array(
   historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.runtime.setup.modules. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup_Modules = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_ModulesSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.reason. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_ReasonSchema = z
   .enum([
@@ -6780,20 +3428,12 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_ReasonSchem
     'the module plan could not be equipped',
   ])
   .nullable();
-/** Raw response path: answer.body.battle.runtime.setup.reason. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup_Reason = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_ReasonSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.state. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_StateSchema = z.enum([
   'degraded',
   'unknown',
   'verified',
 ]);
-/** Raw response path: answer.body.battle.runtime.setup.state. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup_State = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_SetupSchema = z.strictObject({
   continued_with_partial:
@@ -6804,84 +3444,39 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_SetupSchema = z.s
   reason: historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_ReasonSchema,
   state: historyDetailAnswer_Status200_Body_Battle_Runtime_Setup_StateSchema,
 });
-/** Raw response path: answer.body.battle.runtime.setup. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_Setup = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_SetupSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.artifact. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_ArtifactSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.stats_capture.artifact. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_Artifact = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_ArtifactSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.battle_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_BattleIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.stats_capture.battle_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_BattleId = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_BattleIdSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.copied_tier. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_CopiedTierSchema = z
   .number()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.stats_capture.copied_tier. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_CopiedTier = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_CopiedTierSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.copied_wave. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_CopiedWaveSchema = z
   .number()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.stats_capture.copied_wave. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_CopiedWave = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_CopiedWaveSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.envelope_hash. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_EnvelopeHashSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.stats_capture.envelope_hash. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_EnvelopeHash = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_EnvelopeHashSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.error. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_ErrorSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.stats_capture.error. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_Error = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_ErrorSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.fresh. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_FreshSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.stats_capture.fresh. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_Fresh = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_FreshSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.freshness_method. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_FreshnessMethodSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.stats_capture.freshness_method. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_FreshnessMethod =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_FreshnessMethodSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.sequence_after. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_SequenceAfterSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.stats_capture.sequence_after. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_SequenceAfter = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_SequenceAfterSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.sequence_before. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_SequenceBeforeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.stats_capture.sequence_before. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_SequenceBefore = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_SequenceBeforeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.status. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_StatusSchema = z.enum([
   'captured_unverified',
@@ -6889,40 +3484,20 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_Stat
   'pending',
   'verified',
 ]);
-/** Raw response path: answer.body.battle.runtime.stats_capture.status. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_Status = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_StatusSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.structured. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_StructuredSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.stats_capture.structured. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_Structured = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_StructuredSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.tier_matches. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_TierMatchesSchema = z
   .boolean()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.stats_capture.tier_matches. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_TierMatches = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_TierMatchesSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.verified. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_VerifiedSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.stats_capture.verified. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_Verified = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_VerifiedSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture.wave_consistent. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_WaveConsistentSchema = z
   .boolean()
   .nullable();
-/** Raw response path: answer.body.battle.runtime.stats_capture.wave_consistent. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_WaveConsistent = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_WaveConsistentSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.stats_capture. */
 export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCaptureSchema = z.strictObject({
   artifact: historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_ArtifactSchema,
@@ -6951,10 +3526,6 @@ export const historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCaptureSchem
   wave_consistent:
     historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture_WaveConsistentSchema.optional(),
 });
-/** Raw response path: answer.body.battle.runtime.stats_capture. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime_StatsCapture = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCaptureSchema
->;
 /** Strict raw response path: answer.body.battle.runtime. */
 export const historyDetailAnswer_Status200_Body_Battle_RuntimeSchema = z.strictObject({
   collection_evidence:
@@ -6977,39 +3548,19 @@ export const historyDetailAnswer_Status200_Body_Battle_RuntimeSchema = z.strictO
   setup: historyDetailAnswer_Status200_Body_Battle_Runtime_SetupSchema,
   stats_capture: historyDetailAnswer_Status200_Body_Battle_Runtime_StatsCaptureSchema.optional(),
 });
-/** Raw response path: answer.body.battle.runtime. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Runtime = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_RuntimeSchema
->;
 /** Strict raw response path: answer.body.battle.segments[].ended_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_EndedAtSchema = z
   .number()
   .nullable();
-/** Raw response path: answer.body.battle.segments[].ended_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_EndedAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_EndedAtSchema
->;
 /** Strict raw response path: answer.body.battle.segments[].generation. */
 export const historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.battle.segments[].generation. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_Generation = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_GenerationSchema
->;
 /** Strict raw response path: answer.body.battle.segments[].operation_id. */
 export const historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.segments[].operation_id. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_OperationId = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_OperationIdSchema
->;
 /** Strict raw response path: answer.body.battle.segments[].started_at. */
 export const historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_StartedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.segments[].started_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_StartedAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_StartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.segments[]. */
 export const historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElementSchema = z.strictObject(
   {
@@ -7019,30 +3570,14 @@ export const historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElementSche
     started_at: historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElement_StartedAtSchema,
   },
 );
-/** Raw response path: answer.body.battle.segments[]. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Segments_ArrayElement = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.segments. */
 export const historyDetailAnswer_Status200_Body_Battle_SegmentsSchema = z.array(
   historyDetailAnswer_Status200_Body_Battle_Segments_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.segments. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Segments = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_SegmentsSchema
->;
 /** Strict raw response path: answer.body.battle.start_certainty. */
 export const historyDetailAnswer_Status200_Body_Battle_StartCertaintySchema = z.string();
-/** Raw response path: answer.body.battle.start_certainty. */
-export type HistoryDetailAnswer_Status200_Body_Battle_StartCertainty = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_StartCertaintySchema
->;
 /** Strict raw response path: answer.body.battle.started_at. */
 export const historyDetailAnswer_Status200_Body_Battle_StartedAtSchema = z.number().nullable();
-/** Raw response path: answer.body.battle.started_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_StartedAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_StartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.status. */
 export const historyDetailAnswer_Status200_Body_Battle_StatusSchema = z.enum([
   'active',
@@ -7050,34 +3585,14 @@ export const historyDetailAnswer_Status200_Body_Battle_StatusSchema = z.enum([
   'interrupted',
   'prepared',
 ]);
-/** Raw response path: answer.body.battle.status. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Status = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_StatusSchema
->;
 /** Strict raw response path: answer.body.battle.tier. */
 export const historyDetailAnswer_Status200_Body_Battle_TierSchema = z.number();
-/** Raw response path: answer.body.battle.tier. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Tier = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_TierSchema
->;
 /** Strict raw response path: answer.body.battle.updated_at. */
 export const historyDetailAnswer_Status200_Body_Battle_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.battle.updated_at. */
-export type HistoryDetailAnswer_Status200_Body_Battle_UpdatedAt = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.battle.wave. */
 export const historyDetailAnswer_Status200_Body_Battle_WaveSchema = z.number().nullable();
-/** Raw response path: answer.body.battle.wave. */
-export type HistoryDetailAnswer_Status200_Body_Battle_Wave = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_WaveSchema
->;
 /** Strict raw response path: answer.body.battle.wave_provenance. */
 export const historyDetailAnswer_Status200_Body_Battle_WaveProvenanceSchema = z.string();
-/** Raw response path: answer.body.battle.wave_provenance. */
-export type HistoryDetailAnswer_Status200_Body_Battle_WaveProvenance = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Battle_WaveProvenanceSchema
->;
 /** Strict raw response path: answer.body.battle. */
 export const historyDetailAnswer_Status200_Body_BattleSchema = z.strictObject({
   applied_controls: historyDetailAnswer_Status200_Body_Battle_AppliedControlsSchema,
@@ -7121,34 +3636,14 @@ export const historyDetailAnswer_Status200_Body_BattleSchema = z.strictObject({
   wave: historyDetailAnswer_Status200_Body_Battle_WaveSchema,
   wave_provenance: historyDetailAnswer_Status200_Body_Battle_WaveProvenanceSchema,
 });
-/** Raw response path: answer.body.battle. */
-export type HistoryDetailAnswer_Status200_Body_Battle = z.infer<
-  typeof historyDetailAnswer_Status200_Body_BattleSchema
->;
 /** Strict raw response path: answer.body.context.account. */
 export const historyDetailAnswer_Status200_Body_Context_AccountSchema = z.string().nullable();
-/** Raw response path: answer.body.context.account. */
-export type HistoryDetailAnswer_Status200_Body_Context_Account = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.context.device_key. */
 export const historyDetailAnswer_Status200_Body_Context_DeviceKeySchema = z.string();
-/** Raw response path: answer.body.context.device_key. */
-export type HistoryDetailAnswer_Status200_Body_Context_DeviceKey = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.context.instance. */
 export const historyDetailAnswer_Status200_Body_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.context.instance. */
-export type HistoryDetailAnswer_Status200_Body_Context_Instance = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.context.serial. */
 export const historyDetailAnswer_Status200_Body_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.context.serial. */
-export type HistoryDetailAnswer_Status200_Body_Context_Serial = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.context. */
 export const historyDetailAnswer_Status200_Body_ContextSchema = z.strictObject({
   account: historyDetailAnswer_Status200_Body_Context_AccountSchema,
@@ -7156,52 +3651,23 @@ export const historyDetailAnswer_Status200_Body_ContextSchema = z.strictObject({
   instance: historyDetailAnswer_Status200_Body_Context_InstanceSchema,
   serial: historyDetailAnswer_Status200_Body_Context_SerialSchema,
 });
-/** Raw response path: answer.body.context. */
-export type HistoryDetailAnswer_Status200_Body_Context = z.infer<
-  typeof historyDetailAnswer_Status200_Body_ContextSchema
->;
 /** Strict raw response path: answer.body.events[].battle_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_BattleIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].battle_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_BattleId = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_BattleIdSchema
->;
 /** Strict raw response path: answer.body.events[].envelope_hash. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_EnvelopeHashSchema =
   z.string();
-/** Raw response path: answer.body.events[].envelope_hash. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_EnvelopeHash =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_EnvelopeHashSchema
-  >;
 /** Strict raw response path: answer.body.events[].generation. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.events[].generation. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_Generation = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_GenerationSchema
->;
 /** Strict raw response path: answer.body.events[].sequence. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_SequenceSchema =
   z.number();
-/** Raw response path: answer.body.events[].sequence. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_Sequence = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_SequenceSchema
->;
 /** Strict raw response path: answer.body.events[].t. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_TSchema = z.number();
-/** Raw response path: answer.body.events[].t. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_T = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_TSchema
->;
 /** Strict raw response path: answer.body.events[].timestamp. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_TimestampSchema =
   z.number();
-/** Raw response path: answer.body.events[].timestamp. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_Timestamp = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_TimestampSchema
->;
 /** Strict raw response path: answer.body.events[], variant: kind active. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActiveSchema =
   z.strictObject({
@@ -7214,48 +3680,21 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActiveSc
     t: historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_TSchema,
     timestamp: historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActive_TimestampSchema,
   });
-/** Raw response path: answer.body.events[], variant: kind active. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindActive = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindActiveSchema
->;
 /** Strict raw response path: answer.body.events[].battle_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_BattleIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].battle_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_BattleId = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_BattleIdSchema
->;
 /** Strict raw response path: answer.body.events[].envelope_hash. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_EnvelopeHashSchema =
   z.string();
-/** Raw response path: answer.body.events[].envelope_hash. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_EnvelopeHash = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_EnvelopeHashSchema
->;
 /** Strict raw response path: answer.body.events[].evidence.last_observed_wave. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Evidence_LastObservedWaveSchema =
   z.number();
-/** Raw response path: answer.body.events[].evidence.last_observed_wave. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Evidence_LastObservedWave =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Evidence_LastObservedWaveSchema
-  >;
 /** Strict raw response path: answer.body.events[].evidence.note. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Evidence_NoteSchema =
   z.string();
-/** Raw response path: answer.body.events[].evidence.note. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Evidence_Note =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Evidence_NoteSchema
-  >;
 /** Strict raw response path: answer.body.events[].evidence.outcome_certainty. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Evidence_OutcomeCertaintySchema =
   z.string();
-/** Raw response path: answer.body.events[].evidence.outcome_certainty. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Evidence_OutcomeCertainty =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Evidence_OutcomeCertaintySchema
-  >;
 /** Strict raw response path: answer.body.events[].evidence. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_EvidenceSchema =
   z.strictObject({
@@ -7265,52 +3704,24 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Ev
     outcome_certainty:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Evidence_OutcomeCertaintySchema.optional(),
   });
-/** Raw response path: answer.body.events[].evidence. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Evidence = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_EvidenceSchema
->;
 /** Strict raw response path: answer.body.events[].generation. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.events[].generation. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Generation = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_GenerationSchema
->;
 /** Strict raw response path: answer.body.events[].outcome. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_OutcomeSchema =
   z.string();
-/** Raw response path: answer.body.events[].outcome. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Outcome = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_OutcomeSchema
->;
 /** Strict raw response path: answer.body.events[].reason. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_ReasonSchema = z.enum(
   ['a_reason_this_version_does_not_know', 'driver_surrendered_its_own_run', 'observed_results'],
 );
-/** Raw response path: answer.body.events[].reason. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Reason = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_ReasonSchema
->;
 /** Strict raw response path: answer.body.events[].sequence. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_SequenceSchema =
   z.number();
-/** Raw response path: answer.body.events[].sequence. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Sequence = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_SequenceSchema
->;
 /** Strict raw response path: answer.body.events[].t. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_TSchema = z.number();
-/** Raw response path: answer.body.events[].t. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_T = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_TSchema
->;
 /** Strict raw response path: answer.body.events[].timestamp. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_TimestampSchema =
   z.number();
-/** Raw response path: answer.body.events[].timestamp. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_Timestamp = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_TimestampSchema
->;
 /** Strict raw response path: answer.body.events[], variant: kind ended. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEndedSchema =
   z.strictObject({
@@ -7326,80 +3737,33 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEndedSch
     t: historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_TSchema,
     timestamp: historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded_TimestampSchema,
   });
-/** Raw response path: answer.body.events[], variant: kind ended. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindEnded = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindEndedSchema
->;
 /** Strict raw response path: answer.body.events[].battle_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_BattleIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].battle_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_BattleId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_BattleIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].envelope_hash. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_EnvelopeHashSchema =
   z.string();
-/** Raw response path: answer.body.events[].envelope_hash. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_EnvelopeHash =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_EnvelopeHashSchema
-  >;
 /** Strict raw response path: answer.body.events[].evidence. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_EvidenceSchema =
   z.null();
-/** Raw response path: answer.body.events[].evidence. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_Evidence =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_EvidenceSchema
-  >;
 /** Strict raw response path: answer.body.events[].generation. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.events[].generation. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_Generation =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_GenerationSchema
-  >;
 /** Strict raw response path: answer.body.events[].outcome. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_OutcomeSchema =
   z.string();
-/** Raw response path: answer.body.events[].outcome. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_Outcome =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_OutcomeSchema
-  >;
 /** Strict raw response path: answer.body.events[].reason. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_ReasonSchema =
   z.enum(['driver_operation_ended', 'results_without_observed_entry']);
-/** Raw response path: answer.body.events[].reason. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_Reason = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_ReasonSchema
->;
 /** Strict raw response path: answer.body.events[].sequence. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_SequenceSchema =
   z.number();
-/** Raw response path: answer.body.events[].sequence. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_Sequence =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_SequenceSchema
-  >;
 /** Strict raw response path: answer.body.events[].t. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_TSchema =
   z.number();
-/** Raw response path: answer.body.events[].t. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_T = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_TSchema
->;
 /** Strict raw response path: answer.body.events[].timestamp. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_TimestampSchema =
   z.number();
-/** Raw response path: answer.body.events[].timestamp. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_Timestamp =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_TimestampSchema
-  >;
 /** Strict raw response path: answer.body.events[], variant: kind interrupted. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterruptedSchema =
   z.strictObject({
@@ -7418,54 +3782,24 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrup
     timestamp:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted_TimestampSchema,
   });
-/** Raw response path: answer.body.events[], variant: kind interrupted. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindInterrupted = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindInterruptedSchema
->;
 /** Strict raw response path: answer.body.events[].battle_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_BattleIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].battle_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_BattleId = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_BattleIdSchema
->;
 /** Strict raw response path: answer.body.events[].envelope_hash. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_EnvelopeHashSchema =
   z.string();
-/** Raw response path: answer.body.events[].envelope_hash. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_EnvelopeHash =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_EnvelopeHashSchema
-  >;
 /** Strict raw response path: answer.body.events[].generation. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.events[].generation. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_Generation =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_GenerationSchema
-  >;
 /** Strict raw response path: answer.body.events[].sequence. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_SequenceSchema =
   z.number();
-/** Raw response path: answer.body.events[].sequence. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_Sequence = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_SequenceSchema
->;
 /** Strict raw response path: answer.body.events[].t. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_TSchema =
   z.number();
-/** Raw response path: answer.body.events[].t. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_T = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_TSchema
->;
 /** Strict raw response path: answer.body.events[].timestamp. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_TimestampSchema =
   z.number();
-/** Raw response path: answer.body.events[].timestamp. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_Timestamp = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_TimestampSchema
->;
 /** Strict raw response path: answer.body.events[], variant: kind prepared. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPreparedSchema =
   z.strictObject({
@@ -7479,79 +3813,33 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared
     t: historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_TSchema,
     timestamp: historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared_TimestampSchema,
   });
-/** Raw response path: answer.body.events[], variant: kind prepared. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindPrepared = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindPreparedSchema
->;
 /** Strict raw response path: answer.body.events[].battle_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_BattleIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].battle_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_BattleId = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_BattleIdSchema
->;
 /** Strict raw response path: answer.body.events[].envelope_hash. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_EnvelopeHashSchema =
   z.string();
-/** Raw response path: answer.body.events[].envelope_hash. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_EnvelopeHash =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_EnvelopeHashSchema
-  >;
 /** Strict raw response path: answer.body.events[].generation. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.events[].generation. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Generation = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_GenerationSchema
->;
 /** Strict raw response path: answer.body.events[].sequence. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_SequenceSchema =
   z.number();
-/** Raw response path: answer.body.events[].sequence. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Sequence = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_SequenceSchema
->;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.ad_claim_confirmations. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_AdClaimConfirmationsSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.collection_evidence.ad_claim_confirmations. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_AdClaimConfirmations =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_AdClaimConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.coverage. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_CoverageSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.collection_evidence.coverage. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_Coverage =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_CoverageSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.generation. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.collection_evidence.generation. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_Generation =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_GenerationSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.latest_confirmations.ad_gems.id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_AdGems_IdSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.collection_evidence.latest_confirmations.ad_gems.id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_AdGems_Id =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_AdGems_IdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.latest_confirmations.ad_gems.observed_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_AdGems_ObservedAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.collection_evidence.latest_confirmations.ad_gems.observed_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_AdGems_ObservedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_AdGems_ObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.latest_confirmations.ad_gems. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_AdGemsSchema =
   z.strictObject({
@@ -7559,27 +3847,12 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     observed_at:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_AdGems_ObservedAtSchema,
   });
-/** Raw response path: answer.body.events[].status.collection_evidence.latest_confirmations.ad_gems. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_AdGems =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_AdGemsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.latest_confirmations.floating_gems.id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_FloatingGems_IdSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.collection_evidence.latest_confirmations.floating_gems.id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_FloatingGems_Id =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_FloatingGems_IdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.latest_confirmations.floating_gems.observed_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_FloatingGems_ObservedAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.collection_evidence.latest_confirmations.floating_gems.observed_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_FloatingGems_ObservedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_FloatingGems_ObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.latest_confirmations.floating_gems. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_FloatingGemsSchema =
   z.strictObject({
@@ -7587,11 +3860,6 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     observed_at:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_FloatingGems_ObservedAtSchema,
   });
-/** Raw response path: answer.body.events[].status.collection_evidence.latest_confirmations.floating_gems. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_FloatingGems =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.latest_confirmations. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmationsSchema =
   z.strictObject({
@@ -7600,43 +3868,18 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     floating_gems:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations_FloatingGemsSchema.optional(),
   });
-/** Raw response path: answer.body.events[].status.collection_evidence.latest_confirmations. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmations =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_LatestConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.observed_through_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_ObservedThroughAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.collection_evidence.observed_through_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_ObservedThroughAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_ObservedThroughAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.orbit_balance_confirmations. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_OrbitBalanceConfirmationsSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.collection_evidence.orbit_balance_confirmations. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_OrbitBalanceConfirmations =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_OrbitBalanceConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.orbit_recorded_increase. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_OrbitRecordedIncreaseSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.collection_evidence.orbit_recorded_increase. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_OrbitRecordedIncrease =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_OrbitRecordedIncreaseSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence.started_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_StartedAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.collection_evidence.started_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_StartedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_StartedAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.collection_evidence. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidenceSchema =
   z.strictObject({
@@ -7657,51 +3900,21 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     started_at:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence_StartedAtSchema,
   });
-/** Raw response path: answer.body.events[].status.collection_evidence. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidence =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_CollectionEvidenceSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.driver_generation. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_DriverGenerationSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.driver_generation. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_DriverGeneration =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_DriverGenerationSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.last_wave_provenance. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_LastWaveProvenanceSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.last_wave_provenance. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_LastWaveProvenance =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_LastWaveProvenanceSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.observation_gap_started_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGapStartedAtSchema =
   z.number().nullable();
-/** Raw response path: answer.body.events[].status.observation_gap_started_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGapStartedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGapStartedAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.observation_gaps[].ended_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGaps_ArrayElement_EndedAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.observation_gaps[].ended_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGaps_ArrayElement_EndedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGaps_ArrayElement_EndedAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.observation_gaps[].started_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGaps_ArrayElement_StartedAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.observation_gaps[].started_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGaps_ArrayElement_StartedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGaps_ArrayElement_StartedAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.observation_gaps[]. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGaps_ArrayElementSchema =
   z.strictObject({
@@ -7710,93 +3923,38 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     started_at:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGaps_ArrayElement_StartedAtSchema,
   });
-/** Raw response path: answer.body.events[].status.observation_gaps[]. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGaps_ArrayElement =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGaps_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.observation_gaps. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGapsSchema =
   z.array(
     historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGaps_ArrayElementSchema,
   );
-/** Raw response path: answer.body.events[].status.observation_gaps. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGaps =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationGapsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.observation_status. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationStatusSchema =
   z.enum(['observing', 'waiting_for_game_state']);
-/** Raw response path: answer.body.events[].status.observation_status. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationStatus =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservationStatusSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.observed_duration_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservedDurationSecSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.observed_duration_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservedDurationSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservedDurationSecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.observed_wave. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservedWaveSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.observed_wave. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservedWave =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ObservedWaveSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.abilities.blocker. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_BlockerSchema =
   z.string().nullable();
-/** Raw response path: answer.body.events[].status.routines.abilities.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_Blocker =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.abilities.enabled. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.abilities.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.abilities.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.abilities.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_NextDueAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.abilities.server_time. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.abilities.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_ServerTime =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.abilities.state. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_StateSchema =
   z.enum(['watching']);
-/** Raw response path: answer.body.events[].status.routines.abilities.state. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_State =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_StateSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.abilities.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.abilities.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.abilities. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AbilitiesSchema =
   z.strictObject({
@@ -7813,91 +3971,36 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     window_ends_at:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.events[].status.routines.abilities. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Abilities =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AbilitiesSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.appearance_after_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_AppearanceAfterAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.appearance_after_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_AppearanceAfterAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_AppearanceAfterAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.blocker. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_BlockerSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Blocker =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.claim_attempt_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ClaimAttemptIdSchema =
   z.string().nullable();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.claim_attempt_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ClaimAttemptId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ClaimAttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.claim_rect. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ClaimRectSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.claim_rect. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ClaimRect =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ClaimRectSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.counters.attempts. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_AttemptsSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.counters.attempts. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_Attempts =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_AttemptsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.counters.checks. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_ChecksSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.counters.checks. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_Checks =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_ChecksSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.counters.confirmed. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_ConfirmedSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.counters.confirmed. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_Confirmed =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_ConfirmedSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.counters.seen. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_SeenSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.counters.seen. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_Seen =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_SeenSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.counters.skips. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_SkipsSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.counters.skips. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_Skips =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_SkipsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.counters.windows_missed. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_WindowsMissedSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.counters.windows_missed. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_WindowsMissed =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_WindowsMissedSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.counters. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_CountersSchema =
   z.strictObject({
@@ -7913,43 +4016,18 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     windows_missed:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters_WindowsMissedSchema,
   });
-/** Raw response path: answer.body.events[].status.routines.ad_gems.counters. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Counters =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_CountersSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.durations.observed_wait_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_ObservedWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.durations.observed_wait_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_ObservedWaitSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_ObservedWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.durations.response_delay_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_ResponseDelaySecSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.durations.response_delay_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_ResponseDelaySec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_ResponseDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.durations.scheduling_wait_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_SchedulingWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.durations.scheduling_wait_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_SchedulingWaitSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_SchedulingWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.durations.verification_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_VerificationSecSchema =
   z.number().nullable();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.durations.verification_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_VerificationSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_VerificationSecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.durations. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_DurationsSchema =
   z.strictObject({
@@ -7962,123 +4040,48 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     verification_sec:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations_VerificationSecSchema,
   });
-/** Raw response path: answer.body.events[].status.routines.ad_gems.durations. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Durations =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_DurationsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.enabled. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.first_seen_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_FirstSeenAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.first_seen_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_FirstSeenAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_FirstSeenAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_absent_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastAbsentAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_absent_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastAbsentAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastAbsentAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.claim_attempt_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ClaimAttemptIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.claim_attempt_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ClaimAttemptId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ClaimAttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.confirmed. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ConfirmedSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.confirmed. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_Confirmed =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ConfirmedSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.observed_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ObservedAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.observed_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ObservedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.observed_wait_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ObservedWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.observed_wait_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ObservedWaitSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ObservedWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.offer_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_OfferIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.offer_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_OfferId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_OfferIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.outcome. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_OutcomeSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.outcome. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_Outcome =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_OutcomeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.reason. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ReasonSchema =
   z.enum(['offer_still_visible']);
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.reason. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_Reason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.response_delay_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ResponseDelaySecSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.response_delay_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ResponseDelaySec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_ResponseDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.scheduling_wait_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_SchedulingWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.scheduling_wait_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_SchedulingWaitSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_SchedulingWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.verification_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_VerificationSecSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.verification_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_VerificationSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_VerificationSecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.window_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_WindowIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt.window_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_WindowId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttemptSchema =
   z
@@ -8107,107 +4110,42 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
         historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt_WindowIdSchema,
     })
     .nullable();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_failed_attempt. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttempt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastFailedAttemptSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_observed_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastObservedAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_observed_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastObservedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.claim_attempt_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ClaimAttemptIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.claim_attempt_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ClaimAttemptId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ClaimAttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.confirmed. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ConfirmedSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.confirmed. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_Confirmed =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ConfirmedSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.observed_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ObservedAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.observed_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ObservedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.observed_wait_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ObservedWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.observed_wait_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ObservedWaitSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ObservedWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.offer_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_OfferIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.offer_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_OfferId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_OfferIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.outcome. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_OutcomeSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.outcome. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_Outcome =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_OutcomeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.reason. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ReasonSchema =
   z.enum(['offer_disappeared', 'offer_still_visible']);
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.reason. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_Reason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.response_delay_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ResponseDelaySecSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.response_delay_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ResponseDelaySec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_ResponseDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.scheduling_wait_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_SchedulingWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.scheduling_wait_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_SchedulingWaitSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_SchedulingWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.verification_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_VerificationSecSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.verification_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_VerificationSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_VerificationSecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.window_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_WindowIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_outcome.window_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_WindowId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_outcome. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcomeSchema =
   z
@@ -8236,147 +4174,57 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
         historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome_WindowIdSchema,
     })
     .nullable();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_outcome. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcome =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.last_seen_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastSeenAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.last_seen_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastSeenAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_LastSeenAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.manual_active. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ManualActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.manual_active. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ManualActive =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ManualActiveSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.manual_pending. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ManualPendingSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.manual_pending. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ManualPending =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ManualPendingSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.next_check_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_NextCheckAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.next_check_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_NextCheckAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_NextCheckAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_NextDueAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.observation_age_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ObservationAgeSecSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.observation_age_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ObservationAgeSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ObservationAgeSecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.offer_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_OfferIdSchema =
   z.string().nullable();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.offer_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_OfferId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_OfferIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.response_due_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ResponseDueAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.response_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ResponseDueAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ResponseDueAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.response_started_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ResponseStartedAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.response_started_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ResponseStartedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ResponseStartedAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.server_time. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ServerTime =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.stale_after_sec. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_StaleAfterSecSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.stale_after_sec. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_StaleAfterSec =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_StaleAfterSecSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.state. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_StateSchema =
   z.enum(['scheduled']);
-/** Raw response path: answer.body.events[].status.routines.ad_gems.state. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_State =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_StateSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.visibility. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_VisibilitySchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.visibility. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_Visibility =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_VisibilitySchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.visibility_reason. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_VisibilityReasonSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.visibility_reason. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_VisibilityReason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_VisibilityReasonSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.window_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_WindowIdSchema =
   z.string().nullable();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.window_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_WindowId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems.window_started_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_WindowStartedAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.ad_gems.window_started_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_WindowStartedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_WindowStartedAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.ad_gems. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGemsSchema =
   z.strictObject({
@@ -8439,75 +4287,30 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     window_started_at:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems_WindowStartedAtSchema,
   });
-/** Raw response path: answer.body.events[].status.routines.ad_gems. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGems =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_AdGemsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.attempt_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_AttemptIdSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.attempt_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_AttemptId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_AttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.blocker. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_BlockerSchema =
   z.string().nullable();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_Blocker =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.enabled. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.last_outcome.attempt_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_AttemptIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.last_outcome.attempt_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_AttemptId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_AttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.last_outcome.confirmed. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_ConfirmedSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.last_outcome.confirmed. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_Confirmed =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_ConfirmedSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.last_outcome.observed_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_ObservedAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.last_outcome.observed_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_ObservedAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_ObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.last_outcome.reason. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_ReasonSchema =
   z.enum(['attempt_timeout', 'balance_increased']);
-/** Raw response path: answer.body.events[].status.routines.floating_gems.last_outcome.reason. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_Reason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.last_outcome.window_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_WindowIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.last_outcome.window_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_WindowId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.last_outcome. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcomeSchema =
   z
@@ -8524,75 +4327,30 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
         historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome_WindowIdSchema,
     })
     .nullable();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.last_outcome. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcome =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.last_refusal. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastRefusalSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.last_refusal. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastRefusal =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_LastRefusalSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.manual_active. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_ManualActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.manual_active. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_ManualActive =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_ManualActiveSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.manual_pending. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_ManualPendingSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.manual_pending. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_ManualPending =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_ManualPendingSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_NextDueAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.server_time. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_ServerTime =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.state. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_StateSchema =
   z.enum(['off']);
-/** Raw response path: answer.body.events[].status.routines.floating_gems.state. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_State =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_StateSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems.window_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_WindowIdSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.floating_gems.window_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_WindowId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.floating_gems. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -8621,59 +4379,24 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     window_id:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems_WindowIdSchema,
   });
-/** Raw response path: answer.body.events[].status.routines.floating_gems. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGems =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.repeat.blocker. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_BlockerSchema =
   z.string().nullable();
-/** Raw response path: answer.body.events[].status.routines.repeat.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_Blocker =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.repeat.enabled. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.repeat.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.repeat.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.repeat.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_NextDueAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.repeat.server_time. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.repeat.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_ServerTime =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.repeat.state. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_StateSchema =
   z.enum(['boundary_wait']);
-/** Raw response path: answer.body.events[].status.routines.repeat.state. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_State =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_StateSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.repeat.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.repeat.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.repeat. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_RepeatSchema =
   z.strictObject({
@@ -8690,59 +4413,24 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     window_ends_at:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.events[].status.routines.repeat. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Repeat =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_RepeatSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rescue.blocker. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_BlockerSchema =
   z.string().nullable();
-/** Raw response path: answer.body.events[].status.routines.rescue.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_Blocker =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rescue.enabled. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.rescue.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rescue.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.rescue.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_NextDueAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rescue.server_time. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.rescue.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_ServerTime =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rescue.state. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_StateSchema =
   z.enum(['watching']);
-/** Raw response path: answer.body.events[].status.routines.rescue.state. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_State =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_StateSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rescue.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.rescue.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rescue. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_RescueSchema =
   z.strictObject({
@@ -8759,59 +4447,24 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     window_ends_at:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.events[].status.routines.rescue. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rescue =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_RescueSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rewards.blocker. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_BlockerSchema =
   z.string().nullable();
-/** Raw response path: answer.body.events[].status.routines.rewards.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_Blocker =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rewards.enabled. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.rewards.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rewards.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.rewards.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_NextDueAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rewards.server_time. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.rewards.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_ServerTime =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rewards.state. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_StateSchema =
   z.enum(['watching']);
-/** Raw response path: answer.body.events[].status.routines.rewards.state. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_State =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_StateSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rewards.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.rewards.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.rewards. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_RewardsSchema =
   z.strictObject({
@@ -8828,83 +4481,33 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     window_ends_at:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.events[].status.routines.rewards. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Rewards =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_RewardsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.blocker. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_BlockerSchema =
   z.string().nullable();
-/** Raw response path: answer.body.events[].status.routines.shopping.blocker. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_Blocker =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.enabled. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.shopping.enabled. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_Enabled =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.active. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.active. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Active =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ActiveSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.attempts. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_AttemptsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.attempts. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Attempts =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_AttemptsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.cadence. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_CadenceSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.cadence. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Cadence =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_CadenceSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.cash_reserve. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_CashReserveSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.cash_reserve. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_CashReserve =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.confirmed_purchases. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ConfirmedPurchasesSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.confirmed_purchases. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ConfirmedPurchases =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ConfirmedPurchasesSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.continuation_budget.purchases. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationBudget_PurchasesSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.continuation_budget.purchases. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationBudget_Purchases =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationBudget_PurchasesSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.continuation_budget.seconds. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.continuation_budget.seconds. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationBudget_Seconds =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.continuation_budget. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationBudgetSchema =
   z.strictObject({
@@ -8913,43 +4516,18 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     seconds:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema,
   });
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.continuation_budget. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationBudget =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationBudgetSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.continuation_ready. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationReadySchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.continuation_ready. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationReady =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ContinuationReadySchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.count_semantics. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_CountSemanticsSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.count_semantics. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_CountSemantics =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_CountSemanticsSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.decision.action. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Decision_ActionSchema =
   z.enum(['wait']);
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.decision.action. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Decision_Action =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Decision_ActionSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.decision.reason. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Decision_ReasonSchema =
   z.enum(['not_started']);
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.decision.reason. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Decision_Reason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Decision_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.decision. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_DecisionSchema =
   z.strictObject({
@@ -8958,83 +4536,33 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     reason:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Decision_ReasonSchema,
   });
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.decision. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Decision =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_DecisionSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.last_confirmation. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_LastConfirmationSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.last_confirmation. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_LastConfirmation =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_LastConfirmationSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.last_sweep. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_LastSweepSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.last_sweep. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_LastSweep =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_LastSweepSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.manual. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ManualSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.manual. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Manual =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ManualSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.pending_confirmation. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_PendingConfirmationSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.pending_confirmation. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_PendingConfirmation =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_PendingConfirmationSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.quantity_observation_supported. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_QuantityObservationSupportedSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.quantity_observation_supported. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_QuantityObservationSupported =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_QuantityObservationSupportedSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.reserve_enforcement. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ReserveEnforcementSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.reserve_enforcement. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ReserveEnforcement =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ReserveEnforcementSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.reserve_supported. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ReserveSupportedSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.reserve_supported. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ReserveSupported =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_ReserveSupportedSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.sweep_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_SweepIdSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.sweep_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_SweepId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_SweepIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome.version. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_VersionSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome.version. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_Version =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_VersionSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.last_outcome. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcomeSchema =
   z.strictObject({
@@ -9075,43 +4603,18 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     version:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome_VersionSchema,
   });
-/** Raw response path: answer.body.events[].status.routines.shopping.last_outcome. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcome =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_LastOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.next_due_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.shopping.next_due_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_NextDueAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.server_time. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.routines.shopping.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_ServerTime =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.state. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_StateSchema =
   z.enum(['scheduled']);
-/** Raw response path: answer.body.events[].status.routines.shopping.state. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_State =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_StateSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping.window_ends_at. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.events[].status.routines.shopping.window_ends_at. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_WindowEndsAt =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines.shopping. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_ShoppingSchema =
   z.strictObject({
@@ -9130,11 +4633,6 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     window_ends_at:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.events[].status.routines.shopping. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_Shopping =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_ShoppingSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.routines. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_RoutinesSchema =
   z.strictObject({
@@ -9153,83 +4651,33 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     shopping:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines_ShoppingSchema,
   });
-/** Raw response path: answer.body.events[].status.routines. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Routines =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_RoutinesSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.server_time. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.server_time. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ServerTime =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup.continued_with_partial. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_ContinuedWithPartialSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.setup.continued_with_partial. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_ContinuedWithPartial =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_ContinuedWithPartialSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup.detail. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_DetailSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.setup.detail. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Detail =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_DetailSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup.loadout. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_LoadoutSchema =
   z.string().nullable();
-/** Raw response path: answer.body.events[].status.setup.loadout. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Loadout =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_LoadoutSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup.modules[].detail. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_DetailSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.setup.modules[].detail. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_Detail =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_DetailSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup.modules[].module. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_ModuleSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.setup.modules[].module. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_Module =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_ModuleSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup.modules[].reason. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_ReasonSchema =
   z.enum(['module_not_positively_equipped']).nullable();
-/** Raw response path: answer.body.events[].status.setup.modules[].reason. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_Reason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup.modules[].role. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_RoleSchema =
   z.enum(['category']);
-/** Raw response path: answer.body.events[].status.setup.modules[].role. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_Role =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_RoleSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup.modules[].state. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_StateSchema =
   z.enum(['unknown', 'verified']);
-/** Raw response path: answer.body.events[].status.setup.modules[].state. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_State =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_StateSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup.modules[]. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElementSchema =
   z.strictObject({
@@ -9243,21 +4691,11 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     state:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement_StateSchema,
   });
-/** Raw response path: answer.body.events[].status.setup.modules[]. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElement =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup.modules. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_ModulesSchema =
   z.array(
     historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules_ArrayElementSchema,
   );
-/** Raw response path: answer.body.events[].status.setup.modules. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Modules =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_ModulesSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup.reason. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_ReasonSchema =
   z
@@ -9268,19 +4706,9 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
       'the module plan could not be equipped',
     ])
     .nullable();
-/** Raw response path: answer.body.events[].status.setup.reason. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_Reason =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup.state. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_StateSchema =
   z.enum(['degraded', 'unknown', 'verified']);
-/** Raw response path: answer.body.events[].status.setup.state. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_State =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_StateSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.setup. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_SetupSchema =
   z.strictObject({
@@ -9297,131 +4725,51 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     state:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup_StateSchema,
   });
-/** Raw response path: answer.body.events[].status.setup. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_Setup =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_SetupSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.artifact. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_ArtifactSchema =
   z.string().nullable();
-/** Raw response path: answer.body.events[].status.stats_capture.artifact. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_Artifact =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_ArtifactSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.battle_id. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_BattleIdSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.stats_capture.battle_id. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_BattleId =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_BattleIdSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.copied_tier. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_CopiedTierSchema =
   z.number().nullable();
-/** Raw response path: answer.body.events[].status.stats_capture.copied_tier. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_CopiedTier =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_CopiedTierSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.copied_wave. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_CopiedWaveSchema =
   z.number().nullable();
-/** Raw response path: answer.body.events[].status.stats_capture.copied_wave. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_CopiedWave =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_CopiedWaveSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.envelope_hash. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_EnvelopeHashSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.stats_capture.envelope_hash. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_EnvelopeHash =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_EnvelopeHashSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.error. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_ErrorSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.stats_capture.error. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_Error =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_ErrorSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.fresh. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_FreshSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.stats_capture.fresh. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_Fresh =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_FreshSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.freshness_method. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_FreshnessMethodSchema =
   z.string();
-/** Raw response path: answer.body.events[].status.stats_capture.freshness_method. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_FreshnessMethod =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_FreshnessMethodSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.sequence_after. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_SequenceAfterSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.stats_capture.sequence_after. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_SequenceAfter =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_SequenceAfterSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.sequence_before. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_SequenceBeforeSchema =
   z.number();
-/** Raw response path: answer.body.events[].status.stats_capture.sequence_before. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_SequenceBefore =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_SequenceBeforeSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.status. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_StatusSchema =
   z.enum(['captured_unverified', 'failed', 'pending', 'verified']);
-/** Raw response path: answer.body.events[].status.stats_capture.status. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_Status =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_StatusSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.structured. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_StructuredSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.stats_capture.structured. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_Structured =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_StructuredSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.tier_matches. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_TierMatchesSchema =
   z.boolean().nullable();
-/** Raw response path: answer.body.events[].status.stats_capture.tier_matches. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_TierMatches =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_TierMatchesSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.verified. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_VerifiedSchema =
   z.boolean();
-/** Raw response path: answer.body.events[].status.stats_capture.verified. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_Verified =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_VerifiedSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture.wave_consistent. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_WaveConsistentSchema =
   z.boolean().nullable();
-/** Raw response path: answer.body.events[].status.stats_capture.wave_consistent. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_WaveConsistent =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_WaveConsistentSchema
-  >;
 /** Strict raw response path: answer.body.events[].status.stats_capture. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCaptureSchema =
   z.strictObject({
@@ -9456,11 +4804,6 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     wave_consistent:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture_WaveConsistentSchema.optional(),
   });
-/** Raw response path: answer.body.events[].status.stats_capture. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCapture =
-  z.infer<
-    typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCaptureSchema
-  >;
 /** Strict raw response path: answer.body.events[].status. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_StatusSchema =
   z.strictObject({
@@ -9489,23 +4832,11 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_S
     stats_capture:
       historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status_StatsCaptureSchema.optional(),
   });
-/** Raw response path: answer.body.events[].status. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Status = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_StatusSchema
->;
 /** Strict raw response path: answer.body.events[].t. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_TSchema = z.number();
-/** Raw response path: answer.body.events[].t. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_T = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_TSchema
->;
 /** Strict raw response path: answer.body.events[].timestamp. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_TimestampSchema =
   z.number();
-/** Raw response path: answer.body.events[].timestamp. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_Timestamp = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_TimestampSchema
->;
 /** Strict raw response path: answer.body.events[], variant: kind status. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatusSchema =
   z.strictObject({
@@ -9519,10 +4850,6 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatusSc
     t: historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_TSchema,
     timestamp: historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus_TimestampSchema,
   });
-/** Raw response path: answer.body.events[], variant: kind status. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement_KindStatus = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatusSchema
->;
 /** Strict raw response path: answer.body.events[]. */
 export const historyDetailAnswer_Status200_Body_Events_ArrayElementSchema = z.discriminatedUnion(
   'kind',
@@ -9534,136 +4861,68 @@ export const historyDetailAnswer_Status200_Body_Events_ArrayElementSchema = z.di
     historyDetailAnswer_Status200_Body_Events_ArrayElement_KindStatusSchema,
   ],
 );
-/** Raw response path: answer.body.events[]. */
-export type HistoryDetailAnswer_Status200_Body_Events_ArrayElement = z.infer<
-  typeof historyDetailAnswer_Status200_Body_Events_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.events. */
 export const historyDetailAnswer_Status200_Body_EventsSchema = z.array(
   historyDetailAnswer_Status200_Body_Events_ArrayElementSchema,
 );
-/** Raw response path: answer.body.events. */
-export type HistoryDetailAnswer_Status200_Body_Events = z.infer<
-  typeof historyDetailAnswer_Status200_Body_EventsSchema
->;
 /** Strict raw response path: answer.body. */
 export const historyDetailAnswer_Status200_BodySchema = z.strictObject({
   battle: historyDetailAnswer_Status200_Body_BattleSchema,
   context: historyDetailAnswer_Status200_Body_ContextSchema,
   events: historyDetailAnswer_Status200_Body_EventsSchema,
 });
-/** Raw response path: answer.body. */
-export type HistoryDetailAnswer_Status200_Body = z.infer<
-  typeof historyDetailAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const historyDetailAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type HistoryDetailAnswer_Status200_Status = z.infer<
-  typeof historyDetailAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members battle, context, events. */
 export const historyDetailAnswer_Status200Schema = z.strictObject({
   body: historyDetailAnswer_Status200_BodySchema,
   status: historyDetailAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members battle, context, events. */
-export type HistoryDetailAnswer_Status200 = z.infer<typeof historyDetailAnswer_Status200Schema>;
 /** Strict raw response path: answer.body.error. */
 export const historyDetailAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type HistoryDetailAnswer_Status400_Body_Error = z.infer<
-  typeof historyDetailAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const historyDetailAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type HistoryDetailAnswer_Status400_Body_Ok = z.infer<
-  typeof historyDetailAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const historyDetailAnswer_Status400_BodySchema = z.strictObject({
   error: historyDetailAnswer_Status400_Body_ErrorSchema,
   ok: historyDetailAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type HistoryDetailAnswer_Status400_Body = z.infer<
-  typeof historyDetailAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const historyDetailAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type HistoryDetailAnswer_Status400_Status = z.infer<
-  typeof historyDetailAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const historyDetailAnswer_Status400Schema = z.strictObject({
   body: historyDetailAnswer_Status400_BodySchema,
   status: historyDetailAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type HistoryDetailAnswer_Status400 = z.infer<typeof historyDetailAnswer_Status400Schema>;
 /** Strict raw response path: answer.body.error. */
 export const historyDetailAnswer_Status404_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type HistoryDetailAnswer_Status404_Body_Error = z.infer<
-  typeof historyDetailAnswer_Status404_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const historyDetailAnswer_Status404_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type HistoryDetailAnswer_Status404_Body_Ok = z.infer<
-  typeof historyDetailAnswer_Status404_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const historyDetailAnswer_Status404_BodySchema = z.strictObject({
   error: historyDetailAnswer_Status404_Body_ErrorSchema,
   ok: historyDetailAnswer_Status404_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type HistoryDetailAnswer_Status404_Body = z.infer<
-  typeof historyDetailAnswer_Status404_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const historyDetailAnswer_Status404_StatusSchema = z.literal(404);
-/** Raw response path: answer.status. */
-export type HistoryDetailAnswer_Status404_Status = z.infer<
-  typeof historyDetailAnswer_Status404_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 404, body members error, ok. */
 export const historyDetailAnswer_Status404Schema = z.strictObject({
   body: historyDetailAnswer_Status404_BodySchema,
   status: historyDetailAnswer_Status404_StatusSchema,
 });
-/** Raw response path: answer, variant: status 404, body members error, ok. */
-export type HistoryDetailAnswer_Status404 = z.infer<typeof historyDetailAnswer_Status404Schema>;
 /** Strict raw response path: answer.body.text. */
 export const historyDetailAnswer_Status500_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type HistoryDetailAnswer_Status500_Body_Text = z.infer<
-  typeof historyDetailAnswer_Status500_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const historyDetailAnswer_Status500_BodySchema = z.strictObject({
   text: historyDetailAnswer_Status500_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type HistoryDetailAnswer_Status500_Body = z.infer<
-  typeof historyDetailAnswer_Status500_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const historyDetailAnswer_Status500_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type HistoryDetailAnswer_Status500_Status = z.infer<
-  typeof historyDetailAnswer_Status500_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members text. */
 export const historyDetailAnswer_Status500Schema = z.strictObject({
   body: historyDetailAnswer_Status500_BodySchema,
   status: historyDetailAnswer_Status500_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members text. */
-export type HistoryDetailAnswer_Status500 = z.infer<typeof historyDetailAnswer_Status500Schema>;
 /** Strict raw response path: answer. */
 export const historyDetailAnswerSchema = z.union([
   historyDetailAnswer_Status200Schema,

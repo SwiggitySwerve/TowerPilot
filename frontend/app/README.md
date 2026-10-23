@@ -24,7 +24,7 @@ Node.js 22.13+ (22.x), 24.x or 26+ (`engines` in package.json; the locked depend
 | `npm run dev`       | Dev server on `http://127.0.0.1:5173/ui/app/` with the fixture-based fake backend |
 | `npm run build`     | Production build into `../webui/app/` with `THIRD_PARTY_NOTICES.txt`              |
 | `npm run typecheck` | `tsc` over the app, tests, tooling and the DOM-free `core/`                       |
-| `npm run lint`      | ESLint (layers, no literals, a11y, hooks, typed rules) and Prettier check; ESLint gets an 8 GB heap because its typed rules build four TypeScript programs over the generated contract modules (about 6 GB at peak, above Node's 4 GB default) |
+| `npm run lint`      | ESLint (layers, no literals, a11y, hooks, typed rules) and Prettier check, on Node's default heap. Its typed rules load the generated contract modules, so the generator exports a named type only for each family root (peak heap about 3.6 GB of the 4.3 GB default, measured 2026-10-22) |
 | `npm test`          | Vitest: unit, component (Testing Library, jest-axe) and type tests                |
 | `npm run e2e`       | Playwright against the built app and the fake backend (build first)               |
 | `npm run format`    | Prettier write                                                                    |

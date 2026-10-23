@@ -1000,6 +1000,7 @@ export async function generateModule(fixture, identity, descriptor = HARVEST_DES
     );
     return `${JSON.stringify(family.key)}: ${schema}`;
   });
+  const rootNames = new Set(families.map((family) => family.name));
   const names = declarations.map((item) => item.name);
   if (new Set(names).size !== names.length) throw new Error('Raw-path schema name collision');
   // A family-bound module names its families' hashes and their combined hash (familyIdentity).
@@ -1025,7 +1026,12 @@ ${declarations
   .map(({ name, rawPath, variant, expression }) => {
     const schema = schemaName(name);
     const where = variant === undefined ? rawPath : `${rawPath}, variant: ${variant}`;
-    return `/** Strict raw response path: ${where}. */\nexport const ${schema} = ${expression};\n/** Raw response path: ${where}. */\nexport type ${name} = z.infer<typeof ${schema}>;`;
+    const declaration = `/** Strict raw response path: ${where}. */\nexport const ${schema} = ${expression};`;
+    // Only a family root gets a named type: the app imports no per-path type, and thousands of
+    // unused aliases only made every typed lint/check load heavier (lint ran out of memory).
+    return rootNames.has(name)
+      ? `${declaration}\n/** Raw response path: ${where}. */\nexport type ${name} = z.infer<typeof ${schema}>;`
+      : declaration;
   })
   .join('\n')}
 /** Strict schemas keyed by fixture family, including sequence/readback samples. */

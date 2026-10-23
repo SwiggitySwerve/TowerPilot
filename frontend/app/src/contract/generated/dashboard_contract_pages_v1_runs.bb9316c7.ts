@@ -8,121 +8,53 @@ export const fixtureVersionSchema = z.literal(1);
 export type FixtureVersion = z.infer<typeof fixtureVersionSchema>;
 /** Strict raw response path: answer.body.blueprint. */
 export const runControlsSaveAnswer_Status200V1_Body_BlueprintSchema = z.string();
-/** Raw response path: answer.body.blueprint. */
-export type RunControlsSaveAnswer_Status200V1_Body_Blueprint = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_BlueprintSchema
->;
 /** Strict raw response path: answer.body.capabilities.actions. */
 export const runControlsSaveAnswer_Status200V1_Body_Capabilities_ActionsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.capabilities.actions. */
-export type RunControlsSaveAnswer_Status200V1_Body_Capabilities_Actions = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Capabilities_ActionsSchema
->;
 /** Strict raw response path: answer.body.capabilities.controls[]. */
 export const runControlsSaveAnswer_Status200V1_Body_Capabilities_Controls_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.capabilities.controls[]. */
-export type RunControlsSaveAnswer_Status200V1_Body_Capabilities_Controls_ArrayElement = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Capabilities_Controls_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.capabilities.controls. */
 export const runControlsSaveAnswer_Status200V1_Body_Capabilities_ControlsSchema = z.array(
   runControlsSaveAnswer_Status200V1_Body_Capabilities_Controls_ArrayElementSchema,
 );
-/** Raw response path: answer.body.capabilities.controls. */
-export type RunControlsSaveAnswer_Status200V1_Body_Capabilities_Controls = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Capabilities_ControlsSchema
->;
 /** Strict raw response path: answer.body.capabilities. */
 export const runControlsSaveAnswer_Status200V1_Body_CapabilitiesSchema = z.strictObject({
   actions: runControlsSaveAnswer_Status200V1_Body_Capabilities_ActionsSchema,
   controls: runControlsSaveAnswer_Status200V1_Body_Capabilities_ControlsSchema,
 });
-/** Raw response path: answer.body.capabilities. */
-export type RunControlsSaveAnswer_Status200V1_Body_Capabilities = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_CapabilitiesSchema
->;
 /** Strict raw response path: answer.body.catalog[].availability. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_AvailabilitySchema =
   z.string();
-/** Raw response path: answer.body.catalog[].availability. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_Availability = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_AvailabilitySchema
->;
 /** Strict raw response path: answer.body.catalog[].excluded_by_default. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_ExcludedByDefaultSchema =
   z.boolean();
-/** Raw response path: answer.body.catalog[].excluded_by_default. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_ExcludedByDefault = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_ExcludedByDefaultSchema
->;
 /** Strict raw response path: answer.body.catalog[].exclusion_reason. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_ExclusionReasonSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.catalog[].exclusion_reason. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_ExclusionReason = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_ExclusionReasonSchema
->;
 /** Strict raw response path: answer.body.catalog[].game_order. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_GameOrderSchema = z.null();
-/** Raw response path: answer.body.catalog[].game_order. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_GameOrder = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_GameOrderSchema
->;
 /** Strict raw response path: answer.body.catalog[].id. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_IdSchema = z.string();
-/** Raw response path: answer.body.catalog[].id. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_Id = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_IdSchema
->;
 /** Strict raw response path: answer.body.catalog[].label. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_LabelSchema = z.string();
-/** Raw response path: answer.body.catalog[].label. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_Label = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_LabelSchema
->;
 /** Strict raw response path: answer.body.catalog[].order. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_OrderSchema = z.number();
-/** Raw response path: answer.body.catalog[].order. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_Order = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_OrderSchema
->;
 /** Strict raw response path: answer.body.catalog[].order_provenance. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_OrderProvenanceSchema =
   z.string();
-/** Raw response path: answer.body.catalog[].order_provenance. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_OrderProvenance = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_OrderProvenanceSchema
->;
 /** Strict raw response path: answer.body.catalog[].order_verified. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_OrderVerifiedSchema =
   z.boolean();
-/** Raw response path: answer.body.catalog[].order_verified. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_OrderVerified = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_OrderVerifiedSchema
->;
 /** Strict raw response path: answer.body.catalog[].recognition. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_RecognitionSchema =
   z.string();
-/** Raw response path: answer.body.catalog[].recognition. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_Recognition = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_RecognitionSchema
->;
 /** Strict raw response path: answer.body.catalog[].section. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_SectionSchema = z.string();
-/** Raw response path: answer.body.catalog[].section. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_Section = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_SectionSchema
->;
 /** Strict raw response path: answer.body.catalog[].tab. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_TabSchema = z.string();
-/** Raw response path: answer.body.catalog[].tab. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_Tab = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_TabSchema
->;
 /** Strict raw response path: answer.body.catalog[]. */
 export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElementSchema = z.strictObject({
   availability: runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_AvailabilitySchema,
@@ -141,178 +73,82 @@ export const runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElementSchema =
   section: runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_SectionSchema,
   tab: runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement_TabSchema,
 });
-/** Raw response path: answer.body.catalog[]. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElement = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.catalog. */
 export const runControlsSaveAnswer_Status200V1_Body_CatalogSchema = z.array(
   runControlsSaveAnswer_Status200V1_Body_Catalog_ArrayElementSchema,
 );
-/** Raw response path: answer.body.catalog. */
-export type RunControlsSaveAnswer_Status200V1_Body_Catalog = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_CatalogSchema
->;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.interval_sec.max. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.interval_sec.max. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.interval_sec.min. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.interval_sec.min. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.interval_sec. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_MaxSchema,
     min: runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.ad_gems.interval_sec. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSecSchema
->;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.window_sec.max. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.window_sec.max. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_Max =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.window_sec.min. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.window_sec.min. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_Min =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.window_sec. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSecSchema =
   z.strictObject({
     max: runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_MaxSchema,
     min: runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.ad_gems.window_sec. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSecSchema
->;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.interval_sec.max. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.interval_sec.max. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.interval_sec.min. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.interval_sec.min. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.interval_sec. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_MaxSchema,
     min: runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.floating_gems.interval_sec. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.max. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.max. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.min. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.min. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MaxSchema,
     min: runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.window_sec.max. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.window_sec.max. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_Max =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.window_sec.min. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.window_sec.min. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_Min =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.window_sec. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSecSchema =
   z.strictObject({
     max: runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_MaxSchema,
     min: runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.floating_gems.window_sec. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.shopping.interval_sec.max. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.shopping.interval_sec.max. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.shopping.interval_sec.min. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.shopping.interval_sec.min. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.shopping.interval_sec. */
 export const runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_MaxSchema,
     min: runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.shopping.interval_sec. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints. */
 export const runControlsSaveAnswer_Status200V1_Body_ConstraintsSchema = z.strictObject({
   'routines.ad_gems.interval_sec':
@@ -328,93 +164,41 @@ export const runControlsSaveAnswer_Status200V1_Body_ConstraintsSchema = z.strict
   'routines.shopping.interval_sec':
     runControlsSaveAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSecSchema,
 });
-/** Raw response path: answer.body.constraints. */
-export type RunControlsSaveAnswer_Status200V1_Body_Constraints = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_ConstraintsSchema
->;
 /** Strict raw response path: answer.body.context.account. */
 export const runControlsSaveAnswer_Status200V1_Body_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.context.account. */
-export type RunControlsSaveAnswer_Status200V1_Body_Context_Account = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.context.instance. */
 export const runControlsSaveAnswer_Status200V1_Body_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.context.instance. */
-export type RunControlsSaveAnswer_Status200V1_Body_Context_Instance = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.context.profile. */
 export const runControlsSaveAnswer_Status200V1_Body_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.context.profile. */
-export type RunControlsSaveAnswer_Status200V1_Body_Context_Profile = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.context. */
 export const runControlsSaveAnswer_Status200V1_Body_ContextSchema = z.strictObject({
   account: runControlsSaveAnswer_Status200V1_Body_Context_AccountSchema,
   instance: runControlsSaveAnswer_Status200V1_Body_Context_InstanceSchema,
   profile: runControlsSaveAnswer_Status200V1_Body_Context_ProfileSchema,
 });
-/** Raw response path: answer.body.context. */
-export type RunControlsSaveAnswer_Status200V1_Body_Context = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_ContextSchema
->;
 /** Strict raw response path: answer.body.notice. */
 export const runControlsSaveAnswer_Status200V1_Body_NoticeSchema = z.string();
-/** Raw response path: answer.body.notice. */
-export type RunControlsSaveAnswer_Status200V1_Body_Notice = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_NoticeSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const runControlsSaveAnswer_Status200V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RunControlsSaveAnswer_Status200V1_Body_Ok = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body.profile_revision. */
 export const runControlsSaveAnswer_Status200V1_Body_ProfileRevisionSchema = z.string();
-/** Raw response path: answer.body.profile_revision. */
-export type RunControlsSaveAnswer_Status200V1_Body_ProfileRevision = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.settings.routines.abilities.enabled. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.abilities.enabled. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_Abilities_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Abilities_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.abilities. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AbilitiesSchema =
   z.strictObject({
     enabled: runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.settings.routines.abilities. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_Abilities = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems.enabled. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.ad_gems.enabled. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGems_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems.interval_sec. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.ad_gems.interval_sec. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGems_IntervalSec = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGems_IntervalSecSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems.window_sec. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.ad_gems.window_sec. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGems_WindowSec = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGemsSchema = z.strictObject(
   {
@@ -423,41 +207,18 @@ export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGemsSche
     window_sec: runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGems_WindowSecSchema,
   },
 );
-/** Raw response path: answer.body.settings.routines.ad_gems. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGems = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.enabled. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.floating_gems.enabled. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.interval_sec. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.floating_gems.interval_sec. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.tap_interval_sec. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.floating_gems.tap_interval_sec. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.window_sec. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.floating_gems.window_sec. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -469,70 +230,34 @@ export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGe
     window_sec:
       runControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.settings.routines.floating_gems. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGems = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.settings.routines.repeat.enabled. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.repeat.enabled. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_Repeat_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.repeat. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_RepeatSchema = z.strictObject(
   { enabled: runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Repeat_EnabledSchema },
 );
-/** Raw response path: answer.body.settings.routines.repeat. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_Repeat = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rescue.enabled. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.rescue.enabled. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_Rescue_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rescue. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_RescueSchema = z.strictObject(
   { enabled: runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Rescue_EnabledSchema },
 );
-/** Raw response path: answer.body.settings.routines.rescue. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_Rescue = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rewards.enabled. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.rewards.enabled. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_Rewards_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rewards. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_RewardsSchema =
   z.strictObject({
     enabled: runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.settings.routines.rewards. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_Rewards = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.settings.routines.shopping.enabled. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.shopping.enabled. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_Shopping_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.shopping.interval_sec. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.shopping.interval_sec. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_Shopping_IntervalSec = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Shopping_IntervalSecSchema
->;
 /** Strict raw response path: answer.body.settings.routines.shopping. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_ShoppingSchema =
   z.strictObject({
@@ -540,10 +265,6 @@ export const runControlsSaveAnswer_Status200V1_Body_Settings_Routines_ShoppingSc
     interval_sec:
       runControlsSaveAnswer_Status200V1_Body_Settings_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.settings.routines.shopping. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines_Shopping = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.settings.routines. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_RoutinesSchema = z.strictObject({
   abilities: runControlsSaveAnswer_Status200V1_Body_Settings_Routines_AbilitiesSchema,
@@ -554,25 +275,13 @@ export const runControlsSaveAnswer_Status200V1_Body_Settings_RoutinesSchema = z.
   rewards: runControlsSaveAnswer_Status200V1_Body_Settings_Routines_RewardsSchema,
   shopping: runControlsSaveAnswer_Status200V1_Body_Settings_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.settings.routines. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_Routines = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_RoutinesSchema
->;
 /** Strict raw response path: answer.body.settings.shopping_plan. */
 export const runControlsSaveAnswer_Status200V1_Body_Settings_ShoppingPlanSchema = z.null();
-/** Raw response path: answer.body.settings.shopping_plan. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings_ShoppingPlan = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_Settings_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.settings. */
 export const runControlsSaveAnswer_Status200V1_Body_SettingsSchema = z.strictObject({
   routines: runControlsSaveAnswer_Status200V1_Body_Settings_RoutinesSchema,
   shopping_plan: runControlsSaveAnswer_Status200V1_Body_Settings_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.settings. */
-export type RunControlsSaveAnswer_Status200V1_Body_Settings = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_Body_SettingsSchema
->;
 /** Strict raw response path: answer.body. */
 export const runControlsSaveAnswer_Status200V1_BodySchema = z.strictObject({
   blueprint: runControlsSaveAnswer_Status200V1_Body_BlueprintSchema,
@@ -585,142 +294,62 @@ export const runControlsSaveAnswer_Status200V1_BodySchema = z.strictObject({
   profile_revision: runControlsSaveAnswer_Status200V1_Body_ProfileRevisionSchema,
   settings: runControlsSaveAnswer_Status200V1_Body_SettingsSchema,
 });
-/** Raw response path: answer.body. */
-export type RunControlsSaveAnswer_Status200V1_Body = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const runControlsSaveAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type RunControlsSaveAnswer_Status200V1_Status = z.infer<
-  typeof runControlsSaveAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members blueprint, capabilities, catalog, constraints, context, notice, ok, profile_revision, settings. */
 export const runControlsSaveAnswer_Status200V1Schema = z.strictObject({
   body: runControlsSaveAnswer_Status200V1_BodySchema,
   status: runControlsSaveAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members blueprint, capabilities, catalog, constraints, context, notice, ok, profile_revision, settings. */
-export type RunControlsSaveAnswer_Status200V1 = z.infer<
-  typeof runControlsSaveAnswer_Status200V1Schema
->;
 /** Strict raw response path: answer.body.blueprint. */
 export const runControlsSaveAnswer_Status200V2_Body_BlueprintSchema = z.string();
-/** Raw response path: answer.body.blueprint. */
-export type RunControlsSaveAnswer_Status200V2_Body_Blueprint = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_BlueprintSchema
->;
 /** Strict raw response path: answer.body.capabilities.actions. */
 export const runControlsSaveAnswer_Status200V2_Body_Capabilities_ActionsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.capabilities.actions. */
-export type RunControlsSaveAnswer_Status200V2_Body_Capabilities_Actions = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Capabilities_ActionsSchema
->;
 /** Strict raw response path: answer.body.capabilities.controls[]. */
 export const runControlsSaveAnswer_Status200V2_Body_Capabilities_Controls_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.capabilities.controls[]. */
-export type RunControlsSaveAnswer_Status200V2_Body_Capabilities_Controls_ArrayElement = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Capabilities_Controls_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.capabilities.controls. */
 export const runControlsSaveAnswer_Status200V2_Body_Capabilities_ControlsSchema = z.array(
   runControlsSaveAnswer_Status200V2_Body_Capabilities_Controls_ArrayElementSchema,
 );
-/** Raw response path: answer.body.capabilities.controls. */
-export type RunControlsSaveAnswer_Status200V2_Body_Capabilities_Controls = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Capabilities_ControlsSchema
->;
 /** Strict raw response path: answer.body.capabilities. */
 export const runControlsSaveAnswer_Status200V2_Body_CapabilitiesSchema = z.strictObject({
   actions: runControlsSaveAnswer_Status200V2_Body_Capabilities_ActionsSchema,
   controls: runControlsSaveAnswer_Status200V2_Body_Capabilities_ControlsSchema,
 });
-/** Raw response path: answer.body.capabilities. */
-export type RunControlsSaveAnswer_Status200V2_Body_Capabilities = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_CapabilitiesSchema
->;
 /** Strict raw response path: answer.body.catalog[].availability. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_AvailabilitySchema =
   z.string();
-/** Raw response path: answer.body.catalog[].availability. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_Availability = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_AvailabilitySchema
->;
 /** Strict raw response path: answer.body.catalog[].excluded_by_default. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_ExcludedByDefaultSchema =
   z.boolean();
-/** Raw response path: answer.body.catalog[].excluded_by_default. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_ExcludedByDefault = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_ExcludedByDefaultSchema
->;
 /** Strict raw response path: answer.body.catalog[].exclusion_reason. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_ExclusionReasonSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.catalog[].exclusion_reason. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_ExclusionReason = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_ExclusionReasonSchema
->;
 /** Strict raw response path: answer.body.catalog[].game_order. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_GameOrderSchema = z.null();
-/** Raw response path: answer.body.catalog[].game_order. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_GameOrder = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_GameOrderSchema
->;
 /** Strict raw response path: answer.body.catalog[].id. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_IdSchema = z.string();
-/** Raw response path: answer.body.catalog[].id. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_Id = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_IdSchema
->;
 /** Strict raw response path: answer.body.catalog[].label. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_LabelSchema = z.string();
-/** Raw response path: answer.body.catalog[].label. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_Label = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_LabelSchema
->;
 /** Strict raw response path: answer.body.catalog[].order. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_OrderSchema = z.number();
-/** Raw response path: answer.body.catalog[].order. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_Order = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_OrderSchema
->;
 /** Strict raw response path: answer.body.catalog[].order_provenance. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_OrderProvenanceSchema =
   z.string();
-/** Raw response path: answer.body.catalog[].order_provenance. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_OrderProvenance = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_OrderProvenanceSchema
->;
 /** Strict raw response path: answer.body.catalog[].order_verified. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_OrderVerifiedSchema =
   z.boolean();
-/** Raw response path: answer.body.catalog[].order_verified. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_OrderVerified = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_OrderVerifiedSchema
->;
 /** Strict raw response path: answer.body.catalog[].recognition. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_RecognitionSchema =
   z.string();
-/** Raw response path: answer.body.catalog[].recognition. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_Recognition = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_RecognitionSchema
->;
 /** Strict raw response path: answer.body.catalog[].section. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_SectionSchema = z.string();
-/** Raw response path: answer.body.catalog[].section. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_Section = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_SectionSchema
->;
 /** Strict raw response path: answer.body.catalog[].tab. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_TabSchema = z.string();
-/** Raw response path: answer.body.catalog[].tab. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_Tab = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_TabSchema
->;
 /** Strict raw response path: answer.body.catalog[]. */
 export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElementSchema = z.strictObject({
   availability: runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_AvailabilitySchema,
@@ -739,178 +368,82 @@ export const runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElementSchema =
   section: runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_SectionSchema,
   tab: runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement_TabSchema,
 });
-/** Raw response path: answer.body.catalog[]. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElement = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.catalog. */
 export const runControlsSaveAnswer_Status200V2_Body_CatalogSchema = z.array(
   runControlsSaveAnswer_Status200V2_Body_Catalog_ArrayElementSchema,
 );
-/** Raw response path: answer.body.catalog. */
-export type RunControlsSaveAnswer_Status200V2_Body_Catalog = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_CatalogSchema
->;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.interval_sec.max. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.interval_sec.max. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.interval_sec.min. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.interval_sec.min. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.interval_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_MaxSchema,
     min: runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.ad_gems.interval_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSecSchema
->;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.window_sec.max. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.window_sec.max. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_Max =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.window_sec.min. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.window_sec.min. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_Min =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.window_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSecSchema =
   z.strictObject({
     max: runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_MaxSchema,
     min: runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.ad_gems.window_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSecSchema
->;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.interval_sec.max. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.interval_sec.max. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.interval_sec.min. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.interval_sec.min. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.interval_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_MaxSchema,
     min: runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.floating_gems.interval_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.max. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.max. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.min. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.min. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MaxSchema,
     min: runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.window_sec.max. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.window_sec.max. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_Max =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.window_sec.min. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.window_sec.min. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_Min =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.window_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSecSchema =
   z.strictObject({
     max: runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_MaxSchema,
     min: runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.floating_gems.window_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.shopping.interval_sec.max. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.shopping.interval_sec.max. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.shopping.interval_sec.min. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.shopping.interval_sec.min. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.shopping.interval_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_MaxSchema,
     min: runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.shopping.interval_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints. */
 export const runControlsSaveAnswer_Status200V2_Body_ConstraintsSchema = z.strictObject({
   'routines.ad_gems.interval_sec':
@@ -926,87 +459,39 @@ export const runControlsSaveAnswer_Status200V2_Body_ConstraintsSchema = z.strict
   'routines.shopping.interval_sec':
     runControlsSaveAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSecSchema,
 });
-/** Raw response path: answer.body.constraints. */
-export type RunControlsSaveAnswer_Status200V2_Body_Constraints = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_ConstraintsSchema
->;
 /** Strict raw response path: answer.body.context.account. */
 export const runControlsSaveAnswer_Status200V2_Body_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.context.account. */
-export type RunControlsSaveAnswer_Status200V2_Body_Context_Account = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.context.instance. */
 export const runControlsSaveAnswer_Status200V2_Body_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.context.instance. */
-export type RunControlsSaveAnswer_Status200V2_Body_Context_Instance = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.context.profile. */
 export const runControlsSaveAnswer_Status200V2_Body_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.context.profile. */
-export type RunControlsSaveAnswer_Status200V2_Body_Context_Profile = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.context. */
 export const runControlsSaveAnswer_Status200V2_Body_ContextSchema = z.strictObject({
   account: runControlsSaveAnswer_Status200V2_Body_Context_AccountSchema,
   instance: runControlsSaveAnswer_Status200V2_Body_Context_InstanceSchema,
   profile: runControlsSaveAnswer_Status200V2_Body_Context_ProfileSchema,
 });
-/** Raw response path: answer.body.context. */
-export type RunControlsSaveAnswer_Status200V2_Body_Context = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_ContextSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const runControlsSaveAnswer_Status200V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RunControlsSaveAnswer_Status200V2_Body_Ok = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.profile_revision. */
 export const runControlsSaveAnswer_Status200V2_Body_ProfileRevisionSchema = z.string();
-/** Raw response path: answer.body.profile_revision. */
-export type RunControlsSaveAnswer_Status200V2_Body_ProfileRevision = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.settings.routines.abilities.enabled. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.abilities.enabled. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_Abilities_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Abilities_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.abilities. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AbilitiesSchema =
   z.strictObject({
     enabled: runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.settings.routines.abilities. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_Abilities = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems.enabled. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.ad_gems.enabled. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGems_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems.interval_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.ad_gems.interval_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGems_IntervalSec = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGems_IntervalSecSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems.window_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.ad_gems.window_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGems_WindowSec = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGemsSchema = z.strictObject(
   {
@@ -1015,41 +500,18 @@ export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGemsSche
     window_sec: runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGems_WindowSecSchema,
   },
 );
-/** Raw response path: answer.body.settings.routines.ad_gems. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGems = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.enabled. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.floating_gems.enabled. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.interval_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.floating_gems.interval_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.tap_interval_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.floating_gems.tap_interval_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.window_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.floating_gems.window_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -1061,70 +523,34 @@ export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGe
     window_sec:
       runControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.settings.routines.floating_gems. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGems = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.settings.routines.repeat.enabled. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.repeat.enabled. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_Repeat_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.repeat. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_RepeatSchema = z.strictObject(
   { enabled: runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Repeat_EnabledSchema },
 );
-/** Raw response path: answer.body.settings.routines.repeat. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_Repeat = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rescue.enabled. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.rescue.enabled. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_Rescue_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rescue. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_RescueSchema = z.strictObject(
   { enabled: runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Rescue_EnabledSchema },
 );
-/** Raw response path: answer.body.settings.routines.rescue. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_Rescue = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rewards.enabled. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.rewards.enabled. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_Rewards_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rewards. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_RewardsSchema =
   z.strictObject({
     enabled: runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.settings.routines.rewards. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_Rewards = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.settings.routines.shopping.enabled. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.shopping.enabled. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_Shopping_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.shopping.interval_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.shopping.interval_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_Shopping_IntervalSec = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Shopping_IntervalSecSchema
->;
 /** Strict raw response path: answer.body.settings.routines.shopping. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_ShoppingSchema =
   z.strictObject({
@@ -1132,10 +558,6 @@ export const runControlsSaveAnswer_Status200V2_Body_Settings_Routines_ShoppingSc
     interval_sec:
       runControlsSaveAnswer_Status200V2_Body_Settings_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.settings.routines.shopping. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines_Shopping = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.settings.routines. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_RoutinesSchema = z.strictObject({
   abilities: runControlsSaveAnswer_Status200V2_Body_Settings_Routines_AbilitiesSchema,
@@ -1146,103 +568,44 @@ export const runControlsSaveAnswer_Status200V2_Body_Settings_RoutinesSchema = z.
   rewards: runControlsSaveAnswer_Status200V2_Body_Settings_Routines_RewardsSchema,
   shopping: runControlsSaveAnswer_Status200V2_Body_Settings_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.settings.routines. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_Routines = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_RoutinesSchema
->;
 /** Strict raw response path: answer.body.settings.shopping_plan.cadence. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_CadenceSchema =
   z.string();
-/** Raw response path: answer.body.settings.shopping_plan.cadence. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Cadence = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_CadenceSchema
->;
 /** Strict raw response path: answer.body.settings.shopping_plan.cash_reserve. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_CashReserveSchema =
   z.number();
-/** Raw response path: answer.body.settings.shopping_plan.cash_reserve. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_CashReserve = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_CashReserveSchema
->;
 /** Strict raw response path: answer.body.settings.shopping_plan.enabled. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.shopping_plan.enabled. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Enabled = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.shopping_plan.excluded_upgrades[]. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_ExcludedUpgrades_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.settings.shopping_plan.excluded_upgrades[]. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_ExcludedUpgrades_ArrayElement =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_ExcludedUpgrades_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.settings.shopping_plan.excluded_upgrades. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_ExcludedUpgradesSchema =
   z.array(
     runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_ExcludedUpgrades_ArrayElementSchema,
   );
-/** Raw response path: answer.body.settings.shopping_plan.excluded_upgrades. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_ExcludedUpgrades = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_ExcludedUpgradesSchema
->;
 /** Strict raw response path: answer.body.settings.shopping_plan.interval_sec. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.shopping_plan.interval_sec. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_IntervalSec = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_IntervalSecSchema
->;
 /** Strict raw response path: answer.body.settings.shopping_plan.queue[].enabled. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.shopping_plan.queue[].enabled. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_Enabled =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.settings.shopping_plan.queue[].from_wave. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_FromWaveSchema =
   z.number();
-/** Raw response path: answer.body.settings.shopping_plan.queue[].from_wave. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_FromWave =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_FromWaveSchema
-  >;
 /** Strict raw response path: answer.body.settings.shopping_plan.queue[].id. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_IdSchema =
   z.string();
-/** Raw response path: answer.body.settings.shopping_plan.queue[].id. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_Id =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_IdSchema
-  >;
 /** Strict raw response path: answer.body.settings.shopping_plan.queue[].tap_limit. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_TapLimitSchema =
   z.number();
-/** Raw response path: answer.body.settings.shopping_plan.queue[].tap_limit. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_TapLimit =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_TapLimitSchema
-  >;
 /** Strict raw response path: answer.body.settings.shopping_plan.queue[].until_wave. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_UntilWaveSchema =
   z.null();
-/** Raw response path: answer.body.settings.shopping_plan.queue[].until_wave. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_UntilWave =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_UntilWaveSchema
-  >;
 /** Strict raw response path: answer.body.settings.shopping_plan.queue[].weight. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_WeightSchema =
   z.number();
-/** Raw response path: answer.body.settings.shopping_plan.queue[].weight. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_Weight =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_WeightSchema
-  >;
 /** Strict raw response path: answer.body.settings.shopping_plan.queue[]. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElementSchema =
   z.strictObject({
@@ -1258,33 +621,16 @@ export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_
     weight:
       runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement_WeightSchema,
   });
-/** Raw response path: answer.body.settings.shopping_plan.queue[]. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElement =
-  z.infer<
-    typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.settings.shopping_plan.queue. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_QueueSchema = z.array(
   runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue_ArrayElementSchema,
 );
-/** Raw response path: answer.body.settings.shopping_plan.queue. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Queue = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_QueueSchema
->;
 /** Strict raw response path: answer.body.settings.shopping_plan.queue_mode. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_QueueModeSchema =
   z.string();
-/** Raw response path: answer.body.settings.shopping_plan.queue_mode. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_QueueMode = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_QueueModeSchema
->;
 /** Strict raw response path: answer.body.settings.shopping_plan.version. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_VersionSchema =
   z.number();
-/** Raw response path: answer.body.settings.shopping_plan.version. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_Version = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_VersionSchema
->;
 /** Strict raw response path: answer.body.settings.shopping_plan. */
 export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlanSchema = z
   .strictObject({
@@ -1299,19 +645,11 @@ export const runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlanSchema 
     version: runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan_VersionSchema,
   })
   .nullable();
-/** Raw response path: answer.body.settings.shopping_plan. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlan = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.settings. */
 export const runControlsSaveAnswer_Status200V2_Body_SettingsSchema = z.strictObject({
   routines: runControlsSaveAnswer_Status200V2_Body_Settings_RoutinesSchema,
   shopping_plan: runControlsSaveAnswer_Status200V2_Body_Settings_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.settings. */
-export type RunControlsSaveAnswer_Status200V2_Body_Settings = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_Body_SettingsSchema
->;
 /** Strict raw response path: answer.body. */
 export const runControlsSaveAnswer_Status200V2_BodySchema = z.strictObject({
   blueprint: runControlsSaveAnswer_Status200V2_Body_BlueprintSchema,
@@ -1323,165 +661,77 @@ export const runControlsSaveAnswer_Status200V2_BodySchema = z.strictObject({
   profile_revision: runControlsSaveAnswer_Status200V2_Body_ProfileRevisionSchema,
   settings: runControlsSaveAnswer_Status200V2_Body_SettingsSchema,
 });
-/** Raw response path: answer.body. */
-export type RunControlsSaveAnswer_Status200V2_Body = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const runControlsSaveAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type RunControlsSaveAnswer_Status200V2_Status = z.infer<
-  typeof runControlsSaveAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members blueprint, capabilities, catalog, constraints, context, ok, profile_revision, settings. */
 export const runControlsSaveAnswer_Status200V2Schema = z.strictObject({
   body: runControlsSaveAnswer_Status200V2_BodySchema,
   status: runControlsSaveAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members blueprint, capabilities, catalog, constraints, context, ok, profile_revision, settings. */
-export type RunControlsSaveAnswer_Status200V2 = z.infer<
-  typeof runControlsSaveAnswer_Status200V2Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const runControlsSaveAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type RunControlsSaveAnswer_Status400_Body_Error = z.infer<
-  typeof runControlsSaveAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const runControlsSaveAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RunControlsSaveAnswer_Status400_Body_Ok = z.infer<
-  typeof runControlsSaveAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const runControlsSaveAnswer_Status400_BodySchema = z.strictObject({
   error: runControlsSaveAnswer_Status400_Body_ErrorSchema,
   ok: runControlsSaveAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type RunControlsSaveAnswer_Status400_Body = z.infer<
-  typeof runControlsSaveAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const runControlsSaveAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type RunControlsSaveAnswer_Status400_Status = z.infer<
-  typeof runControlsSaveAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const runControlsSaveAnswer_Status400Schema = z.strictObject({
   body: runControlsSaveAnswer_Status400_BodySchema,
   status: runControlsSaveAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type RunControlsSaveAnswer_Status400 = z.infer<typeof runControlsSaveAnswer_Status400Schema>;
 /** Strict raw response path: answer.body.code. */
 export const runControlsSaveAnswer_Status409V1_Body_CodeSchema = z.enum(['action_lock']);
-/** Raw response path: answer.body.code. */
-export type RunControlsSaveAnswer_Status409V1_Body_Code = z.infer<
-  typeof runControlsSaveAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const runControlsSaveAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type RunControlsSaveAnswer_Status409V1_Body_Error = z.infer<
-  typeof runControlsSaveAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const runControlsSaveAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RunControlsSaveAnswer_Status409V1_Body_Ok = z.infer<
-  typeof runControlsSaveAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const runControlsSaveAnswer_Status409V1_BodySchema = z.strictObject({
   code: runControlsSaveAnswer_Status409V1_Body_CodeSchema,
   error: runControlsSaveAnswer_Status409V1_Body_ErrorSchema,
   ok: runControlsSaveAnswer_Status409V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type RunControlsSaveAnswer_Status409V1_Body = z.infer<
-  typeof runControlsSaveAnswer_Status409V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const runControlsSaveAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type RunControlsSaveAnswer_Status409V1_Status = z.infer<
-  typeof runControlsSaveAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const runControlsSaveAnswer_Status409V1Schema = z.strictObject({
   body: runControlsSaveAnswer_Status409V1_BodySchema,
   status: runControlsSaveAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type RunControlsSaveAnswer_Status409V1 = z.infer<
-  typeof runControlsSaveAnswer_Status409V1Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const runControlsSaveAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type RunControlsSaveAnswer_Status409V2_Body_Error = z.infer<
-  typeof runControlsSaveAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const runControlsSaveAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RunControlsSaveAnswer_Status409V2_Body_Ok = z.infer<
-  typeof runControlsSaveAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const runControlsSaveAnswer_Status409V2_BodySchema = z.strictObject({
   error: runControlsSaveAnswer_Status409V2_Body_ErrorSchema,
   ok: runControlsSaveAnswer_Status409V2_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type RunControlsSaveAnswer_Status409V2_Body = z.infer<
-  typeof runControlsSaveAnswer_Status409V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const runControlsSaveAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type RunControlsSaveAnswer_Status409V2_Status = z.infer<
-  typeof runControlsSaveAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members error, ok. */
 export const runControlsSaveAnswer_Status409V2Schema = z.strictObject({
   body: runControlsSaveAnswer_Status409V2_BodySchema,
   status: runControlsSaveAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members error, ok. */
-export type RunControlsSaveAnswer_Status409V2 = z.infer<
-  typeof runControlsSaveAnswer_Status409V2Schema
->;
 /** Strict raw response path: answer.body.text. */
 export const runControlsSaveAnswer_Status500_Body_TextSchema = z.string();
-/** Raw response path: answer.body.text. */
-export type RunControlsSaveAnswer_Status500_Body_Text = z.infer<
-  typeof runControlsSaveAnswer_Status500_Body_TextSchema
->;
 /** Strict raw response path: answer.body. */
 export const runControlsSaveAnswer_Status500_BodySchema = z.strictObject({
   text: runControlsSaveAnswer_Status500_Body_TextSchema,
 });
-/** Raw response path: answer.body. */
-export type RunControlsSaveAnswer_Status500_Body = z.infer<
-  typeof runControlsSaveAnswer_Status500_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const runControlsSaveAnswer_Status500_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type RunControlsSaveAnswer_Status500_Status = z.infer<
-  typeof runControlsSaveAnswer_Status500_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members text. */
 export const runControlsSaveAnswer_Status500Schema = z.strictObject({
   body: runControlsSaveAnswer_Status500_BodySchema,
   status: runControlsSaveAnswer_Status500_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members text. */
-export type RunControlsSaveAnswer_Status500 = z.infer<typeof runControlsSaveAnswer_Status500Schema>;
 /** Strict raw response path: answer. */
 export const runControlsSaveAnswerSchema = z.union([
   runControlsSaveAnswer_Status200V1Schema,
@@ -1495,127 +745,56 @@ export const runControlsSaveAnswerSchema = z.union([
 export type RunControlsSaveAnswer = z.infer<typeof runControlsSaveAnswerSchema>;
 /** Strict raw response path: answer.body.blueprint. */
 export const runControlsSaveReadAnswer_Status200V1_Body_BlueprintSchema = z.string();
-/** Raw response path: answer.body.blueprint. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Blueprint = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_BlueprintSchema
->;
 /** Strict raw response path: answer.body.capabilities.actions. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Capabilities_ActionsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.capabilities.actions. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Capabilities_Actions = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Capabilities_ActionsSchema
->;
 /** Strict raw response path: answer.body.capabilities.controls[]. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Capabilities_Controls_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.capabilities.controls[]. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Capabilities_Controls_ArrayElement = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Capabilities_Controls_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.capabilities.controls. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Capabilities_ControlsSchema = z.array(
   runControlsSaveReadAnswer_Status200V1_Body_Capabilities_Controls_ArrayElementSchema,
 );
-/** Raw response path: answer.body.capabilities.controls. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Capabilities_Controls = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Capabilities_ControlsSchema
->;
 /** Strict raw response path: answer.body.capabilities. */
 export const runControlsSaveReadAnswer_Status200V1_Body_CapabilitiesSchema = z.strictObject({
   actions: runControlsSaveReadAnswer_Status200V1_Body_Capabilities_ActionsSchema,
   controls: runControlsSaveReadAnswer_Status200V1_Body_Capabilities_ControlsSchema,
 });
-/** Raw response path: answer.body.capabilities. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Capabilities = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_CapabilitiesSchema
->;
 /** Strict raw response path: answer.body.catalog[].availability. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_AvailabilitySchema =
   z.string();
-/** Raw response path: answer.body.catalog[].availability. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_Availability = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_AvailabilitySchema
->;
 /** Strict raw response path: answer.body.catalog[].excluded_by_default. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_ExcludedByDefaultSchema =
   z.boolean();
-/** Raw response path: answer.body.catalog[].excluded_by_default. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_ExcludedByDefault =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_ExcludedByDefaultSchema
-  >;
 /** Strict raw response path: answer.body.catalog[].exclusion_reason. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_ExclusionReasonSchema =
   z.string().nullable();
-/** Raw response path: answer.body.catalog[].exclusion_reason. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_ExclusionReason =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_ExclusionReasonSchema
-  >;
 /** Strict raw response path: answer.body.catalog[].game_order. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_GameOrderSchema =
   z.null();
-/** Raw response path: answer.body.catalog[].game_order. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_GameOrder = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_GameOrderSchema
->;
 /** Strict raw response path: answer.body.catalog[].id. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_IdSchema = z.string();
-/** Raw response path: answer.body.catalog[].id. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_Id = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_IdSchema
->;
 /** Strict raw response path: answer.body.catalog[].label. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_LabelSchema =
   z.string();
-/** Raw response path: answer.body.catalog[].label. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_Label = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_LabelSchema
->;
 /** Strict raw response path: answer.body.catalog[].order. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_OrderSchema =
   z.number();
-/** Raw response path: answer.body.catalog[].order. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_Order = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_OrderSchema
->;
 /** Strict raw response path: answer.body.catalog[].order_provenance. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_OrderProvenanceSchema =
   z.string();
-/** Raw response path: answer.body.catalog[].order_provenance. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_OrderProvenance =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_OrderProvenanceSchema
-  >;
 /** Strict raw response path: answer.body.catalog[].order_verified. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_OrderVerifiedSchema =
   z.boolean();
-/** Raw response path: answer.body.catalog[].order_verified. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_OrderVerified = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_OrderVerifiedSchema
->;
 /** Strict raw response path: answer.body.catalog[].recognition. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_RecognitionSchema =
   z.string();
-/** Raw response path: answer.body.catalog[].recognition. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_Recognition = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_RecognitionSchema
->;
 /** Strict raw response path: answer.body.catalog[].section. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_SectionSchema =
   z.string();
-/** Raw response path: answer.body.catalog[].section. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_Section = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_SectionSchema
->;
 /** Strict raw response path: answer.body.catalog[].tab. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_TabSchema = z.string();
-/** Raw response path: answer.body.catalog[].tab. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_Tab = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_TabSchema
->;
 /** Strict raw response path: answer.body.catalog[]. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElementSchema = z.strictObject(
   {
@@ -1638,180 +817,82 @@ export const runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElementSche
     tab: runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement_TabSchema,
   },
 );
-/** Raw response path: answer.body.catalog[]. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElement = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.catalog. */
 export const runControlsSaveReadAnswer_Status200V1_Body_CatalogSchema = z.array(
   runControlsSaveReadAnswer_Status200V1_Body_Catalog_ArrayElementSchema,
 );
-/** Raw response path: answer.body.catalog. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Catalog = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_CatalogSchema
->;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.interval_sec.max. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.interval_sec.max. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.interval_sec.min. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.interval_sec.min. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.interval_sec. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_MaxSchema,
     min: runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.ad_gems.interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.window_sec.max. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.window_sec.max. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_Max =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.window_sec.min. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.window_sec.min. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_Min =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.window_sec. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSecSchema =
   z.strictObject({
     max: runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_MaxSchema,
     min: runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.ad_gems.window_sec. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesAdGemsWindowSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.interval_sec.max. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.interval_sec.max. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.interval_sec.min. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.interval_sec.min. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.interval_sec. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_MaxSchema,
     min: runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.floating_gems.interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.max. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.max. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.min. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.min. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MaxSchema,
     min: runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsTapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.window_sec.max. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.window_sec.max. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_Max =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.window_sec.min. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.window_sec.min. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_Min =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.window_sec. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSecSchema =
   z.strictObject({
     max: runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_MaxSchema,
     min: runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.floating_gems.window_sec. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesFloatingGemsWindowSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.shopping.interval_sec.max. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.shopping.interval_sec.max. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.shopping.interval_sec.min. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.shopping.interval_sec.min. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.shopping.interval_sec. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_MaxSchema,
     min: runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.shopping.interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints. */
 export const runControlsSaveReadAnswer_Status200V1_Body_ConstraintsSchema = z.strictObject({
   'routines.ad_gems.interval_sec':
@@ -1827,95 +908,41 @@ export const runControlsSaveReadAnswer_Status200V1_Body_ConstraintsSchema = z.st
   'routines.shopping.interval_sec':
     runControlsSaveReadAnswer_Status200V1_Body_Constraints_RoutinesShoppingIntervalSecSchema,
 });
-/** Raw response path: answer.body.constraints. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Constraints = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_ConstraintsSchema
->;
 /** Strict raw response path: answer.body.context.account. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.context.account. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Context_Account = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.context.instance. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.context.instance. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Context_Instance = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.context.profile. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.context.profile. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Context_Profile = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.context. */
 export const runControlsSaveReadAnswer_Status200V1_Body_ContextSchema = z.strictObject({
   account: runControlsSaveReadAnswer_Status200V1_Body_Context_AccountSchema,
   instance: runControlsSaveReadAnswer_Status200V1_Body_Context_InstanceSchema,
   profile: runControlsSaveReadAnswer_Status200V1_Body_Context_ProfileSchema,
 });
-/** Raw response path: answer.body.context. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Context = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_ContextSchema
->;
 /** Strict raw response path: answer.body.notice. */
 export const runControlsSaveReadAnswer_Status200V1_Body_NoticeSchema = z.string();
-/** Raw response path: answer.body.notice. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Notice = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_NoticeSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const runControlsSaveReadAnswer_Status200V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Ok = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body.profile_revision. */
 export const runControlsSaveReadAnswer_Status200V1_Body_ProfileRevisionSchema = z.string();
-/** Raw response path: answer.body.profile_revision. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_ProfileRevision = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.settings.routines.abilities.enabled. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.abilities.enabled. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Abilities_Enabled =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.abilities. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AbilitiesSchema =
   z.strictObject({
     enabled: runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.settings.routines.abilities. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Abilities = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems.enabled. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.ad_gems.enabled. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems_Enabled = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems.interval_sec. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.ad_gems.interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.ad_gems.window_sec. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.ad_gems.window_sec. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems_WindowSec = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGemsSchema =
   z.strictObject({
@@ -1924,42 +951,18 @@ export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems
       runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems_IntervalSecSchema,
     window_sec: runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.settings.routines.ad_gems. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGems = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.enabled. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.floating_gems.enabled. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.interval_sec. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.floating_gems.interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.tap_interval_sec. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.floating_gems.tap_interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.window_sec. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.floating_gems.window_sec. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -1972,73 +975,36 @@ export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Floati
     window_sec:
       runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.settings.routines.floating_gems. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGems = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.settings.routines.repeat.enabled. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.repeat.enabled. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Repeat_Enabled = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.repeat. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_RepeatSchema =
   z.strictObject({
     enabled: runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.settings.routines.repeat. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Repeat = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rescue.enabled. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.rescue.enabled. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Rescue_Enabled = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rescue. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_RescueSchema =
   z.strictObject({
     enabled: runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.settings.routines.rescue. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Rescue = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rewards.enabled. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.rewards.enabled. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Rewards_Enabled = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rewards. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_RewardsSchema =
   z.strictObject({
     enabled: runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.settings.routines.rewards. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Rewards = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.settings.routines.shopping.enabled. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.shopping.enabled. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Shopping_Enabled = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.shopping.interval_sec. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.shopping.interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.shopping. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_ShoppingSchema =
   z.strictObject({
@@ -2046,10 +1012,6 @@ export const runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Shoppi
     interval_sec:
       runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.settings.routines.shopping. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_Shopping = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.settings.routines. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_RoutinesSchema = z.strictObject({
   abilities: runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_AbilitiesSchema,
@@ -2060,25 +1022,13 @@ export const runControlsSaveReadAnswer_Status200V1_Body_Settings_RoutinesSchema 
   rewards: runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_RewardsSchema,
   shopping: runControlsSaveReadAnswer_Status200V1_Body_Settings_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.settings.routines. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_Routines = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_RoutinesSchema
->;
 /** Strict raw response path: answer.body.settings.shopping_plan. */
 export const runControlsSaveReadAnswer_Status200V1_Body_Settings_ShoppingPlanSchema = z.null();
-/** Raw response path: answer.body.settings.shopping_plan. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings_ShoppingPlan = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_Settings_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.settings. */
 export const runControlsSaveReadAnswer_Status200V1_Body_SettingsSchema = z.strictObject({
   routines: runControlsSaveReadAnswer_Status200V1_Body_Settings_RoutinesSchema,
   shopping_plan: runControlsSaveReadAnswer_Status200V1_Body_Settings_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.settings. */
-export type RunControlsSaveReadAnswer_Status200V1_Body_Settings = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_Body_SettingsSchema
->;
 /** Strict raw response path: answer.body. */
 export const runControlsSaveReadAnswer_Status200V1_BodySchema = z.strictObject({
   blueprint: runControlsSaveReadAnswer_Status200V1_Body_BlueprintSchema,
@@ -2091,148 +1041,65 @@ export const runControlsSaveReadAnswer_Status200V1_BodySchema = z.strictObject({
   profile_revision: runControlsSaveReadAnswer_Status200V1_Body_ProfileRevisionSchema,
   settings: runControlsSaveReadAnswer_Status200V1_Body_SettingsSchema,
 });
-/** Raw response path: answer.body. */
-export type RunControlsSaveReadAnswer_Status200V1_Body = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const runControlsSaveReadAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type RunControlsSaveReadAnswer_Status200V1_Status = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members blueprint, capabilities, catalog, constraints, context, notice, ok, profile_revision, settings. */
 export const runControlsSaveReadAnswer_Status200V1Schema = z.strictObject({
   body: runControlsSaveReadAnswer_Status200V1_BodySchema,
   status: runControlsSaveReadAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members blueprint, capabilities, catalog, constraints, context, notice, ok, profile_revision, settings. */
-export type RunControlsSaveReadAnswer_Status200V1 = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V1Schema
->;
 /** Strict raw response path: answer.body.blueprint. */
 export const runControlsSaveReadAnswer_Status200V2_Body_BlueprintSchema = z.string();
-/** Raw response path: answer.body.blueprint. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Blueprint = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_BlueprintSchema
->;
 /** Strict raw response path: answer.body.capabilities.actions. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Capabilities_ActionsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.capabilities.actions. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Capabilities_Actions = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Capabilities_ActionsSchema
->;
 /** Strict raw response path: answer.body.capabilities.controls[]. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Capabilities_Controls_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.capabilities.controls[]. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Capabilities_Controls_ArrayElement = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Capabilities_Controls_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.capabilities.controls. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Capabilities_ControlsSchema = z.array(
   runControlsSaveReadAnswer_Status200V2_Body_Capabilities_Controls_ArrayElementSchema,
 );
-/** Raw response path: answer.body.capabilities.controls. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Capabilities_Controls = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Capabilities_ControlsSchema
->;
 /** Strict raw response path: answer.body.capabilities. */
 export const runControlsSaveReadAnswer_Status200V2_Body_CapabilitiesSchema = z.strictObject({
   actions: runControlsSaveReadAnswer_Status200V2_Body_Capabilities_ActionsSchema,
   controls: runControlsSaveReadAnswer_Status200V2_Body_Capabilities_ControlsSchema,
 });
-/** Raw response path: answer.body.capabilities. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Capabilities = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_CapabilitiesSchema
->;
 /** Strict raw response path: answer.body.catalog[].availability. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_AvailabilitySchema =
   z.string();
-/** Raw response path: answer.body.catalog[].availability. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_Availability = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_AvailabilitySchema
->;
 /** Strict raw response path: answer.body.catalog[].excluded_by_default. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_ExcludedByDefaultSchema =
   z.boolean();
-/** Raw response path: answer.body.catalog[].excluded_by_default. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_ExcludedByDefault =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_ExcludedByDefaultSchema
-  >;
 /** Strict raw response path: answer.body.catalog[].exclusion_reason. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_ExclusionReasonSchema =
   z.string().nullable();
-/** Raw response path: answer.body.catalog[].exclusion_reason. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_ExclusionReason =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_ExclusionReasonSchema
-  >;
 /** Strict raw response path: answer.body.catalog[].game_order. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_GameOrderSchema =
   z.null();
-/** Raw response path: answer.body.catalog[].game_order. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_GameOrder = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_GameOrderSchema
->;
 /** Strict raw response path: answer.body.catalog[].id. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_IdSchema = z.string();
-/** Raw response path: answer.body.catalog[].id. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_Id = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_IdSchema
->;
 /** Strict raw response path: answer.body.catalog[].label. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_LabelSchema =
   z.string();
-/** Raw response path: answer.body.catalog[].label. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_Label = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_LabelSchema
->;
 /** Strict raw response path: answer.body.catalog[].order. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_OrderSchema =
   z.number();
-/** Raw response path: answer.body.catalog[].order. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_Order = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_OrderSchema
->;
 /** Strict raw response path: answer.body.catalog[].order_provenance. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_OrderProvenanceSchema =
   z.string();
-/** Raw response path: answer.body.catalog[].order_provenance. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_OrderProvenance =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_OrderProvenanceSchema
-  >;
 /** Strict raw response path: answer.body.catalog[].order_verified. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_OrderVerifiedSchema =
   z.boolean();
-/** Raw response path: answer.body.catalog[].order_verified. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_OrderVerified = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_OrderVerifiedSchema
->;
 /** Strict raw response path: answer.body.catalog[].recognition. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_RecognitionSchema =
   z.string();
-/** Raw response path: answer.body.catalog[].recognition. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_Recognition = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_RecognitionSchema
->;
 /** Strict raw response path: answer.body.catalog[].section. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_SectionSchema =
   z.string();
-/** Raw response path: answer.body.catalog[].section. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_Section = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_SectionSchema
->;
 /** Strict raw response path: answer.body.catalog[].tab. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_TabSchema = z.string();
-/** Raw response path: answer.body.catalog[].tab. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_Tab = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_TabSchema
->;
 /** Strict raw response path: answer.body.catalog[]. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElementSchema = z.strictObject(
   {
@@ -2255,180 +1122,82 @@ export const runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElementSche
     tab: runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement_TabSchema,
   },
 );
-/** Raw response path: answer.body.catalog[]. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElement = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.catalog. */
 export const runControlsSaveReadAnswer_Status200V2_Body_CatalogSchema = z.array(
   runControlsSaveReadAnswer_Status200V2_Body_Catalog_ArrayElementSchema,
 );
-/** Raw response path: answer.body.catalog. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Catalog = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_CatalogSchema
->;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.interval_sec.max. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.interval_sec.max. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.interval_sec.min. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.interval_sec.min. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.interval_sec. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_MaxSchema,
     min: runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.ad_gems.interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.window_sec.max. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.window_sec.max. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_Max =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.window_sec.min. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.ad_gems.window_sec.min. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_Min =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.ad_gems.window_sec. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSecSchema =
   z.strictObject({
     max: runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_MaxSchema,
     min: runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.ad_gems.window_sec. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesAdGemsWindowSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.interval_sec.max. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.interval_sec.max. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.interval_sec.min. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.interval_sec.min. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.interval_sec. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_MaxSchema,
     min: runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.floating_gems.interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.max. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.max. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.min. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec.min. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MaxSchema,
     min: runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.floating_gems.tap_interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsTapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.window_sec.max. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.window_sec.max. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_Max =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.window_sec.min. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.floating_gems.window_sec.min. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_Min =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.floating_gems.window_sec. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSecSchema =
   z.strictObject({
     max: runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_MaxSchema,
     min: runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.floating_gems.window_sec. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesFloatingGemsWindowSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.shopping.interval_sec.max. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_MaxSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.shopping.interval_sec.max. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_Max =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_MaxSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.shopping.interval_sec.min. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_MinSchema =
   z.number();
-/** Raw response path: answer.body.constraints.routines.shopping.interval_sec.min. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_Min =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_MinSchema
-  >;
 /** Strict raw response path: answer.body.constraints.routines.shopping.interval_sec. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSecSchema =
   z.strictObject({
     max: runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_MaxSchema,
     min: runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec_MinSchema,
   });
-/** Raw response path: answer.body.constraints.routines.shopping.interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.constraints. */
 export const runControlsSaveReadAnswer_Status200V2_Body_ConstraintsSchema = z.strictObject({
   'routines.ad_gems.interval_sec':
@@ -2444,91 +1213,41 @@ export const runControlsSaveReadAnswer_Status200V2_Body_ConstraintsSchema = z.st
   'routines.shopping.interval_sec':
     runControlsSaveReadAnswer_Status200V2_Body_Constraints_RoutinesShoppingIntervalSecSchema,
 });
-/** Raw response path: answer.body.constraints. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Constraints = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_ConstraintsSchema
->;
 /** Strict raw response path: answer.body.context.account. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Context_AccountSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.context.account. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Context_Account = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.context.instance. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.context.instance. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Context_Instance = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.context.profile. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.context.profile. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Context_Profile = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.context. */
 export const runControlsSaveReadAnswer_Status200V2_Body_ContextSchema = z.strictObject({
   account: runControlsSaveReadAnswer_Status200V2_Body_Context_AccountSchema,
   instance: runControlsSaveReadAnswer_Status200V2_Body_Context_InstanceSchema,
   profile: runControlsSaveReadAnswer_Status200V2_Body_Context_ProfileSchema,
 });
-/** Raw response path: answer.body.context. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Context = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_ContextSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const runControlsSaveReadAnswer_Status200V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Ok = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.profile_revision. */
 export const runControlsSaveReadAnswer_Status200V2_Body_ProfileRevisionSchema = z.string();
-/** Raw response path: answer.body.profile_revision. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_ProfileRevision = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.settings.routines.abilities.enabled. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.abilities.enabled. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Abilities_Enabled =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.abilities. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AbilitiesSchema =
   z.strictObject({
     enabled: runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.settings.routines.abilities. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Abilities = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems.enabled. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.ad_gems.enabled. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems_Enabled = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems.interval_sec. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.ad_gems.interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.ad_gems.window_sec. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.ad_gems.window_sec. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems_WindowSec = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.settings.routines.ad_gems. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGemsSchema =
   z.strictObject({
@@ -2537,42 +1256,18 @@ export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems
       runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems_IntervalSecSchema,
     window_sec: runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.settings.routines.ad_gems. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGems = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.enabled. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.floating_gems.enabled. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.interval_sec. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.floating_gems.interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.tap_interval_sec. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.floating_gems.tap_interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems.window_sec. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.floating_gems.window_sec. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.floating_gems. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -2585,73 +1280,36 @@ export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Floati
     window_sec:
       runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.settings.routines.floating_gems. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGems = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.settings.routines.repeat.enabled. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.repeat.enabled. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Repeat_Enabled = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.repeat. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_RepeatSchema =
   z.strictObject({
     enabled: runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.settings.routines.repeat. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Repeat = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rescue.enabled. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.rescue.enabled. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Rescue_Enabled = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rescue. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_RescueSchema =
   z.strictObject({
     enabled: runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.settings.routines.rescue. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Rescue = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rewards.enabled. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.rewards.enabled. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Rewards_Enabled = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.rewards. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_RewardsSchema =
   z.strictObject({
     enabled: runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.settings.routines.rewards. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Rewards = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.settings.routines.shopping.enabled. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.settings.routines.shopping.enabled. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Shopping_Enabled = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.settings.routines.shopping.interval_sec. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.settings.routines.shopping.interval_sec. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.settings.routines.shopping. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_ShoppingSchema =
   z.strictObject({
@@ -2659,10 +1317,6 @@ export const runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Shoppi
     interval_sec:
       runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.settings.routines.shopping. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_Shopping = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.settings.routines. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_RoutinesSchema = z.strictObject({
   abilities: runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_AbilitiesSchema,
@@ -2673,25 +1327,13 @@ export const runControlsSaveReadAnswer_Status200V2_Body_Settings_RoutinesSchema 
   rewards: runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_RewardsSchema,
   shopping: runControlsSaveReadAnswer_Status200V2_Body_Settings_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.settings.routines. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_Routines = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_RoutinesSchema
->;
 /** Strict raw response path: answer.body.settings.shopping_plan. */
 export const runControlsSaveReadAnswer_Status200V2_Body_Settings_ShoppingPlanSchema = z.null();
-/** Raw response path: answer.body.settings.shopping_plan. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings_ShoppingPlan = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_Settings_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.settings. */
 export const runControlsSaveReadAnswer_Status200V2_Body_SettingsSchema = z.strictObject({
   routines: runControlsSaveReadAnswer_Status200V2_Body_Settings_RoutinesSchema,
   shopping_plan: runControlsSaveReadAnswer_Status200V2_Body_Settings_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.settings. */
-export type RunControlsSaveReadAnswer_Status200V2_Body_Settings = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_Body_SettingsSchema
->;
 /** Strict raw response path: answer.body. */
 export const runControlsSaveReadAnswer_Status200V2_BodySchema = z.strictObject({
   blueprint: runControlsSaveReadAnswer_Status200V2_Body_BlueprintSchema,
@@ -2703,61 +1345,29 @@ export const runControlsSaveReadAnswer_Status200V2_BodySchema = z.strictObject({
   profile_revision: runControlsSaveReadAnswer_Status200V2_Body_ProfileRevisionSchema,
   settings: runControlsSaveReadAnswer_Status200V2_Body_SettingsSchema,
 });
-/** Raw response path: answer.body. */
-export type RunControlsSaveReadAnswer_Status200V2_Body = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const runControlsSaveReadAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type RunControlsSaveReadAnswer_Status200V2_Status = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members blueprint, capabilities, catalog, constraints, context, ok, profile_revision, settings. */
 export const runControlsSaveReadAnswer_Status200V2Schema = z.strictObject({
   body: runControlsSaveReadAnswer_Status200V2_BodySchema,
   status: runControlsSaveReadAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members blueprint, capabilities, catalog, constraints, context, ok, profile_revision, settings. */
-export type RunControlsSaveReadAnswer_Status200V2 = z.infer<
-  typeof runControlsSaveReadAnswer_Status200V2Schema
->;
 /** Strict raw response path: answer.body.error. */
 export const runControlsSaveReadAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type RunControlsSaveReadAnswer_Status400_Body_Error = z.infer<
-  typeof runControlsSaveReadAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const runControlsSaveReadAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RunControlsSaveReadAnswer_Status400_Body_Ok = z.infer<
-  typeof runControlsSaveReadAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const runControlsSaveReadAnswer_Status400_BodySchema = z.strictObject({
   error: runControlsSaveReadAnswer_Status400_Body_ErrorSchema,
   ok: runControlsSaveReadAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type RunControlsSaveReadAnswer_Status400_Body = z.infer<
-  typeof runControlsSaveReadAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const runControlsSaveReadAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type RunControlsSaveReadAnswer_Status400_Status = z.infer<
-  typeof runControlsSaveReadAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const runControlsSaveReadAnswer_Status400Schema = z.strictObject({
   body: runControlsSaveReadAnswer_Status400_BodySchema,
   status: runControlsSaveReadAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type RunControlsSaveReadAnswer_Status400 = z.infer<
-  typeof runControlsSaveReadAnswer_Status400Schema
->;
 /** Strict raw response path: answer. */
 export const runControlsSaveReadAnswerSchema = z.union([
   runControlsSaveReadAnswer_Status200V1Schema,
@@ -2769,45 +1379,21 @@ export type RunControlsSaveReadAnswer = z.infer<typeof runControlsSaveReadAnswer
 /** Strict raw response path: answer.body.battle.applied_controls.routines.abilities.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.abilities.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Abilities_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.abilities. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AbilitiesSchema =
   z.strictObject({
     enabled:
       liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.abilities. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Abilities = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.ad_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.ad_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.ad_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.ad_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.ad_gems.window_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.ad_gems.window_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.ad_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGemsSchema =
   z.strictObject({
@@ -2817,42 +1403,18 @@ export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_A
     window_sec:
       liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.ad_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems.tap_interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems.window_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems.window_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -2865,79 +1427,37 @@ export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_F
     window_sec:
       liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGems =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.repeat.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.repeat.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Repeat_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Repeat_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.repeat. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_RepeatSchema =
   z.strictObject({
     enabled: liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.repeat. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Repeat = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.rescue.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.rescue.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Rescue_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Rescue_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.rescue. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_RescueSchema =
   z.strictObject({
     enabled: liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.rescue. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Rescue = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.rewards.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.rewards.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Rewards_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.rewards. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_RewardsSchema =
   z.strictObject({
     enabled:
       liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.rewards. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Rewards = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.shopping.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.shopping.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.shopping.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.shopping.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.shopping. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_ShoppingSchema =
   z.strictObject({
@@ -2946,10 +1466,6 @@ export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_S
     interval_sec:
       liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.shopping. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_Shopping = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_RoutinesSchema =
   z.strictObject({
@@ -2962,49 +1478,22 @@ export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_RoutinesSc
     rewards: liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_RewardsSchema,
     shopping: liveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines_ShoppingSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_Routines = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.shopping_plan. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControls_ShoppingPlanSchema = z.null();
-/** Raw response path: answer.body.battle.applied_controls.shopping_plan. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls_ShoppingPlan = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedControls_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedControlsSchema = z.strictObject({
   routines: liveControlsAnswer_Status200_Body_Battle_AppliedControls_RoutinesSchema,
   shopping_plan: liveControlsAnswer_Status200_Body_Battle_AppliedControls_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.battle.applied_controls. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedControls = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedControlsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.ad_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_overrides.routines.ad_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.ad_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_overrides.routines.ad_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.ad_gems.window_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_overrides.routines.ad_gems.window_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.ad_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGemsSchema =
   z.strictObject({
@@ -3015,34 +1504,15 @@ export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_
     window_sec:
       liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGems_WindowSecSchema.optional(),
   });
-/** Raw response path: answer.body.battle.applied_overrides.routines.ad_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.floating_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_overrides.routines.floating_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.floating_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_overrides.routines.floating_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.floating_gems.tap_interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_overrides.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.floating_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -3053,27 +1523,12 @@ export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_
     tap_interval_sec:
       liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGems_TapIntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_overrides.routines.floating_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGems =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.shopping.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_overrides.routines.shopping.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_Shopping_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.shopping.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_overrides.routines.shopping.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.shopping. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_ShoppingSchema =
   z.strictObject({
@@ -3082,10 +1537,6 @@ export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_
     interval_sec:
       liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_overrides.routines.shopping. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_Shopping = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_RoutinesSchema =
   z.strictObject({
@@ -3095,168 +1546,76 @@ export const liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_RoutinesS
     shopping:
       liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines_ShoppingSchema.optional(),
   });
-/** Raw response path: answer.body.battle.applied_overrides.routines. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides_Routines = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedOverridesSchema = z.strictObject({
   routines: liveControlsAnswer_Status200_Body_Battle_AppliedOverrides_RoutinesSchema.optional(),
 });
-/** Raw response path: answer.body.battle.applied_overrides. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedOverrides = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedOverridesSchema
->;
 /** Strict raw response path: answer.body.battle.applied_revision. */
 export const liveControlsAnswer_Status200_Body_Battle_AppliedRevisionSchema = z.number();
-/** Raw response path: answer.body.battle.applied_revision. */
-export type LiveControlsAnswer_Status200_Body_Battle_AppliedRevision = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_AppliedRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.blueprint. */
 export const liveControlsAnswer_Status200_Body_Battle_BlueprintSchema = z.string();
-/** Raw response path: answer.body.battle.blueprint. */
-export type LiveControlsAnswer_Status200_Body_Battle_Blueprint = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_BlueprintSchema
->;
 /** Strict raw response path: answer.body.battle.boundary_evidence.last_observed_wave. */
 export const liveControlsAnswer_Status200_Body_Battle_BoundaryEvidence_LastObservedWaveSchema =
   z.number();
-/** Raw response path: answer.body.battle.boundary_evidence.last_observed_wave. */
-export type LiveControlsAnswer_Status200_Body_Battle_BoundaryEvidence_LastObservedWave = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_BoundaryEvidence_LastObservedWaveSchema
->;
 /** Strict raw response path: answer.body.battle.boundary_evidence. */
 export const liveControlsAnswer_Status200_Body_Battle_BoundaryEvidenceSchema = z.strictObject({
   last_observed_wave:
     liveControlsAnswer_Status200_Body_Battle_BoundaryEvidence_LastObservedWaveSchema,
 });
-/** Raw response path: answer.body.battle.boundary_evidence. */
-export type LiveControlsAnswer_Status200_Body_Battle_BoundaryEvidence = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_BoundaryEvidenceSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities.actions[]. */
 export const liveControlsAnswer_Status200_Body_Battle_Capabilities_Actions_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.battle.capabilities.actions[]. */
-export type LiveControlsAnswer_Status200_Body_Battle_Capabilities_Actions_ArrayElement = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Capabilities_Actions_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities.actions. */
 export const liveControlsAnswer_Status200_Body_Battle_Capabilities_ActionsSchema = z.array(
   liveControlsAnswer_Status200_Body_Battle_Capabilities_Actions_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.capabilities.actions. */
-export type LiveControlsAnswer_Status200_Body_Battle_Capabilities_Actions = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Capabilities_ActionsSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities.controls[]. */
 export const liveControlsAnswer_Status200_Body_Battle_Capabilities_Controls_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.battle.capabilities.controls[]. */
-export type LiveControlsAnswer_Status200_Body_Battle_Capabilities_Controls_ArrayElement = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Capabilities_Controls_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities.controls. */
 export const liveControlsAnswer_Status200_Body_Battle_Capabilities_ControlsSchema = z.array(
   liveControlsAnswer_Status200_Body_Battle_Capabilities_Controls_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.capabilities.controls. */
-export type LiveControlsAnswer_Status200_Body_Battle_Capabilities_Controls = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Capabilities_ControlsSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities. */
 export const liveControlsAnswer_Status200_Body_Battle_CapabilitiesSchema = z.strictObject({
   actions: liveControlsAnswer_Status200_Body_Battle_Capabilities_ActionsSchema,
   controls: liveControlsAnswer_Status200_Body_Battle_Capabilities_ControlsSchema,
 });
-/** Raw response path: answer.body.battle.capabilities. */
-export type LiveControlsAnswer_Status200_Body_Battle_Capabilities = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_CapabilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].applied_paths[]. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_AppliedPaths_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.battle.commands[].applied_paths[]. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_AppliedPaths_ArrayElement =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_AppliedPaths_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].applied_paths. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_AppliedPathsSchema =
   z.array(
     liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_AppliedPaths_ArrayElementSchema,
   );
-/** Raw response path: answer.body.battle.commands[].applied_paths. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_AppliedPaths = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_AppliedPathsSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].battle_id. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_BattleIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.commands[].battle_id. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_BattleId = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_BattleIdSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].evidence. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_EvidenceSchema =
   z.null();
-/** Raw response path: answer.body.battle.commands[].evidence. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Evidence = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_EvidenceSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].generation. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.battle.commands[].generation. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Generation = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_GenerationSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].id. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_IdSchema = z.string();
-/** Raw response path: answer.body.battle.commands[].id. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Id = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_IdSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].kind. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_KindSchema = z.enum([
   'controls',
 ]);
-/** Raw response path: answer.body.battle.commands[].kind. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Kind = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_KindSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].operation_id. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.commands[].operation_id. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_OperationId = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_OperationIdSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.ad_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.commands[].payload.routines.ad_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.ad_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_IntervalSecSchema =
   z.number().nullable();
-/** Raw response path: answer.body.battle.commands[].payload.routines.ad_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.ad_gems.window_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.commands[].payload.routines.ad_gems.window_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.ad_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGemsSchema =
   z.strictObject({
@@ -3267,35 +1626,15 @@ export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payl
     window_sec:
       liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_WindowSecSchema.optional(),
   });
-/** Raw response path: answer.body.battle.commands[].payload.routines.ad_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.floating_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.commands[].payload.routines.floating_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.floating_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.commands[].payload.routines.floating_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.floating_gems.tap_interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.commands[].payload.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.floating_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -3306,46 +1645,21 @@ export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payl
     tap_interval_sec:
       liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_TapIntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.commands[].payload.routines.floating_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.rewards.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.commands[].payload.routines.rewards.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Rewards_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.rewards. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_RewardsSchema =
   z.strictObject({
     enabled:
       liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.commands[].payload.routines.rewards. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Rewards =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_RewardsSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.shopping.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.commands[].payload.routines.shopping.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.shopping.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.commands[].payload.routines.shopping.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.shopping. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_ShoppingSchema =
   z.strictObject({
@@ -3354,11 +1668,6 @@ export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payl
     interval_sec:
       liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.commands[].payload.routines.shopping. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_ShoppingSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_RoutinesSchema =
   z.strictObject({
@@ -3371,59 +1680,29 @@ export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payl
     shopping:
       liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines_ShoppingSchema.optional(),
   });
-/** Raw response path: answer.body.battle.commands[].payload.routines. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_Routines =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_RoutinesSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_PayloadSchema =
   z.strictObject({
     routines: liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload_RoutinesSchema,
   });
-/** Raw response path: answer.body.battle.commands[].payload. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Payload = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_PayloadSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].reason. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_ReasonSchema = z
   .enum(['battle_ended'])
   .nullable();
-/** Raw response path: answer.body.battle.commands[].reason. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Reason = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_ReasonSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].request_keys[]. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_RequestKeys_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.battle.commands[].request_keys[]. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_RequestKeys_ArrayElement =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_RequestKeys_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].request_keys. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_RequestKeysSchema =
   z.array(
     liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_RequestKeys_ArrayElementSchema,
   );
-/** Raw response path: answer.body.battle.commands[].request_keys. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_RequestKeys = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_RequestKeysSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].requested_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_RequestedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.commands[].requested_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_RequestedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_RequestedAtSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].revision. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_RevisionSchema =
   z.number();
-/** Raw response path: answer.body.battle.commands[].revision. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Revision = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_RevisionSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].state. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_StateSchema = z.enum([
   'applied',
@@ -3432,17 +1711,9 @@ export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_Stat
   'rejected',
   'requested',
 ]);
-/** Raw response path: answer.body.battle.commands[].state. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_State = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_StateSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].updated_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_UpdatedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.commands[].updated_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_UpdatedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.battle.commands[]. */
 export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElementSchema = z.strictObject({
   applied_paths: liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_AppliedPathsSchema,
@@ -3460,96 +1731,36 @@ export const liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElementSchem
   state: liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_StateSchema,
   updated_at: liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement_UpdatedAtSchema,
 });
-/** Raw response path: answer.body.battle.commands[]. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands_ArrayElement = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.commands. */
 export const liveControlsAnswer_Status200_Body_Battle_CommandsSchema = z.array(
   liveControlsAnswer_Status200_Body_Battle_Commands_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.commands. */
-export type LiveControlsAnswer_Status200_Body_Battle_Commands = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_CommandsSchema
->;
 /** Strict raw response path: answer.body.battle.context.account. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.battle.context.account. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_Account = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.battle.context.adb_host. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_AdbHostSchema = z.string();
-/** Raw response path: answer.body.battle.context.adb_host. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_AdbHost = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.battle.context.adb_port. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_AdbPortSchema = z.number();
-/** Raw response path: answer.body.battle.context.adb_port. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_AdbPort = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.battle.context.artifact_dir. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_ArtifactDirSchema = z.string();
-/** Raw response path: answer.body.battle.context.artifact_dir. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_ArtifactDir = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_ArtifactDirSchema
->;
 /** Strict raw response path: answer.body.battle.context.config_revision. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.battle.context.config_revision. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_ConfigRevision = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.context.device_key. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_DeviceKeySchema = z.string();
-/** Raw response path: answer.body.battle.context.device_key. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_DeviceKey = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.battle.context.instance. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.battle.context.instance. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_Instance = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.battle.context.profile. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.battle.context.profile. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_Profile = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.battle.context.profile_path. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_ProfilePathSchema = z.string();
-/** Raw response path: answer.body.battle.context.profile_path. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_ProfilePath = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_ProfilePathSchema
->;
 /** Strict raw response path: answer.body.battle.context.profile_revision. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_ProfileRevisionSchema = z.string();
-/** Raw response path: answer.body.battle.context.profile_revision. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_ProfileRevision = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.context.rendering. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_RenderingSchema = z.null();
-/** Raw response path: answer.body.battle.context.rendering. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_Rendering = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.battle.context.selected_run. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_SelectedRunSchema = z.string();
-/** Raw response path: answer.body.battle.context.selected_run. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_SelectedRun = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.battle.context.serial. */
 export const liveControlsAnswer_Status200_Body_Battle_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.battle.context.serial. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context_Serial = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.battle.context. */
 export const liveControlsAnswer_Status200_Body_Battle_ContextSchema = z.strictObject({
   account: liveControlsAnswer_Status200_Body_Battle_Context_AccountSchema,
@@ -3566,60 +1777,27 @@ export const liveControlsAnswer_Status200_Body_Battle_ContextSchema = z.strictOb
   selected_run: liveControlsAnswer_Status200_Body_Battle_Context_SelectedRunSchema,
   serial: liveControlsAnswer_Status200_Body_Battle_Context_SerialSchema,
 });
-/** Raw response path: answer.body.battle.context. */
-export type LiveControlsAnswer_Status200_Body_Battle_Context = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_ContextSchema
->;
 /** Strict raw response path: answer.body.battle.control_revision. */
 export const liveControlsAnswer_Status200_Body_Battle_ControlRevisionSchema = z.number();
-/** Raw response path: answer.body.battle.control_revision. */
-export type LiveControlsAnswer_Status200_Body_Battle_ControlRevision = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_ControlRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.created_at. */
 export const liveControlsAnswer_Status200_Body_Battle_CreatedAtSchema = z.number();
-/** Raw response path: answer.body.battle.created_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_CreatedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.abilities.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.abilities.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_Abilities_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Abilities_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.abilities. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AbilitiesSchema =
   z.strictObject({
     enabled: liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.abilities. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_Abilities = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.ad_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.ad_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGems_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.ad_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.ad_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.ad_gems.window_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.ad_gems.window_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGems_WindowSec = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.ad_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGemsSchema =
   z.strictObject({
@@ -3628,42 +1806,18 @@ export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGemsS
       liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGems_IntervalSecSchema,
     window_sec: liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.ad_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.floating_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.floating_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems.tap_interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems.window_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.floating_gems.window_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -3675,73 +1829,36 @@ export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Floatin
     window_sec:
       liveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.floating_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.repeat.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.repeat.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_Repeat_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.repeat. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_RepeatSchema =
   z.strictObject({
     enabled: liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.repeat. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_Repeat = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.rescue.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.rescue.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_Rescue_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.rescue. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_RescueSchema =
   z.strictObject({
     enabled: liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.rescue. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_Rescue = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.rewards.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.rewards.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_Rewards_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.rewards. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_RewardsSchema =
   z.strictObject({
     enabled: liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.rewards. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_Rewards = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.shopping.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.shopping.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_Shopping_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.shopping.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.shopping.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.shopping. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_ShoppingSchema =
   z.strictObject({
@@ -3749,10 +1866,6 @@ export const liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Shoppin
     interval_sec:
       liveControlsAnswer_Status200_Body_Battle_Effective_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.shopping. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines_Shopping = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_RoutinesSchema = z.strictObject({
   abilities: liveControlsAnswer_Status200_Body_Battle_Effective_Routines_AbilitiesSchema,
@@ -3763,79 +1876,35 @@ export const liveControlsAnswer_Status200_Body_Battle_Effective_RoutinesSchema =
   rewards: liveControlsAnswer_Status200_Body_Battle_Effective_Routines_RewardsSchema,
   shopping: liveControlsAnswer_Status200_Body_Battle_Effective_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.battle.effective.routines. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_Routines = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.effective.shopping_plan. */
 export const liveControlsAnswer_Status200_Body_Battle_Effective_ShoppingPlanSchema = z.null();
-/** Raw response path: answer.body.battle.effective.shopping_plan. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective_ShoppingPlan = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Effective_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battle.effective. */
 export const liveControlsAnswer_Status200_Body_Battle_EffectiveSchema = z.strictObject({
   routines: liveControlsAnswer_Status200_Body_Battle_Effective_RoutinesSchema,
   shopping_plan: liveControlsAnswer_Status200_Body_Battle_Effective_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.battle.effective. */
-export type LiveControlsAnswer_Status200_Body_Battle_Effective = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_EffectiveSchema
->;
 /** Strict raw response path: answer.body.battle.end_reason. */
 export const liveControlsAnswer_Status200_Body_Battle_EndReasonSchema = z.string().nullable();
-/** Raw response path: answer.body.battle.end_reason. */
-export type LiveControlsAnswer_Status200_Body_Battle_EndReason = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_EndReasonSchema
->;
 /** Strict raw response path: answer.body.battle.ended_at. */
 export const liveControlsAnswer_Status200_Body_Battle_EndedAtSchema = z.number().nullable();
-/** Raw response path: answer.body.battle.ended_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_EndedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_EndedAtSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.abilities.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.abilities.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Abilities_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.abilities. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AbilitiesSchema =
   z.strictObject({
     enabled:
       liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.abilities. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Abilities = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.ad_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.ad_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.ad_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.ad_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.ad_gems.window_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.ad_gems.window_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.ad_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGemsSchema =
   z.strictObject({
@@ -3846,42 +1915,18 @@ export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines
     window_sec:
       liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.ad_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems.tap_interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems.window_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems.window_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -3894,81 +1939,39 @@ export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines
     window_sec:
       liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGems =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.repeat.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.repeat.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Repeat_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Repeat_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.repeat. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RepeatSchema =
   z.strictObject({
     enabled:
       liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.repeat. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Repeat = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.rescue.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.rescue.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rescue_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rescue_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.rescue. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RescueSchema =
   z.strictObject({
     enabled:
       liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.rescue. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rescue = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.rewards.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.rewards.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rewards_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.rewards. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RewardsSchema =
   z.strictObject({
     enabled:
       liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.rewards. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Rewards = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.shopping.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.shopping.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.shopping.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.shopping.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.shopping. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_ShoppingSchema =
   z.strictObject({
@@ -3977,10 +1980,6 @@ export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines
     interval_sec:
       liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.shopping. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_Shopping = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_RoutinesSchema =
   z.strictObject({
@@ -3993,40 +1992,20 @@ export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines
     rewards: liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_RewardsSchema,
     shopping: liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines_ShoppingSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_Routines = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.shopping_plan. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_ShoppingPlanSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.controls.shopping_plan. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls_ShoppingPlan = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_ControlsSchema = z.strictObject({
   routines: liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_RoutinesSchema,
   shopping_plan: liveControlsAnswer_Status200_Body_Battle_Envelope_Controls_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.battle.envelope.controls. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Controls = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_ControlsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset._source.blueprint. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Source_BlueprintSchema =
   z.string();
-/** Raw response path: answer.body.battle.envelope.preset._source.blueprint. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Source_Blueprint = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Source_BlueprintSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset._source.profile. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Source_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.battle.envelope.preset._source.profile. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Source_Profile = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Source_ProfileSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset._source. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_SourceSchema = z.strictObject(
   {
@@ -4034,142 +2013,57 @@ export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_SourceSche
     profile: liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Source_ProfileSchema,
   },
 );
-/** Raw response path: answer.body.battle.envelope.preset._source. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Source = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_SourceSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.burst_cancel_sprint. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstCancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.burst_cancel_sprint. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstCancelSprint =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstCancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.burst_require_match. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRequireMatchSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.burst_require_match. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRequireMatch =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRequireMatchSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.burst_require_ready. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRequireReadySchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.burst_require_ready. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRequireReady =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRequireReadySchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.burst_retaps. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRetapsSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.burst_retaps. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRetaps =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_BurstRetapsSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.collapse_from. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_CollapseFromSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.collapse_from. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_CollapseFrom =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_CollapseFromSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.deadband. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_DeadbandSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.deadband. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_Deadband = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_DeadbandSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.dm_below. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_DmBelowSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.dm_below. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_DmBelow = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_DmBelowSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.end_sprint_after_sw. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_EndSprintAfterSwSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.end_sprint_after_sw. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_EndSprintAfterSw =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_EndSprintAfterSwSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.falling_samples. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_FallingSamplesSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.falling_samples. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_FallingSamples =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_FallingSamplesSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.hold_until_second_wind. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_HoldUntilSecondWindSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.hold_until_second_wind. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_HoldUntilSecondWind =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_HoldUntilSecondWindSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.hp_nuke_require_ready. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_HpNukeRequireReadySchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.hp_nuke_require_ready. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_HpNukeRequireReady =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_HpNukeRequireReadySchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.nuke_below. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_NukeBelowSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.nuke_below. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_NukeBelow = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_NukeBelowSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.nuke_on_fleet. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_NukeOnFleetSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.nuke_on_fleet. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_NukeOnFleet =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_NukeOnFleetSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.post_sw_watch_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_PostSwWatchSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.post_sw_watch_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_PostSwWatchSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_PostSwWatchSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.refire_guard_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_RefireGuardSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.refire_guard_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_RefireGuardSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_RefireGuardSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.rescue_bar. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_RescueBarSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.rescue_bar. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_RescueBar = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_RescueBarSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.sw_immunity_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_SwImmunitySecSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.sw_immunity_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_SwImmunitySec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_SwImmunitySecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_AbilitiesSchema =
   z.strictObject({
@@ -4204,57 +2098,24 @@ export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_AbilitiesS
     sw_immunity_sec:
       liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities_SwImmunitySecSchema,
   });
-/** Raw response path: answer.body.battle.envelope.preset.abilities. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Abilities = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.cancel_sprint. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_CancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.cancel_sprint. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_CancelSprint = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_CancelSprintSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.always_on. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.always_on. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOn =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.always_on_above. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnAboveSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.always_on_above. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnAbove =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnAboveSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.off_after_waves. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_OffAfterWavesSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.off_after_waves. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_OffAfterWaves =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_OffAfterWavesSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.pre_mark_waves. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_PreMarkWavesSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.pre_mark_waves. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_PreMarkWaves =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_PreMarkWavesSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightningSchema =
   z.strictObject({
@@ -4268,40 +2129,19 @@ export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLight
     pre_mark_waves:
       liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning_PreMarkWavesSchema,
   });
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightning = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ChainLightningSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.dissonant_tab. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_DissonantTabSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.dissonant_tab. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_DissonantTab = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_DissonantTabSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gather.ad_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Gather_AdGemsSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.gather.ad_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Gather_AdGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Gather_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gather.gem_delay_sec[]. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.gather.gem_delay_sec[]. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.gather.gem_delay_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySecSchema =
   z.array(
     liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySec_ArrayElementSchema,
   );
-/** Raw response path: answer.body.battle.envelope.preset.gather.gem_delay_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySec = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySecSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gather. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_GatherSchema = z.strictObject(
   {
@@ -4310,111 +2150,46 @@ export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_GatherSche
       liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Gather_GemDelaySecSchema,
   },
 );
-/** Raw response path: answer.body.battle.envelope.preset.gather. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Gather = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_GatherSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gem_delay_sec[]. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.gem_delay_sec[]. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.gem_delay_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySecSchema = z.array(
   liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySec_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.envelope.preset.gem_delay_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySec = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_GemDelaySecSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.kind. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_KindSchema = z.enum(['coin']);
-/** Raw response path: answer.body.battle.envelope.preset.kind. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Kind = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_KindSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.label. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_LabelSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.preset.label. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Label = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_LabelSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.loadout. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_LoadoutSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.loadout. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Loadout = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_LoadoutSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.max_wave. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_MaxWaveSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.max_wave. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_MaxWave = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_MaxWaveSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.perk_bans. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_PerkBansSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.perk_bans. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_PerkBans = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_PerkBansSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.restart_via_home. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_RestartViaHomeSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.restart_via_home. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_RestartViaHome = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_RestartViaHomeSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.rules. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_RulesSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battle.envelope.preset.rules. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Rules = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_RulesSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.runner. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_RunnerSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.preset.runner. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Runner = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_RunnerSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.runner_args. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_RunnerArgsSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.runner_args. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_RunnerArgs = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_RunnerArgsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.shop_interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ShopIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.shop_interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ShopIntervalSec = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ShopIntervalSecSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.shopping. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ShoppingSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battle.envelope.preset.shopping. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Shopping = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.tier. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_TierSchema = z.number();
-/** Raw response path: answer.body.battle.envelope.preset.tier. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_Tier = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_TierSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.uw_wanted. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_UwWantedSchema =
   z.strictObject({});
-/** Raw response path: answer.body.battle.envelope.preset.uw_wanted. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset_UwWanted = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_UwWantedSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_PresetSchema = z.strictObject({
   _source: liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_SourceSchema,
@@ -4438,43 +2213,19 @@ export const liveControlsAnswer_Status200_Body_Battle_Envelope_PresetSchema = z.
   tier: liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_TierSchema,
   uw_wanted: liveControlsAnswer_Status200_Body_Battle_Envelope_Preset_UwWantedSchema,
 });
-/** Raw response path: answer.body.battle.envelope.preset. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Preset = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_PresetSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset_key. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_PresetKeySchema = z.string();
-/** Raw response path: answer.body.battle.envelope.preset_key. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_PresetKey = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_PresetKeySchema
->;
 /** Strict raw response path: answer.body.battle.envelope.source.blueprint. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Source_BlueprintSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.source.blueprint. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Source_Blueprint = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Source_BlueprintSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.source.profile. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_Source_ProfileSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.source.profile. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Source_Profile = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_Source_ProfileSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.source. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_SourceSchema = z.strictObject({
   blueprint: liveControlsAnswer_Status200_Body_Battle_Envelope_Source_BlueprintSchema,
   profile: liveControlsAnswer_Status200_Body_Battle_Envelope_Source_ProfileSchema,
 });
-/** Raw response path: answer.body.battle.envelope.source. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_Source = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_SourceSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.source_revision. */
 export const liveControlsAnswer_Status200_Body_Battle_Envelope_SourceRevisionSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.source_revision. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope_SourceRevision = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Envelope_SourceRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.envelope. */
 export const liveControlsAnswer_Status200_Body_Battle_EnvelopeSchema = z.strictObject({
   controls: liveControlsAnswer_Status200_Body_Battle_Envelope_ControlsSchema,
@@ -4483,92 +2234,35 @@ export const liveControlsAnswer_Status200_Body_Battle_EnvelopeSchema = z.strictO
   source: liveControlsAnswer_Status200_Body_Battle_Envelope_SourceSchema,
   source_revision: liveControlsAnswer_Status200_Body_Battle_Envelope_SourceRevisionSchema,
 });
-/** Raw response path: answer.body.battle.envelope. */
-export type LiveControlsAnswer_Status200_Body_Battle_Envelope = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_EnvelopeSchema
->;
 /** Strict raw response path: answer.body.battle.envelope_hash. */
 export const liveControlsAnswer_Status200_Body_Battle_EnvelopeHashSchema = z.string();
-/** Raw response path: answer.body.battle.envelope_hash. */
-export type LiveControlsAnswer_Status200_Body_Battle_EnvelopeHash = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_EnvelopeHashSchema
->;
 /** Strict raw response path: answer.body.battle.final_wave. */
 export const liveControlsAnswer_Status200_Body_Battle_FinalWaveSchema = z.number().nullable();
-/** Raw response path: answer.body.battle.final_wave. */
-export type LiveControlsAnswer_Status200_Body_Battle_FinalWave = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_FinalWaveSchema
->;
 /** Strict raw response path: answer.body.battle.finalization_fingerprint. */
 export const liveControlsAnswer_Status200_Body_Battle_FinalizationFingerprintSchema = z.string();
-/** Raw response path: answer.body.battle.finalization_fingerprint. */
-export type LiveControlsAnswer_Status200_Body_Battle_FinalizationFingerprint = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_FinalizationFingerprintSchema
->;
 /** Strict raw response path: answer.body.battle.generation. */
 export const liveControlsAnswer_Status200_Body_Battle_GenerationSchema = z.string();
-/** Raw response path: answer.body.battle.generation. */
-export type LiveControlsAnswer_Status200_Body_Battle_Generation = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_GenerationSchema
->;
 /** Strict raw response path: answer.body.battle.id. */
 export const liveControlsAnswer_Status200_Body_Battle_IdSchema = z.string();
-/** Raw response path: answer.body.battle.id. */
-export type LiveControlsAnswer_Status200_Body_Battle_Id = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_IdSchema
->;
 /** Strict raw response path: answer.body.battle.label. */
 export const liveControlsAnswer_Status200_Body_Battle_LabelSchema = z.string();
-/** Raw response path: answer.body.battle.label. */
-export type LiveControlsAnswer_Status200_Body_Battle_Label = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_LabelSchema
->;
 /** Strict raw response path: answer.body.battle.observed_started_at. */
 export const liveControlsAnswer_Status200_Body_Battle_ObservedStartedAtSchema = z.number();
-/** Raw response path: answer.body.battle.observed_started_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_ObservedStartedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_ObservedStartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.operation_id. */
 export const liveControlsAnswer_Status200_Body_Battle_OperationIdSchema = z.string();
-/** Raw response path: answer.body.battle.operation_id. */
-export type LiveControlsAnswer_Status200_Body_Battle_OperationId = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_OperationIdSchema
->;
 /** Strict raw response path: answer.body.battle.origin. */
 export const liveControlsAnswer_Status200_Body_Battle_OriginSchema = z.enum(['adopted']);
-/** Raw response path: answer.body.battle.origin. */
-export type LiveControlsAnswer_Status200_Body_Battle_Origin = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_OriginSchema
->;
 /** Strict raw response path: answer.body.battle.outcome. */
 export const liveControlsAnswer_Status200_Body_Battle_OutcomeSchema = z.string();
-/** Raw response path: answer.body.battle.outcome. */
-export type LiveControlsAnswer_Status200_Body_Battle_Outcome = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_OutcomeSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.ad_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.overrides.routines.ad_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGems_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.ad_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.overrides.routines.ad_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.overrides.routines.ad_gems.window_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.overrides.routines.ad_gems.window_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGems_WindowSec = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.ad_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGemsSchema =
   z.strictObject({
@@ -4578,34 +2272,15 @@ export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGemsS
     window_sec:
       liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGems_WindowSecSchema.optional(),
   });
-/** Raw response path: answer.body.battle.overrides.routines.ad_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.floating_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.overrides.routines.floating_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.overrides.routines.floating_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.overrides.routines.floating_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.overrides.routines.floating_gems.tap_interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.overrides.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.overrides.routines.floating_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -4615,41 +2290,20 @@ export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Floatin
     tap_interval_sec:
       liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGems_TapIntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.overrides.routines.floating_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.rewards.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.overrides.routines.rewards.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Rewards_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.rewards. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_RewardsSchema =
   z.strictObject({
     enabled: liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.overrides.routines.rewards. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Rewards = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.shopping.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.overrides.routines.shopping.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Shopping_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.shopping.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.overrides.routines.shopping.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.overrides.routines.shopping. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_ShoppingSchema =
   z.strictObject({
@@ -4657,10 +2311,6 @@ export const liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Shoppin
     interval_sec:
       liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.overrides.routines.shopping. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines_Shopping = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines. */
 export const liveControlsAnswer_Status200_Body_Battle_Overrides_RoutinesSchema = z.strictObject({
   ad_gems: liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_AdGemsSchema,
@@ -4669,80 +2319,36 @@ export const liveControlsAnswer_Status200_Body_Battle_Overrides_RoutinesSchema =
   rewards: liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_RewardsSchema.optional(),
   shopping: liveControlsAnswer_Status200_Body_Battle_Overrides_Routines_ShoppingSchema.optional(),
 });
-/** Raw response path: answer.body.battle.overrides.routines. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides_Routines = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Overrides_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.overrides. */
 export const liveControlsAnswer_Status200_Body_Battle_OverridesSchema = z.strictObject({
   routines: liveControlsAnswer_Status200_Body_Battle_Overrides_RoutinesSchema,
 });
-/** Raw response path: answer.body.battle.overrides. */
-export type LiveControlsAnswer_Status200_Body_Battle_Overrides = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_OverridesSchema
->;
 /** Strict raw response path: answer.body.battle.prepared_at. */
 export const liveControlsAnswer_Status200_Body_Battle_PreparedAtSchema = z.number();
-/** Raw response path: answer.body.battle.prepared_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_PreparedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_PreparedAtSchema
->;
 /** Strict raw response path: answer.body.battle.previous_battle_id. */
 export const liveControlsAnswer_Status200_Body_Battle_PreviousBattleIdSchema = z.null();
-/** Raw response path: answer.body.battle.previous_battle_id. */
-export type LiveControlsAnswer_Status200_Body_Battle_PreviousBattleId = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_PreviousBattleIdSchema
->;
 /** Strict raw response path: answer.body.battle.reason. */
 export const liveControlsAnswer_Status200_Body_Battle_ReasonSchema = z
   .enum(['observed_results'])
   .nullable();
-/** Raw response path: answer.body.battle.reason. */
-export type LiveControlsAnswer_Status200_Body_Battle_Reason = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_ReasonSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.abilities.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.abilities.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Abilities_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.abilities. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AbilitiesSchema =
   z.strictObject({
     enabled:
       liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.abilities. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Abilities = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.ad_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.ad_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.ad_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.ad_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.ad_gems.window_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.ad_gems.window_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.ad_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGemsSchema =
   z.strictObject({
@@ -4753,42 +2359,18 @@ export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines
     window_sec:
       liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.ad_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems.tap_interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems.window_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems.window_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -4801,81 +2383,39 @@ export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines
     window_sec:
       liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGems =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.repeat.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.repeat.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Repeat_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Repeat_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.repeat. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_RepeatSchema =
   z.strictObject({
     enabled:
       liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.repeat. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Repeat = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.rescue.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.rescue.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Rescue_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Rescue_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.rescue. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_RescueSchema =
   z.strictObject({
     enabled:
       liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.rescue. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Rescue = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.rewards.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.rewards.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Rewards_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.rewards. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_RewardsSchema =
   z.strictObject({
     enabled:
       liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.rewards. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Rewards = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.shopping.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.shopping.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.shopping.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.shopping.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.shopping. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_ShoppingSchema =
   z.strictObject({
@@ -4884,10 +2424,6 @@ export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines
     interval_sec:
       liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.shopping. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_Shopping = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_RoutinesSchema =
   z.strictObject({
@@ -4900,94 +2436,40 @@ export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines
     rewards: liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_RewardsSchema,
     shopping: liveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines_ShoppingSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_Routines = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.shopping_plan. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControls_ShoppingPlanSchema =
   z.null();
-/** Raw response path: answer.body.battle.requested_controls.shopping_plan. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls_ShoppingPlan = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_RequestedControls_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls. */
 export const liveControlsAnswer_Status200_Body_Battle_RequestedControlsSchema = z.strictObject({
   routines: liveControlsAnswer_Status200_Body_Battle_RequestedControls_RoutinesSchema,
   shopping_plan: liveControlsAnswer_Status200_Body_Battle_RequestedControls_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.battle.requested_controls. */
-export type LiveControlsAnswer_Status200_Body_Battle_RequestedControls = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_RequestedControlsSchema
->;
 /** Strict raw response path: answer.body.battle.result. */
 export const liveControlsAnswer_Status200_Body_Battle_ResultSchema = z.string();
-/** Raw response path: answer.body.battle.result. */
-export type LiveControlsAnswer_Status200_Body_Battle_Result = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_ResultSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.ad_claim_confirmations. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_AdClaimConfirmationsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.ad_claim_confirmations. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_AdClaimConfirmations =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_AdClaimConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.coverage. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_CoverageSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.coverage. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_Coverage = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_CoverageSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.generation. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.generation. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_Generation =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_GenerationSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmationsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_LatestConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.observed_through_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_ObservedThroughAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.observed_through_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_ObservedThroughAt =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_ObservedThroughAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.orbit_balance_confirmations. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitBalanceConfirmationsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.orbit_balance_confirmations. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitBalanceConfirmations =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitBalanceConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.orbit_recorded_increase. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitRecordedIncreaseSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.orbit_recorded_increase. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitRecordedIncrease =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitRecordedIncreaseSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.started_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_StartedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.started_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_StartedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_StartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidenceSchema =
   z.strictObject({
@@ -5006,102 +2488,44 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence
       liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_OrbitRecordedIncreaseSchema,
     started_at: liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence_StartedAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.collection_evidence. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidence = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidenceSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.driver_generation. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_DriverGenerationSchema = z.string();
-/** Raw response path: answer.body.battle.runtime.driver_generation. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_DriverGeneration = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_DriverGenerationSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.last_wave_provenance. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_LastWaveProvenanceSchema = z.string();
-/** Raw response path: answer.body.battle.runtime.last_wave_provenance. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_LastWaveProvenance = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_LastWaveProvenanceSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observation_gap_started_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_ObservationGapStartedAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.observation_gap_started_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_ObservationGapStartedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_ObservationGapStartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observation_gaps. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_ObservationGapsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battle.runtime.observation_gaps. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_ObservationGaps = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_ObservationGapsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observation_status. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_ObservationStatusSchema = z.enum([
   'observing',
 ]);
-/** Raw response path: answer.body.battle.runtime.observation_status. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_ObservationStatus = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_ObservationStatusSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observed_duration_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_ObservedDurationSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.observed_duration_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_ObservedDurationSec = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_ObservedDurationSecSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observed_wave. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_ObservedWaveSchema = z.number();
-/** Raw response path: answer.body.battle.runtime.observed_wave. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_ObservedWave = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_ObservedWaveSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.blocker. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.blocker. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_Blocker = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.next_due_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.next_due_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_NextDueAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.server_time. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.server_time. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_ServerTime =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.state. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_StateSchema =
   z.enum(['watching']);
-/** Raw response path: answer.body.battle.runtime.routines.abilities.state. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_State = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.window_ends_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.window_ends_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_WindowEndsAt =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AbilitiesSchema =
   z.strictObject({
@@ -5115,88 +2539,36 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities
     window_ends_at:
       liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.abilities. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Abilities = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.appearance_after_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_AppearanceAfterAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.appearance_after_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_AppearanceAfterAt =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_AppearanceAfterAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.blocker. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_BlockerSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.blocker. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Blocker = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.claim_attempt_id. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ClaimAttemptIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.claim_attempt_id. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ClaimAttemptId =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ClaimAttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.claim_rect. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ClaimRectSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.claim_rect. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ClaimRect = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ClaimRectSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.attempts. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_AttemptsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.attempts. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_Attempts =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_AttemptsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.checks. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_ChecksSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.checks. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_Checks =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_ChecksSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.confirmed. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_ConfirmedSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.confirmed. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_Confirmed =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_ConfirmedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.seen. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_SeenSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.seen. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_Seen =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_SeenSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.skips. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_SkipsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.skips. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_Skips =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_SkipsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.windows_missed. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_WindowsMissedSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.windows_missed. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_WindowsMissed =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_WindowsMissedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_CountersSchema =
   z.strictObject({
@@ -5210,42 +2582,18 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Co
     windows_missed:
       liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters_WindowsMissedSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Counters = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_CountersSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations.observed_wait_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_ObservedWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations.observed_wait_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_ObservedWaitSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_ObservedWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations.response_delay_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_ResponseDelaySecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations.response_delay_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_ResponseDelaySec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_ResponseDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations.scheduling_wait_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_SchedulingWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations.scheduling_wait_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_SchedulingWaitSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_SchedulingWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations.verification_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_VerificationSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations.verification_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_VerificationSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_VerificationSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_DurationsSchema =
   z.strictObject({
@@ -5258,182 +2606,77 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Du
     verification_sec:
       liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations_VerificationSecSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Durations = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_DurationsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.first_seen_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_FirstSeenAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.first_seen_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_FirstSeenAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_FirstSeenAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_absent_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastAbsentAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_absent_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastAbsentAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastAbsentAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttemptSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastFailedAttemptSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_observed_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastObservedAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_observed_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastObservedAt =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastObservedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcomeSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcome = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastOutcomeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_seen_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastSeenAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_seen_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastSeenAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_LastSeenAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.manual_active. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ManualActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.manual_active. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ManualActive = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ManualActiveSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.manual_pending. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ManualPendingSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.manual_pending. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ManualPending =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ManualPendingSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.next_check_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_NextCheckAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.next_check_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_NextCheckAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_NextCheckAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.next_due_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.next_due_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_NextDueAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.observation_age_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ObservationAgeSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.observation_age_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ObservationAgeSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ObservationAgeSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.offer_id. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_OfferIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.offer_id. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_OfferId = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_OfferIdSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.response_due_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ResponseDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.response_due_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ResponseDueAt =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ResponseDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.response_started_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ResponseStartedAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.response_started_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ResponseStartedAt =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ResponseStartedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.server_time. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.server_time. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ServerTime = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.stale_after_sec. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_StaleAfterSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.stale_after_sec. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_StaleAfterSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_StaleAfterSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.state. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_StateSchema = z.enum([
   'off',
   'scheduled',
 ]);
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.state. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_State = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.visibility. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_VisibilitySchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.visibility. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_Visibility = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_VisibilitySchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.visibility_reason. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_VisibilityReasonSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.visibility_reason. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_VisibilityReason =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_VisibilityReasonSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.window_ends_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.window_ends_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowEndsAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowEndsAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.window_id. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.window_id. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowId = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowIdSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.window_started_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowStartedAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.window_started_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowStartedAt =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowStartedAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGemsSchema =
   z.strictObject({
@@ -5484,105 +2727,42 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGemsSch
     window_started_at:
       liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems_WindowStartedAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.attempt_id. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_AttemptIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.attempt_id. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_AttemptId =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_AttemptIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.blocker. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.blocker. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_Blocker =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_BlockerSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcomeSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.last_refusal. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastRefusalSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.last_refusal. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastRefusal =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_LastRefusalSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.manual_active. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ManualActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.manual_active. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ManualActive =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ManualActiveSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.manual_pending. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ManualPendingSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.manual_pending. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ManualPending =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ManualPendingSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.next_due_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.next_due_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_NextDueAt =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_NextDueAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.server_time. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.server_time. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ServerTime =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_ServerTimeSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.state. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_StateSchema =
   z.enum(['off', 'scheduled']);
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.state. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_State = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.window_ends_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.window_ends_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowEndsAt =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.window_id. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.window_id. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowId =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -5608,53 +2788,25 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingG
     window_id:
       liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems_WindowIdSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.blocker. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.blocker. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_Blocker = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.next_due_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.next_due_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_NextDueAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.server_time. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.server_time. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_ServerTime = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.state. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_StateSchema = z.enum([
   'boundary_wait',
 ]);
-/** Raw response path: answer.body.battle.runtime.routines.repeat.state. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_State = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.window_ends_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.window_ends_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_WindowEndsAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_WindowEndsAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_RepeatSchema =
   z.strictObject({
@@ -5666,53 +2818,25 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_RepeatSch
     window_ends_at:
       liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.repeat. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Repeat = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.blocker. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.blocker. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_Blocker = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.next_due_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.next_due_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_NextDueAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.server_time. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.server_time. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_ServerTime = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.state. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_StateSchema = z.enum([
   'watching',
 ]);
-/** Raw response path: answer.body.battle.runtime.routines.rescue.state. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_State = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.window_ends_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.window_ends_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_WindowEndsAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_WindowEndsAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_RescueSchema =
   z.strictObject({
@@ -5724,54 +2848,25 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_RescueSch
     window_ends_at:
       liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.rescue. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rescue = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.blocker. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.blocker. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_Blocker = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.next_due_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.next_due_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_NextDueAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.server_time. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.server_time. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_ServerTime = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.state. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_StateSchema = z.enum(
   ['watching'],
 );
-/** Raw response path: answer.body.battle.runtime.routines.rewards.state. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_State = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.window_ends_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.window_ends_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_WindowEndsAt =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_RewardsSchema =
   z.strictObject({
@@ -5783,80 +2878,33 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_RewardsSc
     window_ends_at:
       liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.rewards. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Rewards = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.blocker. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.blocker. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_Blocker = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.enabled. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.enabled. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.active. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.active. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Active =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ActiveSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.attempts. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_AttemptsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.attempts. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Attempts =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_AttemptsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.cadence. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CadenceSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.cadence. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Cadence =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CadenceSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.cash_reserve. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CashReserveSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.cash_reserve. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CashReserve =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.confirmed_purchases. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ConfirmedPurchasesSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.confirmed_purchases. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ConfirmedPurchases =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ConfirmedPurchasesSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget.purchases. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_PurchasesSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget.purchases. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_Purchases =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_PurchasesSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget.seconds. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget.seconds. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_Seconds =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudgetSchema =
   z.strictObject({
@@ -5865,43 +2913,18 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_
     seconds:
       liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudgetSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_ready. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationReadySchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_ready. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationReady =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationReadySchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.count_semantics. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CountSemanticsSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.count_semantics. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CountSemantics =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CountSemanticsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision.action. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ActionSchema =
   z.enum(['wait']);
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision.action. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_Action =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ActionSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision.reason. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ReasonSchema =
   z.enum(['not_started']);
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision.reason. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_Reason =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_DecisionSchema =
   z.strictObject({
@@ -5910,83 +2933,33 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_
     reason:
       liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ReasonSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_DecisionSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.last_confirmation. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastConfirmationSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.last_confirmation. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastConfirmation =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastConfirmationSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.last_sweep. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastSweepSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.last_sweep. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastSweep =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastSweepSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.manual. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ManualSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.manual. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Manual =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ManualSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.pending_confirmation. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_PendingConfirmationSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.pending_confirmation. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_PendingConfirmation =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_PendingConfirmationSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.quantity_observation_supported. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_QuantityObservationSupportedSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.quantity_observation_supported. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_QuantityObservationSupported =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_QuantityObservationSupportedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.reserve_enforcement. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveEnforcementSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.reserve_enforcement. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveEnforcement =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveEnforcementSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.reserve_supported. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveSupportedSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.reserve_supported. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveSupported =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveSupportedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.sweep_id. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_SweepIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.sweep_id. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_SweepId =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_SweepIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.version. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_VersionSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.version. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Version =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_VersionSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcomeSchema =
   z.strictObject({
@@ -6027,40 +3000,18 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_
     version:
       liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome_VersionSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcome =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_LastOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.next_due_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.next_due_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_NextDueAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.server_time. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.server_time. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_ServerTime = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.state. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_StateSchema =
   z.enum(['scheduled']);
-/** Raw response path: answer.body.battle.runtime.routines.shopping.state. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_State = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.window_ends_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.window_ends_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_WindowEndsAt =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_WindowEndsAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_ShoppingSchema =
   z.strictObject({
@@ -6075,10 +3026,6 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_ShoppingS
     window_ends_at:
       liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping_WindowEndsAtSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.shopping. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines_Shopping = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_RoutinesSchema = z.strictObject({
   abilities: liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_AbilitiesSchema,
@@ -6089,59 +3036,27 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_RoutinesSchema = z
   rewards: liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_RewardsSchema,
   shopping: liveControlsAnswer_Status200_Body_Battle_Runtime_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.battle.runtime.routines. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Routines = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.server_time. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_ServerTimeSchema = z.number();
-/** Raw response path: answer.body.battle.runtime.server_time. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_ServerTime = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.continued_with_partial. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_ContinuedWithPartialSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.setup.continued_with_partial. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Setup_ContinuedWithPartial = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_ContinuedWithPartialSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.detail. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_DetailSchema = z.string();
-/** Raw response path: answer.body.battle.runtime.setup.detail. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Setup_Detail = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_DetailSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.loadout. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_LoadoutSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.setup.loadout. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Setup_Loadout = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_LoadoutSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.modules. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_ModulesSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battle.runtime.setup.modules. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Setup_Modules = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_ModulesSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.reason. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_ReasonSchema = z.enum([
   'Setup has not been verified for this battle',
 ]);
-/** Raw response path: answer.body.battle.runtime.setup.reason. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Setup_Reason = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_ReasonSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.state. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_StateSchema = z.enum([
   'unknown',
 ]);
-/** Raw response path: answer.body.battle.runtime.setup.state. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Setup_State = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup. */
 export const liveControlsAnswer_Status200_Body_Battle_Runtime_SetupSchema = z.strictObject({
   continued_with_partial:
@@ -6152,10 +3067,6 @@ export const liveControlsAnswer_Status200_Body_Battle_Runtime_SetupSchema = z.st
   reason: liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_ReasonSchema,
   state: liveControlsAnswer_Status200_Body_Battle_Runtime_Setup_StateSchema,
 });
-/** Raw response path: answer.body.battle.runtime.setup. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime_Setup = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Runtime_SetupSchema
->;
 /** Strict raw response path: answer.body.battle.runtime. */
 export const liveControlsAnswer_Status200_Body_Battle_RuntimeSchema = z.strictObject({
   collection_evidence: liveControlsAnswer_Status200_Body_Battle_Runtime_CollectionEvidenceSchema,
@@ -6171,39 +3082,19 @@ export const liveControlsAnswer_Status200_Body_Battle_RuntimeSchema = z.strictOb
   server_time: liveControlsAnswer_Status200_Body_Battle_Runtime_ServerTimeSchema,
   setup: liveControlsAnswer_Status200_Body_Battle_Runtime_SetupSchema,
 });
-/** Raw response path: answer.body.battle.runtime. */
-export type LiveControlsAnswer_Status200_Body_Battle_Runtime = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_RuntimeSchema
->;
 /** Strict raw response path: answer.body.battle.segments[].ended_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_EndedAtSchema = z
   .number()
   .nullable();
-/** Raw response path: answer.body.battle.segments[].ended_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_EndedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_EndedAtSchema
->;
 /** Strict raw response path: answer.body.battle.segments[].generation. */
 export const liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.battle.segments[].generation. */
-export type LiveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_Generation = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_GenerationSchema
->;
 /** Strict raw response path: answer.body.battle.segments[].operation_id. */
 export const liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.segments[].operation_id. */
-export type LiveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_OperationId = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_OperationIdSchema
->;
 /** Strict raw response path: answer.body.battle.segments[].started_at. */
 export const liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_StartedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.segments[].started_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_StartedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_StartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.segments[]. */
 export const liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElementSchema = z.strictObject({
   ended_at: liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_EndedAtSchema,
@@ -6211,60 +3102,24 @@ export const liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElementSchem
   operation_id: liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_OperationIdSchema,
   started_at: liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement_StartedAtSchema,
 });
-/** Raw response path: answer.body.battle.segments[]. */
-export type LiveControlsAnswer_Status200_Body_Battle_Segments_ArrayElement = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.segments. */
 export const liveControlsAnswer_Status200_Body_Battle_SegmentsSchema = z.array(
   liveControlsAnswer_Status200_Body_Battle_Segments_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.segments. */
-export type LiveControlsAnswer_Status200_Body_Battle_Segments = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_SegmentsSchema
->;
 /** Strict raw response path: answer.body.battle.start_certainty. */
 export const liveControlsAnswer_Status200_Body_Battle_StartCertaintySchema = z.string();
-/** Raw response path: answer.body.battle.start_certainty. */
-export type LiveControlsAnswer_Status200_Body_Battle_StartCertainty = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_StartCertaintySchema
->;
 /** Strict raw response path: answer.body.battle.started_at. */
 export const liveControlsAnswer_Status200_Body_Battle_StartedAtSchema = z.number();
-/** Raw response path: answer.body.battle.started_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_StartedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_StartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.status. */
 export const liveControlsAnswer_Status200_Body_Battle_StatusSchema = z.enum(['active', 'ended']);
-/** Raw response path: answer.body.battle.status. */
-export type LiveControlsAnswer_Status200_Body_Battle_Status = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_StatusSchema
->;
 /** Strict raw response path: answer.body.battle.tier. */
 export const liveControlsAnswer_Status200_Body_Battle_TierSchema = z.number();
-/** Raw response path: answer.body.battle.tier. */
-export type LiveControlsAnswer_Status200_Body_Battle_Tier = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_TierSchema
->;
 /** Strict raw response path: answer.body.battle.updated_at. */
 export const liveControlsAnswer_Status200_Body_Battle_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.battle.updated_at. */
-export type LiveControlsAnswer_Status200_Body_Battle_UpdatedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.battle.wave. */
 export const liveControlsAnswer_Status200_Body_Battle_WaveSchema = z.number();
-/** Raw response path: answer.body.battle.wave. */
-export type LiveControlsAnswer_Status200_Body_Battle_Wave = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_WaveSchema
->;
 /** Strict raw response path: answer.body.battle.wave_provenance. */
 export const liveControlsAnswer_Status200_Body_Battle_WaveProvenanceSchema = z.string();
-/** Raw response path: answer.body.battle.wave_provenance. */
-export type LiveControlsAnswer_Status200_Body_Battle_WaveProvenance = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Battle_WaveProvenanceSchema
->;
 /** Strict raw response path: answer.body.battle. */
 export const liveControlsAnswer_Status200_Body_BattleSchema = z.strictObject({
   applied_controls: liveControlsAnswer_Status200_Body_Battle_AppliedControlsSchema,
@@ -6308,76 +3163,32 @@ export const liveControlsAnswer_Status200_Body_BattleSchema = z.strictObject({
   wave: liveControlsAnswer_Status200_Body_Battle_WaveSchema,
   wave_provenance: liveControlsAnswer_Status200_Body_Battle_WaveProvenanceSchema,
 });
-/** Raw response path: answer.body.battle. */
-export type LiveControlsAnswer_Status200_Body_Battle = z.infer<
-  typeof liveControlsAnswer_Status200_Body_BattleSchema
->;
 /** Strict raw response path: answer.body.command.applied_paths. */
 export const liveControlsAnswer_Status200_Body_Command_AppliedPathsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.command.applied_paths. */
-export type LiveControlsAnswer_Status200_Body_Command_AppliedPaths = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_AppliedPathsSchema
->;
 /** Strict raw response path: answer.body.command.battle_id. */
 export const liveControlsAnswer_Status200_Body_Command_BattleIdSchema = z.string();
-/** Raw response path: answer.body.command.battle_id. */
-export type LiveControlsAnswer_Status200_Body_Command_BattleId = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_BattleIdSchema
->;
 /** Strict raw response path: answer.body.command.evidence. */
 export const liveControlsAnswer_Status200_Body_Command_EvidenceSchema = z.null();
-/** Raw response path: answer.body.command.evidence. */
-export type LiveControlsAnswer_Status200_Body_Command_Evidence = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_EvidenceSchema
->;
 /** Strict raw response path: answer.body.command.generation. */
 export const liveControlsAnswer_Status200_Body_Command_GenerationSchema = z.string();
-/** Raw response path: answer.body.command.generation. */
-export type LiveControlsAnswer_Status200_Body_Command_Generation = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_GenerationSchema
->;
 /** Strict raw response path: answer.body.command.id. */
 export const liveControlsAnswer_Status200_Body_Command_IdSchema = z.string();
-/** Raw response path: answer.body.command.id. */
-export type LiveControlsAnswer_Status200_Body_Command_Id = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_IdSchema
->;
 /** Strict raw response path: answer.body.command.kind. */
 export const liveControlsAnswer_Status200_Body_Command_KindSchema = z.enum(['controls']);
-/** Raw response path: answer.body.command.kind. */
-export type LiveControlsAnswer_Status200_Body_Command_Kind = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_KindSchema
->;
 /** Strict raw response path: answer.body.command.operation_id. */
 export const liveControlsAnswer_Status200_Body_Command_OperationIdSchema = z.string();
-/** Raw response path: answer.body.command.operation_id. */
-export type LiveControlsAnswer_Status200_Body_Command_OperationId = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_OperationIdSchema
->;
 /** Strict raw response path: answer.body.command.payload.routines.ad_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.command.payload.routines.ad_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGems_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.command.payload.routines.ad_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGems_IntervalSecSchema = z
   .number()
   .nullable();
-/** Raw response path: answer.body.command.payload.routines.ad_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGems_IntervalSec = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGems_IntervalSecSchema
->;
 /** Strict raw response path: answer.body.command.payload.routines.ad_gems.window_sec. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.command.payload.routines.ad_gems.window_sec. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGems_WindowSec = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.command.payload.routines.ad_gems. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGemsSchema =
   z.strictObject({
@@ -6388,34 +3199,15 @@ export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGemsSc
     window_sec:
       liveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGems_WindowSecSchema.optional(),
   });
-/** Raw response path: answer.body.command.payload.routines.ad_gems. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.command.payload.routines.floating_gems.enabled. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.command.payload.routines.floating_gems.enabled. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.command.payload.routines.floating_gems.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.command.payload.routines.floating_gems.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.command.payload.routines.floating_gems.tap_interval_sec. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.command.payload.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.command.payload.routines.floating_gems. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -6425,41 +3217,20 @@ export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_Floating
     tap_interval_sec:
       liveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGems_TapIntervalSecSchema,
   });
-/** Raw response path: answer.body.command.payload.routines.floating_gems. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGems = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.command.payload.routines.rewards.enabled. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.command.payload.routines.rewards.enabled. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_Rewards_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.command.payload.routines.rewards. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_RewardsSchema =
   z.strictObject({
     enabled: liveControlsAnswer_Status200_Body_Command_Payload_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.command.payload.routines.rewards. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_Rewards = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.command.payload.routines.shopping.enabled. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.command.payload.routines.shopping.enabled. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_Shopping_Enabled = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.command.payload.routines.shopping.interval_sec. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.command.payload.routines.shopping.interval_sec. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.command.payload.routines.shopping. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_ShoppingSchema =
   z.strictObject({
@@ -6467,10 +3238,6 @@ export const liveControlsAnswer_Status200_Body_Command_Payload_Routines_Shopping
     interval_sec:
       liveControlsAnswer_Status200_Body_Command_Payload_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.command.payload.routines.shopping. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines_Shopping = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_Payload_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.command.payload.routines. */
 export const liveControlsAnswer_Status200_Body_Command_Payload_RoutinesSchema = z.strictObject({
   ad_gems: liveControlsAnswer_Status200_Body_Command_Payload_Routines_AdGemsSchema.optional(),
@@ -6479,38 +3246,18 @@ export const liveControlsAnswer_Status200_Body_Command_Payload_RoutinesSchema = 
   rewards: liveControlsAnswer_Status200_Body_Command_Payload_Routines_RewardsSchema.optional(),
   shopping: liveControlsAnswer_Status200_Body_Command_Payload_Routines_ShoppingSchema.optional(),
 });
-/** Raw response path: answer.body.command.payload.routines. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload_Routines = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_Payload_RoutinesSchema
->;
 /** Strict raw response path: answer.body.command.payload. */
 export const liveControlsAnswer_Status200_Body_Command_PayloadSchema = z.strictObject({
   routines: liveControlsAnswer_Status200_Body_Command_Payload_RoutinesSchema,
 });
-/** Raw response path: answer.body.command.payload. */
-export type LiveControlsAnswer_Status200_Body_Command_Payload = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_PayloadSchema
->;
 /** Strict raw response path: answer.body.command.reason. */
 export const liveControlsAnswer_Status200_Body_Command_ReasonSchema = z
   .enum(['battle_ended'])
   .nullable();
-/** Raw response path: answer.body.command.reason. */
-export type LiveControlsAnswer_Status200_Body_Command_Reason = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_ReasonSchema
->;
 /** Strict raw response path: answer.body.command.requested_at. */
 export const liveControlsAnswer_Status200_Body_Command_RequestedAtSchema = z.number();
-/** Raw response path: answer.body.command.requested_at. */
-export type LiveControlsAnswer_Status200_Body_Command_RequestedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_RequestedAtSchema
->;
 /** Strict raw response path: answer.body.command.revision. */
 export const liveControlsAnswer_Status200_Body_Command_RevisionSchema = z.number();
-/** Raw response path: answer.body.command.revision. */
-export type LiveControlsAnswer_Status200_Body_Command_Revision = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_RevisionSchema
->;
 /** Strict raw response path: answer.body.command.state. */
 export const liveControlsAnswer_Status200_Body_Command_StateSchema = z.enum([
   'applied',
@@ -6519,16 +3266,8 @@ export const liveControlsAnswer_Status200_Body_Command_StateSchema = z.enum([
   'rejected',
   'requested',
 ]);
-/** Raw response path: answer.body.command.state. */
-export type LiveControlsAnswer_Status200_Body_Command_State = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_StateSchema
->;
 /** Strict raw response path: answer.body.command.updated_at. */
 export const liveControlsAnswer_Status200_Body_Command_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.command.updated_at. */
-export type LiveControlsAnswer_Status200_Body_Command_UpdatedAt = z.infer<
-  typeof liveControlsAnswer_Status200_Body_Command_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.command. */
 export const liveControlsAnswer_Status200_Body_CommandSchema = z.strictObject({
   applied_paths: liveControlsAnswer_Status200_Body_Command_AppliedPathsSchema,
@@ -6545,22 +3284,10 @@ export const liveControlsAnswer_Status200_Body_CommandSchema = z.strictObject({
   state: liveControlsAnswer_Status200_Body_Command_StateSchema,
   updated_at: liveControlsAnswer_Status200_Body_Command_UpdatedAtSchema,
 });
-/** Raw response path: answer.body.command. */
-export type LiveControlsAnswer_Status200_Body_Command = z.infer<
-  typeof liveControlsAnswer_Status200_Body_CommandSchema
->;
 /** Strict raw response path: answer.body.control_revision. */
 export const liveControlsAnswer_Status200_Body_ControlRevisionSchema = z.number();
-/** Raw response path: answer.body.control_revision. */
-export type LiveControlsAnswer_Status200_Body_ControlRevision = z.infer<
-  typeof liveControlsAnswer_Status200_Body_ControlRevisionSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const liveControlsAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type LiveControlsAnswer_Status200_Body_Ok = z.infer<
-  typeof liveControlsAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const liveControlsAnswer_Status200_BodySchema = z.strictObject({
   battle: liveControlsAnswer_Status200_Body_BattleSchema,
@@ -6568,196 +3295,90 @@ export const liveControlsAnswer_Status200_BodySchema = z.strictObject({
   control_revision: liveControlsAnswer_Status200_Body_ControlRevisionSchema,
   ok: liveControlsAnswer_Status200_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type LiveControlsAnswer_Status200_Body = z.infer<
-  typeof liveControlsAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const liveControlsAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type LiveControlsAnswer_Status200_Status = z.infer<
-  typeof liveControlsAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members battle, command, control_revision, ok. */
 export const liveControlsAnswer_Status200Schema = z.strictObject({
   body: liveControlsAnswer_Status200_BodySchema,
   status: liveControlsAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members battle, command, control_revision, ok. */
-export type LiveControlsAnswer_Status200 = z.infer<typeof liveControlsAnswer_Status200Schema>;
 /** Strict raw response path: answer.body.error. */
 export const liveControlsAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type LiveControlsAnswer_Status400_Body_Error = z.infer<
-  typeof liveControlsAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const liveControlsAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type LiveControlsAnswer_Status400_Body_Ok = z.infer<
-  typeof liveControlsAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const liveControlsAnswer_Status400_BodySchema = z.strictObject({
   error: liveControlsAnswer_Status400_Body_ErrorSchema,
   ok: liveControlsAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type LiveControlsAnswer_Status400_Body = z.infer<
-  typeof liveControlsAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const liveControlsAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type LiveControlsAnswer_Status400_Status = z.infer<
-  typeof liveControlsAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members error, ok. */
 export const liveControlsAnswer_Status400Schema = z.strictObject({
   body: liveControlsAnswer_Status400_BodySchema,
   status: liveControlsAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members error, ok. */
-export type LiveControlsAnswer_Status400 = z.infer<typeof liveControlsAnswer_Status400Schema>;
 /** Strict raw response path: answer.body.error. */
 export const liveControlsAnswer_Status404_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type LiveControlsAnswer_Status404_Body_Error = z.infer<
-  typeof liveControlsAnswer_Status404_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const liveControlsAnswer_Status404_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type LiveControlsAnswer_Status404_Body_Ok = z.infer<
-  typeof liveControlsAnswer_Status404_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const liveControlsAnswer_Status404_BodySchema = z.strictObject({
   error: liveControlsAnswer_Status404_Body_ErrorSchema,
   ok: liveControlsAnswer_Status404_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type LiveControlsAnswer_Status404_Body = z.infer<
-  typeof liveControlsAnswer_Status404_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const liveControlsAnswer_Status404_StatusSchema = z.literal(404);
-/** Raw response path: answer.status. */
-export type LiveControlsAnswer_Status404_Status = z.infer<
-  typeof liveControlsAnswer_Status404_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 404, body members error, ok. */
 export const liveControlsAnswer_Status404Schema = z.strictObject({
   body: liveControlsAnswer_Status404_BodySchema,
   status: liveControlsAnswer_Status404_StatusSchema,
 });
-/** Raw response path: answer, variant: status 404, body members error, ok. */
-export type LiveControlsAnswer_Status404 = z.infer<typeof liveControlsAnswer_Status404Schema>;
 /** Strict raw response path: answer.body.code. */
 export const liveControlsAnswer_Status409V1_Body_CodeSchema = z.enum(['action_lock']);
-/** Raw response path: answer.body.code. */
-export type LiveControlsAnswer_Status409V1_Body_Code = z.infer<
-  typeof liveControlsAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const liveControlsAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type LiveControlsAnswer_Status409V1_Body_Error = z.infer<
-  typeof liveControlsAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const liveControlsAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type LiveControlsAnswer_Status409V1_Body_Ok = z.infer<
-  typeof liveControlsAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const liveControlsAnswer_Status409V1_BodySchema = z.strictObject({
   code: liveControlsAnswer_Status409V1_Body_CodeSchema,
   error: liveControlsAnswer_Status409V1_Body_ErrorSchema,
   ok: liveControlsAnswer_Status409V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type LiveControlsAnswer_Status409V1_Body = z.infer<
-  typeof liveControlsAnswer_Status409V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const liveControlsAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type LiveControlsAnswer_Status409V1_Status = z.infer<
-  typeof liveControlsAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const liveControlsAnswer_Status409V1Schema = z.strictObject({
   body: liveControlsAnswer_Status409V1_BodySchema,
   status: liveControlsAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type LiveControlsAnswer_Status409V1 = z.infer<typeof liveControlsAnswer_Status409V1Schema>;
 /** Strict raw response path: answer.body.error. */
 export const liveControlsAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type LiveControlsAnswer_Status409V2_Body_Error = z.infer<
-  typeof liveControlsAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const liveControlsAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type LiveControlsAnswer_Status409V2_Body_Ok = z.infer<
-  typeof liveControlsAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const liveControlsAnswer_Status409V2_BodySchema = z.strictObject({
   error: liveControlsAnswer_Status409V2_Body_ErrorSchema,
   ok: liveControlsAnswer_Status409V2_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type LiveControlsAnswer_Status409V2_Body = z.infer<
-  typeof liveControlsAnswer_Status409V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const liveControlsAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type LiveControlsAnswer_Status409V2_Status = z.infer<
-  typeof liveControlsAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members error, ok. */
 export const liveControlsAnswer_Status409V2Schema = z.strictObject({
   body: liveControlsAnswer_Status409V2_BodySchema,
   status: liveControlsAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members error, ok. */
-export type LiveControlsAnswer_Status409V2 = z.infer<typeof liveControlsAnswer_Status409V2Schema>;
 /** Strict raw response path: answer.body.code. */
 export const liveControlsAnswer_Status500_Body_CodeSchema = z.enum(['command_outcome_unknown']);
-/** Raw response path: answer.body.code. */
-export type LiveControlsAnswer_Status500_Body_Code = z.infer<
-  typeof liveControlsAnswer_Status500_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.command_id. */
 export const liveControlsAnswer_Status500_Body_CommandIdSchema = z.string();
-/** Raw response path: answer.body.command_id. */
-export type LiveControlsAnswer_Status500_Body_CommandId = z.infer<
-  typeof liveControlsAnswer_Status500_Body_CommandIdSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const liveControlsAnswer_Status500_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type LiveControlsAnswer_Status500_Body_Error = z.infer<
-  typeof liveControlsAnswer_Status500_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const liveControlsAnswer_Status500_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type LiveControlsAnswer_Status500_Body_Ok = z.infer<
-  typeof liveControlsAnswer_Status500_Body_OkSchema
->;
 /** Strict raw response path: answer.body.outcome. */
 export const liveControlsAnswer_Status500_Body_OutcomeSchema = z.string();
-/** Raw response path: answer.body.outcome. */
-export type LiveControlsAnswer_Status500_Body_Outcome = z.infer<
-  typeof liveControlsAnswer_Status500_Body_OutcomeSchema
->;
 /** Strict raw response path: answer.body. */
 export const liveControlsAnswer_Status500_BodySchema = z.strictObject({
   code: liveControlsAnswer_Status500_Body_CodeSchema,
@@ -6766,23 +3387,13 @@ export const liveControlsAnswer_Status500_BodySchema = z.strictObject({
   ok: liveControlsAnswer_Status500_Body_OkSchema,
   outcome: liveControlsAnswer_Status500_Body_OutcomeSchema,
 });
-/** Raw response path: answer.body. */
-export type LiveControlsAnswer_Status500_Body = z.infer<
-  typeof liveControlsAnswer_Status500_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const liveControlsAnswer_Status500_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type LiveControlsAnswer_Status500_Status = z.infer<
-  typeof liveControlsAnswer_Status500_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members code, command_id, error, ok, outcome. */
 export const liveControlsAnswer_Status500Schema = z.strictObject({
   body: liveControlsAnswer_Status500_BodySchema,
   status: liveControlsAnswer_Status500_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members code, command_id, error, ok, outcome. */
-export type LiveControlsAnswer_Status500 = z.infer<typeof liveControlsAnswer_Status500Schema>;
 /** Strict raw response path: answer. */
 export const liveControlsAnswerSchema = z.union([
   liveControlsAnswer_Status200Schema,
@@ -6797,41 +3408,20 @@ export type LiveControlsAnswer = z.infer<typeof liveControlsAnswerSchema>;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.abilities.enabled. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.abilities.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Abilities_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Abilities_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.abilities. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AbilitiesSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.abilities. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Abilities = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.ad_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.ad_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGems_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.ad_gems.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.ad_gems.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.ad_gems.window_sec. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.ad_gems.window_sec. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGems_WindowSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.ad_gems. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGemsSchema =
   z.strictObject({
@@ -6840,42 +3430,18 @@ export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGemsS
       liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGems_IntervalSecSchema,
     window_sec: liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.ad_gems. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems.tap_interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems.window_sec. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems.window_sec. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.floating_gems. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -6887,73 +3453,36 @@ export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Floatin
     window_sec:
       liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.floating_gems. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.repeat.enabled. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.repeat.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Repeat_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.repeat. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_RepeatSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.repeat. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Repeat = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.rescue.enabled. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.rescue.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Rescue_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.rescue. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_RescueSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.rescue. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Rescue = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.rewards.enabled. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.rewards.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Rewards_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.rewards. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_RewardsSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.rewards. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Rewards = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.shopping.enabled. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_controls.routines.shopping.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Shopping_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.shopping.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_controls.routines.shopping.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_controls.routines.shopping. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_ShoppingSchema =
   z.strictObject({
@@ -6961,10 +3490,6 @@ export const liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Shoppin
     interval_sec:
       liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_controls.routines.shopping. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines_Shopping = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.routines. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_RoutinesSchema = z.strictObject({
   abilities: liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_AbilitiesSchema,
@@ -6975,39 +3500,19 @@ export const liveControlsReadAnswer_Body_Battle_AppliedControls_RoutinesSchema =
   rewards: liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_RewardsSchema,
   shopping: liveControlsReadAnswer_Body_Battle_AppliedControls_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.battle.applied_controls.routines. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_Routines = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls.shopping_plan. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControls_ShoppingPlanSchema = z.null();
-/** Raw response path: answer.body.battle.applied_controls.shopping_plan. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls_ShoppingPlan = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControls_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battle.applied_controls. */
 export const liveControlsReadAnswer_Body_Battle_AppliedControlsSchema = z.strictObject({
   routines: liveControlsReadAnswer_Body_Battle_AppliedControls_RoutinesSchema,
   shopping_plan: liveControlsReadAnswer_Body_Battle_AppliedControls_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.battle.applied_controls. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedControls = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedControlsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.ad_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_overrides.routines.ad_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_AdGems_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.ad_gems.window_sec. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_overrides.routines.ad_gems.window_sec. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_AdGems_WindowSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.ad_gems. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_AdGemsSchema =
   z.strictObject({
@@ -7015,34 +3520,15 @@ export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_AdGems
     window_sec:
       liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_AdGems_WindowSecSchema.optional(),
   });
-/** Raw response path: answer.body.battle.applied_overrides.routines.ad_gems. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_AdGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.floating_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_overrides.routines.floating_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.floating_gems.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_overrides.routines.floating_gems.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.floating_gems.tap_interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_overrides.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.floating_gems. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -7053,41 +3539,20 @@ export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Floati
     tap_interval_sec:
       liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGems_TapIntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_overrides.routines.floating_gems. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.rewards.enabled. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_overrides.routines.rewards.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Rewards_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.rewards. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_RewardsSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.applied_overrides.routines.rewards. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Rewards = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.shopping.enabled. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.applied_overrides.routines.shopping.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Shopping_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.shopping.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.applied_overrides.routines.shopping.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines.shopping. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_ShoppingSchema =
   z.strictObject({
@@ -7095,10 +3560,6 @@ export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Shoppi
     interval_sec:
       liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.applied_overrides.routines.shopping. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_Shopping = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides.routines. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_RoutinesSchema = z.strictObject({
   ad_gems: liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_AdGemsSchema,
@@ -7107,148 +3568,64 @@ export const liveControlsReadAnswer_Body_Battle_AppliedOverrides_RoutinesSchema 
   rewards: liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_RewardsSchema.optional(),
   shopping: liveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines_ShoppingSchema.optional(),
 });
-/** Raw response path: answer.body.battle.applied_overrides.routines. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides_Routines = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedOverrides_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.applied_overrides. */
 export const liveControlsReadAnswer_Body_Battle_AppliedOverridesSchema = z.strictObject({
   routines: liveControlsReadAnswer_Body_Battle_AppliedOverrides_RoutinesSchema.optional(),
 });
-/** Raw response path: answer.body.battle.applied_overrides. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedOverrides = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedOverridesSchema
->;
 /** Strict raw response path: answer.body.battle.applied_revision. */
 export const liveControlsReadAnswer_Body_Battle_AppliedRevisionSchema = z.number();
-/** Raw response path: answer.body.battle.applied_revision. */
-export type LiveControlsReadAnswer_Body_Battle_AppliedRevision = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_AppliedRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.blueprint. */
 export const liveControlsReadAnswer_Body_Battle_BlueprintSchema = z.string();
-/** Raw response path: answer.body.battle.blueprint. */
-export type LiveControlsReadAnswer_Body_Battle_Blueprint = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_BlueprintSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities.actions[]. */
 export const liveControlsReadAnswer_Body_Battle_Capabilities_Actions_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.battle.capabilities.actions[]. */
-export type LiveControlsReadAnswer_Body_Battle_Capabilities_Actions_ArrayElement = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Capabilities_Actions_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities.actions. */
 export const liveControlsReadAnswer_Body_Battle_Capabilities_ActionsSchema = z.array(
   liveControlsReadAnswer_Body_Battle_Capabilities_Actions_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.capabilities.actions. */
-export type LiveControlsReadAnswer_Body_Battle_Capabilities_Actions = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Capabilities_ActionsSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities.controls[]. */
 export const liveControlsReadAnswer_Body_Battle_Capabilities_Controls_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.battle.capabilities.controls[]. */
-export type LiveControlsReadAnswer_Body_Battle_Capabilities_Controls_ArrayElement = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Capabilities_Controls_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities.controls. */
 export const liveControlsReadAnswer_Body_Battle_Capabilities_ControlsSchema = z.array(
   liveControlsReadAnswer_Body_Battle_Capabilities_Controls_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.capabilities.controls. */
-export type LiveControlsReadAnswer_Body_Battle_Capabilities_Controls = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Capabilities_ControlsSchema
->;
 /** Strict raw response path: answer.body.battle.capabilities. */
 export const liveControlsReadAnswer_Body_Battle_CapabilitiesSchema = z.strictObject({
   actions: liveControlsReadAnswer_Body_Battle_Capabilities_ActionsSchema,
   controls: liveControlsReadAnswer_Body_Battle_Capabilities_ControlsSchema,
 });
-/** Raw response path: answer.body.battle.capabilities. */
-export type LiveControlsReadAnswer_Body_Battle_Capabilities = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_CapabilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].applied_paths[]. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_AppliedPaths_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.battle.commands[].applied_paths[]. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_AppliedPaths_ArrayElement =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_AppliedPaths_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].applied_paths. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_AppliedPathsSchema = z.array(
   liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_AppliedPaths_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.commands[].applied_paths. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_AppliedPaths = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_AppliedPathsSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].battle_id. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_BattleIdSchema = z.string();
-/** Raw response path: answer.body.battle.commands[].battle_id. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_BattleId = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_BattleIdSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].evidence. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_EvidenceSchema = z.null();
-/** Raw response path: answer.body.battle.commands[].evidence. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Evidence = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_EvidenceSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].generation. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_GenerationSchema = z.string();
-/** Raw response path: answer.body.battle.commands[].generation. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Generation = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_GenerationSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].id. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_IdSchema = z.string();
-/** Raw response path: answer.body.battle.commands[].id. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Id = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_IdSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].kind. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_KindSchema = z.enum([
   'controls',
 ]);
-/** Raw response path: answer.body.battle.commands[].kind. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Kind = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_KindSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].operation_id. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.commands[].operation_id. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_OperationId = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_OperationIdSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.ad_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.commands[].payload.routines.ad_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_Enabled =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.ad_gems.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_IntervalSecSchema =
   z.number().nullable();
-/** Raw response path: answer.body.battle.commands[].payload.routines.ad_gems.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.ad_gems.window_sec. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.commands[].payload.routines.ad_gems.window_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.ad_gems. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGemsSchema =
   z.strictObject({
@@ -7259,35 +3636,15 @@ export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Ro
     window_sec:
       liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems_WindowSecSchema.optional(),
   });
-/** Raw response path: answer.body.battle.commands[].payload.routines.ad_gems. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGems =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_AdGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.floating_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.commands[].payload.routines.floating_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.floating_gems.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.commands[].payload.routines.floating_gems.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.floating_gems.tap_interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.commands[].payload.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.floating_gems. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -7298,46 +3655,21 @@ export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Ro
     tap_interval_sec:
       liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems_TapIntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.commands[].payload.routines.floating_gems. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGems =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_FloatingGemsSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.rewards.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.commands[].payload.routines.rewards.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Rewards_Enabled =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Rewards_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.rewards. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_RewardsSchema =
   z.strictObject({
     enabled:
       liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.commands[].payload.routines.rewards. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Rewards =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_RewardsSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.shopping.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.commands[].payload.routines.shopping.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_Enabled =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.shopping.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.commands[].payload.routines.shopping.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines.shopping. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_ShoppingSchema =
   z.strictObject({
@@ -7346,11 +3678,6 @@ export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Ro
     interval_sec:
       liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.commands[].payload.routines.shopping. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_Shopping =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_ShoppingSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].payload.routines. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_RoutinesSchema =
   z.strictObject({
@@ -7363,54 +3690,25 @@ export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Ro
     shopping:
       liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines_ShoppingSchema.optional(),
   });
-/** Raw response path: answer.body.battle.commands[].payload.routines. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_Routines = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].payload. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_PayloadSchema =
   z.strictObject({
     routines: liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload_RoutinesSchema,
   });
-/** Raw response path: answer.body.battle.commands[].payload. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Payload = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_PayloadSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].reason. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_ReasonSchema = z.null();
-/** Raw response path: answer.body.battle.commands[].reason. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Reason = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_ReasonSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].request_keys[]. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_RequestKeys_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.battle.commands[].request_keys[]. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_RequestKeys_ArrayElement =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_RequestKeys_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battle.commands[].request_keys. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_RequestKeysSchema = z.array(
   liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_RequestKeys_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.commands[].request_keys. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_RequestKeys = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_RequestKeysSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].requested_at. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_RequestedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.commands[].requested_at. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_RequestedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_RequestedAtSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].revision. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_RevisionSchema = z.number();
-/** Raw response path: answer.body.battle.commands[].revision. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_Revision = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_RevisionSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].state. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_StateSchema = z.enum([
   'applied',
@@ -7419,16 +3717,8 @@ export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_StateSchem
   'rejected',
   'requested',
 ]);
-/** Raw response path: answer.body.battle.commands[].state. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_State = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_StateSchema
->;
 /** Strict raw response path: answer.body.battle.commands[].updated_at. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.battle.commands[].updated_at. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement_UpdatedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.battle.commands[]. */
 export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElementSchema = z.strictObject({
   applied_paths: liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_AppliedPathsSchema,
@@ -7446,96 +3736,36 @@ export const liveControlsReadAnswer_Body_Battle_Commands_ArrayElementSchema = z.
   state: liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_StateSchema,
   updated_at: liveControlsReadAnswer_Body_Battle_Commands_ArrayElement_UpdatedAtSchema,
 });
-/** Raw response path: answer.body.battle.commands[]. */
-export type LiveControlsReadAnswer_Body_Battle_Commands_ArrayElement = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Commands_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.commands. */
 export const liveControlsReadAnswer_Body_Battle_CommandsSchema = z.array(
   liveControlsReadAnswer_Body_Battle_Commands_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.commands. */
-export type LiveControlsReadAnswer_Body_Battle_Commands = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_CommandsSchema
->;
 /** Strict raw response path: answer.body.battle.context.account. */
 export const liveControlsReadAnswer_Body_Battle_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.battle.context.account. */
-export type LiveControlsReadAnswer_Body_Battle_Context_Account = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.battle.context.adb_host. */
 export const liveControlsReadAnswer_Body_Battle_Context_AdbHostSchema = z.string();
-/** Raw response path: answer.body.battle.context.adb_host. */
-export type LiveControlsReadAnswer_Body_Battle_Context_AdbHost = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.battle.context.adb_port. */
 export const liveControlsReadAnswer_Body_Battle_Context_AdbPortSchema = z.number();
-/** Raw response path: answer.body.battle.context.adb_port. */
-export type LiveControlsReadAnswer_Body_Battle_Context_AdbPort = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.battle.context.artifact_dir. */
 export const liveControlsReadAnswer_Body_Battle_Context_ArtifactDirSchema = z.string();
-/** Raw response path: answer.body.battle.context.artifact_dir. */
-export type LiveControlsReadAnswer_Body_Battle_Context_ArtifactDir = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_ArtifactDirSchema
->;
 /** Strict raw response path: answer.body.battle.context.config_revision. */
 export const liveControlsReadAnswer_Body_Battle_Context_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.battle.context.config_revision. */
-export type LiveControlsReadAnswer_Body_Battle_Context_ConfigRevision = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.context.device_key. */
 export const liveControlsReadAnswer_Body_Battle_Context_DeviceKeySchema = z.string();
-/** Raw response path: answer.body.battle.context.device_key. */
-export type LiveControlsReadAnswer_Body_Battle_Context_DeviceKey = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.battle.context.instance. */
 export const liveControlsReadAnswer_Body_Battle_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.battle.context.instance. */
-export type LiveControlsReadAnswer_Body_Battle_Context_Instance = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.battle.context.profile. */
 export const liveControlsReadAnswer_Body_Battle_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.battle.context.profile. */
-export type LiveControlsReadAnswer_Body_Battle_Context_Profile = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.battle.context.profile_path. */
 export const liveControlsReadAnswer_Body_Battle_Context_ProfilePathSchema = z.string();
-/** Raw response path: answer.body.battle.context.profile_path. */
-export type LiveControlsReadAnswer_Body_Battle_Context_ProfilePath = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_ProfilePathSchema
->;
 /** Strict raw response path: answer.body.battle.context.profile_revision. */
 export const liveControlsReadAnswer_Body_Battle_Context_ProfileRevisionSchema = z.string();
-/** Raw response path: answer.body.battle.context.profile_revision. */
-export type LiveControlsReadAnswer_Body_Battle_Context_ProfileRevision = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.context.rendering. */
 export const liveControlsReadAnswer_Body_Battle_Context_RenderingSchema = z.null();
-/** Raw response path: answer.body.battle.context.rendering. */
-export type LiveControlsReadAnswer_Body_Battle_Context_Rendering = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.battle.context.selected_run. */
 export const liveControlsReadAnswer_Body_Battle_Context_SelectedRunSchema = z.string();
-/** Raw response path: answer.body.battle.context.selected_run. */
-export type LiveControlsReadAnswer_Body_Battle_Context_SelectedRun = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.battle.context.serial. */
 export const liveControlsReadAnswer_Body_Battle_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.battle.context.serial. */
-export type LiveControlsReadAnswer_Body_Battle_Context_Serial = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.battle.context. */
 export const liveControlsReadAnswer_Body_Battle_ContextSchema = z.strictObject({
   account: liveControlsReadAnswer_Body_Battle_Context_AccountSchema,
@@ -7552,98 +3782,44 @@ export const liveControlsReadAnswer_Body_Battle_ContextSchema = z.strictObject({
   selected_run: liveControlsReadAnswer_Body_Battle_Context_SelectedRunSchema,
   serial: liveControlsReadAnswer_Body_Battle_Context_SerialSchema,
 });
-/** Raw response path: answer.body.battle.context. */
-export type LiveControlsReadAnswer_Body_Battle_Context = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_ContextSchema
->;
 /** Strict raw response path: answer.body.battle.control_revision. */
 export const liveControlsReadAnswer_Body_Battle_ControlRevisionSchema = z.number();
-/** Raw response path: answer.body.battle.control_revision. */
-export type LiveControlsReadAnswer_Body_Battle_ControlRevision = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_ControlRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.created_at. */
 export const liveControlsReadAnswer_Body_Battle_CreatedAtSchema = z.number();
-/** Raw response path: answer.body.battle.created_at. */
-export type LiveControlsReadAnswer_Body_Battle_CreatedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.abilities.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.abilities.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_Abilities_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_Abilities_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.abilities. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_AbilitiesSchema = z.strictObject(
   { enabled: liveControlsReadAnswer_Body_Battle_Effective_Routines_Abilities_EnabledSchema },
 );
-/** Raw response path: answer.body.battle.effective.routines.abilities. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_Abilities = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.ad_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.ad_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.ad_gems.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.ad_gems.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems_IntervalSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems_IntervalSecSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.ad_gems.window_sec. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.ad_gems.window_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems_WindowSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.ad_gems. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_AdGemsSchema = z.strictObject({
   enabled: liveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems_EnabledSchema,
   interval_sec: liveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems_IntervalSecSchema,
   window_sec: liveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems_WindowSecSchema,
 });
-/** Raw response path: answer.body.battle.effective.routines.ad_gems. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_AdGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.floating_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.floating_gems.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems.tap_interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems.window_sec. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.floating_gems.window_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_WindowSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.floating_gems. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -7654,78 +3830,38 @@ export const liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGemsS
       liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_TapIntervalSecSchema,
     window_sec: liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.effective.routines.floating_gems. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.repeat.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.repeat.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_Repeat_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.repeat. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_RepeatSchema = z.strictObject({
   enabled: liveControlsReadAnswer_Body_Battle_Effective_Routines_Repeat_EnabledSchema,
 });
-/** Raw response path: answer.body.battle.effective.routines.repeat. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_Repeat = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.rescue.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.rescue.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_Rescue_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.rescue. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_RescueSchema = z.strictObject({
   enabled: liveControlsReadAnswer_Body_Battle_Effective_Routines_Rescue_EnabledSchema,
 });
-/** Raw response path: answer.body.battle.effective.routines.rescue. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_Rescue = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.rewards.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.rewards.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_Rewards_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.rewards. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_RewardsSchema = z.strictObject({
   enabled: liveControlsReadAnswer_Body_Battle_Effective_Routines_Rewards_EnabledSchema,
 });
-/** Raw response path: answer.body.battle.effective.routines.rewards. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_Rewards = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.shopping.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.effective.routines.shopping.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_Shopping_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.shopping.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.effective.routines.shopping.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_Shopping_IntervalSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_Shopping_IntervalSecSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines.shopping. */
 export const liveControlsReadAnswer_Body_Battle_Effective_Routines_ShoppingSchema = z.strictObject({
   enabled: liveControlsReadAnswer_Body_Battle_Effective_Routines_Shopping_EnabledSchema,
   interval_sec: liveControlsReadAnswer_Body_Battle_Effective_Routines_Shopping_IntervalSecSchema,
 });
-/** Raw response path: answer.body.battle.effective.routines.shopping. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines_Shopping = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.effective.routines. */
 export const liveControlsReadAnswer_Body_Battle_Effective_RoutinesSchema = z.strictObject({
   abilities: liveControlsReadAnswer_Body_Battle_Effective_Routines_AbilitiesSchema,
@@ -7736,77 +3872,34 @@ export const liveControlsReadAnswer_Body_Battle_Effective_RoutinesSchema = z.str
   rewards: liveControlsReadAnswer_Body_Battle_Effective_Routines_RewardsSchema,
   shopping: liveControlsReadAnswer_Body_Battle_Effective_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.battle.effective.routines. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_Routines = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.effective.shopping_plan. */
 export const liveControlsReadAnswer_Body_Battle_Effective_ShoppingPlanSchema = z.null();
-/** Raw response path: answer.body.battle.effective.shopping_plan. */
-export type LiveControlsReadAnswer_Body_Battle_Effective_ShoppingPlan = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Effective_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battle.effective. */
 export const liveControlsReadAnswer_Body_Battle_EffectiveSchema = z.strictObject({
   routines: liveControlsReadAnswer_Body_Battle_Effective_RoutinesSchema,
   shopping_plan: liveControlsReadAnswer_Body_Battle_Effective_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.battle.effective. */
-export type LiveControlsReadAnswer_Body_Battle_Effective = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_EffectiveSchema
->;
 /** Strict raw response path: answer.body.battle.end_reason. */
 export const liveControlsReadAnswer_Body_Battle_EndReasonSchema = z.null();
-/** Raw response path: answer.body.battle.end_reason. */
-export type LiveControlsReadAnswer_Body_Battle_EndReason = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_EndReasonSchema
->;
 /** Strict raw response path: answer.body.battle.ended_at. */
 export const liveControlsReadAnswer_Body_Battle_EndedAtSchema = z.null();
-/** Raw response path: answer.body.battle.ended_at. */
-export type LiveControlsReadAnswer_Body_Battle_EndedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_EndedAtSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.abilities.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.abilities.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Abilities_Enabled =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.abilities. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AbilitiesSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.abilities. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Abilities = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.ad_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.ad_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGems_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.ad_gems.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.ad_gems.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.ad_gems.window_sec. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.ad_gems.window_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.ad_gems. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGemsSchema =
   z.strictObject({
@@ -7816,42 +3909,18 @@ export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGem
     window_sec:
       liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.ad_gems. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems.tap_interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems.window_sec. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems.window_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.floating_gems. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -7864,74 +3933,36 @@ export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Float
     window_sec:
       liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.floating_gems. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.repeat.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.repeat.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Repeat_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.repeat. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_RepeatSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.repeat. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Repeat = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.rescue.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.rescue.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Rescue_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.rescue. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_RescueSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.rescue. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Rescue = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.rewards.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.rewards.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Rewards_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.rewards. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_RewardsSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.rewards. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Rewards = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.shopping.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.controls.routines.shopping.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Shopping_Enabled =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.shopping.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.controls.routines.shopping.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines.shopping. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_ShoppingSchema =
   z.strictObject({
@@ -7939,10 +3970,6 @@ export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Shopp
     interval_sec:
       liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.envelope.controls.routines.shopping. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_Shopping = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.routines. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_RoutinesSchema = z.strictObject({
   abilities: liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_AbilitiesSchema,
@@ -7953,169 +3980,72 @@ export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_RoutinesSchema
   rewards: liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_RewardsSchema,
   shopping: liveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.battle.envelope.controls.routines. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_Routines = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls.shopping_plan. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Controls_ShoppingPlanSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.controls.shopping_plan. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls_ShoppingPlan = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Controls_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.controls. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_ControlsSchema = z.strictObject({
   routines: liveControlsReadAnswer_Body_Battle_Envelope_Controls_RoutinesSchema,
   shopping_plan: liveControlsReadAnswer_Body_Battle_Envelope_Controls_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.battle.envelope.controls. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Controls = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_ControlsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset._source.blueprint. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Source_BlueprintSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.preset._source.blueprint. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Source_Blueprint = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Source_BlueprintSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset._source.profile. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Source_ProfileSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.preset._source.profile. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Source_Profile = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Source_ProfileSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset._source. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_SourceSchema = z.strictObject({
   blueprint: liveControlsReadAnswer_Body_Battle_Envelope_Preset_Source_BlueprintSchema,
   profile: liveControlsReadAnswer_Body_Battle_Envelope_Preset_Source_ProfileSchema,
 });
-/** Raw response path: answer.body.battle.envelope.preset._source. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Source = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_SourceSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.burst_cancel_sprint. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_BurstCancelSprintSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.burst_cancel_sprint. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_BurstCancelSprint =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_BurstCancelSprintSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.burst_require_match. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_BurstRequireMatchSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.burst_require_match. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_BurstRequireMatch =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_BurstRequireMatchSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.burst_require_ready. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_BurstRequireReadySchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.burst_require_ready. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_BurstRequireReady =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_BurstRequireReadySchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.burst_retaps. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_BurstRetapsSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.burst_retaps. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_BurstRetaps = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_BurstRetapsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.collapse_from. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_CollapseFromSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.collapse_from. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_CollapseFrom = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_CollapseFromSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.deadband. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_DeadbandSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.deadband. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_Deadband = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_DeadbandSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.dm_below. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_DmBelowSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.dm_below. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_DmBelow = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_DmBelowSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.end_sprint_after_sw. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_EndSprintAfterSwSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.end_sprint_after_sw. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_EndSprintAfterSw = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_EndSprintAfterSwSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.falling_samples. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_FallingSamplesSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.falling_samples. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_FallingSamples = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_FallingSamplesSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.hold_until_second_wind. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_HoldUntilSecondWindSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.hold_until_second_wind. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_HoldUntilSecondWind =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_HoldUntilSecondWindSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.hp_nuke_require_ready. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_HpNukeRequireReadySchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.hp_nuke_require_ready. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_HpNukeRequireReady =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_HpNukeRequireReadySchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.nuke_below. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_NukeBelowSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.nuke_below. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_NukeBelow = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_NukeBelowSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.nuke_on_fleet. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_NukeOnFleetSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.nuke_on_fleet. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_NukeOnFleet = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_NukeOnFleetSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.post_sw_watch_sec. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_PostSwWatchSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.post_sw_watch_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_PostSwWatchSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_PostSwWatchSecSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.refire_guard_sec. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_RefireGuardSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.refire_guard_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_RefireGuardSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_RefireGuardSecSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.rescue_bar. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_RescueBarSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.rescue_bar. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_RescueBar = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_RescueBarSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities.sw_immunity_sec. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_SwImmunitySecSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.abilities.sw_immunity_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_SwImmunitySec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_SwImmunitySecSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.abilities. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_AbilitiesSchema = z.strictObject({
   burst_cancel_sprint:
@@ -8145,54 +4075,23 @@ export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_AbilitiesSchema 
   rescue_bar: liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_RescueBarSchema,
   sw_immunity_sec: liveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities_SwImmunitySecSchema,
 });
-/** Raw response path: answer.body.battle.envelope.preset.abilities. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Abilities = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.cancel_sprint. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_CancelSprintSchema = z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.cancel_sprint. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_CancelSprint = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_CancelSprintSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.always_on. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.always_on. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOn = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.always_on_above. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnAboveSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.always_on_above. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnAbove =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_AlwaysOnAboveSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.off_after_waves. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_OffAfterWavesSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.off_after_waves. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_OffAfterWaves =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_OffAfterWavesSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning.pre_mark_waves. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_PreMarkWavesSchema =
   z.null();
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning.pre_mark_waves. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_PreMarkWaves =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_PreMarkWavesSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.chain_lightning. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightningSchema =
   z.strictObject({
@@ -8205,144 +4104,59 @@ export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightningSc
     pre_mark_waves:
       liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning_PreMarkWavesSchema,
   });
-/** Raw response path: answer.body.battle.envelope.preset.chain_lightning. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightning = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_ChainLightningSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.dissonant_tab. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_DissonantTabSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.dissonant_tab. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_DissonantTab = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_DissonantTabSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gather.ad_gems. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather_AdGemsSchema = z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.gather.ad_gems. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather_AdGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gather.gem_delay_sec[]. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.gather.gem_delay_sec[]. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather_GemDelaySec_ArrayElement =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather_GemDelaySec_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.battle.envelope.preset.gather.gem_delay_sec. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather_GemDelaySecSchema = z.array(
   liveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather_GemDelaySec_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.envelope.preset.gather.gem_delay_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather_GemDelaySec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather_GemDelaySecSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gather. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_GatherSchema = z.strictObject({
   ad_gems: liveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather_AdGemsSchema,
   gem_delay_sec: liveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather_GemDelaySecSchema,
 });
-/** Raw response path: answer.body.battle.envelope.preset.gather. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Gather = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_GatherSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gem_delay_sec[]. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_GemDelaySec_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.battle.envelope.preset.gem_delay_sec[]. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_GemDelaySec_ArrayElement = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_GemDelaySec_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.gem_delay_sec. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_GemDelaySecSchema = z.array(
   liveControlsReadAnswer_Body_Battle_Envelope_Preset_GemDelaySec_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.envelope.preset.gem_delay_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_GemDelaySec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_GemDelaySecSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.kind. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_KindSchema = z.enum(['coin']);
-/** Raw response path: answer.body.battle.envelope.preset.kind. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Kind = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_KindSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.label. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_LabelSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.preset.label. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Label = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_LabelSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.loadout. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_LoadoutSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.loadout. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Loadout = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_LoadoutSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.max_wave. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_MaxWaveSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.max_wave. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_MaxWave = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_MaxWaveSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.perk_bans. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_PerkBansSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.perk_bans. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_PerkBans = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_PerkBansSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.restart_via_home. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_RestartViaHomeSchema = z.boolean();
-/** Raw response path: answer.body.battle.envelope.preset.restart_via_home. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_RestartViaHome = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_RestartViaHomeSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.rules. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_RulesSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battle.envelope.preset.rules. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Rules = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_RulesSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.runner. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_RunnerSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.preset.runner. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Runner = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_RunnerSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.runner_args. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_RunnerArgsSchema = z.null();
-/** Raw response path: answer.body.battle.envelope.preset.runner_args. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_RunnerArgs = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_RunnerArgsSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.shop_interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_ShopIntervalSecSchema = z.number();
-/** Raw response path: answer.body.battle.envelope.preset.shop_interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_ShopIntervalSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_ShopIntervalSecSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.shopping. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_ShoppingSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battle.envelope.preset.shopping. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Shopping = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.tier. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_TierSchema = z.number();
-/** Raw response path: answer.body.battle.envelope.preset.tier. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_Tier = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_TierSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset.uw_wanted. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Preset_UwWantedSchema = z.strictObject({});
-/** Raw response path: answer.body.battle.envelope.preset.uw_wanted. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset_UwWanted = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Preset_UwWantedSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_PresetSchema = z.strictObject({
   _source: liveControlsReadAnswer_Body_Battle_Envelope_Preset_SourceSchema,
@@ -8366,43 +4180,19 @@ export const liveControlsReadAnswer_Body_Battle_Envelope_PresetSchema = z.strict
   tier: liveControlsReadAnswer_Body_Battle_Envelope_Preset_TierSchema,
   uw_wanted: liveControlsReadAnswer_Body_Battle_Envelope_Preset_UwWantedSchema,
 });
-/** Raw response path: answer.body.battle.envelope.preset. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Preset = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_PresetSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.preset_key. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_PresetKeySchema = z.string();
-/** Raw response path: answer.body.battle.envelope.preset_key. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_PresetKey = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_PresetKeySchema
->;
 /** Strict raw response path: answer.body.battle.envelope.source.blueprint. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Source_BlueprintSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.source.blueprint. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Source_Blueprint = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Source_BlueprintSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.source.profile. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_Source_ProfileSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.source.profile. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Source_Profile = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_Source_ProfileSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.source. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_SourceSchema = z.strictObject({
   blueprint: liveControlsReadAnswer_Body_Battle_Envelope_Source_BlueprintSchema,
   profile: liveControlsReadAnswer_Body_Battle_Envelope_Source_ProfileSchema,
 });
-/** Raw response path: answer.body.battle.envelope.source. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_Source = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_SourceSchema
->;
 /** Strict raw response path: answer.body.battle.envelope.source_revision. */
 export const liveControlsReadAnswer_Body_Battle_Envelope_SourceRevisionSchema = z.string();
-/** Raw response path: answer.body.battle.envelope.source_revision. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope_SourceRevision = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Envelope_SourceRevisionSchema
->;
 /** Strict raw response path: answer.body.battle.envelope. */
 export const liveControlsReadAnswer_Body_Battle_EnvelopeSchema = z.strictObject({
   controls: liveControlsReadAnswer_Body_Battle_Envelope_ControlsSchema,
@@ -8411,111 +4201,45 @@ export const liveControlsReadAnswer_Body_Battle_EnvelopeSchema = z.strictObject(
   source: liveControlsReadAnswer_Body_Battle_Envelope_SourceSchema,
   source_revision: liveControlsReadAnswer_Body_Battle_Envelope_SourceRevisionSchema,
 });
-/** Raw response path: answer.body.battle.envelope. */
-export type LiveControlsReadAnswer_Body_Battle_Envelope = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_EnvelopeSchema
->;
 /** Strict raw response path: answer.body.battle.envelope_hash. */
 export const liveControlsReadAnswer_Body_Battle_EnvelopeHashSchema = z.string();
-/** Raw response path: answer.body.battle.envelope_hash. */
-export type LiveControlsReadAnswer_Body_Battle_EnvelopeHash = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_EnvelopeHashSchema
->;
 /** Strict raw response path: answer.body.battle.final_wave. */
 export const liveControlsReadAnswer_Body_Battle_FinalWaveSchema = z.null();
-/** Raw response path: answer.body.battle.final_wave. */
-export type LiveControlsReadAnswer_Body_Battle_FinalWave = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_FinalWaveSchema
->;
 /** Strict raw response path: answer.body.battle.generation. */
 export const liveControlsReadAnswer_Body_Battle_GenerationSchema = z.string();
-/** Raw response path: answer.body.battle.generation. */
-export type LiveControlsReadAnswer_Body_Battle_Generation = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_GenerationSchema
->;
 /** Strict raw response path: answer.body.battle.id. */
 export const liveControlsReadAnswer_Body_Battle_IdSchema = z.string();
-/** Raw response path: answer.body.battle.id. */
-export type LiveControlsReadAnswer_Body_Battle_Id = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_IdSchema
->;
 /** Strict raw response path: answer.body.battle.label. */
 export const liveControlsReadAnswer_Body_Battle_LabelSchema = z.string();
-/** Raw response path: answer.body.battle.label. */
-export type LiveControlsReadAnswer_Body_Battle_Label = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_LabelSchema
->;
 /** Strict raw response path: answer.body.battle.observed_started_at. */
 export const liveControlsReadAnswer_Body_Battle_ObservedStartedAtSchema = z.number();
-/** Raw response path: answer.body.battle.observed_started_at. */
-export type LiveControlsReadAnswer_Body_Battle_ObservedStartedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_ObservedStartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.operation_id. */
 export const liveControlsReadAnswer_Body_Battle_OperationIdSchema = z.string();
-/** Raw response path: answer.body.battle.operation_id. */
-export type LiveControlsReadAnswer_Body_Battle_OperationId = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_OperationIdSchema
->;
 /** Strict raw response path: answer.body.battle.origin. */
 export const liveControlsReadAnswer_Body_Battle_OriginSchema = z.enum(['adopted']);
-/** Raw response path: answer.body.battle.origin. */
-export type LiveControlsReadAnswer_Body_Battle_Origin = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_OriginSchema
->;
 /** Strict raw response path: answer.body.battle.outcome. */
 export const liveControlsReadAnswer_Body_Battle_OutcomeSchema = z.string();
-/** Raw response path: answer.body.battle.outcome. */
-export type LiveControlsReadAnswer_Body_Battle_Outcome = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_OutcomeSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.ad_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.overrides.routines.ad_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines_AdGems_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Overrides_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.ad_gems.window_sec. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.overrides.routines.ad_gems.window_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines_AdGems_WindowSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Overrides_Routines_AdGems_WindowSecSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.ad_gems. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_AdGemsSchema = z.strictObject({
   enabled: liveControlsReadAnswer_Body_Battle_Overrides_Routines_AdGems_EnabledSchema,
   window_sec:
     liveControlsReadAnswer_Body_Battle_Overrides_Routines_AdGems_WindowSecSchema.optional(),
 });
-/** Raw response path: answer.body.battle.overrides.routines.ad_gems. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines_AdGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Overrides_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.floating_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.overrides.routines.floating_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGems_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.floating_gems.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.overrides.routines.floating_gems.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.overrides.routines.floating_gems.tap_interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.overrides.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.overrides.routines.floating_gems. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -8525,48 +4249,24 @@ export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGemsS
     tap_interval_sec:
       liveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGems_TapIntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.overrides.routines.floating_gems. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Overrides_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.rewards.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.overrides.routines.rewards.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines_Rewards_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Overrides_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.rewards. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_RewardsSchema = z.strictObject({
   enabled: liveControlsReadAnswer_Body_Battle_Overrides_Routines_Rewards_EnabledSchema,
 });
-/** Raw response path: answer.body.battle.overrides.routines.rewards. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines_Rewards = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Overrides_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.shopping.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.overrides.routines.shopping.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines_Shopping_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Overrides_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.shopping.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.overrides.routines.shopping.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines_Shopping_IntervalSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Overrides_Routines_Shopping_IntervalSecSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines.shopping. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_Routines_ShoppingSchema = z.strictObject({
   enabled: liveControlsReadAnswer_Body_Battle_Overrides_Routines_Shopping_EnabledSchema,
   interval_sec: liveControlsReadAnswer_Body_Battle_Overrides_Routines_Shopping_IntervalSecSchema,
 });
-/** Raw response path: answer.body.battle.overrides.routines.shopping. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines_Shopping = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Overrides_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.overrides.routines. */
 export const liveControlsReadAnswer_Body_Battle_Overrides_RoutinesSchema = z.strictObject({
   ad_gems: liveControlsReadAnswer_Body_Battle_Overrides_Routines_AdGemsSchema,
@@ -8575,76 +4275,33 @@ export const liveControlsReadAnswer_Body_Battle_Overrides_RoutinesSchema = z.str
   rewards: liveControlsReadAnswer_Body_Battle_Overrides_Routines_RewardsSchema.optional(),
   shopping: liveControlsReadAnswer_Body_Battle_Overrides_Routines_ShoppingSchema.optional(),
 });
-/** Raw response path: answer.body.battle.overrides.routines. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides_Routines = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Overrides_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.overrides. */
 export const liveControlsReadAnswer_Body_Battle_OverridesSchema = z.strictObject({
   routines: liveControlsReadAnswer_Body_Battle_Overrides_RoutinesSchema.optional(),
 });
-/** Raw response path: answer.body.battle.overrides. */
-export type LiveControlsReadAnswer_Body_Battle_Overrides = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_OverridesSchema
->;
 /** Strict raw response path: answer.body.battle.prepared_at. */
 export const liveControlsReadAnswer_Body_Battle_PreparedAtSchema = z.number();
-/** Raw response path: answer.body.battle.prepared_at. */
-export type LiveControlsReadAnswer_Body_Battle_PreparedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_PreparedAtSchema
->;
 /** Strict raw response path: answer.body.battle.previous_battle_id. */
 export const liveControlsReadAnswer_Body_Battle_PreviousBattleIdSchema = z.null();
-/** Raw response path: answer.body.battle.previous_battle_id. */
-export type LiveControlsReadAnswer_Body_Battle_PreviousBattleId = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_PreviousBattleIdSchema
->;
 /** Strict raw response path: answer.body.battle.reason. */
 export const liveControlsReadAnswer_Body_Battle_ReasonSchema = z.null();
-/** Raw response path: answer.body.battle.reason. */
-export type LiveControlsReadAnswer_Body_Battle_Reason = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_ReasonSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.abilities.enabled. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.abilities.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Abilities_Enabled =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Abilities_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.abilities. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AbilitiesSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Abilities_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.abilities. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Abilities = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.ad_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.ad_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGems_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.ad_gems.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.ad_gems.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGems_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.ad_gems.window_sec. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.ad_gems.window_sec. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGems_WindowSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.ad_gems. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGemsSchema =
   z.strictObject({
@@ -8654,42 +4311,18 @@ export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGem
     window_sec:
       liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.ad_gems. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_Enabled =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems.tap_interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_TapIntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems.tap_interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_TapIntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_TapIntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems.window_sec. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_WindowSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems.window_sec. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_WindowSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_WindowSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.floating_gems. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -8702,74 +4335,36 @@ export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Float
     window_sec:
       liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems_WindowSecSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.floating_gems. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.repeat.enabled. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Repeat_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.repeat.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Repeat_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.repeat. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_RepeatSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Repeat_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.repeat. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Repeat = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.rescue.enabled. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Rescue_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.rescue.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Rescue_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.rescue. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_RescueSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Rescue_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.rescue. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Rescue = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.rewards.enabled. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.rewards.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Rewards_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.rewards. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_RewardsSchema =
   z.strictObject({
     enabled: liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Rewards_EnabledSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.rewards. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Rewards = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.shopping.enabled. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.requested_controls.routines.shopping.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Shopping_Enabled =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Shopping_EnabledSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.shopping.interval_sec. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Shopping_IntervalSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.requested_controls.routines.shopping.interval_sec. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Shopping_IntervalSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Shopping_IntervalSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.requested_controls.routines.shopping. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_ShoppingSchema =
   z.strictObject({
@@ -8777,10 +4372,6 @@ export const liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Shopp
     interval_sec:
       liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Shopping_IntervalSecSchema,
   });
-/** Raw response path: answer.body.battle.requested_controls.routines.shopping. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines_Shopping = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.routines. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_RoutinesSchema = z.strictObject({
   abilities: liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_AbilitiesSchema,
@@ -8791,92 +4382,39 @@ export const liveControlsReadAnswer_Body_Battle_RequestedControls_RoutinesSchema
   rewards: liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_RewardsSchema,
   shopping: liveControlsReadAnswer_Body_Battle_RequestedControls_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.battle.requested_controls.routines. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_Routines = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls.shopping_plan. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControls_ShoppingPlanSchema = z.null();
-/** Raw response path: answer.body.battle.requested_controls.shopping_plan. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls_ShoppingPlan = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControls_ShoppingPlanSchema
->;
 /** Strict raw response path: answer.body.battle.requested_controls. */
 export const liveControlsReadAnswer_Body_Battle_RequestedControlsSchema = z.strictObject({
   routines: liveControlsReadAnswer_Body_Battle_RequestedControls_RoutinesSchema,
   shopping_plan: liveControlsReadAnswer_Body_Battle_RequestedControls_ShoppingPlanSchema,
 });
-/** Raw response path: answer.body.battle.requested_controls. */
-export type LiveControlsReadAnswer_Body_Battle_RequestedControls = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RequestedControlsSchema
->;
 /** Strict raw response path: answer.body.battle.result. */
 export const liveControlsReadAnswer_Body_Battle_ResultSchema = z.string();
-/** Raw response path: answer.body.battle.result. */
-export type LiveControlsReadAnswer_Body_Battle_Result = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_ResultSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.ad_claim_confirmations. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_AdClaimConfirmationsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.ad_claim_confirmations. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_AdClaimConfirmations =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_AdClaimConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.coverage. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_CoverageSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.coverage. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_Coverage = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_CoverageSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.generation. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_GenerationSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.generation. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_Generation = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_GenerationSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_LatestConfirmationsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.battle.runtime.collection_evidence.latest_confirmations. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_LatestConfirmations =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_LatestConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.observed_through_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_ObservedThroughAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.observed_through_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_ObservedThroughAt =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_ObservedThroughAtSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.orbit_balance_confirmations. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_OrbitBalanceConfirmationsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.orbit_balance_confirmations. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_OrbitBalanceConfirmations =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_OrbitBalanceConfirmationsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.orbit_recorded_increase. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_OrbitRecordedIncreaseSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.orbit_recorded_increase. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_OrbitRecordedIncrease =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_OrbitRecordedIncreaseSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence.started_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_StartedAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.collection_evidence.started_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_StartedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_StartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.collection_evidence. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidenceSchema = z.strictObject({
   ad_claim_confirmations:
@@ -8893,98 +4431,42 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidenceSchema
     liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_OrbitRecordedIncreaseSchema,
   started_at: liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence_StartedAtSchema,
 });
-/** Raw response path: answer.body.battle.runtime.collection_evidence. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidence = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidenceSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.driver_generation. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_DriverGenerationSchema = z.string();
-/** Raw response path: answer.body.battle.runtime.driver_generation. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_DriverGeneration = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_DriverGenerationSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.last_wave_provenance. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_LastWaveProvenanceSchema = z.string();
-/** Raw response path: answer.body.battle.runtime.last_wave_provenance. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_LastWaveProvenance = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_LastWaveProvenanceSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observation_gap_started_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_ObservationGapStartedAtSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.observation_gap_started_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_ObservationGapStartedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_ObservationGapStartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observation_gaps. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_ObservationGapsSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battle.runtime.observation_gaps. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_ObservationGaps = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_ObservationGapsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observation_status. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_ObservationStatusSchema = z.enum([
   'observing',
 ]);
-/** Raw response path: answer.body.battle.runtime.observation_status. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_ObservationStatus = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_ObservationStatusSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observed_duration_sec. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_ObservedDurationSecSchema = z.number();
-/** Raw response path: answer.body.battle.runtime.observed_duration_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_ObservedDurationSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_ObservedDurationSecSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.observed_wave. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_ObservedWaveSchema = z.number();
-/** Raw response path: answer.body.battle.runtime.observed_wave. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_ObservedWave = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_ObservedWaveSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.blocker. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_BlockerSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.blocker. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_Blocker = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.next_due_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_NextDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.next_due_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_NextDueAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.server_time. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.server_time. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_ServerTime = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.state. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_StateSchema = z.enum([
   'watching',
 ]);
-/** Raw response path: answer.body.battle.runtime.routines.abilities.state. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_State = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities.window_ends_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.abilities.window_ends_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_WindowEndsAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_WindowEndsAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.abilities. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AbilitiesSchema = z.strictObject({
   blocker: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_BlockerSchema,
@@ -8994,79 +4476,34 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AbilitiesSchema
   state: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_StateSchema,
   window_ends_at: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities_WindowEndsAtSchema,
 });
-/** Raw response path: answer.body.battle.runtime.routines.abilities. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Abilities = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.appearance_after_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_AppearanceAfterAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.appearance_after_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_AppearanceAfterAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_AppearanceAfterAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.blocker. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_BlockerSchema = z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.blocker. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Blocker = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.claim_attempt_id. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ClaimAttemptIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.claim_attempt_id. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ClaimAttemptId = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ClaimAttemptIdSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.claim_rect. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ClaimRectSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.claim_rect. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ClaimRect = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ClaimRectSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.attempts. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_AttemptsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.attempts. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_Attempts = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_AttemptsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.checks. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_ChecksSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.checks. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_Checks = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_ChecksSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.confirmed. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_ConfirmedSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.confirmed. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_Confirmed = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_ConfirmedSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.seen. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_SeenSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.seen. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_Seen = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_SeenSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.skips. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_SkipsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.skips. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_Skips = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_SkipsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters.windows_missed. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_WindowsMissedSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters.windows_missed. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_WindowsMissed =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_WindowsMissedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.counters. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_CountersSchema =
   z.strictObject({
@@ -9078,42 +4515,18 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters
     windows_missed:
       liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters_WindowsMissedSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.counters. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Counters = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_CountersSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations.observed_wait_sec. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_ObservedWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations.observed_wait_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_ObservedWaitSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_ObservedWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations.response_delay_sec. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_ResponseDelaySecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations.response_delay_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_ResponseDelaySec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_ResponseDelaySecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations.scheduling_wait_sec. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_SchedulingWaitSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations.scheduling_wait_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_SchedulingWaitSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_SchedulingWaitSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations.verification_sec. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_VerificationSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations.verification_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_VerificationSec =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_VerificationSecSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.durations. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_DurationsSchema =
   z.strictObject({
@@ -9126,169 +4539,73 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Duration
     verification_sec:
       liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations_VerificationSecSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.durations. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Durations = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_DurationsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_EnabledSchema = z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.first_seen_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_FirstSeenAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.first_seen_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_FirstSeenAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_FirstSeenAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_absent_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastAbsentAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_absent_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastAbsentAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastAbsentAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastFailedAttemptSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_failed_attempt. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastFailedAttempt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastFailedAttemptSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_observed_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastObservedAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_observed_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastObservedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastObservedAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastOutcomeSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_outcome. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastOutcome = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastOutcomeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.last_seen_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastSeenAtSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.last_seen_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastSeenAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_LastSeenAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.manual_active. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ManualActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.manual_active. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ManualActive = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ManualActiveSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.manual_pending. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ManualPendingSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.manual_pending. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ManualPending = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ManualPendingSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.next_check_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_NextCheckAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.next_check_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_NextCheckAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_NextCheckAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.next_due_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.next_due_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_NextDueAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.observation_age_sec. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ObservationAgeSecSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.observation_age_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ObservationAgeSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ObservationAgeSecSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.offer_id. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_OfferIdSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.offer_id. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_OfferId = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_OfferIdSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.response_due_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ResponseDueAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.response_due_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ResponseDueAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ResponseDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.response_started_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ResponseStartedAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.response_started_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ResponseStartedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ResponseStartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.server_time. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.server_time. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ServerTime = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.stale_after_sec. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_StaleAfterSecSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.stale_after_sec. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_StaleAfterSec = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_StaleAfterSecSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.state. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_StateSchema = z.enum([
   'off',
   'scheduled',
 ]);
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.state. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_State = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.visibility. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_VisibilitySchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.visibility. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_Visibility = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_VisibilitySchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.visibility_reason. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_VisibilityReasonSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.visibility_reason. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_VisibilityReason = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_VisibilityReasonSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.window_ends_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.window_ends_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_WindowEndsAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_WindowEndsAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.window_id. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_WindowIdSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.window_id. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_WindowId = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_WindowIdSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems.window_started_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_WindowStartedAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems.window_started_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_WindowStartedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_WindowStartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.ad_gems. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGemsSchema = z.strictObject({
   appearance_after_at:
@@ -9327,97 +4644,44 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGemsSchema = 
   window_started_at:
     liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems_WindowStartedAtSchema,
 });
-/** Raw response path: answer.body.battle.runtime.routines.ad_gems. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_AdGemsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.attempt_id. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_AttemptIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.attempt_id. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_AttemptId = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_AttemptIdSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.blocker. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_BlockerSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.blocker. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_Blocker = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_LastOutcomeSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.last_outcome. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_LastOutcome = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_LastOutcomeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.last_refusal. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_LastRefusalSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.last_refusal. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_LastRefusal = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_LastRefusalSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.manual_active. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_ManualActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.manual_active. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_ManualActive = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_ManualActiveSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.manual_pending. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_ManualPendingSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.manual_pending. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_ManualPending =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_ManualPendingSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.next_due_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.next_due_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_NextDueAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.server_time. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.server_time. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_ServerTime = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.state. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_StateSchema = z.enum([
   'off',
   'scheduled',
 ]);
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.state. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_State = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.window_ends_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.window_ends_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_WindowEndsAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_WindowEndsAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems.window_id. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_WindowIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems.window_id. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_WindowId = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_WindowIdSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.floating_gems. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGemsSchema =
   z.strictObject({
@@ -9439,50 +4703,22 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGemsSch
       liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_WindowEndsAtSchema,
     window_id: liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems_WindowIdSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.floating_gems. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGems = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.blocker. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_BlockerSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.blocker. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_Blocker = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_EnabledSchema = z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.next_due_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_NextDueAtSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.next_due_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_NextDueAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.server_time. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.server_time. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_ServerTime = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.state. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_StateSchema = z.enum([
   'boundary_wait',
 ]);
-/** Raw response path: answer.body.battle.runtime.routines.repeat.state. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_State = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat.window_ends_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.repeat.window_ends_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_WindowEndsAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_WindowEndsAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.repeat. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_RepeatSchema = z.strictObject({
   blocker: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_BlockerSchema,
@@ -9492,50 +4728,22 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_RepeatSchema = 
   state: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_StateSchema,
   window_ends_at: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat_WindowEndsAtSchema,
 });
-/** Raw response path: answer.body.battle.runtime.routines.repeat. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Repeat = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_RepeatSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.blocker. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_BlockerSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.blocker. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_Blocker = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_EnabledSchema = z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.next_due_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_NextDueAtSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.next_due_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_NextDueAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.server_time. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.server_time. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_ServerTime = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.state. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_StateSchema = z.enum([
   'watching',
 ]);
-/** Raw response path: answer.body.battle.runtime.routines.rescue.state. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_State = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue.window_ends_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rescue.window_ends_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_WindowEndsAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_WindowEndsAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rescue. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_RescueSchema = z.strictObject({
   blocker: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_BlockerSchema,
@@ -9545,52 +4753,24 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_RescueSchema = 
   state: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_StateSchema,
   window_ends_at: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue_WindowEndsAtSchema,
 });
-/** Raw response path: answer.body.battle.runtime.routines.rescue. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rescue = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_RescueSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.blocker. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_BlockerSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.blocker. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_Blocker = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.next_due_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_NextDueAtSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.next_due_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_NextDueAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.server_time. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.server_time. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_ServerTime = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.state. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_StateSchema = z.enum([
   'off',
   'watching',
 ]);
-/** Raw response path: answer.body.battle.runtime.routines.rewards.state. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_State = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards.window_ends_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.rewards.window_ends_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_WindowEndsAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_WindowEndsAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.rewards. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_RewardsSchema = z.strictObject({
   blocker: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_BlockerSchema,
@@ -9600,79 +4780,32 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_RewardsSchema =
   state: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_StateSchema,
   window_ends_at: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards_WindowEndsAtSchema,
 });
-/** Raw response path: answer.body.battle.runtime.routines.rewards. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Rewards = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_RewardsSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.blocker. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_BlockerSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.blocker. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_Blocker = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_BlockerSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.enabled. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_EnabledSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.enabled. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_Enabled = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_EnabledSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.active. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ActiveSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.active. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Active =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ActiveSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.attempts. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_AttemptsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.attempts. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Attempts =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_AttemptsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.cadence. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CadenceSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.cadence. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Cadence =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CadenceSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.cash_reserve. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CashReserveSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.cash_reserve. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CashReserve =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CashReserveSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.confirmed_purchases. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ConfirmedPurchasesSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.confirmed_purchases. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ConfirmedPurchases =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ConfirmedPurchasesSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget.purchases. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_PurchasesSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget.purchases. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_Purchases =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_PurchasesSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget.seconds. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget.seconds. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_Seconds =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudgetSchema =
   z.strictObject({
@@ -9681,43 +4814,18 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOu
     seconds:
       liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget_SecondsSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_budget. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudget =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationBudgetSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_ready. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationReadySchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.continuation_ready. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationReady =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ContinuationReadySchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.count_semantics. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CountSemanticsSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.count_semantics. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CountSemantics =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_CountSemanticsSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision.action. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ActionSchema =
   z.enum(['wait']);
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision.action. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_Action =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ActionSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision.reason. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ReasonSchema =
   z.enum(['not_started']);
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision.reason. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_Reason =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ReasonSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_DecisionSchema =
   z.strictObject({
@@ -9726,83 +4834,33 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOu
     reason:
       liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision_ReasonSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.decision. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Decision =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_DecisionSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.last_confirmation. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastConfirmationSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.last_confirmation. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastConfirmation =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastConfirmationSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.last_sweep. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastSweepSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.last_sweep. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastSweep =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_LastSweepSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.manual. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ManualSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.manual. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Manual =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ManualSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.pending_confirmation. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_PendingConfirmationSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.pending_confirmation. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_PendingConfirmation =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_PendingConfirmationSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.quantity_observation_supported. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_QuantityObservationSupportedSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.quantity_observation_supported. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_QuantityObservationSupported =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_QuantityObservationSupportedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.reserve_enforcement. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveEnforcementSchema =
   z.string();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.reserve_enforcement. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveEnforcement =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveEnforcementSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.reserve_supported. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveSupportedSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.reserve_supported. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveSupported =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_ReserveSupportedSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.sweep_id. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_SweepIdSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.sweep_id. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_SweepId =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_SweepIdSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.version. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_VersionSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome.version. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_Version =
-  z.infer<
-    typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_VersionSchema
-  >;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.last_outcome. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcomeSchema =
   z.strictObject({
@@ -9839,39 +4897,19 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOu
       liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_SweepIdSchema,
     version: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome_VersionSchema,
   });
-/** Raw response path: answer.body.battle.runtime.routines.shopping.last_outcome. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcome = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_LastOutcomeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.next_due_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_NextDueAtSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.next_due_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_NextDueAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_NextDueAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.server_time. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_ServerTimeSchema =
   z.number();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.server_time. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_ServerTime = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.state. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_StateSchema = z.enum([
   'scheduled',
 ]);
-/** Raw response path: answer.body.battle.runtime.routines.shopping.state. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_State = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping.window_ends_at. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_WindowEndsAtSchema =
   z.null();
-/** Raw response path: answer.body.battle.runtime.routines.shopping.window_ends_at. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_WindowEndsAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_WindowEndsAtSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines.shopping. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_ShoppingSchema = z.strictObject({
   blocker: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_BlockerSchema,
@@ -9882,10 +4920,6 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_Routines_ShoppingSchema 
   state: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_StateSchema,
   window_ends_at: liveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping_WindowEndsAtSchema,
 });
-/** Raw response path: answer.body.battle.runtime.routines.shopping. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines_Shopping = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Routines_ShoppingSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.routines. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_RoutinesSchema = z.strictObject({
   abilities: liveControlsReadAnswer_Body_Battle_Runtime_Routines_AbilitiesSchema,
@@ -9896,57 +4930,25 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_RoutinesSchema = z.stric
   rewards: liveControlsReadAnswer_Body_Battle_Runtime_Routines_RewardsSchema,
   shopping: liveControlsReadAnswer_Body_Battle_Runtime_Routines_ShoppingSchema,
 });
-/** Raw response path: answer.body.battle.runtime.routines. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Routines = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_RoutinesSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.server_time. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_ServerTimeSchema = z.number();
-/** Raw response path: answer.body.battle.runtime.server_time. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_ServerTime = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_ServerTimeSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.continued_with_partial. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Setup_ContinuedWithPartialSchema =
   z.boolean();
-/** Raw response path: answer.body.battle.runtime.setup.continued_with_partial. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Setup_ContinuedWithPartial = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Setup_ContinuedWithPartialSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.detail. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Setup_DetailSchema = z.string();
-/** Raw response path: answer.body.battle.runtime.setup.detail. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Setup_Detail = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Setup_DetailSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.loadout. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Setup_LoadoutSchema = z.null();
-/** Raw response path: answer.body.battle.runtime.setup.loadout. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Setup_Loadout = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Setup_LoadoutSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.modules. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Setup_ModulesSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.battle.runtime.setup.modules. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Setup_Modules = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Setup_ModulesSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.reason. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Setup_ReasonSchema = z.enum([
   'Setup has not been verified for this battle',
 ]);
-/** Raw response path: answer.body.battle.runtime.setup.reason. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Setup_Reason = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Setup_ReasonSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup.state. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_Setup_StateSchema = z.enum(['unknown']);
-/** Raw response path: answer.body.battle.runtime.setup.state. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Setup_State = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_Setup_StateSchema
->;
 /** Strict raw response path: answer.body.battle.runtime.setup. */
 export const liveControlsReadAnswer_Body_Battle_Runtime_SetupSchema = z.strictObject({
   continued_with_partial:
@@ -9957,10 +4959,6 @@ export const liveControlsReadAnswer_Body_Battle_Runtime_SetupSchema = z.strictOb
   reason: liveControlsReadAnswer_Body_Battle_Runtime_Setup_ReasonSchema,
   state: liveControlsReadAnswer_Body_Battle_Runtime_Setup_StateSchema,
 });
-/** Raw response path: answer.body.battle.runtime.setup. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime_Setup = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Runtime_SetupSchema
->;
 /** Strict raw response path: answer.body.battle.runtime. */
 export const liveControlsReadAnswer_Body_Battle_RuntimeSchema = z.strictObject({
   collection_evidence: liveControlsReadAnswer_Body_Battle_Runtime_CollectionEvidenceSchema,
@@ -9976,35 +4974,15 @@ export const liveControlsReadAnswer_Body_Battle_RuntimeSchema = z.strictObject({
   server_time: liveControlsReadAnswer_Body_Battle_Runtime_ServerTimeSchema,
   setup: liveControlsReadAnswer_Body_Battle_Runtime_SetupSchema,
 });
-/** Raw response path: answer.body.battle.runtime. */
-export type LiveControlsReadAnswer_Body_Battle_Runtime = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_RuntimeSchema
->;
 /** Strict raw response path: answer.body.battle.segments[].ended_at. */
 export const liveControlsReadAnswer_Body_Battle_Segments_ArrayElement_EndedAtSchema = z.null();
-/** Raw response path: answer.body.battle.segments[].ended_at. */
-export type LiveControlsReadAnswer_Body_Battle_Segments_ArrayElement_EndedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Segments_ArrayElement_EndedAtSchema
->;
 /** Strict raw response path: answer.body.battle.segments[].generation. */
 export const liveControlsReadAnswer_Body_Battle_Segments_ArrayElement_GenerationSchema = z.string();
-/** Raw response path: answer.body.battle.segments[].generation. */
-export type LiveControlsReadAnswer_Body_Battle_Segments_ArrayElement_Generation = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Segments_ArrayElement_GenerationSchema
->;
 /** Strict raw response path: answer.body.battle.segments[].operation_id. */
 export const liveControlsReadAnswer_Body_Battle_Segments_ArrayElement_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.battle.segments[].operation_id. */
-export type LiveControlsReadAnswer_Body_Battle_Segments_ArrayElement_OperationId = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Segments_ArrayElement_OperationIdSchema
->;
 /** Strict raw response path: answer.body.battle.segments[].started_at. */
 export const liveControlsReadAnswer_Body_Battle_Segments_ArrayElement_StartedAtSchema = z.number();
-/** Raw response path: answer.body.battle.segments[].started_at. */
-export type LiveControlsReadAnswer_Body_Battle_Segments_ArrayElement_StartedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Segments_ArrayElement_StartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.segments[]. */
 export const liveControlsReadAnswer_Body_Battle_Segments_ArrayElementSchema = z.strictObject({
   ended_at: liveControlsReadAnswer_Body_Battle_Segments_ArrayElement_EndedAtSchema,
@@ -10012,60 +4990,24 @@ export const liveControlsReadAnswer_Body_Battle_Segments_ArrayElementSchema = z.
   operation_id: liveControlsReadAnswer_Body_Battle_Segments_ArrayElement_OperationIdSchema,
   started_at: liveControlsReadAnswer_Body_Battle_Segments_ArrayElement_StartedAtSchema,
 });
-/** Raw response path: answer.body.battle.segments[]. */
-export type LiveControlsReadAnswer_Body_Battle_Segments_ArrayElement = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_Segments_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.battle.segments. */
 export const liveControlsReadAnswer_Body_Battle_SegmentsSchema = z.array(
   liveControlsReadAnswer_Body_Battle_Segments_ArrayElementSchema,
 );
-/** Raw response path: answer.body.battle.segments. */
-export type LiveControlsReadAnswer_Body_Battle_Segments = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_SegmentsSchema
->;
 /** Strict raw response path: answer.body.battle.start_certainty. */
 export const liveControlsReadAnswer_Body_Battle_StartCertaintySchema = z.string();
-/** Raw response path: answer.body.battle.start_certainty. */
-export type LiveControlsReadAnswer_Body_Battle_StartCertainty = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_StartCertaintySchema
->;
 /** Strict raw response path: answer.body.battle.started_at. */
 export const liveControlsReadAnswer_Body_Battle_StartedAtSchema = z.number();
-/** Raw response path: answer.body.battle.started_at. */
-export type LiveControlsReadAnswer_Body_Battle_StartedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_StartedAtSchema
->;
 /** Strict raw response path: answer.body.battle.status. */
 export const liveControlsReadAnswer_Body_Battle_StatusSchema = z.enum(['active']);
-/** Raw response path: answer.body.battle.status. */
-export type LiveControlsReadAnswer_Body_Battle_Status = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_StatusSchema
->;
 /** Strict raw response path: answer.body.battle.tier. */
 export const liveControlsReadAnswer_Body_Battle_TierSchema = z.number();
-/** Raw response path: answer.body.battle.tier. */
-export type LiveControlsReadAnswer_Body_Battle_Tier = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_TierSchema
->;
 /** Strict raw response path: answer.body.battle.updated_at. */
 export const liveControlsReadAnswer_Body_Battle_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.battle.updated_at. */
-export type LiveControlsReadAnswer_Body_Battle_UpdatedAt = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.battle.wave. */
 export const liveControlsReadAnswer_Body_Battle_WaveSchema = z.number();
-/** Raw response path: answer.body.battle.wave. */
-export type LiveControlsReadAnswer_Body_Battle_Wave = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_WaveSchema
->;
 /** Strict raw response path: answer.body.battle.wave_provenance. */
 export const liveControlsReadAnswer_Body_Battle_WaveProvenanceSchema = z.string();
-/** Raw response path: answer.body.battle.wave_provenance. */
-export type LiveControlsReadAnswer_Body_Battle_WaveProvenance = z.infer<
-  typeof liveControlsReadAnswer_Body_Battle_WaveProvenanceSchema
->;
 /** Strict raw response path: answer.body.battle. */
 export const liveControlsReadAnswer_Body_BattleSchema = z.strictObject({
   applied_controls: liveControlsReadAnswer_Body_Battle_AppliedControlsSchema,
@@ -10106,84 +5048,32 @@ export const liveControlsReadAnswer_Body_BattleSchema = z.strictObject({
   wave: liveControlsReadAnswer_Body_Battle_WaveSchema,
   wave_provenance: liveControlsReadAnswer_Body_Battle_WaveProvenanceSchema,
 });
-/** Raw response path: answer.body.battle. */
-export type LiveControlsReadAnswer_Body_Battle = z.infer<
-  typeof liveControlsReadAnswer_Body_BattleSchema
->;
 /** Strict raw response path: answer.body.catalog[].availability. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElement_AvailabilitySchema = z.string();
-/** Raw response path: answer.body.catalog[].availability. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement_Availability = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElement_AvailabilitySchema
->;
 /** Strict raw response path: answer.body.catalog[].excluded_by_default. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElement_ExcludedByDefaultSchema = z.boolean();
-/** Raw response path: answer.body.catalog[].excluded_by_default. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement_ExcludedByDefault = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElement_ExcludedByDefaultSchema
->;
 /** Strict raw response path: answer.body.catalog[].exclusion_reason. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElement_ExclusionReasonSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.catalog[].exclusion_reason. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement_ExclusionReason = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElement_ExclusionReasonSchema
->;
 /** Strict raw response path: answer.body.catalog[].game_order. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElement_GameOrderSchema = z.null();
-/** Raw response path: answer.body.catalog[].game_order. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement_GameOrder = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElement_GameOrderSchema
->;
 /** Strict raw response path: answer.body.catalog[].id. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElement_IdSchema = z.string();
-/** Raw response path: answer.body.catalog[].id. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement_Id = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElement_IdSchema
->;
 /** Strict raw response path: answer.body.catalog[].label. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElement_LabelSchema = z.string();
-/** Raw response path: answer.body.catalog[].label. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement_Label = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElement_LabelSchema
->;
 /** Strict raw response path: answer.body.catalog[].order. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElement_OrderSchema = z.number();
-/** Raw response path: answer.body.catalog[].order. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement_Order = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElement_OrderSchema
->;
 /** Strict raw response path: answer.body.catalog[].order_provenance. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElement_OrderProvenanceSchema = z.string();
-/** Raw response path: answer.body.catalog[].order_provenance. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement_OrderProvenance = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElement_OrderProvenanceSchema
->;
 /** Strict raw response path: answer.body.catalog[].order_verified. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElement_OrderVerifiedSchema = z.boolean();
-/** Raw response path: answer.body.catalog[].order_verified. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement_OrderVerified = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElement_OrderVerifiedSchema
->;
 /** Strict raw response path: answer.body.catalog[].recognition. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElement_RecognitionSchema = z.string();
-/** Raw response path: answer.body.catalog[].recognition. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement_Recognition = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElement_RecognitionSchema
->;
 /** Strict raw response path: answer.body.catalog[].section. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElement_SectionSchema = z.string();
-/** Raw response path: answer.body.catalog[].section. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement_Section = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElement_SectionSchema
->;
 /** Strict raw response path: answer.body.catalog[].tab. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElement_TabSchema = z.string();
-/** Raw response path: answer.body.catalog[].tab. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement_Tab = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElement_TabSchema
->;
 /** Strict raw response path: answer.body.catalog[]. */
 export const liveControlsReadAnswer_Body_Catalog_ArrayElementSchema = z.strictObject({
   availability: liveControlsReadAnswer_Body_Catalog_ArrayElement_AvailabilitySchema,
@@ -10199,36 +5089,20 @@ export const liveControlsReadAnswer_Body_Catalog_ArrayElementSchema = z.strictOb
   section: liveControlsReadAnswer_Body_Catalog_ArrayElement_SectionSchema,
   tab: liveControlsReadAnswer_Body_Catalog_ArrayElement_TabSchema,
 });
-/** Raw response path: answer.body.catalog[]. */
-export type LiveControlsReadAnswer_Body_Catalog_ArrayElement = z.infer<
-  typeof liveControlsReadAnswer_Body_Catalog_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.catalog. */
 export const liveControlsReadAnswer_Body_CatalogSchema = z.array(
   liveControlsReadAnswer_Body_Catalog_ArrayElementSchema,
 );
-/** Raw response path: answer.body.catalog. */
-export type LiveControlsReadAnswer_Body_Catalog = z.infer<
-  typeof liveControlsReadAnswer_Body_CatalogSchema
->;
 /** Strict raw response path: answer.body.server_time. */
 export const liveControlsReadAnswer_Body_ServerTimeSchema = z.number();
-/** Raw response path: answer.body.server_time. */
-export type LiveControlsReadAnswer_Body_ServerTime = z.infer<
-  typeof liveControlsReadAnswer_Body_ServerTimeSchema
->;
 /** Strict raw response path: answer.body. */
 export const liveControlsReadAnswer_BodySchema = z.strictObject({
   battle: liveControlsReadAnswer_Body_BattleSchema,
   catalog: liveControlsReadAnswer_Body_CatalogSchema,
   server_time: liveControlsReadAnswer_Body_ServerTimeSchema,
 });
-/** Raw response path: answer.body. */
-export type LiveControlsReadAnswer_Body = z.infer<typeof liveControlsReadAnswer_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const liveControlsReadAnswer_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type LiveControlsReadAnswer_Status = z.infer<typeof liveControlsReadAnswer_StatusSchema>;
 /** Strict raw response path: answer. */
 export const liveControlsReadAnswerSchema = z.strictObject({
   body: liveControlsReadAnswer_BodySchema,

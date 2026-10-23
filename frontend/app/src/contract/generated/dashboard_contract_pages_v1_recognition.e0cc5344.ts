@@ -7,157 +7,64 @@ export const fixtureVersionSchema = z.literal(1);
 export type FixtureVersion = z.infer<typeof fixtureVersionSchema>;
 /** Strict raw response path: answer.body.activity. */
 export const recognitionStatusAnswer_Status200V1_Body_ActivitySchema = z.null();
-/** Raw response path: answer.body.activity. */
-export type RecognitionStatusAnswer_Status200V1_Body_Activity = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_ActivitySchema
->;
 /** Strict raw response path: answer.body.artifact_errors.report. */
 export const recognitionStatusAnswer_Status200V1_Body_ArtifactErrors_ReportSchema = z.string();
-/** Raw response path: answer.body.artifact_errors.report. */
-export type RecognitionStatusAnswer_Status200V1_Body_ArtifactErrors_Report = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_ArtifactErrors_ReportSchema
->;
 /** Strict raw response path: answer.body.artifact_errors.state. */
 export const recognitionStatusAnswer_Status200V1_Body_ArtifactErrors_StateSchema = z.enum([
   'Saved calibrate_state.json belongs to another operation',
   "Saved calibrate_state.json is unavailable: [Errno 2] No such file or directory: '<root>/logs/main/calibrate_state.json'",
 ]);
-/** Raw response path: answer.body.artifact_errors.state. */
-export type RecognitionStatusAnswer_Status200V1_Body_ArtifactErrors_State = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_ArtifactErrors_StateSchema
->;
 /** Strict raw response path: answer.body.artifact_errors. */
 export const recognitionStatusAnswer_Status200V1_Body_ArtifactErrorsSchema = z.strictObject({
   report: recognitionStatusAnswer_Status200V1_Body_ArtifactErrors_ReportSchema.optional(),
   state: recognitionStatusAnswer_Status200V1_Body_ArtifactErrors_StateSchema.optional(),
 });
-/** Raw response path: answer.body.artifact_errors. */
-export type RecognitionStatusAnswer_Status200V1_Body_ArtifactErrors = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_ArtifactErrorsSchema
->;
 /** Strict raw response path: answer.body.card_manifest. */
 export const recognitionStatusAnswer_Status200V1_Body_CardManifestSchema = z.strictObject({});
-/** Raw response path: answer.body.card_manifest. */
-export type RecognitionStatusAnswer_Status200V1_Body_CardManifest = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_CardManifestSchema
->;
 /** Strict raw response path: answer.body.manifest. */
 export const recognitionStatusAnswer_Status200V1_Body_ManifestSchema = z.strictObject({});
-/** Raw response path: answer.body.manifest. */
-export type RecognitionStatusAnswer_Status200V1_Body_Manifest = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_ManifestSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_CancellableSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Cancellable = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_Account =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AccountSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AdbHost =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AdbHostSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AdbPort =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AdbPortSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ArtifactDir =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ArtifactDirSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ConfigRevision =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_DeviceKey =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_DeviceKeySchema
-  >;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_Instance =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_Profile =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfileSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfilePath =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfilePathSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfileRevision =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_Rendering =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_RenderingSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SelectedRunSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SelectedRun =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SelectedRunSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_Serial =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SerialSchema
-  >;
 /** Strict raw response path: answer.body.operation.context. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ContextSchema =
   z.strictObject({
@@ -185,77 +92,32 @@ export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Co
       recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SelectedRunSchema,
     serial: recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SerialSchema,
   });
-/** Raw response path: answer.body.operation.context. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Context = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_CreatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_CreatedAt = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ErrorSchema =
   z.null();
-/** Raw response path: answer.body.operation.error. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Error = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Id = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_IdempotencyKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_IdempotencyKey =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_IdempotencyKeySchema
-  >;
 /** Strict raw response path: answer.body.operation.progress. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ProgressSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Progress = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_RecoveryAction =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_RecoveryActionSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.bootstrap. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Request_BootstrapSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.request.bootstrap. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Request_Bootstrap =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Request_BootstrapSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.flows. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Request_FlowsSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.request.flows. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Request_Flows =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Request_FlowsSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.phases. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Request_PhasesSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.phases. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Request_Phases =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Request_PhasesSchema
-  >;
 /** Strict raw response path: answer.body.operation.request. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_RequestSchema =
   z.strictObject({
@@ -265,26 +127,12 @@ export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Re
       recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Request_FlowsSchema.optional(),
     phases: recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Request_PhasesSchema,
   });
-/** Raw response path: answer.body.operation.request. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Request = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_report.json.path. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateReportJson_PathSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_report.json.path. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateReportJson_Path =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateReportJson_PathSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_report.json.revision. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateReportJson_RevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_report.json.revision. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateReportJson_Revision =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateReportJson_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_report.json. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateReportJsonSchema =
   z.strictObject({
@@ -292,27 +140,12 @@ export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Re
     revision:
       recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateReportJson_RevisionSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.calibrate_report.json. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateReportJson =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateReportJsonSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_PathSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_Path =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_PathSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_RevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_Revision =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJsonSchema =
   z.strictObject({
@@ -320,11 +153,6 @@ export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Re
     revision:
       recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_RevisionSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJsonSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefsSchema =
   z.strictObject({
@@ -333,54 +161,25 @@ export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Re
     'calibrate_state.json':
       recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJsonSchema.optional(),
   });
-/** Raw response path: answer.body.operation.result_refs. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_RevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Revision = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_StatusSchema = z.enum(
   ['awaiting_apply', 'running'],
 );
-/** Raw response path: answer.body.operation.status. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_StepSchema =
   z.string();
-/** Raw response path: answer.body.operation.step. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Step = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_UpdatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_UpdatedAt = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_CreationTimeSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_CreationTime =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_CreationTimeSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_PidSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_Pid = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_WorkerSchema = z
   .strictObject({
@@ -389,10 +188,6 @@ export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Wo
     pid: recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_PidSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.worker. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_Worker = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation, variant: kind calibrate. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrateSchema =
   z.strictObject({
@@ -415,120 +210,48 @@ export const recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrateSch
     updated_at: recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_UpdatedAtSchema,
     worker: recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate_WorkerSchema,
   });
-/** Raw response path: answer.body.operation, variant: kind calibrate. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrate = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindCalibrateSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_CancellableSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Cancellable = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_Account =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_AccountSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_AdbHost =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_AdbHostSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_AdbPort =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_AdbPortSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ArtifactDir =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ArtifactDirSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ConfigRevision =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_DeviceKey =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_DeviceKeySchema
-  >;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_Instance =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_Profile =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfileSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfilePath =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfilePathSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfileRevision =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_Rendering =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_RenderingSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_SelectedRunSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_SelectedRun =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_SelectedRunSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_Serial = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_ContextSchema =
   z.strictObject({
@@ -553,116 +276,51 @@ export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Cont
       recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_SelectedRunSchema,
     serial: recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context_SerialSchema,
   });
-/** Raw response path: answer.body.operation.context. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Context = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_CreatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_CreatedAt = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_ErrorSchema = z.null();
-/** Raw response path: answer.body.operation.error. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Error = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Id = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_IdempotencyKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_IdempotencyKey = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_ProgressSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Progress = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_RecoveryAction = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request.watch. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Request_WatchSchema =
   z.number();
-/** Raw response path: answer.body.operation.request.watch. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Request_Watch = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Request_WatchSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_RequestSchema =
   z.strictObject({
     watch: recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Request_WatchSchema,
   });
-/** Raw response path: answer.body.operation.request. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Request = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_ResultRefsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.result_refs. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_ResultRefs = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_RevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Revision = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_StatusSchema = z.enum([
   'running',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Step = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_UpdatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_UpdatedAt = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Worker_CreationTimeSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Worker_CreationTime =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Worker_CreationTimeSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Worker_PidSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Worker_Pid = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_WorkerSchema =
   z.strictObject({
@@ -670,10 +328,6 @@ export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Work
       recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Worker_CreationTimeSchema,
     pid: recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Worker_PidSchema,
   });
-/** Raw response path: answer.body.operation.worker. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_Worker = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation, variant: kind observe. */
 export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserveSchema = z.strictObject({
   cancellable: recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_CancellableSchema,
@@ -695,10 +349,6 @@ export const recognitionStatusAnswer_Status200V1_Body_Operation_KindObserveSchem
   updated_at: recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_UpdatedAtSchema,
   worker: recognitionStatusAnswer_Status200V1_Body_Operation_KindObserve_WorkerSchema,
 });
-/** Raw response path: answer.body.operation, variant: kind observe. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation_KindObserve = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Operation_KindObserveSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const recognitionStatusAnswer_Status200V1_Body_OperationSchema = z.discriminatedUnion(
   'kind',
@@ -707,73 +357,29 @@ export const recognitionStatusAnswer_Status200V1_Body_OperationSchema = z.discri
     recognitionStatusAnswer_Status200V1_Body_Operation_KindObserveSchema,
   ],
 );
-/** Raw response path: answer.body.operation. */
-export type RecognitionStatusAnswer_Status200V1_Body_Operation = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_OperationSchema
->;
 /** Strict raw response path: answer.body.report. */
 export const recognitionStatusAnswer_Status200V1_Body_ReportSchema = z.strictObject({});
-/** Raw response path: answer.body.report. */
-export type RecognitionStatusAnswer_Status200V1_Body_Report = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_ReportSchema
->;
 /** Strict raw response path: answer.body.restore_pending. */
 export const recognitionStatusAnswer_Status200V1_Body_RestorePendingSchema = z.boolean();
-/** Raw response path: answer.body.restore_pending. */
-export type RecognitionStatusAnswer_Status200V1_Body_RestorePending = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_RestorePendingSchema
->;
 /** Strict raw response path: answer.body.running. */
 export const recognitionStatusAnswer_Status200V1_Body_RunningSchema = z.boolean();
-/** Raw response path: answer.body.running. */
-export type RecognitionStatusAnswer_Status200V1_Body_Running = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_RunningSchema
->;
 /** Strict raw response path: answer.body.selection.bootstrap. */
 export const recognitionStatusAnswer_Status200V1_Body_Selection_BootstrapSchema = z.boolean();
-/** Raw response path: answer.body.selection.bootstrap. */
-export type RecognitionStatusAnswer_Status200V1_Body_Selection_Bootstrap = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Selection_BootstrapSchema
->;
 /** Strict raw response path: answer.body.selection.flows. */
 export const recognitionStatusAnswer_Status200V1_Body_Selection_FlowsSchema = z.boolean();
-/** Raw response path: answer.body.selection.flows. */
-export type RecognitionStatusAnswer_Status200V1_Body_Selection_Flows = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Selection_FlowsSchema
->;
 /** Strict raw response path: answer.body.selection.mode. */
 export const recognitionStatusAnswer_Status200V1_Body_Selection_ModeSchema = z.string();
-/** Raw response path: answer.body.selection.mode. */
-export type RecognitionStatusAnswer_Status200V1_Body_Selection_Mode = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Selection_ModeSchema
->;
 /** Strict raw response path: answer.body.selection.phases[]. */
 export const recognitionStatusAnswer_Status200V1_Body_Selection_Phases_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.selection.phases[]. */
-export type RecognitionStatusAnswer_Status200V1_Body_Selection_Phases_ArrayElement = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Selection_Phases_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.selection.phases. */
 export const recognitionStatusAnswer_Status200V1_Body_Selection_PhasesSchema = z.array(
   recognitionStatusAnswer_Status200V1_Body_Selection_Phases_ArrayElementSchema,
 );
-/** Raw response path: answer.body.selection.phases. */
-export type RecognitionStatusAnswer_Status200V1_Body_Selection_Phases = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Selection_PhasesSchema
->;
 /** Strict raw response path: answer.body.selection.taps. */
 export const recognitionStatusAnswer_Status200V1_Body_Selection_TapsSchema = z.boolean();
-/** Raw response path: answer.body.selection.taps. */
-export type RecognitionStatusAnswer_Status200V1_Body_Selection_Taps = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Selection_TapsSchema
->;
 /** Strict raw response path: answer.body.selection.watch. */
 export const recognitionStatusAnswer_Status200V1_Body_Selection_WatchSchema = z.number();
-/** Raw response path: answer.body.selection.watch. */
-export type RecognitionStatusAnswer_Status200V1_Body_Selection_Watch = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_Selection_WatchSchema
->;
 /** Strict raw response path: answer.body.selection. */
 export const recognitionStatusAnswer_Status200V1_Body_SelectionSchema = z.strictObject({
   bootstrap: recognitionStatusAnswer_Status200V1_Body_Selection_BootstrapSchema.optional(),
@@ -783,177 +389,84 @@ export const recognitionStatusAnswer_Status200V1_Body_SelectionSchema = z.strict
   taps: recognitionStatusAnswer_Status200V1_Body_Selection_TapsSchema,
   watch: recognitionStatusAnswer_Status200V1_Body_Selection_WatchSchema.optional(),
 });
-/** Raw response path: answer.body.selection. */
-export type RecognitionStatusAnswer_Status200V1_Body_Selection = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_SelectionSchema
->;
 /** Strict raw response path: answer.body.state.activity.kind. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Activity_KindSchema = z.enum([
   'calibrate_progress',
 ]);
-/** Raw response path: answer.body.state.activity.kind. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Activity_Kind = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Activity_KindSchema
->;
 /** Strict raw response path: answer.body.state.activity.phase. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Activity_PhaseSchema = z.string();
-/** Raw response path: answer.body.state.activity.phase. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Activity_Phase = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Activity_PhaseSchema
->;
 /** Strict raw response path: answer.body.state.activity.t. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Activity_TSchema = z.number();
-/** Raw response path: answer.body.state.activity.t. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Activity_T = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Activity_TSchema
->;
 /** Strict raw response path: answer.body.state.activity. */
 export const recognitionStatusAnswer_Status200V1_Body_State_ActivitySchema = z.strictObject({
   kind: recognitionStatusAnswer_Status200V1_Body_State_Activity_KindSchema,
   phase: recognitionStatusAnswer_Status200V1_Body_State_Activity_PhaseSchema,
   t: recognitionStatusAnswer_Status200V1_Body_State_Activity_TSchema,
 });
-/** Raw response path: answer.body.state.activity. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Activity = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_ActivitySchema
->;
 /** Strict raw response path: answer.body.state.operation_id. */
 export const recognitionStatusAnswer_Status200V1_Body_State_OperationIdSchema = z.string();
-/** Raw response path: answer.body.state.operation_id. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_OperationId = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_OperationIdSchema
->;
 /** Strict raw response path: answer.body.state.phases.cards.status. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Phases_Cards_StatusSchema = z.enum([
   'done',
 ]);
-/** Raw response path: answer.body.state.phases.cards.status. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Phases_Cards_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Phases_Cards_StatusSchema
->;
 /** Strict raw response path: answer.body.state.phases.cards. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Phases_CardsSchema = z.strictObject({
   status: recognitionStatusAnswer_Status200V1_Body_State_Phases_Cards_StatusSchema,
 });
-/** Raw response path: answer.body.state.phases.cards. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Phases_Cards = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Phases_CardsSchema
->;
 /** Strict raw response path: answer.body.state.phases.guild.error. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Phases_Guild_ErrorSchema = z.string();
-/** Raw response path: answer.body.state.phases.guild.error. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Phases_Guild_Error = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Phases_Guild_ErrorSchema
->;
 /** Strict raw response path: answer.body.state.phases.guild.status. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Phases_Guild_StatusSchema = z.enum([
   'failed',
 ]);
-/** Raw response path: answer.body.state.phases.guild.status. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Phases_Guild_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Phases_Guild_StatusSchema
->;
 /** Strict raw response path: answer.body.state.phases.guild. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Phases_GuildSchema = z.strictObject({
   error: recognitionStatusAnswer_Status200V1_Body_State_Phases_Guild_ErrorSchema,
   status: recognitionStatusAnswer_Status200V1_Body_State_Phases_Guild_StatusSchema,
 });
-/** Raw response path: answer.body.state.phases.guild. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Phases_Guild = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Phases_GuildSchema
->;
 /** Strict raw response path: answer.body.state.phases.modules.status. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Phases_Modules_StatusSchema = z.enum([
   'done',
 ]);
-/** Raw response path: answer.body.state.phases.modules.status. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Phases_Modules_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Phases_Modules_StatusSchema
->;
 /** Strict raw response path: answer.body.state.phases.modules. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Phases_ModulesSchema = z.strictObject({
   status: recognitionStatusAnswer_Status200V1_Body_State_Phases_Modules_StatusSchema,
 });
-/** Raw response path: answer.body.state.phases.modules. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Phases_Modules = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Phases_ModulesSchema
->;
 /** Strict raw response path: answer.body.state.phases. */
 export const recognitionStatusAnswer_Status200V1_Body_State_PhasesSchema = z.strictObject({
   cards: recognitionStatusAnswer_Status200V1_Body_State_Phases_CardsSchema,
   guild: recognitionStatusAnswer_Status200V1_Body_State_Phases_GuildSchema,
   modules: recognitionStatusAnswer_Status200V1_Body_State_Phases_ModulesSchema,
 });
-/** Raw response path: answer.body.state.phases. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Phases = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_PhasesSchema
->;
 /** Strict raw response path: answer.body.state.player.abilities.nuke. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Player_Abilities_NukeSchema =
   z.boolean();
-/** Raw response path: answer.body.state.player.abilities.nuke. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Player_Abilities_Nuke = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Player_Abilities_NukeSchema
->;
 /** Strict raw response path: answer.body.state.player.abilities. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Player_AbilitiesSchema = z.strictObject(
   { nuke: recognitionStatusAnswer_Status200V1_Body_State_Player_Abilities_NukeSchema },
 );
-/** Raw response path: answer.body.state.player.abilities. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Player_Abilities = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Player_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.state.player.card_presets[]. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Player_CardPresets_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.state.player.card_presets[]. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Player_CardPresets_ArrayElement =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V1_Body_State_Player_CardPresets_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.state.player.card_presets. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Player_CardPresetsSchema = z.array(
   recognitionStatusAnswer_Status200V1_Body_State_Player_CardPresets_ArrayElementSchema,
 );
-/** Raw response path: answer.body.state.player.card_presets. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Player_CardPresets = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Player_CardPresetsSchema
->;
 /** Strict raw response path: answer.body.state.player.max_tier. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Player_MaxTierSchema = z.number();
-/** Raw response path: answer.body.state.player.max_tier. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Player_MaxTier = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Player_MaxTierSchema
->;
 /** Strict raw response path: answer.body.state.player.uws.chain_lightning. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Player_Uws_ChainLightningSchema =
   z.boolean();
-/** Raw response path: answer.body.state.player.uws.chain_lightning. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Player_Uws_ChainLightning = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Player_Uws_ChainLightningSchema
->;
 /** Strict raw response path: answer.body.state.player.uws.death_wave. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Player_Uws_DeathWaveSchema =
   z.boolean();
-/** Raw response path: answer.body.state.player.uws.death_wave. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Player_Uws_DeathWave = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Player_Uws_DeathWaveSchema
->;
 /** Strict raw response path: answer.body.state.player.uws. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Player_UwsSchema = z.strictObject({
   chain_lightning: recognitionStatusAnswer_Status200V1_Body_State_Player_Uws_ChainLightningSchema,
   death_wave: recognitionStatusAnswer_Status200V1_Body_State_Player_Uws_DeathWaveSchema,
 });
-/** Raw response path: answer.body.state.player.uws. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Player_Uws = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Player_UwsSchema
->;
 /** Strict raw response path: answer.body.state.player.wall. */
 export const recognitionStatusAnswer_Status200V1_Body_State_Player_WallSchema = z.boolean();
-/** Raw response path: answer.body.state.player.wall. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Player_Wall = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_Player_WallSchema
->;
 /** Strict raw response path: answer.body.state.player. */
 export const recognitionStatusAnswer_Status200V1_Body_State_PlayerSchema = z.strictObject({
   abilities: recognitionStatusAnswer_Status200V1_Body_State_Player_AbilitiesSchema,
@@ -962,46 +475,22 @@ export const recognitionStatusAnswer_Status200V1_Body_State_PlayerSchema = z.str
   uws: recognitionStatusAnswer_Status200V1_Body_State_Player_UwsSchema,
   wall: recognitionStatusAnswer_Status200V1_Body_State_Player_WallSchema,
 });
-/** Raw response path: answer.body.state.player. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_Player = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_PlayerSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle.id. */
 export const recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_IdSchema = z.string();
-/** Raw response path: answer.body.state.setup_battle.id. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_SetupBattle_Id = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_IdSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle.operation_id. */
 export const recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.state.setup_battle.operation_id. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_SetupBattle_OperationId = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_OperationIdSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle.reason. */
 export const recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_ReasonSchema = z.enum([
   'consented setup battle',
 ]);
-/** Raw response path: answer.body.state.setup_battle.reason. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_SetupBattle_Reason = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_ReasonSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle.started_at. */
 export const recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_StartedAtSchema =
   z.number();
-/** Raw response path: answer.body.state.setup_battle.started_at. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_SetupBattle_StartedAt = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_StartedAtSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle.status. */
 export const recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_StatusSchema = z.enum([
   'active',
 ]);
-/** Raw response path: answer.body.state.setup_battle.status. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_SetupBattle_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_StatusSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle. */
 export const recognitionStatusAnswer_Status200V1_Body_State_SetupBattleSchema = z.strictObject({
   id: recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_IdSchema,
@@ -1010,10 +499,6 @@ export const recognitionStatusAnswer_Status200V1_Body_State_SetupBattleSchema = 
   started_at: recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_StartedAtSchema,
   status: recognitionStatusAnswer_Status200V1_Body_State_SetupBattle_StatusSchema,
 });
-/** Raw response path: answer.body.state.setup_battle. */
-export type RecognitionStatusAnswer_Status200V1_Body_State_SetupBattle = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_State_SetupBattleSchema
->;
 /** Strict raw response path: answer.body.state. */
 export const recognitionStatusAnswer_Status200V1_Body_StateSchema = z.strictObject({
   activity: recognitionStatusAnswer_Status200V1_Body_State_ActivitySchema.optional(),
@@ -1022,16 +507,8 @@ export const recognitionStatusAnswer_Status200V1_Body_StateSchema = z.strictObje
   player: recognitionStatusAnswer_Status200V1_Body_State_PlayerSchema.optional(),
   setup_battle: recognitionStatusAnswer_Status200V1_Body_State_SetupBattleSchema.optional(),
 });
-/** Raw response path: answer.body.state. */
-export type RecognitionStatusAnswer_Status200V1_Body_State = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_StateSchema
->;
 /** Strict raw response path: answer.body.taps_allowed. */
 export const recognitionStatusAnswer_Status200V1_Body_TapsAllowedSchema = z.boolean();
-/** Raw response path: answer.body.taps_allowed. */
-export type RecognitionStatusAnswer_Status200V1_Body_TapsAllowed = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_Body_TapsAllowedSchema
->;
 /** Strict raw response path: answer.body. */
 export const recognitionStatusAnswer_Status200V1_BodySchema = z.strictObject({
   activity: recognitionStatusAnswer_Status200V1_Body_ActivitySchema,
@@ -1046,79 +523,37 @@ export const recognitionStatusAnswer_Status200V1_BodySchema = z.strictObject({
   state: recognitionStatusAnswer_Status200V1_Body_StateSchema,
   taps_allowed: recognitionStatusAnswer_Status200V1_Body_TapsAllowedSchema,
 });
-/** Raw response path: answer.body. */
-export type RecognitionStatusAnswer_Status200V1_Body = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const recognitionStatusAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type RecognitionStatusAnswer_Status200V1_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members activity, artifact_errors, card_manifest, manifest, operation, report, restore_pending, running, selection, state, taps_allowed. */
 export const recognitionStatusAnswer_Status200V1Schema = z.strictObject({
   body: recognitionStatusAnswer_Status200V1_BodySchema,
   status: recognitionStatusAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members activity, artifact_errors, card_manifest, manifest, operation, report, restore_pending, running, selection, state, taps_allowed. */
-export type RecognitionStatusAnswer_Status200V1 = z.infer<
-  typeof recognitionStatusAnswer_Status200V1Schema
->;
 /** Strict raw response path: answer.body.activity. */
 export const recognitionStatusAnswer_Status200V2_Body_ActivitySchema = z.null();
-/** Raw response path: answer.body.activity. */
-export type RecognitionStatusAnswer_Status200V2_Body_Activity = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_ActivitySchema
->;
 /** Strict raw response path: answer.body.card_manifest.cards.main_farm.slot. */
 export const recognitionStatusAnswer_Status200V2_Body_CardManifest_Cards_MainFarm_SlotSchema =
   z.number();
-/** Raw response path: answer.body.card_manifest.cards.main_farm.slot. */
-export type RecognitionStatusAnswer_Status200V2_Body_CardManifest_Cards_MainFarm_Slot = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_CardManifest_Cards_MainFarm_SlotSchema
->;
 /** Strict raw response path: answer.body.card_manifest.cards.main_farm. */
 export const recognitionStatusAnswer_Status200V2_Body_CardManifest_Cards_MainFarmSchema =
   z.strictObject({
     slot: recognitionStatusAnswer_Status200V2_Body_CardManifest_Cards_MainFarm_SlotSchema,
   });
-/** Raw response path: answer.body.card_manifest.cards.main_farm. */
-export type RecognitionStatusAnswer_Status200V2_Body_CardManifest_Cards_MainFarm = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_CardManifest_Cards_MainFarmSchema
->;
 /** Strict raw response path: answer.body.card_manifest.cards. */
 export const recognitionStatusAnswer_Status200V2_Body_CardManifest_CardsSchema = z.strictObject({
   main_farm: recognitionStatusAnswer_Status200V2_Body_CardManifest_Cards_MainFarmSchema,
 });
-/** Raw response path: answer.body.card_manifest.cards. */
-export type RecognitionStatusAnswer_Status200V2_Body_CardManifest_Cards = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_CardManifest_CardsSchema
->;
 /** Strict raw response path: answer.body.card_manifest. */
 export const recognitionStatusAnswer_Status200V2_Body_CardManifestSchema = z.strictObject({
   cards: recognitionStatusAnswer_Status200V2_Body_CardManifest_CardsSchema.optional(),
 });
-/** Raw response path: answer.body.card_manifest. */
-export type RecognitionStatusAnswer_Status200V2_Body_CardManifest = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_CardManifestSchema
->;
 /** Strict raw response path: answer.body.manifest.modules.black_hole_digestor.rarity. */
 export const recognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHoleDigestor_RaritySchema =
   z.string();
-/** Raw response path: answer.body.manifest.modules.black_hole_digestor.rarity. */
-export type RecognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHoleDigestor_Rarity =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHoleDigestor_RaritySchema
-  >;
 /** Strict raw response path: answer.body.manifest.modules.black_hole_digestor.slot. */
 export const recognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHoleDigestor_SlotSchema =
   z.number();
-/** Raw response path: answer.body.manifest.modules.black_hole_digestor.slot. */
-export type RecognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHoleDigestor_Slot =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHoleDigestor_SlotSchema
-  >;
 /** Strict raw response path: answer.body.manifest.modules.black_hole_digestor. */
 export const recognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHoleDigestorSchema =
   z.strictObject({
@@ -1126,117 +561,49 @@ export const recognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHole
       recognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHoleDigestor_RaritySchema,
     slot: recognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHoleDigestor_SlotSchema,
   });
-/** Raw response path: answer.body.manifest.modules.black_hole_digestor. */
-export type RecognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHoleDigestor = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHoleDigestorSchema
->;
 /** Strict raw response path: answer.body.manifest.modules. */
 export const recognitionStatusAnswer_Status200V2_Body_Manifest_ModulesSchema = z.strictObject({
   black_hole_digestor:
     recognitionStatusAnswer_Status200V2_Body_Manifest_Modules_BlackHoleDigestorSchema,
 });
-/** Raw response path: answer.body.manifest.modules. */
-export type RecognitionStatusAnswer_Status200V2_Body_Manifest_Modules = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Manifest_ModulesSchema
->;
 /** Strict raw response path: answer.body.manifest. */
 export const recognitionStatusAnswer_Status200V2_Body_ManifestSchema = z.strictObject({
   modules: recognitionStatusAnswer_Status200V2_Body_Manifest_ModulesSchema.optional(),
 });
-/** Raw response path: answer.body.manifest. */
-export type RecognitionStatusAnswer_Status200V2_Body_Manifest = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_ManifestSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_CancellableSchema = z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Cancellable = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_Account = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_AdbHostSchema = z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_AdbHost = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_AdbPortSchema = z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_AdbPort = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_ArtifactDir = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_ArtifactDirSchema
->;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_ConfigRevision = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_DeviceKey = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_Instance = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_Profile = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_ProfilePath = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_ProfilePathSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_ProfileRevision = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_RenderingSchema = z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_Rendering = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_SelectedRunSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_SelectedRun = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context_Serial = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ContextSchema = z.strictObject({
   account: recognitionStatusAnswer_Status200V2_Body_Operation_Context_AccountSchema,
@@ -1254,31 +621,15 @@ export const recognitionStatusAnswer_Status200V2_Body_Operation_ContextSchema = 
   selected_run: recognitionStatusAnswer_Status200V2_Body_Operation_Context_SelectedRunSchema,
   serial: recognitionStatusAnswer_Status200V2_Body_Operation_Context_SerialSchema,
 });
-/** Raw response path: answer.body.operation.context. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Context = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_CreatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_CreatedAt = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error.code. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Error_CodeSchema = z.enum([
   'calibration_failed',
   'restoration_required',
 ]);
-/** Raw response path: answer.body.operation.error.code. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Error_Code = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Error_CodeSchema
->;
 /** Strict raw response path: answer.body.operation.error.message. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Error_MessageSchema = z.string();
-/** Raw response path: answer.body.operation.error.message. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Error_Message = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Error_MessageSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ErrorSchema = z
   .strictObject({
@@ -1286,85 +637,35 @@ export const recognitionStatusAnswer_Status200V2_Body_Operation_ErrorSchema = z
     message: recognitionStatusAnswer_Status200V2_Body_Operation_Error_MessageSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.error. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Error = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Id = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_IdempotencyKeySchema = z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_IdempotencyKey = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.kind. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_KindSchema = z.enum(['calibrate']);
-/** Raw response path: answer.body.operation.kind. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Kind = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_KindSchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ProgressSchema = z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Progress = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_RecoveryActionSchema = z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_RecoveryAction = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request.bootstrap. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Request_BootstrapSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.request.bootstrap. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Request_Bootstrap = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Request_BootstrapSchema
->;
 /** Strict raw response path: answer.body.operation.request.flows. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Request_FlowsSchema = z.boolean();
-/** Raw response path: answer.body.operation.request.flows. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Request_Flows = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Request_FlowsSchema
->;
 /** Strict raw response path: answer.body.operation.request.phases. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_Request_PhasesSchema = z.string();
-/** Raw response path: answer.body.operation.request.phases. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Request_Phases = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_Request_PhasesSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_RequestSchema = z.strictObject({
   bootstrap: recognitionStatusAnswer_Status200V2_Body_Operation_Request_BootstrapSchema,
   flows: recognitionStatusAnswer_Status200V2_Body_Operation_Request_FlowsSchema.optional(),
   phases: recognitionStatusAnswer_Status200V2_Body_Operation_Request_PhasesSchema,
 });
-/** Raw response path: answer.body.operation.request. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Request = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_report.json.path. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateReportJson_PathSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_report.json.path. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateReportJson_Path =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateReportJson_PathSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_report.json.revision. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateReportJson_RevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_report.json.revision. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateReportJson_Revision =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateReportJson_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_report.json. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateReportJsonSchema =
   z.strictObject({
@@ -1372,27 +673,12 @@ export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_Calib
     revision:
       recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateReportJson_RevisionSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.calibrate_report.json. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateReportJson =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateReportJsonSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_PathSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_Path =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_PathSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_RevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_Revision =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJsonSchema =
   z.strictObject({
@@ -1400,27 +686,12 @@ export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_Calib
     revision:
       recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_RevisionSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJsonSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.card_manifest.json.path. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CardManifestJson_PathSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.card_manifest.json.path. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CardManifestJson_Path =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CardManifestJson_PathSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.card_manifest.json.revision. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CardManifestJson_RevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.card_manifest.json.revision. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CardManifestJson_Revision =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CardManifestJson_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.card_manifest.json. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CardManifestJsonSchema =
   z.strictObject({
@@ -1428,27 +699,12 @@ export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CardM
     revision:
       recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CardManifestJson_RevisionSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.card_manifest.json. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CardManifestJson =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_CardManifestJsonSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.module_manifest.json.path. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_ModuleManifestJson_PathSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.module_manifest.json.path. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_ModuleManifestJson_Path =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_ModuleManifestJson_PathSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.module_manifest.json.revision. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_ModuleManifestJson_RevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.module_manifest.json.revision. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_ModuleManifestJson_Revision =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_ModuleManifestJson_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.module_manifest.json. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_ModuleManifestJsonSchema =
   z.strictObject({
@@ -1456,11 +712,6 @@ export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_Modul
     revision:
       recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_ModuleManifestJson_RevisionSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.module_manifest.json. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_ModuleManifestJson =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_ModuleManifestJsonSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefsSchema = z.strictObject({
   'calibrate_report.json':
@@ -1472,16 +723,8 @@ export const recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefsSchema
   'module_manifest.json':
     recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs_ModuleManifestJsonSchema.optional(),
 });
-/** Raw response path: answer.body.operation.result_refs. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_ResultRefs = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Revision = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_StatusSchema = z.enum([
   'awaiting_apply',
@@ -1489,28 +732,12 @@ export const recognitionStatusAnswer_Status200V2_Body_Operation_StatusSchema = z
   'failed',
   'restoration_required',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Step = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_UpdatedAt = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const recognitionStatusAnswer_Status200V2_Body_Operation_WorkerSchema = z.null();
-/** Raw response path: answer.body.operation.worker. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation_Worker = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Operation_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const recognitionStatusAnswer_Status200V2_Body_OperationSchema = z.strictObject({
   cancellable: recognitionStatusAnswer_Status200V2_Body_Operation_CancellableSchema,
@@ -1530,39 +757,18 @@ export const recognitionStatusAnswer_Status200V2_Body_OperationSchema = z.strict
   updated_at: recognitionStatusAnswer_Status200V2_Body_Operation_UpdatedAtSchema,
   worker: recognitionStatusAnswer_Status200V2_Body_Operation_WorkerSchema,
 });
-/** Raw response path: answer.body.operation. */
-export type RecognitionStatusAnswer_Status200V2_Body_Operation = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_OperationSchema
->;
 /** Strict raw response path: answer.body.report.entries[].image_sha256. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_ImageSha256Schema =
   z.string();
-/** Raw response path: answer.body.report.entries[].image_sha256. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_ImageSha256 =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_ImageSha256Schema
-  >;
 /** Strict raw response path: answer.body.report.entries[].next. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_NextSchema =
   z.number();
-/** Raw response path: answer.body.report.entries[].next. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_Next = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_NextSchema
->;
 /** Strict raw response path: answer.body.report.entries[].phase. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_PhaseSchema =
   z.string();
-/** Raw response path: answer.body.report.entries[].phase. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_Phase = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_PhaseSchema
->;
 /** Strict raw response path: answer.body.report.entries[].rarity. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_RaritySchema =
   z.string();
-/** Raw response path: answer.body.report.entries[].rarity. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_Rarity = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_RaritySchema
->;
 /** Strict raw response path: answer.body.report.entries[].reason. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_ReasonSchema =
   z.enum([
@@ -1570,45 +776,21 @@ export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElemen
     'Another spot on the source frame looks the same',
     'The saved image no longer matches the screen',
   ]);
-/** Raw response path: answer.body.report.entries[].reason. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_Reason = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_ReasonSchema
->;
 /** Strict raw response path: answer.body.report.entries[].rel. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_RelSchema =
   z.string();
-/** Raw response path: answer.body.report.entries[].rel. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_Rel = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_RelSchema
->;
 /** Strict raw response path: answer.body.report.entries[].screen. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_ScreenSchema =
   z.string();
-/** Raw response path: answer.body.report.entries[].screen. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_Screen = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_ScreenSchema
->;
 /** Strict raw response path: answer.body.report.entries[].self. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_SelfSchema =
   z.number();
-/** Raw response path: answer.body.report.entries[].self. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_Self = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_SelfSchema
->;
 /** Strict raw response path: answer.body.report.entries[].status. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_StatusSchema =
   z.enum(['stale', 'unverified_copy', 'verified', 'written']);
-/** Raw response path: answer.body.report.entries[].status. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_StatusSchema
->;
 /** Strict raw response path: answer.body.report.entries[].verified. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_VerifiedSchema =
   z.boolean();
-/** Raw response path: answer.body.report.entries[].verified. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_Verified = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_VerifiedSchema
->;
 /** Strict raw response path: answer.body.report.entries[]. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElementSchema =
   z.strictObject({
@@ -1628,109 +810,48 @@ export const recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElemen
     status: recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_StatusSchema,
     verified: recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement_VerifiedSchema,
   });
-/** Raw response path: answer.body.report.entries[]. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElement = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.report.entries. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_EntriesSchema = z.array(
   recognitionStatusAnswer_Status200V2_Body_Report_Entries_ArrayElementSchema,
 );
-/** Raw response path: answer.body.report.entries. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Entries = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_EntriesSchema
->;
 /** Strict raw response path: answer.body.report.operation_id. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_OperationIdSchema = z.string();
-/** Raw response path: answer.body.report.operation_id. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_OperationId = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_OperationIdSchema
->;
 /** Strict raw response path: answer.body.report.player.modules_equipped[]. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Player_ModulesEquipped_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.report.player.modules_equipped[]. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Player_ModulesEquipped_ArrayElement =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_Report_Player_ModulesEquipped_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.report.player.modules_equipped. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_Player_ModulesEquippedSchema = z.array(
   recognitionStatusAnswer_Status200V2_Body_Report_Player_ModulesEquipped_ArrayElementSchema,
 );
-/** Raw response path: answer.body.report.player.modules_equipped. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Player_ModulesEquipped = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_Player_ModulesEquippedSchema
->;
 /** Strict raw response path: answer.body.report.player. */
 export const recognitionStatusAnswer_Status200V2_Body_Report_PlayerSchema = z.strictObject({
   modules_equipped: recognitionStatusAnswer_Status200V2_Body_Report_Player_ModulesEquippedSchema,
 });
-/** Raw response path: answer.body.report.player. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report_Player = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Report_PlayerSchema
->;
 /** Strict raw response path: answer.body.report. */
 export const recognitionStatusAnswer_Status200V2_Body_ReportSchema = z.strictObject({
   entries: recognitionStatusAnswer_Status200V2_Body_Report_EntriesSchema.optional(),
   operation_id: recognitionStatusAnswer_Status200V2_Body_Report_OperationIdSchema.optional(),
   player: recognitionStatusAnswer_Status200V2_Body_Report_PlayerSchema.optional(),
 });
-/** Raw response path: answer.body.report. */
-export type RecognitionStatusAnswer_Status200V2_Body_Report = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_ReportSchema
->;
 /** Strict raw response path: answer.body.restore_pending. */
 export const recognitionStatusAnswer_Status200V2_Body_RestorePendingSchema = z.boolean();
-/** Raw response path: answer.body.restore_pending. */
-export type RecognitionStatusAnswer_Status200V2_Body_RestorePending = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_RestorePendingSchema
->;
 /** Strict raw response path: answer.body.running. */
 export const recognitionStatusAnswer_Status200V2_Body_RunningSchema = z.boolean();
-/** Raw response path: answer.body.running. */
-export type RecognitionStatusAnswer_Status200V2_Body_Running = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_RunningSchema
->;
 /** Strict raw response path: answer.body.selection.bootstrap. */
 export const recognitionStatusAnswer_Status200V2_Body_Selection_BootstrapSchema = z.boolean();
-/** Raw response path: answer.body.selection.bootstrap. */
-export type RecognitionStatusAnswer_Status200V2_Body_Selection_Bootstrap = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Selection_BootstrapSchema
->;
 /** Strict raw response path: answer.body.selection.flows. */
 export const recognitionStatusAnswer_Status200V2_Body_Selection_FlowsSchema = z.boolean();
-/** Raw response path: answer.body.selection.flows. */
-export type RecognitionStatusAnswer_Status200V2_Body_Selection_Flows = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Selection_FlowsSchema
->;
 /** Strict raw response path: answer.body.selection.mode. */
 export const recognitionStatusAnswer_Status200V2_Body_Selection_ModeSchema = z.string();
-/** Raw response path: answer.body.selection.mode. */
-export type RecognitionStatusAnswer_Status200V2_Body_Selection_Mode = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Selection_ModeSchema
->;
 /** Strict raw response path: answer.body.selection.phases[]. */
 export const recognitionStatusAnswer_Status200V2_Body_Selection_Phases_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.selection.phases[]. */
-export type RecognitionStatusAnswer_Status200V2_Body_Selection_Phases_ArrayElement = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Selection_Phases_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.selection.phases. */
 export const recognitionStatusAnswer_Status200V2_Body_Selection_PhasesSchema = z.array(
   recognitionStatusAnswer_Status200V2_Body_Selection_Phases_ArrayElementSchema,
 );
-/** Raw response path: answer.body.selection.phases. */
-export type RecognitionStatusAnswer_Status200V2_Body_Selection_Phases = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Selection_PhasesSchema
->;
 /** Strict raw response path: answer.body.selection.taps. */
 export const recognitionStatusAnswer_Status200V2_Body_Selection_TapsSchema = z.boolean();
-/** Raw response path: answer.body.selection.taps. */
-export type RecognitionStatusAnswer_Status200V2_Body_Selection_Taps = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_Selection_TapsSchema
->;
 /** Strict raw response path: answer.body.selection. */
 export const recognitionStatusAnswer_Status200V2_Body_SelectionSchema = z.strictObject({
   bootstrap: recognitionStatusAnswer_Status200V2_Body_Selection_BootstrapSchema,
@@ -1739,73 +860,33 @@ export const recognitionStatusAnswer_Status200V2_Body_SelectionSchema = z.strict
   phases: recognitionStatusAnswer_Status200V2_Body_Selection_PhasesSchema,
   taps: recognitionStatusAnswer_Status200V2_Body_Selection_TapsSchema,
 });
-/** Raw response path: answer.body.selection. */
-export type RecognitionStatusAnswer_Status200V2_Body_Selection = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_SelectionSchema
->;
 /** Strict raw response path: answer.body.state.activity.kind. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Activity_KindSchema = z.enum([
   'calibrate_progress',
 ]);
-/** Raw response path: answer.body.state.activity.kind. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Activity_Kind = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Activity_KindSchema
->;
 /** Strict raw response path: answer.body.state.activity.phase. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Activity_PhaseSchema = z.string();
-/** Raw response path: answer.body.state.activity.phase. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Activity_Phase = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Activity_PhaseSchema
->;
 /** Strict raw response path: answer.body.state.activity.t. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Activity_TSchema = z.number();
-/** Raw response path: answer.body.state.activity.t. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Activity_T = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Activity_TSchema
->;
 /** Strict raw response path: answer.body.state.activity. */
 export const recognitionStatusAnswer_Status200V2_Body_State_ActivitySchema = z.strictObject({
   kind: recognitionStatusAnswer_Status200V2_Body_State_Activity_KindSchema,
   phase: recognitionStatusAnswer_Status200V2_Body_State_Activity_PhaseSchema,
   t: recognitionStatusAnswer_Status200V2_Body_State_Activity_TSchema,
 });
-/** Raw response path: answer.body.state.activity. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Activity = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_ActivitySchema
->;
 /** Strict raw response path: answer.body.state.final_screen.error. */
 export const recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_ErrorSchema = z.string();
-/** Raw response path: answer.body.state.final_screen.error. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_FinalScreen_Error = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_ErrorSchema
->;
 /** Strict raw response path: answer.body.state.final_screen.name. */
 export const recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_NameSchema = z.string();
-/** Raw response path: answer.body.state.final_screen.name. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_FinalScreen_Name = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_NameSchema
->;
 /** Strict raw response path: answer.body.state.final_screen.observed_at. */
 export const recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_ObservedAtSchema =
   z.number();
-/** Raw response path: answer.body.state.final_screen.observed_at. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_FinalScreen_ObservedAt = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_ObservedAtSchema
->;
 /** Strict raw response path: answer.body.state.final_screen.operation_id. */
 export const recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.state.final_screen.operation_id. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_FinalScreen_OperationId = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_OperationIdSchema
->;
 /** Strict raw response path: answer.body.state.final_screen.verified. */
 export const recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_VerifiedSchema =
   z.boolean();
-/** Raw response path: answer.body.state.final_screen.verified. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_FinalScreen_Verified = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_VerifiedSchema
->;
 /** Strict raw response path: answer.body.state.final_screen. */
 export const recognitionStatusAnswer_Status200V2_Body_State_FinalScreenSchema = z.strictObject({
   error: recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_ErrorSchema.optional(),
@@ -1814,147 +895,70 @@ export const recognitionStatusAnswer_Status200V2_Body_State_FinalScreenSchema = 
   operation_id: recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_OperationIdSchema,
   verified: recognitionStatusAnswer_Status200V2_Body_State_FinalScreen_VerifiedSchema,
 });
-/** Raw response path: answer.body.state.final_screen. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_FinalScreen = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_FinalScreenSchema
->;
 /** Strict raw response path: answer.body.state.operation_id. */
 export const recognitionStatusAnswer_Status200V2_Body_State_OperationIdSchema = z.string();
-/** Raw response path: answer.body.state.operation_id. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_OperationId = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_OperationIdSchema
->;
 /** Strict raw response path: answer.body.state.phases.cards.status. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Phases_Cards_StatusSchema = z.enum([
   'done',
 ]);
-/** Raw response path: answer.body.state.phases.cards.status. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Phases_Cards_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Phases_Cards_StatusSchema
->;
 /** Strict raw response path: answer.body.state.phases.cards. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Phases_CardsSchema = z.strictObject({
   status: recognitionStatusAnswer_Status200V2_Body_State_Phases_Cards_StatusSchema,
 });
-/** Raw response path: answer.body.state.phases.cards. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Phases_Cards = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Phases_CardsSchema
->;
 /** Strict raw response path: answer.body.state.phases.guild.error. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Phases_Guild_ErrorSchema = z.string();
-/** Raw response path: answer.body.state.phases.guild.error. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Phases_Guild_Error = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Phases_Guild_ErrorSchema
->;
 /** Strict raw response path: answer.body.state.phases.guild.status. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Phases_Guild_StatusSchema = z.enum([
   'failed',
 ]);
-/** Raw response path: answer.body.state.phases.guild.status. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Phases_Guild_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Phases_Guild_StatusSchema
->;
 /** Strict raw response path: answer.body.state.phases.guild. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Phases_GuildSchema = z.strictObject({
   error: recognitionStatusAnswer_Status200V2_Body_State_Phases_Guild_ErrorSchema,
   status: recognitionStatusAnswer_Status200V2_Body_State_Phases_Guild_StatusSchema,
 });
-/** Raw response path: answer.body.state.phases.guild. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Phases_Guild = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Phases_GuildSchema
->;
 /** Strict raw response path: answer.body.state.phases.modules.status. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Phases_Modules_StatusSchema = z.enum([
   'done',
 ]);
-/** Raw response path: answer.body.state.phases.modules.status. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Phases_Modules_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Phases_Modules_StatusSchema
->;
 /** Strict raw response path: answer.body.state.phases.modules. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Phases_ModulesSchema = z.strictObject({
   status: recognitionStatusAnswer_Status200V2_Body_State_Phases_Modules_StatusSchema,
 });
-/** Raw response path: answer.body.state.phases.modules. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Phases_Modules = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Phases_ModulesSchema
->;
 /** Strict raw response path: answer.body.state.phases. */
 export const recognitionStatusAnswer_Status200V2_Body_State_PhasesSchema = z.strictObject({
   cards: recognitionStatusAnswer_Status200V2_Body_State_Phases_CardsSchema,
   guild: recognitionStatusAnswer_Status200V2_Body_State_Phases_GuildSchema,
   modules: recognitionStatusAnswer_Status200V2_Body_State_Phases_ModulesSchema,
 });
-/** Raw response path: answer.body.state.phases. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Phases = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_PhasesSchema
->;
 /** Strict raw response path: answer.body.state.player.abilities.nuke. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Player_Abilities_NukeSchema =
   z.boolean();
-/** Raw response path: answer.body.state.player.abilities.nuke. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Player_Abilities_Nuke = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Player_Abilities_NukeSchema
->;
 /** Strict raw response path: answer.body.state.player.abilities. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Player_AbilitiesSchema = z.strictObject(
   { nuke: recognitionStatusAnswer_Status200V2_Body_State_Player_Abilities_NukeSchema },
 );
-/** Raw response path: answer.body.state.player.abilities. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Player_Abilities = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Player_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.state.player.card_presets[]. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Player_CardPresets_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.state.player.card_presets[]. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Player_CardPresets_ArrayElement =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V2_Body_State_Player_CardPresets_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.state.player.card_presets. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Player_CardPresetsSchema = z.array(
   recognitionStatusAnswer_Status200V2_Body_State_Player_CardPresets_ArrayElementSchema,
 );
-/** Raw response path: answer.body.state.player.card_presets. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Player_CardPresets = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Player_CardPresetsSchema
->;
 /** Strict raw response path: answer.body.state.player.max_tier. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Player_MaxTierSchema = z.number();
-/** Raw response path: answer.body.state.player.max_tier. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Player_MaxTier = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Player_MaxTierSchema
->;
 /** Strict raw response path: answer.body.state.player.uws.chain_lightning. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Player_Uws_ChainLightningSchema =
   z.boolean();
-/** Raw response path: answer.body.state.player.uws.chain_lightning. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Player_Uws_ChainLightning = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Player_Uws_ChainLightningSchema
->;
 /** Strict raw response path: answer.body.state.player.uws.death_wave. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Player_Uws_DeathWaveSchema =
   z.boolean();
-/** Raw response path: answer.body.state.player.uws.death_wave. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Player_Uws_DeathWave = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Player_Uws_DeathWaveSchema
->;
 /** Strict raw response path: answer.body.state.player.uws. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Player_UwsSchema = z.strictObject({
   chain_lightning: recognitionStatusAnswer_Status200V2_Body_State_Player_Uws_ChainLightningSchema,
   death_wave: recognitionStatusAnswer_Status200V2_Body_State_Player_Uws_DeathWaveSchema,
 });
-/** Raw response path: answer.body.state.player.uws. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Player_Uws = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Player_UwsSchema
->;
 /** Strict raw response path: answer.body.state.player.wall. */
 export const recognitionStatusAnswer_Status200V2_Body_State_Player_WallSchema = z.boolean();
-/** Raw response path: answer.body.state.player.wall. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Player_Wall = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_Player_WallSchema
->;
 /** Strict raw response path: answer.body.state.player. */
 export const recognitionStatusAnswer_Status200V2_Body_State_PlayerSchema = z.strictObject({
   abilities: recognitionStatusAnswer_Status200V2_Body_State_Player_AbilitiesSchema,
@@ -1963,53 +967,25 @@ export const recognitionStatusAnswer_Status200V2_Body_State_PlayerSchema = z.str
   uws: recognitionStatusAnswer_Status200V2_Body_State_Player_UwsSchema,
   wall: recognitionStatusAnswer_Status200V2_Body_State_Player_WallSchema,
 });
-/** Raw response path: answer.body.state.player. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_Player = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_PlayerSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle.finished_at. */
 export const recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_FinishedAtSchema =
   z.number();
-/** Raw response path: answer.body.state.setup_battle.finished_at. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_SetupBattle_FinishedAt = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_FinishedAtSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle.id. */
 export const recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_IdSchema = z.string();
-/** Raw response path: answer.body.state.setup_battle.id. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_SetupBattle_Id = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_IdSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle.operation_id. */
 export const recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_OperationIdSchema =
   z.string();
-/** Raw response path: answer.body.state.setup_battle.operation_id. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_SetupBattle_OperationId = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_OperationIdSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle.reason. */
 export const recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_ReasonSchema = z.enum([
   'consented setup battle',
 ]);
-/** Raw response path: answer.body.state.setup_battle.reason. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_SetupBattle_Reason = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_ReasonSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle.started_at. */
 export const recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_StartedAtSchema =
   z.number();
-/** Raw response path: answer.body.state.setup_battle.started_at. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_SetupBattle_StartedAt = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_StartedAtSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle.status. */
 export const recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_StatusSchema = z.enum([
   'finished',
 ]);
-/** Raw response path: answer.body.state.setup_battle.status. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_SetupBattle_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_StatusSchema
->;
 /** Strict raw response path: answer.body.state.setup_battle. */
 export const recognitionStatusAnswer_Status200V2_Body_State_SetupBattleSchema = z.strictObject({
   finished_at: recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_FinishedAtSchema,
@@ -2019,10 +995,6 @@ export const recognitionStatusAnswer_Status200V2_Body_State_SetupBattleSchema = 
   started_at: recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_StartedAtSchema,
   status: recognitionStatusAnswer_Status200V2_Body_State_SetupBattle_StatusSchema,
 });
-/** Raw response path: answer.body.state.setup_battle. */
-export type RecognitionStatusAnswer_Status200V2_Body_State_SetupBattle = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_State_SetupBattleSchema
->;
 /** Strict raw response path: answer.body.state. */
 export const recognitionStatusAnswer_Status200V2_Body_StateSchema = z.strictObject({
   activity: recognitionStatusAnswer_Status200V2_Body_State_ActivitySchema.optional(),
@@ -2032,16 +1004,8 @@ export const recognitionStatusAnswer_Status200V2_Body_StateSchema = z.strictObje
   player: recognitionStatusAnswer_Status200V2_Body_State_PlayerSchema,
   setup_battle: recognitionStatusAnswer_Status200V2_Body_State_SetupBattleSchema.optional(),
 });
-/** Raw response path: answer.body.state. */
-export type RecognitionStatusAnswer_Status200V2_Body_State = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_StateSchema
->;
 /** Strict raw response path: answer.body.taps_allowed. */
 export const recognitionStatusAnswer_Status200V2_Body_TapsAllowedSchema = z.boolean();
-/** Raw response path: answer.body.taps_allowed. */
-export type RecognitionStatusAnswer_Status200V2_Body_TapsAllowed = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_Body_TapsAllowedSchema
->;
 /** Strict raw response path: answer.body. */
 export const recognitionStatusAnswer_Status200V2_BodySchema = z.strictObject({
   activity: recognitionStatusAnswer_Status200V2_Body_ActivitySchema,
@@ -2055,45 +1019,21 @@ export const recognitionStatusAnswer_Status200V2_BodySchema = z.strictObject({
   state: recognitionStatusAnswer_Status200V2_Body_StateSchema,
   taps_allowed: recognitionStatusAnswer_Status200V2_Body_TapsAllowedSchema,
 });
-/** Raw response path: answer.body. */
-export type RecognitionStatusAnswer_Status200V2_Body = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const recognitionStatusAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type RecognitionStatusAnswer_Status200V2_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members activity, card_manifest, manifest, operation, report, restore_pending, running, selection, state, taps_allowed. */
 export const recognitionStatusAnswer_Status200V2Schema = z.strictObject({
   body: recognitionStatusAnswer_Status200V2_BodySchema,
   status: recognitionStatusAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members activity, card_manifest, manifest, operation, report, restore_pending, running, selection, state, taps_allowed. */
-export type RecognitionStatusAnswer_Status200V2 = z.infer<
-  typeof recognitionStatusAnswer_Status200V2Schema
->;
 /** Strict raw response path: answer.body.activity.kind. */
 export const recognitionStatusAnswer_Status200V3_Body_Activity_KindSchema = z.enum([
   'calibrate_progress',
 ]);
-/** Raw response path: answer.body.activity.kind. */
-export type RecognitionStatusAnswer_Status200V3_Body_Activity_Kind = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Activity_KindSchema
->;
 /** Strict raw response path: answer.body.activity.phase. */
 export const recognitionStatusAnswer_Status200V3_Body_Activity_PhaseSchema = z.string();
-/** Raw response path: answer.body.activity.phase. */
-export type RecognitionStatusAnswer_Status200V3_Body_Activity_Phase = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Activity_PhaseSchema
->;
 /** Strict raw response path: answer.body.activity.t. */
 export const recognitionStatusAnswer_Status200V3_Body_Activity_TSchema = z.number();
-/** Raw response path: answer.body.activity.t. */
-export type RecognitionStatusAnswer_Status200V3_Body_Activity_T = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Activity_TSchema
->;
 /** Strict raw response path: answer.body.activity. */
 export const recognitionStatusAnswer_Status200V3_Body_ActivitySchema = z
   .strictObject({
@@ -2102,75 +1042,34 @@ export const recognitionStatusAnswer_Status200V3_Body_ActivitySchema = z
     t: recognitionStatusAnswer_Status200V3_Body_Activity_TSchema,
   })
   .nullable();
-/** Raw response path: answer.body.activity. */
-export type RecognitionStatusAnswer_Status200V3_Body_Activity = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_ActivitySchema
->;
 /** Strict raw response path: answer.body.card_manifest. */
 export const recognitionStatusAnswer_Status200V3_Body_CardManifestSchema = z.strictObject({});
-/** Raw response path: answer.body.card_manifest. */
-export type RecognitionStatusAnswer_Status200V3_Body_CardManifest = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_CardManifestSchema
->;
 /** Strict raw response path: answer.body.manifest. */
 export const recognitionStatusAnswer_Status200V3_Body_ManifestSchema = z.strictObject({});
-/** Raw response path: answer.body.manifest. */
-export type RecognitionStatusAnswer_Status200V3_Body_Manifest = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_ManifestSchema
->;
 /** Strict raw response path: answer.body.report.entries[].image_sha256. */
 export const recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_ImageSha256Schema =
   z.string();
-/** Raw response path: answer.body.report.entries[].image_sha256. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_ImageSha256 =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_ImageSha256Schema
-  >;
 /** Strict raw response path: answer.body.report.entries[].rarity. */
 export const recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_RaritySchema =
   z.string();
-/** Raw response path: answer.body.report.entries[].rarity. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_Rarity = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_RaritySchema
->;
 /** Strict raw response path: answer.body.report.entries[].reason. */
 export const recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_ReasonSchema =
   z.enum([
     'A legendary copy is equipped; the inventory shows a epic copy. The saved inventory image could not be verified against the same appearance. Keep it until that copy is visible in inventory; do not replace it merely because a different copy is visible.',
     'The saved image no longer matches the screen',
   ]);
-/** Raw response path: answer.body.report.entries[].reason. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_Reason = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_ReasonSchema
->;
 /** Strict raw response path: answer.body.report.entries[].rel. */
 export const recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_RelSchema =
   z.string();
-/** Raw response path: answer.body.report.entries[].rel. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_Rel = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_RelSchema
->;
 /** Strict raw response path: answer.body.report.entries[].screen. */
 export const recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_ScreenSchema =
   z.string();
-/** Raw response path: answer.body.report.entries[].screen. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_Screen = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_ScreenSchema
->;
 /** Strict raw response path: answer.body.report.entries[].status. */
 export const recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_StatusSchema =
   z.enum(['stale', 'unverified_copy', 'verified']);
-/** Raw response path: answer.body.report.entries[].status. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_StatusSchema
->;
 /** Strict raw response path: answer.body.report.entries[].verified. */
 export const recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_VerifiedSchema =
   z.boolean();
-/** Raw response path: answer.body.report.entries[].verified. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_Verified = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_VerifiedSchema
->;
 /** Strict raw response path: answer.body.report.entries[]. */
 export const recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElementSchema =
   z.strictObject({
@@ -2186,96 +1085,43 @@ export const recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElemen
     status: recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_StatusSchema,
     verified: recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement_VerifiedSchema,
   });
-/** Raw response path: answer.body.report.entries[]. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElement = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.report.entries. */
 export const recognitionStatusAnswer_Status200V3_Body_Report_EntriesSchema = z.array(
   recognitionStatusAnswer_Status200V3_Body_Report_Entries_ArrayElementSchema,
 );
-/** Raw response path: answer.body.report.entries. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report_Entries = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Report_EntriesSchema
->;
 /** Strict raw response path: answer.body.report.player.modules_equipped[]. */
 export const recognitionStatusAnswer_Status200V3_Body_Report_Player_ModulesEquipped_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.report.player.modules_equipped[]. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report_Player_ModulesEquipped_ArrayElement =
-  z.infer<
-    typeof recognitionStatusAnswer_Status200V3_Body_Report_Player_ModulesEquipped_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.report.player.modules_equipped. */
 export const recognitionStatusAnswer_Status200V3_Body_Report_Player_ModulesEquippedSchema = z.array(
   recognitionStatusAnswer_Status200V3_Body_Report_Player_ModulesEquipped_ArrayElementSchema,
 );
-/** Raw response path: answer.body.report.player.modules_equipped. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report_Player_ModulesEquipped = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Report_Player_ModulesEquippedSchema
->;
 /** Strict raw response path: answer.body.report.player. */
 export const recognitionStatusAnswer_Status200V3_Body_Report_PlayerSchema = z.strictObject({
   modules_equipped: recognitionStatusAnswer_Status200V3_Body_Report_Player_ModulesEquippedSchema,
 });
-/** Raw response path: answer.body.report.player. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report_Player = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Report_PlayerSchema
->;
 /** Strict raw response path: answer.body.report. */
 export const recognitionStatusAnswer_Status200V3_Body_ReportSchema = z.strictObject({
   entries: recognitionStatusAnswer_Status200V3_Body_Report_EntriesSchema.optional(),
   player: recognitionStatusAnswer_Status200V3_Body_Report_PlayerSchema.optional(),
 });
-/** Raw response path: answer.body.report. */
-export type RecognitionStatusAnswer_Status200V3_Body_Report = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_ReportSchema
->;
 /** Strict raw response path: answer.body.restore_pending. */
 export const recognitionStatusAnswer_Status200V3_Body_RestorePendingSchema = z.boolean();
-/** Raw response path: answer.body.restore_pending. */
-export type RecognitionStatusAnswer_Status200V3_Body_RestorePending = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_RestorePendingSchema
->;
 /** Strict raw response path: answer.body.running. */
 export const recognitionStatusAnswer_Status200V3_Body_RunningSchema = z.boolean();
-/** Raw response path: answer.body.running. */
-export type RecognitionStatusAnswer_Status200V3_Body_Running = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_RunningSchema
->;
 /** Strict raw response path: answer.body.selection.mode. */
 export const recognitionStatusAnswer_Status200V3_Body_Selection_ModeSchema = z.string();
-/** Raw response path: answer.body.selection.mode. */
-export type RecognitionStatusAnswer_Status200V3_Body_Selection_Mode = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Selection_ModeSchema
->;
 /** Strict raw response path: answer.body.selection.overwrite. */
 export const recognitionStatusAnswer_Status200V3_Body_Selection_OverwriteSchema = z.boolean();
-/** Raw response path: answer.body.selection.overwrite. */
-export type RecognitionStatusAnswer_Status200V3_Body_Selection_Overwrite = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Selection_OverwriteSchema
->;
 /** Strict raw response path: answer.body.selection.phases[]. */
 export const recognitionStatusAnswer_Status200V3_Body_Selection_Phases_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.selection.phases[]. */
-export type RecognitionStatusAnswer_Status200V3_Body_Selection_Phases_ArrayElement = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Selection_Phases_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.selection.phases. */
 export const recognitionStatusAnswer_Status200V3_Body_Selection_PhasesSchema = z.array(
   recognitionStatusAnswer_Status200V3_Body_Selection_Phases_ArrayElementSchema,
 );
-/** Raw response path: answer.body.selection.phases. */
-export type RecognitionStatusAnswer_Status200V3_Body_Selection_Phases = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Selection_PhasesSchema
->;
 /** Strict raw response path: answer.body.selection.taps. */
 export const recognitionStatusAnswer_Status200V3_Body_Selection_TapsSchema = z.boolean();
-/** Raw response path: answer.body.selection.taps. */
-export type RecognitionStatusAnswer_Status200V3_Body_Selection_Taps = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_Selection_TapsSchema
->;
 /** Strict raw response path: answer.body.selection. */
 export const recognitionStatusAnswer_Status200V3_Body_SelectionSchema = z
   .strictObject({
@@ -2285,120 +1131,60 @@ export const recognitionStatusAnswer_Status200V3_Body_SelectionSchema = z
     taps: recognitionStatusAnswer_Status200V3_Body_Selection_TapsSchema,
   })
   .nullable();
-/** Raw response path: answer.body.selection. */
-export type RecognitionStatusAnswer_Status200V3_Body_Selection = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_SelectionSchema
->;
 /** Strict raw response path: answer.body.state.activity.kind. */
 export const recognitionStatusAnswer_Status200V3_Body_State_Activity_KindSchema = z.enum([
   'calibrate_progress',
 ]);
-/** Raw response path: answer.body.state.activity.kind. */
-export type RecognitionStatusAnswer_Status200V3_Body_State_Activity_Kind = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_State_Activity_KindSchema
->;
 /** Strict raw response path: answer.body.state.activity.phase. */
 export const recognitionStatusAnswer_Status200V3_Body_State_Activity_PhaseSchema = z.string();
-/** Raw response path: answer.body.state.activity.phase. */
-export type RecognitionStatusAnswer_Status200V3_Body_State_Activity_Phase = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_State_Activity_PhaseSchema
->;
 /** Strict raw response path: answer.body.state.activity.t. */
 export const recognitionStatusAnswer_Status200V3_Body_State_Activity_TSchema = z.number();
-/** Raw response path: answer.body.state.activity.t. */
-export type RecognitionStatusAnswer_Status200V3_Body_State_Activity_T = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_State_Activity_TSchema
->;
 /** Strict raw response path: answer.body.state.activity. */
 export const recognitionStatusAnswer_Status200V3_Body_State_ActivitySchema = z.strictObject({
   kind: recognitionStatusAnswer_Status200V3_Body_State_Activity_KindSchema,
   phase: recognitionStatusAnswer_Status200V3_Body_State_Activity_PhaseSchema,
   t: recognitionStatusAnswer_Status200V3_Body_State_Activity_TSchema,
 });
-/** Raw response path: answer.body.state.activity. */
-export type RecognitionStatusAnswer_Status200V3_Body_State_Activity = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_State_ActivitySchema
->;
 /** Strict raw response path: answer.body.state.phases.cards.status. */
 export const recognitionStatusAnswer_Status200V3_Body_State_Phases_Cards_StatusSchema = z.enum([
   'done',
 ]);
-/** Raw response path: answer.body.state.phases.cards.status. */
-export type RecognitionStatusAnswer_Status200V3_Body_State_Phases_Cards_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_State_Phases_Cards_StatusSchema
->;
 /** Strict raw response path: answer.body.state.phases.cards. */
 export const recognitionStatusAnswer_Status200V3_Body_State_Phases_CardsSchema = z.strictObject({
   status: recognitionStatusAnswer_Status200V3_Body_State_Phases_Cards_StatusSchema,
 });
-/** Raw response path: answer.body.state.phases.cards. */
-export type RecognitionStatusAnswer_Status200V3_Body_State_Phases_Cards = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_State_Phases_CardsSchema
->;
 /** Strict raw response path: answer.body.state.phases.guild.error. */
 export const recognitionStatusAnswer_Status200V3_Body_State_Phases_Guild_ErrorSchema = z.string();
-/** Raw response path: answer.body.state.phases.guild.error. */
-export type RecognitionStatusAnswer_Status200V3_Body_State_Phases_Guild_Error = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_State_Phases_Guild_ErrorSchema
->;
 /** Strict raw response path: answer.body.state.phases.guild.status. */
 export const recognitionStatusAnswer_Status200V3_Body_State_Phases_Guild_StatusSchema = z.enum([
   'failed',
 ]);
-/** Raw response path: answer.body.state.phases.guild.status. */
-export type RecognitionStatusAnswer_Status200V3_Body_State_Phases_Guild_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_State_Phases_Guild_StatusSchema
->;
 /** Strict raw response path: answer.body.state.phases.guild. */
 export const recognitionStatusAnswer_Status200V3_Body_State_Phases_GuildSchema = z.strictObject({
   error: recognitionStatusAnswer_Status200V3_Body_State_Phases_Guild_ErrorSchema,
   status: recognitionStatusAnswer_Status200V3_Body_State_Phases_Guild_StatusSchema,
 });
-/** Raw response path: answer.body.state.phases.guild. */
-export type RecognitionStatusAnswer_Status200V3_Body_State_Phases_Guild = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_State_Phases_GuildSchema
->;
 /** Strict raw response path: answer.body.state.phases.modules.status. */
 export const recognitionStatusAnswer_Status200V3_Body_State_Phases_Modules_StatusSchema = z.enum([
   'done',
 ]);
-/** Raw response path: answer.body.state.phases.modules.status. */
-export type RecognitionStatusAnswer_Status200V3_Body_State_Phases_Modules_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_State_Phases_Modules_StatusSchema
->;
 /** Strict raw response path: answer.body.state.phases.modules. */
 export const recognitionStatusAnswer_Status200V3_Body_State_Phases_ModulesSchema = z.strictObject({
   status: recognitionStatusAnswer_Status200V3_Body_State_Phases_Modules_StatusSchema,
 });
-/** Raw response path: answer.body.state.phases.modules. */
-export type RecognitionStatusAnswer_Status200V3_Body_State_Phases_Modules = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_State_Phases_ModulesSchema
->;
 /** Strict raw response path: answer.body.state.phases. */
 export const recognitionStatusAnswer_Status200V3_Body_State_PhasesSchema = z.strictObject({
   cards: recognitionStatusAnswer_Status200V3_Body_State_Phases_CardsSchema,
   guild: recognitionStatusAnswer_Status200V3_Body_State_Phases_GuildSchema,
   modules: recognitionStatusAnswer_Status200V3_Body_State_Phases_ModulesSchema,
 });
-/** Raw response path: answer.body.state.phases. */
-export type RecognitionStatusAnswer_Status200V3_Body_State_Phases = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_State_PhasesSchema
->;
 /** Strict raw response path: answer.body.state. */
 export const recognitionStatusAnswer_Status200V3_Body_StateSchema = z.strictObject({
   activity: recognitionStatusAnswer_Status200V3_Body_State_ActivitySchema.optional(),
   phases: recognitionStatusAnswer_Status200V3_Body_State_PhasesSchema.optional(),
 });
-/** Raw response path: answer.body.state. */
-export type RecognitionStatusAnswer_Status200V3_Body_State = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_StateSchema
->;
 /** Strict raw response path: answer.body.taps_allowed. */
 export const recognitionStatusAnswer_Status200V3_Body_TapsAllowedSchema = z.boolean();
-/** Raw response path: answer.body.taps_allowed. */
-export type RecognitionStatusAnswer_Status200V3_Body_TapsAllowed = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_Body_TapsAllowedSchema
->;
 /** Strict raw response path: answer.body. */
 export const recognitionStatusAnswer_Status200V3_BodySchema = z.strictObject({
   activity: recognitionStatusAnswer_Status200V3_Body_ActivitySchema,
@@ -2411,71 +1197,35 @@ export const recognitionStatusAnswer_Status200V3_BodySchema = z.strictObject({
   state: recognitionStatusAnswer_Status200V3_Body_StateSchema,
   taps_allowed: recognitionStatusAnswer_Status200V3_Body_TapsAllowedSchema,
 });
-/** Raw response path: answer.body. */
-export type RecognitionStatusAnswer_Status200V3_Body = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const recognitionStatusAnswer_Status200V3_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type RecognitionStatusAnswer_Status200V3_Status = z.infer<
-  typeof recognitionStatusAnswer_Status200V3_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members activity, card_manifest, manifest, report, restore_pending, running, selection, state, taps_allowed. */
 export const recognitionStatusAnswer_Status200V3Schema = z.strictObject({
   body: recognitionStatusAnswer_Status200V3_BodySchema,
   status: recognitionStatusAnswer_Status200V3_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members activity, card_manifest, manifest, report, restore_pending, running, selection, state, taps_allowed. */
-export type RecognitionStatusAnswer_Status200V3 = z.infer<
-  typeof recognitionStatusAnswer_Status200V3Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const recognitionStatusAnswer_Status409_Body_CodeSchema = z.enum([
   'operation_kind_mismatch',
   'operation_unknown',
 ]);
-/** Raw response path: answer.body.code. */
-export type RecognitionStatusAnswer_Status409_Body_Code = z.infer<
-  typeof recognitionStatusAnswer_Status409_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const recognitionStatusAnswer_Status409_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type RecognitionStatusAnswer_Status409_Body_Error = z.infer<
-  typeof recognitionStatusAnswer_Status409_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const recognitionStatusAnswer_Status409_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type RecognitionStatusAnswer_Status409_Body_Ok = z.infer<
-  typeof recognitionStatusAnswer_Status409_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const recognitionStatusAnswer_Status409_BodySchema = z.strictObject({
   code: recognitionStatusAnswer_Status409_Body_CodeSchema,
   error: recognitionStatusAnswer_Status409_Body_ErrorSchema,
   ok: recognitionStatusAnswer_Status409_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type RecognitionStatusAnswer_Status409_Body = z.infer<
-  typeof recognitionStatusAnswer_Status409_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const recognitionStatusAnswer_Status409_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type RecognitionStatusAnswer_Status409_Status = z.infer<
-  typeof recognitionStatusAnswer_Status409_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const recognitionStatusAnswer_Status409Schema = z.strictObject({
   body: recognitionStatusAnswer_Status409_BodySchema,
   status: recognitionStatusAnswer_Status409_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type RecognitionStatusAnswer_Status409 = z.infer<
-  typeof recognitionStatusAnswer_Status409Schema
->;
 /** Strict raw response path: answer. */
 export const recognitionStatusAnswerSchema = z.union([
   recognitionStatusAnswer_Status200V1Schema,
@@ -2487,25 +1237,13 @@ export const recognitionStatusAnswerSchema = z.union([
 export type RecognitionStatusAnswer = z.infer<typeof recognitionStatusAnswerSchema>;
 /** Strict raw response path: answer.body.activity. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_ActivitySchema = z.null();
-/** Raw response path: answer.body.activity. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Activity = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_ActivitySchema
->;
 /** Strict raw response path: answer.body.artifact_errors.report. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_ArtifactErrors_ReportSchema =
   z.string();
-/** Raw response path: answer.body.artifact_errors.report. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_ArtifactErrors_Report = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_ArtifactErrors_ReportSchema
->;
 /** Strict raw response path: answer.body.artifact_errors.state. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_ArtifactErrors_StateSchema = z.enum([
   "Saved calibrate_state.json is unavailable: [Errno 2] No such file or directory: '<root>/logs/main/calibrate_state.json'",
 ]);
-/** Raw response path: answer.body.artifact_errors.state. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_ArtifactErrors_State = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_ArtifactErrors_StateSchema
->;
 /** Strict raw response path: answer.body.artifact_errors. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_ArtifactErrorsSchema = z.strictObject(
   {
@@ -2513,136 +1251,54 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_ArtifactErrorsSche
     state: recognitionStatusReadbackAnswer_Status200V1_Body_ArtifactErrors_StateSchema,
   },
 );
-/** Raw response path: answer.body.artifact_errors. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_ArtifactErrors = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_ArtifactErrorsSchema
->;
 /** Strict raw response path: answer.body.card_manifest. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_CardManifestSchema = z.strictObject(
   {},
 );
-/** Raw response path: answer.body.card_manifest. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_CardManifest = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_CardManifestSchema
->;
 /** Strict raw response path: answer.body.manifest. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_ManifestSchema = z.strictObject({});
-/** Raw response path: answer.body.manifest. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Manifest = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_ManifestSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_CancellableSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Cancellable =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_CancellableSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_Account =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AccountSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AdbHost =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AdbHostSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AdbPort =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_AdbPortSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ArtifactDir =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ArtifactDirSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ConfigRevision =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_DeviceKey =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_DeviceKeySchema
-  >;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_Instance =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_Profile =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfileSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfilePath =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfilePathSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfileRevision =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_ProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_Rendering =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_RenderingSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SelectedRunSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SelectedRun =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SelectedRunSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_Serial =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SerialSchema
-  >;
 /** Strict raw response path: answer.body.operation.context. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_ContextSchema =
   z.strictObject({
@@ -2673,35 +1329,15 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCali
     serial:
       recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context_SerialSchema,
   });
-/** Raw response path: answer.body.operation.context. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Context =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_ContextSchema
-  >;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_CreatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_CreatedAt =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_CreatedAtSchema
-  >;
 /** Strict raw response path: answer.body.operation.error.code. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Error_CodeSchema =
   z.enum(['calibration_failed', 'worker_lost']);
-/** Raw response path: answer.body.operation.error.code. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Error_Code =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Error_CodeSchema
-  >;
 /** Strict raw response path: answer.body.operation.error.message. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Error_MessageSchema =
   z.string();
-/** Raw response path: answer.body.operation.error.message. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Error_Message =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Error_MessageSchema
-  >;
 /** Strict raw response path: answer.body.operation.error. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_ErrorSchema =
   z
@@ -2711,90 +1347,36 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCali
         recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Error_MessageSchema,
     })
     .nullable();
-/** Raw response path: answer.body.operation.error. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Error =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_ErrorSchema
-  >;
 /** Strict raw response path: answer.body.operation.id. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_IdSchema =
   z.string();
-/** Raw response path: answer.body.operation.id. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Id = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_IdempotencyKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_IdempotencyKey =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_IdempotencyKeySchema
-  >;
 /** Strict raw response path: answer.body.operation.progress. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_ProgressSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Progress =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_ProgressSchema
-  >;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_RecoveryActionSchema =
   z.string().nullable();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_RecoveryAction =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_RecoveryActionSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.bootstrap. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_BootstrapSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.request.bootstrap. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_Bootstrap =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_BootstrapSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.account. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.request.expected_context.account. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_Account =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_AccountSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.instance. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.instance. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_Instance =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.profile. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.profile. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_Profile =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_ProfileSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.rendering. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.request.expected_context.rendering. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_Rendering =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_RenderingSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.serial. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.serial. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_Serial =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_SerialSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContextSchema =
   z.strictObject({
@@ -2809,19 +1391,9 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCali
     serial:
       recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext_SerialSchema,
   });
-/** Raw response path: answer.body.operation.request.expected_context. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContext =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_ExpectedContextSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.phases. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_PhasesSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.phases. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_Phases =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_PhasesSchema
-  >;
 /** Strict raw response path: answer.body.operation.request. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_RequestSchema =
   z.strictObject({
@@ -2832,66 +1404,27 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCali
     phases:
       recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request_PhasesSchema,
   });
-/** Raw response path: answer.body.operation.request. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Request =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_RequestSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.result_refs. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefs =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_ResultRefsSchema
-  >;
 /** Strict raw response path: answer.body.operation.revision. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_RevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Revision =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.status. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_StatusSchema =
   z.enum(['accepted', 'cancelling', 'failed', 'interrupted']);
-/** Raw response path: answer.body.operation.status. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Status =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_StatusSchema
-  >;
 /** Strict raw response path: answer.body.operation.step. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_StepSchema =
   z.string();
-/** Raw response path: answer.body.operation.step. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Step = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_UpdatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_UpdatedAt =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_UpdatedAtSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_CreationTimeSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_CreationTime =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_CreationTimeSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_PidSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_Pid =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_PidSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_WorkerSchema =
   z.strictObject({
@@ -2899,11 +1432,6 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCali
       recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_CreationTimeSchema,
     pid: recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Worker_PidSchema,
   });
-/** Raw response path: answer.body.operation.worker. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_Worker =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_WorkerSchema
-  >;
 /** Strict raw response path: answer.body.operation, variant: kind calibrate. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrateSchema =
   z.strictObject({
@@ -2932,122 +1460,48 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCali
       recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_UpdatedAtSchema,
     worker: recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate_WorkerSchema,
   });
-/** Raw response path: answer.body.operation, variant: kind calibrate. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrate = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrateSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_CancellableSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Cancellable =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_CancellableSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_Account =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_AccountSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_AdbHost =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_AdbHostSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_AdbPort =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_AdbPortSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ArtifactDir =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ArtifactDirSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ConfigRevision =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_DeviceKey =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_DeviceKeySchema
-  >;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_Instance =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_Profile =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfileSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfilePath =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfilePathSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfileRevision =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_ProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_Rendering =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_RenderingSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_SelectedRunSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_SelectedRun =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_SelectedRunSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_Serial =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_SerialSchema
-  >;
 /** Strict raw response path: answer.body.operation.context. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_ContextSchema =
   z.strictObject({
@@ -3078,97 +1532,39 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObse
     serial:
       recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context_SerialSchema,
   });
-/** Raw response path: answer.body.operation.context. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Context =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_ContextSchema
-  >;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_CreatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_CreatedAt =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_CreatedAtSchema
-  >;
 /** Strict raw response path: answer.body.operation.error. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_ErrorSchema =
   z.null();
-/** Raw response path: answer.body.operation.error. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Error = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_IdSchema =
   z.string();
-/** Raw response path: answer.body.operation.id. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Id = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_IdempotencyKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_IdempotencyKey =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_IdempotencyKeySchema
-  >;
 /** Strict raw response path: answer.body.operation.progress. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_ProgressSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Progress =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_ProgressSchema
-  >;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_RecoveryAction =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_RecoveryActionSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.account. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.request.expected_context.account. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_Account =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_AccountSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.instance. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.instance. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_Instance =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.profile. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.profile. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_Profile =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_ProfileSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.rendering. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.request.expected_context.rendering. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_Rendering =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_RenderingSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.serial. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.serial. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_Serial =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_SerialSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContextSchema =
   z.strictObject({
@@ -3183,76 +1579,33 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObse
     serial:
       recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext_SerialSchema,
   });
-/** Raw response path: answer.body.operation.request.expected_context. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContext =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContextSchema
-  >;
 /** Strict raw response path: answer.body.operation.request. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_RequestSchema =
   z.strictObject({
     expected_context:
       recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request_ExpectedContextSchema,
   });
-/** Raw response path: answer.body.operation.request. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Request =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_RequestSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_ResultRefsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.result_refs. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_ResultRefs =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_ResultRefsSchema
-  >;
 /** Strict raw response path: answer.body.operation.revision. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_RevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Revision =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.status. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_StatusSchema =
   z.enum(['accepted']);
-/** Raw response path: answer.body.operation.status. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Status = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_StepSchema =
   z.string();
-/** Raw response path: answer.body.operation.step. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Step = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_UpdatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_UpdatedAt =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_UpdatedAtSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Worker_CreationTimeSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Worker_CreationTime =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Worker_CreationTimeSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Worker_PidSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Worker_Pid =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Worker_PidSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_WorkerSchema =
   z.strictObject({
@@ -3260,10 +1613,6 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObse
       recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Worker_CreationTimeSchema,
     pid: recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Worker_PidSchema,
   });
-/** Raw response path: answer.body.operation.worker. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_Worker = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation, variant: kind observe. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserveSchema =
   z.strictObject({
@@ -3290,85 +1639,36 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObse
       recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_UpdatedAtSchema,
     worker: recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve_WorkerSchema,
   });
-/** Raw response path: answer.body.operation, variant: kind observe. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserve = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserveSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_OperationSchema =
   z.discriminatedUnion('kind', [
     recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindCalibrateSchema,
     recognitionStatusReadbackAnswer_Status200V1_Body_Operation_KindObserveSchema,
   ]);
-/** Raw response path: answer.body.operation. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Operation = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_OperationSchema
->;
 /** Strict raw response path: answer.body.report. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_ReportSchema = z.strictObject({});
-/** Raw response path: answer.body.report. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Report = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_ReportSchema
->;
 /** Strict raw response path: answer.body.restore_pending. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_RestorePendingSchema = z.boolean();
-/** Raw response path: answer.body.restore_pending. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_RestorePending = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_RestorePendingSchema
->;
 /** Strict raw response path: answer.body.running. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_RunningSchema = z.boolean();
-/** Raw response path: answer.body.running. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Running = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_RunningSchema
->;
 /** Strict raw response path: answer.body.selection.bootstrap. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Selection_BootstrapSchema =
   z.boolean();
-/** Raw response path: answer.body.selection.bootstrap. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Selection_Bootstrap = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Selection_BootstrapSchema
->;
 /** Strict raw response path: answer.body.selection.expected_context.account. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_AccountSchema =
   z.null();
-/** Raw response path: answer.body.selection.expected_context.account. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_Account =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_AccountSchema
-  >;
 /** Strict raw response path: answer.body.selection.expected_context.instance. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.selection.expected_context.instance. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_Instance =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.selection.expected_context.profile. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.selection.expected_context.profile. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_Profile =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_ProfileSchema
-  >;
 /** Strict raw response path: answer.body.selection.expected_context.rendering. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.selection.expected_context.rendering. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_Rendering =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_RenderingSchema
-  >;
 /** Strict raw response path: answer.body.selection.expected_context.serial. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_SerialSchema =
   z.string();
-/** Raw response path: answer.body.selection.expected_context.serial. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_Serial =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_SerialSchema
-  >;
 /** Strict raw response path: answer.body.selection.expected_context. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContextSchema =
   z.strictObject({
@@ -3382,38 +1682,17 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_Selection_Expected
       recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_RenderingSchema,
     serial: recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext_SerialSchema,
   });
-/** Raw response path: answer.body.selection.expected_context. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContext = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ExpectedContextSchema
->;
 /** Strict raw response path: answer.body.selection.mode. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ModeSchema = z.string();
-/** Raw response path: answer.body.selection.mode. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Selection_Mode = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Selection_ModeSchema
->;
 /** Strict raw response path: answer.body.selection.phases[]. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Selection_Phases_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.selection.phases[]. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Selection_Phases_ArrayElement =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V1_Body_Selection_Phases_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.selection.phases. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Selection_PhasesSchema = z.array(
   recognitionStatusReadbackAnswer_Status200V1_Body_Selection_Phases_ArrayElementSchema,
 );
-/** Raw response path: answer.body.selection.phases. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Selection_Phases = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Selection_PhasesSchema
->;
 /** Strict raw response path: answer.body.selection.taps. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_Selection_TapsSchema = z.boolean();
-/** Raw response path: answer.body.selection.taps. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Selection_Taps = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_Selection_TapsSchema
->;
 /** Strict raw response path: answer.body.selection. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_SelectionSchema = z.strictObject({
   bootstrap: recognitionStatusReadbackAnswer_Status200V1_Body_Selection_BootstrapSchema.optional(),
@@ -3423,22 +1702,10 @@ export const recognitionStatusReadbackAnswer_Status200V1_Body_SelectionSchema = 
   phases: recognitionStatusReadbackAnswer_Status200V1_Body_Selection_PhasesSchema.optional(),
   taps: recognitionStatusReadbackAnswer_Status200V1_Body_Selection_TapsSchema,
 });
-/** Raw response path: answer.body.selection. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_Selection = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_SelectionSchema
->;
 /** Strict raw response path: answer.body.state. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_StateSchema = z.strictObject({});
-/** Raw response path: answer.body.state. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_State = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_StateSchema
->;
 /** Strict raw response path: answer.body.taps_allowed. */
 export const recognitionStatusReadbackAnswer_Status200V1_Body_TapsAllowedSchema = z.boolean();
-/** Raw response path: answer.body.taps_allowed. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body_TapsAllowed = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_Body_TapsAllowedSchema
->;
 /** Strict raw response path: answer.body. */
 export const recognitionStatusReadbackAnswer_Status200V1_BodySchema = z.strictObject({
   activity: recognitionStatusReadbackAnswer_Status200V1_Body_ActivitySchema,
@@ -3453,148 +1720,63 @@ export const recognitionStatusReadbackAnswer_Status200V1_BodySchema = z.strictOb
   state: recognitionStatusReadbackAnswer_Status200V1_Body_StateSchema,
   taps_allowed: recognitionStatusReadbackAnswer_Status200V1_Body_TapsAllowedSchema,
 });
-/** Raw response path: answer.body. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Body = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const recognitionStatusReadbackAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type RecognitionStatusReadbackAnswer_Status200V1_Status = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members activity, artifact_errors, card_manifest, manifest, operation, report, restore_pending, running, selection, state, taps_allowed. */
 export const recognitionStatusReadbackAnswer_Status200V1Schema = z.strictObject({
   body: recognitionStatusReadbackAnswer_Status200V1_BodySchema,
   status: recognitionStatusReadbackAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members activity, artifact_errors, card_manifest, manifest, operation, report, restore_pending, running, selection, state, taps_allowed. */
-export type RecognitionStatusReadbackAnswer_Status200V1 = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V1Schema
->;
 /** Strict raw response path: answer.body.activity. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_ActivitySchema = z.null();
-/** Raw response path: answer.body.activity. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Activity = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_ActivitySchema
->;
 /** Strict raw response path: answer.body.card_manifest. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_CardManifestSchema = z.strictObject(
   {},
 );
-/** Raw response path: answer.body.card_manifest. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_CardManifest = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_CardManifestSchema
->;
 /** Strict raw response path: answer.body.manifest. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_ManifestSchema = z.strictObject({});
-/** Raw response path: answer.body.manifest. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Manifest = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_ManifestSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_CancellableSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Cancellable = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_Account = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_AdbHost = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_AdbPort = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ArtifactDir =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ArtifactDirSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ConfigRevision =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_DeviceKey = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_Instance = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_Profile = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ProfilePath =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ProfilePathSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ProfileRevision =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_ProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_Rendering = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_SelectedRunSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_SelectedRun =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_SelectedRunSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_Serial = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ContextSchema =
   z.strictObject({
@@ -3617,34 +1799,18 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ContextS
       recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_SelectedRunSchema,
     serial: recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context_SerialSchema,
   });
-/** Raw response path: answer.body.operation.context. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Context = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_CreatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_CreatedAt = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error.code. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Error_CodeSchema = z.enum([
   'apply_failed',
   'calibration_failed',
   'restoration_required',
 ]);
-/** Raw response path: answer.body.operation.error.code. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Error_Code = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Error_CodeSchema
->;
 /** Strict raw response path: answer.body.operation.error.message. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Error_MessageSchema =
   z.string();
-/** Raw response path: answer.body.operation.error.message. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Error_Message = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Error_MessageSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ErrorSchema = z
   .strictObject({
@@ -3652,92 +1818,42 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ErrorSch
     message: recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Error_MessageSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.error. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Error = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Id = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_IdempotencyKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_IdempotencyKey = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.kind. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_KindSchema = z.enum([
   'calibrate',
 ]);
-/** Raw response path: answer.body.operation.kind. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Kind = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_KindSchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ProgressSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Progress = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.readiness. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ReadinessSchema = z.null();
-/** Raw response path: answer.body.operation.readiness. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Readiness = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ReadinessSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_RecoveryActionSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_RecoveryAction = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request.bootstrap. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Request_BootstrapSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.request.bootstrap. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Request_Bootstrap = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Request_BootstrapSchema
->;
 /** Strict raw response path: answer.body.operation.request.phases. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Request_PhasesSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.phases. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Request_Phases = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Request_PhasesSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_RequestSchema =
   z.strictObject({
     bootstrap: recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Request_BootstrapSchema,
     phases: recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Request_PhasesSchema,
   });
-/** Raw response path: answer.body.operation.request. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Request = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.error.code. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_CodeSchema =
   z.enum(['calibration_failed']);
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.error.code. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_Code =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_CodeSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.error.message. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_MessageSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.error.message. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_Message =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_MessageSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.error. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_ErrorSchema =
   z
@@ -3747,35 +1863,15 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRe
         recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_MessageSchema,
     })
     .nullable();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.error. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_ErrorSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.recovery_action. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.recovery_action. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_RecoveryAction =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_RecoveryActionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.status. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_StatusSchema =
   z.enum(['awaiting_apply', 'failed']);
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.status. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_Status =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_StatusSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.step. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_StepSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.step. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_Step =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_StepSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcomeSchema =
   z.strictObject({
@@ -3787,27 +1883,12 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRe
       recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_StatusSchema,
     step: recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome_StepSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcome =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyCaptureOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_error.code. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyError_CodeSchema =
   z.enum(['apply_failed']);
-/** Raw response path: answer.body.operation.result_refs.apply_error.code. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyError_Code =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyError_CodeSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_error.message. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyError_MessageSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_error.message. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyError_Message =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyError_MessageSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_error. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyErrorSchema =
   z
@@ -3817,59 +1898,24 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRe
         recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyError_MessageSchema,
     })
     .nullable();
-/** Raw response path: answer.body.operation.result_refs.apply_error. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyError =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyErrorSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_profile_digest. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyProfileDigestSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_profile_digest. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyProfileDigest =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyProfileDigestSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_profile_revision. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_profile_revision. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyProfileRevision =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_request_revision. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyRequestRevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.result_refs.apply_request_revision. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyRequestRevision =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyRequestRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_status. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyStatusSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_status. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyStatus =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_ApplyStatusSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_PathSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_Path =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_PathSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_RevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_Revision =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJsonSchema =
   z.strictObject({
@@ -3877,11 +1923,6 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRe
     revision:
       recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson_RevisionSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJson =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJsonSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefsSchema =
   z.strictObject({
@@ -3900,16 +1941,8 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRe
     'calibrate_state.json':
       recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs_CalibrateStateJsonSchema,
   });
-/** Raw response path: answer.body.operation.result_refs. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefs = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Revision = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_StatusSchema = z.enum([
   'awaiting_apply',
@@ -3917,38 +1950,17 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_StatusSc
   'restoration_required',
   'succeeded',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Status = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Step = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_UpdatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_UpdatedAt = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Worker_CreationTimeSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Worker_CreationTime =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Worker_CreationTimeSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Worker_PidSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Worker_Pid = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_WorkerSchema = z
   .strictObject({
@@ -3957,10 +1969,6 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_Operation_WorkerSc
     pid: recognitionStatusReadbackAnswer_Status200V2_Body_Operation_Worker_PidSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.worker. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation_Worker = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Operation_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_OperationSchema = z.strictObject({
   cancellable: recognitionStatusReadbackAnswer_Status200V2_Body_Operation_CancellableSchema,
@@ -3981,63 +1989,26 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_OperationSchema = 
   updated_at: recognitionStatusReadbackAnswer_Status200V2_Body_Operation_UpdatedAtSchema,
   worker: recognitionStatusReadbackAnswer_Status200V2_Body_Operation_WorkerSchema,
 });
-/** Raw response path: answer.body.operation. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Operation = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_OperationSchema
->;
 /** Strict raw response path: answer.body.report. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_ReportSchema = z.strictObject({});
-/** Raw response path: answer.body.report. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Report = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_ReportSchema
->;
 /** Strict raw response path: answer.body.restore_pending. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_RestorePendingSchema = z.boolean();
-/** Raw response path: answer.body.restore_pending. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_RestorePending = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_RestorePendingSchema
->;
 /** Strict raw response path: answer.body.running. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_RunningSchema = z.boolean();
-/** Raw response path: answer.body.running. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Running = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_RunningSchema
->;
 /** Strict raw response path: answer.body.selection.bootstrap. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Selection_BootstrapSchema =
   z.boolean();
-/** Raw response path: answer.body.selection.bootstrap. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Selection_Bootstrap = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Selection_BootstrapSchema
->;
 /** Strict raw response path: answer.body.selection.mode. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Selection_ModeSchema = z.string();
-/** Raw response path: answer.body.selection.mode. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Selection_Mode = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Selection_ModeSchema
->;
 /** Strict raw response path: answer.body.selection.phases[]. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Selection_Phases_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.selection.phases[]. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Selection_Phases_ArrayElement =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_Selection_Phases_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.selection.phases. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Selection_PhasesSchema = z.array(
   recognitionStatusReadbackAnswer_Status200V2_Body_Selection_Phases_ArrayElementSchema,
 );
-/** Raw response path: answer.body.selection.phases. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Selection_Phases = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Selection_PhasesSchema
->;
 /** Strict raw response path: answer.body.selection.taps. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_Selection_TapsSchema = z.boolean();
-/** Raw response path: answer.body.selection.taps. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Selection_Taps = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_Selection_TapsSchema
->;
 /** Strict raw response path: answer.body.selection. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_SelectionSchema = z.strictObject({
   bootstrap: recognitionStatusReadbackAnswer_Status200V2_Body_Selection_BootstrapSchema,
@@ -4045,71 +2016,33 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_SelectionSchema = 
   phases: recognitionStatusReadbackAnswer_Status200V2_Body_Selection_PhasesSchema,
   taps: recognitionStatusReadbackAnswer_Status200V2_Body_Selection_TapsSchema,
 });
-/** Raw response path: answer.body.selection. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_Selection = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_SelectionSchema
->;
 /** Strict raw response path: answer.body.state.operation_id. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_State_OperationIdSchema = z.string();
-/** Raw response path: answer.body.state.operation_id. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_State_OperationId = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_State_OperationIdSchema
->;
 /** Strict raw response path: answer.body.state.player.abilities.nuke. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Abilities_NukeSchema =
   z.boolean();
-/** Raw response path: answer.body.state.player.abilities.nuke. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Abilities_Nuke = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Abilities_NukeSchema
->;
 /** Strict raw response path: answer.body.state.player.abilities. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_AbilitiesSchema =
   z.strictObject({
     nuke: recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Abilities_NukeSchema,
   });
-/** Raw response path: answer.body.state.player.abilities. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Abilities = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_AbilitiesSchema
->;
 /** Strict raw response path: answer.body.state.player.card_presets[]. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_CardPresets_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.state.player.card_presets[]. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_State_Player_CardPresets_ArrayElement =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_CardPresets_ArrayElementSchema
-  >;
 /** Strict raw response path: answer.body.state.player.card_presets. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_CardPresetsSchema =
   z.array(
     recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_CardPresets_ArrayElementSchema,
   );
-/** Raw response path: answer.body.state.player.card_presets. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_State_Player_CardPresets = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_CardPresetsSchema
->;
 /** Strict raw response path: answer.body.state.player.max_tier. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_MaxTierSchema =
   z.number();
-/** Raw response path: answer.body.state.player.max_tier. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_State_Player_MaxTier = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_MaxTierSchema
->;
 /** Strict raw response path: answer.body.state.player.uws.chain_lightning. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Uws_ChainLightningSchema =
   z.boolean();
-/** Raw response path: answer.body.state.player.uws.chain_lightning. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Uws_ChainLightning =
-  z.infer<
-    typeof recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Uws_ChainLightningSchema
-  >;
 /** Strict raw response path: answer.body.state.player.uws.death_wave. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Uws_DeathWaveSchema =
   z.boolean();
-/** Raw response path: answer.body.state.player.uws.death_wave. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Uws_DeathWave = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Uws_DeathWaveSchema
->;
 /** Strict raw response path: answer.body.state.player.uws. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_UwsSchema =
   z.strictObject({
@@ -4117,16 +2050,8 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_UwsSc
       recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Uws_ChainLightningSchema,
     death_wave: recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Uws_DeathWaveSchema,
   });
-/** Raw response path: answer.body.state.player.uws. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Uws = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_UwsSchema
->;
 /** Strict raw response path: answer.body.state.player.wall. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_WallSchema = z.boolean();
-/** Raw response path: answer.body.state.player.wall. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_State_Player_Wall = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_WallSchema
->;
 /** Strict raw response path: answer.body.state.player. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_State_PlayerSchema = z.strictObject({
   abilities: recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_AbilitiesSchema,
@@ -4135,25 +2060,13 @@ export const recognitionStatusReadbackAnswer_Status200V2_Body_State_PlayerSchema
   uws: recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_UwsSchema,
   wall: recognitionStatusReadbackAnswer_Status200V2_Body_State_Player_WallSchema,
 });
-/** Raw response path: answer.body.state.player. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_State_Player = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_State_PlayerSchema
->;
 /** Strict raw response path: answer.body.state. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_StateSchema = z.strictObject({
   operation_id: recognitionStatusReadbackAnswer_Status200V2_Body_State_OperationIdSchema,
   player: recognitionStatusReadbackAnswer_Status200V2_Body_State_PlayerSchema,
 });
-/** Raw response path: answer.body.state. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_State = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_StateSchema
->;
 /** Strict raw response path: answer.body.taps_allowed. */
 export const recognitionStatusReadbackAnswer_Status200V2_Body_TapsAllowedSchema = z.boolean();
-/** Raw response path: answer.body.taps_allowed. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body_TapsAllowed = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_Body_TapsAllowedSchema
->;
 /** Strict raw response path: answer.body. */
 export const recognitionStatusReadbackAnswer_Status200V2_BodySchema = z.strictObject({
   activity: recognitionStatusReadbackAnswer_Status200V2_Body_ActivitySchema,
@@ -4167,25 +2080,13 @@ export const recognitionStatusReadbackAnswer_Status200V2_BodySchema = z.strictOb
   state: recognitionStatusReadbackAnswer_Status200V2_Body_StateSchema,
   taps_allowed: recognitionStatusReadbackAnswer_Status200V2_Body_TapsAllowedSchema,
 });
-/** Raw response path: answer.body. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Body = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const recognitionStatusReadbackAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type RecognitionStatusReadbackAnswer_Status200V2_Status = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members activity, card_manifest, manifest, operation, report, restore_pending, running, selection, state, taps_allowed. */
 export const recognitionStatusReadbackAnswer_Status200V2Schema = z.strictObject({
   body: recognitionStatusReadbackAnswer_Status200V2_BodySchema,
   status: recognitionStatusReadbackAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members activity, card_manifest, manifest, operation, report, restore_pending, running, selection, state, taps_allowed. */
-export type RecognitionStatusReadbackAnswer_Status200V2 = z.infer<
-  typeof recognitionStatusReadbackAnswer_Status200V2Schema
->;
 /** Strict raw response path: answer. */
 export const recognitionStatusReadbackAnswerSchema = z.union([
   recognitionStatusReadbackAnswer_Status200V1Schema,
@@ -4195,116 +2096,52 @@ export const recognitionStatusReadbackAnswerSchema = z.union([
 export type RecognitionStatusReadbackAnswer = z.infer<typeof recognitionStatusReadbackAnswerSchema>;
 /** Strict raw response path: answer.body.active_instance. */
 export const recognitionConfigAnswer_Body_ActiveInstanceSchema = z.string();
-/** Raw response path: answer.body.active_instance. */
-export type RecognitionConfigAnswer_Body_ActiveInstance = z.infer<
-  typeof recognitionConfigAnswer_Body_ActiveInstanceSchema
->;
 /** Strict raw response path: answer.body.active_profile. */
 export const recognitionConfigAnswer_Body_ActiveProfileSchema = z.string();
-/** Raw response path: answer.body.active_profile. */
-export type RecognitionConfigAnswer_Body_ActiveProfile = z.infer<
-  typeof recognitionConfigAnswer_Body_ActiveProfileSchema
->;
 /** Strict raw response path: answer.body.config_revision. */
 export const recognitionConfigAnswer_Body_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.config_revision. */
-export type RecognitionConfigAnswer_Body_ConfigRevision = z.infer<
-  typeof recognitionConfigAnswer_Body_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.instances.main.allow_taps. */
 export const recognitionConfigAnswer_Body_Instances_Main_AllowTapsSchema = z.boolean();
-/** Raw response path: answer.body.instances.main.allow_taps. */
-export type RecognitionConfigAnswer_Body_Instances_Main_AllowTaps = z.infer<
-  typeof recognitionConfigAnswer_Body_Instances_Main_AllowTapsSchema
->;
 /** Strict raw response path: answer.body.instances.main.rois.wall_bar[]. */
 export const recognitionConfigAnswer_Body_Instances_Main_Rois_WallBar_ArrayElementSchema =
   z.number();
-/** Raw response path: answer.body.instances.main.rois.wall_bar[]. */
-export type RecognitionConfigAnswer_Body_Instances_Main_Rois_WallBar_ArrayElement = z.infer<
-  typeof recognitionConfigAnswer_Body_Instances_Main_Rois_WallBar_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.instances.main.rois.wall_bar. */
 export const recognitionConfigAnswer_Body_Instances_Main_Rois_WallBarSchema = z.array(
   recognitionConfigAnswer_Body_Instances_Main_Rois_WallBar_ArrayElementSchema,
 );
-/** Raw response path: answer.body.instances.main.rois.wall_bar. */
-export type RecognitionConfigAnswer_Body_Instances_Main_Rois_WallBar = z.infer<
-  typeof recognitionConfigAnswer_Body_Instances_Main_Rois_WallBarSchema
->;
 /** Strict raw response path: answer.body.instances.main.rois. */
 export const recognitionConfigAnswer_Body_Instances_Main_RoisSchema = z.strictObject({
   wall_bar: recognitionConfigAnswer_Body_Instances_Main_Rois_WallBarSchema,
 });
-/** Raw response path: answer.body.instances.main.rois. */
-export type RecognitionConfigAnswer_Body_Instances_Main_Rois = z.infer<
-  typeof recognitionConfigAnswer_Body_Instances_Main_RoisSchema
->;
 /** Strict raw response path: answer.body.instances.main.serial. */
 export const recognitionConfigAnswer_Body_Instances_Main_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.main.serial. */
-export type RecognitionConfigAnswer_Body_Instances_Main_Serial = z.infer<
-  typeof recognitionConfigAnswer_Body_Instances_Main_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.main. */
 export const recognitionConfigAnswer_Body_Instances_MainSchema = z.strictObject({
   allow_taps: recognitionConfigAnswer_Body_Instances_Main_AllowTapsSchema,
   rois: recognitionConfigAnswer_Body_Instances_Main_RoisSchema,
   serial: recognitionConfigAnswer_Body_Instances_Main_SerialSchema,
 });
-/** Raw response path: answer.body.instances.main. */
-export type RecognitionConfigAnswer_Body_Instances_Main = z.infer<
-  typeof recognitionConfigAnswer_Body_Instances_MainSchema
->;
 /** Strict raw response path: answer.body.instances.other.serial. */
 export const recognitionConfigAnswer_Body_Instances_Other_SerialSchema = z.string();
-/** Raw response path: answer.body.instances.other.serial. */
-export type RecognitionConfigAnswer_Body_Instances_Other_Serial = z.infer<
-  typeof recognitionConfigAnswer_Body_Instances_Other_SerialSchema
->;
 /** Strict raw response path: answer.body.instances.other. */
 export const recognitionConfigAnswer_Body_Instances_OtherSchema = z.strictObject({
   serial: recognitionConfigAnswer_Body_Instances_Other_SerialSchema,
 });
-/** Raw response path: answer.body.instances.other. */
-export type RecognitionConfigAnswer_Body_Instances_Other = z.infer<
-  typeof recognitionConfigAnswer_Body_Instances_OtherSchema
->;
 /** Strict raw response path: answer.body.instances. */
 export const recognitionConfigAnswer_Body_InstancesSchema = z.strictObject({
   main: recognitionConfigAnswer_Body_Instances_MainSchema,
   other: recognitionConfigAnswer_Body_Instances_OtherSchema,
 });
-/** Raw response path: answer.body.instances. */
-export type RecognitionConfigAnswer_Body_Instances = z.infer<
-  typeof recognitionConfigAnswer_Body_InstancesSchema
->;
 /** Strict raw response path: answer.body.loadouts.plain. */
 export const recognitionConfigAnswer_Body_Loadouts_PlainSchema = z.strictObject({});
-/** Raw response path: answer.body.loadouts.plain. */
-export type RecognitionConfigAnswer_Body_Loadouts_Plain = z.infer<
-  typeof recognitionConfigAnswer_Body_Loadouts_PlainSchema
->;
 /** Strict raw response path: answer.body.loadouts. */
 export const recognitionConfigAnswer_Body_LoadoutsSchema = z.strictObject({
   plain: recognitionConfigAnswer_Body_Loadouts_PlainSchema,
 });
-/** Raw response path: answer.body.loadouts. */
-export type RecognitionConfigAnswer_Body_Loadouts = z.infer<
-  typeof recognitionConfigAnswer_Body_LoadoutsSchema
->;
 /** Strict raw response path: answer.body.preset. */
 export const recognitionConfigAnswer_Body_PresetSchema = z.string();
-/** Raw response path: answer.body.preset. */
-export type RecognitionConfigAnswer_Body_Preset = z.infer<
-  typeof recognitionConfigAnswer_Body_PresetSchema
->;
 /** Strict raw response path: answer.body.presets. */
 export const recognitionConfigAnswer_Body_PresetsSchema = z.strictObject({});
-/** Raw response path: answer.body.presets. */
-export type RecognitionConfigAnswer_Body_Presets = z.infer<
-  typeof recognitionConfigAnswer_Body_PresetsSchema
->;
 /** Strict raw response path: answer.body. */
 export const recognitionConfigAnswer_BodySchema = z.strictObject({
   active_instance: recognitionConfigAnswer_Body_ActiveInstanceSchema,
@@ -4315,12 +2152,8 @@ export const recognitionConfigAnswer_BodySchema = z.strictObject({
   preset: recognitionConfigAnswer_Body_PresetSchema,
   presets: recognitionConfigAnswer_Body_PresetsSchema,
 });
-/** Raw response path: answer.body. */
-export type RecognitionConfigAnswer_Body = z.infer<typeof recognitionConfigAnswer_BodySchema>;
 /** Strict raw response path: answer.status. */
 export const recognitionConfigAnswer_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type RecognitionConfigAnswer_Status = z.infer<typeof recognitionConfigAnswer_StatusSchema>;
 /** Strict raw response path: answer. */
 export const recognitionConfigAnswerSchema = z.strictObject({
   body: recognitionConfigAnswer_BodySchema,
@@ -4330,96 +2163,36 @@ export const recognitionConfigAnswerSchema = z.strictObject({
 export type RecognitionConfigAnswer = z.infer<typeof recognitionConfigAnswerSchema>;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateStartAnswer_Status200V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateStartAnswer_Status200V1_Body_Ok = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_CancellableSchema = z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Cancellable = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_Account = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_AdbHostSchema = z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_AdbHost = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_AdbPortSchema = z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_AdbPort = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_ArtifactDirSchema = z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_ArtifactDir = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_ArtifactDirSchema
->;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_ConfigRevision = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_DeviceKeySchema = z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_DeviceKey = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_Instance = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_Profile = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_ProfilePathSchema = z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_ProfilePath = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_ProfilePathSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_ProfileRevision = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_RenderingSchema = z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_Rendering = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_SelectedRunSchema = z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_SelectedRun = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context_Serial = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_ContextSchema = z.strictObject({
   account: calibrateStartAnswer_Status200V1_Body_Operation_Context_AccountSchema,
@@ -4436,30 +2209,14 @@ export const calibrateStartAnswer_Status200V1_Body_Operation_ContextSchema = z.s
   selected_run: calibrateStartAnswer_Status200V1_Body_Operation_Context_SelectedRunSchema,
   serial: calibrateStartAnswer_Status200V1_Body_Operation_Context_SerialSchema,
 });
-/** Raw response path: answer.body.operation.context. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Context = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_CreatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_CreatedAt = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error.code. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Error_CodeSchema = z.enum([
   'calibration_failed',
 ]);
-/** Raw response path: answer.body.operation.error.code. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Error_Code = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Error_CodeSchema
->;
 /** Strict raw response path: answer.body.operation.error.message. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Error_MessageSchema = z.string();
-/** Raw response path: answer.body.operation.error.message. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Error_Message = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Error_MessageSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_ErrorSchema = z
   .strictObject({
@@ -4467,80 +2224,31 @@ export const calibrateStartAnswer_Status200V1_Body_Operation_ErrorSchema = z
     message: calibrateStartAnswer_Status200V1_Body_Operation_Error_MessageSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.error. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Error = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Id = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_IdempotencyKeySchema = z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_IdempotencyKey = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.kind. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_KindSchema = z.enum(['calibrate']);
-/** Raw response path: answer.body.operation.kind. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Kind = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_KindSchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_ProgressSchema = z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Progress = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_RecoveryActionSchema = z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_RecoveryAction = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request.expected_context.account. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.request.expected_context.account. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_Account =
-  z.infer<
-    typeof calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_AccountSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.instance. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.instance. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_Instance =
-  z.infer<
-    typeof calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.profile. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.profile. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_Profile =
-  z.infer<
-    typeof calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_ProfileSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.rendering. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.request.expected_context.rendering. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_Rendering =
-  z.infer<
-    typeof calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_RenderingSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.serial. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.serial. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_Serial =
-  z.infer<
-    typeof calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_SerialSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContextSchema =
   z.strictObject({
@@ -4552,79 +2260,35 @@ export const calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedCon
       calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_RenderingSchema,
     serial: calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext_SerialSchema,
   });
-/** Raw response path: answer.body.operation.request.expected_context. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContext = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContextSchema
->;
 /** Strict raw response path: answer.body.operation.request.phases. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Request_PhasesSchema = z.string();
-/** Raw response path: answer.body.operation.request.phases. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Request_Phases = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Request_PhasesSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_RequestSchema = z.strictObject({
   expected_context: calibrateStartAnswer_Status200V1_Body_Operation_Request_ExpectedContextSchema,
   phases: calibrateStartAnswer_Status200V1_Body_Operation_Request_PhasesSchema,
 });
-/** Raw response path: answer.body.operation.request. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Request = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_ResultRefsSchema = z.strictObject({});
-/** Raw response path: answer.body.operation.result_refs. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_ResultRefs = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Revision = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_StatusSchema = z.enum([
   'accepted',
   'failed',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Status = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Step = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_UpdatedAt = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Worker_CreationTimeSchema = z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Worker_CreationTime = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Worker_CreationTimeSchema
->;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_Worker_PidSchema = z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Worker_Pid = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const calibrateStartAnswer_Status200V1_Body_Operation_WorkerSchema = z.strictObject({
   creation_time: calibrateStartAnswer_Status200V1_Body_Operation_Worker_CreationTimeSchema,
   pid: calibrateStartAnswer_Status200V1_Body_Operation_Worker_PidSchema,
 });
-/** Raw response path: answer.body.operation.worker. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation_Worker = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_Operation_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const calibrateStartAnswer_Status200V1_Body_OperationSchema = z.strictObject({
   cancellable: calibrateStartAnswer_Status200V1_Body_Operation_CancellableSchema,
@@ -4644,135 +2308,55 @@ export const calibrateStartAnswer_Status200V1_Body_OperationSchema = z.strictObj
   updated_at: calibrateStartAnswer_Status200V1_Body_Operation_UpdatedAtSchema,
   worker: calibrateStartAnswer_Status200V1_Body_Operation_WorkerSchema,
 });
-/** Raw response path: answer.body.operation. */
-export type CalibrateStartAnswer_Status200V1_Body_Operation = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_OperationSchema
->;
 /** Strict raw response path: answer.body.operation_id. */
 export const calibrateStartAnswer_Status200V1_Body_OperationIdSchema = z.string();
-/** Raw response path: answer.body.operation_id. */
-export type CalibrateStartAnswer_Status200V1_Body_OperationId = z.infer<
-  typeof calibrateStartAnswer_Status200V1_Body_OperationIdSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateStartAnswer_Status200V1_BodySchema = z.strictObject({
   ok: calibrateStartAnswer_Status200V1_Body_OkSchema,
   operation: calibrateStartAnswer_Status200V1_Body_OperationSchema,
   operation_id: calibrateStartAnswer_Status200V1_Body_OperationIdSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateStartAnswer_Status200V1_Body = z.infer<
-  typeof calibrateStartAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateStartAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type CalibrateStartAnswer_Status200V1_Status = z.infer<
-  typeof calibrateStartAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members ok, operation, operation_id. */
 export const calibrateStartAnswer_Status200V1Schema = z.strictObject({
   body: calibrateStartAnswer_Status200V1_BodySchema,
   status: calibrateStartAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members ok, operation, operation_id. */
-export type CalibrateStartAnswer_Status200V1 = z.infer<
-  typeof calibrateStartAnswer_Status200V1Schema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateStartAnswer_Status200V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateStartAnswer_Status200V2_Body_Ok = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_CancellableSchema = z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Cancellable = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_Account = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_AdbHostSchema = z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_AdbHost = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_AdbPortSchema = z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_AdbPort = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_ArtifactDirSchema = z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_ArtifactDir = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_ArtifactDirSchema
->;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_ConfigRevision = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_DeviceKeySchema = z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_DeviceKey = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_Instance = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_Profile = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_ProfilePathSchema = z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_ProfilePath = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_ProfilePathSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_ProfileRevision = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_RenderingSchema = z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_Rendering = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_SelectedRunSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_SelectedRun = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context_Serial = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_ContextSchema = z.strictObject({
   account: calibrateStartAnswer_Status200V2_Body_Operation_Context_AccountSchema,
@@ -4789,111 +2373,42 @@ export const calibrateStartAnswer_Status200V2_Body_Operation_ContextSchema = z.s
   selected_run: calibrateStartAnswer_Status200V2_Body_Operation_Context_SelectedRunSchema,
   serial: calibrateStartAnswer_Status200V2_Body_Operation_Context_SerialSchema,
 });
-/** Raw response path: answer.body.operation.context. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Context = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_CreatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_CreatedAt = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_ErrorSchema = z.null();
-/** Raw response path: answer.body.operation.error. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Error = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Id = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_IdempotencyKeySchema = z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_IdempotencyKey = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.kind. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_KindSchema = z.enum(['calibrate']);
-/** Raw response path: answer.body.operation.kind. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Kind = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_KindSchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_ProgressSchema = z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Progress = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_RecoveryActionSchema = z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_RecoveryAction = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request.allow_navigation. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_AllowNavigationSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.request.allow_navigation. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_AllowNavigation = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_AllowNavigationSchema
->;
 /** Strict raw response path: answer.body.operation.request.battle_only. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_BattleOnlySchema = z.boolean();
-/** Raw response path: answer.body.operation.request.battle_only. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_BattleOnly = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_BattleOnlySchema
->;
 /** Strict raw response path: answer.body.operation.request.bootstrap. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_BootstrapSchema = z.boolean();
-/** Raw response path: answer.body.operation.request.bootstrap. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_Bootstrap = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_BootstrapSchema
->;
 /** Strict raw response path: answer.body.operation.request.expected_context.account. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.request.expected_context.account. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_Account =
-  z.infer<
-    typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_AccountSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.instance. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.instance. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_Instance =
-  z.infer<
-    typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.profile. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.profile. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_Profile =
-  z.infer<
-    typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_ProfileSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.rendering. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.request.expected_context.rendering. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_Rendering =
-  z.infer<
-    typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_RenderingSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.serial. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.serial. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_Serial =
-  z.infer<
-    typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_SerialSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContextSchema =
   z.strictObject({
@@ -4905,55 +2420,23 @@ export const calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedCon
       calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_RenderingSchema,
     serial: calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext_SerialSchema,
   });
-/** Raw response path: answer.body.operation.request.expected_context. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContext = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_ExpectedContextSchema
->;
 /** Strict raw response path: answer.body.operation.request.flows. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_FlowsSchema = z.boolean();
-/** Raw response path: answer.body.operation.request.flows. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_Flows = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_FlowsSchema
->;
 /** Strict raw response path: answer.body.operation.request.fresh. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_FreshSchema = z.boolean();
-/** Raw response path: answer.body.operation.request.fresh. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_Fresh = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_FreshSchema
->;
 /** Strict raw response path: answer.body.operation.request.overwrite. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_OverwriteSchema = z.boolean();
-/** Raw response path: answer.body.operation.request.overwrite. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_Overwrite = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_OverwriteSchema
->;
 /** Strict raw response path: answer.body.operation.request.phases. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_PhasesSchema = z.string();
-/** Raw response path: answer.body.operation.request.phases. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_Phases = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_PhasesSchema
->;
 /** Strict raw response path: answer.body.operation.request.routes[]. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_Routes_ArrayElementSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.routes[]. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_Routes_ArrayElement = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_Routes_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.operation.request.routes. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_RoutesSchema = z.array(
   calibrateStartAnswer_Status200V2_Body_Operation_Request_Routes_ArrayElementSchema,
 );
-/** Raw response path: answer.body.operation.request.routes. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_Routes = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_RoutesSchema
->;
 /** Strict raw response path: answer.body.operation.request.selected_run. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Request_SelectedRunSchema = z.string();
-/** Raw response path: answer.body.operation.request.selected_run. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request_SelectedRun = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Request_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_RequestSchema = z.strictObject({
   allow_navigation:
@@ -4970,61 +2453,25 @@ export const calibrateStartAnswer_Status200V2_Body_Operation_RequestSchema = z.s
   selected_run:
     calibrateStartAnswer_Status200V2_Body_Operation_Request_SelectedRunSchema.optional(),
 });
-/** Raw response path: answer.body.operation.request. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Request = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_ResultRefsSchema = z.strictObject({});
-/** Raw response path: answer.body.operation.result_refs. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_ResultRefs = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Revision = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_StatusSchema = z.enum(['accepted']);
-/** Raw response path: answer.body.operation.status. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Status = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Step = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_UpdatedAt = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Worker_CreationTimeSchema = z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Worker_CreationTime = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Worker_CreationTimeSchema
->;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_Worker_PidSchema = z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Worker_Pid = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const calibrateStartAnswer_Status200V2_Body_Operation_WorkerSchema = z.strictObject({
   creation_time: calibrateStartAnswer_Status200V2_Body_Operation_Worker_CreationTimeSchema,
   pid: calibrateStartAnswer_Status200V2_Body_Operation_Worker_PidSchema,
 });
-/** Raw response path: answer.body.operation.worker. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation_Worker = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_Operation_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const calibrateStartAnswer_Status200V2_Body_OperationSchema = z.strictObject({
   cancellable: calibrateStartAnswer_Status200V2_Body_Operation_CancellableSchema,
@@ -5044,22 +2491,10 @@ export const calibrateStartAnswer_Status200V2_Body_OperationSchema = z.strictObj
   updated_at: calibrateStartAnswer_Status200V2_Body_Operation_UpdatedAtSchema,
   worker: calibrateStartAnswer_Status200V2_Body_Operation_WorkerSchema,
 });
-/** Raw response path: answer.body.operation. */
-export type CalibrateStartAnswer_Status200V2_Body_Operation = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_OperationSchema
->;
 /** Strict raw response path: answer.body.operation_id. */
 export const calibrateStartAnswer_Status200V2_Body_OperationIdSchema = z.string();
-/** Raw response path: answer.body.operation_id. */
-export type CalibrateStartAnswer_Status200V2_Body_OperationId = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_OperationIdSchema
->;
 /** Strict raw response path: answer.body.phases. */
 export const calibrateStartAnswer_Status200V2_Body_PhasesSchema = z.string();
-/** Raw response path: answer.body.phases. */
-export type CalibrateStartAnswer_Status200V2_Body_Phases = z.infer<
-  typeof calibrateStartAnswer_Status200V2_Body_PhasesSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateStartAnswer_Status200V2_BodySchema = z.strictObject({
   ok: calibrateStartAnswer_Status200V2_Body_OkSchema,
@@ -5067,104 +2502,50 @@ export const calibrateStartAnswer_Status200V2_BodySchema = z.strictObject({
   operation_id: calibrateStartAnswer_Status200V2_Body_OperationIdSchema,
   phases: calibrateStartAnswer_Status200V2_Body_PhasesSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateStartAnswer_Status200V2_Body = z.infer<
-  typeof calibrateStartAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateStartAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type CalibrateStartAnswer_Status200V2_Status = z.infer<
-  typeof calibrateStartAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members ok, operation, operation_id, phases. */
 export const calibrateStartAnswer_Status200V2Schema = z.strictObject({
   body: calibrateStartAnswer_Status200V2_BodySchema,
   status: calibrateStartAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members ok, operation, operation_id, phases. */
-export type CalibrateStartAnswer_Status200V2 = z.infer<
-  typeof calibrateStartAnswer_Status200V2Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const calibrateStartAnswer_Status400_Body_CodeSchema = z.enum([
   'invalid_phases',
   'invalid_request',
   'invalid_routes',
 ]);
-/** Raw response path: answer.body.code. */
-export type CalibrateStartAnswer_Status400_Body_Code = z.infer<
-  typeof calibrateStartAnswer_Status400_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateStartAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateStartAnswer_Status400_Body_Error = z.infer<
-  typeof calibrateStartAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateStartAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateStartAnswer_Status400_Body_Ok = z.infer<
-  typeof calibrateStartAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateStartAnswer_Status400_BodySchema = z.strictObject({
   code: calibrateStartAnswer_Status400_Body_CodeSchema,
   error: calibrateStartAnswer_Status400_Body_ErrorSchema,
   ok: calibrateStartAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateStartAnswer_Status400_Body = z.infer<
-  typeof calibrateStartAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateStartAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type CalibrateStartAnswer_Status400_Status = z.infer<
-  typeof calibrateStartAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members code, error, ok. */
 export const calibrateStartAnswer_Status400Schema = z.strictObject({
   body: calibrateStartAnswer_Status400_BodySchema,
   status: calibrateStartAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members code, error, ok. */
-export type CalibrateStartAnswer_Status400 = z.infer<typeof calibrateStartAnswer_Status400Schema>;
 /** Strict raw response path: answer.body.code. */
 export const calibrateStartAnswer_Status409V1_Body_CodeSchema = z.enum([
   'navigation_images_missing',
 ]);
-/** Raw response path: answer.body.code. */
-export type CalibrateStartAnswer_Status409V1_Body_Code = z.infer<
-  typeof calibrateStartAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateStartAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateStartAnswer_Status409V1_Body_Error = z.infer<
-  typeof calibrateStartAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.missing[]. */
 export const calibrateStartAnswer_Status409V1_Body_Missing_ArrayElementSchema = z.string();
-/** Raw response path: answer.body.missing[]. */
-export type CalibrateStartAnswer_Status409V1_Body_Missing_ArrayElement = z.infer<
-  typeof calibrateStartAnswer_Status409V1_Body_Missing_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.missing. */
 export const calibrateStartAnswer_Status409V1_Body_MissingSchema = z.array(
   calibrateStartAnswer_Status409V1_Body_Missing_ArrayElementSchema,
 );
-/** Raw response path: answer.body.missing. */
-export type CalibrateStartAnswer_Status409V1_Body_Missing = z.infer<
-  typeof calibrateStartAnswer_Status409V1_Body_MissingSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateStartAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateStartAnswer_Status409V1_Body_Ok = z.infer<
-  typeof calibrateStartAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateStartAnswer_Status409V1_BodySchema = z.strictObject({
   code: calibrateStartAnswer_Status409V1_Body_CodeSchema,
@@ -5172,25 +2553,13 @@ export const calibrateStartAnswer_Status409V1_BodySchema = z.strictObject({
   missing: calibrateStartAnswer_Status409V1_Body_MissingSchema,
   ok: calibrateStartAnswer_Status409V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateStartAnswer_Status409V1_Body = z.infer<
-  typeof calibrateStartAnswer_Status409V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateStartAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type CalibrateStartAnswer_Status409V1_Status = z.infer<
-  typeof calibrateStartAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, missing, ok. */
 export const calibrateStartAnswer_Status409V1Schema = z.strictObject({
   body: calibrateStartAnswer_Status409V1_BodySchema,
   status: calibrateStartAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, missing, ok. */
-export type CalibrateStartAnswer_Status409V1 = z.infer<
-  typeof calibrateStartAnswer_Status409V1Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const calibrateStartAnswer_Status409V2_Body_CodeSchema = z.enum([
   'action_lock',
@@ -5200,196 +2569,84 @@ export const calibrateStartAnswer_Status409V2_Body_CodeSchema = z.enum([
   'modules_not_done',
   'taps_disabled',
 ]);
-/** Raw response path: answer.body.code. */
-export type CalibrateStartAnswer_Status409V2_Body_Code = z.infer<
-  typeof calibrateStartAnswer_Status409V2_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateStartAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateStartAnswer_Status409V2_Body_Error = z.infer<
-  typeof calibrateStartAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateStartAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateStartAnswer_Status409V2_Body_Ok = z.infer<
-  typeof calibrateStartAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateStartAnswer_Status409V2_BodySchema = z.strictObject({
   code: calibrateStartAnswer_Status409V2_Body_CodeSchema,
   error: calibrateStartAnswer_Status409V2_Body_ErrorSchema,
   ok: calibrateStartAnswer_Status409V2_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateStartAnswer_Status409V2_Body = z.infer<
-  typeof calibrateStartAnswer_Status409V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateStartAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type CalibrateStartAnswer_Status409V2_Status = z.infer<
-  typeof calibrateStartAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const calibrateStartAnswer_Status409V2Schema = z.strictObject({
   body: calibrateStartAnswer_Status409V2_BodySchema,
   status: calibrateStartAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type CalibrateStartAnswer_Status409V2 = z.infer<
-  typeof calibrateStartAnswer_Status409V2Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const calibrateStartAnswer_Status409V3_Body_CodeSchema = z.enum(['device_owned']);
-/** Raw response path: answer.body.code. */
-export type CalibrateStartAnswer_Status409V3_Body_Code = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateStartAnswer_Status409V3_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateStartAnswer_Status409V3_Body_Error = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateStartAnswer_Status409V3_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateStartAnswer_Status409V3_Body_Ok = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_OkSchema
->;
 /** Strict raw response path: answer.body.owner.battle. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_BattleSchema = z.null();
-/** Raw response path: answer.body.owner.battle. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Battle = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_BattleSchema
->;
 /** Strict raw response path: answer.body.owner.foreign. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_ForeignSchema = z.boolean();
-/** Raw response path: answer.body.owner.foreign. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Foreign = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_ForeignSchema
->;
 /** Strict raw response path: answer.body.owner.gathers. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_GathersSchema = z.null();
-/** Raw response path: answer.body.owner.gathers. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Gathers = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_GathersSchema
->;
 /** Strict raw response path: answer.body.owner.gems.ad_gems. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_Gems_AdGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.ad_gems. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Gems_AdGems = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_Gems_AdGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems.basis. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_Gems_BasisSchema = z.enum([
   'not_reported',
 ]);
-/** Raw response path: answer.body.owner.gems.basis. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Gems_Basis = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_Gems_BasisSchema
->;
 /** Strict raw response path: answer.body.owner.gems.floating_gems. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.floating_gems. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Gems_FloatingGems = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_GemsSchema = z.strictObject({
   ad_gems: calibrateStartAnswer_Status409V3_Body_Owner_Gems_AdGemsSchema,
   basis: calibrateStartAnswer_Status409V3_Body_Owner_Gems_BasisSchema,
   floating_gems: calibrateStartAnswer_Status409V3_Body_Owner_Gems_FloatingGemsSchema,
 });
-/** Raw response path: answer.body.owner.gems. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Gems = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_GemsSchema
->;
 /** Strict raw response path: answer.body.owner.harvest_managed. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_HarvestManagedSchema = z.boolean();
-/** Raw response path: answer.body.owner.harvest_managed. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_HarvestManaged = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_HarvestManagedSchema
->;
 /** Strict raw response path: answer.body.owner.kind. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_KindSchema = z.enum(['operation']);
-/** Raw response path: answer.body.owner.kind. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Kind = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_KindSchema
->;
 /** Strict raw response path: answer.body.owner.operation_id. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_OperationIdSchema = z.string();
-/** Raw response path: answer.body.owner.operation_id. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_OperationId = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.operation_kind. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_OperationKindSchema = z.enum([
   'gems',
   'run',
   'scan',
 ]);
-/** Raw response path: answer.body.owner.operation_kind. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_OperationKind = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_OperationKindSchema
->;
 /** Strict raw response path: answer.body.owner.pid. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_PidSchema = z.number();
-/** Raw response path: answer.body.owner.pid. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Pid = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_PidSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.action. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_Recovery_ActionSchema = z.enum([
   'stop_operation',
 ]);
-/** Raw response path: answer.body.owner.recovery.action. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Recovery_Action = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_Recovery_ActionSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.expected_revision. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_Recovery_ExpectedRevisionSchema =
   z.number();
-/** Raw response path: answer.body.owner.recovery.expected_revision. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Recovery_ExpectedRevision = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.operation_id. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_Recovery_OperationIdSchema = z.string();
-/** Raw response path: answer.body.owner.recovery.operation_id. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Recovery_OperationId = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_Recovery_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.recovery. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_RecoverySchema = z.strictObject({
   action: calibrateStartAnswer_Status409V3_Body_Owner_Recovery_ActionSchema,
   expected_revision: calibrateStartAnswer_Status409V3_Body_Owner_Recovery_ExpectedRevisionSchema,
   operation_id: calibrateStartAnswer_Status409V3_Body_Owner_Recovery_OperationIdSchema,
 });
-/** Raw response path: answer.body.owner.recovery. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Recovery = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_RecoverySchema
->;
 /** Strict raw response path: answer.body.owner.routines. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_RoutinesSchema = z.null();
-/** Raw response path: answer.body.owner.routines. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Routines = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_RoutinesSchema
->;
 /** Strict raw response path: answer.body.owner.script. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_ScriptSchema = z.null();
-/** Raw response path: answer.body.owner.script. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Script = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_ScriptSchema
->;
 /** Strict raw response path: answer.body.owner.status. */
 export const calibrateStartAnswer_Status409V3_Body_Owner_StatusSchema = z.enum(['running']);
-/** Raw response path: answer.body.owner.status. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner_Status = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Owner_StatusSchema
->;
 /** Strict raw response path: answer.body.owner. */
 export const calibrateStartAnswer_Status409V3_Body_OwnerSchema = z.strictObject({
   battle: calibrateStartAnswer_Status409V3_Body_Owner_BattleSchema,
@@ -5406,46 +2663,22 @@ export const calibrateStartAnswer_Status409V3_Body_OwnerSchema = z.strictObject(
   script: calibrateStartAnswer_Status409V3_Body_Owner_ScriptSchema,
   status: calibrateStartAnswer_Status409V3_Body_Owner_StatusSchema,
 });
-/** Raw response path: answer.body.owner. */
-export type CalibrateStartAnswer_Status409V3_Body_Owner = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_OwnerSchema
->;
 /** Strict raw response path: answer.body.recovery.action. */
 export const calibrateStartAnswer_Status409V3_Body_Recovery_ActionSchema = z.enum([
   'stop_operation',
 ]);
-/** Raw response path: answer.body.recovery.action. */
-export type CalibrateStartAnswer_Status409V3_Body_Recovery_Action = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Recovery_ActionSchema
->;
 /** Strict raw response path: answer.body.recovery.expected_revision. */
 export const calibrateStartAnswer_Status409V3_Body_Recovery_ExpectedRevisionSchema = z.number();
-/** Raw response path: answer.body.recovery.expected_revision. */
-export type CalibrateStartAnswer_Status409V3_Body_Recovery_ExpectedRevision = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: answer.body.recovery.operation_id. */
 export const calibrateStartAnswer_Status409V3_Body_Recovery_OperationIdSchema = z.string();
-/** Raw response path: answer.body.recovery.operation_id. */
-export type CalibrateStartAnswer_Status409V3_Body_Recovery_OperationId = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_Recovery_OperationIdSchema
->;
 /** Strict raw response path: answer.body.recovery. */
 export const calibrateStartAnswer_Status409V3_Body_RecoverySchema = z.strictObject({
   action: calibrateStartAnswer_Status409V3_Body_Recovery_ActionSchema,
   expected_revision: calibrateStartAnswer_Status409V3_Body_Recovery_ExpectedRevisionSchema,
   operation_id: calibrateStartAnswer_Status409V3_Body_Recovery_OperationIdSchema,
 });
-/** Raw response path: answer.body.recovery. */
-export type CalibrateStartAnswer_Status409V3_Body_Recovery = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_RecoverySchema
->;
 /** Strict raw response path: answer.body.retry. */
 export const calibrateStartAnswer_Status409V3_Body_RetrySchema = z.string();
-/** Raw response path: answer.body.retry. */
-export type CalibrateStartAnswer_Status409V3_Body_Retry = z.infer<
-  typeof calibrateStartAnswer_Status409V3_Body_RetrySchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateStartAnswer_Status409V3_BodySchema = z.strictObject({
   code: calibrateStartAnswer_Status409V3_Body_CodeSchema,
@@ -5455,25 +2688,13 @@ export const calibrateStartAnswer_Status409V3_BodySchema = z.strictObject({
   recovery: calibrateStartAnswer_Status409V3_Body_RecoverySchema,
   retry: calibrateStartAnswer_Status409V3_Body_RetrySchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateStartAnswer_Status409V3_Body = z.infer<
-  typeof calibrateStartAnswer_Status409V3_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateStartAnswer_Status409V3_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type CalibrateStartAnswer_Status409V3_Status = z.infer<
-  typeof calibrateStartAnswer_Status409V3_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
 export const calibrateStartAnswer_Status409V3Schema = z.strictObject({
   body: calibrateStartAnswer_Status409V3_BodySchema,
   status: calibrateStartAnswer_Status409V3_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
-export type CalibrateStartAnswer_Status409V3 = z.infer<
-  typeof calibrateStartAnswer_Status409V3Schema
->;
 /** Strict raw response path: answer. */
 export const calibrateStartAnswerSchema = z.union([
   calibrateStartAnswer_Status200V1Schema,
@@ -5487,98 +2708,38 @@ export const calibrateStartAnswerSchema = z.union([
 export type CalibrateStartAnswer = z.infer<typeof calibrateStartAnswerSchema>;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateObserveAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateObserveAnswer_Status200_Body_Ok = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const calibrateObserveAnswer_Status200_Body_Operation_CancellableSchema = z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Cancellable = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_Account = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_AdbHostSchema = z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_AdbHost = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_AdbPortSchema = z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_AdbPort = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_ArtifactDirSchema = z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_ArtifactDir = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_ArtifactDirSchema
->;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_ConfigRevision = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_DeviceKeySchema = z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_DeviceKey = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_Instance = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_Profile = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_ProfilePathSchema = z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_ProfilePath = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_ProfilePathSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_ProfileRevision = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_RenderingSchema = z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_Rendering = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_SelectedRunSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_SelectedRun = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context_Serial = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const calibrateObserveAnswer_Status200_Body_Operation_ContextSchema = z.strictObject({
   account: calibrateObserveAnswer_Status200_Body_Operation_Context_AccountSchema,
@@ -5595,92 +2756,35 @@ export const calibrateObserveAnswer_Status200_Body_Operation_ContextSchema = z.s
   selected_run: calibrateObserveAnswer_Status200_Body_Operation_Context_SelectedRunSchema,
   serial: calibrateObserveAnswer_Status200_Body_Operation_Context_SerialSchema,
 });
-/** Raw response path: answer.body.operation.context. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Context = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const calibrateObserveAnswer_Status200_Body_Operation_CreatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_CreatedAt = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const calibrateObserveAnswer_Status200_Body_Operation_ErrorSchema = z.null();
-/** Raw response path: answer.body.operation.error. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Error = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const calibrateObserveAnswer_Status200_Body_Operation_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Id = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const calibrateObserveAnswer_Status200_Body_Operation_IdempotencyKeySchema = z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_IdempotencyKey = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.kind. */
 export const calibrateObserveAnswer_Status200_Body_Operation_KindSchema = z.enum(['observe']);
-/** Raw response path: answer.body.operation.kind. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Kind = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_KindSchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const calibrateObserveAnswer_Status200_Body_Operation_ProgressSchema = z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Progress = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const calibrateObserveAnswer_Status200_Body_Operation_RecoveryActionSchema = z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_RecoveryAction = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request.expected_context.account. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.request.expected_context.account. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_Account =
-  z.infer<
-    typeof calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_AccountSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.instance. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.instance. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_Instance =
-  z.infer<
-    typeof calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.profile. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.profile. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_Profile =
-  z.infer<
-    typeof calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_ProfileSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.rendering. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.request.expected_context.rendering. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_Rendering =
-  z.infer<
-    typeof calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_RenderingSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context.serial. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.expected_context.serial. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_Serial =
-  z.infer<
-    typeof calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_SerialSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.expected_context. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContextSchema =
   z.strictObject({
@@ -5692,22 +2796,10 @@ export const calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedCon
       calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_RenderingSchema,
     serial: calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext_SerialSchema,
   });
-/** Raw response path: answer.body.operation.request.expected_context. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContext = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Request_ExpectedContextSchema
->;
 /** Strict raw response path: answer.body.operation.request.selected_run. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Request_SelectedRunSchema = z.string();
-/** Raw response path: answer.body.operation.request.selected_run. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Request_SelectedRun = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Request_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.operation.request.watch. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Request_WatchSchema = z.number();
-/** Raw response path: answer.body.operation.request.watch. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Request_Watch = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Request_WatchSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const calibrateObserveAnswer_Status200_Body_Operation_RequestSchema = z.strictObject({
   expected_context:
@@ -5716,61 +2808,25 @@ export const calibrateObserveAnswer_Status200_Body_Operation_RequestSchema = z.s
     calibrateObserveAnswer_Status200_Body_Operation_Request_SelectedRunSchema.optional(),
   watch: calibrateObserveAnswer_Status200_Body_Operation_Request_WatchSchema.optional(),
 });
-/** Raw response path: answer.body.operation.request. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Request = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const calibrateObserveAnswer_Status200_Body_Operation_ResultRefsSchema = z.strictObject({});
-/** Raw response path: answer.body.operation.result_refs. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_ResultRefs = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const calibrateObserveAnswer_Status200_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Revision = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const calibrateObserveAnswer_Status200_Body_Operation_StatusSchema = z.enum(['accepted']);
-/** Raw response path: answer.body.operation.status. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Status = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const calibrateObserveAnswer_Status200_Body_Operation_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Step = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const calibrateObserveAnswer_Status200_Body_Operation_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_UpdatedAt = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Worker_CreationTimeSchema = z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Worker_CreationTime = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Worker_CreationTimeSchema
->;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const calibrateObserveAnswer_Status200_Body_Operation_Worker_PidSchema = z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Worker_Pid = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const calibrateObserveAnswer_Status200_Body_Operation_WorkerSchema = z.strictObject({
   creation_time: calibrateObserveAnswer_Status200_Body_Operation_Worker_CreationTimeSchema,
   pid: calibrateObserveAnswer_Status200_Body_Operation_Worker_PidSchema,
 });
-/** Raw response path: answer.body.operation.worker. */
-export type CalibrateObserveAnswer_Status200_Body_Operation_Worker = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_Operation_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const calibrateObserveAnswer_Status200_Body_OperationSchema = z.strictObject({
   cancellable: calibrateObserveAnswer_Status200_Body_Operation_CancellableSchema,
@@ -5790,87 +2846,43 @@ export const calibrateObserveAnswer_Status200_Body_OperationSchema = z.strictObj
   updated_at: calibrateObserveAnswer_Status200_Body_Operation_UpdatedAtSchema,
   worker: calibrateObserveAnswer_Status200_Body_Operation_WorkerSchema,
 });
-/** Raw response path: answer.body.operation. */
-export type CalibrateObserveAnswer_Status200_Body_Operation = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_OperationSchema
->;
 /** Strict raw response path: answer.body.operation_id. */
 export const calibrateObserveAnswer_Status200_Body_OperationIdSchema = z.string();
-/** Raw response path: answer.body.operation_id. */
-export type CalibrateObserveAnswer_Status200_Body_OperationId = z.infer<
-  typeof calibrateObserveAnswer_Status200_Body_OperationIdSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateObserveAnswer_Status200_BodySchema = z.strictObject({
   ok: calibrateObserveAnswer_Status200_Body_OkSchema,
   operation: calibrateObserveAnswer_Status200_Body_OperationSchema,
   operation_id: calibrateObserveAnswer_Status200_Body_OperationIdSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateObserveAnswer_Status200_Body = z.infer<
-  typeof calibrateObserveAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateObserveAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type CalibrateObserveAnswer_Status200_Status = z.infer<
-  typeof calibrateObserveAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members ok, operation, operation_id. */
 export const calibrateObserveAnswer_Status200Schema = z.strictObject({
   body: calibrateObserveAnswer_Status200_BodySchema,
   status: calibrateObserveAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members ok, operation, operation_id. */
-export type CalibrateObserveAnswer_Status200 = z.infer<
-  typeof calibrateObserveAnswer_Status200Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const calibrateObserveAnswer_Status400_Body_CodeSchema = z.enum([
   'invalid_request',
   'invalid_watch',
 ]);
-/** Raw response path: answer.body.code. */
-export type CalibrateObserveAnswer_Status400_Body_Code = z.infer<
-  typeof calibrateObserveAnswer_Status400_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateObserveAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateObserveAnswer_Status400_Body_Error = z.infer<
-  typeof calibrateObserveAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateObserveAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateObserveAnswer_Status400_Body_Ok = z.infer<
-  typeof calibrateObserveAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateObserveAnswer_Status400_BodySchema = z.strictObject({
   code: calibrateObserveAnswer_Status400_Body_CodeSchema,
   error: calibrateObserveAnswer_Status400_Body_ErrorSchema,
   ok: calibrateObserveAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateObserveAnswer_Status400_Body = z.infer<
-  typeof calibrateObserveAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateObserveAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type CalibrateObserveAnswer_Status400_Status = z.infer<
-  typeof calibrateObserveAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members code, error, ok. */
 export const calibrateObserveAnswer_Status400Schema = z.strictObject({
   body: calibrateObserveAnswer_Status400_BodySchema,
   status: calibrateObserveAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members code, error, ok. */
-export type CalibrateObserveAnswer_Status400 = z.infer<
-  typeof calibrateObserveAnswer_Status400Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const calibrateObserveAnswer_Status409V1_Body_CodeSchema = z.enum([
   'action_lock',
@@ -5878,192 +2890,80 @@ export const calibrateObserveAnswer_Status409V1_Body_CodeSchema = z.enum([
   'context_changed',
   'idempotency_key_reused',
 ]);
-/** Raw response path: answer.body.code. */
-export type CalibrateObserveAnswer_Status409V1_Body_Code = z.infer<
-  typeof calibrateObserveAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateObserveAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateObserveAnswer_Status409V1_Body_Error = z.infer<
-  typeof calibrateObserveAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateObserveAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateObserveAnswer_Status409V1_Body_Ok = z.infer<
-  typeof calibrateObserveAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateObserveAnswer_Status409V1_BodySchema = z.strictObject({
   code: calibrateObserveAnswer_Status409V1_Body_CodeSchema,
   error: calibrateObserveAnswer_Status409V1_Body_ErrorSchema,
   ok: calibrateObserveAnswer_Status409V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateObserveAnswer_Status409V1_Body = z.infer<
-  typeof calibrateObserveAnswer_Status409V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateObserveAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type CalibrateObserveAnswer_Status409V1_Status = z.infer<
-  typeof calibrateObserveAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const calibrateObserveAnswer_Status409V1Schema = z.strictObject({
   body: calibrateObserveAnswer_Status409V1_BodySchema,
   status: calibrateObserveAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type CalibrateObserveAnswer_Status409V1 = z.infer<
-  typeof calibrateObserveAnswer_Status409V1Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const calibrateObserveAnswer_Status409V2_Body_CodeSchema = z.enum(['device_owned']);
-/** Raw response path: answer.body.code. */
-export type CalibrateObserveAnswer_Status409V2_Body_Code = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateObserveAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateObserveAnswer_Status409V2_Body_Error = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateObserveAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateObserveAnswer_Status409V2_Body_Ok = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.owner.battle. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_BattleSchema = z.null();
-/** Raw response path: answer.body.owner.battle. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Battle = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_BattleSchema
->;
 /** Strict raw response path: answer.body.owner.foreign. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_ForeignSchema = z.boolean();
-/** Raw response path: answer.body.owner.foreign. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Foreign = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_ForeignSchema
->;
 /** Strict raw response path: answer.body.owner.gathers. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_GathersSchema = z.null();
-/** Raw response path: answer.body.owner.gathers. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Gathers = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_GathersSchema
->;
 /** Strict raw response path: answer.body.owner.gems.ad_gems. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_Gems_AdGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.ad_gems. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Gems_AdGems = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_Gems_AdGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems.basis. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_Gems_BasisSchema = z.enum([
   'not_reported',
 ]);
-/** Raw response path: answer.body.owner.gems.basis. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Gems_Basis = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_Gems_BasisSchema
->;
 /** Strict raw response path: answer.body.owner.gems.floating_gems. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.floating_gems. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Gems_FloatingGems = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_GemsSchema = z.strictObject({
   ad_gems: calibrateObserveAnswer_Status409V2_Body_Owner_Gems_AdGemsSchema,
   basis: calibrateObserveAnswer_Status409V2_Body_Owner_Gems_BasisSchema,
   floating_gems: calibrateObserveAnswer_Status409V2_Body_Owner_Gems_FloatingGemsSchema,
 });
-/** Raw response path: answer.body.owner.gems. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Gems = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_GemsSchema
->;
 /** Strict raw response path: answer.body.owner.harvest_managed. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_HarvestManagedSchema = z.boolean();
-/** Raw response path: answer.body.owner.harvest_managed. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_HarvestManaged = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_HarvestManagedSchema
->;
 /** Strict raw response path: answer.body.owner.kind. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_KindSchema = z.enum(['operation']);
-/** Raw response path: answer.body.owner.kind. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Kind = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_KindSchema
->;
 /** Strict raw response path: answer.body.owner.operation_id. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_OperationIdSchema = z.string();
-/** Raw response path: answer.body.owner.operation_id. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_OperationId = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.operation_kind. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_OperationKindSchema = z.enum(['run']);
-/** Raw response path: answer.body.owner.operation_kind. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_OperationKind = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_OperationKindSchema
->;
 /** Strict raw response path: answer.body.owner.pid. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_PidSchema = z.number();
-/** Raw response path: answer.body.owner.pid. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Pid = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_PidSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.action. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_Recovery_ActionSchema = z.enum([
   'stop_operation',
 ]);
-/** Raw response path: answer.body.owner.recovery.action. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Recovery_Action = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_Recovery_ActionSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.expected_revision. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_Recovery_ExpectedRevisionSchema =
   z.number();
-/** Raw response path: answer.body.owner.recovery.expected_revision. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Recovery_ExpectedRevision = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.operation_id. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_Recovery_OperationIdSchema = z.string();
-/** Raw response path: answer.body.owner.recovery.operation_id. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Recovery_OperationId = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_Recovery_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.recovery. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_RecoverySchema = z.strictObject({
   action: calibrateObserveAnswer_Status409V2_Body_Owner_Recovery_ActionSchema,
   expected_revision: calibrateObserveAnswer_Status409V2_Body_Owner_Recovery_ExpectedRevisionSchema,
   operation_id: calibrateObserveAnswer_Status409V2_Body_Owner_Recovery_OperationIdSchema,
 });
-/** Raw response path: answer.body.owner.recovery. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Recovery = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_RecoverySchema
->;
 /** Strict raw response path: answer.body.owner.routines. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_RoutinesSchema = z.null();
-/** Raw response path: answer.body.owner.routines. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Routines = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_RoutinesSchema
->;
 /** Strict raw response path: answer.body.owner.script. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_ScriptSchema = z.null();
-/** Raw response path: answer.body.owner.script. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Script = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_ScriptSchema
->;
 /** Strict raw response path: answer.body.owner.status. */
 export const calibrateObserveAnswer_Status409V2_Body_Owner_StatusSchema = z.enum(['running']);
-/** Raw response path: answer.body.owner.status. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner_Status = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Owner_StatusSchema
->;
 /** Strict raw response path: answer.body.owner. */
 export const calibrateObserveAnswer_Status409V2_Body_OwnerSchema = z.strictObject({
   battle: calibrateObserveAnswer_Status409V2_Body_Owner_BattleSchema,
@@ -6080,46 +2980,22 @@ export const calibrateObserveAnswer_Status409V2_Body_OwnerSchema = z.strictObjec
   script: calibrateObserveAnswer_Status409V2_Body_Owner_ScriptSchema,
   status: calibrateObserveAnswer_Status409V2_Body_Owner_StatusSchema,
 });
-/** Raw response path: answer.body.owner. */
-export type CalibrateObserveAnswer_Status409V2_Body_Owner = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_OwnerSchema
->;
 /** Strict raw response path: answer.body.recovery.action. */
 export const calibrateObserveAnswer_Status409V2_Body_Recovery_ActionSchema = z.enum([
   'stop_operation',
 ]);
-/** Raw response path: answer.body.recovery.action. */
-export type CalibrateObserveAnswer_Status409V2_Body_Recovery_Action = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Recovery_ActionSchema
->;
 /** Strict raw response path: answer.body.recovery.expected_revision. */
 export const calibrateObserveAnswer_Status409V2_Body_Recovery_ExpectedRevisionSchema = z.number();
-/** Raw response path: answer.body.recovery.expected_revision. */
-export type CalibrateObserveAnswer_Status409V2_Body_Recovery_ExpectedRevision = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: answer.body.recovery.operation_id. */
 export const calibrateObserveAnswer_Status409V2_Body_Recovery_OperationIdSchema = z.string();
-/** Raw response path: answer.body.recovery.operation_id. */
-export type CalibrateObserveAnswer_Status409V2_Body_Recovery_OperationId = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_Recovery_OperationIdSchema
->;
 /** Strict raw response path: answer.body.recovery. */
 export const calibrateObserveAnswer_Status409V2_Body_RecoverySchema = z.strictObject({
   action: calibrateObserveAnswer_Status409V2_Body_Recovery_ActionSchema,
   expected_revision: calibrateObserveAnswer_Status409V2_Body_Recovery_ExpectedRevisionSchema,
   operation_id: calibrateObserveAnswer_Status409V2_Body_Recovery_OperationIdSchema,
 });
-/** Raw response path: answer.body.recovery. */
-export type CalibrateObserveAnswer_Status409V2_Body_Recovery = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_RecoverySchema
->;
 /** Strict raw response path: answer.body.retry. */
 export const calibrateObserveAnswer_Status409V2_Body_RetrySchema = z.string();
-/** Raw response path: answer.body.retry. */
-export type CalibrateObserveAnswer_Status409V2_Body_Retry = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_Body_RetrySchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateObserveAnswer_Status409V2_BodySchema = z.strictObject({
   code: calibrateObserveAnswer_Status409V2_Body_CodeSchema,
@@ -6129,25 +3005,13 @@ export const calibrateObserveAnswer_Status409V2_BodySchema = z.strictObject({
   recovery: calibrateObserveAnswer_Status409V2_Body_RecoverySchema,
   retry: calibrateObserveAnswer_Status409V2_Body_RetrySchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateObserveAnswer_Status409V2_Body = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateObserveAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type CalibrateObserveAnswer_Status409V2_Status = z.infer<
-  typeof calibrateObserveAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
 export const calibrateObserveAnswer_Status409V2Schema = z.strictObject({
   body: calibrateObserveAnswer_Status409V2_BodySchema,
   status: calibrateObserveAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
-export type CalibrateObserveAnswer_Status409V2 = z.infer<
-  typeof calibrateObserveAnswer_Status409V2Schema
->;
 /** Strict raw response path: answer. */
 export const calibrateObserveAnswerSchema = z.union([
   calibrateObserveAnswer_Status200Schema,
@@ -6159,102 +3023,38 @@ export const calibrateObserveAnswerSchema = z.union([
 export type CalibrateObserveAnswer = z.infer<typeof calibrateObserveAnswerSchema>;
 /** Strict raw response path: answer.body.applied. */
 export const calibrateApplyAnswer_Status200V1_Body_AppliedSchema = z.boolean();
-/** Raw response path: answer.body.applied. */
-export type CalibrateApplyAnswer_Status200V1_Body_Applied = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_AppliedSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateApplyAnswer_Status200V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateApplyAnswer_Status200V1_Body_Ok = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_CancellableSchema = z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Cancellable = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_Account = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_AdbHostSchema = z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_AdbHost = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_AdbPortSchema = z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_AdbPort = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_ArtifactDirSchema = z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_ArtifactDir = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_ArtifactDirSchema
->;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_ConfigRevision = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_DeviceKeySchema = z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_DeviceKey = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_Instance = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_Profile = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_ProfilePathSchema = z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_ProfilePath = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_ProfilePathSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_ProfileRevision = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_RenderingSchema = z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_Rendering = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_SelectedRunSchema = z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_SelectedRun = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context_Serial = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ContextSchema = z.strictObject({
   account: calibrateApplyAnswer_Status200V1_Body_Operation_Context_AccountSchema,
@@ -6271,30 +3071,14 @@ export const calibrateApplyAnswer_Status200V1_Body_Operation_ContextSchema = z.s
   selected_run: calibrateApplyAnswer_Status200V1_Body_Operation_Context_SelectedRunSchema,
   serial: calibrateApplyAnswer_Status200V1_Body_Operation_Context_SerialSchema,
 });
-/** Raw response path: answer.body.operation.context. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Context = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_CreatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_CreatedAt = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error.code. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Error_CodeSchema = z.enum([
   'calibration_failed',
 ]);
-/** Raw response path: answer.body.operation.error.code. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Error_Code = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Error_CodeSchema
->;
 /** Strict raw response path: answer.body.operation.error.message. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Error_MessageSchema = z.string();
-/** Raw response path: answer.body.operation.error.message. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Error_Message = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Error_MessageSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ErrorSchema = z
   .strictObject({
@@ -6302,83 +3086,33 @@ export const calibrateApplyAnswer_Status200V1_Body_Operation_ErrorSchema = z
     message: calibrateApplyAnswer_Status200V1_Body_Operation_Error_MessageSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.error. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Error = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Id = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_IdempotencyKeySchema = z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_IdempotencyKey = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.kind. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_KindSchema = z.enum(['calibrate']);
-/** Raw response path: answer.body.operation.kind. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Kind = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_KindSchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ProgressSchema = z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Progress = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.readiness. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ReadinessSchema = z.null();
-/** Raw response path: answer.body.operation.readiness. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Readiness = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_ReadinessSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_RecoveryActionSchema = z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_RecoveryAction = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request.bootstrap. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Request_BootstrapSchema = z.boolean();
-/** Raw response path: answer.body.operation.request.bootstrap. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Request_Bootstrap = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Request_BootstrapSchema
->;
 /** Strict raw response path: answer.body.operation.request.phases. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Request_PhasesSchema = z.string();
-/** Raw response path: answer.body.operation.request.phases. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Request_Phases = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Request_PhasesSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_RequestSchema = z.strictObject({
   bootstrap: calibrateApplyAnswer_Status200V1_Body_Operation_Request_BootstrapSchema,
   phases: calibrateApplyAnswer_Status200V1_Body_Operation_Request_PhasesSchema,
 });
-/** Raw response path: answer.body.operation.request. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Request = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.error.code. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_CodeSchema =
   z.enum(['calibration_failed']);
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.error.code. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_Code =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_CodeSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.error.message. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_MessageSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.error.message. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_Message =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_MessageSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.error. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_ErrorSchema =
   z
@@ -6388,35 +3122,15 @@ export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCap
         calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error_MessageSchema,
     })
     .nullable();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.error. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_Error =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_ErrorSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.recovery_action. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.recovery_action. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_RecoveryAction =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_RecoveryActionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.status. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_StatusSchema =
   z.enum(['awaiting_apply', 'failed']);
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.status. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_Status =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_StatusSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.step. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_StepSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.step. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_Step =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_StepSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcomeSchema =
   z.strictObject({
@@ -6428,63 +3142,26 @@ export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCap
       calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_StatusSchema,
     step: calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome_StepSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcome =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyCaptureOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_error. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyErrorSchema = z.null();
-/** Raw response path: answer.body.operation.result_refs.apply_error. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyError = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyErrorSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs.apply_profile_digest. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyProfileDigestSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_profile_digest. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyProfileDigest = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyProfileDigestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs.apply_profile_revision. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_profile_revision. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyProfileRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_request_revision. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyRequestRevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.result_refs.apply_request_revision. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyRequestRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyRequestRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_status. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyStatusSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_status. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyStatus = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_ApplyStatusSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_CalibrateStateJson_PathSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_CalibrateStateJson_Path =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_CalibrateStateJson_PathSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_CalibrateStateJson_RevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_CalibrateStateJson_Revision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_CalibrateStateJson_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_CalibrateStateJsonSchema =
   z.strictObject({
@@ -6492,10 +3169,6 @@ export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_Calibrat
     revision:
       calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_CalibrateStateJson_RevisionSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_CalibrateStateJson = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_CalibrateStateJsonSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefsSchema = z.strictObject({
   apply_capture_outcome:
@@ -6511,58 +3184,26 @@ export const calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefsSchema = 
   'calibrate_state.json':
     calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs_CalibrateStateJsonSchema,
 });
-/** Raw response path: answer.body.operation.result_refs. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_ResultRefs = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Revision = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_StatusSchema = z.enum([
   'failed',
   'succeeded',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Status = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Step = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_UpdatedAt = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Worker_CreationTimeSchema = z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Worker_CreationTime = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Worker_CreationTimeSchema
->;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_Worker_PidSchema = z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Worker_Pid = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const calibrateApplyAnswer_Status200V1_Body_Operation_WorkerSchema = z.strictObject({
   creation_time: calibrateApplyAnswer_Status200V1_Body_Operation_Worker_CreationTimeSchema,
   pid: calibrateApplyAnswer_Status200V1_Body_Operation_Worker_PidSchema,
 });
-/** Raw response path: answer.body.operation.worker. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation_Worker = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_Operation_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const calibrateApplyAnswer_Status200V1_Body_OperationSchema = z.strictObject({
   cancellable: calibrateApplyAnswer_Status200V1_Body_Operation_CancellableSchema,
@@ -6583,22 +3224,10 @@ export const calibrateApplyAnswer_Status200V1_Body_OperationSchema = z.strictObj
   updated_at: calibrateApplyAnswer_Status200V1_Body_Operation_UpdatedAtSchema,
   worker: calibrateApplyAnswer_Status200V1_Body_Operation_WorkerSchema,
 });
-/** Raw response path: answer.body.operation. */
-export type CalibrateApplyAnswer_Status200V1_Body_Operation = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_OperationSchema
->;
 /** Strict raw response path: answer.body.profile. */
 export const calibrateApplyAnswer_Status200V1_Body_ProfileSchema = z.string();
-/** Raw response path: answer.body.profile. */
-export type CalibrateApplyAnswer_Status200V1_Body_Profile = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_ProfileSchema
->;
 /** Strict raw response path: answer.body.readiness. */
 export const calibrateApplyAnswer_Status200V1_Body_ReadinessSchema = z.null();
-/** Raw response path: answer.body.readiness. */
-export type CalibrateApplyAnswer_Status200V1_Body_Readiness = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_Body_ReadinessSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateApplyAnswer_Status200V1_BodySchema = z.strictObject({
   applied: calibrateApplyAnswer_Status200V1_Body_AppliedSchema,
@@ -6607,143 +3236,59 @@ export const calibrateApplyAnswer_Status200V1_BodySchema = z.strictObject({
   profile: calibrateApplyAnswer_Status200V1_Body_ProfileSchema,
   readiness: calibrateApplyAnswer_Status200V1_Body_ReadinessSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateApplyAnswer_Status200V1_Body = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateApplyAnswer_Status200V1_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type CalibrateApplyAnswer_Status200V1_Status = z.infer<
-  typeof calibrateApplyAnswer_Status200V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members applied, ok, operation, profile, readiness. */
 export const calibrateApplyAnswer_Status200V1Schema = z.strictObject({
   body: calibrateApplyAnswer_Status200V1_BodySchema,
   status: calibrateApplyAnswer_Status200V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members applied, ok, operation, profile, readiness. */
-export type CalibrateApplyAnswer_Status200V1 = z.infer<
-  typeof calibrateApplyAnswer_Status200V1Schema
->;
 /** Strict raw response path: answer.body.applied. */
 export const calibrateApplyAnswer_Status200V2_Body_AppliedSchema = z.boolean();
-/** Raw response path: answer.body.applied. */
-export type CalibrateApplyAnswer_Status200V2_Body_Applied = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_AppliedSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateApplyAnswer_Status200V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateApplyAnswer_Status200V2_Body_Ok = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_CancellableSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Cancellable = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_Account = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_AdbHost = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_AdbPort = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ArtifactDir =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ArtifactDirSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ConfigRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_DeviceKey =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_DeviceKeySchema
-  >;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_Instance =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_Profile = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ProfilePath =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ProfilePathSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ProfileRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_ProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_Rendering =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_RenderingSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_SelectedRunSchema =
   z.string().nullable();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_SelectedRun =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_SelectedRunSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_Serial = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ContextSchema =
   z.strictObject({
@@ -6768,31 +3313,15 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Conte
       calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_SelectedRunSchema,
     serial: calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context_SerialSchema,
   });
-/** Raw response path: answer.body.operation.context. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Context = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_CreatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_CreatedAt = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error.code. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Error_CodeSchema =
   z.enum(['calibration_failed', 'worker_lost']);
-/** Raw response path: answer.body.operation.error.code. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Error_Code = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Error_CodeSchema
->;
 /** Strict raw response path: answer.body.operation.error.message. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Error_MessageSchema =
   z.string();
-/** Raw response path: answer.body.operation.error.message. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Error_Message = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Error_MessageSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ErrorSchema = z
   .strictObject({
@@ -6800,45 +3329,20 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Error
     message: calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Error_MessageSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.error. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Error = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Id = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_IdempotencyKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_IdempotencyKey = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ProgressSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Progress = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.readiness.missing. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Readiness_MissingSchema =
   z.array(z.unknown()); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.operation.readiness.missing. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Readiness_Missing =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Readiness_MissingSchema
-  >;
 /** Strict raw response path: answer.body.operation.readiness.ready. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Readiness_ReadySchema =
   z.boolean();
-/** Raw response path: answer.body.operation.readiness.ready. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Readiness_Ready = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Readiness_ReadySchema
->;
 /** Strict raw response path: answer.body.operation.readiness. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ReadinessSchema = z
   .strictObject({
@@ -6846,40 +3350,18 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Readi
     ready: calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Readiness_ReadySchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.readiness. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Readiness = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ReadinessSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_RecoveryAction = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request.bootstrap. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Request_BootstrapSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.request.bootstrap. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Request_Bootstrap =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Request_BootstrapSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.phases. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Request_PhasesSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.phases. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Request_Phases = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Request_PhasesSchema
->;
 /** Strict raw response path: answer.body.operation.request.selected_run. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Request_SelectedRunSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.selected_run. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Request_SelectedRun =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Request_SelectedRunSchema
-  >;
 /** Strict raw response path: answer.body.operation.request. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_RequestSchema =
   z.strictObject({
@@ -6889,26 +3371,12 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Reque
     selected_run:
       calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Request_SelectedRunSchema.optional(),
   });
-/** Raw response path: answer.body.operation.request. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Request = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.error.code. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Error_CodeSchema =
   z.enum(['calibration_failed', 'worker_lost']);
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.error.code. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Error_Code =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Error_CodeSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.error.message. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Error_MessageSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.error.message. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Error_Message =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Error_MessageSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.error. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_ErrorSchema =
   z
@@ -6918,35 +3386,15 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Resul
         calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Error_MessageSchema,
     })
     .nullable();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.error. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Error =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_ErrorSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.recovery_action. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.recovery_action. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_RecoveryAction =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_RecoveryActionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.status. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_StatusSchema =
   z.enum(['awaiting_apply', 'failed', 'interrupted']);
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.status. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Status =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_StatusSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.step. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_StepSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.step. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Step =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_StepSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcomeSchema =
   z.strictObject({
@@ -6958,75 +3406,30 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Resul
       calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_StatusSchema,
     step: calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_StepSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_config_revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_config_revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyConfigRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_error. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyErrorSchema =
   z.null();
-/** Raw response path: answer.body.operation.result_refs.apply_error. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyError =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyErrorSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_profile_digest. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyProfileDigestSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_profile_digest. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyProfileDigest =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyProfileDigestSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_profile_revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_profile_revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyProfileRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_request_revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyRequestRevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.result_refs.apply_request_revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyRequestRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyRequestRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_status. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyStatusSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_status. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyStatus =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_ApplyStatusSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_PathSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_Path =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_PathSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_RevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_Revision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJsonSchema =
   z.strictObject({
@@ -7034,11 +3437,6 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Resul
     revision:
       calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_RevisionSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJsonSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefsSchema =
   z.strictObject({
@@ -7059,55 +3457,26 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Resul
     'calibrate_state.json':
       calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJsonSchema,
   });
-/** Raw response path: answer.body.operation.result_refs. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefs = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_RevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Revision = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_StatusSchema = z.enum([
   'failed',
   'interrupted',
   'succeeded',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Status = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Step = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_UpdatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_UpdatedAt = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Worker_CreationTimeSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Worker_CreationTime =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Worker_CreationTimeSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Worker_PidSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Worker_Pid = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_WorkerSchema =
   z.strictObject({
@@ -7115,10 +3484,6 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Worke
       calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Worker_CreationTimeSchema,
     pid: calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Worker_PidSchema,
   });
-/** Raw response path: answer.body.operation.worker. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_Worker = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation, variant: kind calibrate. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrateSchema = z.strictObject({
   cancellable: calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_CancellableSchema,
@@ -7141,113 +3506,48 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrateSchema
   updated_at: calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_UpdatedAtSchema,
   worker: calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate_WorkerSchema,
 });
-/** Raw response path: answer.body.operation, variant: kind calibrate. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrate = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrateSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_CancellableSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Cancellable = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_Account = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_AdbHost = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_AdbPort = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ArtifactDir =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ArtifactDirSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ConfigRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_DeviceKey = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_Instance = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_Profile = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ProfilePath =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ProfilePathSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ProfileRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_ProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_Rendering = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_SelectedRunSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_SelectedRun =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_SelectedRunSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_Serial = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ContextSchema =
   z.strictObject({
@@ -7270,95 +3570,39 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context
       calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_SelectedRunSchema,
     serial: calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context_SerialSchema,
   });
-/** Raw response path: answer.body.operation.context. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Context = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_CreatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_CreatedAt = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ErrorSchema = z.null();
-/** Raw response path: answer.body.operation.error. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Error = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Id = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_IdempotencyKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_IdempotencyKey = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ProgressSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Progress = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.readiness. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ReadinessSchema = z.null();
-/** Raw response path: answer.body.operation.readiness. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Readiness = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ReadinessSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_RecoveryAction = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_RequestSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.request. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Request = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.error. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_ErrorSchema =
   z.null();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.error. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_Error =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_ErrorSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.recovery_action. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.recovery_action. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_RecoveryAction =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_RecoveryActionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.status. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_StatusSchema =
   z.enum(['awaiting_apply']);
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.status. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_Status =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_StatusSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.step. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_StepSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.step. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_Step =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_StepSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcomeSchema =
   z.strictObject({
@@ -7370,67 +3614,27 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultR
       calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_StatusSchema,
     step: calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome_StepSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcome =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyCaptureOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_error. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyErrorSchema =
   z.null();
-/** Raw response path: answer.body.operation.result_refs.apply_error. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyError =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyErrorSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_profile_digest. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyProfileDigestSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_profile_digest. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyProfileDigest =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyProfileDigestSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_profile_revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_profile_revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyProfileRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_request_revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyRequestRevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.result_refs.apply_request_revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyRequestRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyRequestRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_status. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyStatusSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_status. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyStatus =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_ApplyStatusSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_CalibrateStateJson_PathSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_CalibrateStateJson_Path =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_CalibrateStateJson_PathSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_CalibrateStateJson_RevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_CalibrateStateJson_Revision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_CalibrateStateJson_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_CalibrateStateJsonSchema =
   z.strictObject({
@@ -7438,11 +3642,6 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultR
     revision:
       calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_CalibrateStateJson_RevisionSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_CalibrateStateJson =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_CalibrateStateJsonSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefsSchema =
   z.strictObject({
@@ -7461,53 +3660,24 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultR
     'calibrate_state.json':
       calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs_CalibrateStateJsonSchema,
   });
-/** Raw response path: answer.body.operation.result_refs. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefs = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_RevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Revision = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_StatusSchema = z.enum([
   'succeeded',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Status = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Step = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_UpdatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_UpdatedAt = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Worker_CreationTimeSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Worker_CreationTime =
-  z.infer<
-    typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Worker_CreationTimeSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Worker_PidSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Worker_Pid = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_WorkerSchema =
   z.strictObject({
@@ -7515,10 +3685,6 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_WorkerS
       calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Worker_CreationTimeSchema,
     pid: calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Worker_PidSchema,
   });
-/** Raw response path: answer.body.operation.worker. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_Worker = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation, variant: kind observe. */
 export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserveSchema = z.strictObject({
   cancellable: calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_CancellableSchema,
@@ -7539,39 +3705,19 @@ export const calibrateApplyAnswer_Status200V2_Body_Operation_KindObserveSchema =
   updated_at: calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_UpdatedAtSchema,
   worker: calibrateApplyAnswer_Status200V2_Body_Operation_KindObserve_WorkerSchema,
 });
-/** Raw response path: answer.body.operation, variant: kind observe. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation_KindObserve = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Operation_KindObserveSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const calibrateApplyAnswer_Status200V2_Body_OperationSchema = z.discriminatedUnion('kind', [
   calibrateApplyAnswer_Status200V2_Body_Operation_KindCalibrateSchema,
   calibrateApplyAnswer_Status200V2_Body_Operation_KindObserveSchema,
 ]);
-/** Raw response path: answer.body.operation. */
-export type CalibrateApplyAnswer_Status200V2_Body_Operation = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_OperationSchema
->;
 /** Strict raw response path: answer.body.profile. */
 export const calibrateApplyAnswer_Status200V2_Body_ProfileSchema = z.string();
-/** Raw response path: answer.body.profile. */
-export type CalibrateApplyAnswer_Status200V2_Body_Profile = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_ProfileSchema
->;
 /** Strict raw response path: answer.body.readiness.missing. */
 export const calibrateApplyAnswer_Status200V2_Body_Readiness_MissingSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.readiness.missing. */
-export type CalibrateApplyAnswer_Status200V2_Body_Readiness_Missing = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Readiness_MissingSchema
->;
 /** Strict raw response path: answer.body.readiness.ready. */
 export const calibrateApplyAnswer_Status200V2_Body_Readiness_ReadySchema = z.boolean();
-/** Raw response path: answer.body.readiness.ready. */
-export type CalibrateApplyAnswer_Status200V2_Body_Readiness_Ready = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_Readiness_ReadySchema
->;
 /** Strict raw response path: answer.body.readiness. */
 export const calibrateApplyAnswer_Status200V2_Body_ReadinessSchema = z
   .strictObject({
@@ -7579,32 +3725,16 @@ export const calibrateApplyAnswer_Status200V2_Body_ReadinessSchema = z
     ready: calibrateApplyAnswer_Status200V2_Body_Readiness_ReadySchema,
   })
   .nullable();
-/** Raw response path: answer.body.readiness. */
-export type CalibrateApplyAnswer_Status200V2_Body_Readiness = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_ReadinessSchema
->;
 /** Strict raw response path: answer.body.remaining_run_checks. */
 export const calibrateApplyAnswer_Status200V2_Body_RemainingRunChecksSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.remaining_run_checks. */
-export type CalibrateApplyAnswer_Status200V2_Body_RemainingRunChecks = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_RemainingRunChecksSchema
->;
 /** Strict raw response path: answer.body.wall_bar[]. */
 export const calibrateApplyAnswer_Status200V2_Body_WallBar_ArrayElementSchema = z.number();
-/** Raw response path: answer.body.wall_bar[]. */
-export type CalibrateApplyAnswer_Status200V2_Body_WallBar_ArrayElement = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_WallBar_ArrayElementSchema
->;
 /** Strict raw response path: answer.body.wall_bar. */
 export const calibrateApplyAnswer_Status200V2_Body_WallBarSchema = z
   .array(calibrateApplyAnswer_Status200V2_Body_WallBar_ArrayElementSchema)
   .nullable();
-/** Raw response path: answer.body.wall_bar. */
-export type CalibrateApplyAnswer_Status200V2_Body_WallBar = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_Body_WallBarSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateApplyAnswer_Status200V2_BodySchema = z.strictObject({
   applied: calibrateApplyAnswer_Status200V2_Body_AppliedSchema,
@@ -7615,57 +3745,25 @@ export const calibrateApplyAnswer_Status200V2_BodySchema = z.strictObject({
   remaining_run_checks: calibrateApplyAnswer_Status200V2_Body_RemainingRunChecksSchema,
   wall_bar: calibrateApplyAnswer_Status200V2_Body_WallBarSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateApplyAnswer_Status200V2_Body = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateApplyAnswer_Status200V2_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type CalibrateApplyAnswer_Status200V2_Status = z.infer<
-  typeof calibrateApplyAnswer_Status200V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members applied, ok, operation, profile, readiness, remaining_run_checks, wall_bar. */
 export const calibrateApplyAnswer_Status200V2Schema = z.strictObject({
   body: calibrateApplyAnswer_Status200V2_BodySchema,
   status: calibrateApplyAnswer_Status200V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members applied, ok, operation, profile, readiness, remaining_run_checks, wall_bar. */
-export type CalibrateApplyAnswer_Status200V2 = z.infer<
-  typeof calibrateApplyAnswer_Status200V2Schema
->;
 /** Strict raw response path: answer.body.applied. */
 export const calibrateApplyAnswer_Status200V3_Body_AppliedSchema = z.boolean();
-/** Raw response path: answer.body.applied. */
-export type CalibrateApplyAnswer_Status200V3_Body_Applied = z.infer<
-  typeof calibrateApplyAnswer_Status200V3_Body_AppliedSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateApplyAnswer_Status200V3_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateApplyAnswer_Status200V3_Body_Ok = z.infer<
-  typeof calibrateApplyAnswer_Status200V3_Body_OkSchema
->;
 /** Strict raw response path: answer.body.profile. */
 export const calibrateApplyAnswer_Status200V3_Body_ProfileSchema = z.string();
-/** Raw response path: answer.body.profile. */
-export type CalibrateApplyAnswer_Status200V3_Body_Profile = z.infer<
-  typeof calibrateApplyAnswer_Status200V3_Body_ProfileSchema
->;
 /** Strict raw response path: answer.body.remaining_run_checks. */
 export const calibrateApplyAnswer_Status200V3_Body_RemainingRunChecksSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.remaining_run_checks. */
-export type CalibrateApplyAnswer_Status200V3_Body_RemainingRunChecks = z.infer<
-  typeof calibrateApplyAnswer_Status200V3_Body_RemainingRunChecksSchema
->;
 /** Strict raw response path: answer.body.wall_bar. */
 export const calibrateApplyAnswer_Status200V3_Body_WallBarSchema = z.null();
-/** Raw response path: answer.body.wall_bar. */
-export type CalibrateApplyAnswer_Status200V3_Body_WallBar = z.infer<
-  typeof calibrateApplyAnswer_Status200V3_Body_WallBarSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateApplyAnswer_Status200V3_BodySchema = z.strictObject({
   applied: calibrateApplyAnswer_Status200V3_Body_AppliedSchema,
@@ -7674,25 +3772,13 @@ export const calibrateApplyAnswer_Status200V3_BodySchema = z.strictObject({
   remaining_run_checks: calibrateApplyAnswer_Status200V3_Body_RemainingRunChecksSchema,
   wall_bar: calibrateApplyAnswer_Status200V3_Body_WallBarSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateApplyAnswer_Status200V3_Body = z.infer<
-  typeof calibrateApplyAnswer_Status200V3_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateApplyAnswer_Status200V3_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type CalibrateApplyAnswer_Status200V3_Status = z.infer<
-  typeof calibrateApplyAnswer_Status200V3_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members applied, ok, profile, remaining_run_checks, wall_bar. */
 export const calibrateApplyAnswer_Status200V3Schema = z.strictObject({
   body: calibrateApplyAnswer_Status200V3_BodySchema,
   status: calibrateApplyAnswer_Status200V3_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members applied, ok, profile, remaining_run_checks, wall_bar. */
-export type CalibrateApplyAnswer_Status200V3 = z.infer<
-  typeof calibrateApplyAnswer_Status200V3Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const calibrateApplyAnswer_Status400_Body_CodeSchema = z.enum([
   'apply_failed',
@@ -7701,45 +3787,23 @@ export const calibrateApplyAnswer_Status400_Body_CodeSchema = z.enum([
   'profile_missing',
   'restoration_pending',
 ]);
-/** Raw response path: answer.body.code. */
-export type CalibrateApplyAnswer_Status400_Body_Code = z.infer<
-  typeof calibrateApplyAnswer_Status400_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateApplyAnswer_Status400_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateApplyAnswer_Status400_Body_Error = z.infer<
-  typeof calibrateApplyAnswer_Status400_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateApplyAnswer_Status400_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateApplyAnswer_Status400_Body_Ok = z.infer<
-  typeof calibrateApplyAnswer_Status400_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateApplyAnswer_Status400_BodySchema = z.strictObject({
   code: calibrateApplyAnswer_Status400_Body_CodeSchema,
   error: calibrateApplyAnswer_Status400_Body_ErrorSchema,
   ok: calibrateApplyAnswer_Status400_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateApplyAnswer_Status400_Body = z.infer<
-  typeof calibrateApplyAnswer_Status400_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateApplyAnswer_Status400_StatusSchema = z.literal(400);
-/** Raw response path: answer.status. */
-export type CalibrateApplyAnswer_Status400_Status = z.infer<
-  typeof calibrateApplyAnswer_Status400_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 400, body members code, error, ok. */
 export const calibrateApplyAnswer_Status400Schema = z.strictObject({
   body: calibrateApplyAnswer_Status400_BodySchema,
   status: calibrateApplyAnswer_Status400_StatusSchema,
 });
-/** Raw response path: answer, variant: status 400, body members code, error, ok. */
-export type CalibrateApplyAnswer_Status400 = z.infer<typeof calibrateApplyAnswer_Status400Schema>;
 /** Strict raw response path: answer.body.code. */
 export const calibrateApplyAnswer_Status409V1_Body_CodeSchema = z.enum([
   'action_lock',
@@ -7751,47 +3815,23 @@ export const calibrateApplyAnswer_Status409V1_Body_CodeSchema = z.enum([
   'operation_unknown',
   'starter_profile',
 ]);
-/** Raw response path: answer.body.code. */
-export type CalibrateApplyAnswer_Status409V1_Body_Code = z.infer<
-  typeof calibrateApplyAnswer_Status409V1_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateApplyAnswer_Status409V1_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateApplyAnswer_Status409V1_Body_Error = z.infer<
-  typeof calibrateApplyAnswer_Status409V1_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateApplyAnswer_Status409V1_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateApplyAnswer_Status409V1_Body_Ok = z.infer<
-  typeof calibrateApplyAnswer_Status409V1_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateApplyAnswer_Status409V1_BodySchema = z.strictObject({
   code: calibrateApplyAnswer_Status409V1_Body_CodeSchema,
   error: calibrateApplyAnswer_Status409V1_Body_ErrorSchema,
   ok: calibrateApplyAnswer_Status409V1_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateApplyAnswer_Status409V1_Body = z.infer<
-  typeof calibrateApplyAnswer_Status409V1_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateApplyAnswer_Status409V1_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type CalibrateApplyAnswer_Status409V1_Status = z.infer<
-  typeof calibrateApplyAnswer_Status409V1_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok. */
 export const calibrateApplyAnswer_Status409V1Schema = z.strictObject({
   body: calibrateApplyAnswer_Status409V1_BodySchema,
   status: calibrateApplyAnswer_Status409V1_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok. */
-export type CalibrateApplyAnswer_Status409V1 = z.infer<
-  typeof calibrateApplyAnswer_Status409V1Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const calibrateApplyAnswer_Status409V2_Body_CodeSchema = z.enum([
   'context_changed',
@@ -7800,128 +3840,52 @@ export const calibrateApplyAnswer_Status409V2_Body_CodeSchema = z.enum([
   'operation_changed',
   'profile_changed',
 ]);
-/** Raw response path: answer.body.code. */
-export type CalibrateApplyAnswer_Status409V2_Body_Code = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateApplyAnswer_Status409V2_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateApplyAnswer_Status409V2_Body_Error = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateApplyAnswer_Status409V2_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateApplyAnswer_Status409V2_Body_Ok = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_OkSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_CancellableSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Cancellable = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_Account = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_AdbHost = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_AdbPort = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ArtifactDir =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ArtifactDirSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ConfigRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_DeviceKey =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_DeviceKeySchema
-  >;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_Instance =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_InstanceSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_Profile = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ProfilePath =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ProfilePathSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ProfileRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_ProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_Rendering =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_RenderingSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_SelectedRunSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_SelectedRun =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_SelectedRunSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_Serial = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ContextSchema =
   z.strictObject({
@@ -7946,31 +3910,15 @@ export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Conte
       calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_SelectedRunSchema,
     serial: calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context_SerialSchema,
   });
-/** Raw response path: answer.body.operation.context. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Context = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_CreatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_CreatedAt = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error.code. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Error_CodeSchema =
   z.enum(['restoration_required']);
-/** Raw response path: answer.body.operation.error.code. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Error_Code = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Error_CodeSchema
->;
 /** Strict raw response path: answer.body.operation.error.message. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Error_MessageSchema =
   z.string();
-/** Raw response path: answer.body.operation.error.message. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Error_Message = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Error_MessageSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ErrorSchema = z
   .strictObject({
@@ -7978,59 +3926,26 @@ export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Error
     message: calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Error_MessageSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.error. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Error = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Id = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_IdempotencyKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_IdempotencyKey = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ProgressSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Progress = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.readiness. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ReadinessSchema =
   z.null();
-/** Raw response path: answer.body.operation.readiness. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Readiness = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ReadinessSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_RecoveryAction = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request.bootstrap. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Request_BootstrapSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.request.bootstrap. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Request_Bootstrap =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Request_BootstrapSchema
-  >;
 /** Strict raw response path: answer.body.operation.request.phases. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Request_PhasesSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.phases. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Request_Phases = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Request_PhasesSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_RequestSchema =
   z.strictObject({
@@ -8038,42 +3953,18 @@ export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Reque
       calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Request_BootstrapSchema,
     phases: calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Request_PhasesSchema,
   });
-/** Raw response path: answer.body.operation.request. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Request = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.error. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_ErrorSchema =
   z.null();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.error. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Error =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_ErrorSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.recovery_action. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.recovery_action. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_RecoveryAction =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_RecoveryActionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.status. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_StatusSchema =
   z.enum(['awaiting_apply']);
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.status. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Status =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_StatusSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome.step. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_StepSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome.step. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_Step =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_StepSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_capture_outcome. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcomeSchema =
   z.strictObject({
@@ -8085,67 +3976,27 @@ export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Resul
       calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_StatusSchema,
     step: calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome_StepSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.apply_capture_outcome. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcome =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyCaptureOutcomeSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_error. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyErrorSchema =
   z.null();
-/** Raw response path: answer.body.operation.result_refs.apply_error. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyError =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyErrorSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_profile_digest. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyProfileDigestSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_profile_digest. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyProfileDigest =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyProfileDigestSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_profile_revision. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_profile_revision. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyProfileRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_request_revision. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyRequestRevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.result_refs.apply_request_revision. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyRequestRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyRequestRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.apply_status. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyStatusSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.apply_status. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyStatus =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_ApplyStatusSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_PathSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_Path =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_PathSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_RevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_Revision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJsonSchema =
   z.strictObject({
@@ -8153,11 +4004,6 @@ export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Resul
     revision:
       calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson_RevisionSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJson =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJsonSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefsSchema =
   z.strictObject({
@@ -8176,17 +4022,9 @@ export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Resul
     'calibrate_state.json':
       calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs_CalibrateStateJsonSchema,
   });
-/** Raw response path: answer.body.operation.result_refs. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefs = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_RevisionSchema =
   z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Revision = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_StatusSchema = z.enum([
   'awaiting_apply',
@@ -8194,38 +4032,17 @@ export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Statu
   'restoration_required',
   'succeeded',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Status = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Step = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_UpdatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_UpdatedAt = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Worker_CreationTimeSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Worker_CreationTime =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Worker_CreationTimeSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Worker_PidSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Worker_Pid = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_WorkerSchema = z
   .strictObject({
@@ -8234,10 +4051,6 @@ export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Worke
     pid: calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Worker_PidSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.worker. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_Worker = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation, variant: kind calibrate. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrateSchema = z.strictObject({
   cancellable: calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_CancellableSchema,
@@ -8261,110 +4074,48 @@ export const calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrateSchema
   updated_at: calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_UpdatedAtSchema,
   worker: calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate_WorkerSchema,
 });
-/** Raw response path: answer.body.operation, variant: kind calibrate. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrate = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrateSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_CancellableSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Cancellable = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_Account = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_AdbHost = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_AdbPort = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ArtifactDir = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ArtifactDirSchema
->;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ConfigRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_DeviceKey = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_Instance = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_Profile = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ProfilePath = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ProfilePathSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ProfileRevision =
-  z.infer<
-    typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_ProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_Rendering = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_SelectedRunSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_SelectedRun = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_Serial = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_ContextSchema =
   z.strictObject({
@@ -8387,95 +4138,39 @@ export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_ContextSch
       calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_SelectedRunSchema,
     serial: calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context_SerialSchema,
   });
-/** Raw response path: answer.body.operation.context. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Context = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_CreatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_CreatedAt = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_ErrorSchema = z.null();
-/** Raw response path: answer.body.operation.error. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Error = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Id = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_IdempotencyKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_IdempotencyKey = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_ProgressSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Progress = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_RecoveryAction = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_RequestSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.request. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Request = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_ResultRefsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.result_refs. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_ResultRefs = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Revision = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_StatusSchema = z.enum([
   'succeeded',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Status = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Step = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_UpdatedAt = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_WorkerSchema = z.null();
-/** Raw response path: answer.body.operation.worker. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan_Worker = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation, variant: kind scan. */
 export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScanSchema = z.strictObject({
   cancellable: calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_CancellableSchema,
@@ -8495,19 +4190,11 @@ export const calibrateApplyAnswer_Status409V2_Body_Operation_KindScanSchema = z.
   updated_at: calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_UpdatedAtSchema,
   worker: calibrateApplyAnswer_Status409V2_Body_Operation_KindScan_WorkerSchema,
 });
-/** Raw response path: answer.body.operation, variant: kind scan. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation_KindScan = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_Operation_KindScanSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const calibrateApplyAnswer_Status409V2_Body_OperationSchema = z.discriminatedUnion('kind', [
   calibrateApplyAnswer_Status409V2_Body_Operation_KindCalibrateSchema,
   calibrateApplyAnswer_Status409V2_Body_Operation_KindScanSchema,
 ]);
-/** Raw response path: answer.body.operation. */
-export type CalibrateApplyAnswer_Status409V2_Body_Operation = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_Body_OperationSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateApplyAnswer_Status409V2_BodySchema = z.strictObject({
   code: calibrateApplyAnswer_Status409V2_Body_CodeSchema,
@@ -8515,173 +4202,73 @@ export const calibrateApplyAnswer_Status409V2_BodySchema = z.strictObject({
   ok: calibrateApplyAnswer_Status409V2_Body_OkSchema,
   operation: calibrateApplyAnswer_Status409V2_Body_OperationSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateApplyAnswer_Status409V2_Body = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateApplyAnswer_Status409V2_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type CalibrateApplyAnswer_Status409V2_Status = z.infer<
-  typeof calibrateApplyAnswer_Status409V2_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, operation. */
 export const calibrateApplyAnswer_Status409V2Schema = z.strictObject({
   body: calibrateApplyAnswer_Status409V2_BodySchema,
   status: calibrateApplyAnswer_Status409V2_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, operation. */
-export type CalibrateApplyAnswer_Status409V2 = z.infer<
-  typeof calibrateApplyAnswer_Status409V2Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const calibrateApplyAnswer_Status409V3_Body_CodeSchema = z.enum(['device_owned']);
-/** Raw response path: answer.body.code. */
-export type CalibrateApplyAnswer_Status409V3_Body_Code = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateApplyAnswer_Status409V3_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateApplyAnswer_Status409V3_Body_Error = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateApplyAnswer_Status409V3_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateApplyAnswer_Status409V3_Body_Ok = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_OkSchema
->;
 /** Strict raw response path: answer.body.owner.battle. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_BattleSchema = z.null();
-/** Raw response path: answer.body.owner.battle. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Battle = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_BattleSchema
->;
 /** Strict raw response path: answer.body.owner.foreign. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_ForeignSchema = z.boolean();
-/** Raw response path: answer.body.owner.foreign. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Foreign = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_ForeignSchema
->;
 /** Strict raw response path: answer.body.owner.gathers. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_GathersSchema = z.null();
-/** Raw response path: answer.body.owner.gathers. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Gathers = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_GathersSchema
->;
 /** Strict raw response path: answer.body.owner.gems.ad_gems. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_Gems_AdGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.ad_gems. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Gems_AdGems = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_Gems_AdGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems.basis. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_Gems_BasisSchema = z.enum([
   'not_reported',
 ]);
-/** Raw response path: answer.body.owner.gems.basis. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Gems_Basis = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_Gems_BasisSchema
->;
 /** Strict raw response path: answer.body.owner.gems.floating_gems. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_Gems_FloatingGemsSchema = z.null();
-/** Raw response path: answer.body.owner.gems.floating_gems. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Gems_FloatingGems = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_Gems_FloatingGemsSchema
->;
 /** Strict raw response path: answer.body.owner.gems. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_GemsSchema = z.strictObject({
   ad_gems: calibrateApplyAnswer_Status409V3_Body_Owner_Gems_AdGemsSchema,
   basis: calibrateApplyAnswer_Status409V3_Body_Owner_Gems_BasisSchema,
   floating_gems: calibrateApplyAnswer_Status409V3_Body_Owner_Gems_FloatingGemsSchema,
 });
-/** Raw response path: answer.body.owner.gems. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Gems = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_GemsSchema
->;
 /** Strict raw response path: answer.body.owner.harvest_managed. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_HarvestManagedSchema = z.boolean();
-/** Raw response path: answer.body.owner.harvest_managed. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_HarvestManaged = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_HarvestManagedSchema
->;
 /** Strict raw response path: answer.body.owner.kind. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_KindSchema = z.enum(['operation']);
-/** Raw response path: answer.body.owner.kind. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Kind = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_KindSchema
->;
 /** Strict raw response path: answer.body.owner.operation_id. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_OperationIdSchema = z.string();
-/** Raw response path: answer.body.owner.operation_id. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_OperationId = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.operation_kind. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_OperationKindSchema = z.enum([
   'calibrate',
   'run',
 ]);
-/** Raw response path: answer.body.owner.operation_kind. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_OperationKind = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_OperationKindSchema
->;
 /** Strict raw response path: answer.body.owner.pid. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_PidSchema = z.number();
-/** Raw response path: answer.body.owner.pid. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Pid = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_PidSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.action. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_Recovery_ActionSchema = z.enum([
   'stop_operation',
 ]);
-/** Raw response path: answer.body.owner.recovery.action. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Recovery_Action = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_Recovery_ActionSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.expected_revision. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_Recovery_ExpectedRevisionSchema =
   z.number();
-/** Raw response path: answer.body.owner.recovery.expected_revision. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Recovery_ExpectedRevision = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: answer.body.owner.recovery.operation_id. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_Recovery_OperationIdSchema = z.string();
-/** Raw response path: answer.body.owner.recovery.operation_id. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Recovery_OperationId = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_Recovery_OperationIdSchema
->;
 /** Strict raw response path: answer.body.owner.recovery. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_RecoverySchema = z.strictObject({
   action: calibrateApplyAnswer_Status409V3_Body_Owner_Recovery_ActionSchema,
   expected_revision: calibrateApplyAnswer_Status409V3_Body_Owner_Recovery_ExpectedRevisionSchema,
   operation_id: calibrateApplyAnswer_Status409V3_Body_Owner_Recovery_OperationIdSchema,
 });
-/** Raw response path: answer.body.owner.recovery. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Recovery = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_RecoverySchema
->;
 /** Strict raw response path: answer.body.owner.routines. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_RoutinesSchema = z.null();
-/** Raw response path: answer.body.owner.routines. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Routines = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_RoutinesSchema
->;
 /** Strict raw response path: answer.body.owner.script. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_ScriptSchema = z.null();
-/** Raw response path: answer.body.owner.script. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Script = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_ScriptSchema
->;
 /** Strict raw response path: answer.body.owner.status. */
 export const calibrateApplyAnswer_Status409V3_Body_Owner_StatusSchema = z.enum(['running']);
-/** Raw response path: answer.body.owner.status. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner_Status = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Owner_StatusSchema
->;
 /** Strict raw response path: answer.body.owner. */
 export const calibrateApplyAnswer_Status409V3_Body_OwnerSchema = z.strictObject({
   battle: calibrateApplyAnswer_Status409V3_Body_Owner_BattleSchema,
@@ -8698,46 +4285,22 @@ export const calibrateApplyAnswer_Status409V3_Body_OwnerSchema = z.strictObject(
   script: calibrateApplyAnswer_Status409V3_Body_Owner_ScriptSchema,
   status: calibrateApplyAnswer_Status409V3_Body_Owner_StatusSchema,
 });
-/** Raw response path: answer.body.owner. */
-export type CalibrateApplyAnswer_Status409V3_Body_Owner = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_OwnerSchema
->;
 /** Strict raw response path: answer.body.recovery.action. */
 export const calibrateApplyAnswer_Status409V3_Body_Recovery_ActionSchema = z.enum([
   'stop_operation',
 ]);
-/** Raw response path: answer.body.recovery.action. */
-export type CalibrateApplyAnswer_Status409V3_Body_Recovery_Action = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Recovery_ActionSchema
->;
 /** Strict raw response path: answer.body.recovery.expected_revision. */
 export const calibrateApplyAnswer_Status409V3_Body_Recovery_ExpectedRevisionSchema = z.number();
-/** Raw response path: answer.body.recovery.expected_revision. */
-export type CalibrateApplyAnswer_Status409V3_Body_Recovery_ExpectedRevision = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Recovery_ExpectedRevisionSchema
->;
 /** Strict raw response path: answer.body.recovery.operation_id. */
 export const calibrateApplyAnswer_Status409V3_Body_Recovery_OperationIdSchema = z.string();
-/** Raw response path: answer.body.recovery.operation_id. */
-export type CalibrateApplyAnswer_Status409V3_Body_Recovery_OperationId = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_Recovery_OperationIdSchema
->;
 /** Strict raw response path: answer.body.recovery. */
 export const calibrateApplyAnswer_Status409V3_Body_RecoverySchema = z.strictObject({
   action: calibrateApplyAnswer_Status409V3_Body_Recovery_ActionSchema,
   expected_revision: calibrateApplyAnswer_Status409V3_Body_Recovery_ExpectedRevisionSchema,
   operation_id: calibrateApplyAnswer_Status409V3_Body_Recovery_OperationIdSchema,
 });
-/** Raw response path: answer.body.recovery. */
-export type CalibrateApplyAnswer_Status409V3_Body_Recovery = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_RecoverySchema
->;
 /** Strict raw response path: answer.body.retry. */
 export const calibrateApplyAnswer_Status409V3_Body_RetrySchema = z.string();
-/** Raw response path: answer.body.retry. */
-export type CalibrateApplyAnswer_Status409V3_Body_Retry = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_Body_RetrySchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateApplyAnswer_Status409V3_BodySchema = z.strictObject({
   code: calibrateApplyAnswer_Status409V3_Body_CodeSchema,
@@ -8747,66 +4310,32 @@ export const calibrateApplyAnswer_Status409V3_BodySchema = z.strictObject({
   recovery: calibrateApplyAnswer_Status409V3_Body_RecoverySchema,
   retry: calibrateApplyAnswer_Status409V3_Body_RetrySchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateApplyAnswer_Status409V3_Body = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateApplyAnswer_Status409V3_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type CalibrateApplyAnswer_Status409V3_Status = z.infer<
-  typeof calibrateApplyAnswer_Status409V3_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
 export const calibrateApplyAnswer_Status409V3Schema = z.strictObject({
   body: calibrateApplyAnswer_Status409V3_BodySchema,
   status: calibrateApplyAnswer_Status409V3_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, owner, recovery, retry. */
-export type CalibrateApplyAnswer_Status409V3 = z.infer<
-  typeof calibrateApplyAnswer_Status409V3Schema
->;
 /** Strict raw response path: answer.body.code. */
 export const calibrateApplyAnswer_Status500_Body_CodeSchema = z.enum(['apply_failed']);
-/** Raw response path: answer.body.code. */
-export type CalibrateApplyAnswer_Status500_Body_Code = z.infer<
-  typeof calibrateApplyAnswer_Status500_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateApplyAnswer_Status500_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateApplyAnswer_Status500_Body_Error = z.infer<
-  typeof calibrateApplyAnswer_Status500_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateApplyAnswer_Status500_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateApplyAnswer_Status500_Body_Ok = z.infer<
-  typeof calibrateApplyAnswer_Status500_Body_OkSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateApplyAnswer_Status500_BodySchema = z.strictObject({
   code: calibrateApplyAnswer_Status500_Body_CodeSchema,
   error: calibrateApplyAnswer_Status500_Body_ErrorSchema,
   ok: calibrateApplyAnswer_Status500_Body_OkSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateApplyAnswer_Status500_Body = z.infer<
-  typeof calibrateApplyAnswer_Status500_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateApplyAnswer_Status500_StatusSchema = z.literal(500);
-/** Raw response path: answer.status. */
-export type CalibrateApplyAnswer_Status500_Status = z.infer<
-  typeof calibrateApplyAnswer_Status500_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 500, body members code, error, ok. */
 export const calibrateApplyAnswer_Status500Schema = z.strictObject({
   body: calibrateApplyAnswer_Status500_BodySchema,
   status: calibrateApplyAnswer_Status500_StatusSchema,
 });
-/** Raw response path: answer, variant: status 500, body members code, error, ok. */
-export type CalibrateApplyAnswer_Status500 = z.infer<typeof calibrateApplyAnswer_Status500Schema>;
 /** Strict raw response path: answer. */
 export const calibrateApplyAnswerSchema = z.union([
   calibrateApplyAnswer_Status200V1Schema,
@@ -8822,113 +4351,48 @@ export const calibrateApplyAnswerSchema = z.union([
 export type CalibrateApplyAnswer = z.infer<typeof calibrateApplyAnswerSchema>;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateStopAnswer_Status200_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateStopAnswer_Status200_Body_Ok = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_OkSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_CancellableSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Cancellable = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_Account = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_AdbHost = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_AdbPort = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ArtifactDir =
-  z.infer<
-    typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ArtifactDirSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ConfigRevision =
-  z.infer<
-    typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_DeviceKey = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_Instance = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_Profile = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ProfilePath =
-  z.infer<
-    typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ProfilePathSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ProfileRevision =
-  z.infer<
-    typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_ProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_Rendering = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_SelectedRunSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_SelectedRun =
-  z.infer<
-    typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_SelectedRunSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_Serial = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_ContextSchema =
   z.strictObject({
@@ -8951,32 +4415,16 @@ export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_ContextS
       calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_SelectedRunSchema,
     serial: calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context_SerialSchema,
   });
-/** Raw response path: answer.body.operation.context. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Context = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_CreatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_CreatedAt = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error.code. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Error_CodeSchema = z.enum([
   'worker_released',
 ]);
-/** Raw response path: answer.body.operation.error.code. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Error_Code = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Error_CodeSchema
->;
 /** Strict raw response path: answer.body.operation.error.message. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Error_MessageSchema =
   z.string();
-/** Raw response path: answer.body.operation.error.message. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Error_Message = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Error_MessageSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_ErrorSchema = z
   .strictObject({
@@ -8984,112 +4432,51 @@ export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_ErrorSch
     message: calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Error_MessageSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.error. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Error = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Id = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_IdempotencyKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_IdempotencyKey = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_ProgressSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Progress = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_RecoveryActionSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_RecoveryAction = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request.bootstrap. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Request_BootstrapSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.request.bootstrap. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Request_Bootstrap = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Request_BootstrapSchema
->;
 /** Strict raw response path: answer.body.operation.request.phases. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Request_PhasesSchema =
   z.string();
-/** Raw response path: answer.body.operation.request.phases. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Request_Phases = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Request_PhasesSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_RequestSchema =
   z.strictObject({
     bootstrap: calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Request_BootstrapSchema,
     phases: calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Request_PhasesSchema,
   });
-/** Raw response path: answer.body.operation.request. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Request = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_ResultRefsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.result_refs. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_ResultRefs = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Revision = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_StatusSchema = z.enum([
   'cancelling',
   'interrupted',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Status = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Step = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_UpdatedAtSchema =
   z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_UpdatedAt = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Worker_CreationTimeSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Worker_CreationTime =
-  z.infer<
-    typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Worker_CreationTimeSchema
-  >;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Worker_PidSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Worker_Pid = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_WorkerSchema =
   z.strictObject({
@@ -9097,10 +4484,6 @@ export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_WorkerSc
       calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Worker_CreationTimeSchema,
     pid: calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Worker_PidSchema,
   });
-/** Raw response path: answer.body.operation.worker. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate_Worker = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation, variant: kind calibrate. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrateSchema = z.strictObject({
   cancellable: calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_CancellableSchema,
@@ -9120,110 +4503,48 @@ export const calibrateStopAnswer_Status200_Body_Operation_KindCalibrateSchema = 
   updated_at: calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_UpdatedAtSchema,
   worker: calibrateStopAnswer_Status200_Body_Operation_KindCalibrate_WorkerSchema,
 });
-/** Raw response path: answer.body.operation, variant: kind calibrate. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindCalibrate = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindCalibrateSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_CancellableSchema =
   z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Cancellable = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_AccountSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_Account = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_AdbHostSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_AdbHost = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_AdbPortSchema =
   z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_AdbPort = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ArtifactDirSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ArtifactDir = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ArtifactDirSchema
->;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ConfigRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ConfigRevision =
-  z.infer<
-    typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ConfigRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_DeviceKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_DeviceKey = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_InstanceSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_Instance = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ProfileSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_Profile = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ProfilePathSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ProfilePath = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ProfilePathSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ProfileRevision =
-  z.infer<
-    typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_ProfileRevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_RenderingSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_Rendering = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_SelectedRunSchema =
   z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_SelectedRun = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_SerialSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_Serial = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_ContextSchema =
   z.strictObject({
@@ -9246,102 +4567,42 @@ export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_ContextSch
       calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_SelectedRunSchema,
     serial: calibrateStopAnswer_Status200_Body_Operation_KindObserve_Context_SerialSchema,
   });
-/** Raw response path: answer.body.operation.context. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Context = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_CreatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_CreatedAt = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_ErrorSchema = z.null();
-/** Raw response path: answer.body.operation.error. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Error = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Id = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_IdempotencyKeySchema =
   z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_IdempotencyKey = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_ProgressSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Progress = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_RecoveryActionSchema =
   z.null();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_RecoveryAction = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_RequestSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.request. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Request = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_ResultRefsSchema =
   z.strictObject({});
-/** Raw response path: answer.body.operation.result_refs. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_ResultRefs = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Revision = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_StatusSchema = z.enum([
   'cancelling',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Status = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Step = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_UpdatedAt = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Worker_CreationTimeSchema =
   z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Worker_CreationTime = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Worker_CreationTimeSchema
->;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_Worker_PidSchema = z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Worker_Pid = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_WorkerSchema = z.strictObject(
   {
@@ -9350,10 +4611,6 @@ export const calibrateStopAnswer_Status200_Body_Operation_KindObserve_WorkerSche
     pid: calibrateStopAnswer_Status200_Body_Operation_KindObserve_Worker_PidSchema,
   },
 );
-/** Raw response path: answer.body.operation.worker. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve_Worker = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserve_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation, variant: kind observe. */
 export const calibrateStopAnswer_Status200_Body_Operation_KindObserveSchema = z.strictObject({
   cancellable: calibrateStopAnswer_Status200_Body_Operation_KindObserve_CancellableSchema,
@@ -9373,51 +4630,23 @@ export const calibrateStopAnswer_Status200_Body_Operation_KindObserveSchema = z.
   updated_at: calibrateStopAnswer_Status200_Body_Operation_KindObserve_UpdatedAtSchema,
   worker: calibrateStopAnswer_Status200_Body_Operation_KindObserve_WorkerSchema,
 });
-/** Raw response path: answer.body.operation, variant: kind observe. */
-export type CalibrateStopAnswer_Status200_Body_Operation_KindObserve = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Operation_KindObserveSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const calibrateStopAnswer_Status200_Body_OperationSchema = z.discriminatedUnion('kind', [
   calibrateStopAnswer_Status200_Body_Operation_KindCalibrateSchema,
   calibrateStopAnswer_Status200_Body_Operation_KindObserveSchema,
 ]);
-/** Raw response path: answer.body.operation. */
-export type CalibrateStopAnswer_Status200_Body_Operation = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_OperationSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.family. */
 export const calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_FamilySchema = z.null();
-/** Raw response path: answer.body.stop.by_this_request.family. */
-export type CalibrateStopAnswer_Status200_Body_Stop_ByThisRequest_Family = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_FamilySchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.paused. */
 export const calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_PausedSchema = z.boolean();
-/** Raw response path: answer.body.stop.by_this_request.paused. */
-export type CalibrateStopAnswer_Status200_Body_Stop_ByThisRequest_Paused = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_PausedSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.released. */
 export const calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_ReleasedSchema = z.boolean();
-/** Raw response path: answer.body.stop.by_this_request.released. */
-export type CalibrateStopAnswer_Status200_Body_Stop_ByThisRequest_Released = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_ReleasedSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.requested. */
 export const calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_RequestedSchema = z.boolean();
-/** Raw response path: answer.body.stop.by_this_request.requested. */
-export type CalibrateStopAnswer_Status200_Body_Stop_ByThisRequest_Requested = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_RequestedSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request.signalled. */
 export const calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_SignalledSchema = z.array(
   z.unknown(),
 ); /* Never observed non-empty at this raw path. */
-/** Raw response path: answer.body.stop.by_this_request.signalled. */
-export type CalibrateStopAnswer_Status200_Body_Stop_ByThisRequest_Signalled = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_SignalledSchema
->;
 /** Strict raw response path: answer.body.stop.by_this_request. */
 export const calibrateStopAnswer_Status200_Body_Stop_ByThisRequestSchema = z.strictObject({
   family: calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_FamilySchema,
@@ -9426,28 +4655,12 @@ export const calibrateStopAnswer_Status200_Body_Stop_ByThisRequestSchema = z.str
   requested: calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_RequestedSchema,
   signalled: calibrateStopAnswer_Status200_Body_Stop_ByThisRequest_SignalledSchema,
 });
-/** Raw response path: answer.body.stop.by_this_request. */
-export type CalibrateStopAnswer_Status200_Body_Stop_ByThisRequest = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Stop_ByThisRequestSchema
->;
 /** Strict raw response path: answer.body.stop.holder. */
 export const calibrateStopAnswer_Status200_Body_Stop_HolderSchema = z.null();
-/** Raw response path: answer.body.stop.holder. */
-export type CalibrateStopAnswer_Status200_Body_Stop_Holder = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Stop_HolderSchema
->;
 /** Strict raw response path: answer.body.stop.reason. */
 export const calibrateStopAnswer_Status200_Body_Stop_ReasonSchema = z.null();
-/** Raw response path: answer.body.stop.reason. */
-export type CalibrateStopAnswer_Status200_Body_Stop_Reason = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Stop_ReasonSchema
->;
 /** Strict raw response path: answer.body.stop.state. */
 export const calibrateStopAnswer_Status200_Body_Stop_StateSchema = z.enum(['released', 'stopping']);
-/** Raw response path: answer.body.stop.state. */
-export type CalibrateStopAnswer_Status200_Body_Stop_State = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_Stop_StateSchema
->;
 /** Strict raw response path: answer.body.stop. */
 export const calibrateStopAnswer_Status200_Body_StopSchema = z.strictObject({
   by_this_request: calibrateStopAnswer_Status200_Body_Stop_ByThisRequestSchema,
@@ -9455,140 +4668,58 @@ export const calibrateStopAnswer_Status200_Body_StopSchema = z.strictObject({
   reason: calibrateStopAnswer_Status200_Body_Stop_ReasonSchema,
   state: calibrateStopAnswer_Status200_Body_Stop_StateSchema,
 });
-/** Raw response path: answer.body.stop. */
-export type CalibrateStopAnswer_Status200_Body_Stop = z.infer<
-  typeof calibrateStopAnswer_Status200_Body_StopSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateStopAnswer_Status200_BodySchema = z.strictObject({
   ok: calibrateStopAnswer_Status200_Body_OkSchema,
   operation: calibrateStopAnswer_Status200_Body_OperationSchema,
   stop: calibrateStopAnswer_Status200_Body_StopSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateStopAnswer_Status200_Body = z.infer<
-  typeof calibrateStopAnswer_Status200_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateStopAnswer_Status200_StatusSchema = z.literal(200);
-/** Raw response path: answer.status. */
-export type CalibrateStopAnswer_Status200_Status = z.infer<
-  typeof calibrateStopAnswer_Status200_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 200, body members ok, operation, stop. */
 export const calibrateStopAnswer_Status200Schema = z.strictObject({
   body: calibrateStopAnswer_Status200_BodySchema,
   status: calibrateStopAnswer_Status200_StatusSchema,
 });
-/** Raw response path: answer, variant: status 200, body members ok, operation, stop. */
-export type CalibrateStopAnswer_Status200 = z.infer<typeof calibrateStopAnswer_Status200Schema>;
 /** Strict raw response path: answer.body.code. */
 export const calibrateStopAnswer_Status409_Body_CodeSchema = z.enum([
   'operation_changed',
   'operation_required',
   'operation_unknown',
 ]);
-/** Raw response path: answer.body.code. */
-export type CalibrateStopAnswer_Status409_Body_Code = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_CodeSchema
->;
 /** Strict raw response path: answer.body.error. */
 export const calibrateStopAnswer_Status409_Body_ErrorSchema = z.string();
-/** Raw response path: answer.body.error. */
-export type CalibrateStopAnswer_Status409_Body_Error = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_ErrorSchema
->;
 /** Strict raw response path: answer.body.ok. */
 export const calibrateStopAnswer_Status409_Body_OkSchema = z.boolean();
-/** Raw response path: answer.body.ok. */
-export type CalibrateStopAnswer_Status409_Body_Ok = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_OkSchema
->;
 /** Strict raw response path: answer.body.operation.cancellable. */
 export const calibrateStopAnswer_Status409_Body_Operation_CancellableSchema = z.boolean();
-/** Raw response path: answer.body.operation.cancellable. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Cancellable = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_CancellableSchema
->;
 /** Strict raw response path: answer.body.operation.context.account. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_AccountSchema = z.null();
-/** Raw response path: answer.body.operation.context.account. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_Account = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_AccountSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_host. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_AdbHostSchema = z.string();
-/** Raw response path: answer.body.operation.context.adb_host. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_AdbHost = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_AdbHostSchema
->;
 /** Strict raw response path: answer.body.operation.context.adb_port. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_AdbPortSchema = z.number();
-/** Raw response path: answer.body.operation.context.adb_port. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_AdbPort = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_AdbPortSchema
->;
 /** Strict raw response path: answer.body.operation.context.artifact_dir. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_ArtifactDirSchema = z.string();
-/** Raw response path: answer.body.operation.context.artifact_dir. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_ArtifactDir = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_ArtifactDirSchema
->;
 /** Strict raw response path: answer.body.operation.context.config_revision. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_ConfigRevisionSchema = z.string();
-/** Raw response path: answer.body.operation.context.config_revision. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_ConfigRevision = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_ConfigRevisionSchema
->;
 /** Strict raw response path: answer.body.operation.context.device_key. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_DeviceKeySchema = z.string();
-/** Raw response path: answer.body.operation.context.device_key. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_DeviceKey = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_DeviceKeySchema
->;
 /** Strict raw response path: answer.body.operation.context.instance. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_InstanceSchema = z.string();
-/** Raw response path: answer.body.operation.context.instance. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_Instance = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_InstanceSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_ProfileSchema = z.string();
-/** Raw response path: answer.body.operation.context.profile. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_Profile = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_ProfileSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_path. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_ProfilePathSchema = z.string();
-/** Raw response path: answer.body.operation.context.profile_path. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_ProfilePath = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_ProfilePathSchema
->;
 /** Strict raw response path: answer.body.operation.context.profile_revision. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_ProfileRevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.context.profile_revision. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_ProfileRevision = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_ProfileRevisionSchema
->;
 /** Strict raw response path: answer.body.operation.context.rendering. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_RenderingSchema = z.null();
-/** Raw response path: answer.body.operation.context.rendering. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_Rendering = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_RenderingSchema
->;
 /** Strict raw response path: answer.body.operation.context.selected_run. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_SelectedRunSchema = z.null();
-/** Raw response path: answer.body.operation.context.selected_run. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_SelectedRun = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_SelectedRunSchema
->;
 /** Strict raw response path: answer.body.operation.context.serial. */
 export const calibrateStopAnswer_Status409_Body_Operation_Context_SerialSchema = z.string();
-/** Raw response path: answer.body.operation.context.serial. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context_Serial = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Context_SerialSchema
->;
 /** Strict raw response path: answer.body.operation.context. */
 export const calibrateStopAnswer_Status409_Body_Operation_ContextSchema = z.strictObject({
   account: calibrateStopAnswer_Status409_Body_Operation_Context_AccountSchema,
@@ -9605,31 +4736,15 @@ export const calibrateStopAnswer_Status409_Body_Operation_ContextSchema = z.stri
   selected_run: calibrateStopAnswer_Status409_Body_Operation_Context_SelectedRunSchema,
   serial: calibrateStopAnswer_Status409_Body_Operation_Context_SerialSchema,
 });
-/** Raw response path: answer.body.operation.context. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Context = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_ContextSchema
->;
 /** Strict raw response path: answer.body.operation.created_at. */
 export const calibrateStopAnswer_Status409_Body_Operation_CreatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.created_at. */
-export type CalibrateStopAnswer_Status409_Body_Operation_CreatedAt = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_CreatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.error.code. */
 export const calibrateStopAnswer_Status409_Body_Operation_Error_CodeSchema = z.enum([
   'restoration_required',
   'worker_lost',
 ]);
-/** Raw response path: answer.body.operation.error.code. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Error_Code = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Error_CodeSchema
->;
 /** Strict raw response path: answer.body.operation.error.message. */
 export const calibrateStopAnswer_Status409_Body_Operation_Error_MessageSchema = z.string();
-/** Raw response path: answer.body.operation.error.message. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Error_Message = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Error_MessageSchema
->;
 /** Strict raw response path: answer.body.operation.error. */
 export const calibrateStopAnswer_Status409_Body_Operation_ErrorSchema = z
   .strictObject({
@@ -9637,79 +4752,33 @@ export const calibrateStopAnswer_Status409_Body_Operation_ErrorSchema = z
     message: calibrateStopAnswer_Status409_Body_Operation_Error_MessageSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.error. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Error = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_ErrorSchema
->;
 /** Strict raw response path: answer.body.operation.id. */
 export const calibrateStopAnswer_Status409_Body_Operation_IdSchema = z.string();
-/** Raw response path: answer.body.operation.id. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Id = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_IdSchema
->;
 /** Strict raw response path: answer.body.operation.idempotency_key. */
 export const calibrateStopAnswer_Status409_Body_Operation_IdempotencyKeySchema = z.string();
-/** Raw response path: answer.body.operation.idempotency_key. */
-export type CalibrateStopAnswer_Status409_Body_Operation_IdempotencyKey = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_IdempotencyKeySchema
->;
 /** Strict raw response path: answer.body.operation.kind. */
 export const calibrateStopAnswer_Status409_Body_Operation_KindSchema = z.enum(['calibrate']);
-/** Raw response path: answer.body.operation.kind. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Kind = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_KindSchema
->;
 /** Strict raw response path: answer.body.operation.progress. */
 export const calibrateStopAnswer_Status409_Body_Operation_ProgressSchema = z.strictObject({});
-/** Raw response path: answer.body.operation.progress. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Progress = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_ProgressSchema
->;
 /** Strict raw response path: answer.body.operation.recovery_action. */
 export const calibrateStopAnswer_Status409_Body_Operation_RecoveryActionSchema = z
   .string()
   .nullable();
-/** Raw response path: answer.body.operation.recovery_action. */
-export type CalibrateStopAnswer_Status409_Body_Operation_RecoveryAction = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_RecoveryActionSchema
->;
 /** Strict raw response path: answer.body.operation.request.bootstrap. */
 export const calibrateStopAnswer_Status409_Body_Operation_Request_BootstrapSchema = z.boolean();
-/** Raw response path: answer.body.operation.request.bootstrap. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Request_Bootstrap = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Request_BootstrapSchema
->;
 /** Strict raw response path: answer.body.operation.request.phases. */
 export const calibrateStopAnswer_Status409_Body_Operation_Request_PhasesSchema = z.string();
-/** Raw response path: answer.body.operation.request.phases. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Request_Phases = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Request_PhasesSchema
->;
 /** Strict raw response path: answer.body.operation.request. */
 export const calibrateStopAnswer_Status409_Body_Operation_RequestSchema = z.strictObject({
   bootstrap: calibrateStopAnswer_Status409_Body_Operation_Request_BootstrapSchema,
   phases: calibrateStopAnswer_Status409_Body_Operation_Request_PhasesSchema,
 });
-/** Raw response path: answer.body.operation.request. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Request = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_RequestSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
 export const calibrateStopAnswer_Status409_Body_Operation_ResultRefs_CalibrateStateJson_PathSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.path. */
-export type CalibrateStopAnswer_Status409_Body_Operation_ResultRefs_CalibrateStateJson_Path =
-  z.infer<
-    typeof calibrateStopAnswer_Status409_Body_Operation_ResultRefs_CalibrateStateJson_PathSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
 export const calibrateStopAnswer_Status409_Body_Operation_ResultRefs_CalibrateStateJson_RevisionSchema =
   z.string();
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json.revision. */
-export type CalibrateStopAnswer_Status409_Body_Operation_ResultRefs_CalibrateStateJson_Revision =
-  z.infer<
-    typeof calibrateStopAnswer_Status409_Body_Operation_ResultRefs_CalibrateStateJson_RevisionSchema
-  >;
 /** Strict raw response path: answer.body.operation.result_refs.calibrate_state.json. */
 export const calibrateStopAnswer_Status409_Body_Operation_ResultRefs_CalibrateStateJsonSchema =
   z.strictObject({
@@ -9717,25 +4786,13 @@ export const calibrateStopAnswer_Status409_Body_Operation_ResultRefs_CalibrateSt
     revision:
       calibrateStopAnswer_Status409_Body_Operation_ResultRefs_CalibrateStateJson_RevisionSchema,
   });
-/** Raw response path: answer.body.operation.result_refs.calibrate_state.json. */
-export type CalibrateStopAnswer_Status409_Body_Operation_ResultRefs_CalibrateStateJson = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_ResultRefs_CalibrateStateJsonSchema
->;
 /** Strict raw response path: answer.body.operation.result_refs. */
 export const calibrateStopAnswer_Status409_Body_Operation_ResultRefsSchema = z.strictObject({
   'calibrate_state.json':
     calibrateStopAnswer_Status409_Body_Operation_ResultRefs_CalibrateStateJsonSchema.optional(),
 });
-/** Raw response path: answer.body.operation.result_refs. */
-export type CalibrateStopAnswer_Status409_Body_Operation_ResultRefs = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_ResultRefsSchema
->;
 /** Strict raw response path: answer.body.operation.revision. */
 export const calibrateStopAnswer_Status409_Body_Operation_RevisionSchema = z.number();
-/** Raw response path: answer.body.operation.revision. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Revision = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_RevisionSchema
->;
 /** Strict raw response path: answer.body.operation.status. */
 export const calibrateStopAnswer_Status409_Body_Operation_StatusSchema = z.enum([
   'awaiting_apply',
@@ -9743,34 +4800,14 @@ export const calibrateStopAnswer_Status409_Body_Operation_StatusSchema = z.enum(
   'restoration_required',
   'running',
 ]);
-/** Raw response path: answer.body.operation.status. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Status = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_StatusSchema
->;
 /** Strict raw response path: answer.body.operation.step. */
 export const calibrateStopAnswer_Status409_Body_Operation_StepSchema = z.string();
-/** Raw response path: answer.body.operation.step. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Step = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_StepSchema
->;
 /** Strict raw response path: answer.body.operation.updated_at. */
 export const calibrateStopAnswer_Status409_Body_Operation_UpdatedAtSchema = z.number();
-/** Raw response path: answer.body.operation.updated_at. */
-export type CalibrateStopAnswer_Status409_Body_Operation_UpdatedAt = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_UpdatedAtSchema
->;
 /** Strict raw response path: answer.body.operation.worker.creation_time. */
 export const calibrateStopAnswer_Status409_Body_Operation_Worker_CreationTimeSchema = z.number();
-/** Raw response path: answer.body.operation.worker.creation_time. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Worker_CreationTime = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Worker_CreationTimeSchema
->;
 /** Strict raw response path: answer.body.operation.worker.pid. */
 export const calibrateStopAnswer_Status409_Body_Operation_Worker_PidSchema = z.number();
-/** Raw response path: answer.body.operation.worker.pid. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Worker_Pid = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_Worker_PidSchema
->;
 /** Strict raw response path: answer.body.operation.worker. */
 export const calibrateStopAnswer_Status409_Body_Operation_WorkerSchema = z
   .strictObject({
@@ -9778,10 +4815,6 @@ export const calibrateStopAnswer_Status409_Body_Operation_WorkerSchema = z
     pid: calibrateStopAnswer_Status409_Body_Operation_Worker_PidSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation.worker. */
-export type CalibrateStopAnswer_Status409_Body_Operation_Worker = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_Operation_WorkerSchema
->;
 /** Strict raw response path: answer.body.operation. */
 export const calibrateStopAnswer_Status409_Body_OperationSchema = z
   .strictObject({
@@ -9803,10 +4836,6 @@ export const calibrateStopAnswer_Status409_Body_OperationSchema = z
     worker: calibrateStopAnswer_Status409_Body_Operation_WorkerSchema,
   })
   .nullable();
-/** Raw response path: answer.body.operation. */
-export type CalibrateStopAnswer_Status409_Body_Operation = z.infer<
-  typeof calibrateStopAnswer_Status409_Body_OperationSchema
->;
 /** Strict raw response path: answer.body. */
 export const calibrateStopAnswer_Status409_BodySchema = z.strictObject({
   code: calibrateStopAnswer_Status409_Body_CodeSchema,
@@ -9814,23 +4843,13 @@ export const calibrateStopAnswer_Status409_BodySchema = z.strictObject({
   ok: calibrateStopAnswer_Status409_Body_OkSchema,
   operation: calibrateStopAnswer_Status409_Body_OperationSchema,
 });
-/** Raw response path: answer.body. */
-export type CalibrateStopAnswer_Status409_Body = z.infer<
-  typeof calibrateStopAnswer_Status409_BodySchema
->;
 /** Strict raw response path: answer.status. */
 export const calibrateStopAnswer_Status409_StatusSchema = z.literal(409);
-/** Raw response path: answer.status. */
-export type CalibrateStopAnswer_Status409_Status = z.infer<
-  typeof calibrateStopAnswer_Status409_StatusSchema
->;
 /** Strict raw response path: answer, variant: status 409, body members code, error, ok, operation. */
 export const calibrateStopAnswer_Status409Schema = z.strictObject({
   body: calibrateStopAnswer_Status409_BodySchema,
   status: calibrateStopAnswer_Status409_StatusSchema,
 });
-/** Raw response path: answer, variant: status 409, body members code, error, ok, operation. */
-export type CalibrateStopAnswer_Status409 = z.infer<typeof calibrateStopAnswer_Status409Schema>;
 /** Strict raw response path: answer. */
 export const calibrateStopAnswerSchema = z.union([
   calibrateStopAnswer_Status200Schema,
