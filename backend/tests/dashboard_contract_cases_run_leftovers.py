@@ -282,13 +282,18 @@ ADD_REFUSALS = [
 ]
 
 
+def add_dissonance_run(profile):
+    """The dissonance coin run `dissonance` of the run-entry worlds (a coin run with a tab), added to a populated profile."""
+    run = copy.deepcopy(profile['blueprints']['farm_deep'])
+    run.update(label='Dissonance', dissonant_tab='utility', loadout='plain')
+    run['policies'] = {'gather': 'all_on'}
+    profile['blueprints']['dissonance'] = run
+
+
 def entry_world(w, *, profile_change=None):
     """The populated account with UW and rescue policies, equipment in config.yaml, and a dissonance coin run `dissonance`."""
     def add_dissonance(profile):
-        run = copy.deepcopy(profile['blueprints']['farm_deep'])
-        run.update(label='Dissonance', dissonant_tab='utility', loadout='plain')
-        run['policies'] = {'gather': 'all_on'}
-        profile['blueprints']['dissonance'] = run
+        add_dissonance_run(profile)
         if profile_change:
             profile_change(profile)
     with_abilities(w, mutate=add_dissonance)

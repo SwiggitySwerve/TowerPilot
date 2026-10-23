@@ -60,6 +60,8 @@ from dashboard_contract_cases_kind_guard import KG, run_kind_guard_cases
 from dashboard_contract_cases_profile_fenced import PF as PFD, profile_patch_fenced_cases
 from dashboard_contract_cases_ad_gems_poll import AP, ad_gems_failed_attempt_poll_cases
 from dashboard_contract_cases_plan_removal import PRE, plan_removal_effects_cases
+from dashboard_contract_cases_profile_target_more import PM as PTM, REFUSED_RUN_FIELDS, profile_target_more_cases
+from dashboard_contract_cases_settings_modules_more import SMM, settings_modules_more_cases
 from dashboard_contract_cases_profile import run_profile_cases, run_schedule_cases
 from dashboard_contract_cases_settings import run_settings_cases
 from dashboard_contract_cases_runs import run_controls_live_cases, run_controls_save_cases
@@ -80,7 +82,8 @@ FAMILIES = [run_controls_save_cases, run_controls_live_cases, run_history_cases,
             run_battle_details_cases, run_plan_section_delete_cases, run_templates_add_fenced_cases, shopping_queue_cases, profile_target_cases,
             runtime_environment_cases, run_preview_cases, settings_modules_cases, loadout_restore_eligibility_cases, settings_switch_records_cases,
             run_templates_add_coded_cases, run_controls_live_reset_all_mixed_cases, run_entry_patch_parity_cases, shopping_queue_bounds_cases,
-            run_kind_guard_cases, profile_patch_fenced_cases, ad_gems_failed_attempt_poll_cases, plan_removal_effects_cases]
+            run_kind_guard_cases, profile_patch_fenced_cases, ad_gems_failed_attempt_poll_cases, plan_removal_effects_cases, profile_target_more_cases,
+            settings_modules_more_cases]
 UNNAMED_ALLOWED = 49      # cases no row names (the settling reads of one scenario); report.json lists them
 
 NOTES = dict(
@@ -1282,6 +1285,34 @@ COVERAGE.update({
         PRE, 'plan_week_deleted_is_refused_a_plan_with_no_blocks', 'plan_days_deleted_is_refused_a_plan_with_no_blocks', 'read_runs_after_the_refusals_nothing_changed',
         'plan_week_deleted_when_the_plan_is_gone_is_refused_the_same_way'),
 })
+COVERAGE.update({
+    'F6-14 r12e Schedule: the whole day plan of the INACTIVE profile removed (200, no `value`, fenced) with the read that follows, the delete of an already absent section (200, same revision), one half of the plan refused (400 `schedules nothing`), and the active profile still holding its plan': keys(
+        PTM, 'read_before_the_inactive_plan_is_removed', 'inactive_plan_week_deleted_is_refused_a_plan_with_no_blocks', 'inactive_plan_deleted', 'read_after_the_inactive_plan_was_removed',
+        'inactive_plan_delete_when_the_section_is_already_gone', 'read_the_active_profile_after_the_inactive_plan_was_removed'),
+    'F6-14 r12e Schedule: the delete of the inactive plan after another client saved (409 revision_conflict, plan remains) and after the account was switched (409 context_changed)': keys(
+        PTM, 'inactive_plan_delete_stale_revision_409', 'read_after_the_stale_delete_the_plan_remains', 'inactive_plan_delete_refused_after_account_switch'),
+    'F6-14 r12e Abilities: an unused Ultimate Weapon policy and an unused rescue policy of the inactive profile deleted (200, no `value`), each state read back': keys(
+        PTM, 'read_before_the_inactive_policies_are_deleted', 'inactive_unused_uw_policy_deleted', 'inactive_unused_rescue_policy_deleted', 'read_after_the_unused_policies_were_deleted'),
+    'F6-14 r12e Abilities: the same deletes refused while a run of the inactive profile uses the policy (400 `unknown policy`), nothing written': keys(
+        PTM, 'inactive_uw_policy_deleted_while_a_run_uses_it_is_refused', 'inactive_rescue_policy_deleted_while_a_run_uses_it_is_refused', 'read_after_the_in_use_deletes_were_refused_nothing_changed'),
+    'F6-14 r12e Abilities: a rescue policy of the inactive profile saved with its rules in another order (the whole policy, as the page sends it) and the rules put in another order by the rules subpath, each read back': keys(
+        PTM, 'inactive_rescue_policy_saved_with_its_rules_in_another_order', 'read_after_the_inactive_rescue_rules_were_reordered_as_a_whole_policy',
+        'inactive_rescue_rules_reordered_by_the_rules_subpath', 'read_after_the_inactive_rescue_rules_were_reordered_by_the_subpath'),
+    'F6-14 r12e Runs entry: every field of a run the Runs page can save or delete, for the inactive profile (the lists of run_entry_patch replayed with expected_context), before and after': keys(
+        PTM, 'read_before_the_first_inactive_run_entry_save', *[f'inactive_{case}' for _, case, _, _ in ENTRY_SAVES], *[f'inactive_{case}' for _, case, _ in ENTRY_DELETES],
+        'read_after_the_inactive_run_entry_saves_holds_every_change'),
+    'F6-14 r12e Runs entry: one refusal of each kind of the run-entry validator for the inactive profile (400 with problems, no code), nothing written': keys(
+        PTM, *[f'inactive_{case}_is_refused' for case in REFUSED_RUN_FIELDS], *[f'inactive_{case}_is_refused' for _, case, _ in ENTRY_DELETE_REFUSALS],
+        'read_after_the_inactive_run_entry_refusals_nothing_changed'),
+    'F6-14 r12e Runs entry: a run field of the inactive profile after another client saved (409, judged before the values) and after the account was switched (409 context_changed)': keys(
+        PTM, 'inactive_run_entry_stale_revision_409', 'inactive_run_entry_stale_revision_is_judged_before_the_values', 'read_after_the_stale_run_entry_refusals_holds_the_other_clients_save',
+        'inactive_run_entry_refused_after_account_switch'),
+    'F6-14 r12e read failure: GET /api/profile-files that fails (500, no JSON) and answers again afterwards': keys(
+        PTM, 'profile_files_read_failed_500', 'profile_files_read_after_the_failure_answers_again'),
+    'F6-14 r12e: an inactive target whose source cannot be read - the list still names it patchable, the source read and a patch of it (with its true revision) are 400 with the parser text, or "is not a mapping"': keys(
+        PTM, 'inactive_target_source_that_cannot_be_parsed_400', 'profile_files_still_lists_the_target_whose_source_cannot_be_parsed', 'inactive_patch_of_a_target_that_cannot_be_parsed_is_the_parser_error_400',
+        'inactive_target_source_that_is_not_a_mapping_400', 'inactive_patch_of_a_target_that_is_not_a_mapping_400'),
+})
 NOTES.update(
     run_kind_guard=('r12d (F6-11 RL12, the r12c review): a run\'s kind picks its runner and decides which fields it may carry, so POST /api/profile-patch refuses a patch that changes the kind of a run that exists before and after it. '
                     'A change by the `kind` field, by replacing the whole run, or by replacing the whole `blueprints` mapping is 400 {ok:false, code:"kind_change_refused", error, changes:[{blueprint, from_kind, to_kind}]} (sorted by run name; a deleted kind would be to_kind null), nothing written. '
@@ -1303,7 +1334,55 @@ NOTES.update(
                           'the blueprint runs are identical before, after and after the add-back. Deleting plan.week or plan.days (either half) leaves a plan with no blocks and is 400 {ok:false, error, problems} with the validator text (uncoded), also when the section is already gone (the route deletes from an empty plan); nothing is written. '
                           'GET /api/schedule/status was probed and not recorded: it reports the running scheduler last observation and stayed available after the removal in the synthetic world.'),
 )
-FAMILY_ROWS = {AP: 'F6-11 6.4 (r12d: the failed Ad gems attempt through the collector own poll)', PRE: 'F6-11 6.5 (r12d: what removing the plan changes)', KG: 'F6-11 RL12 (r12d: a run kind is fixed)', PFD: 'F6-14b (brief section 7: fenced writes to the active profile)', TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
+NOTES.update(
+    profile_target_more=('r12e (the open recording requests of the F6-14 reports): what profile_target did not record about editing an INACTIVE profile (`second`, same account, `mine` in force). Every write carries {name:\'second\', path, value | op:\'delete\', expected_context, expected_revision}; a delete has no `value`. '
+                         'The active profile and config.yaml are byte-identical after every group (asserted). Schedule: removing the plan section is 200 and the read shows no `plan`; deleting what is absent is 200 with the same revision (no rewrite); deleting plan.week alone is 400 "a plan with no blocks schedules nothing" (uncoded, `problems`); a stale revision is 409 revision_conflict, a changed account 409 context_changed. '
+                         'Abilities: an unused UW or rescue policy deletes (200); while a run of the profile uses it the delete is 400 "unknown policy \'<id>\' (defined in ...: <the others>)", nothing written; the rules of a rescue policy are reordered by saving the whole policy (what the page sends) or by the rules subpath, both 200. '
+                         'Runs entry: ENTRY_SAVES / ENTRY_DELETES of run_entry_patch replayed for the inactive profile (the answers equal the active profile\'s except for the profile they describe) and one refusal of each kind. '
+                         'Read failure: GET /api/profile-files raises when config.yaml cannot be read (500, the default page, no JSON). A target whose file cannot be parsed is still LISTED, `patchable: true` (the list looks at names, not content), GET /api/profile-src/<name> is 400 {ok:false, error: the parser text}, '
+                         'and a patch is that same 400 even with the file\'s true revision (the file is left as it is); a file that is not a mapping (a list, a scalar, empty) is 400 "<name>.yaml is not a mapping" for the read and the patch.'),
+)
+COVERAGE.update({
+    'F6-15 C-03 Emulators (1)(3): the read just before the published saved_instance_defaults, and the machine fallback (empty preset) with autostart off saved from the state that save leaves, with the read after': keys(
+        SMM, 'read_before_saved_instance_defaults', 'saved_instance_defaults_with_fallback_and_autostart_off', 'read_after_saved_instance_defaults_with_fallback_and_autostart_off'),
+    'F6-15 C-03 Emulators (2): a hand-edited emulator preset the options do not offer - the read, the form that sends it back (refused), a save without the field (kept), the fallback (replaces it)': keys(
+        SMM, 'read_with_an_unlisted_saved_instance_defaults_preset', 'instance_defaults_form_sent_with_the_unlisted_preset_is_refused', 'read_after_the_refused_unlisted_instance_preset_nothing_changed',
+        'instance_defaults_saved_without_the_preset_field_keeps_the_unlisted_preset', 'read_after_the_partial_instance_save_the_unlisted_preset_remains',
+        'instance_defaults_choosing_the_machine_fallback_replaces_the_unlisted_preset', 'read_after_the_unlisted_instance_preset_was_replaced'),
+    'F6-15 C-03 Runtime (4): run-defaults, loop-defaults, missions-defaults and fleet-defaults saved while the selected emulator carries its own value that differs from the machine default - read before, save, read after (the override unchanged)': keys(
+        SMM, 'read_before_saved_run_defaults_with_overrides', 'saved_run_defaults_with_overrides', 'read_after_saved_run_defaults_with_overrides', 'read_before_saved_loop_defaults_with_overrides', 'saved_loop_defaults_with_overrides', 'read_after_saved_loop_defaults_with_overrides', 'read_before_saved_missions_defaults_with_overrides', 'saved_missions_defaults_with_overrides', 'read_after_saved_missions_defaults_with_overrides', 'read_before_saved_fleet_defaults_with_overrides', 'saved_fleet_defaults_with_overrides', 'read_after_saved_fleet_defaults_with_overrides'),
+    'F6-15 C-03 Runtime (5): run-defaults with a stored preset the options do not offer (read, refused, replaced by a listed one), and with no runnable preset - the empty options list, every value refused': keys(
+        SMM, 'read_with_an_unlisted_saved_run_defaults_preset', 'run_defaults_saving_back_the_unlisted_preset_is_refused', 'read_after_the_refused_unlisted_run_preset_nothing_changed',
+        'run_defaults_choosing_a_listed_preset_replaces_the_unlisted_one', 'read_after_the_unlisted_run_preset_was_replaced', 'read_with_no_runnable_run_defaults_preset_options',
+        'run_defaults_with_no_runnable_preset_refuses_the_value_it_shows', 'run_defaults_with_no_runnable_preset_refuses_the_empty_value', 'instance_defaults_with_no_runnable_preset_refuses_a_named_preset',
+        'read_after_the_empty_options_refusals_nothing_changed', 'instance_defaults_with_no_runnable_preset_still_saves_the_empty_value', 'read_after_the_empty_value_was_saved_with_no_runnable_preset',
+        'read_with_no_presets_in_the_configuration_the_options_are_empty', 'run_defaults_with_no_presets_in_the_configuration_is_refused'),
+    'F6-15 r12e: a placeholder preset (`defined: false`) and the empty value on run-defaults refused (400 `expected enum`), nothing written': keys(
+        SMM, 'read_with_a_placeholder_preset_in_the_configuration', 'run_defaults_with_a_placeholder_preset_is_refused', 'run_defaults_with_the_empty_value_is_refused',
+        'instance_defaults_with_a_placeholder_preset_is_refused', 'instance_defaults_with_a_placeholder_and_a_valid_label_writes_neither', 'read_after_the_refused_preset_saves_nothing_changed'),
+    'F6-15 C-03 Equipment (6): tournament-cards saved with every string list empty from the state the published save leaves, the reads, and the same save again (200, same revision)': keys(
+        SMM, 'read_before_saved_tournament_cards_empty_lists', 'saved_tournament_cards_empty_lists', 'read_after_saved_tournament_cards_empty_lists',
+        'config_read_after_saved_tournament_cards_empty_lists', 'saved_the_same_empty_lists_again_keeps_the_revision'),
+    'F6-15 r12e: tournament-cards with only one list emptied (the other is kept), and with no account bound (the root block) both emptied': keys(
+        SMM, 'read_before_only_the_drop_list_is_emptied', 'saved_tournament_cards_with_only_the_drop_list_empty_the_add_list_is_kept', 'read_after_only_the_drop_list_was_emptied',
+        'read_before_only_the_add_list_is_emptied', 'saved_tournament_cards_with_only_the_add_list_empty_the_drop_list_is_kept', 'read_after_only_the_add_list_was_emptied',
+        'read_before_the_unbound_tournament_lists_are_emptied', 'saved_tournament_cards_empty_lists_and_no_account', 'read_after_the_unbound_tournament_lists_were_emptied'),
+    'F6-15 C-03 Equipment (7)(8): GET /api/config just before the published saved_modules_restore, and just before the published clearing refusal of loadout_restore_eligibility': keys(
+        SMM, 'read_before_saved_modules_restore', 'read_before_the_clearing_refusal'),
+})
+NOTES.update(
+    settings_modules_more=('r12e (the open recording requests of F6-15, compliance C-03): what settings_modules and loadout_restore did not record. Every request is POST /api/settings {context, revision, module, values} (the reads are GET /api/settings, or GET /api/config where the name says so) over the worlds of settings_modules (alpha on main, beta on other; presets normal_run, coin_farm and the placeholder `later`). '
+                           'The published families are unchanged: a read the page needs "just before" a published save (read_before_saved_instance_defaults, read_before_saved_modules_restore, read_before_the_clearing_refusal, and the state the published saved_tournament_cards leaves) is recorded here in a world that reaches the same bytes, and test_the_reads_of_settings_modules_more_are_the_states_the_published_saves_start_from compares its revision with the published request. '
+                           'saved_instance_defaults_with_fallback_and_autostart_off is {preset:"", autostart:false} sent from the state the published save leaves: the catalogue has no boolean `fallback`; "fallback" is the explicit option "Use machine fallback" (the empty preset), stored as the empty string, and autostart is stored as an explicit false. '
+                           'Machine defaults over an override: run-defaults, loop-defaults, missions-defaults and fleet-defaults write the ROOT value only; the selected emulator\'s own values (its default preset, instances.main.loop|missions|fleet) and the other emulator are byte-identical afterwards, and the emulator module (`loop`, `missions`, `fleet`) still shows its override - '
+                           'a key the override does not carry (loop.dry_run, fleet.post_window) follows the new default. Preset choices: an enum offers exactly the catalogue options - run-defaults the runnable presets (a `defined: false` placeholder is not one), instance-defaults those plus the empty value "Use machine fallback" - '
+                           'and any other value is 400 {ok:false, error:"<label>: expected enum"} (run-defaults: "Fallback preset: expected enum", instance-defaults: "Default preset: expected enum"; uncoded), whatever its type, with nothing written, also the valid fields of the same request. '
+                           'Only the fields a request names are validated: a stored preset that is no longer offered (a hand-edited name) stays, and is shown with an options list that lacks it, until a request names it, so a form that sends every field back is refused while a save without the preset field is 200. '
+                           'With no runnable preset (all placeholders, or no `presets` in the configuration) run-defaults offers an empty list and refuses every value, the one it shows included; instance-defaults offers only the empty value and saves it. '
+                           'Tournament lists: tournament-cards stores the lists as sent, [] included (saved_tournament_cards_empty_lists sets every string list of the module to []); with an account bound to the selected emulator they are the account\'s (the root block, the legacy default, and the other account are untouched), with none they are the root block; '
+                           'a save that changes nothing is 200 with the same revision. The two GET /api/config reads are the configuration the loadout restore requests start from; the request that follows each is replayed unrecorded by the generator to prove the read admits it.'),
+)
+FAMILY_ROWS = {SMM: 'F6-15 open recordings (r12e: more of the settings modules)', PTM: 'F6-14 open recordings (r12e: more of an inactive profile)', AP: 'F6-11 6.4 (r12d: the failed Ad gems attempt through the collector own poll)', PRE: 'F6-11 6.5 (r12d: what removing the plan changes)', KG: 'F6-11 RL12 (r12d: a run kind is fixed)', PFD: 'F6-14b (brief section 7: fenced writes to the active profile)', TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
                RESET: 'F6-11 RL2 (6.1)', TF: 'F6-11 RL4 guarded (root decision: run-templates/add gains expected_revision and expected_context)', SQ: 'F6-12 (brief section 8)', PTG: 'F6-14 (brief section 6)', ENTRY: 'F6-11 RL3 (6.2)', TEMPLATES: 'F6-11 RL4 (6.3)', DETAILS: 'F6-11 RL7 (6.4)', PLAN_DELETE: 'F6-11 RL8 (6.5)', SAVE: 'RUN-04..07', LIVE: 'RUN-08..11', HL: 'H-01', HD: 'H-01, H-02', CFG: 'G-01', PR: 'G-02', PP: 'G-03', SP: 'S-01', ST: 'G-04', LO: 'E-01', CO: 'C-01', AB: 'A-01', AC: 'P-01', PF: 'P-02', EI: 'M-01', EA: 'M-02', ET: 'M-03', RS: 'T-01', RD: 'T-02', RR: 'R-01, R-02, R-06', CW: 'R-02', RI: 'R-03', SA: 'R-04', RL: 'R-05'}
 
 
@@ -1346,7 +1425,8 @@ PUBLISHED_ORDER = ['run_controls_save_cases', 'run_controls_live_cases', 'run_hi
                    'run_plan_section_delete_cases', 'run_templates_add_fenced_cases', 'shopping_queue_cases', 'profile_target_cases',
                    'runtime_environment_cases', 'run_preview_cases', 'settings_modules_cases', 'loadout_restore_eligibility_cases', 'settings_switch_records_cases',
                    'run_templates_add_coded_cases', 'run_controls_live_reset_all_mixed_cases', 'run_entry_patch_parity_cases', 'shopping_queue_bounds_cases',
-                   'run_kind_guard_cases', 'profile_patch_fenced_cases', 'ad_gems_failed_attempt_poll_cases', 'plan_removal_effects_cases']
+                   'run_kind_guard_cases', 'profile_patch_fenced_cases', 'ad_gems_failed_attempt_poll_cases', 'plan_removal_effects_cases', 'profile_target_more_cases',
+                   'settings_modules_more_cases']
 
 
 CODED_PATHS = frozenset({'/api/calibrate/start', '/api/calibrate/observe', '/api/calibrate/apply', '/api/calibrate/stop', '/api/calibrate/status',
@@ -1426,6 +1506,38 @@ def test_the_r12d_families_are_made_by_the_real_routes_and_are_the_same_twice(da
     assert render(build(dash, tmp_path / 'two', monkeypatch, chosen)) == first
     families = json.loads(first)['cases']
     assert {name: len(cases) for name, cases in families.items()} == {PAR: 54, KG: 21, PFD: 28, AP: 5, PRE: 11}
+
+
+def test_the_r12e_family_is_made_by_the_real_routes_and_is_the_same_twice(dash, tmp_path, monkeypatch):
+    """The family r12e added (more of an inactive profile) on its own: every assertion of its generator runs (a delete that is not refused, a revision that moved, a file that was touched fails here),
+    and two runs are byte-identical (a file modification time that was not pinned shows here). The full contract below also compares it with the committed fixture."""
+    first = render(build(dash, tmp_path / 'one', monkeypatch, [profile_target_more_cases]))
+    assert render(build(dash, tmp_path / 'two', monkeypatch, [profile_target_more_cases])) == first
+    families = json.loads(first)['cases']
+    assert {name: len(cases) for name, cases in families.items()} == {PTM: 72}
+
+
+def test_the_r12e_settings_family_is_made_by_the_real_routes_and_is_the_same_twice(dash, tmp_path, monkeypatch):
+    """The second family r12e added (more of the settings modules: a machine default over an emulator override, a preset the options list does not offer, empty tournament lists) on its own:
+    every assertion of its generator runs (an override that changed, a refusal that wrote, a list that was not stored as sent fails here), and two runs are byte-identical."""
+    first = render(build(dash, tmp_path / 'one', monkeypatch, [settings_modules_more_cases]))
+    assert render(build(dash, tmp_path / 'two', monkeypatch, [settings_modules_more_cases])) == first
+    families = json.loads(first)['cases']
+    assert {name: len(cases) for name, cases in families.items()} == {SMM: 58}
+
+
+def test_the_reads_of_settings_modules_more_are_the_states_the_published_saves_start_from(dash, tmp_path, monkeypatch):
+    """A read recorded in settings_modules_more "just before" a save of a published family must be the state that save starts from: the revision the published request carries is the revision of the read (the cases are
+    compared before the ids are aliased, so they are the routes' own values), and the world that reaches it differs from the published one only by its directory."""
+    cases = generate(dash, tmp_path / 'guard', monkeypatch, [settings_modules_cases, loadout_restore_eligibility_cases, settings_modules_more_cases])
+    more, published, eligibility, restore = cases[SMM], cases[SM], cases[LE], cases[LR]
+    assert more['read_before_saved_instance_defaults']['body']['revision'] == published['saved_instance_defaults']['request']['body']['revision']
+    assert more['read_before_saved_instance_defaults']['body']['context'] == published['saved_instance_defaults']['request']['body']['context']
+    assert more['saved_instance_defaults_with_fallback_and_autostart_off']['request']['body']['revision'] == published['saved_instance_defaults']['body']['revision']
+    assert more['read_before_saved_tournament_cards_empty_lists']['body']['revision'] == published['read_after_saved_tournament_cards']['body']['revision']
+    assert more['read_before_saved_modules_restore']['body']['config_revision'] == restore['saved_modules_restore']['request']['body']['expected_revision']
+    assert more['read_before_saved_modules_restore']['body']['loadouts']['plain'] == restore['saved_cards_restore']['request']['body']['body']
+    assert more['read_before_the_clearing_refusal']['body']['config_revision'] == eligibility['refused_clearing_the_stored_restore_value_of_a_loadout_no_run_uses']['request']['body']['expected_revision']
 
 
 def test_the_families_are_generated_in_a_fixed_order():

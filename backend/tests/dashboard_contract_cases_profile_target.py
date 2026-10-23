@@ -28,9 +28,10 @@ BASELINE = {'black_hole': True, 'chronofield': True, 'death_wave': True, 'golden
 UW_CALM = {'label': 'Calm', 'baseline': dict(BASELINE, spotlight=False)}
 
 
-def target_world(w, *, accounts=True):
-    """alpha (profile `mine` in force; library mine + second) and beta (profile `theirs`), on one emulator. `second` differs from `mine` in its farm label."""
-    with_abilities(w)
+def target_world(w, *, accounts=True, mutate=None):
+    """alpha (profile `mine` in force; library mine + second) and beta (profile `theirs`), on one emulator. `second` differs from `mine` in its farm label.
+    `mutate` changes the populated profile before `second` and `theirs` are copied from it (a world with more runs, for example)."""
+    with_abilities(w, mutate=mutate)
     mine = yaml.safe_load((w.root / 'profiles' / 'mine.yaml').read_text(encoding='utf-8'))
     second = copy.deepcopy(mine)
     second['blueprints']['farm']['label'] = 'Second farm'
