@@ -3,9 +3,15 @@ import { axe } from 'jest-axe';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { entries, own, ownPath } from '../../../src/core/read.ts';
 import { selectShoppingSaved } from '../../../src/store/selectors/shoppingSaved.ts';
+import { contextFromConfig } from '../../../src/api/context.ts';
+import { createMemoryStorage } from '../../support/fakeTransport.ts';
 import { postBodies } from '../../support/dataLayer.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
-import { dashboardPagesCase, type DashboardCase } from '../../support/dashboardFixture.ts';
+import {
+  dashboardPagesCase,
+  dashboardCase,
+  type DashboardCase,
+} from '../../support/dashboardFixture.ts';
 import { bounds, boundsDraft, numericBoundsCases } from '../../support/shoppingBounds.ts';
 import { renderPage, type PageOptions } from '../dashboard/harness.tsx';
 
@@ -59,6 +65,103 @@ beforeEach(() => {
 afterEach(() => {
   window.location.hash = '';
   vi.useRealTimers();
+});
+
+it.each(['cold', 'same', 'changed'])(
+  'SQ5 saved queue edits wait for the confirmed context (%s), including routine edits',
+  async (startup) => {
+    const context = contextFromConfig(CONFIG);
+    const page = await open(undefined, {
+      storage: createMemoryStorage(
+        startup === 'cold'
+          ? {}
+          : {
+              'tp.context.v1': JSON.stringify({
+                ...context,
+                ...(startup === 'changed' ? { serial: 'old:1' } : {}),
+              }),
+            },
+      ),
+      before: (fake) => {
+        fake.route('GET', '/api/config', () => 'hold');
+      },
+    });
+    expect(page.data.store.getSnapshot().contextConfirmed).toBe(false);
+    expect(form().queryByRole('textbox', { name: 'Cash reserve' })).toBeNull();
+    expect(root()).toHaveTextContent('Waiting for the emulator, account and profile to be read.');
+    expect(document.querySelector('[data-scope-kind="saved"] input')).toBeNull();
+    expect(page.data.store.getSnapshot().runDrafts).toEqual({});
+    act(() => {
+      page.fake.next('/api/config').respond(200, CONFIG);
+    });
+    await page.advance(100);
+    expect(page.data.store.getSnapshot().contextConfirmed).toBe(true);
+    await fill(page, 'Cash reserve', '12345');
+    const scope = selectShoppingSaved(page.data.store.getSnapshot()).scope;
+    act(() => {
+      page.data.commands.checkRun();
+    });
+    await page.advance(100);
+    expect(selectShoppingSaved(page.data.store.getSnapshot()).scope).toBe(scope);
+    expect(form().getByRole('textbox', { name: 'Cash reserve' })).toHaveValue('12345');
+    expect(saveButton()).not.toHaveAttribute('aria-disabled', 'true');
+  },
+);
+
+it('SQ5 saved queue edits wait for the run catalogue to confirm the draft scope', async () => {
+  const page = await open(undefined, {
+    before: (fake) => {
+      fake.route('GET', '/api/runs', () => 'hold');
+    },
+  });
+  expect(page.data.store.getSnapshot().contextConfirmed).toBe(true);
+  const before = selectShoppingSaved(page.data.store.getSnapshot());
+  expect(before.scope).toMatch(/:farm:shopping_plan$/u);
+  expect(form().queryByRole('textbox', { name: 'Cash reserve' })).toBeNull();
+  expect(root()).toHaveTextContent('Reading the saved settings');
+  expect(document.querySelector('[data-scope-kind="saved"] input')).toBeNull();
+  act(() => {
+    page.fake.last('/api/runs').respond(200, dashboardCase('runs.ready').body);
+  });
+  await page.advance(100);
+  const after = selectShoppingSaved(page.data.store.getSnapshot());
+  expect(after.scope).toMatch(/:bp_farm:shopping_plan$/u);
+  await fill(page, 'Cash reserve', '12345');
+  act(() => {
+    page.data.commands.checkRun();
+  });
+  await page.advance(100);
+  expect(form().getByRole('textbox', { name: 'Cash reserve' })).toHaveValue('12345');
+  expect(saveButton()).not.toHaveAttribute('aria-disabled', 'true');
+});
+
+it('SQ5 failed startup run catalogue keeps drafts gated and offers a working retry', async () => {
+  const page = await open(undefined, {
+    before: (fake) => {
+      fake.route('GET', '/api/runs', () => 'hold');
+    },
+  });
+  act(() => {
+    page.fake.last('/api/runs').lose();
+  });
+  await page.advance(100);
+  expect(form().queryByRole('textbox', { name: 'Cash reserve' })).toBeNull();
+  expect(root()).toHaveTextContent(
+    'The run list could not be read. Check it again before editing saved settings.',
+  );
+  expect(root()).not.toHaveTextContent('Reading the saved settings');
+  const reads = () =>
+    page.fake.requests.filter((read) => read.method === 'GET' && read.path === '/api/runs').length;
+  const before = reads();
+  page.fake.route('GET', '/api/runs', () => dashboardCase('runs.ready'));
+  await page.user.click(within(document.body).getByRole('button', { name: 'Check runs' }));
+  await page.advance(100);
+  expect(reads()).toBe(before + 1);
+  await fill(page, 'Cash reserve', '12345');
+  expect(selectShoppingSaved(page.data.store.getSnapshot()).scope).toMatch(
+    /:bp_farm:shopping_plan$/u,
+  );
+  expect(saveButton()).not.toHaveAttribute('aria-disabled', 'true');
 });
 
 it('SQ1 Create stages an empty queue and requires explicit reserve, pattern and cadence before one save', async () => {

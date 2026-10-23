@@ -1,13 +1,9 @@
 """The dashboard UI's write shapes, proven against the real validator.
 
-The glass UI never invents shapes ad hoc: every value an editor writes when a
-control is switched to a new kind/mode lives in ONE JSON block inside
-frontend/webui/index.html (<script type="application/json" id="ui-seeds">).
-These tests parse that exact block and prove every shape against
-playerprofile.validate on the shipped default profile - so "changing the
-Chain Lightning mode to off_until_wave errors immediately" (2026-08-25) is a
-class of bug that cannot silently return: a seed the validator refuses is a
-red test, not a broken editor.
+The historical editor seeds live in backend/tests/fixtures/ui_policy_seeds.json,
+extracted verbatim from the legacy dashboard's ui-seeds block. These tests
+prove every shape against playerprofile.validate on the shipped default
+profile and pin the validator regressions the editors relied on.
 
 The API-level tests drive the same /api/profile-patch endpoint the UI calls,
 against a throwaway copy of the default profile, and pin the refusals the
@@ -19,7 +15,6 @@ import glob
 import importlib.util
 import json
 import os
-import re
 import shutil
 from pathlib import Path
 
@@ -32,12 +27,8 @@ INDEX = os.path.join(os.path.dirname(BACKEND), "frontend", "webui",
 
 
 def _load_seeds() -> dict:
-    with open(INDEX, encoding="utf-8") as fh:
-        html = fh.read()
-    m = re.search(r'<script type="application/json" id="ui-seeds">\s*'
-                  r'(\{.*?\})\s*</script>', html, re.S)
-    assert m, "ui-seeds block missing from index.html"
-    return json.loads(m.group(1))
+    seeds = Path(__file__).parent / "fixtures" / "ui_policy_seeds.json"
+    return json.loads(seeds.read_text(encoding="utf-8"))
 
 
 SEEDS = _load_seeds()

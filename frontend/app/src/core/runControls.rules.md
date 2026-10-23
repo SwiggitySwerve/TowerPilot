@@ -18,6 +18,14 @@ discovery, including a whole shopping plan as one leaf.
   never proves application. Retained submitted reset paths remain authoritative when either
   response omits its payload, including lost receipts and restored intents after reload.
   Identical replay does not bypass this rule.
+- SQ5 context-scoped routine and shopping editors use `store/intents.ts`'s
+  `hasConfirmedContext` before accepting input. A stored session context is provisional:
+  config can change the context key and hide edits made under it. Saved, live and shared
+  policy editors show catalogue waiting text until config confirms the context. Saved run
+  editors also wait for the initial successful run catalogue read to resolve their identity: `farm` and
+  `bp_farm` resolve to the same controls read but name different persisted draft scopes.
+  `selectRunsPage().saved.scopeReady` owns this saved-editor gate. A failed initial
+  catalogue read keeps inputs closed, shows its failure, and offers `checkRuns` to retry.
 - SQ5 numeric range rules belong to the backend. Queue drafts retain raw text and send typed
   numbers without rounding or clamping. Refused writes show exact server text beside that
   queue's Save action, preserve drafts, and never claim Saved or Applied. The queue selector

@@ -85,6 +85,46 @@ async function layoutProblems(page: Page, width: number): Promise<string[]> {
 }
 
 for (const width of WIDTHS) {
+  for (const action of ['prepare', 'learn']) {
+    test(`R17 Prepare ${action} preselects the Dashboard run at ${String(width)} without extra entry requests`, async ({
+      page,
+    }) => {
+      const problems = await openScenario(page, 'profiles_setup', { width });
+      const startNext = region(page, 'startNext');
+      const run = startNext.getByRole('combobox', { name: 'Run to start' });
+      await run.selectOption('bp_farm');
+      await expect(run).toHaveValue('bp_farm');
+      const link = startNext.locator(`[data-focus-key="startNext:${action}"]`);
+      await expect(link).toHaveAttribute('href', '#recognition?run=bp_farm');
+      const readiness: string[] = [];
+      page.on('request', (request) => {
+        if (new URL(request.url()).pathname === '/api/readiness') readiness.push(request.url());
+      });
+      await link.click();
+      await expect(page.getByRole('heading', { level: 1, name: 'Recognition' })).toBeVisible();
+      const picker = region(page, 'recognitionRun').getByRole('combobox', { name: 'Run' });
+      await expect(picker).toHaveValue('bp_farm');
+      await expect(
+        region(page, 'recognitionRun').getByRole('button', { name: 'Prepare this run' }),
+      ).toHaveAttribute('aria-disabled', 'true');
+      await page.waitForTimeout(1_500);
+      expect(readiness).toEqual([]);
+      expect(await posts(page)).toEqual([]);
+      expect(await layoutProblems(page, width)).toEqual([]);
+      await page.screenshot({
+        path: path.join(OUT, `r17-prepare-${action}-${String(width)}.png`),
+        fullPage: true,
+      });
+      await page.evaluate(() => {
+        window.location.hash = '#recognition?run=unknown';
+      });
+      await expect(picker).toHaveValue('');
+      expect(readiness).toEqual([]);
+      expect(await posts(page)).toEqual([]);
+      expect(problems).toEqual([]);
+    });
+  }
+
   test(`R1 R2 R3 RM9 the page at ${String(width)}: evidence, not-reported metrics, no request on open, axe and targets`, async ({
     page,
   }) => {

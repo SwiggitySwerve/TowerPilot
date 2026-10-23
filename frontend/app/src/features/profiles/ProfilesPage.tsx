@@ -30,8 +30,8 @@ import { TopBar } from '../dashboard/topBar/TopBar.tsx';
 import { ProfileOutcome } from './ProfileOutcome.tsx';
 import './profiles.css';
 
-const RECOGNITION = '/ui/index.html#screens';
-const EMULATORS = '/ui/index.html#emulators';
+const RECOGNITION = '#recognition';
+const EMULATORS = '#emulators';
 
 function reasonOf(reason: string | null): CopyEntry {
   const reasons: Readonly<Record<string, CopyEntry>> = t.reasons;

@@ -198,7 +198,7 @@ export function restoreUsage(
 ): 'unused' | 'noProfile' | null {
   if (activeProfile === null) return 'noProfile';
   const blueprints = ownPath(source, 'profile', 'blueprints');
-  if (record(blueprints) === undefined || entries(blueprints).length === 0) return null;
+  if (record(blueprints) === undefined) return null;
   return entries(blueprints).some(([, bp]) => own(bp, 'loadout') === name) ? null : 'unused';
 }
 /* Selection choices are read from the same profile as the ordinary cards picker. */

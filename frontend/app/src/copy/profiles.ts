@@ -88,8 +88,8 @@ export const profiles = {
       'A saved account does not mean its screens are learned',
       'Recognition shows what each run still needs; nothing on this page starts a setup step or a scan.',
     ),
-    emulators: entry('Emulators (previous page)'),
-    recognition: entry('Recognition (previous page)'),
+    emulators: entry('Emulators'),
+    recognition: entry('Recognition'),
   },
   files: {
     title: entry('Automation profile'),

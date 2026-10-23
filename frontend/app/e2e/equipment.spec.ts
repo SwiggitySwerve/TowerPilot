@@ -295,7 +295,7 @@ for (const width of widths) {
     const region = page.getByRole('region', { name: /^Selected loadout/ });
     await expect(region.getByRole('link', { name: 'Open Recognition' })).toHaveAttribute(
       'href',
-      '/ui/index.html#screens',
+      '#recognition',
     );
     await accessibility(page);
     await shot(page, 'missing-discovery', width);

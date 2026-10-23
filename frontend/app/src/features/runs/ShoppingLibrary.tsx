@@ -175,7 +175,9 @@ function Policy({
         {t.binding.short}
       </a>
       <Disclosure label={t.edit.short}>
-        {policy.base.plan !== null ? (
+        {!policy.contextReady ? (
+          <p role="status">{copy.runs.reasons.context_unknown.short}</p>
+        ) : policy.base.plan !== null ? (
           <LibraryQueue base={policy.base} draft={policy.draft} vm={policy.queue} onDraft={apply} />
         ) : (
           <LegacyEditor policy={policy} onDraft={apply} />
@@ -327,7 +329,7 @@ export function ShoppingLibrary() {
               commands.editDraft(create.scope, key, value);
           }}
         />
-        {!create.active ? null : (
+        {!create.active || !vm.contextReady ? null : (
           <fieldset data-library-create>
             <legend>{(create.copying ? t.copyTitle : t.createTitle).short}</legend>
             <label>

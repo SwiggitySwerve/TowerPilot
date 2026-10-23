@@ -16,6 +16,13 @@ import type { ContextView, DashboardState, IntentView } from './types.ts';
  * a lease holder, an unsettled Turn on - never support a claim: its answer is
  * never a turn-off receipt, a revision or a Known On of the current context.
  */
+/** Context-scoped drafts must wait until config confirms their persistence boundary. */
+export function hasConfirmedContext(
+  state: Pick<DashboardState, 'context' | 'contextConfirmed'>,
+): boolean {
+  return state.contextConfirmed && state.context !== null;
+}
+
 /**
  * The draft-scope key of a context (emulator, serial, account, profile): the editors' drafts
  * (Runs saved settings, the Profiles forms) are kept under it, so a draft made for one

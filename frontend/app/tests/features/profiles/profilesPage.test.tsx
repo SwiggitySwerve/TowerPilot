@@ -863,12 +863,13 @@ describe('P4 setup state', () => {
       expect(within(box).getByText(toolsLine)).toBeVisible();
       expect(within(box).getByText(calibrationLine)).toBeVisible();
       expect(within(box).getByText(runsLine)).toBeVisible();
-      expect(
-        within(box).getByRole('link', { name: 'Recognition (previous page)' }),
-      ).toHaveAttribute('href', '/ui/index.html#screens');
-      expect(within(box).getByRole('link', { name: 'Emulators (previous page)' })).toHaveAttribute(
+      expect(within(box).getByRole('link', { name: 'Recognition' })).toHaveAttribute(
         'href',
-        '/ui/index.html#emulators',
+        '#recognition',
+      );
+      expect(within(box).getByRole('link', { name: 'Emulators' })).toHaveAttribute(
+        'href',
+        '#emulators',
       );
       await page.advance(10_000);
       expect(page.fake.writes()).toEqual([]);

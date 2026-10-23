@@ -78,7 +78,12 @@ for (const width of [1360, 1054, 390]) {
       await expect(
         page.getByRole('status').filter({ hasText: 'Saved in the profile.' }),
       ).toBeVisible();
-      await page.getByRole('button', { name: 'Read saved result', exact: true }).click();
+      // Let this read settle before the next draft: a revision that arrives after an edit
+      // asks for review and blocks Save (abilities rules: a changed revision needs review).
+      const reads = world.reads();
+      await read(page).click();
+      await expect.poll(world.reads).toBeGreaterThan(reads);
+      await expect(read(page)).toBeEnabled();
     }
     await page.getByRole('button', { name: 'Wall drain', exact: true }).click();
     world.answer(moreCase('inactive_rescue_policy_saved_with_its_rules_in_another_order'));

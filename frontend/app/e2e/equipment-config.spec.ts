@@ -605,13 +605,43 @@ for (const width of [1360, 1054, 390]) {
     await accessibility(page, width);
     await screenshot(page, width, 'r12f-modules-saved');
   });
-  for (const shape of [
-    'without_blueprints',
-    'with_blueprints_null',
-    'with_blueprints_a_list',
-    'with_an_empty_blueprints_mapping',
-  ]) {
-    test(`C15-8 r12f ${shape} defers, refuses verbatim and keeps draft at ${String(width)}`, async ({
+  test(`C15-8 C15-9 F6-15-R1 empty blueprints disable restore Save with a visible reason and zero POSTs at ${String(width)}`, async ({
+    page,
+  }) => {
+    await open(page, width, 'with_an_empty_blueprints_mapping');
+    await page.getByRole('combobox', { name: 'Cards', exact: true }).selectOption('main_farm');
+    await page
+      .getByRole('combobox', { name: 'Restore cards preset', exact: true })
+      .selectOption('no_card');
+    await expect(save(page)).toHaveAttribute('aria-disabled', 'true');
+    const reasonId = await save(page).getAttribute('aria-describedby');
+    expect(reasonId).not.toBeNull();
+    const reason = page.locator(`[id="${reasonId ?? ''}"]`);
+    await expect(reason).toBeVisible();
+    await expect(reason).toHaveText(
+      'Restore changes cannot be saved: use this loadout in a run of the active profile first.',
+    );
+    // The genuine empty-map refusal records restore_loadout_unused. Its server
+    // message is not local copy; the existing catalogue reason explains this block.
+    expect(
+      own(
+        body(
+          'settings_modules_more_2',
+          'restore_refused_for_a_profile_with_an_empty_blueprints_mapping',
+        ),
+        'code',
+      ),
+    ).toBe('restore_loadout_unused');
+    await enter(page, save(page));
+    expect(await posts(page)).toHaveLength(0);
+    await expect(
+      page.getByRole('combobox', { name: 'Restore cards preset', exact: true }),
+    ).toHaveValue('no_card');
+    await accessibility(page, width);
+    await screenshot(page, width, 'F6-15-R1-empty-blueprints-blocked');
+  });
+  for (const shape of ['without_blueprints', 'with_blueprints_null', 'with_blueprints_a_list']) {
+    test(`C15-8 C15-9 F6-15-R1 ${shape} defers, refuses verbatim and keeps draft at ${String(width)}`, async ({
       page,
     }) => {
       await open(page, width, shape);

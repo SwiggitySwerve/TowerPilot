@@ -660,7 +660,7 @@ export function AbilitiesPage({
           <summary>{t.evidence.short}</summary>
           <p>{t.evidenceHelp.short}</p>
           <Json value={ownPath(target?.source, 'profile', 'player')} />
-          <a href="/ui/index.html#screens">{t.recognition.short}</a>
+          <a href="#recognition">{t.recognition.short}</a>
         </details>
         {(['problems', 'warnings', 'validator_error'] as const).map((key) => {
           const values =

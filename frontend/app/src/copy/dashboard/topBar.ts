@@ -25,7 +25,7 @@ export const topBar = {
     emulator_unconfigured: entry('No emulator chosen'),
   },
   notRead: entry('No successful status read yet'),
-  /** The new app's own pages (Runs brief RUN-12), before the previous pages. */
+  /** The app's pages (Runs brief RUN-12). */
   appPages: [
     { id: 'dashboard', label: entry('Dashboard') },
     { id: 'runs', label: entry('Runs') },
@@ -38,18 +38,5 @@ export const topBar = {
     { id: 'emulators', label: entry('Emulators') },
     { id: 'runtime', label: entry('Runtime') },
     { id: 'recognition', label: entry('Recognition') },
-  ],
-  legacyPages: [
-    {
-      hash: 'overview',
-      label: entry('Previous Dashboard', 'Unresolved requests stay on this page'),
-    },
-    {
-      hash: 'runs',
-      label: entry(
-        'Previous Runs page',
-        'The shopping queue and the entry and equipment settings are still edited there',
-      ),
-    },
   ],
 } as const;

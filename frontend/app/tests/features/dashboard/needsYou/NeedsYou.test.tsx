@@ -275,7 +275,7 @@ it('F-082: unavailable setup progress offers Retry and Review setup result', asy
   expect(h.commands.checkStatus).not.toHaveBeenCalled();
   expect(row.getByRole('link', { name: 'Review setup result' })).toHaveAttribute(
     'href',
-    '/ui/index.html#screens',
+    '#recognition',
   );
   await verify(h.view.container);
 });
@@ -291,12 +291,12 @@ it('F-082: pending equipment restoration links to setup and the exact operation 
   expect(row.getByText('Equipment not restored yet - other automation is on hold')).toBeVisible();
   expect(row.getByRole('link', { name: 'Review setup result' })).toHaveAttribute(
     'href',
-    '/ui/index.html#screens',
+    '#recognition',
   );
   const id = own(operation, 'id');
   expect(row.getByRole('link', { name: 'Events for this operation' })).toHaveAttribute(
     'href',
-    `/ui/index.html#runtime?operation_id=${String(id)}`,
+    `#runtime?operation_id=${String(id)}`,
   );
   await verify(h.view.container);
 });
@@ -417,7 +417,7 @@ it('F-084: at most three items show and Show all (n) expands the rest in place a
   expect(h.view.container.querySelectorAll('[data-need]')).toHaveLength(vm.count);
   expect(h.view.getByRole('link', { name: 'All runtime events' })).toHaveAttribute(
     'href',
-    '/ui/index.html#runtime',
+    '#runtime',
   );
   await verify(h.view.container);
 });
@@ -430,7 +430,7 @@ it('F-084: three or fewer items have no Show all and detector reports stay under
   await userEvent.setup().click(row.getByText('Why'));
   expect(row.getByRole('link', { name: 'Events for this operation' })).toHaveAttribute(
     'href',
-    `/ui/index.html#runtime?operation_id=${String(own(own(dashboardBody(BLOCKED), 'setup_battle_guard'), 'operation_id'))}`,
+    `#runtime?operation_id=${String(own(own(dashboardBody(BLOCKED), 'setup_battle_guard'), 'operation_id'))}`,
   );
   for (const node of item(h, 'launch_guard').querySelectorAll('[data-server-text="message"]')) {
     expect(node.closest('details')).toHaveAttribute('open');
@@ -447,7 +447,7 @@ it('F-084: the empty state names every checked source and its age without claimi
   expect(h.view.queryByRole('button', { name: /Show all/ })).toBeNull();
   expect(h.view.getByRole('link', { name: 'All runtime events' })).toHaveAttribute(
     'href',
-    '/ui/index.html#runtime',
+    '#runtime',
   );
   await verify(h.view.container);
 });
@@ -504,7 +504,7 @@ it.each([
     'wizard_tools.not_installed',
     'install connection tools',
     'Install connection tools',
-    '/ui/index.html#emulators',
+    '#emulators',
   ],
   [
     'profile',
@@ -512,23 +512,16 @@ it.each([
     'accounts.none_active',
     'create or choose a profile',
     'Choose a profile',
-    '/ui/index.html#profiles',
+    '#profiles',
   ],
-  [
-    'connection',
-    'config',
-    null,
-    'connect an emulator',
-    'Connect an emulator',
-    '/ui/index.html#emulators',
-  ],
+  ['connection', 'config', null, 'connect an emulator', 'Connect an emulator', '#emulators'],
   [
     'screens',
     'runs',
     'runs.combo_entry',
     'learn screens for a run',
     'Learn screens',
-    '/ui/index.html#screens',
+    '#recognition',
   ],
 ] satisfies readonly (readonly [string, ResourceId, string | null, string, string, string])[])(
   'F-098: first missing %s step links to the legacy page that completes it',

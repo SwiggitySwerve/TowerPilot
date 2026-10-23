@@ -282,7 +282,7 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
         ) : null}
         {vm.empty ? <p role="alert">{t.empty.short}</p> : null}
         <p>
-          <a id="schedule:profiles" href="/ui/index.html#profiles">
+          <a id="schedule:profiles" href="#profiles">
             {t.profiles.short}
           </a>
         </p>

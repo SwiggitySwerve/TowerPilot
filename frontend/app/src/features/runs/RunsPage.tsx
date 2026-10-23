@@ -32,8 +32,7 @@ import './runs.css';
 const t = copy.runs;
 
 /** The previous Runs page keeps the shopping queue and the entry settings (brief RUN-14, RUN-17). */
-const PREVIOUS_RUNS = '/ui/index.html#runs';
-const RECOGNITION = '/ui/index.html#screens';
+const RECOGNITION = '#recognition';
 
 /** PE6: these forms keep their active values; the entry editor has its own target. */
 function ActiveOnly({ children }: { readonly children: CopyNode }) {
@@ -218,7 +217,17 @@ function SavedSection() {
             <ServerValue kind="message" value={saved.notice} />
           </p>
         )}
-        {saved.read === 'not_read' ? <p>{t.saved.reading.short}</p> : null}
+        {saved.catalogueUnavailable ? (
+          <div className="tp-runs__note" role="status">
+            <p>{t.saved.catalogueUnavailable.short}</p>
+            {saved.catalogueError === null ? null : (
+              <ServerValue kind="message" value={saved.catalogueError} />
+            )}
+            <Button tier="quiet" label={t.saved.checkRuns.short} onClick={commands.checkRuns} />
+          </div>
+        ) : saved.read === 'not_read' ? (
+          <p>{t.saved.reading.short}</p>
+        ) : null}
         {saved.read === 'unavailable' ? (
           <p className="tp-runs__note">
             <span>{t.saved.unavailable.short}</span>
@@ -257,9 +266,6 @@ function SavedSection() {
         </ActiveOnly>
         <RunEntry />
         {line === null ? null : <RunOutcome outcome={line} />}
-        <p className="tp-runs__links">
-          <a href={PREVIOUS_RUNS}>{t.saved.previousPage.short}</a>
-        </p>
         <RunDefaults />
       </RegionBody>
     </>

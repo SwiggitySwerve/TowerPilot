@@ -168,7 +168,7 @@ export function EquipmentPage({ equipment }: { readonly equipment: EquipmentStor
                     <p>
                       <span>{t.missing.short}</span>
                       {t.space}
-                      <a href="/ui/index.html#screens">{t.recognition.short}</a>
+                      <a href="#recognition">{t.recognition.short}</a>
                     </p>
                   ) : null}
                 </li>
@@ -304,7 +304,7 @@ export function EquipmentPage({ equipment }: { readonly equipment: EquipmentStor
                 <p id="equipment:missing" role="alert">
                   {t.missing.short}
                   {t.space}
-                  <a id="equipment:recognition" href="/ui/index.html#screens">
+                  <a id="equipment:recognition" href="#recognition">
                     {t.recognition.short}
                   </a>
                 </p>

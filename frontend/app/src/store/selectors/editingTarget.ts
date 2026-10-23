@@ -17,6 +17,17 @@ export function editingFiles(state: DashboardState) {
     : null;
 }
 
+/**
+ * The profiles a pick may name now. A pick is kept under the page context, so none is
+ * offered before a config read of this page confirms that context: the read that does
+ * starts a new epoch, which would drop a pick made earlier. The reducer accepts exactly these.
+ */
+export function pickableNow(state: DashboardState) {
+  return state.context === null || !state.contextConfirmed
+    ? []
+    : pickableProfiles(editingFiles(state));
+}
+
 export function selectEditingTarget(state: DashboardState): EditingTarget {
   const pick = state.context === null ? undefined : state.editTargets[editTargetKey(state.context)];
   return {
@@ -34,7 +45,7 @@ export function editingTargetVM(target: EditingTarget) {
 }
 
 export function selectEditingChoices(state: DashboardState) {
-  return pickableProfiles(editingFiles(state)).map((file) => ({
+  return pickableNow(state).map((file) => ({
     key: file.name,
     name: fromServer('name', file.name),
   }));

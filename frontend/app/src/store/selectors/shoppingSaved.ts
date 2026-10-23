@@ -12,6 +12,7 @@ import {
 } from '../../core/shoppingPlan.ts';
 import { fromServer } from '../../copy/server.ts';
 import type { SaveRunCommand } from '../commands.ts';
+import { hasConfirmedContext } from '../intents.ts';
 import { contextReadOf } from '../reads.ts';
 import type { DashboardState } from '../types.ts';
 import { commandVM } from '../viewModels.ts';
@@ -25,6 +26,7 @@ export const isSavedShoppingScope = (scope: string): boolean => scope.endsWith(S
 
 /** SQ11: queue drafts share persistence with run drafts but never the routine editor's scope. */
 export function selectShoppingSaved(state: DashboardState) {
+  const contextReady = hasConfirmedContext(state);
   const saved = selectRunsPage(state).saved;
   const run = saved.run;
   const scope = run === null ? null : `${savedScope(state, run)}${SCOPE_SUFFIX}`;
@@ -86,8 +88,9 @@ export function selectShoppingSaved(state: DashboardState) {
     fenceReason !== 'no_changes';
   const blueprint = id(own(body, 'blueprint'));
   const revision = id(own(body, 'profile_revision'));
-  const reason =
-    !available || !supported || blueprint === undefined || revision === undefined
+  const reason = !contextReady
+    ? 'context_unknown'
+    : !available || !supported || blueprint === undefined || revision === undefined
       ? 'run_not_read'
       : currentInterval === undefined
         ? 'shopping_interval_unknown'
@@ -117,6 +120,9 @@ export function selectShoppingSaved(state: DashboardState) {
         };
   return {
     scope,
+    contextReady,
+    scopeReady: saved.scopeReady,
+    catalogueUnavailable: saved.catalogueUnavailable,
     draft,
     refusal: queueRefusal(state, scope, saved.outcome),
     base,

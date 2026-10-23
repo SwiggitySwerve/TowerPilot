@@ -92,7 +92,11 @@ function serverHash(): string {
 }
 
 /** The current route; re-renders on `hashchange`. */
+export function useRouteHash(): string {
+  return useSyncExternalStore(subscribe, currentHash, serverHash);
+}
+
 export function useRoute(): RouteMatch {
-  const hash = useSyncExternalStore(subscribe, currentHash, serverHash);
+  const hash = useRouteHash();
   return useMemo(() => matchHash(hash), [hash]);
 }

@@ -545,7 +545,7 @@ describe('Equipment Wanted rows', () => {
     expect(screen.getByLabelText('Cards')).toHaveAttribute('aria-invalid', 'true');
     expect(within(editor()).getByRole('link', { name: 'Open Recognition' })).toHaveAttribute(
       'href',
-      '/ui/index.html#screens',
+      '#recognition',
     );
     expect(saveButton()).toHaveAttribute('aria-disabled', 'true');
     expect(s.fake.writes()).toHaveLength(0);

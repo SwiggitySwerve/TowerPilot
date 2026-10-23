@@ -812,7 +812,7 @@ describe('Runs page: review fixes (F6R-02 to F6R-07)', () => {
     expect(region.querySelector('.tp-runs__readiness')).toHaveTextContent(line);
     expect(
       within(region).getByRole('link', { name: 'Prepare runs on the Recognition page' }),
-    ).toHaveAttribute('href', '/ui/index.html#screens');
+    ).toHaveAttribute('href', '#recognition');
     expect(textOutsideCatalogue(document.body)).toEqual([]);
   });
 });

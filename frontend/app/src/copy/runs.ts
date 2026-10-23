@@ -160,10 +160,13 @@ export const runs = {
       'The link named this run. The page shows its saved settings only if the server knows it; it never opens another run instead.',
     ),
     reading: entry('Reading the saved settings'),
+    catalogueUnavailable: entry(
+      'The run list could not be read. Check it again before editing saved settings.',
+    ),
+    checkRuns: entry('Check runs'),
     unavailable: entry("The saved settings can't be read"),
     save: entry('Save run settings'),
     check: entry('Check saved values'),
-    previousPage: entry('Shopping queue, entry and equipment settings: previous Runs page'),
     prepare: entry('Prepare runs on the Recognition page'),
   },
   discard: entry('Discard'),
@@ -209,6 +212,7 @@ export const runs = {
   changes: (count: number) =>
     made(count === 1 ? '1 change not saved' : `${String(count)} changes not saved`),
   reasons: {
+    context_unknown: entry('Waiting for the emulator, account and profile to be read.'),
     run_not_read: entry("The run's saved settings have not been read yet"),
     read_other_context: entry('These settings were read for another emulator or profile'),
     revision_unknown: entry('The version of these settings is not known; check them again'),

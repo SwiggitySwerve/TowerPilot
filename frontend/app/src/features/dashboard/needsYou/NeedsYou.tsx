@@ -21,10 +21,10 @@ import './needsYou.css';
 
 const words = copy.dashboard.needsYou;
 const setupLinks = {
-  tools: '/ui/index.html#emulators',
-  profile: '/ui/index.html#profiles',
-  connection: '/ui/index.html#emulators',
-  screens: '/ui/index.html#screens',
+  tools: '#emulators',
+  profile: '#profiles',
+  connection: '#emulators',
+  screens: '#recognition',
 } as const;
 
 function lineFor(item: NeedItemVM): CopyEntry {
@@ -122,9 +122,7 @@ function CollectionConfirmation({
 
 function OperationEvents({ operationId }: { readonly operationId: ServerText<'id'> | null }) {
   return operationId === null ? null : (
-    <a href={`/ui/index.html#runtime?operation_id=${encodeURIComponent(operationId)}`}>
-      {words.events.short}
-    </a>
+    <a href={`#runtime?operation_id=${encodeURIComponent(operationId)}`}>{words.events.short}</a>
   );
 }
 
@@ -249,11 +247,9 @@ function NeedItem({ item }: { readonly item: NeedItemVM }) {
             {words.finishActions[step].short}
           </a>
         )}
-        {item.code === 'other_runs_images' ? (
-          <a href="/ui/index.html#screens">{words.learn.short}</a>
-        ) : null}
+        {item.code === 'other_runs_images' ? <a href="#recognition">{words.learn.short}</a> : null}
         {item.code === 'launch_guard' || item.code === 'setup_outcome' ? (
-          <a href="/ui/index.html#screens">{words.review.short}</a>
+          <a href="#recognition">{words.review.short}</a>
         ) : null}
         {item.handoffCommand !== null ? null : <OperationEvents operationId={item.operationId} />}
         <ItemWhy item={item} line={line} />
@@ -335,7 +331,7 @@ function NeedsYouContent() {
         <span>{words.countClose.short}</span>
       </span>
       <RegionEnd>
-        <a href="/ui/index.html#runtime">{words.runtime.short}</a>
+        <a href="#runtime">{words.runtime.short}</a>
       </RegionEnd>
       <RegionBody>
         {vm.count === 0 ? <p className="tp-need__empty">{words.empty(vm.checked)}</p> : null}

@@ -75,6 +75,7 @@ def test_serving_reports_whether_the_port_answers(launcher, monkeypatch):
                         lambda url, timeout=None: asked.append(url) or _Response())
     assert launcher.serving() is True
     assert asked == [launcher.UI]
+    assert launcher.UI == launcher.URL + "/ui/app/"
 
     def refused(url, timeout=None):
         raise OSError("connection refused")
@@ -89,6 +90,13 @@ def test_a_second_launch_opens_the_running_dashboard_and_starts_nothing(launcher
     monkeypatch.setattr(launcher, "serve", lambda: served.append("started"))
     assert launcher.main(tray=lambda: pytest.fail("no tray on a second launch")) == 0
     assert opened == [launcher.SETUP] and served == []
+
+
+def test_open_ui_opens_the_new_emulators_page(launcher, monkeypatch):
+    opened = []
+    monkeypatch.setattr(launcher.webbrowser, "open", opened.append)
+    launcher.open_ui()
+    assert opened == [launcher.URL + "/ui/app/#emulators"]
 
 
 def test_first_launch_serves_opens_the_browser_and_hands_the_main_thread_to_the_tray(

@@ -7,6 +7,7 @@ import { bodiesTo, posts } from './helpers.ts';
 import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
 import { bounds } from '../tests/support/shoppingBounds.ts';
 import { own } from '../src/core/read.ts';
+import { contextFromConfig } from '../src/api/context.ts';
 
 const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
@@ -29,8 +30,98 @@ async function open(page: Page, scenario: string, width: number) {
   await page.evaluate(() => {
     window.location.hash = '#runs/saved/farm';
   });
+  await expect
+    .poll(() => page.evaluate(() => sessionStorage.getItem('tp.context.v1')))
+    .not.toBeNull();
   await expect(root(page)).toBeVisible();
 }
+test('SQ5 saved queue edits wait for the confirmed context when startup config replaces a stored serial', async ({
+  page,
+}) => {
+  const context = contextFromConfig(dashboardPagesCase('config_state.read_before_the_save').body);
+  await page.addInitScript((context) => {
+    sessionStorage.setItem('tp.context.v1', JSON.stringify({ ...context, serial: 'old:1' }));
+  }, context);
+  let release = () => {};
+  const configGate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/api/config', async (route) => {
+    await configGate;
+    await route.continue();
+  });
+  await page.goto('/__fake/use?scenario=shopping_saved_refused');
+  await page.evaluate(() => {
+    location.hash = '#runs/saved/farm';
+  });
+  await expect(root(page)).toBeVisible();
+  await expect(root(page)).toContainText(
+    'Waiting for the emulator, account and profile to be read.',
+  );
+  await expect(root(page).getByRole('textbox')).toHaveCount(0);
+  await expect(page.locator('[data-scope-kind="saved"] input')).toHaveCount(0);
+  release();
+  const reserve = root(page).getByRole('textbox', { name: 'Cash reserve', exact: true });
+  await reserve.fill('12345');
+  await page.getByRole('button', { name: 'Check saved values', exact: true }).click();
+  await expect(reserve).toHaveValue('12345');
+  await expect(root(page).getByRole('button', { name: 'Save queue', exact: true })).toBeEnabled();
+});
+
+test('SQ5 saved queue edits wait for the run catalogue to confirm the draft scope', async ({
+  page,
+}) => {
+  let release = () => {};
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/api/runs', async (route) => {
+    await gate;
+    await route.continue();
+  });
+  await page.goto('/__fake/use?scenario=shopping_saved_refused');
+  await page.evaluate(() => {
+    location.hash = '#runs/saved/farm';
+  });
+  await expect(root(page)).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => sessionStorage.getItem('tp.context.v1')))
+    .not.toBeNull();
+  await expect(root(page)).toContainText('Reading the saved settings');
+  await expect(root(page).getByRole('textbox')).toHaveCount(0);
+  await expect(page.locator('[data-scope-kind="saved"] input')).toHaveCount(0);
+  release();
+  const reserve = root(page).getByRole('textbox', { name: 'Cash reserve', exact: true });
+  await reserve.fill('12345');
+  await page.getByRole('button', { name: 'Check saved values', exact: true }).click();
+  await expect(reserve).toHaveValue('12345');
+  await expect(root(page).getByRole('button', { name: 'Save queue', exact: true })).toBeEnabled();
+});
+
+test('SQ5 failed startup run catalogue has a visible retry that restores saved editing', async ({
+  page,
+}) => {
+  let recovered = false;
+  await page.route('**/api/runs', async (route) => {
+    if (recovered) await route.continue();
+    else await route.abort('failed');
+  });
+  await page.goto('/__fake/use?scenario=shopping_saved_refused');
+  await page.evaluate(() => {
+    location.hash = '#runs/saved/farm';
+  });
+  await expect(root(page)).toContainText(
+    'The run list could not be read. Check it again before editing saved settings.',
+  );
+  await expect(root(page).getByRole('textbox')).toHaveCount(0);
+  await expect(page.locator('[data-scope-kind="saved"] input')).toHaveCount(0);
+  recovered = true;
+  await page.getByRole('button', { name: 'Check runs', exact: true }).click();
+  const reserve = root(page).getByRole('textbox', { name: 'Cash reserve', exact: true });
+  await reserve.fill('12345');
+  await expect(root(page).getByRole('button', { name: 'Save queue', exact: true })).toBeEnabled();
+});
+
 async function check(page: Page, width: number, state: string) {
   await page.addScriptTag({ path: AXE });
   const violations = await page.evaluate(async () => {

@@ -52,7 +52,7 @@ it('F-002: renders the matching account through ServerValue and links Account de
   );
   expect(screen.getByRole('link', { name: 'Account details' })).toHaveAttribute(
     'href',
-    '/ui/index.html#profiles',
+    '#profiles',
   );
   await check(page.view.container);
 });
@@ -280,7 +280,7 @@ it('F-004: a real click sends exactly one POST /api/wizard/reconnect and cannot 
 });
 
 it.each([1360, 1054, 390])(
-  'F-005: RUN-12 H1 at %i px Pages is within three Tab stops and lists Dashboard, Runs and Run history, then the remaining legacy pages',
+  'F-005: RUN-12 H1 at %i px Pages is within three Tab stops and lists Dashboard, Runs and Run history, and all app pages',
   async (width) => {
     vi.stubGlobal('innerWidth', width);
     const page = renderRegion(
@@ -338,17 +338,9 @@ it.each([1360, 1054, 390])(
       'href',
       '#recognition',
     );
-    const expected = [
-      ['Previous Dashboard', 'overview'],
-      ['Previous Runs page', 'runs'],
-    ] as const;
-    expect(within(nav).getAllByRole('link')).toHaveLength(expected.length + appPages);
-    for (const [name, hash] of expected) {
-      expect(within(nav).getByRole('link', { name })).toHaveAttribute(
-        'href',
-        `/ui/index.html#${hash}`,
-      );
-    }
+    expect(within(nav).getAllByRole('link')).toHaveLength(appPages);
+    expect(within(nav).queryByRole('link', { name: 'Previous Dashboard' })).toBeNull();
+    expect(within(nav).queryByRole('link', { name: 'Previous Runs page' })).toBeNull();
     page.setState(tick(regionState(), 1));
     expect(summary.closest('details')).toHaveAttribute('open');
     const link = within(nav).getByRole('link', { name: 'Runs' });

@@ -396,13 +396,58 @@ it('C15-8 C-03 unchanged stored restore values do not block an ordinary unused-l
   // The stored restore value is preserved in the request; no success is invented.
 });
 
-it.each([
-  'without_blueprints',
-  'with_blueprints_null',
-  'with_blueprints_a_list',
-  'with_an_empty_blueprints_mapping',
-])(
-  'C15-8 r12f profile %s defers to the verbatim recorded refusal and retains the draft',
+it.each(['cards', 'modules'])(
+  'C15-8 C15-9 F6-15-R1 empty blueprints disable %s restore Save with an associated visible reason and zero POSTs',
+  async (kind) => {
+    const family = 'settings_modules_more_2.';
+    const s = await setup(
+      family + 'read_config_after_the_refusals_nothing_changed',
+      family + 'restore_refused_for_a_profile_with_an_empty_blueprints_mapping',
+      family + 'profile_src_with_an_empty_blueprints_mapping',
+    );
+    await change(() => {
+      if (kind === 'cards') s.equipment.editRestoreCards('no_card');
+      else {
+        s.equipment.addRestoreModule();
+        s.equipment.editRestoreModule('draft:0', 'module', 'black_hole_digestor');
+        s.equipment.editRestoreModule('draft:0', 'slot', 'assist');
+      }
+      s.equipment.edit('cards', 'main_farm');
+    });
+    expect(save()).toHaveAttribute('aria-disabled', 'true');
+    const reasonId = save().getAttribute('aria-describedby');
+    const reason = reasonId === null ? null : document.getElementById(reasonId);
+    expect(reason).toBeVisible();
+    expect(reason).toHaveTextContent(
+      'Restore changes cannot be saved: use this loadout in a run of the active profile first.',
+    );
+    // settings_modules_more_2.restore_refused_for_a_profile_with_an_empty_blueprints_mapping
+    // records restore_loadout_unused; use the existing catalogue reason locally.
+    expect(
+      own(
+        fixture(family + 'restore_refused_for_a_profile_with_an_empty_blueprints_mapping').body,
+        'code',
+      ),
+    ).toBe('restore_loadout_unused');
+    fireEvent.click(save());
+    await change(s.equipment.save);
+    expect(s.fake.writes()).toHaveLength(0);
+    expect(s.entry()?.dirty).toBe(true);
+    expect(textOutsideCatalogue(s.mounted.view.container)).toEqual([]);
+    await change(s.equipment.cancel);
+    await change(() => {
+      s.equipment.edit('cards', 'main_farm');
+    });
+    expect(save()).toBeEnabled();
+    s.answer('hold'); // No recorded receipt for this ordinary edit: check the send only.
+    await change(s.equipment.save);
+    expect(s.fake.writes()).toHaveLength(1);
+    expect(own(JSON.parse(s.fake.writes()[0]?.body ?? ''), 'body')).toEqual({ cards: 'main_farm' });
+  },
+);
+
+it.each(['without_blueprints', 'with_blueprints_null', 'with_blueprints_a_list'])(
+  'C15-8 C15-9 F6-15-R1 profile %s defers to the verbatim recorded refusal and retains the draft',
   async (shape) => {
     const family = 'settings_modules_more_2.';
     const reference = family + 'restore_refused_for_a_profile_' + shape;

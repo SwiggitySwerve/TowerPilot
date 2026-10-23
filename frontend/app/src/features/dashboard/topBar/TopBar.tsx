@@ -43,7 +43,7 @@ export function TopBar({
           {vm.accountLastKnown && vm.accountAgeSec !== null ? (
             <span className="tp-topbar-meta">{lastRead(vm.accountAgeSec)}</span>
           ) : null}
-          <a href="/ui/index.html#profiles">{words.accountDetails.short}</a>
+          <a href="#profiles">{words.accountDetails.short}</a>
         </span>
         <span>
           {vm.emulator.kind === 'known' ? (
@@ -87,21 +87,6 @@ export function TopBar({
                 >
                   {page.label.short}
                 </a>
-              </li>
-            ))}
-            {words.legacyPages.map((page) => (
-              <li key={page.hash}>
-                <a
-                  href={`/ui/index.html#${page.hash}`}
-                  onClick={() => {
-                    if (menu.current !== null) menu.current.open = false;
-                  }}
-                >
-                  {page.label.short}
-                </a>
-                {page.label.why === undefined ? null : (
-                  <span className="tp-topbar-meta">{page.label.why}</span>
-                )}
               </li>
             ))}
           </ul>

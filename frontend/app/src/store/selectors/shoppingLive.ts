@@ -4,7 +4,12 @@ import { liveSaveGate, type SaveRequest } from '../../core/runControls.ts';
 import { queuePlan, shopCatalog, type QueueDraft } from '../../core/shoppingPlan.ts';
 import type { SaveLiveCommand } from '../commands.ts';
 import { settledByRead } from '../fences.ts';
-import { contextIntents, contextScopeKey, unresolvedIntent } from '../intents.ts';
+import {
+  contextIntents,
+  contextScopeKey,
+  hasConfirmedContext,
+  unresolvedIntent,
+} from '../intents.ts';
 import { contextReadOf, latestRead, readAgeSec } from '../reads.ts';
 import type { DashboardState } from '../types.ts';
 import { queueRefusal, selectQueueEditor } from './shoppingQueue.ts';
@@ -37,7 +42,7 @@ export function selectShoppingLive(state: DashboardState) {
     (stringList(ownPath(battle, 'capabilities', 'controls')) ?? []).includes('shopping_plan');
   // The draft scope names the page context: before the config read confirms it, typing would
   // land in a scope the page then stops showing, so the editor waits for the context.
-  const contextKnown = state.contextConfirmed && state.context !== null;
+  const contextKnown = hasConfirmedContext(state);
   const supported = advertised && contextKnown;
   const records = contextIntents(state).filter(
     (r) =>

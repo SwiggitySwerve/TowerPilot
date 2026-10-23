@@ -142,7 +142,18 @@ export function SavedShopping() {
       <h3 id={`${idBase}:title`}>{t.title.short}</h3>
       <p>{t.scope.short}</p>
       <p>{t.routines.short}</p>
-      {!vm.displayAvailable ? (
+      {!vm.contextReady ? (
+        <p role="status">{copy.runs.reasons.context_unknown.short}</p>
+      ) : !vm.scopeReady ? (
+        <p role="status">
+          {
+            (vm.catalogueUnavailable
+              ? copy.runs.saved.catalogueUnavailable
+              : copy.runs.saved.reading
+            ).short
+          }
+        </p>
+      ) : !vm.displayAvailable ? (
         <p>{t.unavailable.short}</p>
       ) : !vm.supported ? (
         <p>{t.unsupported.short}</p>

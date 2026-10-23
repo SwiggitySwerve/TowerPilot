@@ -5,6 +5,7 @@ import {
   restoreEligibility,
   restoreModuleRows,
   restoreEquipmentDraft,
+  restoreUsage,
 } from '../../../src/store/equipmentDraft.ts';
 import { own, ownPath } from '../../../src/core/read.ts';
 import {
@@ -16,6 +17,43 @@ const cases = own(loadJsonWithIdentity(DASHBOARD_PAGES_FIXTURE_PATH).fixture, 'c
 const body = (family: string, key: string) => ownPath(cases, family, key, 'body');
 const profile = body('ability_policies', 'read_before_the_first_save');
 describe('restore body owner', () => {
+  it('C15-8 C15-9 F6-15-R1 readable empty blueprints block changed or cleared restores only', () => {
+    const source = body('settings_modules_more_2', 'profile_src_with_an_empty_blueprints_mapping');
+    expect(ownPath(source, 'profile', 'blueprints')).toEqual({});
+    expect(restoreUsage(source, 'plain', 'mine')).toBe('unused');
+    const original = { cards: 'main_farm', cards_restore: 'main_farm' };
+    const draft = equipmentDraft(original);
+    for (const changed of [
+      { ...draft, restoreCards: 'no_card' },
+      { ...draft, restoreCards: '' },
+      { ...draft, restoreModules: [{ key: 'a', module: 'black_hole_digestor', slot: 'assist' }] },
+    ]) {
+      expect(restoreEligibility(changed, original, source, 'plain', 'mine')).toBe('unused');
+    }
+    expect(
+      restoreEligibility(
+        { ...draft, values: { ...draft.values, cards: 'no_card' } },
+        original,
+        source,
+        'plain',
+        'mine',
+      ),
+    ).toBeNull();
+  });
+  it('C15-8 C15-9 F6-15-R1 unreadable absent null and list blueprints defer to the server', () => {
+    const original = { cards: 'main_farm' };
+    const draft = { ...equipmentDraft(original), restoreCards: 'no_card' };
+    const sources = [
+      undefined,
+      ...['without_blueprints', 'with_blueprints_null', 'with_blueprints_a_list'].map((shape) =>
+        body('settings_modules_more_2', `profile_src_${shape}`),
+      ),
+    ];
+    for (const source of sources) {
+      expect(restoreUsage(source, 'plain', 'mine')).toBeNull();
+      expect(restoreEligibility(draft, original, source, 'plain', 'mine')).toBeNull();
+    }
+  });
   it('C15-9 r12f malformed saved restore rows keep raw types and extra members when another row changes', () => {
     // Synthetic historical tuple: no recording contains a saved numeric restore slot
     // or extra tuple member. This boundary-only regression proves sibling edits and

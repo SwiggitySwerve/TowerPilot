@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { recognitionHref } from '../../../core/recognition.ts';
 import { copy } from '../../../copy/catalogue.ts';
 import type { CopyText } from '../../../copy/text.ts';
 import { selectStartNext, type StartNextVM } from '../../../store/selectors/startNext.ts';
@@ -151,13 +152,13 @@ function StartNextBody() {
             </Disclosure>
           ) : null}
           {vm.readiness.imageCount > 0 ? (
-            <a href="/ui/index.html#screens" data-focus-key="startNext:learn">
+            <a href={recognitionHref(vm.picker.selected)} data-focus-key="startNext:learn">
               {words.learn.short}
             </a>
           ) : null}
         </div>
         {vm.transferHint === null ? null : <p>{words.transfer[vm.transferHint].short}</p>}
-        <a href="/ui/index.html#screens" data-focus-key="startNext:prepare">
+        <a href={recognitionHref(vm.picker.selected)} data-focus-key="startNext:prepare">
           {words.prepare.short}
         </a>
       </div>

@@ -11,7 +11,7 @@ import { newQueue, queuePlan, shopCatalog, type QueueDraft } from '../../core/sh
 import { runControlsPath } from './gemSlot.ts';
 import { fromServer } from '../../copy/server.ts';
 import { settledByRead } from '../fences.ts';
-import { boundIntents, contextScopeKey } from '../intents.ts';
+import { boundIntents, contextScopeKey, hasConfirmedContext } from '../intents.ts';
 import { answeredBody } from '../reads.ts';
 import type { DashboardState } from '../types.ts';
 import type { ProfilePatchCommand } from './collection.ts';
@@ -38,6 +38,7 @@ export function libraryScope(state: DashboardState, policy: string): string {
 
 export function selectShoppingLibrary(state: DashboardState) {
   const context = state.context;
+  const contextReady = hasConfirmedContext(state);
   const slot = state.reads.profileSource;
   const read = librarySource(answeredBody(state, 'profileSource'));
   const source = context !== null && read?.name === context.profile ? read : null;
@@ -47,7 +48,7 @@ export function selectShoppingLibrary(state: DashboardState) {
     source !== null &&
     latest?.outcome.kind === 'answered' &&
     latest.outcome.status === 200 &&
-    state.contextConfirmed;
+    contextReady;
   const run = runsPageRun(state);
   const runBody = run === null ? undefined : state.runControls[runControlsPath(run)];
   const body =
@@ -161,6 +162,7 @@ export function selectShoppingLibrary(state: DashboardState) {
     const choices = (values: readonly string[], current: string) =>
       options([...new Set([...values, ...(current === '' ? [] : [current])])]);
     return {
+      contextReady,
       id: policy.id,
       name: fromServer('name', policy.id),
       scope,
@@ -232,6 +234,7 @@ export function selectShoppingLibrary(state: DashboardState) {
       : null;
   return {
     notSent,
+    contextReady,
     profile: fromServer('name', context?.profile),
     readable,
     gate,

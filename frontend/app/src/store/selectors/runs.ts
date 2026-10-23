@@ -33,7 +33,12 @@ import type { StateWord } from '../../core/vocabulary.ts';
 import { fromServer, type ServerText } from '../../copy/server.ts';
 import type { ResetLiveCommand, SaveLiveCommand, SaveRunCommand } from '../commands.ts';
 import { refusedSaveReadback, settledByRead } from '../fences.ts';
-import { contextIntents, contextScopeKey, unresolvedIntent } from '../intents.ts';
+import {
+  contextIntents,
+  contextScopeKey,
+  hasConfirmedContext,
+  unresolvedIntent,
+} from '../intents.ts';
 import { answeredBody, contextReadOf, latestRead, readAgeSec } from '../reads.ts';
 import type { DashboardState, IntentView, ReadRecord } from '../types.ts';
 import { commandVM, type CommandVM } from '../viewModels.ts';
@@ -180,6 +185,10 @@ export interface SavedSectionVM {
    * (or the runs are not read yet): the page says so and never shows another run instead.
    */
   readonly runListed: boolean;
+  /** Config and the run catalogue have established the draft scope. */
+  readonly scopeReady: boolean;
+  readonly catalogueUnavailable: boolean;
+  readonly catalogueError: ServerText<'message'> | null;
   /** The run's key as server text, for a run the list does not hold. */
   readonly runName: ServerText<'name'> | null;
   readonly runLabel: ServerText<'name'> | null;
@@ -531,18 +540,27 @@ function savedSection(state: DashboardState, lines: readonly OutcomeLineVM[]): S
   const run = listed === 'combo' ? (runs[0]?.key ?? null) : listed;
   const read = run === null ? null : (state.runControls[runControlsPath(run)] ?? null);
   const records = run === null ? [] : editorRecords(state, `run:${blueprintOf(run)}`, null);
+  const catalogueReady = answered(state.reads.runs.lastAnswered);
+  const catalogueRead = state.reads.runs.latest;
+  const runListed = run !== null && runs.some((choice) => choice.key === run);
   const base = {
     runs,
     comboListed: entries(own(runsBody, 'runs')).some(([key]) => key === 'combo'),
     run,
-    runListed: run !== null && runs.some((choice) => choice.key === run),
+    runListed,
+    scopeReady: hasConfirmedContext(state) && catalogueReady,
+    catalogueUnavailable: !catalogueReady && catalogueRead !== null,
+    catalogueError:
+      !catalogueReady && catalogueRead?.outcome.kind === 'answered'
+        ? fromServer('message', own(catalogueRead.outcome.body, 'error'))
+        : null,
     runName: run === null ? null : fromServer('name', run),
     runLabel: fromServer('name', ownPath(runsBody, 'runs', run ?? '', 'label')),
     readiness: run === null ? null : readiness(ownPath(runsBody, 'readiness', run)).line,
     readAgeSec: read === null ? null : readAgeSec(state, read),
     outcome: editorOutcome(state, lines, records),
   };
-  if (run === null || read === null)
+  if (run === null || read === null || !base.scopeReady)
     return { ...base, read: 'not_read', readError: null, notice: null, editor: null };
   const body = read.outcome.kind === 'answered' ? read.outcome.body : undefined;
   if (!answered(read)) {

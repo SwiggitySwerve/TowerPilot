@@ -1,4 +1,5 @@
 import { entry, made } from './entry.ts';
+import { runs } from './runs.ts';
 export const shoppingLive = {
   title: entry('Queue for this battle'),
   edit: entry("Edit this battle's queue"),
@@ -20,7 +21,7 @@ export const shoppingLive = {
       'Live queue editing needs a version 2 queue and shopping plan controls advertised by this automation. Create or convert a saved queue for a later battle.',
     ),
     no_battle: entry('A tracked battle is required'),
-    context_unknown: entry('Waiting for the emulator, account and profile to be read.'),
+    context_unknown: runs.reasons.context_unknown,
     battle_not_active: entry('An active tracked battle is required'),
     report_stale: entry('Read a fresh battle report before saving'),
     change_pending: entry('Waiting for the automation to apply the previous change'),

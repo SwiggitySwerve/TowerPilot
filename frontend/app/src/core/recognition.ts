@@ -1,4 +1,5 @@
 import { sameJson } from './json.ts';
+import { queryFromHash } from './hashQuery.ts';
 import {
   entries,
   finite,
@@ -22,6 +23,20 @@ import {
  */
 
 // ------------------------------------------------------------------ choices and bodies
+
+/** Recognition's optional run query; the destination validates membership in its current runs. */
+export function recognitionHref(run: string | null): string {
+  return run === null ? '#recognition' : `#recognition?run=${encodeURIComponent(run)}`;
+}
+
+/** Empty, malformed or unsupported queries leave the normal picker open. */
+export function recognitionRunFromHash(hash: string): string | null {
+  if (!/^#\/?recognition(?:\?|$)/u.test(hash)) return null;
+  const query = queryFromHash(hash);
+  if (Object.keys(query).some((key) => key !== 'run')) return null;
+  const run = query['run'];
+  return run === undefined || run === '' ? null : run;
+}
 
 /** The basic-scan features (legacy calibration phases): cards, modules, global presets, guardians, bots, workshop. */
 export const SCAN_FEATURES = ['c', 'm', 'g', 'u', 'b', 'w'] as const;

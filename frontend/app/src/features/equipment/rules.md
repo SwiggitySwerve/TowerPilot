@@ -22,7 +22,8 @@ behavior. The component renders the selector's results and sends explicit user e
   content with associated validation errors and can be removed and replaced explicitly.
 - Restore eligibility uses only the active profile's source blueprint loadout references.
   Changes, including clearing, are blocked for an unused loadout or no active profile.
-  Unavailable references defer to the server. Ordinary saves with unchanged restore values
+  A readable empty blueprint mapping proves that every loadout is unused. Unreadable source
+  and absent, null or list-shaped blueprints defer to the server. Ordinary saves with unchanged restore values
   remain possible. Revision conflicts take precedence; server errors and warnings stay verbatim.
 - Each Save sends one whole named body with its configuration revision through the shared
   intent machine. The isolated Equipment adapter uses its existing non-resendable `run_save`

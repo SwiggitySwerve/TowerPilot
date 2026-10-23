@@ -209,12 +209,12 @@ it.each([
     if (hasImages)
       expect(view.getByRole('link', { name: 'Learn missing screens' })).toHaveAttribute(
         'href',
-        '/ui/index.html#screens',
+        '#recognition?run=bp_farm',
       );
     else expect(view.queryByRole('link', { name: 'Learn missing screens' })).toBeNull();
     expect(
       view.getByRole('link', { name: 'Prepare runs on the Recognition page' }),
-    ).toHaveAttribute('href', '/ui/index.html#screens');
+    ).toHaveAttribute('href', '#recognition?run=bp_farm');
     await audit(view.container);
   },
 );

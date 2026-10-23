@@ -42,8 +42,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PORT = os.environ.get('TOWER_PILOT_PORT', '8620')
 URL = 'http://127.0.0.1:' + PORT
-UI = URL + '/ui/index.html'
-SETUP = UI + '#setup'
+UI = URL + '/ui/app/'
+SETUP = UI + '#emulators'
 LOG = ROOT / 'backend' / 'logs' / 'launcher.log'
 TITLE = 'Tower Pilot'
 TOOLTIP = TITLE + ' - ' + URL

@@ -1,11 +1,11 @@
-import { editTargetKey, pickableProfiles } from '../core/editingTarget.ts';
+import { editTargetKey } from '../core/editingTarget.ts';
 import { retainedStringListKeys, SETTINGS_BASE_REVISION } from '../core/settingsFields.ts';
 import {
   currentSettingsView,
   settingsScope,
   settingsSavePending,
 } from './selectors/settingsModule.ts';
-import { editingFiles } from './selectors/editingTarget.ts';
+import { pickableNow } from './selectors/editingTarget.ts';
 import { onFromRead } from '../core/harvestChoice.ts';
 import { harvestView } from '../core/readability.ts';
 import { nextSettlements } from './fences.ts';
@@ -278,7 +278,7 @@ export function reduceDashboard(state: DashboardState, action: DashboardAction):
         return state;
       if (
         action.type === 'edit_target_pick' &&
-        !pickableProfiles(editingFiles(state)).some((file) => file.name === action.name)
+        !pickableNow(state).some((file) => file.name === action.name)
       )
         return state;
       const key = editTargetKey(state.context);

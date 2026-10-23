@@ -118,27 +118,7 @@ export function runtimeHash(query: DiagnosticQuery): string {
     .join('&');
   return `#runtime${search === '' ? '' : `?${search}`}`;
 }
-export function queryFromHash(hash: string): DiagnosticQuery {
-  const start = hash.indexOf('?');
-  if (start === -1) return {};
-  const decode = (value: string) => decodeURIComponent(value.replace(/\+/g, ' '));
-  try {
-    return Object.fromEntries(
-      hash
-        .slice(start + 1)
-        .split('&')
-        .filter((part) => part !== '')
-        .map((part) => {
-          const equals = part.indexOf('=');
-          return equals === -1
-            ? [decode(part), '']
-            : [decode(part.slice(0, equals)), decode(part.slice(equals + 1))];
-        }),
-    );
-  } catch {
-    return { __invalid_hash__: '' };
-  }
-}
+export { queryFromHash } from './hashQuery.ts';
 export function queryProblem(query: DiagnosticQuery): FilterProblem | null {
   const supported: readonly string[] = [...RUNTIME_FILTERS, 'since', 'limit', 'failures'];
   if (

@@ -1,4 +1,4 @@
-import { within } from '@testing-library/react';
+import { act, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
@@ -40,10 +40,11 @@ interface Reads {
   readonly runs?: () => DashboardCase;
   readonly readiness?: () => DashboardCase;
   readonly taps?: boolean;
+  readonly hash?: string;
 }
 
 async function openRecognition(reads: Reads = {}, options: PageOptions = {}) {
-  window.location.hash = '#recognition';
+  window.location.hash = reads.hash ?? '#recognition';
   const page = await renderPage({
     config: () => ({
       active_instance: 'main',
@@ -413,6 +414,96 @@ describe('Recognition page R3 evidence and roadmap item 9', () => {
     expect(errors?.textContent).toContain(
       'Saved calibrate_report.json changed after this operation',
     );
+  });
+});
+
+describe('R17 Prepare route preselection', () => {
+  it('R17 Prepare selects a known run on entry, leaves readiness unchecked and preserves a manual pick through polls', async () => {
+    const page = await openRecognition({ hash: '#recognition?run=bp_farm' });
+    const picker = within(region('recognitionRun')).getByRole('combobox', { name: 'Run' });
+    expect(picker).toHaveValue('bp_farm');
+    expect(
+      within(region('recognitionRun')).getByRole('button', { name: 'Prepare this run' }),
+    ).toHaveAttribute('aria-disabled', 'true');
+    await page.user.selectOptions(picker, '');
+    await page.advance(10_000);
+    expect(picker).toHaveValue('');
+    expect(
+      page.fake.requests.filter((request) => request.path.startsWith('/api/readiness')),
+    ).toEqual([]);
+    expect(page.fake.writes()).toEqual([]);
+  });
+
+  it.each(['missing', '', '%E0%A4%A'])(
+    'R17 Prepare leaves the picker for unknown or invalid run %s',
+    async (run) => {
+      const page = await openRecognition({ hash: `#recognition?run=${run}` });
+      expect(within(region('recognitionRun')).getByRole('combobox', { name: 'Run' })).toHaveValue(
+        '',
+      );
+      expect(page.data.store.getSnapshot().recognitionRun).toBeNull();
+      expect(page.fake.writes()).toEqual([]);
+    },
+  );
+
+  it('R17 Prepare follows a query change on the mounted page without checking readiness', async () => {
+    const page = await openRecognition();
+    act(() => {
+      window.location.hash = '#recognition?run=bp_farm';
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+    await page.advance();
+    expect(within(region('recognitionRun')).getByRole('combobox', { name: 'Run' })).toHaveValue(
+      'bp_farm',
+    );
+    act(() => {
+      window.location.hash = '#recognition?run=missing';
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+    await page.advance();
+    expect(within(region('recognitionRun')).getByRole('combobox', { name: 'Run' })).toHaveValue('');
+    expect(
+      page.fake.requests.filter((request) => request.path.startsWith('/api/readiness')),
+    ).toEqual([]);
+  });
+
+  it('R17 Prepare waits for current-context runs, then clears a selection absent after a context change', async () => {
+    let profile = 'mine';
+    let held = true;
+    const page = await openRecognition(
+      { hash: '#recognition?run=bp_farm' },
+      {
+        config: () => ({
+          active_instance: 'main',
+          active_profile: profile,
+          instances: { main: { serial: 'fake:1', allow_taps: true } },
+        }),
+        before: (fake) => {
+          fake.route('GET', '/api/runs', () =>
+            held ? 'hold' : { status: 200, body: { runs: { different: { defined: true } } } },
+          );
+        },
+      },
+    );
+    expect(page.data.store.getSnapshot().recognitionRun).toBeNull();
+    await act(async () => {
+      page.fake.next('/api/runs').respond(200, v1('runs.ready').body);
+      await Promise.resolve();
+    });
+    await page.advance();
+    expect(within(region('recognitionRun')).getByRole('combobox', { name: 'Run' })).toHaveValue(
+      'bp_farm',
+    );
+    profile = 'other';
+    held = false;
+    act(() => {
+      page.data.poller.read('config');
+    });
+    await page.advance(30_000);
+    expect(page.data.store.getSnapshot().context?.profile).toBe('other');
+    expect(page.data.store.getSnapshot().recognitionRun).toBeNull();
+    expect(within(region('recognitionRun')).getByRole('combobox', { name: 'Run' })).toHaveValue('');
+    expect(page.fake.writes()).toEqual([]);
   });
 });
 

@@ -18,6 +18,9 @@ async function open(page: Page, scenario: string, width: number) {
   await page.evaluate(() => {
     window.location.hash = '#runs/saved/farm';
   });
+  await expect
+    .poll(() => page.evaluate(() => sessionStorage.getItem('tp.context.v1')))
+    .not.toBeNull();
   await library(page).getByText('Shared shopping policies', { exact: true }).click();
   await expect(policy(page, 'main_list')).toBeVisible();
 }

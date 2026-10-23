@@ -215,3 +215,37 @@ for (const width of [1360, 1054, 390]) {
     expect(errors).toEqual([]);
   });
 }
+
+test('PE2 the editing picker offers no profile before the page context is read, and a pick made after it holds', async ({
+  page,
+}) => {
+  // Hold the page's first genuine config read so the recorded profile list answers first.
+  let releaseConfig: () => void = () => undefined;
+  const configGate = new Promise<void>((resolve) => {
+    releaseConfig = resolve;
+  });
+  let configReads = 0;
+  await page.route('**/api/config', async (route) => {
+    configReads++;
+    if (configReads === 1) await configGate;
+    await route.continue();
+  });
+  await page.setViewportSize({ width: 1360, height: 900 });
+  const listed = page.waitForResponse('**/api/profile-files');
+  await page.goto('/__fake/use?scenario=profile_target_abilities_uw');
+  await page.evaluate(() => {
+    location.hash = '#profiles';
+  });
+  await listed;
+  const picker = page.locator('[data-form="editing-target"]');
+  await expect(page.locator('[data-profile="second"]')).toBeVisible();
+  await expect(picker.locator('option[value="second"]')).toHaveCount(0);
+  await expect(
+    picker.getByRole('button', { name: 'Edit this profile', exact: true }),
+  ).toBeDisabled();
+  releaseConfig();
+  await picker.getByRole('combobox').selectOption('second');
+  await picker.getByRole('button', { name: 'Edit this profile', exact: true }).click();
+  await expect(picker).toContainText('Editing:second');
+  expect(await posts(page)).toEqual([]);
+});

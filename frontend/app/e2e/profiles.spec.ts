@@ -444,14 +444,14 @@ test('P4 tools missing, modules waiting to be restored and a run not ready stay 
   await expect(setup.getByText('Original modules are waiting to be restored')).toBeVisible();
   await expect(setup.getByText('Runs ready to start: 1; not ready: 1')).toBeVisible();
   await expect(setup).toContainText('A saved account does not mean its screens are learned');
-  await expect(setup.getByRole('link', { name: 'Recognition (previous page)' })).toHaveAttribute(
+  await expect(setup.getByRole('link', { name: 'Recognition' })).toHaveAttribute(
     'href',
-    '/ui/index.html#screens',
+    '#recognition',
   );
   await setup.screenshot({ path: path.join(OUT, 'profiles-setup-1360.png') });
   expect(await axeViolations(page)).toEqual([]);
-  await setup.getByRole('link', { name: 'Emulators (previous page)' }).click();
-  await expect(page).toHaveURL(/\/ui\/index\.html#emulators$/u);
+  await setup.getByRole('link', { name: 'Emulators' }).click();
+  await expect(page).toHaveURL(/\/ui\/app\/#emulators$/u);
   expect(await posts(page)).toEqual([]);
   expect(problems).toEqual([]);
 });

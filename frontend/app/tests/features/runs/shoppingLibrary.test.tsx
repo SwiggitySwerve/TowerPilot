@@ -2,6 +2,8 @@ import { act, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { entries, own, ownPath } from '../../../src/core/read.ts';
+import { contextFromConfig } from '../../../src/api/context.ts';
+import { createMemoryStorage } from '../../support/fakeTransport.ts';
 import { selectShoppingLibrary } from '../../../src/store/selectors/shoppingLibrary.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import {
@@ -677,3 +679,40 @@ describe('SQ10 legacy shopping directives', () => {
     expect(within(policy('legacy')).getByLabelText('Clicks', { exact: true })).toHaveValue('0');
   });
 });
+
+it.each(['same', 'changed'])(
+  'SQ5 shopping library edits wait for the confirmed context (%s)',
+  async (startup) => {
+    const page = await open(() => INITIAL, {
+      storage: createMemoryStorage({
+        'tp.context.v1': JSON.stringify({
+          ...contextFromConfig(CONFIG),
+          ...(startup === 'changed' ? { serial: 'old:1' } : {}),
+        }),
+      }),
+      before: (fake) => {
+        fake.route('GET', '/api/config', () => 'hold');
+      },
+    });
+    const before = policy('main_list');
+    await page.user.click(within(before).getByText('Edit shared policy', { exact: true }));
+    expect(within(before).queryByRole('textbox', { name: 'Cash reserve' })).toBeNull();
+    expect(before).toHaveTextContent('Waiting for the emulator, account and profile to be read.');
+    expect(page.data.store.getSnapshot().runDrafts).toEqual({});
+    act(() => {
+      page.fake.next('/api/config').respond(200, CONFIG);
+    });
+    await page.advance(100);
+    const current = policy('main_list');
+    const toggle = within(current).getByText('Edit shared policy', { exact: true });
+    if (!current.querySelector('details[open]')) await page.user.click(toggle);
+    const reserve = within(current).getByRole('textbox', { name: 'Cash reserve' });
+    await page.user.clear(reserve);
+    await page.user.type(reserve, '12345');
+    expect(
+      selectShoppingLibrary(page.data.store.getSnapshot()).policies.find(
+        (policy) => policy.id === 'main_list',
+      )?.draft['reserve'],
+    ).toBe('12345');
+  },
+);
