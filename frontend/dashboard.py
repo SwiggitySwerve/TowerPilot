@@ -17,6 +17,7 @@ Design rules:
 
 Start:  python dashboard.py           (or pythonw for headless)
 """
+import copy
 import datetime
 import glob
 import hashlib
@@ -3781,6 +3782,7 @@ def api_profile_patch():
             return jsonify({"ok": False,
                             "error": f"{name}.yaml is not a mapping"}), 400
         delete = body.get("op") == "delete"
+        before = copy.deepcopy(data)
         err = _apply_patch(data, body.get("path"), body.get("value"), delete)
         if err:
             return jsonify({"ok": False, "error": err}), 400
@@ -3794,6 +3796,15 @@ def api_profile_patch():
         if problems:
             return jsonify({"ok": False, "problems": problems,
                             "error": problems[0]}), 400
+        # A RUN'S KIND IS FIXED once the run is added: it picks the runner and decides which fields the run may carry. The validator refuses most
+        # changes of it by accident (a field the new kind may not carry, an unknown kind); one that happens to leave a valid profile used to be
+        # saved. Checked after the validator, whose specific message wins for a change it refuses, and after the revision and context checks.
+        if changes := playerprofile.blueprint_kind_changes(before, data):
+            first = changes[0]
+            became = f"a {first['to_kind']} run" if first["to_kind"] else "a run without a type"
+            return jsonify({"ok": False, "code": "kind_change_refused", "changes": changes,
+                            "error": f"Run {first['blueprint']!r} is a {first['from_kind']} run and cannot become {became}: a run's type is fixed when it "
+                                     f"is added. Add a new run of the type you want and remove this one."}), 400
         try:
             backup = _save_yaml_backup(path, data)
             stored = Path(path).read_bytes()

@@ -7,7 +7,7 @@ over the synthetic world of run_entry_patch. The published run_entry_patch keeps
   label     a run's label (R-25 / RL9): set, DELETED so the run identifier shows again, deleted when there is none, refused empty or not text, refused where it would
             repeat another run's name, and the delete that is refused because the identifier title-cased would;
   kind      a coin run switched to a dissonance run and back (R-26 / RL12): the dissonance IS the coin run's `dissonant_tab` (set, retargeted, deleted, null); the
-            `kind` field itself changed (the legacy page never writes it);
+            `kind` field itself is refused (r12d: before it, a coin run that kept no coin-only field could be saved as a tournament run; the legacy page never wrote it);
   limits    `rides` of an Ultimate Weapon grant quest and `cycles` of a cycle quest (R-30 / RL13): saved, deleted, refused, and the fields the other kinds must not carry.
 """
 import copy
@@ -115,11 +115,14 @@ def run_entry_patch_parity_cases(gen):
         asis = saves.refused('kind_changed_from_coin_to_tournament_refused_by_the_equipment', 'farm', ['kind'], value='tournament')
         assert 'as_is' in asis['error'] or any('as_is' in p for p in asis['problems']), asis['problems']
         saves.refused('kind_changed_to_dissonance_which_is_not_a_kind_refused', 'farm', ['kind'], value='dissonance')
-        # ... and ACCEPTED for a coin run that carries no coin-only field: the route does not guard `kind`, which is why the Runs page must never send it
-        changed = saves.ok('kind_changed_on_a_coin_run_that_keeps_no_coin_only_field_is_accepted', 'farm_deep', ['kind'], value='tournament')
-        assert changed['profile']['blueprints']['farm_deep']['kind'] == 'tournament'
+        # ... and, for a coin run that carries no coin-only field (which the validator alone would have accepted), by the route's own guard (r12d):
+        # 400 kind_change_refused, nothing written; the run stays editable (the saved tier below), and the run_kind_guard family records the rest
+        guarded = saves.refused('kind_changed_on_a_coin_run_that_keeps_no_coin_only_field_is_refused', 'farm_deep', ['kind'], value='tournament')
+        assert guarded['code'] == 'kind_change_refused' and guarded['changes'] == [dict(blueprint='farm_deep', from_kind='coin', to_kind='tournament')], guarded
+        saves.ok('saved_tier_of_the_run_whose_kind_change_was_refused', 'farm_deep', ['tier'], value=15)
         read = source(w, PARITY, 'read_after_the_kind_attempts')
-        assert read['profile']['blueprints']['farm_deep']['kind'] == 'tournament' and read['profile']['blueprints']['farm']['kind'] == 'coin'
+        assert read['profile']['blueprints']['farm_deep']['kind'] == 'coin' and read['profile']['blueprints']['farm_deep']['tier'] == 15
+        assert read['profile']['blueprints']['farm']['kind'] == 'coin'
     with gen.world('rpp_limits') as w:
         entry_world(w, profile_change=quest_runs)
         saves = Saves(w)

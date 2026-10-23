@@ -56,6 +56,10 @@ from dashboard_contract_cases_settings_modules import LE, LR, SM, SR, loadout_re
 from dashboard_contract_cases_template_codes import CODED as TC, REFUSALS as TC_REFUSALS, run_templates_add_coded_cases
 from dashboard_contract_cases_shopping_more import OUT_OF_BOUNDS, RM as RMX, SB, run_controls_live_reset_all_mixed_cases, shopping_queue_bounds_cases
 from dashboard_contract_cases_run_parity import PARITY as PAR, run_entry_patch_parity_cases
+from dashboard_contract_cases_kind_guard import KG, run_kind_guard_cases
+from dashboard_contract_cases_profile_fenced import PF as PFD, profile_patch_fenced_cases
+from dashboard_contract_cases_ad_gems_poll import AP, ad_gems_failed_attempt_poll_cases
+from dashboard_contract_cases_plan_removal import PRE, plan_removal_effects_cases
 from dashboard_contract_cases_profile import run_profile_cases, run_schedule_cases
 from dashboard_contract_cases_settings import run_settings_cases
 from dashboard_contract_cases_runs import run_controls_live_cases, run_controls_save_cases
@@ -75,7 +79,8 @@ FAMILIES = [run_controls_save_cases, run_controls_live_cases, run_history_cases,
             recognition_context_fence_cases, run_controls_live_reset_all_cases, run_entry_patch_cases, run_templates_add_cases,
             run_battle_details_cases, run_plan_section_delete_cases, run_templates_add_fenced_cases, shopping_queue_cases, profile_target_cases,
             runtime_environment_cases, run_preview_cases, settings_modules_cases, loadout_restore_eligibility_cases, settings_switch_records_cases,
-            run_templates_add_coded_cases, run_controls_live_reset_all_mixed_cases, run_entry_patch_parity_cases, shopping_queue_bounds_cases]
+            run_templates_add_coded_cases, run_controls_live_reset_all_mixed_cases, run_entry_patch_parity_cases, shopping_queue_bounds_cases,
+            run_kind_guard_cases, profile_patch_fenced_cases, ad_gems_failed_attempt_poll_cases, plan_removal_effects_cases]
 UNNAMED_ALLOWED = 49      # cases no row names (the settling reads of one scenario); report.json lists them
 
 NOTES = dict(
@@ -1141,6 +1146,34 @@ COVERAGE.update({
         'read_config_after_switching_back_every_record_as_it_was'),
 })
 COVERAGE.update({
+    'F6-11 r12d: a run\'s kind is fixed - a change by the kind field, by replacing the whole run, or by replacing the whole blueprints mapping is 400 kind_change_refused (the changes are named, sorted by run), nothing written': keys(
+        KG, 'kind_changed_on_a_coin_run_is_refused', 'whole_run_replaced_by_a_run_of_another_kind_is_refused', 'whole_blueprints_mapping_with_two_kinds_changed_names_both',
+        'read_before_the_kind_attempts', 'read_after_the_attempts_every_kind_is_as_it_was', 'other_field_of_the_run_still_saves_after_the_refusal'),
+    'F6-11 r12d: a kind change the validator already refuses keeps the validator\'s answer (no code, problems)': keys(
+        KG, 'kind_deleted_keeps_the_validators_answer', 'kind_unknown_keeps_the_validators_answer', 'kind_changed_on_a_coin_run_with_coin_only_fields_keeps_the_validators_answer',
+        'kind_changed_on_a_shard_run_keeps_the_validators_answer'),
+    'F6-11 r12d: what is not a kind change - the kind a run already has, a whole run of the same kind, a run added, a run removed, removed and added again with another kind': keys(
+        KG, 'kind_set_to_the_kind_the_run_already_has_is_accepted', 'whole_run_replaced_by_a_run_of_the_same_kind_is_accepted', 'run_added_with_a_kind_of_its_own_is_accepted',
+        'run_removed_is_accepted', 'run_added_again_with_another_kind_after_it_was_removed_is_accepted', 'read_before_the_changes_that_are_not_kind_changes',
+        'read_after_the_changes_that_are_not_kind_changes'),
+    'F6-11 r12d: the revision and the context are judged before the guard, and a matching context does not let a kind change through': keys(
+        KG, 'stale_revision_is_judged_before_the_guard', 'another_context_is_judged_before_the_guard', 'matching_context_and_revision_do_not_let_a_kind_change_through',
+        'read_after_the_ordered_refusals_nothing_changed'),
+    'F6-14b Schedule: the day plan of the ACTIVE profile saved and removed with expected_context and expected_revision, each followed by the read': keys(
+        PFD, 'active_plan_saved', 'read_after_active_plan_saved', 'active_plan_deleted', 'read_after_active_plan_deleted'),
+    'F6-14b Collection: the active profile\'s gathering policy label, a copy, one created from the shipped template, an unused one deleted, and the chores list (fenced), each followed by the read': keys(
+        PFD, 'active_gather_label_saved', 'read_after_active_gather_label_saved', 'active_gather_copy_saved', 'read_after_active_gather_copy_saved',
+        'active_gather_template_created', 'read_after_active_gather_template_created', 'active_unused_gather_deleted', 'read_after_active_unused_gather_deleted',
+        'active_chores_saved', 'read_after_active_chores_saved'),
+    'F6-14b Abilities: an Ultimate Weapon policy and a rescue policy of the active profile saved, then deleted while unused (fenced), each followed by the read': keys(
+        PFD, 'active_uw_policy_saved', 'read_after_active_uw_policy_saved', 'active_uw_policy_deleted', 'read_after_active_uw_policy_deleted',
+        'active_rescue_policy_saved', 'read_after_active_rescue_policy_saved', 'active_rescue_policy_deleted', 'read_after_active_rescue_policy_deleted'),
+    'F6-14b Runs: a run\'s label saved and its perk bans deleted in the active profile (fenced), each followed by the read': keys(
+        PFD, 'active_run_entry_label_saved', 'read_after_active_run_entry_label_saved', 'active_run_entry_field_deleted', 'read_after_active_run_entry_field_deleted'),
+    'F6-14b: a fenced write to the active profile after the account was switched is 409 context_changed, nothing written, and the read shows mine unchanged': keys(
+        PFD, 'active_patch_refused_after_account_switch', 'read_after_active_patch_refused_after_account_switch'),
+})
+COVERAGE.update({
     'F6-11 r12c (a): id_taken - the run identifier or a policy copy exists - with both guards, only the revision, only the context': keys(
         TC, 'id_taken_a_copied_policy_exists', 'id_taken_an_existing_dissonance_run', 'id_taken_the_run_exists', 'id_taken_with_only_the_context',
         'id_taken_with_only_the_revision'),
@@ -1194,9 +1227,9 @@ COVERAGE.update({
         'dissonant_tab_a_number_refused', 'dissonant_tab_empty_text_refused', 'dissonant_tab_set_to_null_is_stored_as_null_not_deleted',
         'dissonant_tab_text_not_a_tab_refused', 'dissonant_tab_ultimate_weapons_accepted', 'read_after_the_switch_back_to_coin', 'read_after_the_switch_to_dissonance',
         'read_after_the_tab_was_set_to_null', 'read_before_the_kind_switches'),
-    'F6-11 RL12 (R-26): the `kind` field itself - refused while the run keeps a field of the old kind, accepted for a coin run that keeps none': keys(
-        PAR, 'kind_changed_from_coin_to_tournament_refused_by_the_equipment', 'kind_changed_on_a_coin_run_that_keeps_no_coin_only_field_is_accepted',
-        'kind_changed_to_dissonance_which_is_not_a_kind_refused', 'read_after_the_kind_attempts'),
+    'F6-11 RL12 (R-26): the `kind` field itself - refused by the validator while the run keeps a field of the old kind, and (r12d) by the route\'s own guard for a coin run that keeps none; the run stays editable': keys(
+        PAR, 'kind_changed_from_coin_to_tournament_refused_by_the_equipment', 'kind_changed_on_a_coin_run_that_keeps_no_coin_only_field_is_refused',
+        'saved_tier_of_the_run_whose_kind_change_was_refused', 'kind_changed_to_dissonance_which_is_not_a_kind_refused', 'read_after_the_kind_attempts'),
     'F6-11 RL13 (R-30): rides of a grant quest and cycles of a cycle quest - saved, rides deleted, cycles required': keys(
         PAR, 'cycles_deleted_refused_a_cycle_quest_needs_its_cycles', 'read_after_the_limit_saves', 'read_before_the_limit_edits',
         'rides_deleted_the_quest_uses_its_own_default', 'saved_cycles', 'saved_cycles_one', 'saved_rides', 'saved_rides_one'),
@@ -1228,13 +1261,49 @@ NOTES.update(
                                        'The same request with only the plan keeps the routine overrides, with only the routines keeps the plan override; a stale control revision is a 409 that keeps both; the identical resend is answered from the record.'),
     run_entry_patch_parity=('r12c (F6-11 RL9, RL12, RL13; legacy rows R-25, R-26, R-30): POST /api/profile-patch on [blueprints, <run>, <field>], the way the legacy page wrote them. label: a delete (op:"delete") makes the run identifier show again and is accepted even when there is no label; an empty, blank or non-text label is refused; '
                             'a label or an identifier that title-cased is another run\'s name is refused, and so is deleting a label when the identifier would then repeat another run\'s label. kind: a dissonance run IS a coin run with `dissonant_tab` - set, retargeted, deleted (op:"delete") to go back; '
-                            'a bare value null is STORED as null (the key stays; the page deletes instead); an unknown tab is refused. `kind` itself is not guarded by the route: refused when the run keeps a field of the old kind (coin-only fields, the as_is equipment), ACCEPTED for a coin run that keeps none, which is why the Runs page must never send it. '
+                            'a bare value null is STORED as null (the key stays; the page deletes instead); an unknown tab is refused. `kind` itself is refused: by the validator while the run keeps a field of the old kind (coin-only fields, the as_is equipment) and, since r12d, by the route\'s own guard (400 kind_change_refused) for a coin run that keeps none - it used to be saved (family run_kind_guard has the full set). '
                             'limits: `rides` of an Ultimate Weapon grant quest and `cycles` of a cycle quest are integers >= 1; rides may be deleted, cycles may not (required); the other kind\'s field and `count` are refused (count names rides / cycles).'),
     shopping_queue_bounds=('r12c (F6-12 SQ5): what the SERVER answers to a shopping queue whose per-entry numbers are out of bounds, through the saved run save (POST /api/run-controls) and the live save (POST /api/operations/{id}/live-controls); both validate the plan with the same rules and refuse with 400 {ok:false, error}, '
                            'recording nothing (a read after them shows the saved run unchanged and no command). tap_limit: an integer >= 0 (negative, fraction, text and booleans are refused); weight: an integer from 1 to 100 ("expected integer >= 1" for 0, a fraction or text; "from 1 to 100" above 100); '
                            'from_wave an integer >= 1, until_wave an integer >= 2 and greater than from_wave (a reversed or empty range is "<id>: empty wave range"). The smallest and largest accepted values are saved and applied in boundary_values_accepted.'),
 )
-FAMILY_ROWS = {TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
+COVERAGE.update({
+    'F6-11 6.4 r12d: an Ad gems offer that appeared after an absence and waits for its window and response delay (through the collector own poll): response_due_at, scheduling and response timing set, no failed attempt yet': keys(
+        AP, 'offer_seen_after_an_absence_and_its_response_scheduled'),
+    'F6-11 6.4 r12d: an Ad gems attempt that was sent and not confirmed (offer_still_visible) with every timing field set (scheduling_wait_sec, response_delay_sec, response_wait_sec, response_overdue_sec, verification_sec)': keys(
+        AP, 'failed_attempt_unconfirmed_the_offer_was_still_visible_after_the_tap'),
+    'F6-11 6.4 r12d: an Ad gems attempt skipped before the tap - the offer moved, another app in front of the game, the offer gone on the fresh frame - with the skip fields of last_failed_attempt': keys(
+        AP, 'failed_attempt_skipped_the_offer_moved_before_the_tap', 'failed_attempt_skipped_another_app_was_in_front_of_the_game',
+        'failed_attempt_skipped_the_offer_was_gone_on_the_fresh_frame'),
+    'F6-11 6.5 r12d: removing the plan section removes the day-plan run from GET /api/runs (runs and readiness), adding it back lists it again, the blueprint runs never change; each write and its profile read': keys(
+        PRE, 'read_runs_before_the_removal_the_day_plan_run_is_listed', 'read_profile_before_the_removal', 'plan_section_removed', 'read_runs_after_the_removal_the_day_plan_run_is_gone',
+        'read_profile_after_the_removal', 'plan_section_added_back', 'read_runs_after_the_plan_was_added_back_the_day_plan_run_is_listed'),
+    'F6-11 6.5 r12d: deleting plan.week or plan.days is 400 (a plan with no blocks schedules nothing), also with the section gone; nothing is written and the run list does not change': keys(
+        PRE, 'plan_week_deleted_is_refused_a_plan_with_no_blocks', 'plan_days_deleted_is_refused_a_plan_with_no_blocks', 'read_runs_after_the_refusals_nothing_changed',
+        'plan_week_deleted_when_the_plan_is_gone_is_refused_the_same_way'),
+})
+NOTES.update(
+    run_kind_guard=('r12d (F6-11 RL12, the r12c review): a run\'s kind picks its runner and decides which fields it may carry, so POST /api/profile-patch refuses a patch that changes the kind of a run that exists before and after it. '
+                    'A change by the `kind` field, by replacing the whole run, or by replacing the whole `blueprints` mapping is 400 {ok:false, code:"kind_change_refused", error, changes:[{blueprint, from_kind, to_kind}]} (sorted by run name; a deleted kind would be to_kind null), nothing written. '
+                    'It is judged after the revision and context checks (409 revision_conflict / context_changed come first) and after the validator: a change the validator already refuses (an unknown or deleted kind, a field the new kind may not carry, the as_is equipment on a non-coin run, a shard-only count) '
+                    'keeps the validator\'s own answer, uncoded, with `problems`. Not kind changes, and accepted: setting the kind a run already has, replacing a whole run by one of the same kind, adding a run (any kind), removing one - '
+                    'and removing a run and adding it again as another kind, which are two requests (a plan block that names the run blocks the first). Before r12d the same patch of a coin run that kept no coin-only field to a tournament run was saved (run_entry_patch_parity recorded it).'),
+    profile_patch_fenced=('r12d (F6-14b, root decision D4): every write of the Schedule, Collection, Abilities and Runs pages to the ACTIVE profile sends expected_context (the runtime context, as GET /api/config publishes it) and expected_revision (the source revision of `mine` it read). '
+                          'The route already honoured both; what was missing were recordings of those bodies for the active profile. Each success is followed by `read_after_<case>` (GET /api/profile-src/mine): the revision and the profile equal the write\'s answer, no problem. '
+                          'The refusal after the account switch is 409 {code:"context_changed", current_context: beta\'s} with nothing written (the read after it equals the read before). The inactive profile `second`, `theirs` and config.yaml are untouched by every case (asserted by the generator). '
+                          'The brief\'s table names 14 cases; 13 are successes and one the refusal; the 14 reads are extra.'),
+)
+NOTES.update(
+    ad_gems_failed_attempt_poll=('r12d (gap of F6-11 6.4): GET /api/battles/active runtime.routines.ad_gems when the failed attempt was made by the collector own poll(frame) on the world clock (only the device boundary is faked: frames, the recognizer rectangle, the window list, capture and tap). '
+                                 'battle_details_runtime finished its attempt by calling _finish_attempt directly, so its scheduling_wait_sec / response_delay_sec are null and response_wait_sec / response_overdue_sec absent; here all four are set (6.0 / 15.0 / 15.0 / 0), '
+                                 'appearance_after_at is set because the HUD showed no offer on the first checks, and response_due_at / response_started_at are set while the response waits (the first case) and null once the attempt started (the offer is forgotten when an attempt begins). '
+                                 'Recorded failures: not_confirmed / offer_still_visible after one tap (verification_before_tap_sec, verification_sec), and three skips with no tap: offer_moved (center_displacement_px, observed_rect, fresh_rect), in_front:<package> (visible_windows) and fresh_offer_missing (visibility absent). '
+                                 'A refused tap or a capture error also fails an attempt but carries a Python traceback with this machine paths, so it is not recorded.'),
+    plan_removal_effects=('r12d (gap of F6-11 6.5): what POST /api/profile-patch {path:["plan"], op:"delete"} changes beyond the profile: GET /api/runs lists the config combo run (the day-plan run) only while the profile has a plan section - the run leaves `runs` and `readiness` when the section is removed and returns when it is added back; '
+                          'the blueprint runs are identical before, after and after the add-back. Deleting plan.week or plan.days (either half) leaves a plan with no blocks and is 400 {ok:false, error, problems} with the validator text (uncoded), also when the section is already gone (the route deletes from an empty plan); nothing is written. '
+                          'GET /api/schedule/status was probed and not recorded: it reports the running scheduler last observation and stayed available after the removal in the synthetic world.'),
+)
+FAMILY_ROWS = {AP: 'F6-11 6.4 (r12d: the failed Ad gems attempt through the collector own poll)', PRE: 'F6-11 6.5 (r12d: what removing the plan changes)', KG: 'F6-11 RL12 (r12d: a run kind is fixed)', PFD: 'F6-14b (brief section 7: fenced writes to the active profile)', TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
                RESET: 'F6-11 RL2 (6.1)', TF: 'F6-11 RL4 guarded (root decision: run-templates/add gains expected_revision and expected_context)', SQ: 'F6-12 (brief section 8)', PTG: 'F6-14 (brief section 6)', ENTRY: 'F6-11 RL3 (6.2)', TEMPLATES: 'F6-11 RL4 (6.3)', DETAILS: 'F6-11 RL7 (6.4)', PLAN_DELETE: 'F6-11 RL8 (6.5)', SAVE: 'RUN-04..07', LIVE: 'RUN-08..11', HL: 'H-01', HD: 'H-01, H-02', CFG: 'G-01', PR: 'G-02', PP: 'G-03', SP: 'S-01', ST: 'G-04', LO: 'E-01', CO: 'C-01', AB: 'A-01', AC: 'P-01', PF: 'P-02', EI: 'M-01', EA: 'M-02', ET: 'M-03', RS: 'T-01', RD: 'T-02', RR: 'R-01, R-02, R-06', CW: 'R-02', RI: 'R-03', SA: 'R-04', RL: 'R-05'}
 
 
@@ -1276,7 +1345,8 @@ PUBLISHED_ORDER = ['run_controls_save_cases', 'run_controls_live_cases', 'run_hi
                    'run_controls_live_reset_all_cases', 'run_entry_patch_cases', 'run_templates_add_cases', 'run_battle_details_cases',
                    'run_plan_section_delete_cases', 'run_templates_add_fenced_cases', 'shopping_queue_cases', 'profile_target_cases',
                    'runtime_environment_cases', 'run_preview_cases', 'settings_modules_cases', 'loadout_restore_eligibility_cases', 'settings_switch_records_cases',
-                   'run_templates_add_coded_cases', 'run_controls_live_reset_all_mixed_cases', 'run_entry_patch_parity_cases', 'shopping_queue_bounds_cases']
+                   'run_templates_add_coded_cases', 'run_controls_live_reset_all_mixed_cases', 'run_entry_patch_parity_cases', 'shopping_queue_bounds_cases',
+                   'run_kind_guard_cases', 'profile_patch_fenced_cases', 'ad_gems_failed_attempt_poll_cases', 'plan_removal_effects_cases']
 
 
 CODED_PATHS = frozenset({'/api/calibrate/start', '/api/calibrate/observe', '/api/calibrate/apply', '/api/calibrate/stop', '/api/calibrate/status',
@@ -1345,7 +1415,17 @@ def test_the_r12c_families_are_made_by_the_real_routes_and_are_the_same_twice(da
     first = render(build(dash, tmp_path / 'one', monkeypatch, chosen))
     assert render(build(dash, tmp_path / 'two', monkeypatch, chosen)) == first
     families = json.loads(first)['cases']
-    assert {name: len(cases) for name, cases in families.items()} == {TC: 67, RMX: 13, PAR: 53, SB: 25}
+    assert {name: len(cases) for name, cases in families.items()} == {TC: 67, RMX: 13, PAR: 54, SB: 25}
+
+
+def test_the_r12d_families_are_made_by_the_real_routes_and_are_the_same_twice(dash, tmp_path, monkeypatch):
+    """The four families r12d added (the guard on a run's kind, the fenced writes to the active profile, the failed Ad gems attempt through the collector's own poll, what removing the plan changes) on their own: every assertion of their generators runs, and two
+    runs are byte-identical. The parity family, whose kind case changed, is generated with them. The full contract below also compares everything with the committed fixture."""
+    chosen = [run_entry_patch_parity_cases, run_kind_guard_cases, profile_patch_fenced_cases, ad_gems_failed_attempt_poll_cases, plan_removal_effects_cases]
+    first = render(build(dash, tmp_path / 'one', monkeypatch, chosen))
+    assert render(build(dash, tmp_path / 'two', monkeypatch, chosen)) == first
+    families = json.loads(first)['cases']
+    assert {name: len(cases) for name, cases in families.items()} == {PAR: 54, KG: 21, PFD: 28, AP: 5, PRE: 11}
 
 
 def test_the_families_are_generated_in_a_fixed_order():

@@ -1219,6 +1219,19 @@ def loadout_corruption_warnings(profile: dict) -> list[str]:
     return out
 
 
+def blueprint_kind_changes(before: dict, after: dict) -> list[dict]:
+    """The runs whose `kind` differs between two versions of a profile, as [{blueprint, from_kind, to_kind}] sorted by run name (the order a request
+    happened to list them in says nothing).
+
+    A run's kind picks its runner and decides which fields it may carry, so it is fixed when the run is added: an editor that patches a profile
+    must not change it (a change would silently re-point a scheduled run at another runner). Only runs present in BOTH versions are compared -
+    adding a run, or removing one, is not a kind change. A deleted kind is a change to None; a run that is not a mapping has no kind."""
+    old, new = _d(_d(before).get("blueprints")), _d(_d(after).get("blueprints"))
+    return [dict(blueprint=name, from_kind=_d(old[name]).get("kind"), to_kind=_d(new[name]).get("kind"))
+            for name in sorted(set(old) & set(new), key=str)
+            if _d(old[name]).get("kind") != _d(new[name]).get("kind")]
+
+
 def blueprint_kind(profile: dict, name: str) -> str | None:
     """The `kind` of one blueprint, or None if there is no such blueprint.
 

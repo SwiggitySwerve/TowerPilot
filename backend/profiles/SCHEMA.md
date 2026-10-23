@@ -295,6 +295,21 @@ not at all. The refusal names the plan block rather than merely saying no.
 A tournament blueprint is one entry, and a tournament BLOCK is one per day
 for the same reason (the ticket auto-starts the run; 10 -> 20 -> 30 gems).
 
+### A run's `kind` is fixed once the run is added
+`kind` picks the runner and decides which fields the run may carry; the plan (a block
+must match its run's kind) and the readiness checks key on it too. The editor route
+(`POST /api/profile-patch`) therefore refuses a patch that changes the `kind` of a run
+that exists both before and after it - by the `kind` field, by replacing the whole run,
+or by replacing the whole `blueprints` mapping - with
+`400 {ok: false, code: "kind_change_refused", error, changes: [{blueprint, from_kind,
+to_kind}]}` and writes nothing. It is judged after the revision and context checks and
+after the validator: a change the validator already refuses (an unknown or deleted
+kind, a field the new kind may not carry, `loadout: as_is` on a non-coin run) keeps the
+validator's own message. Adding a run, removing one, and writing the kind a run already
+has are not changes. To change a run's type, remove the run and add a new one (a plan
+block that names the run blocks the removal until the block is changed). A dissonance
+run is not another kind: it is a coin run with `dissonant_tab`.
+
 ## policies
 ```yaml
 policies:
