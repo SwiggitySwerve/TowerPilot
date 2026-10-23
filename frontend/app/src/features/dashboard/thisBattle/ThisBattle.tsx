@@ -9,6 +9,7 @@ import {
   type QueueVM,
   type RoutineRowVM,
   type ThisBattleVM,
+  type ShoppingTryOnceVM,
 } from '../../../store/selectors/thisBattle.ts';
 import type { ChipVM } from '../../../store/viewModels.ts';
 import { Button } from '../../../ui/Button.tsx';
@@ -23,6 +24,7 @@ import { Why } from '../../../ui/Why.tsx';
 import { useDashboard, useView } from '../context.ts';
 import { DashboardRegion } from '../shared/DashboardRegion.tsx';
 import './thisBattle.css';
+import '../../runs/shoppingLive.css';
 
 const words = copy.dashboard.thisBattle;
 function lookup(
@@ -206,6 +208,63 @@ function RoutineRow({
   );
 }
 
+function ShoppingTryOnceAction({ item }: { readonly item: ShoppingTryOnceVM }) {
+  const { commands } = useDashboard();
+  const id = `shopping-try-${item.action}`;
+  return (
+    <div className="tp-shopping-try__action">
+      <button
+        type="button"
+        className="tp-button"
+        aria-labelledby={`${id}-label ${id}-target`}
+        aria-disabled={item.button.enabled ? undefined : true}
+        aria-describedby={item.button.enabled ? undefined : `${id}-reason`}
+        onClick={() => {
+          if (item.button.enabled && item.button.command !== null)
+            void commands.runNow(item.button.command);
+        }}
+      >
+        <span id={`${id}-label`}>{words.tryOnce.short}</span>
+      </button>
+      {item.button.enabled ? null : (
+        <div id={`${id}-reason`}>
+          {
+            lookup(
+              words.disabled,
+              item.button.reason ?? 'report_unavailable',
+              words.disabled.report_unavailable,
+            ).short
+          }
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ShoppingTryOnce({ value }: { readonly value: readonly ShoppingTryOnceVM[] }) {
+  return (
+    <div className="tp-shopping-try">
+      <p>{words.tryNotice.short}</p>
+      {value.map((item) => (
+        <div key={item.action}>
+          <span id={`shopping-try-${item.action}-target`}>
+            {item.known === null ? (
+              item.label === null ? (
+                words.queue.unknownUpgrade.short
+              ) : (
+                <ServerValue kind="name" value={item.label} />
+              )
+            ) : (
+              words.tryTargets[item.known].short
+            )}
+          </span>
+          <ShoppingTryOnceAction item={item} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Queue({
   value,
   run,
@@ -213,8 +272,10 @@ function Queue({
   readonly value: QueueVM;
   readonly run: ServerText<'name'> | null;
 }) {
+  const { tryOnce } = useView(selectThisBattle);
   return (
     <div className="tp-battle__queue">
+      <ShoppingTryOnce value={tryOnce.filter((item) => item.known !== null)} />
       {value.warnings.map((warning) => {
         const entry = lookup(
           {
@@ -272,18 +333,29 @@ function Queue({
           <ol>
             {value.items.map((item) => (
               <li key={item.key}>
-                {item.label === null ? (
-                  words.queue.unknownUpgrade.short
-                ) : (
-                  <ServerValue value={item.label} kind="name" />
-                )}
-                {item.enabled ? null : <span>{words.queue.disabled.short}</span>}
-                <span>
-                  {item.tapLimit === null ? words.queue.noCap.short : words.tapCap(item.tapLimit)}
-                </span>
-                {value.mode === 'weighted_split' && item.weight !== null ? (
-                  <span>{words.weight(item.weight)}</span>
-                ) : null}
+                <div className="tp-battle__queue-entry">
+                  <span
+                    id={
+                      item.tryOnce === null
+                        ? undefined
+                        : `shopping-try-${item.tryOnce.action}-target`
+                    }
+                  >
+                    {item.label === null ? (
+                      words.queue.unknownUpgrade.short
+                    ) : (
+                      <ServerValue value={item.label} kind="name" />
+                    )}
+                  </span>
+                  {item.enabled ? null : <span>{words.queue.disabled.short}</span>}
+                  <span>
+                    {item.tapLimit === null ? words.queue.noCap.short : words.tapCap(item.tapLimit)}
+                  </span>
+                  {value.mode === 'weighted_split' && item.weight !== null ? (
+                    <span>{words.weight(item.weight)}</span>
+                  ) : null}
+                  {item.tryOnce === null ? null : <ShoppingTryOnceAction item={item.tryOnce} />}
+                </div>
               </li>
             ))}
           </ol>
@@ -327,6 +399,15 @@ function CommandRow({ value }: { readonly value: BattleCommandVM }) {
   return (
     <li className="tp-battle__command">
       <Decision value={value} />
+      {value.shoppingState === null ? null : (
+        <span>{words.shoppingStates[value.shoppingState].short}</span>
+      )}
+      {value.actionText === null ? null : <ServerValue kind="id" value={value.actionText} />}
+      {value.serverEvidence === null ? null : (
+        <Disclosure label={words.commandEvidence.short}>
+          <ServerValue kind="detail" value={value.serverEvidence} />
+        </Disclosure>
+      )}
       {value.row === 'K4' && value.resultChip !== null ? (
         <Decision value={value.resultChip} />
       ) : null}
@@ -521,6 +602,11 @@ function BattleContent() {
                     }
                     actions={
                       <>
+                        <Button
+                          tier="quiet"
+                          label={copy.shoppingLive.check.short}
+                          onClick={commands.checkBattle}
+                        />
                         {outcome.resendOffered ? (
                           <>
                             <Button

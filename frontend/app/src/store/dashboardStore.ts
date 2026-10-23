@@ -62,6 +62,7 @@ export function initialDashboardState(
     sessionContext: options.context ?? null,
     reads: emptyReads(),
     runControls: Object.freeze({}),
+    runControlsLastAnswered: Object.freeze({}),
     intents: Object.freeze([]),
     notices: Object.freeze([]),
     nowMs: options.nowMs ?? 0,
@@ -124,6 +125,15 @@ function applyRead(state: DashboardState, read: ReadRecord): DashboardState {
   };
   if (read.resource === 'runControls') {
     next = { ...next, runControls: Object.freeze({ ...state.runControls, [read.path]: read }) };
+    if (read.outcome.kind === 'answered' && read.outcome.status === 200) {
+      next = {
+        ...next,
+        runControlsLastAnswered: Object.freeze({
+          ...state.runControlsLastAnswered,
+          [read.path]: read,
+        }),
+      };
+    }
   }
   if (read.resource === 'status') {
     const assessment = assessedRead(read);

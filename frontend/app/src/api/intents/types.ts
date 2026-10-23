@@ -133,7 +133,7 @@ export interface IntentMeta {
   readonly blueprint?: string;
   readonly profileRevision?: string;
   /** The dotted-path changes a saved-run or live save sent, to judge a later read against. */
-  readonly changes?: Readonly<Record<string, boolean | number>>;
+  readonly changes?: Readonly<Record<string, unknown>>;
   /**
    * A Runs save (F6R-02): the draft scope it was made from and the raw values typed for the
    * sent paths, so a confirmation clears exactly those, also after a reload.

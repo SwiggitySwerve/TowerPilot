@@ -7,6 +7,7 @@ import {
   type RecordDecision,
 } from './battle.ts';
 import { commandTerminal, commandView, type CommandView } from './commands.ts';
+import { planHolds, queuePlan } from './shoppingPlan.ts';
 import type { ContextRead } from './connection.ts';
 import { finite, hasOwn, id, list, own, ownPath, record, revision, stringList } from './read.ts';
 import type { DiagnosticQuery } from './runtime.ts';
@@ -149,16 +150,25 @@ export interface ActionGate {
     | 'control_change_pending'
     | 'another_action_in_progress'
     | 'commands_unreadable'
-    | 'earlier_outcome_unknown';
+    | 'earlier_outcome_unknown'
+    | 'unsaved_live_queue'
+    | 'queue_unavailable';
 }
 
 /** F-056: one open action blocks ALL three buttons; controls do not. */
 export function actionGate(
   read: ContextRead,
   shown: BattleIdentity | null,
-  routine: Routine,
+  routine: string,
   earlierOutcomeUnknown: boolean,
   elapsedSec = 0,
+  shopping: {
+    readonly requireQueue?: boolean;
+    readonly pendingControl?: boolean;
+    readonly liveDraft?: boolean;
+    readonly unresolvedCommand?: boolean;
+    readonly pendingAction?: boolean;
+  } = {},
 ): ActionGate {
   const deny = (reason: ActionGate['reason']): ActionGate => ({ enabled: false, reason });
   if (read?.kind !== 'answered' || !read.sameContext) return deny('report_unavailable');
@@ -169,6 +179,17 @@ export function actionGate(
     return deny('action_unsupported');
   if (freshBattleReport(read, shown, elapsedSec).kind === 'unknown')
     return deny('report_unavailable');
+  const isShopping = routine === 'shopping' || routine.startsWith('shopping:');
+  if (
+    isShopping &&
+    (shopping.requireQueue === true || routine.startsWith('shopping:')) &&
+    queuePlan(ownPath(battle, 'effective', 'shopping_plan')) === null
+  )
+    return deny('queue_unavailable');
+  if (isShopping && shopping.liveDraft) return deny('unsaved_live_queue');
+  if (isShopping && shopping.unresolvedCommand) return deny('earlier_outcome_unknown');
+  if (isShopping && shopping.pendingAction) return deny('another_action_in_progress');
+  if (isShopping && shopping.pendingControl) return deny('control_change_pending');
   const header = battleView(read, shown, elapsedSec);
   if (header.row !== 'B5') return deny('control_change_pending');
   const commands = list(own(battle, 'commands'));
@@ -178,6 +199,12 @@ export function actionGate(
     if (own(command, 'kind') === 'action' && !commandTerminal(command))
       return deny('another_action_in_progress');
   }
+  if (
+    isShopping &&
+    (shopping.requireQueue === true || routine.startsWith('shopping:')) &&
+    commands.some((command) => own(command, 'kind') === 'controls' && !commandTerminal(command))
+  )
+    return deny('control_change_pending');
   if (earlierOutcomeUnknown) return deny('earlier_outcome_unknown');
   return { enabled: true, reason: 'ready' };
 }
@@ -257,6 +284,20 @@ function listedCommand(
   );
 }
 
+/** SQ8: a recorded receipt still fences another attempt until a same-battle read reports it terminal. */
+export function commandReceiptPending(
+  read: ContextRead,
+  shown: BattleIdentity | null,
+  answer: unknown,
+  kind: 'action' | 'controls',
+): boolean {
+  const receipt = own(answer, 'command');
+  const commandId = id(own(receipt, 'id'));
+  if (shown === null || commandId === undefined || own(receipt, 'kind') !== kind) return false;
+  const current = listedCommand(read, shown, kind, (command) => own(command, 'id') === commandId);
+  return !commandTerminal(current ?? receipt);
+}
+
 function keyListed(command: unknown, requestKey: OpaqueToken): boolean {
   return (list(own(command, 'request_keys')) ?? []).some((key) =>
     sameToken(requestKey, opaqueToken(key)),
@@ -299,7 +340,26 @@ export function liveChangeProgress(
       : requestKey !== null && keyListed(found, requestKey),
   );
   if (command === undefined) return 'not_listed';
-  const row = commandView(command).decision.row;
+  const view = commandView(command);
+  const row = view.decision.row;
+  const plan =
+    ownPath(answer, 'command', 'payload', 'shopping_plan') ?? own(view.payload, 'shopping_plan');
+  if (
+    row === 'K4' &&
+    plan !== undefined &&
+    plan !== null &&
+    (!view.appliedPaths?.includes('shopping_plan') ||
+      !planHolds(
+        ownPath(
+          read?.kind === 'answered' ? read.body : undefined,
+          'battle',
+          'effective',
+          'shopping_plan',
+        ),
+        plan,
+      ))
+  )
+    return 'waiting';
   return row === 'K4'
     ? 'applied'
     : row === 'K5' || row === 'K6'

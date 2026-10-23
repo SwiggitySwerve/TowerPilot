@@ -150,6 +150,291 @@ const e0Samples = Object.fromEntries(
 
 /** @type {Readonly<Record<string, Scenario>>} */
 export const SCENARIOS = Object.freeze({
+  shopping_library_create: {
+    description: 'SQ9 empty queue creation with explicit reserve and choices.',
+    harvest: 'off',
+    get: {
+      config: 'run_templates_add_fenced.read_config_the_page_context_comes_from',
+      profileSource: 'shopping_queue.shopping_library_read_before_any_edit',
+      runControls: 'shopping_queue.shopping_read_before_any_save',
+    },
+    writes: {
+      profilePatch: {
+        case: 'shopping_queue.shopping_policy_created',
+        reads: {
+          profileSource: 'shopping_library_after:shopping_policy_created',
+        },
+      },
+    },
+  },
+  shopping_library_copy: {
+    description: 'SQ9 independent policy copy at its recorded starting revision.',
+    harvest: 'off',
+    get: {
+      config: 'run_templates_add_fenced.read_config_the_page_context_comes_from',
+      profileSource: 'shopping_library_before:shopping_policy_copied',
+      runControls: 'shopping_queue.shopping_read_before_any_save',
+    },
+    writes: {
+      profilePatch: {
+        case: 'shopping_queue.shopping_policy_copied',
+        reads: {
+          profileSource: 'shopping_library_after:shopping_policy_copied',
+        },
+      },
+    },
+  },
+  shopping_library_v2: {
+    description: 'SQ9 shared weighted policy update with keyboard order.',
+    harvest: 'off',
+    get: {
+      config: 'run_templates_add_fenced.read_config_the_page_context_comes_from',
+      profileSource: 'shopping_library_before:shopping_shared_v2_updated',
+      runControls: 'shopping_queue.shopping_read_before_any_save',
+    },
+    writes: {
+      profilePatch: {
+        case: 'shopping_queue.shopping_shared_v2_updated',
+        reads: {
+          profileSource: 'shopping_library_after:shopping_shared_v2_updated',
+        },
+      },
+    },
+  },
+  shopping_library_legacy: {
+    description: 'SQ10 legacy mapping, vocabulary and the recorded clicks-zero refusal.',
+    harvest: 'off',
+    get: {
+      config: 'run_templates_add_fenced.read_config_the_page_context_comes_from',
+      profileSource: 'shopping_library_draft:shopping_legacy_clicks_invalid',
+      runControls: 'shopping_queue.shopping_read_before_any_save',
+    },
+    writes: {
+      profilePatch: {
+        mode: 'refused',
+        case: 'shopping_queue.shopping_legacy_clicks_invalid',
+      },
+    },
+  },
+  shopping_library_delete: {
+    description: 'SQ9 confirmed delete of an unused shared policy; used delete remains disabled.',
+    harvest: 'off',
+    get: {
+      config: 'run_templates_add_fenced.read_config_the_page_context_comes_from',
+      profileSource: 'shopping_queue.shopping_library_read_before_any_edit',
+      runControls: 'shopping_queue.shopping_read_before_any_save',
+    },
+    writes: {
+      profilePatch: {
+        case: 'shopping_queue.shopping_policy_deleted_unused',
+        reads: {
+          profileSource: 'shopping_library_after:shopping_policy_deleted_unused',
+        },
+      },
+    },
+  },
+  shopping_library_unknown: {
+    description: 'SQ9 save answer fails after the write; the old read cannot settle it.',
+    harvest: 'off',
+    get: {
+      config: 'run_templates_add_fenced.read_config_the_page_context_comes_from',
+      profileSource: 'shopping_queue.shopping_library_read_before_any_edit',
+      runControls: 'shopping_queue.shopping_read_before_any_save',
+    },
+    writes: {
+      profilePatch: {
+        mode: 'unknown',
+        case: 'shopping_queue.shopping_shared_reply_failed',
+      },
+    },
+  },
+  shopping_library_readback: {
+    description: 'SQ9 later exact source read settles the existing Unknown save.',
+    harvest: 'off',
+    get: {
+      config: 'run_templates_add_fenced.read_config_the_page_context_comes_from',
+      profileSource: 'shopping_queue.shopping_shared_read_after_unknown',
+      runControls: 'shopping_queue.shopping_read_before_any_save',
+    },
+  },
+  shopping_library_context: {
+    description: 'SQ9 read only initial context, used by a browser click-time race probe.',
+    harvest: 'off',
+    get: {
+      config: 'run_templates_add_fenced.read_config_the_page_context_comes_from',
+      profileSource: 'shopping_queue.shopping_library_read_before_any_edit',
+      runControls: 'shopping_queue.shopping_read_before_any_save',
+    },
+  },
+  shopping_live_save: {
+    description: 'SQ7 full live plan recorded; browser controls the later applied read.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      battlesActive: 'shopping_queue.shopping_plan_read_requested',
+    },
+    writes: { liveControls: { case: 'shopping_queue.shopping_plan_accepted' } },
+  },
+  shopping_live_unknown: {
+    description: 'SQ12 shopping plan admission reply is unknown; no automatic replay.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      battlesActive: 'shopping_queue.shopping_plan_unknown_read',
+    },
+    writes: { liveControls: { case: 'shopping_queue.shopping_plan_reply_unknown' } },
+  },
+  shopping_live_replay: {
+    description: 'SQ12 explicit identical shopping plan replay answers from the record.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      battlesActive: 'shopping_queue.shopping_plan_unknown_read',
+    },
+    writes: { liveControls: { case: 'shopping_queue.shopping_plan_identical_replay' } },
+  },
+  shopping_live_gated: {
+    description: 'SQ7 SQ8 an unapplied plan blocks saves and Try once.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      battlesActive: 'shopping_queue.shopping_plan_read_requested',
+    },
+  },
+  shopping_live_legacy: {
+    description: 'SQ15 legacy driver offers no live queue creation or conversion.',
+    harvest: 'off',
+    get: { battlesActive: 'battles_active.legacy_shopping_plan' },
+  },
+  shopping_live_whole: {
+    description: 'SQ8 a single whole-shopping attempt is recorded.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      // A recorded battle read (a write answer is not one); the browser spec supplies its
+      // labelled pre-click read of this world (admission undone, e2e/runs-shopping-live.spec.ts).
+      battlesActive: 'shopping_queue.shopping_upgrade_completed_without_purchase',
+    },
+    writes: { actions: { case: 'shopping_queue.shopping_whole_accepted' } },
+  },
+  shopping_live_attack: {
+    description: 'SQ8 a single attack-page shopping attempt is recorded.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      // A recorded battle read (a write answer is not one); the browser spec supplies its
+      // labelled pre-click read of this world (admission undone, e2e/runs-shopping-live.spec.ts).
+      battlesActive: 'shopping_queue.shopping_upgrade_completed_without_purchase',
+    },
+    writes: { actions: { case: 'shopping_queue.shopping_attack_accepted' } },
+  },
+  shopping_live_defense: {
+    description: 'SQ8 a single defense-page shopping attempt is recorded.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      // A recorded battle read (a write answer is not one); the browser spec supplies its
+      // labelled pre-click read of this world (admission undone, e2e/runs-shopping-live.spec.ts).
+      battlesActive: 'shopping_queue.shopping_upgrade_completed_without_purchase',
+    },
+    writes: { actions: { case: 'shopping_queue.shopping_defense_accepted' } },
+  },
+  shopping_live_utility: {
+    description: 'SQ8 a single utility-page shopping attempt is recorded.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      // A recorded battle read (a write answer is not one); the browser spec supplies its
+      // labelled pre-click read of this world (admission undone, e2e/runs-shopping-live.spec.ts).
+      battlesActive: 'shopping_queue.shopping_upgrade_completed_without_purchase',
+    },
+    writes: { actions: { case: 'shopping_queue.shopping_utility_accepted' } },
+  },
+  shopping_live_upgrade: {
+    description: 'SQ8 a single included upgrade attempt is recorded.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      battlesActive: 'shopping_queue.shopping_upgrade_requested',
+    },
+    writes: { actions: { case: 'shopping_queue.shopping_upgrade_accepted' } },
+  },
+  shopping_saved_create: {
+    description: 'SQ1: create stages locally, explicit choices then empty queue save.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      runControls: 'run_controls_save.read_before_the_plan_save',
+    },
+    writes: {
+      runControlsSave: {
+        case: 'shopping_queue.shopping_empty_queue_saved',
+        reads: { runControls: 'shopping_queue.shopping_empty_queue_saved' },
+      },
+    },
+  },
+  shopping_saved_conversion: {
+    description: 'SQ2: legacy review, stage, type reserve and explicitly save.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      runControls: 'shopping_queue.shopping_legacy_list_preview',
+    },
+    writes: {
+      runControlsSave: {
+        case: 'shopping_queue.shopping_reviewed_conversion_saved',
+        reads: { runControls: 'shopping_queue.shopping_read_after_the_reviewed_conversion' },
+      },
+    },
+  },
+  shopping_saved_edit: {
+    description: 'SQ3-SQ7: full weighted reordered queue saved for farm only.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      runControls: 'shopping_queue.shopping_read_before_any_save',
+      '/api/run-controls?blueprint=other': 'shopping_queue.shopping_other_run_after_private_save',
+    },
+    writes: {
+      runControlsSave: {
+        case: 'shopping_queue.shopping_weighted_cadence_order_saved',
+        reads: { '/api/run-controls?blueprint=farm': 'shopping_queue.shopping_read_after_save' },
+      },
+    },
+  },
+  shopping_saved_unknown: {
+    description:
+      'SQ12: recorded text 500; unchanged read retains Unknown until explicit check after readback recovers.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      runControls: 'shopping_queue.shopping_read_before_the_unanswered_save',
+    },
+    writes: { runControlsSave: { case: 'shopping_queue.shopping_save_reply_failed' } },
+  },
+  shopping_saved_unknown_read: {
+    description: 'SQ12: later matching read settles original Unknown, never another POST.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      runControls: 'shopping_queue.shopping_read_after_unknown_save',
+    },
+  },
+  shopping_saved_refused: {
+    description: 'SQ12: recorded invalid weight refusal keeps exact raw draft.',
+    harvest: 'off',
+    get: {
+      config: 'config_state.read_before_the_save',
+      runControls: 'shopping_queue.shopping_read_before_any_save',
+    },
+    writes: {
+      runControlsSave: {
+        case: 'shopping_queue.shopping_invalid_weight_refused',
+        reads: { runControls: 'shopping_queue.shopping_read_after_the_refusal_nothing_changed' },
+      },
+    },
+  },
+
   runs_entry_saved: {
     description: 'RL3: one entry field saved, followed by the recorded saved profile.',
     harvest: 'off',

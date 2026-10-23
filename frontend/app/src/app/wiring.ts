@@ -9,6 +9,7 @@ import { sendRunAdd } from '../api/intents/runAdd.ts';
 import {
   contextKey,
   createContextTracker,
+  expectedContext,
   sameContext,
   type ContextTracker,
   type PageContext,
@@ -47,6 +48,9 @@ import { browserTimers, randomId, type Timers } from '../api/timers.ts';
 import { fetchTransport, type Transport } from '../api/transport.ts';
 import { ENDPOINTS, type Endpoint, type EndpointId } from '../api/wire.ts';
 import { readEndpoint } from '../api/client.ts';
+import { selectShoppingLive } from '../store/selectors/shoppingLive.ts';
+import { isSavedShoppingScope } from '../store/selectors/shoppingSaved.ts';
+import { selectThisBattle } from '../store/selectors/thisBattle.ts';
 import { settleCommand } from '../core/routines.ts';
 import {
   activationCheck,
@@ -253,16 +257,41 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       if (draftScope === undefined || draft === undefined || draftsCleared.has(record.id)) continue;
       const settled = state.readSettlements[record.id]?.settlement ?? record.readSettlement;
       if (record.phase !== 'confirmed' && settled !== 'applied' && settled !== 'recorded') continue;
+      // F6-12 SQ7 (LIVE-INT-01): a live queue change clears its submitted values at its
+      // receipt, as a routine change does: the battle read itself says it is requested and
+      // waiting (requested_controls against applied_controls), which a reload keeps, while a
+      // confirmed record is not kept across a reload. Newer typing stays.
       draftsCleared.add(record.id);
+      // SQ10: positional directive keys need their original base and order. If a newer
+      // library edit remains, retain the complete draft for explicit revision reconciliation.
+      if (
+        draftScope.startsWith('runs:shopping-library:') &&
+        Object.entries(state.runDrafts[draftScope] ?? {}).some(
+          ([key, value]) => draft[key] !== value,
+        )
+      )
+        continue;
       // SR-2: a save the server kept only in part clears only the values it holds.
       const answer =
         record.kind === 'run_save' && record.answer !== null && record.phase === 'confirmed'
           ? savedSaveAnswer(record.answer, record.meta)
           : null;
-      const only =
+      const kept =
         answer?.kind === 'saved_partly'
           ? Object.fromEntries(Object.entries(draft).filter(([path]) => answer.kept.includes(path)))
           : draft;
+      // F6-12-C-01: a saved queue draft whose newer edits remain keeps the structure they are
+      // read against (its staged base and order) until a later save or Discard: a run without a
+      // saved plan has no read base to fall back on while its follow-up read is missing.
+      const newer = Object.entries(state.runDrafts[draftScope] ?? {}).some(
+        ([key, value]) => draft[key] !== value,
+      );
+      const only =
+        newer && isSavedShoppingScope(draftScope)
+          ? Object.fromEntries(
+              Object.entries(kept).filter(([path]) => path !== 'base' && path !== 'order'),
+            )
+          : kept;
       store.dispatch({ type: 'draft_discard', scope: draftScope, only });
       if (
         record.kind === 'run_add' &&
@@ -627,6 +656,20 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     },
     runNow: (command) => {
       if (!fenced(command)) return Promise.resolve();
+      if (command.action === 'shopping' || command.action.startsWith('shopping:')) {
+        const current = selectThisBattle(store.getSnapshot()).tryOnce.find(
+          (item) => item.action === command.action,
+        )?.button;
+        if (
+          current?.enabled !== true ||
+          current.command?.battleId !== command.battleId ||
+          current.command.generation !== command.generation ||
+          current.command.expectedRevision !== command.expectedRevision
+        ) {
+          notice('command_not_sent', current?.reason ?? 'battle_changed');
+          return Promise.resolve();
+        }
+      }
       report(sendRunNow(machine, command, tracker.current(), newKey));
       return Promise.resolve();
     },
@@ -696,6 +739,18 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     },
     saveLive: (command) => {
       if (!fenced(command)) return Promise.resolve();
+      if (own(command.changes, 'shopping_plan') !== undefined) {
+        const current = selectShoppingLive(store.getSnapshot());
+        if (
+          current.command === null ||
+          current.command.battleId !== command.battleId ||
+          current.command.generation !== command.generation ||
+          current.command.expectedRevision !== command.expectedRevision
+        ) {
+          notice('command_not_sent', current.reason ?? 'battle_changed');
+          return Promise.resolve();
+        }
+      }
       const result = sendLiveSave(
         machine,
         {
@@ -1152,6 +1207,9 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
               target: command.target,
               profile,
               path: command.path,
+              ...(command.path[0] === 'policies' && command.path[1] === 'shopping_lists'
+                ? { expected_context: expectedContext(command.context) }
+                : {}),
               remove: command.remove,
               value: command.value,
               revision: command.revision,

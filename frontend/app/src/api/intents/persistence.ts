@@ -10,6 +10,7 @@ import {
   stringList,
   text,
 } from '../../core/read.ts';
+import { queuePlan } from '../../core/shoppingPlan.ts';
 import { contextKey, readStoredContext } from '../context.ts';
 import { keysWithPrefix, readJsonItem, writeJsonItem, type KeyValueStorage } from '../storage.ts';
 import type { ApiPath } from '../transport.ts';
@@ -104,11 +105,15 @@ export function saveUnresolved(
   for (const [key, group] of groups) writeJsonItem(storage, key, group);
 }
 
-/** A saved changes map: dotted paths to booleans or finite numbers only. */
-function readChanges(value: unknown): Readonly<Record<string, boolean | number>> | null {
+/** A saved changes map: routine scalars or a full version 2 shopping plan. */
+function readChanges(value: unknown): Readonly<Record<string, unknown>> | null {
   if (record(value) === undefined) return null;
-  const out: Record<string, boolean | number> = {};
+  const out: Record<string, unknown> = {};
   for (const [path, item] of entries(value)) {
+    if (path === 'shopping_plan' && queuePlan(item) !== null) {
+      out[path] = item;
+      continue;
+    }
     const number = finite(item);
     if (typeof item === 'boolean') out[path] = item;
     else if (number !== undefined) out[path] = number;

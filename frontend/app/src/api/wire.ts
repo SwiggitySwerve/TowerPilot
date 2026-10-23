@@ -108,6 +108,14 @@ import {
   runTemplatesListAnswerSchema,
 } from '../contract/r12Families.ts';
 import {
+  shoppingBattleReadAnswerSchema,
+  shoppingBattleWriteAnswerSchema,
+  shoppingLibraryReadAnswerSchema,
+  shoppingPolicyPatchAnswerSchema,
+  shoppingRunReadAnswerSchema,
+  shoppingRunSaveAnswerSchema,
+} from '../contract/shopping.ts';
+import {
   stopCancelAnswerSchema,
   stopConflictAnswerSchema,
   stopKillAnswerSchema,
@@ -443,6 +451,8 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       firstPolicySourceAnswerSchema,
       // F6-11 RL3, RL4, RL8 (r12 candidate): the profile reads around each write.
       runEntrySourceAnswerSchema,
+      // F6-12: the shared shopping library before and after its edits.
+      shoppingLibraryReadAnswerSchema,
       runTemplatesAddSourceAnswerSchema,
       fencedAddSourceAnswerSchema,
       planDeleteSourceAnswerSchema,
@@ -470,6 +480,8 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       // battle with a seen Ad gems offer, a failed attempt and a Floating gems refusal.
       resetAllReadAnswerSchema,
       battleDetailsReadAnswerSchema,
+      // F6-12: a battle's shopping queue changes and Try once commands, requested to completed.
+      shoppingBattleReadAnswerSchema,
     ]),
     battles: endpoint('battles', 'GET', [contract.battlesHistory]),
     battleDetail: endpoint('battleDetail', 'GET', [contract.battleDetail]),
@@ -522,6 +534,8 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
     runControls: endpoint('runControls', 'GET', [
       contract.runControls,
       contract.runControlsSaveRead,
+      // F6-12: saved queues, legacy conversion previews and the reads around queue saves.
+      shoppingRunReadAnswerSchema,
     ]),
     readiness: endpoint('readiness', 'GET', [contract.readiness]),
     harvest: endpoint('harvest', 'GET', [harvest]),
@@ -546,10 +560,13 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
     ]),
     handoff: endpoint('handoff', 'POST', [contract.handoff, contract.writeUnknown]),
     reconnect: endpoint('reconnect', 'POST', [contract.reconnect]),
-    actions: endpoint('actions', 'POST', [contract.battleActions]),
+    actions: endpoint('actions', 'POST', [contract.battleActions, shoppingBattleWriteAnswerSchema]),
     // POST /api/run-controls (Runs page, RUN-05): the read's shape with the new revision,
     // {ok:false, error[, code]} with 400/409, or a text 500 (pages fixture run_controls_save).
-    runControlsSave: endpoint('runControlsSave', 'POST', [contract.runControlsSave]),
+    runControlsSave: endpoint('runControlsSave', 'POST', [
+      contract.runControlsSave,
+      shoppingRunSaveAnswerSchema,
+    ]),
     profilePatch: endpoint('profilePatch', 'POST', [
       schedulePatchAnswerSchema,
       collectionPatchAnswerSchema,
@@ -557,6 +574,8 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       // F6-11 RL3 (one entry field of a run) and RL8 (the whole plan deleted), r12 candidate.
       runEntryPatchAnswerSchema,
       planDeleteAnswerSchema,
+      // F6-12: the shared shopping library (create, copy, edit, delete unused).
+      shoppingPolicyPatchAnswerSchema,
     ]),
     // Collection (C1 to C4) and every typed settings module: the read and its save.
     settings: endpoint('settings', 'GET', [settingsReadAnswerSchema]),
@@ -569,6 +588,8 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       contract.battleActions,
       // F6-11 RL2 (r12 candidate): several paths reset in one request.
       resetAllAnswerSchema,
+      // F6-12: a whole shopping queue sent as one path.
+      shoppingBattleWriteAnswerSchema,
     ]),
     // POST /api/accounts (select or create), /api/account-tier and the profile file writes.
     accountsWrite: endpoint('accountsWrite', 'POST', [profilesAccountsPostAnswerSchema]),

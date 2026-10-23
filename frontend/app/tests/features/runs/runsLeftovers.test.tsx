@@ -438,6 +438,9 @@ describe('RL2 F6-11-P2-05 mixed shopping and routine override reset-all', () => 
       vi.useRealTimers();
       expect(await axe(page.view.container)).toHaveNoViolations();
     },
+    // A whole Runs page plus axe: the explicit budget other axe-heavy tests use (the default
+    // 5 s timed out once under the full suite's parallel load).
+    15_000,
   );
 });
 

@@ -3,6 +3,7 @@ import { commandView, type CommandView } from '../../core/commands.ts';
 import { entries, finite, id, list, own, ownPath, revision, text } from '../../core/read.ts';
 import {
   actionGate,
+  commandReceiptPending,
   routineResult,
   routineTiming,
   runNowAnswer,
@@ -16,6 +17,7 @@ import { settledByRead } from '../fences.ts';
 import { answeredBody, contextReadOf, latestRead, readAgeSec } from '../reads.ts';
 import type { DashboardState } from '../types.ts';
 import { chipVM, commandVM, type ChipVM, type CommandVM } from '../viewModels.ts';
+import { shoppingLiveScope } from './shoppingLive.ts';
 import { selectOutcomes, type OutcomeLineVM } from './outcomes.ts';
 
 export interface RoutineRowVM {
@@ -55,6 +57,14 @@ export interface ThisBattleVM {
   readonly queue: QueueVM;
   readonly outcomes: readonly (OutcomeLineVM & { readonly command: BattleCommandVM | null })[];
   readonly resendAvailable: boolean;
+  readonly tryOnce: readonly ShoppingTryOnceVM[];
+}
+
+export interface ShoppingTryOnceVM {
+  readonly action: string;
+  readonly label: ServerText<'name'> | null;
+  readonly known: 'shopping' | 'attack' | 'defense' | 'utility' | null;
+  readonly button: CommandVM<RunNowCommand>;
 }
 
 export interface QueueVM {
@@ -68,6 +78,7 @@ export interface QueueVM {
     readonly enabled: boolean;
     readonly tapLimit: number | null;
     readonly weight: number | null;
+    readonly tryOnce: ShoppingTryOnceVM | null;
   }[];
   readonly warnings: readonly ChipVM[];
   readonly reportedAgeSec: number | null;
@@ -84,6 +95,9 @@ export interface QueueVM {
 export interface BattleCommandVM extends ChipVM {
   readonly key: string;
   readonly action: string | null;
+  readonly actionText: ServerText<'id'> | null;
+  readonly serverEvidence: ServerText<'detail'> | null;
+  readonly shoppingState: 'requested' | 'started' | 'completed' | null;
   readonly resultAgeSec: number | null;
   readonly resultChip: ChipVM | null;
   readonly id: ServerText<'id'> | null;
@@ -117,6 +131,16 @@ function commandRow(
     ...chipVM(view.decision),
     key: text(view.id) ?? String(index),
     action,
+    actionText: fromServer('id', action),
+    serverEvidence: fromServer(
+      'detail',
+      view.evidence === null || view.evidence === undefined ? null : JSON.stringify(view.evidence),
+    ),
+    shoppingState:
+      action?.startsWith('shopping') &&
+      (view.state === 'requested' || view.state === 'started' || view.state === 'completed')
+        ? view.state
+        : null,
     resultAgeSec: age(result?.observedAt ?? null),
     resultChip: result === null ? null : chipVM(result.decision),
     id: fromServer('id', view.id),
@@ -161,6 +185,82 @@ export function selectThisBattle(state: DashboardState): ThisBattleVM {
       r.meta.battleId === shown.id &&
       r.meta.generation === shown.generation,
   );
+  const commandIntents = intents.filter(
+    (r) =>
+      (r.kind === 'run_now' || r.kind === 'live_controls') &&
+      shown !== null &&
+      r.meta.battleId === shown.id &&
+      r.meta.generation === shown.generation &&
+      r.meta.operationId === shown.operationId,
+  );
+  const shoppingOptions = {
+    requireQueue: true,
+    liveDraft:
+      shown !== null &&
+      Object.keys(state.runDrafts[shoppingLiveScope(state, shown)] ?? {}).length > 0,
+    unresolvedCommand: commandIntents.some(
+      (r) => r.phase === 'unconfirmed' && settledByRead(state, r) === null,
+    ),
+    pendingAction: commandIntents.some(
+      (r) =>
+        r.kind === 'run_now' &&
+        (r.phase === 'sending' ||
+          commandReceiptPending(contextRead, shown, r.answer?.body, 'action')),
+    ),
+    pendingControl: commandIntents.some(
+      (r) =>
+        r.kind === 'live_controls' &&
+        (r.phase === 'sending' ||
+          commandReceiptPending(contextRead, shown, r.answer?.body, 'controls')),
+    ),
+  };
+  const tryButton = (action: string): CommandVM<RunNowCommand> => {
+    const gate = actionGate(contextRead, shown, action, false, elapsed, shoppingOptions);
+    const expectedRevision = revision(own(battle, 'control_revision'));
+    const command =
+      shown === null || expectedRevision === undefined
+        ? null
+        : {
+            ...{ operationId: shown.operationId, battleId: shown.id, generation: shown.generation },
+            expectedRevision,
+            action,
+            epoch: state.epoch,
+          };
+    return commandVM(
+      true,
+      gate.enabled && command !== null,
+      gate.reason === 'ready' ? null : gate.reason,
+      shoppingOptions.pendingAction,
+      command,
+    );
+  };
+  const tryOnce: ShoppingTryOnceVM[] = [
+    { action: 'shopping', known: 'shopping', label: null, button: tryButton('shopping') },
+    ...(['attack', 'defense', 'utility'] as const).map((section) => ({
+      action: `shopping:${section}`,
+      known: section,
+      label: null,
+      button: tryButton(`shopping:${section}`),
+    })),
+  ];
+  const upgradeTryOnce = (item: (typeof shopping.queue)[number]): ShoppingTryOnceVM | null => {
+    if (own(item.raw, 'enabled') !== true) return null;
+    const upgrade = id(own(item.raw, 'id'));
+    const catalog = (list(own(body, 'catalog')) ?? []).find(
+      (entry) => own(entry, 'id') === upgrade,
+    );
+    const section = id(own(catalog, 'section'));
+    if (upgrade === undefined || section === undefined) return null;
+    const action = `shopping:${section}:${upgrade}`;
+    return {
+      action,
+      known: null,
+      label: fromServer('name', item.label ?? upgrade),
+      button: tryButton(action),
+    };
+  };
+  const upgradeActions = shopping.queue.map(upgradeTryOnce);
+  tryOnce.push(...upgradeActions.filter((item) => item !== null));
   const outcomes = selectOutcomes(state)
     .lines.filter((line) => battleIntents.some((record) => record.id === line.id))
     .map((line) => {
@@ -176,6 +276,7 @@ export function selectThisBattle(state: DashboardState): ThisBattleVM {
     });
   return {
     header,
+    tryOnce,
     battleKey: shown === null ? 'untracked' : `${shown.id}/${shown.generation}`,
     runKey: id(own(battle, 'blueprint')) ?? null,
     label: fromServer('name', own(battle, 'label')),
@@ -198,6 +299,7 @@ export function selectThisBattle(state: DashboardState): ThisBattleVM {
         enabled: own(item.raw, 'enabled') === true,
         tapLimit: finite(own(item.raw, 'tap_limit')) ?? null,
         weight: finite(own(item.raw, 'weight')) ?? null,
+        tryOnce: upgradeActions[index] ?? null,
       })),
       warnings: shopping.warnings.map(chipVM),
       reportedAgeSec: age(shopping.reportedAt),
@@ -230,6 +332,7 @@ export function selectThisBattle(state: DashboardState): ThisBattleVM {
               routine,
               matching.some((r) => r.phase === 'unconfirmed' && settledByRead(state, r) === null),
               elapsed,
+              routine === 'shopping' ? shoppingOptions : {},
             );
             const timing = routineTiming(contextRead, shown, routine, elapsed);
             const result = routineResult(own(battle, 'runtime'), routine);

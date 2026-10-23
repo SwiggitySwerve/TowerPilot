@@ -1,6 +1,8 @@
 import { controlApplication } from './battle.ts';
 import { sameJson } from './json.ts';
+import { planHolds, queuePlan } from './shoppingPlan.ts';
 import { entries, finite, id, own, ownPath, revision, stringList } from './read.ts';
+import { typedDecimal } from './typedNumber.ts';
 
 /**
  * Run controls (roadmap item 5; Runs page brief backend/logs/reviews/ui-pages/runs-brief.md):
@@ -84,9 +86,6 @@ export function controlGroups(
   return [...groups].map(([routine, fields]) => ({ routine, fields }));
 }
 
-/** A plain decimal number as a person types it: digits, an optional fraction, no exponent. */
-const DECIMAL = /^\d+(\.\d+)?$/u;
-
 /** Judge one draft value against its field: never clamped, never rounded. */
 export function checkDraft(field: ControlField, draft: string | boolean): DraftCheck {
   if (field.kind === 'toggle') {
@@ -95,11 +94,11 @@ export function checkDraft(field: ControlField, draft: string | boolean): DraftC
       : { kind: 'invalid', reason: 'not_a_number' };
   }
   if (typeof draft !== 'string') return { kind: 'invalid', reason: 'not_a_number' };
-  const trimmed = draft.trim();
-  if (trimmed === '') return { kind: 'invalid', reason: 'empty' };
-  if (!DECIMAL.test(trimmed)) return { kind: 'invalid', reason: 'not_a_number' };
-  const value = Number(trimmed);
-  if (!Number.isFinite(value)) return { kind: 'invalid', reason: 'not_a_number' };
+  const typed = typedDecimal(draft);
+  if ('reason' in typed) return { kind: 'invalid', reason: typed.reason };
+  // A run control is never negative: a typed minus is not a number here (unchanged rule).
+  if (draft.trim().startsWith('-')) return { kind: 'invalid', reason: 'not_a_number' };
+  const { value } = typed;
   if (field.min !== null && value < field.min) return { kind: 'invalid', reason: 'below_min' };
   if (field.max !== null && value > field.max) return { kind: 'invalid', reason: 'above_max' };
   return { kind: 'valid', value };
@@ -205,12 +204,12 @@ export type LiveSaveReason =
   | 'no_changes';
 
 /** The body facts of a live save (POST /api/operations/{id}/live-controls). */
-export interface LiveSave {
+export interface LiveSave<C = Readonly<Record<string, boolean | number>>> {
   readonly operationId: string;
   readonly battleId: string;
   readonly generation: string;
   readonly expectedRevision: number;
-  readonly changes: Readonly<Record<string, boolean | number>>;
+  readonly changes: C;
 }
 
 /**
@@ -221,12 +220,12 @@ export interface LiveSave {
  * compare-and-set, no earlier live save of this battle in flight or unknown, no
  * invalid draft value and at least one change.
  */
-export function liveSaveGate(
+export function liveSaveGate<C extends Readonly<Record<string, unknown>>>(
   battle: unknown,
   reportFresh: boolean,
-  review: DraftReview,
+  review: { readonly changes: C; readonly invalid: DraftReview['invalid'] },
   request: SaveRequest,
-): SaveGate<LiveSave> {
+): SaveGate<LiveSave<C>> {
   const target = liveTarget(battle, reportFresh, request);
   if (!target.enabled) return target;
   if (Object.keys(review.invalid).length > 0) return { enabled: false, reason: 'invalid_value' };
@@ -391,7 +390,7 @@ export type SavedSaveAnswer =
 export interface SentSave {
   readonly blueprint?: string | undefined;
   readonly profileRevision?: string | undefined;
-  readonly changes?: Readonly<Record<string, boolean | number>> | undefined;
+  readonly changes?: Readonly<Record<string, unknown>> | undefined;
 }
 
 /**
@@ -400,11 +399,17 @@ export interface SentSave {
  */
 function heldPaths(
   settings: unknown,
-  changes: Readonly<Record<string, boolean | number>>,
+  changes: Readonly<Record<string, unknown>>,
 ): { readonly held: readonly string[]; readonly other: readonly string[] } | null {
   const held: string[] = [];
   const other: string[] = [];
   for (const [path, value] of Object.entries(changes)) {
+    if (path === 'shopping_plan') {
+      const now = own(settings, path);
+      if (queuePlan(now) === null || !planHolds(now, value)) return null;
+      held.push(path);
+      continue;
+    }
     const parts = splitPath(path);
     const now =
       parts === null ? undefined : ownPath(settings, 'routines', parts.routine, parts.field);
@@ -461,7 +466,7 @@ export function savedReadback(
   sent: {
     readonly blueprint: string;
     readonly profileRevision: string;
-    readonly changes: Readonly<Record<string, boolean | number>>;
+    readonly changes: Readonly<Record<string, unknown>>;
   },
 ): 'applied' | 'changed' | 'unchanged' | null {
   if (own(readBody, 'blueprint') !== sent.blueprint) return null;
@@ -486,7 +491,7 @@ export function settleSavedSave(
   sent: {
     readonly blueprint: string;
     readonly profileRevision: string;
-    readonly changes: Readonly<Record<string, boolean | number>>;
+    readonly changes: Readonly<Record<string, unknown>>;
   },
 ): 'applied' | null {
   return savedReadback(readBody, sent) === 'applied' ? 'applied' : null;

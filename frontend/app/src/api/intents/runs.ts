@@ -14,7 +14,7 @@ export interface SavedSaveInput {
   /** The context the run's read named; the server refuses a save made for another. */
   readonly context: unknown;
   readonly expectedRevision: string;
-  readonly changes: Readonly<Record<string, boolean | number>>;
+  readonly changes: Readonly<Record<string, unknown>>;
   /** F6R-02: the draft scope and the raw values typed for the sent paths. */
   readonly draftScope: string;
   readonly draft: Readonly<Record<string, string | boolean>>;
@@ -57,7 +57,7 @@ export interface LiveSaveInput {
   readonly battleId: string;
   readonly generation: string;
   readonly expectedRevision: number;
-  readonly changes: Readonly<Record<string, boolean | number>>;
+  readonly changes: Readonly<Record<string, unknown>>;
   readonly draftScope: string;
   readonly draft: Readonly<Record<string, string | boolean>>;
   /** The battle's label as the read named it (F6R-04: identifies an earlier battle's line). */

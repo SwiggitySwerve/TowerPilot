@@ -1,4 +1,5 @@
 import { entries, finite, id, list, own, text } from './read.ts';
+import { typedDecimal } from './typedNumber.ts';
 
 /**
  * The typed settings of `GET /api/settings` (collection brief C1 to C4, abilities brief A1):
@@ -179,20 +180,15 @@ export type FieldCheck =
   | { readonly kind: 'valid'; readonly value: unknown }
   | { readonly kind: 'invalid'; readonly reason: FieldReason; readonly part: 0 | 1 | null };
 
-/** A decimal as a person types it: an optional minus, digits, an optional fraction; no exponent. */
-const DECIMAL = /^-?\d+(\.\d+)?$/u;
-
 function number(
   raw: string | boolean | undefined,
   field: SettingsField,
   whole: boolean,
 ): { readonly value: number } | { readonly reason: FieldReason } {
   if (typeof raw !== 'string') return { reason: 'not_a_number' };
-  const trimmed = raw.trim();
-  if (trimmed === '') return { reason: 'empty' };
-  if (!DECIMAL.test(trimmed)) return { reason: 'not_a_number' };
-  const value = Number(trimmed);
-  if (!Number.isFinite(value)) return { reason: 'not_a_number' };
+  const typed = typedDecimal(raw);
+  if ('reason' in typed) return typed;
+  const { value } = typed;
   if (whole && !Number.isInteger(value)) return { reason: 'not_whole' };
   if (field.min !== null && value < field.min) return { reason: 'below_min' };
   if (field.max !== null && value > field.max) return { reason: 'above_max' };

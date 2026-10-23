@@ -11,9 +11,10 @@ import * as contract8 from './dashboard_contract_pages_v1_recognition.e0cc5344.t
 import * as contract9 from './dashboard_contract_pages_v1_runs.bb9316c7.ts';
 import * as contract10 from './dashboard_contract_pages_v1_runtime.7334dcc8.ts';
 import * as contract11 from './dashboard_contract_pages_v1_schedule.0709b095.ts';
-import * as contract12 from './dashboard_contract_v1.0a5c68fd.ts';
-import * as contract13 from './equipment_samples_v1.bdd7ca73.ts';
-import * as contract14 from './harvest_status_v1.3be5a1ea.ts';
+import * as contract12 from './dashboard_contract_pages_v1_shopping.84476b5e.ts';
+import * as contract13 from './dashboard_contract_v1.0a5c68fd.ts';
+import * as contract14 from './equipment_samples_v1.bdd7ca73.ts';
+import * as contract15 from './harvest_status_v1.3be5a1ea.ts';
 const contracts = {
   b46631ae6f207d5bd18edab010fc6b09fa967ac0ef925ef9f75c5abebf4e7a01: contract0,
   f47a0b036f3206d02e6e0049d0af35f075b3e99786b00495c30bf1e7f43f59df: contract1,
@@ -27,9 +28,10 @@ const contracts = {
   bb9316c761b216fdfc9cbdb14b29608ee70fdf13d17975f7afa26d43633f5dd5: contract9,
   '7334dcc845bbc16f00b595bcc3048ec980764a3837d9ca9346f1832b4fea159e': contract10,
   '0709b095431a852946a2fc668035a174751cd40fc9e7c9e8aa9563526dec61b2': contract11,
-  '0a5c68fd55f86b3104c48c6b46a9a5b19225be852599fa72e57bc5e85c72620e': contract12,
-  bdd7ca73fc29c1818a201eaa1dcbac863d40172733c1096db7e1ef4a39e2b909: contract13,
-  '3be5a1ea5d633f4e11850b10367905c1745114c9aaf2d2619f97fe5e1d3fd516': contract14,
+  '84476b5eef9ba07ed6cc61d7a45bf81a2406e2c0f01c32b3462eef05d1e1ab18': contract12,
+  '0a5c68fd55f86b3104c48c6b46a9a5b19225be852599fa72e57bc5e85c72620e': contract13,
+  bdd7ca73fc29c1818a201eaa1dcbac863d40172733c1096db7e1ef4a39e2b909: contract14,
+  '3be5a1ea5d633f4e11850b10367905c1745114c9aaf2d2619f97fe5e1d3fd516': contract15,
 };
 /** Unknown identities fail loudly; no default-identity fallback. */
 export function contractForFixture(identity: { readonly path: string; readonly sha256: string }) {

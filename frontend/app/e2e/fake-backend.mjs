@@ -24,6 +24,7 @@ import {
 import { DEFAULT_GETS, SCENARIOS } from './scenarios.mjs';
 import { RUNTIME_SAVES, runtimeSaveRefusal } from './runtime-fixtures.mjs';
 import { historyAnswer } from './history-fixtures.mjs';
+import { shoppingLibrarySource } from './shopping-library-fixtures.mjs';
 import {
   ABILITIES_FIXTURE_PATH,
   abilitiesRead,
@@ -741,6 +742,11 @@ export function createApiHandler(fixture, options = {}) {
       sendFlaskError(res, 502);
       return;
     }
+    const librarySource = shoppingLibrarySource(reference);
+    if (librarySource !== undefined) {
+      sendCase(res, librarySource);
+      return;
+    }
     const harvest = structuredClone(record(fixture.status[session.harvest ?? scenario.harvest]));
     if (scenario.operation !== undefined) {
       // Fields of the harvest operation no fixture sample holds (a missing revision).
@@ -762,6 +768,19 @@ export function createApiHandler(fixture, options = {}) {
     }
     if (reference === undefined) throw new Error(`No default GET case for ${id}`);
     const answer = answerFor(reference);
+    if (
+      name === 'shopping_saved_create' &&
+      id === 'runControls' &&
+      reference === 'run_controls_save.read_before_the_plan_save'
+    ) {
+      // SQ1: the no-plan recording predates the queue-save recording's revision/interval.
+      // Keep its null plan; align only revision and routine interval to the recorded empty save
+      // so the journey can assert that exact request and receipt without inventing an answer.
+      const before = answerFor('shopping_queue.shopping_read_before_any_save');
+      answer.body['profile_revision'] = before.body['profile_revision'];
+      record(record(record(answer.body['settings'])['routines'])['shopping'])['interval_sec'] =
+        record(record(record(before.body['settings'])['routines'])['shopping'])['interval_sec'];
+    }
     if (id === 'status' && answer.status === 200) {
       answer.body['harvest'] = harvest;
       if (scenario.scan !== 'fixture') {

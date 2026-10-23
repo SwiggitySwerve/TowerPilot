@@ -19,6 +19,7 @@ import {
   type ProfileWriteKind,
 } from '../core/profiles.ts';
 import { settleCommand, settleRunNow } from '../core/routines.ts';
+import { contextsEqual } from '../core/readiness.ts';
 import { savedReadback, savedSaveAnswer, settleSavedSave } from '../core/runControls.ts';
 import { opaqueToken } from '../core/tokens.ts';
 import { assessedRead, contextReadOf } from './reads.ts';
@@ -273,6 +274,15 @@ export function candidateSettlement(
         if (read.startedSeq <= after) continue;
         const context = contextReadOf(read);
         if (context?.kind !== 'answered' || !context.sameContext) continue;
+        if (
+          Object.hasOwn(changes, 'shopping_plan') &&
+          !contextsEqual(own(context.body, 'context'), record.context, [
+            'instance',
+            'account',
+            'profile',
+          ])
+        )
+          continue;
         const settled = settleSavedSave(context.body, { blueprint, profileRevision, changes });
         if (settled !== null) return found(settled, read.startedSeq);
       }
@@ -455,6 +465,9 @@ export function refusedSaveReadback(
   )
     return null;
   const answer = savedSaveAnswer(record.answer, record.meta);
+  // SQ12: a shopping resend refused stale is still refused. Only the original Unknown
+  // request can be settled by a read; a refusal never becomes a shopping receipt.
+  if (Object.hasOwn(changes, 'shopping_plan')) return null;
   if (answer.kind !== 'refused' || !answer.conflict) return null;
   let newest: {
     readonly readback: 'applied' | 'changed' | 'unchanged';

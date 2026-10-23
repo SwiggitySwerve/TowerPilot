@@ -565,6 +565,35 @@ export const CONTRACT_INPUTS = [
       })),
     },
   },
+  {
+    file: DASHBOARD_PAGES_FIXTURE_PATH,
+    descriptor: {
+      // F6-12 shopping queue editor (brief ui-pages/f6-12-shopping-brief.md, family shopping_queue).
+      name: 'dashboard_contract_pages_v1_shopping',
+      boundTo: 'families',
+      // Battle reads and writes carry commands: their states come from the backend's one
+      // serializer for each kind (F-058), as for run_controls_live.
+      vocabularies: [COMMAND_STATE_VOCABULARY],
+      vocabularyFrom: [{ file: DASHBOARD_FIXTURE_PATH, descriptor: DASHBOARD_DESCRIPTOR }],
+      families: /** @type {const} */ ([
+        ['GET', '/api/run-controls', 'ShoppingRunReadAnswer'],
+        ['POST', '/api/run-controls', 'ShoppingRunSaveAnswer'],
+        // live-controls and actions answer with the same battle command envelope.
+        ['POST', '/api/operations/', 'ShoppingBattleWriteAnswer'],
+        ['GET', '/api/battles/active', 'ShoppingBattleReadAnswer'],
+        ['POST', '/api/profile-patch', 'ShoppingPolicyPatchAnswer'],
+        ['GET', '/api/profile-src/', 'ShoppingLibraryReadAnswer'],
+      ]).map(([method, route, name]) => ({
+        key: `shopping_queue ${method} ${route}`,
+        source: 'cases.shopping_queue',
+        method,
+        pathPrefix: route,
+        name,
+        rawPath: 'answer',
+        pick: ['status', 'body'],
+      })),
+    },
+  },
 ];
 
 /** The fixture families a descriptor reads (`cases.<family>` names the family `<family>`). */

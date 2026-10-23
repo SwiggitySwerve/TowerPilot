@@ -88,7 +88,7 @@ export interface SaveRunCommand extends Fenced {
   /** The context the run's read named (sent back: the server refuses another). */
   readonly context: unknown;
   readonly expectedRevision: string;
-  readonly changes: Readonly<Record<string, boolean | number>>;
+  readonly changes: Readonly<Record<string, unknown>>;
   /** The draft values these changes came from: cleared only when this save is confirmed. */
   readonly draft: Readonly<Record<string, string | boolean>>;
 }
@@ -100,7 +100,7 @@ export interface SaveLiveCommand extends Fenced {
   readonly battleId: string;
   readonly generation: string;
   readonly expectedRevision: number;
-  readonly changes: Readonly<Record<string, boolean | number>>;
+  readonly changes: Readonly<Record<string, unknown>>;
   readonly draft: Readonly<Record<string, string | boolean>>;
   /** The battle's label as the read named it (identifies the line once another battle is shown). */
   readonly battleLabel: string | null;

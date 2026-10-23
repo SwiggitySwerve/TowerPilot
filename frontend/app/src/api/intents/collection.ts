@@ -60,6 +60,8 @@ export function sendSettingsSave(
 }
 
 export interface ProfilePatch {
+  /** Shopping-library writes also fence the server's active binding. */
+  readonly expected_context?: PageContext;
   /** The record line it belongs to (a policy action, or the chores). */
   readonly target: string;
   /** The profile it names: the page context's active profile, fenced before sending. */
@@ -92,12 +94,18 @@ export function sendProfilePatch(
             name: patch.profile,
             op: 'delete',
             path: patch.path,
+            ...(patch.expected_context === undefined
+              ? {}
+              : { expected_context: patch.expected_context, value: null }),
           }
         : {
             expected_revision: patch.revision,
             name: patch.profile,
             path: patch.path,
             value: patch.value,
+            ...(patch.expected_context === undefined
+              ? {}
+              : { expected_context: patch.expected_context }),
           },
       key: null,
       meta: {

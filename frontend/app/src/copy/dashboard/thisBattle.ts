@@ -29,6 +29,22 @@ export const thisBattle = {
     edit: entry('Edit this battle in Runs'),
     saved: entry('Saved settings in Runs'),
   },
+  tryOnce: entry('Try once'),
+  tryNotice: entry(
+    'Try once can spend cash even while automatic shopping is off; one attempt may wait or buy nothing',
+  ),
+  tryTargets: {
+    shopping: entry('Shopping'),
+    attack: entry('Attack'),
+    defense: entry('Defense'),
+    utility: entry('Utility'),
+  },
+  commandEvidence: entry('Command evidence'),
+  shoppingStates: {
+    requested: entry('Requested'),
+    started: entry('Started'),
+    completed: entry('Completed; no purchase is implied'),
+  },
   run: entry('Run'),
   now: entry(' now'),
   dismissDescription: entry('Dismiss (does not cancel the request)'),
@@ -75,6 +91,8 @@ export const thisBattle = {
     command_paths_unreadable: entry('command state not recognised'),
   },
   disabled: {
+    unsaved_live_queue: entry("Save or discard this battle's queue edits before Try once"),
+    queue_unavailable: entry('Try once needs a fresh applied version 2 shopping queue'),
     battle_not_active: entry('Run now needs an active tracked battle'),
     no_tracked_battle: entry('Run now needs automation watching a battle'),
     action_unsupported: entry(

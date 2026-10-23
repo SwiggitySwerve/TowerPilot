@@ -69,6 +69,8 @@ export interface DashboardState {
   readonly reads: Readonly<Record<ResourceId, ReadSlot>>;
   /** run-controls answers per path (7.2: cached per run and context). */
   readonly runControls: Readonly<Record<string, ReadRecord>>;
+  /** Last successful read per run in this epoch, for retained editor display after a failed read. */
+  readonly runControlsLastAnswered: Readonly<Record<string, ReadRecord>>;
   /** Every write record of every context (selectors keep only the current context's). */
   readonly intents: readonly IntentView[];
   readonly notices: readonly LocalNotice[];

@@ -204,6 +204,9 @@ describe('R7-02 command schemas accept exactly the wire states of each kind', ()
       // F6-11 RL2: a reset of every override and the reads that settle it (r12).
       'run_controls_live_reset_all GET /api/battles/active',
       'run_controls_live_reset_all POST /api/operations/',
+      // F6-12: shopping queue changes and Try once commands, and the reads around them.
+      'shopping_queue GET /api/battles/active',
+      'shopping_queue POST /api/operations/',
     ]);
   });
   for (const { input, family, commands } of bearing)

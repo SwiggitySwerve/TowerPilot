@@ -99,8 +99,22 @@
   flex-wrap: wrap;
   gap: var(--tp-space-2);
 }
-.tp-battle__queue ol li > span {
-  margin-right: var(--tp-space-2);
+.tp-battle__queue-entry,
+.tp-shopping-try__action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tp-battle__queue-entry {
+  margin-block: var(--tp-space-2);
+}
+@media (max-width: 480px) {
+  .tp-battle__queue-entry .tp-button {
+    min-height: 44px;
+  }
 }
 .tp-battle__sr {
   position: absolute;

@@ -15,6 +15,10 @@ import { runsAdd } from './runsAdd.ts';
 import { runEntry } from './runEntry.ts';
 import { history } from './history.ts';
 import { runtime } from './runtime.ts';
+import { shopping } from './shopping.ts';
+import { shoppingLibrary } from './shoppingLibrary.ts';
+import { shoppingLive } from './shoppingLive.ts';
+import { shoppingSaved } from './shoppingSaved.ts';
 import type { CopyEntry, CopyText } from './text.ts';
 
 export { observeCopy } from './entry.ts';
@@ -46,6 +50,10 @@ export const copy = {
   runs,
   runsAdd,
   runEntry,
+  shopping,
+  shoppingLibrary,
+  shoppingLive,
+  shoppingSaved,
   history,
   runtime,
   recognition,

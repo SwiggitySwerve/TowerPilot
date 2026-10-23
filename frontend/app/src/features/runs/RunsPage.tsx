@@ -19,8 +19,11 @@ import { RevocationFallback } from '../dashboard/shared/RevocationFallback.tsx';
 import { TopBar } from '../dashboard/topBar/TopBar.tsx';
 import { BattleDetails } from './BattleDetails.tsx';
 import { RunEditor } from './RunEditor.tsx';
+import { LiveShopping } from './LiveShopping.tsx';
 import { RunEntry } from './RunEntry.tsx';
+import { SavedShopping } from './SavedShopping.tsx';
 import { AddRun } from './AddRun.tsx';
+import { ShoppingLibrary } from './ShoppingLibrary.tsx';
 import { RunOutcome } from './RunOutcome.tsx';
 import './runs.css';
 
@@ -105,6 +108,7 @@ function LiveSection() {
             />
           }
         />
+        <LiveShopping />
         {line === null ? null : <RunOutcome outcome={line} />}
         {live.earlier.map((earlier) => (
           <RunOutcome key={earlier.line.id} outcome={earlier} />
@@ -214,6 +218,7 @@ function SavedSection() {
             }
           />
         )}
+        <SavedShopping />
         <RunEntry />
         {line === null ? null : <RunOutcome outcome={line} />}
         <p className="tp-runs__links">
@@ -298,6 +303,7 @@ export function RunsPage({
           <RunsRegion id="runsSaved" part="runsSaved" title={t.saved.title}>
             <SavedSection />
           </RunsRegion>
+          <ShoppingLibrary />
         </div>
       </main>
     </>
