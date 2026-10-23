@@ -8,7 +8,7 @@ import json
 import time
 import uuid
 
-from towerpilot_workflows.control_settings import flatten, merge_patch, validate_patch
+from towerpilot_workflows.control_settings import documents, flatten, merge_patch, validate_patch
 from towerpilot_workflows.operations import Conflict, Operations, digest
 
 LIVE = ('prepared', 'active')
@@ -293,7 +293,7 @@ class Battles(Operations):
     @staticmethod
     def _set_overrides(target, patch):
         for key, value in patch.items():
-            if key == 'shopping_plan' and value is not None:
+            if key in documents() and value is not None:
                 target[key] = copy.deepcopy(value)
             elif isinstance(value, dict):
                 Battles._set_overrides(target.setdefault(key, {}), value)

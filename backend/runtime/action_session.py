@@ -17,7 +17,8 @@ import functools
 import time
 
 from runtime import logger
-from towerpilot_workflows.action_contract import CATALOG, SCHEMA_VERSION, SystemClock
+from towerpilot_workflows import action_contract
+from towerpilot_workflows.action_contract import SCHEMA_VERSION, SystemClock
 from towerpilot_workflows.actions import ActiveExecution, Actions, new_record
 
 ADOPTED = ('adopted', 'partial_adoption')       # battle origins whose history starts at the adoption, not at the battle's start
@@ -41,7 +42,7 @@ def contained(reason, default=None):
 
 class ActionSession:
     def __init__(self, path, *, context, driver, operation_id=None, identity=None, coverage=None, config_revision=None,
-                 policy_revision=None, clock=None, catalog=CATALOG):
+                 policy_revision=None, clock=None, catalog=None):
         """path: the operations ledger. context: device_key/account/instance/serial/profile of the driver.
         identity(): (battle_id, generation) read at each record, so a driver that moves to its next battle
         records under the right one; None for an operation-scoped host. coverage(): what its rows cover ('full', or
@@ -49,12 +50,16 @@ class ActionSession:
         self.path, self.context, self.driver = str(path), dict(context), driver
         self.operation_id, self._identity, self._coverage = operation_id, identity, coverage
         self.config_revision, self.policy_revision = config_revision, policy_revision
-        self.clock, self.catalog = clock or SystemClock(), catalog
+        self.clock, self._catalog = clock or SystemClock(), catalog
         self.unrecorded = {}                 # reason -> count of records that could not be written
         self._store = None
         self._ledger = None
         self._open = {}                      # execution id -> monotonic start
         self.last = {}                       # instance -> summary of the newest finished execution, for the projection
+
+    def _catalog_in_force(self):
+        """The catalog this session records and projects against: the one it was given, else the active one."""
+        return self._catalog if self._catalog is not None else action_contract.catalog()
 
     # --------------------------------------------------------- factories
     @classmethod
@@ -98,7 +103,7 @@ class ActionSession:
 
     def _body(self, action, instance, *, trigger, occurrence_key, scheduled_for, command_id, request_key, refs, coverage=None,
               config_revision=None, policy_revision=None):
-        definition = self.catalog.find(action)
+        definition = self._catalog_in_force().find(action)
         if definition is None:
             raise ValueError(f'{action} is not in the action catalog')
         if self.driver not in definition.hosts:
@@ -189,7 +194,7 @@ class ActionSession:
         catalog does not know is not projected. Unknown is None plus a reason, never zero."""
         now = self.clock.wall()
         items = []
-        known = {definition.id: definition for definition in self.catalog}
+        known = {definition.id: definition for definition in self._catalog_in_force()}
         for key in sorted(routines, key=lambda name: (list(known).index(name.partition('@')[0]) if name.partition('@')[0] in known else 10**6, name)):
             action_id, _, instance = key.partition('@')       # 'ad_gems' or '<action>@<instance>': one item per configured instance
             definition, status = known.get(action_id), routines[key]

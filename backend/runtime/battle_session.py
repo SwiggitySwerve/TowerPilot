@@ -4,9 +4,12 @@ import os
 import time
 import uuid
 
-from player.run_controls import FIELDS, flatten, resolve
-from towerpilot_workflows.action_contract import shopping_interval
+from player import saved_controls
+from player.run_controls import flatten, resolve
+from runtime import action_bindings
+from towerpilot_workflows import action_contract
 from towerpilot_workflows.battles import Battles
+from towerpilot_workflows.control_settings import FIELDS, documents
 
 
 class BattleSession:
@@ -84,8 +87,9 @@ class BattleSession:
             'controls': resolve(self.base_preset, self.config),
             'source': copy.deepcopy(self.base_preset.get('_source')), 'source_revision': None,
         }
-        if self.base_preset.get('shopping_plan') is not None:
-            frozen.setdefault('controls', {})['shopping_plan'] = copy.deepcopy(self.base_preset['shopping_plan'])
+        held = saved_controls.frozen_documents(self.base_preset)
+        if held:
+            frozen.setdefault('controls', {}).update(held)
         self.battle = self.store.create(self.operation_id, operation['context'], frozen,
                                         generation=self.generation, origin=origin,
                                         previous_battle_id=previous_battle_id)
@@ -122,18 +126,26 @@ class BattleSession:
     def effective_preset(self):
         return copy.deepcopy(self.effective)
 
+    def bindings(self, rs):
+        """The routine key -> binding of this host: what the generic control, Run now and status seams ask instead of naming an action."""
+        return action_bindings.host_bindings(rs, self)
+
+    def _control_paths(self, key):
+        """The live controls a bound routine publishes: the live fields of its catalog entry, or the gate's own `enabled`."""
+        definition = action_contract.catalog().find(action_contract.split_key(key)[0])
+        if definition is None:
+            names = list(FIELDS[key])
+        elif not definition.capabilities.live_controls:
+            names = []
+        else:
+            names = [item.path for item in definition.fields if item.live]
+        return [f'routines.{key}.{name}' for name in names]
+
     def capabilities(self, rs):
-        if getattr(rs, 'shop', None) is None:
-            return dict(controls=[f'routines.{routine}.{field}' for routine in ('ad_gems', 'floating_gems')
-                                  for field in FIELDS[routine]], actions=['ad_gems', 'floating_gems'])
-        controls = [f'routines.{routine}.{field}' for routine, fields in FIELDS.items()
-                    for field in fields]
-        actions = ['ad_gems', 'floating_gems']
-        if getattr(rs, 'shop', None) is not None and rs.shop.plan is not None:
-            from player.shopping_plan import catalog
-            controls.append('shopping_plan')
-            actions += ['shopping'] + [f'shopping:{s}' for s in ('attack', 'defense', 'utility')]
-            actions += [f"shopping:{c['section']}:{c['id']}" for c in catalog()]
+        bindings = self.bindings(rs)
+        controls = [path for key in bindings for path in self._control_paths(key)]
+        controls += [name for binding in bindings.values() for name in binding.documents()]
+        actions = [token for key, binding in bindings.items() for token in action_bindings.run_now_tokens(key, binding)]
         return dict(controls=controls, actions=actions)
 
     def observe(self, rs, wave):
@@ -151,51 +163,18 @@ class BattleSession:
         return self.battle
 
     def _apply_control(self, rs, path, value):
-        if path == 'shopping_plan':
-            if value is None:
-                raise ValueError('No frozen shopping plan to inherit')
-            plan = copy.deepcopy(value)
-            interval_override = self.battle['overrides'].get('routines', {}).get('shopping', {}).get('interval_sec')
-            enabled_gate = self.battle['requested_controls']['routines']['shopping']['enabled']
-            if interval_override is not None:
-                plan['interval_sec'] = interval_override
-            plan['enabled'] = enabled_gate
-            rs.shopping_enabled = enabled_gate
-            rs.shop.update_plan(plan)
-            self.effective['shopping_plan'] = plan
-            return True
-        _, routine, field = path.split('.')
-        if routine == 'rewards' and rs.mission.active:
-            return False
-        if routine in ('ad_gems', 'floating_gems'):
-            collector = rs.gems.ad_gems if routine == 'ad_gems' else rs.gems.orbit
-            collector.configure({field: value})
-        elif routine == 'shopping':
-            if field == 'enabled':
-                rs.shopping_enabled = value
-                if self.effective.get('shopping_plan') is not None:
-                    self.effective['shopping_plan']['enabled'] = value
-                    rs.shop.update_plan(self.effective['shopping_plan'])
-                if not value:
-                    rs.shop.abort()
-            elif field == 'interval_sec':
-                self.effective['shop_interval_sec'] = value
-                if self.effective.get('shopping_plan') is not None:
-                    self.effective['shopping_plan']['interval_sec'] = value
-                    rs.shop.update_plan(self.effective['shopping_plan'])
-        elif routine == 'rewards':
-            rs.rewards_enabled = value
-        elif routine == 'repeat':
-            rs.repeat_enabled = value
-        elif routine in ('abilities', 'rescue'):
-            self.gates[routine] = value
-            if routine == 'abilities' and value:
-                rs.cl_normalized = False
-                rs.uw_normalized = False
-                rs.uw_done.clear()
-        else:
+        """Install one control through the binding that owns it; False means it cannot be installed yet (the command stays pending)."""
+        bindings = self.bindings(rs)
+        if path in documents():
+            owner = next((binding for binding in bindings.values() if path in binding.documents()), None)
+            if owner is None:
+                raise ValueError('Runtime gate is unsupported')
+            return owner.configure_document(path, value)
+        _, key, field = path.split('.')
+        binding = bindings.get(key)
+        if binding is None:
             raise ValueError('Runtime gate is unsupported')
-        return True
+        return binding.configure({field: value})
 
     def checkpoint(self, rs, *, battle_visible):
         if self.battle['status'] not in ('prepared', 'active'):
@@ -216,6 +195,7 @@ class BattleSession:
                               reason='finishing_owned_flow' if len(applied) < len(flatten(command['payload'])) else None)
         # Manual requests run through the same foreground, battle and collector
         # evidence checks as scheduled actions. No menu recovery is introduced.
+        bindings = self.bindings(rs)
         for command in commands:
             if command['kind'] != 'action':
                 continue
@@ -223,24 +203,13 @@ class BattleSession:
             if command['state'] == 'requested':
                 if self.manual is not None:
                     continue
-                if not battle_visible or (rs.mission is not None and rs.mission.active) or (rs.shop is not None and rs.shop.active):
+                if not battle_visible or any(binding.busy() for binding in bindings.values()):
                     continue
-                if action in ('ad_gems', 'floating_gems'):
-                    collector = rs.gems.ad_gems if action == 'ad_gems' else rs.gems.orbit
-                    if not collector.request_now():
-                        continue
-                    collector.manual_command_id = command['id']
-                    self.manual = dict(id=command['id'], action=action, collector=collector, began=False, command=command)
-                else:
-                    pieces = action.split(':')
-                    rs.shop.manual_command_id = command['id']
-                    if not rs.shop.request_once(section=pieces[1] if len(pieces) > 1 else None,
-                                                upgrade=pieces[2] if len(pieces) > 2 else None):
-                        rs.shop.manual_command_id = None
-                        continue
-                    self.manual = dict(id=command['id'], action=action, began=True, command=command)
-                    self.manual['command'] = self._acknowledge(command, state='started', evidence={'outcome': 'unknown'},
-                                                               diagnostic=rs.shop.status())
+                key, _, variant = action.partition(':')
+                binding = bindings.get(key)
+                if binding is None or not binding.request_now(variant or None, command_id=command['id']):
+                    continue
+                self.manual = dict(id=command['id'], action=action, binding=binding, began=False, command=command)
             self._manual_progress(rs)
         self.publish(rs, battle_visible=battle_visible)
 
@@ -281,28 +250,24 @@ class BattleSession:
         return command
 
     def _manual_progress(self, rs):
+        """Acknowledge what the binding reports about the request in flight: started when its execution begins, completed with
+        its own evidence when it ends. A binding with no `progress()` is never acknowledged from another handler's state."""
         if self.manual is None:
             return
         manual = self.manual
-        if manual['action'] in ('ad_gems', 'floating_gems'):
-            state = manual['collector'].status()
-            if not manual['began'] and state['manual_active']:
-                manual['command'] = self._acknowledge(manual['command'], state='started', diagnostic=state)
-                manual['began'] = True
-            if not state['manual_pending'] and not state['manual_active']:
-                if not manual['began']:
-                    manual['command'] = self._acknowledge(manual['command'], state='started', diagnostic=state)
-                outcome = state['last_outcome']
-                self._acknowledge(manual['command'], state='completed', evidence=outcome, diagnostic=state)
-                self.manual = None
-        else:
-            status = rs.shop.status()
-            if not status['active']:
-                evidence = copy.deepcopy(status.get('manual'))
-                if isinstance(evidence, dict) and (status.get('last_sweep') or {}).get('manual'):
-                    evidence['last_sweep'] = copy.deepcopy(status['last_sweep'])
-                self._acknowledge(manual['command'], state='completed', evidence=evidence, diagnostic=status)
-                self.manual = None
+        result = manual['binding'].progress()
+        if result is None:
+            return
+        diagnostic = result.diagnostic if result.diagnostic is not None else dict(result.refs)
+        if result.state == 'started' and not manual['began']:
+            manual['command'] = self._acknowledge(manual['command'], state='started', evidence=result.acknowledgement(),
+                                                  diagnostic=diagnostic)
+            manual['began'] = True
+        elif result.state == 'terminal':
+            if not manual['began']:
+                manual['command'] = self._acknowledge(manual['command'], state='started', diagnostic=diagnostic)
+            self._acknowledge(manual['command'], state='completed', evidence=result.acknowledgement(), diagnostic=diagnostic)
+            self.manual = None
 
     def publish(self, rs, *, battle_visible):
         now = time.monotonic()
@@ -320,26 +285,13 @@ class BattleSession:
             return
         self._published_at = now
         self.battle = self.store.get(self.battle['id'])
-        routines = {'ad_gems': rs.gems.ad_gems.status(), 'floating_gems': rs.gems.orbit.status()}
-        if not battle_visible and hasattr(rs.gems.ad_gems, 'mark_unknown'):
-            rs.gems.ad_gems.mark_unknown('waiting_for_game_state')
-            routines['ad_gems'] = rs.gems.ad_gems.status()
         epoch = time.time()
-        interval = shopping_interval(self.effective)
-        if rs.shop is not None:
-            shopping_status = rs.shop.status()
-            routines['shopping'] = dict(enabled=rs.shopping_enabled,
-                                     state='active' if rs.shop.active else 'scheduled' if rs.shopping_enabled else 'off',
-                                     next_due_at=epoch if shopping_status.get('continuation_ready') else epoch + rs.last_shop+interval-now,
-                                     window_ends_at=None, last_outcome=shopping_status)
-            routines['rewards'] = dict(enabled=rs.rewards_enabled, state='active' if rs.mission.active else 'watching' if rs.rewards_enabled else 'off',
-                                    next_due_at=None, window_ends_at=None)
-            for routine in ('abilities', 'rescue'):
-                enabled = self.gates.get(routine, True)
-                routines[routine] = dict(enabled=enabled, state='watching' if enabled else 'off',
-                                         next_due_at=None, window_ends_at=None)
-            routines['repeat'] = dict(enabled=rs.repeat_enabled, state='boundary_wait' if rs.repeat_enabled else 'off',
-                                       next_due_at=None, window_ends_at=None)
+        bindings = self.bindings(rs)
+        routines = {key: binding.routine(battle_visible=battle_visible, now=now, epoch=epoch) for key, binding in bindings.items()}
+        if not battle_visible:
+            for key, binding in bindings.items():
+                if binding.mark_unobserved('waiting_for_game_state'):
+                    routines[key] = binding.routine(battle_visible=battle_visible, now=now, epoch=epoch)
         for state in routines.values():
             state.update(blocker=state.get('blocker') if battle_visible else 'waiting_for_game_state', server_time=epoch)
         collection = self._collection_evidence(routines, epoch)
@@ -351,7 +303,10 @@ class BattleSession:
             driver_generation=self.generation, observation_status='observing' if battle_visible else 'waiting_for_game_state')
         if self.actions is not None:     # additive: `routines` above stays as the compatibility projection
             try:
-                status['actions'] = self.actions.project(routines, observed_at=epoch, control_revision=self.battle.get('control_revision'))
+                listed = {(action_contract.split_key(key)[1] or key): binding.descriptor_variants()
+                          for key, binding in bindings.items() if binding.descriptor_variants()}
+                status['actions'] = self.actions.project(routines, observed_at=epoch, control_revision=self.battle.get('control_revision'),
+                                                         variants=listed or None)
             except Exception as exc:     # noqa: BLE001 - a projection that cannot be built must never stop the driver
                 from runtime import logger
                 logger.event('action_projection_failed', error=str(exc), error_type=type(exc).__name__)
@@ -394,6 +349,10 @@ class BattleSession:
         summary['observed_through_at'] = epoch
         return summary
 
+    def manual_for(self, key):
+        """Is the Run now request in flight one for this routine (any variant of it)?"""
+        return self.manual is not None and self.manual['action'].partition(':')[0] == key
+
     @property
     def manual_shopping(self):
-        return self.manual is not None and self.manual['action'].startswith('shopping')
+        return self.manual_for('shopping')

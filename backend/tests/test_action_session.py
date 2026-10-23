@@ -35,7 +35,8 @@ def rows(session, **kwargs):
 
 
 # ---------------------------------------------------------------- the import graph
-@pytest.mark.parametrize('module', ['towerpilot_workflows/action_contract.py', 'towerpilot_workflows/actions.py', 'runtime/action_session.py'])
+@pytest.mark.parametrize('module', ['towerpilot_workflows/action_contract.py', 'towerpilot_workflows/actions.py', 'runtime/action_session.py',
+                                    'runtime/action_bindings.py', 'player/saved_controls.py', 'towerpilot_workflows/control_settings.py'])
 def test_the_action_modules_import_no_device_adb_capture_or_settings_module(module):
     """Nothing here may send input or reach the screen: the session records, it never calls a handler."""
     forbidden = {'device', 'cv2', 'settings', 'vision', 'interactions', 'flows', 'adbclient', 'capture', 'act', 'subprocess', 'socket'}

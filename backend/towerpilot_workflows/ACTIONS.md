@@ -1,9 +1,9 @@
 # Timed actions: the contract, the history and the rules
 
-> **Status:** Active (item 6, first batch: the pilot only)
+> **Status:** Active (item 6: the pilot, and the control surface generated from the catalog)
 > **Type:** Rules
 > **Created:** 2026-10-22
-> **Updated:** 2026-10-22
+> **Updated:** 2026-10-23
 > **Owner:** Backend
 > **Spec:** [roadmap-items-6-7/spec.md](../logs/reviews/roadmap-items-6-7/spec.md)
 > **Tags:** actions, scheduling, history, gems, shopping, harvest
@@ -19,6 +19,9 @@ second input owner: the device lease and the operations ledger stay the only own
 | Definitions, schedule policies, field schema, catalog | `backend/towerpilot_workflows/action_contract.py` | stdlib only |
 | The execution table and its transitions | `backend/towerpilot_workflows/actions.py` (`Actions`, a subclass of `Operations`) | the contract, the ledger |
 | Host adapter and the `runtime.actions` projection | `backend/runtime/action_session.py` (`ActionSession`) | no device, adb or capture module |
+| The bindings a driver registers (control, Run now, routine status) | `backend/runtime/action_bindings.py` | no device, adb, capture or settings module |
+| Saved settings: the adapters the definitions name | `backend/player/saved_controls.py` (read by `player/run_controls.py` and `control/run_workspace.py`) | profile and gather modules |
+| Control validation (`FIELDS`, documents) generated from the catalog | `backend/towerpilot_workflows/control_settings.py` | the contract |
 | Dashboard query and the refresher's settlement | `backend/control/actions.py` | the above |
 
 ## The rules
@@ -40,8 +43,10 @@ second input owner: the device lease and the operations ledger stay the only own
 7. **Coalescing is narrow.** Only an automatic, no-input check that ended `refused` or `no_op` shares a row, with the open aggregate
    of the identical scope. A started, manual or key-linked execution is its own row.
 8. **Reads never create anything.** Every read goes through `operations.readonly`; a checkout with no ledger answers an empty history.
-9. **Controls reuse the existing routes.** A new action adds a catalog entry and a binding, never a route. The single read route is
-   `GET /api/actions/executions`.
+9. **Controls reuse the existing routes.** A new action adds a catalog entry, a binding and (when it has saved settings) a saved
+   adapter, never a route and never a dashboard branch. The single read route is `GET /api/actions/executions`. Nothing that
+   dispatches a control, accepts or follows a Run now, publishes a routine or reads and writes a saved setting names an action
+   (`test_action_dispatch_generated.py` checks the code, not the behaviour): each asks the catalog and the binding or adapter registered for it.
 10. **Collection-only authority stays gem-only.** Harvest's overlay and guard name the two gem routines on purpose.
 
 ## Pilot coverage (this batch)
@@ -53,12 +58,33 @@ second input owner: the device lease and the operations ledger stay the only own
 | `shopping` | `AfterCompletion` | the orchestrator's `Shopper` (a sweep that sends input is a row; input-free sweeps are counted checks) |
 | `harvest_launch` | `Backoff` | the dashboard's reconciler: every accepted launch, refusal and failure |
 
-Not done in this batch: deriving the live-control dispatch (`BattleSession._apply_control`), Run now's `progress()` binding and the
-saved-setting adapters from the catalog (spec 2.4 and 2.6). `control_settings.FIELDS` is generated from the catalog for the pilot
-actions; the four gates that are not timed actions (rewards, abilities, rescue, repeat) stay literal until their migration.
+## Adding an action (what the contract asks, and nothing else)
+
+1. **A definition** in the catalog (`action_contract.py`): id, label, family, the driver kinds that may run it, a schedule policy, its
+   `Field`s (`live`, `saved`, bounds, unit), its `Capabilities` (`live_controls`, `pause`, `run_now`, `variants`), the name of its saved
+   adapter (or none), the blueprint kinds that carry its saved settings (`saved_kinds`, none = every kind), any whole-object control it owns
+   (`documents`, with a validator registered through `control_settings.register_document_validator`). A definition with `restricted` set,
+   or whose `run_now` is not `True`, is never offered a Run now whatever its binding says.
+2. **A binding** for each configured instance, registered by the driver (`rs.action_bindings = {routine key: binding}`; the routine key is
+   the action id, or `<action>@<instance>` for one of several instances, the instance being lower-case letters, digits, `_` and `-`): how a
+   value is installed (`configure`, `configure_document`), whether a request is accepted (`request_now`) and how far it has come
+   (`progress()`, which acknowledges the command from THIS binding's own evidence: `pending`, `started`, `terminal`), the routine status
+   (`routine`), and `busy()` while it owns the foreground. A binding that reports no `progress()` has no Run now.
+3. **A recorder** call pair in the handler (`session.recorder(action, instance).opened(...)` and `.closed(...)`, or `record` / `check`): the
+   execution row, its timing and its evidence. The row is written after the input, never before.
+4. **A saved adapter** when the action saves numbers (`SavedAdapter`: `keys`, `read`, `apply`, `prepare`, `write`, `finish`, `extras`),
+   registered by name in `player/saved_controls.py`. Its `enabled` flag needs none: blueprint `automation` is validated against the catalog.
+   The profile schema is closed on purpose, so a saved number also needs its row there (a key in the policy that holds it).
+
+`test_action_synthetic_extension.py` does exactly this for a test-local `synthetic_probe` (two instances) in a COPY of the catalog and
+drives it through the real routes.
 
 ## Tests
 
 Golden traces captured before any edit pin the cadence of every pilot caller (`backend/tests/fixtures/action_golden_v1.json`,
 explicit regeneration only: `TP_REGENERATE_ACTION_GOLDEN=1 python -m pytest backend/tests/test_action_golden_capture.py`).
-Parity, interruption, ownership, ledger, session, route and synthetic-extension tests are the `backend/tests/test_action_*.py` files.
+Golden traces of the control dispatch, the Run now acknowledgements, the published routines and the saved-setting transforms were captured
+the same way before the dispatch was generated (`backend/tests/fixtures/action_dispatch_golden_v1.json`, `TP_REGENERATE_ACTION_DISPATCH_GOLDEN=1
+python -m pytest backend/tests/test_action_dispatch_capture.py`); `test_action_dispatch_parity.py` replays them.
+Parity, interruption, ownership, ledger, session, route and synthetic-extension tests are the `backend/tests/test_action_*.py` files;
+`test_action_declared_proofs.py` holds the proofs the declaration of item 6 still needed and the map from the declaration to the tests.

@@ -11,7 +11,9 @@ the backend. Policies not yet used by a migrated caller are declared as paramete
 """
 from __future__ import annotations
 
+import contextlib
 import math
+import re
 import time
 from dataclasses import dataclass, field
 from typing import Any, Mapping, Protocol
@@ -23,6 +25,7 @@ TRIGGERS = ('automatic', 'manual', 'dependency', 'boundary')
 STATES = ('running', 'yielded', *RESULTS, 'interrupted', 'unknown')
 OPEN_STATES = ('running', 'yielded')            # the states of an execution that is still open
 COVERAGES = ('full', 'since_adoption', 'unknown')
+BINDING_STATES = ('pending', 'started', 'yielded', 'terminal')
 
 
 class SystemClock:
@@ -96,7 +99,13 @@ class Capabilities:
 
 @dataclass(frozen=True)
 class BindingResult:
-    """What a host binding reports about a manual request or an active execution."""
+    """What a host binding reports about a manual request or an active execution.
+
+    `ack` and `diagnostic` serve the command acknowledgement. `ack`, when a binding has its own outcome record (the gem
+    collectors and the shopper do, and the Dashboard already publishes it), is the evidence the acknowledgement carries, verbatim;
+    without it a terminal result is acknowledged with a record built from `outcome`, `effect`, `reason`, `attempts`, `evidence`
+    and `refs` (so a new action needs none). `diagnostic` is the binding's own status snapshot, used only to correlate log lines
+    (window, offer, claim attempt, sweep ids) and never published."""
     state: str                     # pending | started | yielded | terminal
     outcome: str | None = None     # terminal: one of RESULTS
     effect: str = 'none'           # terminal: one of EFFECTS
@@ -104,6 +113,27 @@ class BindingResult:
     attempts: int = 0
     evidence: tuple = ()
     refs: Mapping[str, Any] = field(default_factory=dict)   # window_id, sweep_id, attempt_id: ids the code already mints
+    ack: Mapping[str, Any] | None = None
+    diagnostic: Mapping[str, Any] | None = None
+
+    def __post_init__(self):
+        if self.state not in BINDING_STATES:
+            raise ValueError(f'Unknown binding state: {self.state}')
+        if self.state == 'terminal' and self.outcome is not None and self.outcome not in RESULTS:
+            raise ValueError(f'Unknown terminal outcome: {self.outcome}')
+        if self.effect not in EFFECTS:
+            raise ValueError(f'Unknown effect: {self.effect}')
+
+    def acknowledgement(self) -> dict | None:
+        """The evidence of the command acknowledgement this result stands for: the binding's own record when it has one;
+        for a terminal result with an outcome, the record built from the result (unconfirmed stays `effect: unconfirmed`);
+        otherwise nothing (a pending or started execution has proved nothing yet)."""
+        if self.ack is not None:
+            return dict(self.ack)
+        if self.state == 'terminal' and self.outcome is not None:
+            return dict(outcome=self.outcome, effect=self.effect, reason=self.reason, attempts=self.attempts,
+                        evidence=list(self.evidence), refs=dict(self.refs))
+        return None
 
 
 @dataclass(frozen=True)
@@ -117,6 +147,41 @@ class Decision:
     missed: int = 0
     reason: str | None = None
     basis: str = ''
+
+
+# ------------------------------------------------------------------ bindings
+class Binding(Protocol):
+    """What a driver registers, for each configured instance, so the generic control, Run now and status seams can reach its
+    handler. The handler itself stays in the driver (the gem collectors, the shopper); a binding is the thin adapter in front of
+    it (`runtime.action_bindings`). The session never names an action: it asks the binding.
+
+    `configure` and `configure_document` return True when the value is installed and False when it cannot be installed yet
+    (the owned flow is finishing), in which case the command stays pending. `request_now` returns False when the handler refuses
+    the request (a window is open); `progress` reports the request and returns None when the binding has no opinion. A binding
+    that publishes no `progress()` has no Run now."""
+
+    def configure(self, values: Mapping) -> bool: ...
+    def configure_document(self, name: str, value: Any) -> bool: ...
+    def request_now(self, variant: str | None = None, *, command_id: str | None = None) -> bool: ...
+    def progress(self) -> BindingResult | None: ...
+    def status(self) -> dict: ...
+    def routine(self, *, battle_visible: bool, now: float, epoch: float) -> dict: ...
+
+
+_INSTANCE = re.compile(r'[a-z0-9][a-z0-9_-]*')       # no dot (a control path splits on it), no '@' and no ':' (a Run now token splits on it)
+
+
+def split_key(key: str) -> tuple[str, str | None]:
+    """A routine key is an action id, or `<action>@<instance>` for one of several configured instances of it."""
+    action_id, separator, instance = key.partition('@')
+    return action_id, (instance if separator else None)
+
+
+def routine_key_valid(key) -> bool:
+    if not isinstance(key, str):
+        return False
+    _, instance = split_key(key)
+    return instance is None or _INSTANCE.fullmatch(instance) is not None
 
 
 # ----------------------------------------------------------------- policies
@@ -338,9 +403,15 @@ class ActionDefinition:
     restricted: str | None = None  # reason; non-None means never user-triggered
     evidence: tuple = ()           # outcome reasons that prove a game effect
     consumes: str | None = None    # 'confirmed' | 'attempted' (calendar families)
+    documents: tuple = ()          # whole-object controls the action owns (top-level control keys, replaced wholesale, never merged)
+    saved_kinds: frozenset | None = None   # blueprint kinds that carry its saved controls; None = every kind
 
     def field(self, path: str) -> Field | None:
         return next((item for item in self.fields if item.path == path), None)
+
+    def saved_for(self, kind) -> bool:
+        """Does a run of this blueprint kind carry the action's saved controls?"""
+        return self.saved is not None and (self.saved_kinds is None or kind in self.saved_kinds)
 
     def descriptor(self) -> dict:
         return dict(fields=[item.to_json() for item in self.fields], capabilities=self.capabilities.to_json())
@@ -379,6 +450,10 @@ class Catalog:
         """The legacy `FIELDS` table of the actions that have controls: `{action: {field: bool | (min, max)}}`."""
         return {item.id: {f.path: f.spec() for f in item.fields} for item in self if item.fields}
 
+    def documents(self) -> frozenset:
+        """The names of every whole-object control an action owns."""
+        return frozenset(name for item in self for name in item.documents)
+
 
 _GEM_HOSTS = frozenset({'orchestrator', 'collector', 'shard', 'quest_sm', 'quest_ilm', 'harness'})
 _ENABLED = Field('enabled', 'bool', label='Enabled')
@@ -402,12 +477,28 @@ SHOPPING = ActionDefinition(
     id='shopping', label='Shopping', family='rewards', hosts=frozenset({'orchestrator'}), schedule=AfterCompletion(),
     fields=(_ENABLED, Field('interval_sec', 'number', 1, 86400, 's', 'Interval', default=90)),
     capabilities=Capabilities(live_controls=True, pause=True, run_now=True, variants=True), saved='shopping_plan',
-    evidence=('confirmed_purchase',))
+    evidence=('confirmed_purchase',), documents=('shopping_plan',), saved_kinds=frozenset({'coin', 'tournament'}))
 HARVEST_LAUNCH = ActionDefinition(
     id='harvest_launch', label='Harvest collector launch', family='harvest', hosts=frozenset({'dashboard'}),
     schedule=Backoff(), capabilities=Capabilities(run_now='not_supported'), evidence=('launched',))
 
 CATALOG = Catalog((AD_GEMS, FLOATING_GEMS, SHOPPING, HARVEST_LAUNCH))
+_ACTIVE: list[Catalog] = []
+
+
+def catalog() -> Catalog:
+    """The catalog every generated seam (validators, capability lists, projections, saved controls) reads. Production never
+    changes it; a test that proves an extension swaps in a COPY with `use_catalog`, so the pilot catalog is never touched."""
+    return _ACTIVE[-1] if _ACTIVE else CATALOG
+
+
+@contextlib.contextmanager
+def use_catalog(candidate: Catalog):
+    _ACTIVE.append(candidate)
+    try:
+        yield candidate
+    finally:
+        _ACTIVE.pop()
 
 DEFAULT_SHOPPING_INTERVAL_SEC = SHOPPING.field('interval_sec').default
 SPRINT_SHOPPING_INTERVAL_SEC = 20     # an untracked run shops this often during the intro sprint
