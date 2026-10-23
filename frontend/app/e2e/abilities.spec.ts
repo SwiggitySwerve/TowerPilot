@@ -1,3 +1,6 @@
+import { withRecordedFence } from '../tests/support/profilePatchFenced.ts';
+import type { DashboardCase } from '../tests/support/dashboardFixture.ts';
+import { contextFromConfig } from '../src/api/context.ts';
 import { createRequire } from 'node:module';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
@@ -8,8 +11,13 @@ import { ABILITIES_FIXTURE_PATH } from './abilities-fixtures.mjs';
 import { posts } from './helpers.ts';
 
 const CASES = own(loadJsonWithIdentity(ABILITIES_FIXTURE_PATH).fixture, 'cases');
-const fixture = (view: string, suffix = 'saved') =>
-  ownPath(CASES, 'abilities_samples', `${view}_${suffix}`);
+const fixture = (view: string, suffix = 'saved') => {
+  // Supplementary legacy mode/rule variants have no profile_patch_fenced recording.
+  // Keep their exact recorded bodies plus the runtime fence; the new-family suite binds UW/rescue.
+  const found = ownPath(CASES, 'abilities_samples', `${view}_${suffix}`) as DashboardCase;
+  const context = contextFromConfig(ownPath(CASES, 'abilities_samples', `${view}_config`, 'body'));
+  return context === null ? found : withRecordedFence(found, context);
+};
 const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT = path.resolve('../../backend/logs/reviews/frontend-f6-screens');
 mkdirSync(OUT, { recursive: true });

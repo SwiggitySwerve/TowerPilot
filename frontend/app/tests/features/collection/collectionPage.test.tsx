@@ -1,3 +1,4 @@
+import { assertProfilePatchContexts } from '../../support/profilePatchAssertions.ts';
 import { within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -14,6 +15,13 @@ import { renderPage, type PageOptions } from '../dashboard/harness.tsx';
  * request the page builds differs from a recorded request (another revision, another
  * policy), the test answers with the recorded answer of the same route and kind, and says so.
  */
+const fenceChecks: (() => void)[] = [];
+afterEach(() => {
+  fenceChecks.splice(0).forEach((check) => {
+    check();
+  });
+});
+
 const pages = (path: string) => dashboardPagesCase(path);
 
 function answerOf(found: DashboardCase): { readonly status: number; readonly body: unknown } {
@@ -62,6 +70,10 @@ async function openCollection(reads: Reads = {}, options: PageOptions = {}, hash
     },
   });
   await page.advance(1_000);
+  assertProfilePatchContexts(page.data.machine);
+  fenceChecks.push(() => {
+    assertProfilePatchContexts(page.data.machine);
+  });
   return page;
 }
 
@@ -178,6 +190,11 @@ describe('C1 global rewards', () => {
     );
     expect(settingsPosts(page)).toHaveLength(1);
     expect(box()).toHaveTextContent('Unknown');
+    // C15 C-01: accepting the Unknown outcome does not silently rebase its raw draft.
+    expect(saveOf(box())).toHaveAttribute('aria-disabled', 'true');
+    await page.user.click(
+      within(box()).getByRole('button', { name: 'Use the read revision; keep my draft' }),
+    );
     expect(saveOf(box())).not.toHaveAttribute('aria-disabled', 'true');
   });
 
@@ -403,6 +420,7 @@ describe('C5 policies: list, label, copy, delete', () => {
     await page.advance(0);
     expect(patchPosts(page)).toEqual([
       {
+        expected_context: { instance: 'main', serial: 'fake:1', account: null, profile: 'mine' },
         expected_revision: (source.body as { revision: string }).revision,
         name: 'mine',
         op: 'delete',
@@ -432,6 +450,7 @@ describe('C5 policies: list, label, copy, delete', () => {
     };
     expect(patchPosts(page)).toEqual([
       {
+        expected_context: { instance: 'main', serial: 'fake:1', account: null, profile: 'mine' },
         expected_revision: SOURCE_REVISION,
         name: 'mine',
         path: ['policies', 'gather', 'weekend'],
@@ -559,6 +578,7 @@ describe('C5 policies: list, label, copy, delete', () => {
     await page.advance(0);
     expect(patchPosts(page)).toEqual([
       {
+        expected_context: { instance: 'main', serial: 'fake:1', account: null, profile: 'mine' },
         expected_revision: SOURCE_REVISION,
         name: 'mine',
         path: ['policies', 'gather', 'all_on', 'label'],
@@ -581,6 +601,7 @@ describe('C6 between-run chores', () => {
     await page.advance(0);
     expect(patchPosts(page)).toEqual([
       {
+        expected_context: { instance: 'main', serial: 'fake:1', account: null, profile: 'mine' },
         expected_revision: SOURCE_REVISION,
         name: 'mine',
         path: ['policies', 'chores'],

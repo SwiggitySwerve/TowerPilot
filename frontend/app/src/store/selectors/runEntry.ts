@@ -1,7 +1,9 @@
 import {
   checkEntry,
+  entryNeedsChainLightning,
   entryDraftSnapshot,
   entryRaw,
+  inactiveEntryRecorded,
   runEntryFields,
   runEntryRuns,
   type EntryReason,
@@ -74,7 +76,7 @@ export function selectRunEntry(state: DashboardState) {
             record?.phase === 'refused' &&
             own(record.answer?.body, 'code') === 'revision_conflict' &&
             draft['continued_after'] !== record.id;
-          const reason: EntryReason | 'unavailable' | 'unknown' | 'pending' | 'revision' | null =
+          const blocked: 'unavailable' | 'unknown' | 'pending' | 'revision' | null =
             !readable ||
             !state.contextConfirmed ||
             ownPath(vocab, 'vocab', 'blueprint_fields') === undefined
@@ -85,9 +87,12 @@ export function selectRunEntry(state: DashboardState) {
                   ? 'pending'
                   : stale || (base !== revision && Object.keys(draft).length > 0)
                     ? 'revision'
-                    : checked.kind === 'invalid'
-                      ? checked.reason
-                      : null;
+                    : null;
+          const reason: typeof blocked | EntryReason | 'activeOnly' =
+            target.inactive &&
+            !inactiveEntryRecorded(field.key, checked.kind === 'valid' ? checked.remove : remove)
+              ? 'activeOnly'
+              : (blocked ?? (checked.kind === 'invalid' ? checked.reason : null));
           const command: RunEntryCommand | null =
             reason === null && base !== null && checked.kind === 'valid' && target.name !== null
               ? {
@@ -125,17 +130,58 @@ export function selectRunEntry(state: DashboardState) {
           const reference = id(field.saved);
           const policyEditor:
             | { readonly kind: 'gather'; readonly id: string }
-            | { readonly kind: 'abilities' }
+            | {
+                readonly kind: 'ability';
+                readonly family: 'uw_policies' | 'rescue_policies';
+                readonly policy: string;
+              }
             | null =
             reference === undefined
               ? null
               : field.key === 'policies.gather'
                 ? { kind: 'gather', id: reference }
                 : field.key === 'policies.uw' || field.key === 'policies.rescue'
-                  ? { kind: 'abilities' }
+                  ? {
+                      kind: 'ability',
+                      family: field.key === 'policies.uw' ? 'uw_policies' : 'rescue_policies',
+                      policy: reference,
+                    }
                   : null;
+          const clearChecked = checkEntry(field, raw, true);
+          const clearReason: typeof reason | 'questDefault' =
+            target.inactive && !inactiveEntryRecorded(field.key, true)
+              ? 'activeOnly'
+              : (blocked ??
+                (clearChecked.kind === 'invalid'
+                  ? field.key === 'rides' && clearChecked.reason === 'unchanged'
+                    ? 'questDefault'
+                    : clearChecked.reason
+                  : null));
           return {
             key: field.key,
+            needsChainLightning:
+              field.key === 'policies.uw' && entryNeedsChainLightning(source, raw),
+            clearReason,
+            clearCommand:
+              (field.key === 'label' || field.key === 'rides') &&
+              clearReason === null &&
+              base !== null &&
+              target.name !== null &&
+              clearChecked.kind === 'valid'
+                ? {
+                    epoch: state.epoch,
+                    context,
+                    profile: target.name,
+                    generation: target.generation,
+                    inactive: target.inactive,
+                    target: scope,
+                    revision: base,
+                    path: ['blueprints', run, field.key],
+                    remove: true,
+                    value: undefined,
+                    draft: { scope, values: draft },
+                  }
+                : null,
             type: field.type,
             scope,
             raw,

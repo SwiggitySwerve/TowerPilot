@@ -40,6 +40,28 @@ export function keysWithPrefix(storage: KeyValueStorage, prefix: string): readon
   return keys;
 }
 
+/** Independent editor journals share validation without removing each other's records. */
+export function prefixedStorage(
+  storage: KeyValueStorage | null,
+  prefix: string,
+): KeyValueStorage | null {
+  if (storage === null) return null;
+  const keys = () => keysWithPrefix(storage, prefix);
+  return {
+    get length() {
+      return keys().length;
+    },
+    key: (index) => keys()[index]?.slice(prefix.length) ?? null,
+    getItem: (key) => storage.getItem(prefix + key),
+    setItem: (key, value) => {
+      storage.setItem(prefix + key, value);
+    },
+    removeItem: (key) => {
+      storage.removeItem(prefix + key);
+    },
+  };
+}
+
 /** The JSON value stored at `key`, or undefined when absent, unreadable or not JSON. */
 export function readJsonItem(storage: KeyValueStorage | null, key: string): unknown {
   if (storage === null) return undefined;

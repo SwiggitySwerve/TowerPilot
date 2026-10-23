@@ -166,10 +166,12 @@ export interface DashboardCommands {
   readonly resetLive: (command: ResetLiveCommand) => Promise<void>;
   /** RUN-06, RUN-07: "Check saved values" reads the shown run again (a GET, never a write). */
   readonly checkRun: () => void;
+  readonly checkRuns: () => void;
   /** RUN-10: read the tracked battle again (a GET, never a write). */
   readonly checkBattle: () => void;
   /** The Profiles page opened or closed: its profile files and active profile are read while open. */
   readonly pickEditingTarget: (command: Fenced & { readonly name: string }) => void;
+  readonly checkEditingProfiles: () => void;
   readonly returnEditingToActive: (command: Fenced) => void;
   readonly openProfiles: (open: boolean) => void;
   /**

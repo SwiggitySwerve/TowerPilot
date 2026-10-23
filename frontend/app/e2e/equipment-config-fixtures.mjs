@@ -1,48 +1,4 @@
 // @ts-check
-import {
-  DASHBOARD_PAGES_FIXTURE_PATH,
-  loadJsonWithIdentity,
-} from '../scripts/contract-fixture.mjs';
-
-const fixture =
-  /** @type {{cases: Record<string, Record<string, {status: number, body: Record<string, unknown>, request: {body?: Record<string, unknown>}}>>}} */ (
-    loadJsonWithIdentity(DASHBOARD_PAGES_FIXTURE_PATH).fixture
-  );
-/** @param {string} reference */
-function recorded(reference) {
-  const [family = '', key = ''] = reference.split('.');
-  const value = fixture.cases[family]?.[key];
-  if (value === undefined) throw new Error(`Missing recorded case ${reference}`);
-  return structuredClone(value);
-}
-
-/** @param {string | undefined} reference */
-export function equipmentConfigRead(reference) {
-  if (reference === 'config_fields_equipment_empty_lists') {
-    // Modified recorded save/readback: replace only the tournament list values with [],
-    // since no separate empty-list POST recording exists. Keep its schema/metadata.
-    const empty = recorded('settings_modules.saved_tournament_cards');
-    const modules = /** @type {{id: string, fields: {value: unknown}[]}[]} */ (
-      empty.body['modules']
-    );
-    const module = modules.find((module) => module.id === 'tournament-cards');
-    for (const field of module?.fields ?? []) field.value = [];
-    return empty;
-  }
-  if (reference !== 'config_fields_equipment_modules_before') return null;
-  // Modified recorded predecessor: the modules save's ordinary `modules` body exists
-  // before its restore edit, but that intermediate config GET was not recorded.
-  // Retain the exact preceding config revision and every other key.
-  const before = recorded('loadout_restore.read_after_saved_cards_restore');
-  const saved = recorded('loadout_restore.saved_modules_restore');
-  const loadouts = /** @type {Record<string, unknown>} */ (before.body['loadouts']);
-  const body = /** @type {Record<string, unknown>} */ (saved.request.body?.['body']);
-  const plain = { ...body };
-  delete plain['modules_restore'];
-  loadouts['plain'] = plain;
-  return before;
-}
-
 const tournament = {
   config: 'settings_switch_records.read_config_after_switching_back_every_record_as_it_was',
   settings: 'settings_modules.read_after_saved_run_defaults',
@@ -55,14 +11,74 @@ const equipment = {
 };
 /** @type {Readonly<Record<string, import('./scenarios.mjs').Scenario>>} */
 export const EQUIPMENT_CONFIG_SCENARIOS = {
-  config_fields_equipment_empty: {
-    description: 'C15-6/7 explicitly modified recorded empty-list save/readback',
+  ...Object.fromEntries(
+    [
+      [
+        'add',
+        'read_before_only_the_add_list_is_emptied',
+        'saved_tournament_cards_with_only_the_add_list_empty_the_drop_list_is_kept',
+        'read_after_only_the_add_list_was_emptied',
+      ],
+      [
+        'drop',
+        'read_before_only_the_drop_list_is_emptied',
+        'saved_tournament_cards_with_only_the_drop_list_empty_the_add_list_is_kept',
+        'read_after_only_the_drop_list_was_emptied',
+      ],
+    ].map(([field, before, saved, after]) => [
+      `config_fields_equipment_empty_${field}`,
+      {
+        description: `C15-6/7 C-03 empty only ${field}, keeping the other list`,
+        harvest: 'off',
+        get: { ...tournament, settings: `settings_modules_more.${before}` },
+        writes: {
+          settingsSave: {
+            case: `settings_modules_more.${saved}`,
+            reads: { settings: `settings_modules_more.${after}` },
+          },
+        },
+      },
+    ]),
+  ),
+  config_fields_equipment_lists_lost: {
+    description: 'C15-6/7 C-04 recorded tournament save with its reply lost; unchanged reads',
     harvest: 'off',
-    get: { ...tournament, settings: 'settings_modules.read_after_saved_tournament_cards' },
+    get: tournament,
+    writes: { settingsSave: { mode: 'drop', case: 'settings_modules.saved_tournament_cards' } },
+  },
+  config_fields_equipment_cards_lost: {
+    description: 'C15-8/9 C-04 recorded restore save with its reply lost; unchanged reads',
+    harvest: 'off',
+    get: equipment,
+    writes: { loadoutPatch: { mode: 'drop', case: 'loadout_restore.saved_cards_restore' } },
+  },
+  config_fields_equipment_lists_failed: {
+    description: 'C15-6/7 C-04 genuine failed save reply, no automatic resend',
+    harvest: 'off',
+    get: tournament,
+    writes: {
+      settingsSave: { mode: 'unknown', case: 'settings.saved_then_the_answer_failed_500' },
+    },
+  },
+  config_fields_equipment_cards_failed: {
+    description: 'C15-8/9 C-04 genuine failed save reply, no automatic resend',
+    harvest: 'off',
+    get: equipment,
+    writes: {
+      loadoutPatch: { mode: 'unknown', case: 'loadout_patch.written_then_the_answer_failed_500' },
+    },
+  },
+  config_fields_equipment_empty: {
+    description: 'C15-6/7 C-03 recorded empty-list save/readback',
+    harvest: 'off',
+    get: {
+      ...tournament,
+      settings: 'settings_modules_more.read_before_saved_tournament_cards_empty_lists',
+    },
     writes: {
       settingsSave: {
-        case: 'config_fields_equipment_empty_lists',
-        reads: { settings: 'config_fields_equipment_empty_lists' },
+        case: 'settings_modules_more.saved_tournament_cards_empty_lists',
+        reads: { settings: 'settings_modules_more.read_after_saved_tournament_cards_empty_lists' },
       },
     },
   },
@@ -110,13 +126,26 @@ export const EQUIPMENT_CONFIG_SCENARIOS = {
     },
   },
   config_fields_equipment_modules: {
-    description: 'C15-9 manual modules remain untouched while restore rows save',
+    description:
+      'C15-9 C-03 a receipt with an additional manual field cannot confirm the submitted restore-only body',
     harvest: 'off',
-    get: { ...equipment, config: 'config_fields_equipment_modules_before' },
+    get: { ...equipment, config: 'settings_modules_more.read_before_saved_modules_restore' },
     writes: {
       loadoutPatch: {
         case: 'loadout_restore.saved_modules_restore',
         reads: { config: 'loadout_restore.read_after_saved_modules_restore' },
+      },
+    },
+  },
+  config_fields_equipment_modules_manual: {
+    description:
+      'C15-9 C-03 change restore rows while preserving genuinely recorded manual fields; lose only the answer',
+    harvest: 'off',
+    get: { ...equipment, config: 'loadout_restore.read_after_saved_modules_restore' },
+    writes: {
+      loadoutPatch: {
+        mode: 'drop',
+        case: 'loadout_restore.saved_modules_restore',
       },
     },
   },
@@ -136,8 +165,7 @@ export const EQUIPMENT_CONFIG_SCENARIOS = {
     harvest: 'off',
     get: {
       ...equipment,
-      config:
-        'loadout_restore_eligibility.read_after_the_clearing_refusal_the_stored_value_remains',
+      config: 'settings_modules_more.read_before_the_clearing_refusal',
     },
   },
   config_fields_equipment_no_profile: {

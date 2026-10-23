@@ -31,7 +31,7 @@ export interface CommandView {
   readonly appliedPaths: readonly unknown[] | null;
 }
 
-function payloadPaths(payload: unknown, prefix = ''): readonly string[] {
+export function payloadPaths(payload: unknown, prefix = ''): readonly string[] {
   return entries(payload).flatMap(([key, value]) => {
     const path = prefix === '' ? key : `${prefix}.${key}`;
     // workflows/control_settings.py flatten treats shopping_plan as one path.

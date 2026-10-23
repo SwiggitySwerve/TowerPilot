@@ -5,7 +5,7 @@ import {
   sameContext,
   type PageContext,
 } from './context.ts';
-import { createClickTimeContextRead } from './clickContext.ts';
+import { createClickTimeRevisionContextRead } from './clickContext.ts';
 import { readEndpoint } from './client.ts';
 import { createIntentMachine } from './intents/machine.ts';
 import { sendOnce } from './intents/send.ts';
@@ -110,7 +110,7 @@ export function createEquipmentApi(
     sequence,
     targetKey: contextKey,
     sameContext,
-    readClickContext: createClickTimeContextRead(transport, config),
+    readClickContext: createClickTimeRevisionContextRead(transport, config),
     configMatches: (body: unknown, context: PageContext) =>
       sameContext(contextFromConfig(body), context),
     readConfig: (signal: AbortSignal) => readEndpoint(transport, config, '/api/config', signal),

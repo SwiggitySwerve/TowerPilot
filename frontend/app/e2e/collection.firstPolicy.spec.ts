@@ -1,3 +1,4 @@
+import { withRecordedFence } from '../tests/support/profilePatchFenced.ts';
 import { mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -72,7 +73,12 @@ for (const width of WIDTHS) {
     await expect(page.locator('[data-policy="farm_default"]')).toContainText('Not used by any run');
     await expect(id).toHaveValue('');
     expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
-      firstPolicyCase('first_policy_created_from_the_farm_template_default').request.body,
+      withRecordedFence(firstPolicyCase('first_policy_created_from_the_farm_template_default'), {
+        instance: 'main',
+        serial: 'fake:1',
+        account: null,
+        profile: 'mine',
+      }).request.body,
     ]);
     const readback = await page.request.get('/api/profile-src/mine');
     expect(await readback.json()).toEqual(

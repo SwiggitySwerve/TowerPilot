@@ -6,6 +6,7 @@ import { selectShoppingSaved } from '../../../src/store/selectors/shoppingSaved.
 import { postBodies } from '../../support/dataLayer.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import { dashboardPagesCase, type DashboardCase } from '../../support/dashboardFixture.ts';
+import { bounds, boundsDraft, numericBoundsCases } from '../../support/shoppingBounds.ts';
 import { renderPage, type PageOptions } from '../dashboard/harness.tsx';
 
 const sample = (name: string) => dashboardPagesCase(`shopping_queue.${name}`);
@@ -199,23 +200,47 @@ it('SQ4 saved picker deselection preserves caps and order; selecting excluded up
   expect(review.entries.at(-1)).toMatchObject({ id: 'defense_absolute', enabled: true });
 });
 
-it('SQ12 saved refusal retains invalid-range draft and shows recorded server error through ServerValue', async () => {
-  const refused = sample('shopping_invalid_weight_refused');
-  const page = await open(undefined, {
-    before: (fake) => {
-      fake.route('POST', '/api/run-controls', () => refused);
-    },
-  });
-  await fill(page, 'Weight', '101', entry('damage'));
-  await page.user.click(saveButton());
-  await page.advance(100);
-  expect(within(entry('damage')).getByRole('textbox', { name: 'Weight' })).toHaveValue('101');
-  expect(document.querySelector('[data-outcome="not_saved"]')).not.toBeNull();
-  expect(document.querySelector('[data-outcome="not_saved"]')?.textContent).toContain(
-    String(own(refused.body, 'error')),
-  );
-  expect(posts(page)).toHaveLength(1);
-});
+it.each(numericBoundsCases('saved'))(
+  'SQ5 saved recorded bounds %s: exact POST, server refusal beside Save, retained raw draft or saved readback',
+  async (name) => {
+    let source = bounds('read_before_the_refusals');
+    const answer = bounds(name);
+    const page = await open(() => source, {
+      before: (fake) => {
+        fake.route('POST', '/api/run-controls', () => answer);
+      },
+    });
+    const vm = selectShoppingSaved(page.data.store.getSnapshot());
+    if (vm.scope === null) throw new Error('missing shopping scope');
+    const draft = boundsDraft(name);
+    act(() => {
+      for (const [key, value] of Object.entries(draft))
+        page.data.commands.editDraft(vm.scope ?? '', key, value);
+    });
+    await page.user.click(saveButton());
+    await page.advance(100);
+    expect(posts(page).map((call) => call.body)).toEqual([answer.request.body]);
+    if (answer.status === 400) {
+      expect(
+        root().querySelector('[data-queue-refusal] [data-server-text="message"]'),
+      ).toHaveTextContent(String(own(answer.body, 'error')));
+      expect(root().querySelector('[data-queue-refusal]')).toBeVisible();
+      expect(document.querySelector('[data-outcome="saved"]')).toBeNull();
+      expect(selectShoppingSaved(page.data.store.getSnapshot()).draft).toEqual(draft);
+      source = bounds('read_after_the_refusals_nothing_changed');
+    } else {
+      source = bounds('read_after_the_boundary_values_were_saved');
+    }
+    act(() => {
+      page.data.commands.checkRun();
+    });
+    await page.advance(100);
+    const current = selectShoppingSaved(page.data.store.getSnapshot());
+    expect(current.draft).toEqual(answer.status === 400 ? draft : {});
+    expect(current.base.plan?.raw).toEqual(ownPath(source.body, 'settings', 'shopping_plan'));
+    expect(posts(page)).toHaveLength(1);
+  },
+);
 
 it('SQ12 saved Unknown is not resent and only a later matching same-context read settles it', async () => {
   let source = sample('shopping_read_before_the_unanswered_save');

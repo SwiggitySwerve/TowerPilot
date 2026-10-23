@@ -1,31 +1,41 @@
 import {
+  profilePatchFencedPatchAnswerSchema,
+  profilePatchFencedSourceAnswerSchema,
+} from '../contract/profilePatchFenced.ts';
+import {
   contextFromConfig,
   contextKey,
   expectedContext,
   sameContext,
   type PageContext,
 } from './context.ts';
-import { createClickTimeTargetCheck } from './clickContext.ts';
+import { createClickTimeContextRead, createClickTimeTargetCheck } from './clickContext.ts';
 import { GET_TIMEOUT_MS } from './poller.ts';
 import { editTargetScope } from '../core/editingTarget.ts';
 import { readEndpoint } from './client.ts';
 import { createIntentMachine } from './intents/machine.ts';
+import { retainedProfilePatchRefusal } from './intents/persistence.ts';
+import { draftSettlement } from './intents/draftSettlement.ts';
 import { sendOnce } from './intents/send.ts';
 import { createSequence } from './sequence.ts';
 import { restoreDrafts, saveDrafts } from './drafts.ts';
 import {
   browserSessionStorage,
+  prefixedStorage,
   readJsonItem,
   writeJsonItem,
   type KeyValueStorage,
 } from './storage.ts';
 import { fetchTransport, type ApiPath, type Transport } from './transport.ts';
 import { bodyMembers, ENDPOINTS, type Endpoint } from './wire.ts';
+import { own } from '../core/read.ts';
 import * as schemas from '../contract/abilities.ts';
 import {
   profileTargetConfigAnswerSchema,
   profileTargetSourceAnswerSchema,
   profileTargetPatchAnswerSchema,
+  profileTargetMoreSourceAnswerSchema,
+  profileTargetMorePatchAnswerSchema,
 } from '../contract/profileTarget.ts';
 
 const endpoint = (strict: Endpoint['strict'], method: 'GET' | 'POST' = 'GET'): Endpoint => ({
@@ -36,6 +46,8 @@ const endpoint = (strict: Endpoint['strict'], method: 'GET' | 'POST' = 'GET'): E
 });
 const config = endpoint([schemas.abilitiesConfigAnswerSchema, profileTargetConfigAnswerSchema]);
 const profile = endpoint([
+  profileTargetMoreSourceAnswerSchema,
+  profilePatchFencedSourceAnswerSchema,
   schemas.abilitiesSourceAnswerSchema,
   schemas.abilitiesProfileAnswerSchema,
   schemas.abilitiesSampleSourceAnswerSchema,
@@ -45,18 +57,22 @@ const vocab = endpoint([schemas.abilitiesVocabAnswerSchema]);
 const settings = endpoint([schemas.abilitiesSettingsAnswerSchema]);
 const patch = endpoint(
   [
+    profileTargetMorePatchAnswerSchema,
     schemas.abilitiesPatchAnswerSchema,
     schemas.abilitiesSettingsSaveAnswerSchema,
     schemas.abilitiesSamplePatchAnswerSchema,
     profileTargetPatchAnswerSchema,
+    profilePatchFencedPatchAnswerSchema,
   ],
   'POST',
 );
 
-/** One non-resendable journal for both revision domains. The store durably keeps the
- * frozen submission with its raw draft; a reload restores it as unknown, never sends it.
- * run_save is the existing saved-configuration journal kind. Its Runs classifier cannot
- * confirm these answers; the Abilities owner verifies the named value and revision. */
+const intentTarget = (scope: string, body: unknown) =>
+  `abilities:${scope}:${JSON.stringify(own(body, 'path') ?? 'global')}`;
+
+/** Non-resendable, isolated journal. Raw drafts keep frozen submissions; unresolved
+ * submissions restore as unknown, while the shared journal retains definite runtime
+ * refusals. Policy targets are independent so saving another policy cannot erase one. */
 export function createAbilitiesApi(
   transport: Transport = fetchTransport,
   storage: KeyValueStorage | null = browserSessionStorage(),
@@ -64,16 +80,41 @@ export function createAbilitiesApi(
 ) {
   const machine = createIntentMachine({
     transport,
-    storage: null,
+    storage: prefixedStorage(storage, 'tp.abilities.journal:'),
     sequence: createSequence(),
     endpoints: { ...ENDPOINTS, runControlsSave: patch },
     ...(windowMs === undefined ? {} : { windowMs }),
   });
+  const submissionRecord = (scope: string, body: unknown) => {
+    const name = own(body, 'name');
+    if (typeof name !== 'string') return null;
+    return (
+      machine
+        .snapshot()
+        .findLast(
+          (item) =>
+            item.target === intentTarget(scope, body) &&
+            item.context !== null &&
+            editTargetScope(item.context, name) === scope &&
+            item.supersededBySeq === null &&
+            item.request.body === JSON.stringify(body),
+        ) ?? null
+    );
+  };
   return {
     machine,
     targetKey: contextKey,
     editTargetScope,
     expectedContext,
+    readClickContext: createClickTimeContextRead(transport, config),
+    awaitingAnswer: (scope: string, body: unknown) => {
+      const item = submissionRecord(scope, body);
+      return item !== null && draftSettlement(item) === 'pending';
+    },
+    profileRefusal: (scope: string, body: unknown) => {
+      const item = submissionRecord(scope, body);
+      return item !== null && retainedProfilePatchRefusal(item) ? item : null;
+    },
     checkTarget: createClickTimeTargetCheck(transport, {
       config,
       profileFiles: ENDPOINTS.profileFiles,
@@ -97,10 +138,10 @@ export function createAbilitiesApi(
       body: Readonly<Record<string, unknown>>,
       scope = contextKey(context),
     ) =>
-      sendOnce(machine, `abilities:${scope}`, context, () =>
+      sendOnce(machine, intentTarget(scope, body), context, () =>
         machine.send({
-          kind: 'run_save',
-          target: `abilities:${scope}`,
+          kind: path === '/api/profile-patch' ? 'profile_patch' : 'run_save',
+          target: intentTarget(scope, body),
           endpoint: 'runControlsSave',
           path,
           body,

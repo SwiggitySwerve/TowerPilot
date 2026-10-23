@@ -40,7 +40,8 @@ async function open(
     lost?: boolean;
     unchanged?: boolean;
     initial?: unknown;
-    saved?: unknown;
+    saveCase?: string;
+    readAfter?: string;
     storage?: ReturnType<typeof createMemoryStorage>;
   } = {},
 ) {
@@ -66,11 +67,17 @@ async function open(
             config = recorded('settings_modules.read_config_after_saved_active_instance').body;
           }
         } else
-          settings =
-            options.saved ?? recorded('settings_modules.read_after_saved_instance_defaults').body;
+          settings = recorded(
+            options.readAfter ?? 'settings_modules.read_after_saved_instance_defaults',
+          ).body;
         return options.lost
           ? 'hold'
-          : { status: 200, body: isSwitch ? switchSave.body : (options.saved ?? saved.body) };
+          : {
+              status: 200,
+              body: isSwitch
+                ? switchSave.body
+                : recorded(options.saveCase ?? 'settings_modules.saved_instance_defaults').body,
+            };
       });
     },
   });
@@ -101,6 +108,7 @@ afterEach(() => {
 it('C15-1 C15-2 C15-3 defaults save exactly the recorded body and read back without device actions', async () => {
   const page = await open();
   const defaults = form('instance-defaults');
+  await page.user.clear(defaults.getByRole('textbox', { name: fieldLabel('label') }));
   await page.user.type(
     defaults.getByRole('textbox', { name: fieldLabel('label') }),
     String(own(request, 'label')),
@@ -128,6 +136,7 @@ it('C15-1 stale refusal preserves raw whitespace and the recorded server reason'
   const page = await open({ refusal: name });
   const defaults = form('instance-defaults');
   const input = defaults.getByRole('textbox', { name: fieldLabel('label') });
+  await page.user.clear(input);
   await page.user.type(input, '  Stale  ');
   await page.user.click(defaults.getByRole('button', { name: /^Save$/u }));
   await page.advance(0);
@@ -144,6 +153,7 @@ it('C15-1 a late settings read preserves newer typing and a reload keeps the ori
   page.data.commands.checkSettings();
   await page.advance(0);
   const read = page.fake.next('/api/settings', 'GET');
+  await page.user.clear(form('instance-defaults').getByRole('textbox'));
   await page.user.type(form('instance-defaults').getByRole('textbox'), '  newest draft  ');
   read.respond(200, emulatorConfigBefore().body);
   await page.advance(0);
@@ -216,7 +226,7 @@ it('C15-4 only config naming the intended new instance settles; settings, unchan
   ).toBe('applied');
 });
 
-it('C15-2 fallback is an explicit server option; an unlisted saved preset retains its reason', async () => {
+it('C15-2 C-03 fallback is an explicit server option; an unlisted saved preset retains its reason', async () => {
   const page = await open();
   const defaults = form('instance-defaults');
   const picker = defaults.getByRole('combobox');
@@ -228,16 +238,13 @@ it('C15-2 fallback is an explicit server option; an unlisted saved preset retain
       .getAllByRole('option')
       .map((option) => option.getAttribute('value')),
   ).toEqual(field?.options.map((option) => option.value));
-  // Modified recorded read: retain the invalid enum case's unsupported historical value.
-  const invalid = recorded('settings_modules.invalid_enum_instance_defaults');
-  const read = structuredClone(emulatorConfigBefore().body) as {
-    modules: { id: string; fields: { path: string; value: unknown }[] }[];
-  };
-  const preset = read.modules
-    .find((module) => module.id === 'instance-defaults')
-    ?.fields.find((field) => field.path === 'preset');
+  const read = recorded(
+    'settings_modules_more.read_with_an_unlisted_saved_instance_defaults_preset',
+  ).body;
+  const preset = settingsModule(settingsView(read), 'instance-defaults')?.fields.find(
+    (field) => field.path === 'preset',
+  );
   if (preset === undefined) throw new Error('Missing recorded preset field');
-  preset.value = own(own(invalid.request.body, 'values'), 'preset');
   page.setSettings(read);
   page.data.commands.checkSettings();
   await page.advance(0);
@@ -247,36 +254,84 @@ it('C15-2 fallback is an explicit server option; an unlisted saved preset retain
   page.data.stop();
 });
 
-it('C15-2 C15-3 explicit machine fallback and autostart off round-trip independently of the label', async () => {
-  // Modified recorded receipt/read: the catalogue permits fallback and false, but only
-  // true plus coin_farm was recorded. Flip these two fields to exercise the opposite choices.
-  const off = structuredClone(saved.body) as {
-    modules: { id: string; fields: { path: string; value: unknown }[] }[];
-  };
-  for (const field of off.modules.find((module) => module.id === 'instance-defaults')?.fields ??
-    []) {
-    if (field.path === 'autostart') field.value = false;
-    if (field.path === 'preset') field.value = '';
-  }
-  const page = await open({ initial: saved.body, saved: off });
+it('C15-2 C15-3 C-03 explicit machine fallback and autostart off round-trip independently of the label', async () => {
+  const off = recorded(
+    'settings_modules_more.saved_instance_defaults_with_fallback_and_autostart_off',
+  );
+  const page = await open({
+    initial: recorded('settings_modules.read_after_saved_instance_defaults').body,
+    saveCase: 'settings_modules_more.saved_instance_defaults_with_fallback_and_autostart_off',
+    readAfter:
+      'settings_modules_more.read_after_saved_instance_defaults_with_fallback_and_autostart_off',
+  });
   const defaults = form('instance-defaults');
   await page.user.selectOptions(defaults.getByRole('combobox'), '');
   await page.user.click(defaults.getByRole('checkbox'));
   await page.user.click(defaults.getByRole('button', { name: /^Save$/u }));
   await page.advance(1_000);
-  expect(postBodies(page.fake, '/api/settings')).toEqual([
-    {
-      context: own(saved.request.body, 'context'),
-      module: 'instance-defaults',
-      revision: own(saved.body, 'revision'),
-      values: { preset: '', autostart: false },
-    },
-  ]);
+  expect(postBodies(page.fake, '/api/settings')).toEqual([off.request.body]);
   expect(defaults.getByRole('combobox')).toHaveValue('');
   expect(defaults.getByRole('checkbox')).not.toBeChecked();
   expect(defaults.getByRole('textbox')).toHaveValue(String(own(request, 'label')));
   page.data.stop();
 });
+
+it('C15-1 C15-2 C15-3 C-03 changing label and autostart omits the untouched unlisted preset and readback keeps it', async () => {
+  const saveCase =
+    'settings_modules_more.instance_defaults_saved_without_the_preset_field_keeps_the_unlisted_preset';
+  const partial = recorded(saveCase);
+  const page = await open({
+    initial: recorded('settings_modules_more.read_with_an_unlisted_saved_instance_defaults_preset')
+      .body,
+    saveCase,
+    readAfter:
+      'settings_modules_more.read_after_the_partial_instance_save_the_unlisted_preset_remains',
+  });
+  const defaults = form('instance-defaults');
+  expect(defaults.getByRole('combobox')).toHaveValue('ghost');
+  await page.user.clear(defaults.getByRole('textbox'));
+  await page.user.type(defaults.getByRole('textbox'), 'Tower');
+  await page.user.click(defaults.getByRole('checkbox'));
+  await page.user.click(defaults.getByRole('button', { name: /^Save$/u }));
+  await page.advance(3_000);
+  expect(postBodies(page.fake, '/api/settings')).toEqual([partial.request.body]);
+  expect(defaults.getByRole('combobox')).toHaveValue('ghost');
+  expect(defaults.getByRole('combobox')).toHaveAttribute('aria-invalid', 'true');
+  expect(defaults.getByRole('textbox')).toHaveValue('Tower');
+  expect(defaults.getByRole('checkbox')).toBeChecked();
+  page.data.stop();
+});
+
+it.each([
+  [
+    'unlisted',
+    'read_after_the_partial_instance_save_the_unlisted_preset_remains',
+    'instance_defaults_choosing_the_machine_fallback_replaces_the_unlisted_preset',
+    'read_after_the_unlisted_instance_preset_was_replaced',
+  ],
+])(
+  'C15-2 C-03 %s preset changes only after explicitly choosing machine fallback',
+  async (_state, initial, saveCase, readAfter) => {
+    const prefix = 'settings_modules_more.';
+    const page = await open({
+      initial: recorded(prefix + initial).body,
+      saveCase: prefix + saveCase,
+      readAfter: prefix + readAfter,
+    });
+    const defaults = form('instance-defaults');
+    expect(defaults.getByRole('combobox')).not.toHaveValue('');
+    expect(page.fake.writes()).toEqual([]);
+    await page.user.selectOptions(defaults.getByRole('combobox'), '');
+    await page.user.click(defaults.getByRole('button', { name: /^Save$/u }));
+    await page.advance(3_000);
+    expect(postBodies(page.fake, '/api/settings')).toEqual([
+      recorded(prefix + saveCase).request.body,
+    ]);
+    expect(defaults.getByRole('combobox')).toHaveValue('');
+    expect(defaults.getByRole('combobox')).not.toHaveAttribute('aria-invalid');
+    page.data.stop();
+  },
+);
 
 it.each([
   ['C15-1', 'invalid_string_instance_defaults', 'label'],
@@ -380,6 +435,7 @@ it('C15-4 a successful settings receipt alone stays unresolved until config veri
 
 it('C15-4 lost answer is settled by later config; unsaved defaults remain only in the original context', async () => {
   const page = await open({ lost: true });
+  await page.user.clear(form('instance-defaults').getByRole('textbox'));
   await page.user.type(form('instance-defaults').getByRole('textbox'), 'original draft');
   const old = selectEmulatorSettings(page.data.store.getSnapshot()).defaults?.scope;
   await page.user.selectOptions(form('active-instance').getByRole('combobox'), 'other');
@@ -445,6 +501,7 @@ it('C15-4 sparse account switch and switch back use config-only readback and pre
 
 it('C15-1 failed settings read keeps the draft with a visible reason and refuses a save', async () => {
   const page = await open();
+  await page.user.clear(form('instance-defaults').getByRole('textbox'));
   await page.user.type(form('instance-defaults').getByRole('textbox'), 'keep me');
   const failure = recorded('settings.saved_then_the_answer_failed_500');
   // Reuse the recorded server failure on the settings GET to exercise stale-read UI;
@@ -534,6 +591,7 @@ it('C15-4 Read saved settings again recovers a failed config read without anothe
 
 it('C15-1 C15-4 a pending defaults save visibly blocks a separate switch', async () => {
   const page = await open({ lost: true });
+  await page.user.clear(form('instance-defaults').getByRole('textbox'));
   await page.user.type(form('instance-defaults').getByRole('textbox'), 'waiting');
   await page.user.click(form('instance-defaults').getByRole('button', { name: /^Save$/u }));
   await page.user.selectOptions(form('active-instance').getByRole('combobox'), 'other');

@@ -1,6 +1,7 @@
 import { readEndpoint } from './client.ts';
 import { contextFromConfig, sameContext, type PageContext } from './context.ts';
 import { editingTarget } from '../core/editingTarget.ts';
+import { configRevision } from '../core/config.ts';
 import { profileFilesView } from '../core/profiles.ts';
 import { ownPath } from '../core/read.ts';
 import { GET_TIMEOUT_MS } from './poller.ts';
@@ -60,6 +61,24 @@ export function createClickTimeContextRead(
   timers: Timers = browserTimers,
 ) {
   return createClickTimeConfigRead(transport, config, contextFromConfig, timers);
+}
+
+/** A revision and context from the same independent click-time config answer. */
+export function createClickTimeRevisionContextRead(
+  transport: Transport,
+  config: Endpoint,
+  timers: Timers = browserTimers,
+) {
+  return createClickTimeConfigRead(
+    transport,
+    config,
+    (body) => {
+      const context = contextFromConfig(body);
+      const revision = configRevision(body);
+      return context === null || revision === null ? null : { context, revision };
+    },
+    timers,
+  );
 }
 
 export function createClickTimeLaunchContextRead(

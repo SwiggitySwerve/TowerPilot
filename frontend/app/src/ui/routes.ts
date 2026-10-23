@@ -26,11 +26,18 @@ export type PageId = (typeof PAGE_IDS)[number];
 export type PageTarget =
   | { readonly kind: 'live' }
   | { readonly kind: 'saved'; readonly run: string }
-  | { readonly kind: 'policy'; readonly policy: string };
+  | { readonly kind: 'policy'; readonly policy: string }
+  | {
+      readonly kind: 'ability';
+      readonly family: 'uw_policies' | 'rescue_policies';
+      readonly policy: string;
+    };
 
 export function pageHref(id: PageId, target: PageTarget | null = null): `#${string}` {
   if (target === null) return `#${id}`;
   switch (target.kind) {
+    case 'ability':
+      return `#${id}/${target.family}/${encodeURIComponent(target.policy)}`;
     case 'live':
       return `#${id}/live`;
     case 'saved':

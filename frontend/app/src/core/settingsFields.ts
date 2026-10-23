@@ -149,6 +149,14 @@ export function settingsModule(view: SettingsView | null, moduleId: string): Set
 /** A draft holds raw text per part: `<path>` for one value, `<path>#0`/`<path>#1` for a pair. */
 export type SettingsDraft = Readonly<Record<string, string | boolean>>;
 
+/** Draft provenance, persisted beside raw parts and never sent as a settings value. */
+export const SETTINGS_BASE_REVISION = '#settings-base-revision';
+
+export function settingsDraftRevision(draft: SettingsDraft): string | null {
+  const revision = draft[SETTINGS_BASE_REVISION];
+  return typeof revision === 'string' && revision !== '' ? revision : null;
+}
+
 export function partKey(path: string, part: 0 | 1 | null): string {
   return part === null ? path : `${path}#${String(part)}`;
 }
@@ -395,8 +403,9 @@ export function savedFieldProblem(
       savedPart(field, keys.length === 1 ? null : index === 0 ? 0 : 1),
     ]),
   );
-  // A saved value that is absent reads as '' (savedPart): an unset value is not judged.
-  if (Object.values(saved).some((raw) => raw === '')) return null;
+  // Empty enum values are explicit choices: only the server's options can permit them.
+  // Other absent saved values read as '' (savedPart) and are not judged.
+  if (field.type !== 'enum' && Object.values(saved).some((raw) => raw === '')) return null;
   const checked = checkField(field, saved);
   return checked.kind === 'invalid' ? { reason: checked.reason, part: checked.part } : null;
 }

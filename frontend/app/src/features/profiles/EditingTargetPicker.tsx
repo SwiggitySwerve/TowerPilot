@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { editingTarget as t } from '../../copy/editingTarget.ts';
-import { selectEditingChoices } from '../../store/selectors/editingTarget.ts';
+import { editingFilesFailed, selectEditingChoices } from '../../store/selectors/editingTarget.ts';
 import { Button } from '../../ui/Button.tsx';
 import { ServerOption } from '../../ui/ServerValue.tsx';
 import { useDashboard, useView } from '../dashboard/context.ts';
@@ -10,6 +10,7 @@ export function EditingTargetPicker() {
   const { commands } = useDashboard();
   const epoch = useView((state) => state.epoch);
   const choices = useView(selectEditingChoices);
+  const failed = useView(editingFilesFailed);
   const [pick, setPick] = useState('');
   const available = choices.some((choice) => choice.key === pick);
   return (
@@ -17,6 +18,16 @@ export function EditingTargetPicker() {
       <legend>{t.title.short}</legend>
       <EditingTargetLine />
       <div>{t.scope.short}</div>
+      {failed ? (
+        <div role="alert">
+          {t.listFailed.short}
+          <Button
+            tier="secondary"
+            label={t.retryList.short}
+            onClick={commands.checkEditingProfiles}
+          />
+        </div>
+      ) : null}
       <label className="tp-profiles__field">
         <span>{t.picker.short}</span>
         <select

@@ -6,7 +6,8 @@ import { AbilitiesPage } from '../features/abilities/AbilitiesPage.tsx';
 import { useDashboard } from '../features/dashboard/context.ts';
 import { selectEditingTarget } from '../store/selectors/editingTarget.ts';
 const editors = new WeakMap<DashboardStore, AbilitiesStore>();
-export function ConnectedAbilitiesPage() {
+import type { PageTarget } from '../ui/routes.ts';
+export function ConnectedAbilitiesPage({ target }: { readonly target: PageTarget | null }) {
   const dashboard = useDashboard().store;
   const [abilities] = useState(() => {
     let editor = editors.get(dashboard);
@@ -25,5 +26,8 @@ export function ConnectedAbilitiesPage() {
     sync();
     return unsubscribe;
   }, [dashboard, abilities]);
-  return createElement(AbilitiesPage, { abilities });
+  // RL11: route-local selection/family state resets on navigation; the shared editor
+  // store retains its drafts and pending writes across those route changes.
+  const key = target?.kind === 'ability' ? JSON.stringify([target.family, target.policy]) : 'all';
+  return createElement(AbilitiesPage, { key, abilities, target });
 }

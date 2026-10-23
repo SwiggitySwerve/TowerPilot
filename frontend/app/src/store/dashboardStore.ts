@@ -1,5 +1,10 @@
 import { editTargetKey, pickableProfiles } from '../core/editingTarget.ts';
-import { retainedStringListKeys } from '../core/settingsFields.ts';
+import { retainedStringListKeys, SETTINGS_BASE_REVISION } from '../core/settingsFields.ts';
+import {
+  currentSettingsView,
+  settingsScope,
+  settingsSavePending,
+} from './selectors/settingsModule.ts';
 import { editingFiles } from './selectors/editingTarget.ts';
 import { onFromRead } from '../core/harvestChoice.ts';
 import { harvestView } from '../core/readability.ts';
@@ -116,7 +121,11 @@ function withoutDraft(
   const others = Object.entries(drafts).filter(([key]) => key !== scope);
   return Object.freeze(
     Object.fromEntries(
-      Object.keys(kept).length === 0 ? others : [...others, [scope, Object.freeze(kept)]],
+      Object.keys(kept).filter(
+        (key) => !scope.startsWith('settings:') || key !== SETTINGS_BASE_REVISION,
+      ).length === 0
+        ? others
+        : [...others, [scope, Object.freeze(kept)]],
     ),
   );
 }
@@ -342,11 +351,32 @@ export function reduceDashboard(state: DashboardState, action: DashboardAction):
     case 'draft_edit': {
       const current = state.runDrafts[action.scope] ?? {};
       if (current[action.path] === action.value) return state;
+      const settingsDraft = action.scope.startsWith('settings:');
+      const view = settingsDraft ? currentSettingsView(state) : null;
+      const ownsScope =
+        view?.modules.some(
+          (module) => module.editable && settingsScope(state.context, module.id) === action.scope,
+        ) === true;
+      // A legacy draft with no provenance must be reconciled explicitly. Never assign
+      // a newer read's revision to raw input restored from an earlier session.
+      const firstEdit = settingsDraft && Object.keys(current).length === 0;
+      const revision = firstEdit && ownsScope ? (view.revision ?? '') : '';
+      // Reconciliation is an explicit draft edit, accepted only against a current read.
+      if (
+        settingsDraft &&
+        action.path === SETTINGS_BASE_REVISION &&
+        (!ownsScope || action.value !== view.revision || settingsSavePending(state, ['settings']))
+      )
+        return state;
       return Object.freeze({
         ...state,
         runDrafts: Object.freeze({
           ...state.runDrafts,
-          [action.scope]: Object.freeze({ ...current, [action.path]: action.value }),
+          [action.scope]: Object.freeze({
+            ...current,
+            ...(firstEdit ? { [SETTINGS_BASE_REVISION]: revision } : {}),
+            [action.path]: action.value,
+          }),
         }),
       });
     }

@@ -8,6 +8,7 @@ import { selectRunsPage } from '../../../src/store/selectors/runs.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import { postBodies } from '../../support/dataLayer.ts';
 import { dashboardBody, dashboardPagesCase } from '../../support/dashboardFixture.ts';
+import { bounds, boundsDraft, numericBoundsCases } from '../../support/shoppingBounds.ts';
 import { addBody, addFailure, regionState, tick } from '../../store/regionHelpers.ts';
 import { renderPage, renderRegion } from '../dashboard/harness.tsx';
 const sample = (name: string) => dashboardPagesCase(`shopping_queue.${name}`);
@@ -361,3 +362,49 @@ it('SQ11 SQ7 the live queue waits for the confirmed page context before it can b
   expect(confirmed.supported).toBe(true);
   expect(confirmed.reason).not.toBe('context_unknown');
 });
+
+it.each(numericBoundsCases('live'))(
+  'SQ5 live recorded bounds %s: exact POST, server refusal beside Save, raw draft or same-battle applied readback',
+  async (name) => {
+    let source = bounds('read_after_the_live_refusals_nothing_was_recorded').body;
+    const answer = bounds(name);
+    const key = own(answer.request.body, 'idempotency_key');
+    if (typeof key !== 'string') throw new Error('missing recorded key');
+    const page = await open(() => source, key);
+    const vm = selectShoppingLive(page.data.store.getSnapshot());
+    const draft = boundsDraft(name);
+    act(() => {
+      for (const [key, value] of Object.entries(draft))
+        page.data.commands.editDraft(vm.scope, key, value);
+    });
+    page.fake.route('POST', answer.request.path, () => answer);
+    await page.user.click(
+      within(root()).getByRole('button', { name: 'Save queue for this battle' }),
+    );
+    await page.advance(100);
+    expect(postBodies(page.fake, answer.request.path)).toEqual([answer.request.body]);
+    if (answer.status === 400) {
+      expect(
+        root().querySelector('[data-queue-refusal] [data-server-text="message"]'),
+      ).toHaveTextContent(String(own(answer.body, 'error')));
+      expect(root().querySelector('[data-queue-refusal]')).toBeVisible();
+      expect(selectShoppingLive(page.data.store.getSnapshot()).draft).toEqual(draft);
+    } else {
+      expect(selectRunsPage(page.data.store.getSnapshot()).live.outcome?.code).toBe(
+        'live_recorded',
+      );
+      source = bounds('read_after_the_live_boundary_values_applied').body;
+    }
+    act(() => {
+      page.data.commands.checkBattle();
+    });
+    await page.advance(100);
+    expect(selectRunsPage(page.data.store.getSnapshot()).live.outcome?.code).toBe(
+      answer.status === 400 ? 'live_not_recorded' : 'live_applied',
+    );
+    expect(selectShoppingLive(page.data.store.getSnapshot()).draft).toEqual(
+      answer.status === 400 ? draft : {},
+    );
+    expect(postBodies(page.fake, answer.request.path)).toHaveLength(1);
+  },
+);

@@ -3,6 +3,8 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { bodiesTo, openScenario, posts } from './helpers.ts';
+import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
+import { own, ownPath, entries } from '../src/core/read.ts';
 
 /**
  * The Collection page in a real browser on the fake backend (brief
@@ -210,11 +212,31 @@ test('C5 an in-use policy says why it cannot be deleted; a copy keeps the source
   await copy.getByRole('button', { name: 'Save copy' }).dblclick();
   await expect.poll(async () => (await bodiesTo(page, '/api/profile-patch')).length).toBe(1);
   expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
-    expect.objectContaining({
+    // Supplementary legacy weekend copy: no fenced recording has this identifier/label.
+    // Use the complete recorded source policy and revision, preserving every hidden field.
+    {
       name: 'mine',
+      expected_context: { instance: 'main', serial: 'fake:1', account: null, profile: 'mine' },
+      expected_revision: own(
+        dashboardPagesCase('collection_policies.read_before_the_first_save').body,
+        'revision',
+      ),
       path: ['policies', 'gather', 'weekend'],
-      value: expect.objectContaining({ label: 'Weekend gathering', quests_8h: false }),
-    }),
+      value: {
+        ...Object.fromEntries(
+          entries(
+            ownPath(
+              dashboardPagesCase('collection_policies.read_before_the_first_save').body,
+              'profile',
+              'policies',
+              'gather',
+              'gems_only',
+            ),
+          ),
+        ),
+        label: 'Weekend gathering',
+      },
+    },
   ]);
   await expect(copy.locator('[data-outcome="saved"]')).toBeVisible();
   await policies.screenshot({ path: path.join(OUT, 'collection-policy-copy-1360.png') });
@@ -235,10 +257,17 @@ test('C6 shatter is said to destroy modules; switching quest scan off saves the 
   await chores.getByRole('button', { name: 'Save chores' }).click();
   await expect.poll(async () => (await bodiesTo(page, '/api/profile-patch')).length).toBe(1);
   expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
-    expect.objectContaining({
+    // Supplementary legacy chore revision; the fenced chore request has its own browser suite.
+    {
+      name: 'mine',
+      expected_revision: own(
+        dashboardPagesCase('collection_policies.read_before_the_first_save').body,
+        'revision',
+      ),
+      expected_context: { instance: 'main', serial: 'fake:1', account: null, profile: 'mine' },
       path: ['policies', 'chores'],
       value: [{ name: 'quest_scan', enabled: false }],
-    }),
+    },
   ]);
   await expect(chores.locator('[data-outcome="saved"]')).toBeVisible();
   await chores.screenshot({ path: path.join(OUT, 'collection-chores-saved-1360.png') });

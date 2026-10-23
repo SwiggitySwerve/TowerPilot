@@ -1,15 +1,23 @@
 import {
+  profilePatchFencedPatchAnswerSchema,
+  profilePatchFencedSourceAnswerSchema,
+} from '../contract/profilePatchFenced.ts';
+import {
   profileTargetConfigAnswerSchema,
   profileTargetFilesAnswerSchema,
   profileTargetSourceAnswerSchema,
   profileTargetPatchAnswerSchema,
   profileTargetActivateAnswerSchema,
+  profileTargetMoreFilesAnswerSchema,
+  profileTargetMoreSourceAnswerSchema,
+  profileTargetMorePatchAnswerSchema,
 } from '../contract/profileTarget.ts';
 import {
   analysisStartAnswerSchema,
   templateWriteAnswerSchema,
 } from '../contract/recognitionAdvanced.ts';
 import { z } from 'zod';
+import { previewBackendsAnswerSchema, previewStatusAnswerSchema } from '../contract/preview.ts';
 import { automationAccessAnswerSchema } from '../contract/automationAccess.ts';
 import {
   accountsAnswerSchema,
@@ -107,6 +115,14 @@ import {
   planDeleteSourceAnswerSchema,
   resetAllAnswerSchema,
   resetAllReadAnswerSchema,
+  mixedResetAnswerSchema,
+  mixedResetReadAnswerSchema,
+  codedAddAnswerSchema,
+  codedAddSourceAnswerSchema,
+  queueBoundsSaveAnswerSchema,
+  queueBoundsReadAnswerSchema,
+  queueBoundsLiveAnswerSchema,
+  queueBoundsBattleReadAnswerSchema,
   runEntryPatchAnswerSchema,
   runEntrySourceAnswerSchema,
   runTemplatesAddAnswerSchema,
@@ -124,6 +140,9 @@ import {
 } from '../contract/shopping.ts';
 import {
   configFieldsConfigAnswerSchema,
+  configFieldsMoreConfigAnswerSchema,
+  configFieldsMoreSettingsReadAnswerSchema,
+  configFieldsMoreSettingsSaveAnswerSchema,
   configFieldsSettingsReadAnswerSchema,
   configFieldsSettingsSaveAnswerSchema,
   restoreConfigAnswerSchema,
@@ -318,6 +337,8 @@ export const DEFAULT_CONTRACT: ContractSchemas = {
 
 /** Every Dashboard read of spec section 7 (7.2, plus the click-time reads of INV-1 and Start). */
 export type ReadEndpointId =
+  | 'previewBackends'
+  | 'previewStatus'
   | 'status'
   | 'config'
   | 'accounts'
@@ -443,10 +464,13 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
     body: z.strictObject({ ok: z.literal(true), harvest: contract.harvestStatus }),
   });
   return Object.freeze({
+    previewBackends: endpoint('previewBackends', 'GET', [previewBackendsAnswerSchema]),
+    previewStatus: endpoint('previewStatus', 'GET', [previewStatusAnswerSchema]),
     status: endpoint('status', 'GET', [status]),
     config: endpoint('config', 'GET', [
       // F6-15: the config after an active-instance switch and after a loadout restore save.
       configFieldsConfigAnswerSchema,
+      configFieldsMoreConfigAnswerSchema,
       switchConfigAnswerSchema,
       restoreConfigAnswerSchema,
       restoreEligibilityConfigAnswerSchema,
@@ -463,12 +487,15 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
     // source of one profile, as the reads and the writes' settling reads record them.
     profileFiles: endpoint('profileFiles', 'GET', [
       profileTargetFilesAnswerSchema,
+      profileTargetMoreFilesAnswerSchema,
       profilesFilesReadAnswerSchema,
       profilesFilesAfterAccountAnswerSchema,
       profilesFilesAfterWriteAnswerSchema,
     ]),
     profileSource: endpoint('profileSource', 'GET', [
+      profilePatchFencedSourceAnswerSchema,
       profileTargetSourceAnswerSchema,
+      profileTargetMoreSourceAnswerSchema,
       profilesSourceReadAnswerSchema,
       profilesSourceAfterTierAnswerSchema,
       profilesSourceAfterPromoteAnswerSchema,
@@ -480,6 +507,7 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       shoppingLibraryReadAnswerSchema,
       runTemplatesAddSourceAnswerSchema,
       fencedAddSourceAnswerSchema,
+      codedAddSourceAnswerSchema,
       planDeleteSourceAnswerSchema,
     ]),
     runs: endpoint('runs', 'GET', [contract.runs]),
@@ -487,6 +515,7 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
     runTemplatesAdd: endpoint('runTemplatesAdd', 'POST', [
       runTemplatesAddAnswerSchema,
       fencedAddAnswerSchema,
+      codedAddAnswerSchema,
     ]),
     runTemplates: endpoint('runTemplates', 'GET', [
       runTemplatesAnswerSchema,
@@ -504,6 +533,8 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       // F6-11 RL2 and RL7 (r12 candidate): reads around a reset of every override, and a
       // battle with a seen Ad gems offer, a failed attempt and a Floating gems refusal.
       resetAllReadAnswerSchema,
+      mixedResetReadAnswerSchema,
+      queueBoundsBattleReadAnswerSchema,
       battleDetailsReadAnswerSchema,
       // F6-12: a battle's shopping queue changes and Try once commands, requested to completed.
       shoppingBattleReadAnswerSchema,
@@ -557,6 +588,7 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
     ]),
     templateWrite: endpoint('templateWrite', 'POST', [templateWriteAnswerSchema]),
     runControls: endpoint('runControls', 'GET', [
+      queueBoundsReadAnswerSchema,
       contract.runControls,
       contract.runControlsSaveRead,
       // F6-12: saved queues, legacy conversion previews and the reads around queue saves.
@@ -589,11 +621,14 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
     // POST /api/run-controls (Runs page, RUN-05): the read's shape with the new revision,
     // {ok:false, error[, code]} with 400/409, or a text 500 (pages fixture run_controls_save).
     runControlsSave: endpoint('runControlsSave', 'POST', [
+      queueBoundsSaveAnswerSchema,
       contract.runControlsSave,
       shoppingRunSaveAnswerSchema,
     ]),
     profilePatch: endpoint('profilePatch', 'POST', [
+      profilePatchFencedPatchAnswerSchema,
       profileTargetPatchAnswerSchema,
+      profileTargetMorePatchAnswerSchema,
       schedulePatchAnswerSchema,
       collectionPatchAnswerSchema,
       firstPolicyPatchAnswerSchema,
@@ -608,11 +643,13 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       settingsReadAnswerSchema,
       // F6-15: reads after the typed module saves and the active-instance switches.
       configFieldsSettingsReadAnswerSchema,
+      configFieldsMoreSettingsReadAnswerSchema,
       switchSettingsReadAnswerSchema,
     ]),
     settingsSave: endpoint('settingsSave', 'POST', [
       settingsPostAnswerSchema,
       configFieldsSettingsSaveAnswerSchema,
+      configFieldsMoreSettingsSaveAnswerSchema,
       switchSettingsSaveAnswerSchema,
     ]),
     vocab: endpoint('vocab', 'GET', [vocabReadAnswerSchema]),
@@ -623,6 +660,8 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       contract.battleActions,
       // F6-11 RL2 (r12 candidate): several paths reset in one request.
       resetAllAnswerSchema,
+      mixedResetAnswerSchema,
+      queueBoundsLiveAnswerSchema,
       // F6-12: a whole shopping queue sent as one path.
       shoppingBattleWriteAnswerSchema,
     ]),

@@ -32,6 +32,7 @@ export interface ScheduleEntry {
   readonly version: number;
   readonly busy: boolean;
   readonly readError: boolean;
+  readonly sourceError?: unknown;
   readonly intent: IntentRecord | null;
   readonly reconcile: boolean;
   readonly checked: boolean;
@@ -41,6 +42,15 @@ export interface ScheduleEntry {
   readonly checking: boolean;
   /** F6-11-P2-01: why the last Save or Remove of this target was not sent. */
   readonly notSent: Exclude<TargetCheckResult, 'same'> | null;
+  readonly recovery?:
+    | {
+        readonly id: string;
+        readonly draft: ScheduleDraft;
+        readonly revision: string;
+        readonly version: number;
+        readonly day: string;
+      }
+    | undefined;
 }
 /**
  * F6-11-P2-01: what a Save or Remove click did: `sent` once, nothing at all (`blocked`: the
@@ -125,11 +135,34 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
     const entry = store.getSnapshot().entries[key];
     if (entry !== undefined)
       api.keepDraft(key, {
-        draft: entry.dirty && entry.draft !== null ? entry.draft : undefined,
+        draft:
+          (entry.dirty || entry.recovery !== undefined) && entry.draft !== null
+            ? entry.draft
+            : undefined,
         revision: entry.baseRevision,
         day: entry.day,
         focus: entry.focus,
+        recovery: entry.recovery,
+        version: entry.version,
       });
+  };
+  const rememberSubmission = (
+    intent: IntentRecord,
+    entry: ScheduleEntry,
+    plan: unknown,
+    remove = false,
+  ) => {
+    submitted.set(intent.id, { version: entry.version, plan, ...(remove ? { remove: true } : {}) });
+    const key = store.getSnapshot().key;
+    if (key === null || entry.draft === null || entry.baseRevision === null) return;
+    const recovery = {
+      id: intent.id,
+      draft: entry.draft,
+      revision: entry.baseRevision,
+      version: entry.version,
+      day: entry.day,
+    };
+    change(key, (current) => ({ ...current, recovery }));
   };
   const activeChange = (transform: (entry: ScheduleEntry) => ScheduleEntry) => {
     const key = store.getSnapshot().key;
@@ -175,6 +208,16 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
       change(key, (e) => ({
         ...e,
         intent,
+        ...(api.draftSettlement(intent) === 'refused' && e.recovery?.id === intent.id
+          ? {
+              draft: e.version === e.recovery.version ? e.recovery.draft : e.draft,
+              day: e.version === e.recovery.version ? e.recovery.day : e.day,
+              baseRevision: e.recovery.revision,
+              dirty: true,
+              recovery: undefined,
+            }
+          : {}),
+        ...(accepted ? { recovery: undefined } : {}),
         ...(accepted
           ? {
               source: intent.answer?.body,
@@ -240,17 +283,21 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
       api.reportMatches(observation, context);
     change(key, (e) => {
       const draft =
-        e.dirty || source === undefined ? e.draft : scheduleDraft(own(source, 'profile'));
+        e.dirty || e.recovery !== undefined || source === undefined
+          ? e.draft
+          : scheduleDraft(own(source, 'profile'));
       return {
         ...e,
         busy: false,
         readError: !correct || (!sourceObsolete && target.name !== null && source === undefined),
+        sourceError: !correct || sourceObsolete ? undefined : own(profile?.answer?.body, 'error'),
         ...(source === undefined
           ? {}
           : {
               source,
               draft,
-              baseRevision: e.dirty ? e.baseRevision : profileRevision(source),
+              baseRevision:
+                e.dirty || e.recovery !== undefined ? e.baseRevision : profileRevision(source),
               day: e.day || Object.keys(draft?.days ?? {})[0] || '',
               checked: true,
             }),
@@ -274,13 +321,18 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
       // stays unknown until the person reconciles explicitly.
       if (sent !== null && settleProfilePatch(source, sent) === 'applied') {
         api.machine.settleByRead(intent.id, 'applied');
-        const submittedVersion = submitted.get(intent.id)?.version;
-        change(key, (current) =>
-          sent.remove
+        if (api.draftSettlement(intent, 'applied') === 'pending') return;
+        const submittedVersion = submitted.get(intent.id)?.version ?? e?.recovery?.version;
+        change(key, (current) => ({
+          ...(sent.remove
             ? // F6-11 RL8: a removal is sent only from a clean draft, so a dirty draft now holds
               // edits typed after it (F6-11-P2-03, also when restored after a reload): they stay
               // a draft under this target; only the unchanged draft goes with the plan.
-              current.dirty
+              (
+                current.recovery === undefined
+                  ? current.dirty
+                  : current.version !== submittedVersion
+              )
               ? { ...current, baseRevision: revision }
               : { ...current, baseRevision: revision, dirty: false, draft: null, day: '' }
             : {
@@ -292,8 +344,9 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
                     current.draft === null ? undefined : schedulePlan(current.draft),
                     sent.value,
                   ),
-              },
-        );
+              }),
+          recovery: undefined,
+        }));
       } else change(key, (current) => ({ ...current, reconcile: true }));
     }
   };
@@ -408,6 +461,11 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
       if (store.getSnapshot().entries[key] === undefined) {
         const stored = api.loadDraft(key);
         const draft = restoreScheduleDraft(own(stored, 'draft'));
+        const rawRecovery = own(stored, 'recovery');
+        const recoveryDraft = restoreScheduleDraft(own(rawRecovery, 'draft'));
+        const recoveryId = text(own(rawRecovery, 'id'));
+        const recoveryRevision = text(own(rawRecovery, 'revision'));
+        const recoveryVersion = own(rawRecovery, 'version');
         change(key, () => ({
           ...empty(),
           draft,
@@ -415,6 +473,20 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
           baseRevision: text(own(stored, 'revision')) ?? null,
           day: text(own(stored, 'day')) ?? '',
           focus: text(own(stored, 'focus')) ?? null,
+          version: typeof own(stored, 'version') === 'number' ? Number(own(stored, 'version')) : 0,
+          recovery:
+            recoveryDraft !== null &&
+            recoveryId !== undefined &&
+            recoveryRevision !== undefined &&
+            typeof recoveryVersion === 'number'
+              ? {
+                  id: recoveryId,
+                  draft: recoveryDraft,
+                  revision: recoveryRevision,
+                  version: recoveryVersion,
+                  day: text(own(rawRecovery, 'day')) ?? '',
+                }
+              : undefined,
         }));
       }
       sync();
@@ -495,7 +567,7 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
         const plan = schedulePlan(e.draft);
         const result = api.send(context, e.baseRevision, plan, store.getSnapshot().target.name);
         if (result.kind !== 'sent') return false;
-        submitted.set(result.record.id, { version: e.version, plan });
+        rememberSubmission(result.record, e, plan);
         return true;
       }, canSave),
     removePlan: (revision) => {
@@ -512,7 +584,7 @@ export function createScheduleStore(api: ScheduleApi, now: () => number = Date.n
         if (!ready(e)) return false;
         const result = api.remove(context, revision, store.getSnapshot().target.name);
         if (result.kind !== 'sent') return false;
-        submitted.set(result.record.id, { version: e.version, plan: undefined, remove: true });
+        rememberSubmission(result.record, e, undefined, true);
         return true;
       }, ready);
     },

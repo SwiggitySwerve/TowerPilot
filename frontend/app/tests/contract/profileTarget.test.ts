@@ -7,10 +7,33 @@ import {
   loadJsonWithIdentity,
 } from '../../scripts/contract-fixture.mjs';
 import { dashboardPagesCase } from '../support/dashboardFixture.ts';
+import { moreCase, moreNames } from '../support/profileTargetMore.ts';
 
 const family = own(
   own(loadJsonWithIdentity(DASHBOARD_PAGES_FIXTURE_PATH).fixture, 'cases'),
   'profile_target',
+);
+
+it.each(moreNames)(
+  'PE1 F6-14c profile_target_more.%s is bound to its recorded wire endpoint',
+  (name) => {
+    const found = moreCase(name);
+    const endpoint =
+      found.request.path === '/api/profile-files'
+        ? ENDPOINTS.profileFiles
+        : found.request.method === 'POST'
+          ? ENDPOINTS.profilePatch
+          : ENDPOINTS.profileSource;
+    // The recorded list failure is the default HTML page, not a JSON answer.
+    const raw = own(found.body, 'text');
+    const answer = parseAnswer(
+      endpoint,
+      found.status,
+      typeof raw === 'string' ? raw : JSON.stringify(found.body),
+    );
+    expect(answer.contract).toBe('exact');
+    if (typeof raw === 'string') expect(answer.json).toBe(false);
+  },
 );
 const endpoints = [
   ENDPOINTS.config,

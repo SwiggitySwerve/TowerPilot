@@ -1,6 +1,7 @@
 import {
   runAddLoadouts,
   runAddOptions,
+  runAddRefusal,
   runAddSource,
   runIdCheck,
   runRecipes,
@@ -119,6 +120,7 @@ export function selectRunsAdd(state: DashboardState) {
         : {
             id: record.id,
             phase: phase ?? record.phase,
+            refusal: record.answer === null ? null : runAddRefusal(record.answer),
             accepted: record.accepted === true,
             notAddedAgain:
               own(record.answer?.body, 'code') === 'revision_conflict' &&

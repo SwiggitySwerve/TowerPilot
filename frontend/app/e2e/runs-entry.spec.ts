@@ -1,3 +1,4 @@
+import { withRecordedFence, fencedRuntime } from '../tests/support/profilePatchFenced.ts';
 import { mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -63,7 +64,10 @@ for (const width of [1360, 1054, 390]) {
     await expect(row.locator('[data-outcome="saved"]')).toBeVisible();
     await expect(row.getByRole('button', { name: 'Save field', exact: true })).toBeFocused();
     expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
-      dashboardPagesCase('run_entry_patch.saved_label').request.body,
+      // Supplementary legacy label/value/revision: the fenced recording uses Offline farm.
+      // Exact new-family writes at every width live in profile-patch-fenced.spec.ts.
+      withRecordedFence(dashboardPagesCase('run_entry_patch.saved_label'), fencedRuntime).request
+        .body,
     ]);
     await expect(editor.locator('[data-entry-field="policies.gather"] a')).toHaveAttribute(
       'href',
@@ -71,7 +75,7 @@ for (const width of [1360, 1054, 390]) {
     );
     await expect(editor.locator('[data-entry-field="policies.rescue"] a')).toHaveAttribute(
       'href',
-      '#abilities',
+      '#abilities/rescue_policies/wall_drain',
     );
     await check(page, width);
     await editor.screenshot({ path: path.join(OUT, `runs-entry-saved-${width}.png`) });
@@ -98,5 +102,37 @@ for (const width of [1360, 1054, 390]) {
     await check(page, width);
     await editor.screenshot({ path: path.join(OUT, `runs-entry-refused-${width}.png`) });
     expect(await posts(page)).toHaveLength(1);
+  });
+}
+
+for (const width of [1360, 1054, 390]) {
+  test(`RL13 F6-11-P3-03 quest default has a visible accessible reason at ${width}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const source = dashboardPagesCase(
+      'run_entry_patch_parity.read_after_the_limit_refusals_nothing_changed',
+    );
+    await page.route('**/api/profile-src/mine', async (route) => {
+      await route.fulfill({ status: source.status, json: source.body });
+    });
+    await page.goto('/__fake/use?scenario=runs_entry_saved');
+    await page.evaluate(() => {
+      window.location.hash = '#runs/saved/quest_sm';
+    });
+    const editor = page.locator('[data-run-entry]');
+    const action = editor
+      .locator('[data-entry-field="rides"]')
+      .getByRole('button', { name: 'Use the quest default' });
+    await expect(action).toHaveAttribute('aria-disabled', 'true');
+    const reasonId = await action.getAttribute('aria-describedby');
+    expect(reasonId).toBeTruthy();
+    const reason = page.locator(`[id="${reasonId}"]`);
+    await expect(reason).toHaveCount(1);
+    await expect(reason).toBeVisible();
+    await expect(reason).toHaveText('This quest already uses its default.');
+    await check(page, width);
+    await editor.screenshot({ path: path.join(OUT, `runs-entry-quest-default-${width}.png`) });
+    expect(await posts(page)).toHaveLength(0);
   });
 }

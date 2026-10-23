@@ -398,10 +398,14 @@ export function candidateSettlement(
     case 'settings_save':
     case 'profile_patch': {
       // Collection (C1 to C6): a later read of the settings (a settings save) or of the
-      // profile source (a profile patch), started after the answer or the loss. A 409
-      // refusal may follow a save that did commit (an identical resend is refused as
-      // stale): only a read holding every sent value settles it, as applied.
-      const conflict = record.phase === 'refused' && record.answer?.status === 409;
+      // profile source (a profile patch), started after the answer or the loss.
+      // Settings saves intentionally allow a stale identical resend to settle from
+      // matching values. Every definite profile-patch refusal stays refused; only
+      // an Unknown patch can settle from a later named, advanced source read.
+      const conflict =
+        record.kind === 'settings_save' &&
+        record.phase === 'refused' &&
+        record.answer?.status === 409;
       // C15-4 is the sole intentional context transition. Its receipt stays attached
       // to the submitting context, and only a config read begun after it proves it.
       if (record.kind === 'settings_save' && record.meta.module === 'active-instance') {

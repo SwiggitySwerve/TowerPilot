@@ -9,8 +9,96 @@ import {
 } from '../scripts/contract-fixture.mjs';
 import { bodiesTo, posts } from './helpers.ts';
 import { dashboardPagesCase, type DashboardCase } from '../tests/support/dashboardFixture.ts';
+import { moreWorld, openMore, moreCase, invalidSourceTests } from './profile-target-more.ts';
+
+invalidSourceTests('abilities', proof);
 
 const cases = own(loadJsonWithIdentity(DASHBOARD_PAGES_FIXTURE_PATH).fixture, 'cases');
+
+for (const width of [1360, 1054, 390])
+  for (const family of ['uw', 'rescue']) {
+    test(`PE5 F6-14c inactive ${family} in-use deletion keeps refusal through reload at ${width}`, async ({
+      page,
+    }) => {
+      const before = moreCase('read_before_the_inactive_policies_are_deleted');
+      // Modified recording: hide consumers to model a reference added after this read.
+      Object.assign(own(before.body, 'profile') as object, { blueprints: {} });
+      const world = await moreWorld(page, before),
+        answer = moreCase(`inactive_${family}_policy_deleted_while_a_run_uses_it_is_refused`);
+      world.answer(answer);
+      await openMore(page, width, '#abilities', 'profile_target_abilities_uw');
+      if (family === 'uw')
+        await page.getByRole('button', { name: 'Farm choreography', exact: true }).click();
+      if (family === 'rescue') {
+        await page
+          .getByRole('combobox', { name: 'Saved plans', exact: true })
+          .selectOption('rescue_policies');
+        await page.getByRole('button', { name: 'Wall drain', exact: true }).click();
+      }
+      await page.getByRole('button', { name: 'Delete unused plan', exact: true }).click();
+      await page
+        .getByRole('dialog')
+        .getByRole('button', { name: 'Delete unused plan', exact: true })
+        .click();
+      await expect(
+        page.getByRole('link', { name: String(own(answer.body, 'error')), exact: true }),
+      ).toBeVisible();
+      expect(world.sent).toEqual([answer.request.body]);
+      world.source(moreCase('read_after_the_in_use_deletes_were_refused_nothing_changed'));
+      await page.getByRole('button', { name: 'Read saved result', exact: true }).click();
+      await page.reload();
+      await expect(
+        page.getByRole('link', { name: String(own(answer.body, 'error')), exact: true }),
+      ).toBeVisible();
+      expect(world.sent).toHaveLength(1);
+      await proof(page, `f6-14c-${family}-in-use-reload`, width);
+    });
+  }
+
+for (const width of [1360, 1054, 390]) {
+  test(`PE5 F6-14c unused UW/rescue deletes and whole-policy rule reorder at ${width}`, async ({
+    page,
+  }) => {
+    const world = await moreWorld(page, moreCase('read_before_the_inactive_policies_are_deleted'));
+    await openMore(page, width, '#abilities', 'profile_target_abilities_uw');
+    for (const [family, id, name] of [
+      ['uw_policies', 'Calm', 'inactive_unused_uw_policy_deleted'],
+      ['rescue_policies', 'extra', 'inactive_unused_rescue_policy_deleted'],
+    ]) {
+      world.answer(moreCase(name ?? ''));
+      await page
+        .getByRole('combobox', { name: 'Saved plans', exact: true })
+        .selectOption(family ?? '');
+      await page.getByRole('button', { name: id ?? '', exact: true }).click();
+      await page.getByRole('button', { name: 'Delete unused plan', exact: true }).click();
+      await page
+        .getByRole('dialog')
+        .getByRole('button', { name: 'Delete unused plan', exact: true })
+        .click();
+      await expect(
+        page.getByRole('status').filter({ hasText: 'Saved in the profile.' }),
+      ).toBeVisible();
+      await page.getByRole('button', { name: 'Read saved result', exact: true }).click();
+    }
+    await page.getByRole('button', { name: 'Wall drain', exact: true }).click();
+    world.answer(moreCase('inactive_rescue_policy_saved_with_its_rules_in_another_order'));
+    const rules = page.locator('[data-rule-key]');
+    await rules.nth(2).getByRole('button', { name: 'Move up 3', exact: true }).click();
+    await rules.nth(1).getByRole('button', { name: 'Move up 2', exact: true }).click();
+    await page.getByRole('button', { name: 'Save plan', exact: true }).click();
+    await expect(
+      page.getByRole('status').filter({ hasText: 'Saved in the profile.' }),
+    ).toBeVisible();
+    expect(world.sent).toEqual(
+      [
+        'inactive_unused_uw_policy_deleted',
+        'inactive_unused_rescue_policy_deleted',
+        'inactive_rescue_policy_saved_with_its_rules_in_another_order',
+      ].map((name) => moreCase(name).request.body),
+    );
+    await proof(page, 'f6-14c-deletes-reorder', width);
+  });
+}
 const body = (name: string) => ownPath(cases, 'profile_target', name, 'request', 'body');
 const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT =
@@ -271,7 +359,8 @@ for (const width of [1360, 1054, 390]) {
     }) => {
       // Modified recorded case: remove locally observed consumers. The server's
       // unchanged recorded in-use refusal models a consumer added after this read.
-      // Exact inactive deletes are absent: active delete path/op + inactive fence.
+      // This older transport scenario retains its adapted active delete. The F6-14c
+      // cases above compare the complete inactive requests and refusal readbacks.
       const before = pt('same_account_inactive_target_source');
       record(own(before.body, 'profile'))['blueprints'] = {};
       await targetRead(page, before);

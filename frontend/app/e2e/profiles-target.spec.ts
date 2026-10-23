@@ -3,10 +3,51 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { bodiesTo, posts } from './helpers.ts';
+import { moreCase, openMore, invalidSourceTests } from './profile-target-more.ts';
+
+invalidSourceTests('collection', proof);
 
 const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results/f6-screens');
 mkdirSync(OUT, { recursive: true });
+
+for (const width of [1360, 1054, 390]) {
+  test(`PE1 F6-14c list failure retains target and retries without a write at ${width}`, async ({
+    page,
+  }) => {
+    await openMore(page, width, '#profiles', 'profile_target_runs_saved');
+    let answer = moreCase('profile_files_read_failed_500');
+    await page.route('**/api/profile-files', async (route) => {
+      const body = answer.body as Record<string, unknown>;
+      await route.fulfill(
+        typeof body['text'] === 'string'
+          ? { status: answer.status, body: body['text'], contentType: 'text/html' }
+          : { status: answer.status, json: answer.body },
+      );
+    });
+    // Leaving/reopening Profiles starts a fresh list read without changing its selection.
+    await page.evaluate(() => {
+      location.hash = '#runs/saved/farm';
+    });
+    await expect(page.locator('[data-run-entry]')).toBeVisible();
+    await page.evaluate(() => {
+      location.hash = '#profiles';
+    });
+    const picker = page.locator('[data-form="editing-target"]');
+    await expect(picker).toContainText(
+      'The profile list could not be read. Your editing profile is kept.',
+    );
+    await expect(picker).toContainText('Editing:second');
+    answer = moreCase('profile_files_read_after_the_failure_answers_again');
+    await picker.getByRole('button', { name: 'Retry profile list', exact: true }).click();
+    await expect(picker.locator('[data-editing-target="second"]')).toHaveAttribute(
+      'data-target-blocked',
+      '',
+    );
+    expect(await posts(page)).toEqual([]);
+    await proof(page, 'f6-14c-list-retry', width);
+  });
+}
 
 async function open(page: Page, scenario: string, width: number) {
   const errors: string[] = [];

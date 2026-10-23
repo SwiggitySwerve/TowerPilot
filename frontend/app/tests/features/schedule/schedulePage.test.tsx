@@ -1,3 +1,5 @@
+import { assertProfilePatchContexts } from '../../support/profilePatchAssertions.ts';
+import { withRecordedFence } from '../../support/profilePatchFenced.ts';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
@@ -27,7 +29,7 @@ function fixture(reference: string): DashboardCase {
   const [family = '', key = ''] = reference.split('.');
   const raw = ownPath(CASES, family, key);
   if (raw === undefined) return dashboardCase(reference);
-  return structuredClone(raw) as DashboardCase;
+  return withRecordedFence(structuredClone(raw) as DashboardCase, context);
 }
 const context = { instance: 'main', account: null, serial: 'fake:1', profile: 'mine' };
 const cleanups: (() => void)[] = [];
@@ -69,6 +71,9 @@ async function setup(
   );
   const schedule = createScheduleStore(api);
   cleanups.push(schedule.dispose);
+  cleanups.push(() => {
+    assertProfilePatchContexts(api.machine);
+  });
   await change(() => {
     schedule.setTarget(context, 1);
   });

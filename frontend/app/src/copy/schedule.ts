@@ -1,6 +1,8 @@
 import { entry, made } from './entry.ts';
+import { settings } from './settings.ts';
 
 export const schedule = {
+  contextChanged: settings.outcomes.context_changed,
   space: made(' '),
   pageName: entry('Schedule'),
   intro: entry(

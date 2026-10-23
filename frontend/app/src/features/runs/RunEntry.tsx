@@ -29,8 +29,17 @@ function EntryField({ field }: { readonly field: FieldVM }) {
   };
   const invalid =
     field.reason !== null &&
-    !['unchanged', 'pending', 'unknown', 'revision', 'unavailable'].includes(field.reason);
-  const help = field.key === 'perk_bans' ? t.perks : field.key === 'max_wave' ? t.cap : null;
+    !['unchanged', 'pending', 'unknown', 'revision', 'unavailable', 'activeOnly'].includes(
+      field.reason,
+    );
+  const help =
+    field.key === 'perk_bans'
+      ? t.perks
+      : field.key === 'max_wave'
+        ? t.cap
+        : field.key === 'rides' || field.key === 'cycles'
+          ? t.questValue
+          : null;
   const label = t.fields[field.key];
   return (
     <fieldset className="tp-run-entry__field" data-entry-field={field.key}>
@@ -57,7 +66,9 @@ function EntryField({ field }: { readonly field: FieldVM }) {
             edit(event.currentTarget.value);
           }}
         >
-          {field.none ? <option value="">{t.none.short}</option> : null}
+          {field.none ? (
+            <option value="">{(field.key === 'dissonant_tab' ? t.coin : t.none).short}</option>
+          ) : null}
           {field.unlisted === null ? null : (
             <ServerOption
               value={typeof field.raw === 'string' ? field.raw : ''}
@@ -117,12 +128,13 @@ function EntryField({ field }: { readonly field: FieldVM }) {
           href={
             field.policyEditor.kind === 'gather'
               ? pageHref('collection', { kind: 'policy', policy: field.policyEditor.id })
-              : pageHref('abilities')
+              : pageHref('abilities', field.policyEditor)
           }
         >
           {(field.key === 'policies.gather' ? t.gather : t.abilities).short}
         </a>
       )}
+      {field.needsChainLightning ? <div>{t.chainLightning.short}</div> : null}
       <div className="tp-run-entry__actions">
         <Button
           tier="secondary"
@@ -133,6 +145,21 @@ function EntryField({ field }: { readonly field: FieldVM }) {
             if (field.command !== null) void commands.patchRunEntry(field.command);
           }}
         />
+        {field.key === 'label' || field.key === 'rides' ? (
+          <Button
+            tier="quiet"
+            label={(field.key === 'label' ? t.clearLabel : t.questDefault).short}
+            {...(field.clearCommand === null
+              ? {
+                  disabled: true,
+                  reasonId: `${uid}-clear-reason`,
+                }
+              : {})}
+            onClick={() => {
+              if (field.clearCommand !== null) void commands.patchRunEntry(field.clearCommand);
+            }}
+          />
+        ) : null}
         {field.dirty ? (
           <Button
             tier="quiet"
@@ -143,6 +170,9 @@ function EntryField({ field }: { readonly field: FieldVM }) {
           />
         ) : null}
       </div>
+      {field.clearReason === null || (field.key !== 'label' && field.key !== 'rides') ? null : (
+        <div id={`${uid}-clear-reason`}>{t.reasons[field.clearReason].short}</div>
+      )}
       {field.reason === null ? null : <div id={reasonId}>{t.reasons[field.reason].short}</div>}
       {field.continuation === null ? null : (
         <Button
@@ -178,6 +208,7 @@ export function RunEntry() {
       <h3 id="run-entry-title">{t.title.short}</h3>
       <EditingTargetLine />
       <p>{t.scope.short}</p>
+      <p data-entry-statistics="true">{t.statistics.short}</p>
       <label className="tp-runs__picker tp-runs__picker-label">
         <span>{t.picker.short}</span>
         <select

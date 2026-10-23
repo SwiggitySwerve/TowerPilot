@@ -344,15 +344,13 @@ function LiveResets({
       </ul>
       {resetAll === null ? null : (
         <div className="tp-run-reset tp-run-reset--all" data-reset-all="true">
-          {resetAll.reset.enabled ? null : (
-            <ul className="tp-run-resets__confirm-list" data-reset-all-items="true">
-              {resetAll.items.map((item) => (
-                <li key={item.path} className="tp-run-reset__name">
-                  <OverrideName item={item} />
-                </li>
-              ))}
-            </ul>
-          )}
+          <ul className="tp-run-resets__confirm-list" data-reset-all-items="true">
+            {resetAll.items.map((item) => (
+              <li key={item.path} className="tp-run-reset__name">
+                <OverrideName item={item} />
+              </li>
+            ))}
+          </ul>
           {resetAll.reset.enabled ? (
             <Button
               tier="quiet"

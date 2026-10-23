@@ -11,6 +11,7 @@ import { Button } from '../../ui/Button.tsx';
 import { pageHref } from '../../ui/routes.ts';
 import { useDashboard, useView } from '../dashboard/context.ts';
 import { QueueEditor } from '../shopping/QueueEditor.tsx';
+import { QueueRefusal } from '../shopping/QueueRefusal.tsx';
 import './shoppingLive.css';
 const t = copy.shoppingLive;
 
@@ -75,6 +76,7 @@ export function LiveShopping() {
               />
             ) : null}
           </div>
+          <QueueRefusal message={vm.refusal} />
         </details>
       ) : null}
       {vm.reason === null ? null : (

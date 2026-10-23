@@ -40,6 +40,25 @@ export function selectEditingChoices(state: DashboardState) {
   }));
 }
 
+export function editingFilesFailed(state: DashboardState) {
+  const read = state.reads.profileFiles.latest;
+  return read !== null && (read.outcome.kind === 'failed' || read.outcome.status !== 200);
+}
+
+/** A failed selection read must not expose an older successful source as current evidence. */
+export function editingSourceError(state: DashboardState) {
+  const target = selectEditingTarget(state);
+  const read = state.reads[target.inactive ? 'targetSource' : 'profileSource'].latest;
+  if (
+    target.inactive &&
+    (read?.targetSelection?.name !== target.name ||
+      read.targetSelection.generation !== target.generation)
+  )
+    return null;
+  const body = read?.outcome.body;
+  return fromServer('message', own(body, 'error'));
+}
+
 /** Editors use evidence for their selection; journal settlement independently uses the raw read. */
 export function editorSource(state: DashboardState): ReadRecord | null {
   const target = selectEditingTarget(state);

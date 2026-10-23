@@ -90,6 +90,7 @@ export function DashboardProvider({
   const value = useMemo<DashboardContextValue>(
     () => ({
       store: data.store,
+      preview: data.preview,
       commands: data.commands,
       faults,
       reportFault: (part, error) => {

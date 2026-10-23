@@ -68,41 +68,91 @@ async function openRunsLive(page: Page, scenario: string, width: number) {
 const live = (page: Page) => page.locator('[data-region="runsLive"]');
 
 for (const width of WIDTHS) {
-  test(`RL2 F6-11-P2-05 mixed overrides at ${String(width)}: full list, disabled reason, zero POSTs, axe and targets`, async ({
-    page,
-  }) => {
-    const read = dashboardPagesCase('shopping_queue.shopping_plan_routine_overrides_applied');
-    await page.route('**/api/battles/active', async (route) => {
-      await route.fulfill({ status: read.status, json: read.body });
+  for (const outcome of ['applied', 'stale']) {
+    test(`RL2 mixed reset ${outcome} at ${String(width)}: full list, exactly one POST, read settlement, axe and targets`, async ({
+      page,
+    }) => {
+      const mixed = (name: string) =>
+        dashboardPagesCase(`run_controls_live_reset_all_mixed.${name}`);
+      let source = mixed(
+        outcome === 'stale'
+          ? 'read_after_the_refusal_both_kinds_of_override_remain'
+          : 'read_before_the_reset_the_mixed_overrides_are_in_force',
+      );
+      const answer = mixed(
+        outcome === 'stale'
+          ? 'mixed_reset_with_a_stale_control_revision_refused'
+          : 'accepted_null_for_shopping_plan_and_routine_overrides',
+      );
+      await page.route('**/api/battles/active', (route) =>
+        route.fulfill({ status: source.status, json: source.body }),
+      );
+      await page.route('**/api/operations/*/live-controls', async (route) => {
+        await route.fetch();
+        await route.fulfill({ status: answer.status, json: answer.body });
+      });
+      const problems = await openRunsLive(page, 'runs_live_reset_all', width);
+      const all = live(page).getByRole('button', {
+        name: "Use the battle's starting values for all 3",
+      });
+      await expect(all).not.toHaveAttribute('aria-disabled', 'true');
+      const items = live(page).locator('[data-reset-all-items]');
+      await expect(items.getByRole('listitem')).toHaveCount(3);
+      await expect(items.getByText('Shopping plan', { exact: true })).toBeVisible();
+      if (outcome === 'stale')
+        await live(page).getByRole('textbox', { name: 'Shopping Every', exact: true }).fill('77');
+      await all.click();
+      await expect(page.getByRole('dialog').getByRole('listitem')).toHaveCount(3);
+      await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
+      expect(await posts(page)).toEqual([]);
+      await all.click();
+      await page
+        .getByRole('dialog')
+        .getByRole('button', { name: 'Use starting values', exact: true })
+        .click();
+      if (outcome === 'stale') {
+        // Race replay: the genuine 409 used revision 1; the displayed source is already at 2.
+        // The client must still send the current read's revision and preserve the complete draft/list.
+        await expect(live(page).getByText('Not sent - nothing was recorded')).toBeVisible();
+        await expect(items.getByRole('listitem')).toHaveCount(3);
+        await expect(
+          live(page).getByRole('textbox', { name: 'Shopping Every', exact: true }),
+        ).toHaveValue('77');
+        await expect(live(page).locator('[data-outcome]')).toContainText(
+          'Control revision changed',
+        );
+      } else {
+        await expect(live(page).getByText('Sent to this battle - waiting to apply')).toBeVisible();
+        source = mixed('read_after_the_reset_was_accepted_before_it_applies');
+        await live(page).getByRole('button', { name: 'Check this battle' }).click();
+        await expect(live(page).getByText('Sent to this battle - waiting to apply')).toBeVisible();
+        await expect(live(page).getByText('Applied to this battle', { exact: true })).toHaveCount(
+          0,
+        );
+        source = mixed('read_after_the_mixed_reset_applied');
+        await live(page).getByRole('button', { name: 'Check this battle' }).click();
+        await expect(live(page).getByText('Applied to this battle', { exact: true })).toBeVisible();
+        await expect(items).toHaveCount(0);
+        await expect(live(page).locator('[data-path]')).toHaveCount(0);
+      }
+      expect(await bodiesTo(page, answer.request.path)).toEqual([
+        {
+          ...Object.fromEntries(Object.entries(answer.request.body as Record<string, unknown>)),
+          expected_revision: 2,
+          idempotency_key: expect.any(String),
+        },
+      ]);
+      expect(await axeViolations(page)).toEqual([]);
+      expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+      if (width === 390)
+        for (const button of await live(page).locator('.tp-run-resets button:visible').all())
+          expect((await button.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+      await live(page).screenshot({
+        path: path.join(OUT, `runs-leftovers-mixed-reset-${outcome}-${String(width)}.png`),
+      });
+      expect(problems).toEqual([]);
     });
-    const problems = await openRunsLive(page, 'runs_live_reset_all', width);
-    const all = live(page).getByRole('button', {
-      name: "Use the battle's starting values for all 3",
-    });
-    await expect(all).toHaveAttribute('aria-disabled', 'true');
-    await expect(all).toHaveAccessibleDescription(
-      'This battle also overrides its shopping plan. Resetting a shopping plan from here is not available yet. Reset routine overrides one at a time.',
-    );
-    const items = live(page).locator('[data-reset-all-items]');
-    await expect(items.getByRole('listitem')).toHaveCount(3);
-    await expect(items.getByText('Shopping plan', { exact: true })).toBeVisible();
-    await expect(live(page).locator('[data-path]')).toHaveCount(2);
-    // The aria-disabled control remains focusable; keyboard activation must send nothing.
-    await all.focus();
-    await page.keyboard.press('Enter');
-    await expect(page.getByRole('dialog')).toHaveCount(0);
-    expect(await posts(page)).toEqual([]);
-    expect(await axeViolations(page)).toEqual([]);
-    expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
-    if (width === 390) {
-      for (const button of await live(page).locator('.tp-run-resets button:visible').all())
-        expect((await button.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
-    }
-    await live(page).screenshot({
-      path: path.join(OUT, `runs-leftovers-mixed-reset-${String(width)}.png`),
-    });
-    expect(problems).toEqual([]);
-  });
+  }
 
   test(`RL7 battle details at ${String(width)}: read-only, axe, reflow, targets and screenshot`, async ({
     page,
@@ -308,6 +358,8 @@ for (const width of WIDTHS) {
     expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
       {
         name: 'mine',
+        // Modified recorded plan request: the legacy journey now carries its runtime fence.
+        expected_context: { instance: 'main', serial: 'fake:1', account: null, profile: 'mine' },
         expected_revision: '000000000000000000000000000000000000000000000000000000000000003c',
         path: ['plan'],
         op: 'delete',
@@ -359,6 +411,8 @@ for (const width of WIDTHS) {
     expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
       {
         name: 'mine',
+        // Modified recorded plan request: the legacy journey now carries its runtime fence.
+        expected_context: { instance: 'main', serial: 'fake:1', account: null, profile: 'mine' },
         expected_revision: '000000000000000000000000000000000000000000000000000000000000004e',
         path: ['plan'],
         value: {

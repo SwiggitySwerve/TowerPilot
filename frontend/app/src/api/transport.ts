@@ -53,3 +53,18 @@ export const fetchTransport: Transport = async (request) => {
     };
   }
 };
+
+/** Binary GET: the transport owner returns bounded-reader inputs without reading the body. */
+export async function fetchStreamTransport(path: ApiPath, signal: AbortSignal) {
+  const response = await fetch(path, {
+    method: 'GET',
+    signal,
+    cache: 'no-store',
+    credentials: 'same-origin',
+  });
+  if (!response.ok || response.body === null) {
+    await response.body?.cancel();
+    throw new Error('Preview stream unavailable');
+  }
+  return { headers: response.headers, reader: response.body.getReader() };
+}

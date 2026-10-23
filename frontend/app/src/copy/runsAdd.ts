@@ -1,5 +1,7 @@
 import { entry } from './entry.ts';
 
+const idTaken = entry('That run identifier is already taken. Choose another; your draft is kept.');
+
 export const runsAdd = {
   title: entry('Add a run'),
   scope: entry('Save a run from a recipe. Adding never starts a run or changes the schedule.'),
@@ -37,7 +39,7 @@ export const runsAdd = {
   reasons: {
     enter_id: entry('Enter a run identifier.'),
     bad_id: entry('Use 1 to 64 lowercase letters, numbers or underscores, starting with a letter.'),
-    id_taken: entry('That run identifier is already taken. Choose another; your draft is kept.'),
+    id_taken: idTaken,
     unavailable: entry(
       'Read the recipes, account equipment and active profile before adding a run.',
     ),
@@ -55,5 +57,15 @@ export const runsAdd = {
     unconfirmed: entry(
       'Unknown: the add may have been saved. Check the profile before continuing. Your draft is kept.',
     ),
+  },
+  refusals: {
+    invalid_request: entry('The add request was refused. Review the choices before trying again.'),
+    id_taken: idTaken,
+    profile_unavailable: entry('The profile is unavailable for this add. Check it in Profiles.'),
+    recipe_refused: entry('The recipe or its choices were refused. Your draft is kept.'),
+    validation_failed: entry('The new run did not pass profile validation. Your draft is kept.'),
+    write_failed_nothing_saved: entry('The profile could not be written. Nothing was saved.'),
+    revision_conflict: entry('The saved profile changed. Check the profile before saving again.'),
+    context_changed: entry('The active context changed. Check the profile before saving again.'),
   },
 };

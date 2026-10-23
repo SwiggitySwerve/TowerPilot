@@ -14,6 +14,7 @@ import { Button } from '../../ui/Button.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
 import { useDashboard, useView } from '../dashboard/context.ts';
 import { QueueEditor } from '../shopping/QueueEditor.tsx';
+import { QueueRefusal } from '../shopping/QueueRefusal.tsx';
 import './savedShopping.css';
 
 const t = copy.shoppingSaved;
@@ -262,6 +263,7 @@ export function SavedShopping() {
               {vm.discard ? null : <span id={`${idBase}:discard-reason`}>{t.nothing.short}</span>}
             </div>
           ) : null}
+          <QueueRefusal message={vm.refusal} />
         </details>
       )}
     </section>

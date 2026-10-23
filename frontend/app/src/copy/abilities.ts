@@ -1,5 +1,7 @@
 import { entry, made } from './entry.ts';
+import { settings } from './settings.ts';
 export const abilities = {
+  contextChanged: settings.outcomes.context_changed,
   pageName: entry('Abilities'),
   intro: entry(
     'Saved Ultimate Weapon and rescue plans for later battles. Saving does not fire an ability or change a live battle.',
@@ -16,9 +18,7 @@ export const abilities = {
   scope: entry(
     'Policies apply to the editing profile’s future runs. The global override applies to the active profile. Each save writes one policy or the override once.',
   ),
-  limit: entry(
-    'Inactive policy saves check the target revision and runtime context on the server. Active-profile saves check the revision; their page checks cannot prevent every server-side context race.',
-  ),
+  limit: entry('Policy saves are refused if the account, active profile or saved file changed.'),
   global: entry('Global Demon Mode timing'),
   activeOnly: entry('Return editing to the active profile to change these'),
   globalUnavailable: entry(

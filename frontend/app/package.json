@@ -44,6 +44,7 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "globals": "17.13.0",
     "jest-axe": "11.0.0",
+    "jpeg-js": "0.4.4",
     "jsdom": "29.1.1",
     "postcss": "8.5.31",
     "prettier": "3.9.10",

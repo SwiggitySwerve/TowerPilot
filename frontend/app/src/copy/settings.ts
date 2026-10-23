@@ -14,7 +14,9 @@ function bound(value: number): string {
 export const settings = {
   save: entry('Save'),
   discard: entry('Discard changes'),
+  reconcile: entry('Use the read revision; keep my draft'),
   savedValue: entry('Saved:'),
+  unlistedEmpty: entry('Empty value (not listed)'),
   low: entry('From'),
   high: entry('To'),
   x: entry('x'),
@@ -70,6 +72,9 @@ export const settings = {
     invalid_value: entry('Fix the marked values first'),
     no_changes: entry('No change to save'),
     save_pending: entry('Waiting until the last save is read back'),
+    revision_changed: entry(
+      'The settings revision changed or is missing; review the saved values and reconcile your draft',
+    ),
   },
   outcomes: {
     lead: entry('Last save:'),
@@ -77,6 +82,7 @@ export const settings = {
     restored: entry('kept from before the page was reloaded'),
     sending: entry('Saving'),
     saved: entry('Saved'),
+    context_changed: entry('Not saved: the account or profile changed'),
     refused: entry(
       'Not saved',
       'The server answered that it did not save this request; its reason is below. Your edits are kept.',

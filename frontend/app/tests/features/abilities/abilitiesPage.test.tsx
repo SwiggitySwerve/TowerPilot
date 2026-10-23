@@ -1,3 +1,5 @@
+import { assertProfilePatchContexts } from '../../support/profilePatchAssertions.ts';
+import { withRecordedFence } from '../../support/profilePatchFenced.ts';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -37,7 +39,16 @@ function fixture(ref: string): DashboardCase {
   const [family = '', name = ''] = ref.split('.');
   const raw = ownPath(family === 'abilities_samples' ? SAMPLES : PAGES, family, name);
   if (raw === undefined) throw new Error(`Missing real-route answer ${ref}`);
-  return structuredClone(raw) as DashboardCase;
+  const found = structuredClone(raw) as DashboardCase;
+  const view =
+    family === 'abilities_samples'
+      ? name.replace(/_(saved|before|after|config|settings|vocab).*$/u, '')
+      : 'label';
+  // Context comes from the corresponding recorded config, whose body is the wire value.
+  const context = contextFromConfig(
+    own(own(own(SAMPLES, 'abilities_samples'), `${view}_config`), 'body'),
+  );
+  return context === null ? found : withRecordedFence(found, context);
 }
 const cleanups: (() => void)[] = [];
 afterEach(() => {
@@ -78,6 +89,9 @@ async function setup(
     api = createAbilitiesApi(fake.transport, storage, options.windowMs ?? 200),
     store = createAbilitiesStore(api);
   cleanups.push(store.dispose);
+  cleanups.push(() => {
+    assertProfilePatchContexts(api.machine);
+  });
   const context = contextFromConfig(fixture(`${prefix}_config`).body);
   if (context === null) throw new Error('No fixture context');
   await change(() => {
@@ -332,6 +346,13 @@ describe('Abilities Wanted rows, real-route answers', () => {
     await change(() => {
       s.store.edit(['label'], abilityNode('New label'));
       s.store.save();
+    });
+    // The active save now awaits its click-time read. This case changes targets after
+    // send; changing before that read completes is the separate no-send guard case.
+    await waitFor(() => {
+      expect(s.fake.writes()).toHaveLength(1);
+    });
+    await change(() => {
       s.store.setTarget({ ...s.context, account: 'another' }, 2);
     });
     expect(canSaveAbility(s.store.getSnapshot(), Date.now())).toBe(false);
@@ -755,7 +776,8 @@ describe('Abilities Wanted rows, real-route answers', () => {
         s.store.edit(['label'], abilityNode('Newer never sent'));
         s.store.save();
       });
-      expect(s.entry()?.outcome).toBe(matching ? 'notSent' : 'unknown');
+      // A provisional matching read keeps the original revision until its answer is final.
+      expect(s.entry()?.outcome).toBe(matching ? 'readApplied' : 'unknown');
       expect(s.entry()?.submission).toEqual(original);
       expect(s.fake.writes()).toHaveLength(1);
       const answer = fixture(`${s.prefix}_saved`);

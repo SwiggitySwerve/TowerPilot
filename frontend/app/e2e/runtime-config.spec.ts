@@ -4,6 +4,8 @@ import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { openScenario, posts } from './helpers.ts';
 import { RUNTIME_CONFIG_SAVES } from './runtime-config-fixtures.mjs';
+import { DRAFTS_KEY } from '../src/api/drafts.ts';
+import { SETTINGS_BASE_REVISION } from '../src/core/settingsFields.ts';
 import {
   loadJsonWithIdentity,
   DASHBOARD_PAGES_FIXTURE_PATH,
@@ -16,7 +18,7 @@ const SCREENS = path.resolve(
 );
 mkdirSync(SCREENS, { recursive: true });
 const CASES = record(record(loadJsonWithIdentity(DASHBOARD_PAGES_FIXTURE_PATH).fixture)['cases']);
-const recorded = (name: string) => record(record(CASES['settings_modules'])[name]);
+const recorded = (name: string, family = 'settings_modules') => record(record(CASES[family])[name]);
 type Module = keyof typeof RUNTIME_CONFIG_SAVES;
 const rows: readonly { title: string; module: Module }[] = [
   { title: 'C15-5', module: 'run-defaults' },
@@ -56,8 +58,11 @@ async function open(page: Page, width: number, module: Module, mode = 'saved') {
   await expect(save(page, module)).toBeVisible();
   return errors;
 }
-async function fill(page: Page, module: Module) {
-  const saved = recorded(`saved_${RUNTIME_CONFIG_SAVES[module].suffix}`);
+async function fill(page: Page, module: Module, overrides = false) {
+  const saved = recorded(
+    `saved_${RUNTIME_CONFIG_SAVES[module].suffix}${overrides ? '_with_overrides' : ''}`,
+    overrides ? 'settings_modules_more' : 'settings_modules',
+  );
   const body = record(record(saved['request'])['body']);
   const values = record(body['values']);
   const snapshot = record(recorded(RUNTIME_CONFIG_SAVES[module].before)['body']);
@@ -123,8 +128,93 @@ async function layout(page: Page, width: number, module: Module) {
   expect(violations).toEqual([]);
 }
 for (const width of [1360, 1054, 390]) {
+  for (const mode of ['placeholder', 'no_runnable']) {
+    test(`C15-5 C-03 a restored empty draft stays visibly empty with ${mode} options at ${width}`, async ({
+      page,
+    }) => {
+      await open(page, width, 'run-defaults', mode);
+      const picker = form(page, 'run-defaults').getByRole('combobox');
+      const key = await picker.getAttribute('data-focus-key');
+      if (key === null || !key.endsWith(':preset')) throw new Error('Missing preset draft scope');
+      const read = recorded(
+        mode === 'placeholder'
+          ? 'read_with_a_placeholder_preset_in_the_configuration'
+          : 'read_with_no_runnable_run_defaults_preset_options',
+        'settings_modules_more',
+      );
+      // Restore an old local draft; API responses remain complete recordings.
+      await page.evaluate(
+        ({ storageKey, scope, revisionKey, revision }) => {
+          sessionStorage.setItem(
+            storageKey,
+            JSON.stringify({ [scope]: { preset: '', [revisionKey]: revision } }),
+          );
+        },
+        {
+          storageKey: DRAFTS_KEY,
+          scope: key.slice(0, -':preset'.length),
+          revisionKey: SETTINGS_BASE_REVISION,
+          revision: record(read['body'])['revision'],
+        },
+      );
+      await page.reload();
+      await page.locator('[data-run-defaults] > summary').click();
+      await expect(picker).toHaveValue('');
+      await expect(
+        picker.getByRole('option', { name: 'Empty value (not listed)', exact: true }),
+      ).toHaveJSProperty('selected', true);
+      await expect(picker).toHaveAttribute('aria-invalid', 'true');
+      await expect(
+        form(page, 'run-defaults').getByText('Choose one of the listed options', { exact: true }),
+      ).toBeVisible();
+      await expect(save(page, 'run-defaults')).toBeDisabled();
+      expect(await posts(page)).toEqual([]);
+      await layout(page, width, 'run-defaults');
+      await shot(page, width, 'run-defaults', `${mode}-empty-draft-kept`);
+    });
+  }
+  for (const mode of ['unlisted', 'no_runnable', 'no_presets', 'placeholder']) {
+    test(`C15-5 C-03 ${mode} preset options retain the saved value and never select automatically at ${width}`, async ({
+      page,
+    }) => {
+      await open(page, width, 'run-defaults', mode);
+      const picker = form(page, 'run-defaults').getByRole('combobox');
+      await expect(picker).toHaveValue(mode === 'unlisted' ? 'ghost' : 'normal_run');
+      await expect(save(page, 'run-defaults')).toBeDisabled();
+      const reason = await save(page, 'run-defaults').getAttribute('aria-describedby');
+      expect(reason).not.toBeNull();
+      await expect(page.locator(`[id="${reason ?? ''}"]`)).toBeVisible();
+      await expect(picker.locator('option[value="later"]')).toHaveCount(0);
+      if (mode === 'no_runnable' || mode === 'no_presets') {
+        // The one displayed option is the retained saved value, not a runnable choice.
+        await expect(picker.getByRole('option')).toHaveCount(1);
+        await expect(picker).toHaveAttribute('aria-invalid', 'true');
+      }
+      expect(await posts(page)).toEqual([]);
+      await layout(page, width, 'run-defaults');
+      await shot(page, width, 'run-defaults', `${mode}-kept`);
+      if (mode === 'unlisted') {
+        const saved = recorded(
+          'run_defaults_choosing_a_listed_preset_replaces_the_unlisted_one',
+          'settings_modules_more',
+        );
+        await picker.selectOption('coin_farm');
+        await save(page, 'run-defaults').click();
+        await expect(form(page, 'run-defaults').locator('[data-outcome="saved"]')).toBeVisible();
+        expect((await posts(page)).map((entry) => JSON.parse(entry.body) as unknown)).toEqual([
+          record(record(saved['request'])['body']),
+        ]);
+        await page.getByRole('button', { name: 'Read settings again', exact: true }).click();
+        await expect(picker).toHaveValue('coin_farm');
+        await expect(picker).not.toHaveAttribute('aria-invalid');
+        expect(await posts(page)).toHaveLength(1);
+        await layout(page, width, 'run-defaults');
+        await shot(page, width, 'run-defaults', 'unlisted-replaced');
+      }
+    });
+  }
   for (const { title, module } of rows) {
-    test(`${title} ${module} lost reply stays Unknown until positive readback at ${width}`, async ({
+    test(`${title} C-03 ${module} lost reply stays Unknown until positive readback at ${width}`, async ({
       page,
     }) => {
       const errors = await open(page, width, module, 'unknown');
@@ -143,13 +233,8 @@ for (const width of [1360, 1054, 390]) {
       await shot(page, width, module, 'readback');
       expect(errors).toEqual([]);
     });
-    test(`${title} ${module} save, scope, keyboard and axe at ${width}`, async ({ page }) => {
-      const errors = await open(
-        page,
-        width,
-        module,
-        module === 'run-defaults' ? 'saved' : 'override',
-      );
+    test(`${title} C-03 ${module} save, scope, keyboard and axe at ${width}`, async ({ page }) => {
+      const errors = await open(page, width, module, 'override');
       const picker = page.locator('[data-focus-key="runs:run"]');
       const pickerBefore = module === 'run-defaults' ? await picker.inputValue() : null;
       const override = module.replace('-defaults', '');
@@ -164,7 +249,7 @@ for (const width of [1360, 1054, 390]) {
       if (module !== 'run-defaults') {
         await expect(page.locator('[data-runtime-group]')).toHaveCount(3);
       }
-      const body = await fill(page, module);
+      const body = await fill(page, module, true);
       const button = save(page, module);
       await button.focus();
       await page.keyboard.press('Enter');
@@ -185,7 +270,7 @@ for (const width of [1360, 1054, 390]) {
       await layout(page, width, module);
       expect(errors).toEqual([]);
     });
-    test(`${title} ${module} invalid kept and stale refused at ${width}`, async ({ page }) => {
+    test(`${title} C-03 ${module} invalid kept and stale refused at ${width}`, async ({ page }) => {
       const errors = await open(page, width, module, 'stale');
       if (module !== 'run-defaults') {
         const key =

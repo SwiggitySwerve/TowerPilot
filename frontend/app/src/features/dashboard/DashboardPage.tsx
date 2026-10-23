@@ -9,6 +9,7 @@ import { Toasts } from './shared/Toasts.tsx';
 import { StartNext } from './startNext/StartNext.tsx';
 import { ThisBattle } from './thisBattle/ThisBattle.tsx';
 import { TopBar } from './topBar/TopBar.tsx';
+import { Preview } from './Preview.tsx';
 import './dashboard.css';
 
 /**
@@ -32,12 +33,15 @@ export function DashboardPage() {
       </header>
       <main id="main" className="tp-main" tabIndex={-1}>
         <FaultPoint part="page" />
-        <div className="tp-dashboard">
-          <ControlRegion />
-          <NeedsYou />
-          <ThisBattle />
-          <StartNext />
-          <PlanAndHistory />
+        <div className="tp-dashboard-layout">
+          <div className="tp-dashboard">
+            <ControlRegion />
+            <NeedsYou />
+            <ThisBattle />
+            <StartNext />
+            <PlanAndHistory />
+          </div>
+          <Preview />
         </div>
         <RegionBoundary fallback={null} onError={usePartError('toasts')}>
           <Toasts />

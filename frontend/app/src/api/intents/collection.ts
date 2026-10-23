@@ -1,4 +1,4 @@
-import { contextKey, type PageContext } from '../context.ts';
+import { contextKey, expectedContext, type PageContext } from '../context.ts';
 import type { IntentMachine } from './machine.ts';
 import { sendOnce, type SendResult } from './send.ts';
 
@@ -62,8 +62,6 @@ export function sendSettingsSave(
 export interface ProfilePatch {
   /** Some fenced delete contracts omit value; the shopping library keeps value:null. */
   readonly omitDeleteValue?: boolean;
-  /** Fenced callers name the actual runtime binding separately from the edited file. */
-  readonly expected_context?: PageContext;
   /** The record line it belongs to (a policy action, or the chores). */
   readonly target: string;
   /** The named file to patch; inactive Collection targets differ from context.profile. */
@@ -96,21 +94,15 @@ export function sendProfilePatch(
             name: patch.profile,
             op: 'delete',
             path: patch.path,
-            ...(patch.expected_context === undefined
-              ? {}
-              : {
-                  expected_context: patch.expected_context,
-                  ...(patch.omitDeleteValue === true ? {} : { value: null }),
-                }),
+            expected_context: expectedContext(context),
+            ...(patch.omitDeleteValue === true ? {} : { value: null }),
           }
         : {
             expected_revision: patch.revision,
             name: patch.profile,
             path: patch.path,
             value: patch.value,
-            ...(patch.expected_context === undefined
-              ? {}
-              : { expected_context: patch.expected_context }),
+            expected_context: expectedContext(context),
           },
       key: null,
       meta: {

@@ -7,12 +7,13 @@ import type { Transport } from '../transport.ts';
 import { ENDPOINTS, type Endpoint, type EndpointId } from '../wire.ts';
 import { restoreUnresolved, saveUnresolved } from './persistence.ts';
 import { settledPhase } from './phases.ts';
-import type {
-  IntentDraft,
-  IntentKind,
-  IntentRecord,
-  ReadSettlement,
-  SettledPhase,
+import {
+  lateAnswerPossible,
+  type IntentDraft,
+  type IntentKind,
+  type IntentRecord,
+  type ReadSettlement,
+  type SettledPhase,
 } from './types.ts';
 
 /** The phase a read settlement gives (not_applied: nothing was applied by this request). */
@@ -346,10 +347,13 @@ export function createIntentMachine(options: IntentMachineOptions): IntentMachin
     },
     settleByRead: (id, settlement) => {
       update(id, (current) => {
-        if (current.phase !== 'unconfirmed' || current.readSettlement !== null) return null;
-        const lateAnswerPossible =
-          current.answer === null && current.lostReason === 'window_expired' && !current.restored;
-        return lateAnswerPossible
+        if (current.phase !== 'unconfirmed') return null;
+        if (
+          current.readSettlement !== null &&
+          (current.readSettlement !== settlement || lateAnswerPossible(current))
+        )
+          return null;
+        return lateAnswerPossible(current)
           ? { ...current, readSettlement: settlement }
           : { ...current, phase: SETTLED_BY_READ[settlement], readSettlement: settlement };
       });

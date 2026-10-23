@@ -1,6 +1,7 @@
-import { within } from '@testing-library/react';
+import { act, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { entries, list, own, ownPath } from '../../../src/core/read.ts';
 import { serverDateText } from '../../../src/copy/format.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import { e0Config } from '../../support/dataLayer.ts';
@@ -17,6 +18,9 @@ import { renderPage, type PageOptions } from '../dashboard/harness.tsx';
  * whole wired app, replaying the recorded live-change family
  * (backend/tests/fixtures/dashboard_contract_pages_v1.json, run_controls_live).
  */
+// Each case renders a whole page (axe included); under the full parallel suite 5 s is not enough.
+vi.setConfig({ testTimeout: 30_000 });
+
 const live = (name: string) => dashboardPagesCase(`run_controls_live.${name}`);
 const BATTLE = /^\/api\/battles\/active$/u;
 const RESET = live('accepted_null_resets_a_path_to_the_battles_starting_value');
@@ -401,47 +405,72 @@ describe('F6-11 RL2 reset every override of this battle at once (r12 candidate r
   });
 });
 
-describe('RL2 F6-11-P2-05 mixed shopping and routine override reset-all', () => {
-  const reason =
-    'This battle also overrides its shopping plan. Resetting a shopping plan from here is not available yet. Reset routine overrides one at a time.';
+describe('RL2 recorded mixed shopping and routine resets', () => {
+  const mixed = (name: string) => dashboardPagesCase(`run_controls_live_reset_all_mixed.${name}`);
+  const allButton = () =>
+    within(liveRegion()).getByRole('button', {
+      name: "Use the battle's starting values for all 3",
+    });
 
-  it.each([2, 1])(
-    'RL2 F6-11-P2-05 %i routine overrides plus a shopping plan list every leaf, disable reset-all with a reason, and send zero POSTs',
-    async (routineCount) => {
-      const read = dashboardPagesCase('shopping_queue.shopping_plan_routine_overrides_applied');
-      if (routineCount === 1) {
-        // Modified recorded read: remove only interval_sec from both override maps to cover
-        // exactly one routine leaf plus the shopping plan (no such read was recorded).
-        const battle = (read.body as { battle: Record<string, unknown> }).battle;
-        for (const key of ['overrides', 'applied_overrides']) {
-          const overrides = battle[key] as { routines: { shopping: Record<string, unknown> } };
-          delete overrides.routines.shopping['interval_sec'];
-        }
-      }
-      const page = await openLive(() => read);
-      const all = within(liveRegion()).getByRole('button', {
-        name: `Use the battle's starting values for all ${String(routineCount + 1)}`,
-      });
-      expect(all).toHaveAttribute('aria-disabled', 'true');
-      expect(all).toHaveAccessibleDescription(reason);
-      expect(within(liveRegion()).getByText(reason)).toBeVisible();
-      const list = liveRegion().querySelector('[data-reset-all-items]');
-      expect(list).not.toBeNull();
-      expect(within(list as HTMLElement).getAllByRole('listitem')).toHaveLength(routineCount + 1);
-      expect(within(list as HTMLElement).getByText('Shopping plan')).toBeVisible();
-      expect(resetRows()).toHaveLength(routineCount);
-      await page.user.click(all);
-      await page.advance(30_000);
-      expect(document.querySelector('dialog[open]')).toBeNull();
-      expect(page.fake.writes()).toEqual([]);
-      expect(textOutsideCatalogue(page.view.container)).toEqual([]);
-      vi.useRealTimers();
-      expect(await axe(page.view.container)).toHaveNoViolations();
-    },
-    // A whole Runs page plus axe: the explicit budget other axe-heavy tests use (the default
-    // 5 s timed out once under the full suite's parallel load).
-    15_000,
-  );
+  it('RL2 mixed reset sends every leaf as null once; acceptance waits for the same-battle applied read', async () => {
+    let source = mixed('read_before_the_reset_the_mixed_overrides_are_in_force');
+    const accepted = mixed('accepted_null_for_shopping_plan_and_routine_overrides');
+    const page = await openLive(() => source, { newKey: () => 'mx-3' });
+    const items = () => liveRegion().querySelector('[data-reset-all-items]');
+    expect(items()?.querySelectorAll('li')).toHaveLength(3);
+    await page.user.click(allButton());
+    expect(within(dialog()).getAllByRole('listitem')).toHaveLength(3);
+    expect(within(dialog()).getByText('Shopping plan')).toBeVisible();
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Cancel' }));
+    expect(page.fake.writes()).toEqual([]);
+    page.fake.route('POST', accepted.request.path, () => accepted);
+    await page.user.click(allButton());
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Use starting values' }));
+    await page.advance(100);
+    expect(JSON.parse(page.fake.writes()[0]?.body ?? 'null')).toEqual(accepted.request.body);
+    expect(within(liveRegion()).getByText('Sent to this battle - waiting to apply')).toBeVisible();
+    source = mixed('read_after_the_reset_was_accepted_before_it_applies');
+    await page.advance(5_000);
+    expect(within(liveRegion()).queryByText('Applied to this battle')).toBeNull();
+    source = mixed('read_after_the_mixed_reset_applied');
+    await page.advance(5_000);
+    expect(within(liveRegion()).getByText('Applied to this battle')).toBeVisible();
+    expect(resetRows()).toEqual([]);
+    expect(items()).toBeNull();
+    expect(page.fake.writes()).toHaveLength(1);
+    expect(textOutsideCatalogue(page.view.container)).toEqual([]);
+    vi.useRealTimers();
+    expect(await axe(page.view.container)).toHaveNoViolations();
+  }, 15_000);
+
+  it('RL2 stale mixed refusal preserves the complete list and raw draft without resending', async () => {
+    const source = mixed('read_after_the_refusal_both_kinds_of_override_remain');
+    const refused = mixed('mixed_reset_with_a_stale_control_revision_refused');
+    const page = await openLive(() => source, { newKey: () => 'mx-s' });
+    const input = within(liveRegion()).getByRole('textbox', { name: 'Shopping Every' });
+    await page.user.clear(input);
+    await page.user.type(input, '77');
+    // Race replay: the recorded refusal used revision 1; the currently displayed read is 2.
+    // Keep both responses intact and prove the client sends its read's revision, then retains edits.
+    page.fake.route('POST', refused.request.path, () => refused);
+    await page.user.click(allButton());
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Use starting values' }));
+    await page.advance(5_000);
+    expect(input).toHaveValue('77');
+    expect(
+      liveRegion().querySelector('[data-reset-all-items]')?.querySelectorAll('li'),
+    ).toHaveLength(3);
+    expect(within(liveRegion()).getByText('Not sent - nothing was recorded')).toBeVisible();
+    expect(liveRegion().querySelector('[data-outcome]')?.textContent).toContain(
+      'Control revision changed',
+    );
+    expect(JSON.parse(page.fake.writes()[0]?.body ?? 'null')).toEqual({
+      ...Object.fromEntries(Object.entries(refused.request.body as Record<string, unknown>)),
+      expected_revision: 2,
+    });
+    await page.advance(30_000);
+    expect(page.fake.writes()).toHaveLength(1);
+  });
 });
 
 describe('F6-11-IR-01 a live change follows later reads of its own battle', () => {
@@ -704,3 +733,65 @@ describe('F6-11 RL7 battle details in the live section', () => {
     expect(await axe(page.view.container)).toHaveNoViolations();
   });
 });
+
+it.each([false, true])(
+  'RL2 F6-11-P3-01 lost receipt with restored intent %s checks retained reset paths despite incomplete listed payload',
+  async (reload) => {
+    const mixed = (name: string) => dashboardPagesCase('run_controls_live_reset_all_mixed.' + name);
+    const before = mixed('read_before_the_reset_the_mixed_overrides_are_in_force');
+    const accepted = mixed('accepted_null_for_shopping_plan_and_routine_overrides');
+    let source = before;
+    let page = await openLive(() => source, { newKey: () => 'mx-3' });
+    page.fake.route('POST', accepted.request.path, () => 'hold');
+    await page.user.click(
+      within(liveRegion()).getByRole('button', {
+        name: "Use the battle's starting values for all 3",
+      }),
+    );
+    await page.user.click(within(dialog()).getByRole('button', { name: 'Use starting values' }));
+    await page.advance(100);
+    await act(async () => {
+      page.fake.next(accepted.request.path).lose();
+      await Promise.resolve();
+    });
+    await page.advance(100);
+    const writes = page.fake.writes();
+    expect(writes).toHaveLength(1);
+    if (reload) {
+      const storage = page.storage;
+      page.view.unmount();
+      page.data.stop();
+      page = await openLive(() => source, { storage });
+    }
+    const record = page.data.machine.snapshot().findLast((item) => item.kind === 'live_controls');
+    expect(record?.restored).toBe(reload);
+    expect(record?.meta.resetPaths).toEqual(
+      entries(own(accepted.request.body, 'changes')).map(([path]) => path),
+    );
+    const applied = mixed('read_after_the_mixed_reset_applied');
+    for (const payload of [{}, { shopping_plan: null }]) {
+      // Fault injection: a matching applied command loses reset payload while applied leaves remain.
+      source = {
+        ...applied,
+        body: {
+          ...Object.fromEntries(entries(applied.body)),
+          battle: {
+            ...Object.fromEntries(entries(own(applied.body, 'battle'))),
+            applied_overrides: ownPath(before.body, 'battle', 'applied_overrides'),
+            commands: (list(ownPath(applied.body, 'battle', 'commands')) ?? []).map((command) => ({
+              ...Object.fromEntries(entries(command)),
+              payload,
+            })),
+          },
+        },
+      };
+      await page.advance(5_000);
+      expect(within(liveRegion()).queryByText('Applied to this battle')).toBeNull();
+      expect(within(liveRegion()).getByText('A later read lists this change')).toBeVisible();
+    }
+    source = applied;
+    await page.advance(5_000);
+    expect(within(liveRegion()).getByText('Applied to this battle')).toBeVisible();
+    expect(page.fake.writes()).toHaveLength(reload ? 0 : 1);
+  },
+);

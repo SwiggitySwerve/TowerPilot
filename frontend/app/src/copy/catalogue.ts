@@ -1,4 +1,5 @@
 import { editingTarget } from './editingTarget.ts';
+import { previewCopy } from './preview.ts';
 import { emulatorSettings } from './emulatorSettings.ts';
 import { configEquipment } from './configEquipment.ts';
 import { settingsList } from './settingsList.ts';
@@ -33,6 +34,7 @@ export { observeCopy } from './entry.ts';
  * forbids string literals in JSX.
  */
 export const copy = {
+  preview: previewCopy,
   configEquipment,
   settingsList,
   app: {

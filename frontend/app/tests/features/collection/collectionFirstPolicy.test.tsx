@@ -1,12 +1,32 @@
+import { assertProfilePatchContexts } from '../../support/profilePatchAssertions.ts';
+import { withRecordedFence } from '../../support/profilePatchFenced.ts';
 import { within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
-import { firstPolicyCase } from '../../support/collectionFirstPolicy.ts';
+import { firstPolicyCase as rawFirstPolicyCase } from '../../support/collectionFirstPolicy.ts';
 import { dashboardPagesCase, type DashboardCase } from '../../support/dashboardFixture.ts';
 import { postBodies } from '../../support/dataLayer.ts';
 import type { KeyValueStorage } from '../../../src/api/storage.ts';
 import { renderPage } from '../dashboard/harness.tsx';
+
+// Each case renders a whole page; under the full parallel suite 5 s is not enough.
+vi.setConfig({ testTimeout: 30_000 });
+
+const fenceChecks: (() => void)[] = [];
+afterEach(() => {
+  fenceChecks.splice(0).forEach((check) => {
+    check();
+  });
+});
+
+const firstPolicyCase = (name: string) =>
+  withRecordedFence(rawFirstPolicyCase(name), {
+    instance: 'main',
+    account: null,
+    profile: 'mine',
+    serial: 'fake:1',
+  });
 
 const EMPTY = 'read_a_profile_with_no_gathering_policies';
 const CREATED = 'first_policy_created_from_the_farm_template_default';
@@ -47,6 +67,10 @@ async function open(
     },
   });
   await page.advance(1_000);
+  assertProfilePatchContexts(page.data.machine);
+  fenceChecks.push(() => {
+    assertProfilePatchContexts(page.data.machine);
+  });
   return page;
 }
 

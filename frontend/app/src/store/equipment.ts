@@ -28,6 +28,9 @@ export type EquipmentOutcome =
   | 'conflict'
   | 'contextChanged'
   | 'contextUnconfirmed'
+  | 'selectionChanged'
+  | 'draftChanged'
+  | 'acceptedCurrent'
   | 'readApplied'
   | 'readUnchanged';
 interface Submission {
@@ -259,7 +262,9 @@ export function createEquipmentStore(
                   : own(body, 'code') === 'revision_conflict'
                     ? 'conflict'
                     : 'refused'
-                : 'unknown';
+                : intent.accepted === true
+                  ? 'acceptedCurrent'
+                  : 'unknown';
       change(key, (target) => ({
         ...target,
         ...(accepted
@@ -312,6 +317,7 @@ export function createEquipmentStore(
     const name = target.selected;
     const revision = e.revision;
     const body = equipmentBody(e.draft, e.original);
+    const submission = Object.freeze({ body, original: e.original, revision, version: e.version });
     change(key, (current) => ({
       ...current,
       editors: {
@@ -321,7 +327,7 @@ export function createEquipmentStore(
           outcome: 'checking',
           checked: false,
           refusalContext: null,
-          submission: { body, original: e.original, revision, version: e.version },
+          submission,
         },
       },
     }));
@@ -334,7 +340,7 @@ export function createEquipmentStore(
       current.key !== key ||
       current.epoch !== epoch ||
       !api.sameContext(current.context, context) ||
-      (named !== null && !api.sameContext(named, context));
+      (named !== null && !api.sameContext(named.context, context));
     if (changed || named === null) {
       change(key, (t) => {
         const entry = loadoutEditor(t, name);
@@ -347,7 +353,7 @@ export function createEquipmentStore(
                 [name]: {
                   ...entry,
                   outcome: changed ? 'contextChanged' : 'contextUnconfirmed',
-                  refusalContext: changed ? (named ?? current.context) : null,
+                  refusalContext: changed ? (named?.context ?? current.context) : null,
                   reconcile: entry.reconcile || changed,
                   checked: false,
                 },
@@ -356,7 +362,45 @@ export function createEquipmentStore(
       });
       return;
     }
-    api.send(context, name, revision, body);
+    const latestTarget = currentEquipment(current);
+    const latest = loadoutEditor(latestTarget, name);
+    const outcome =
+      named.revision !== submission.revision ||
+      configRevision(latestTarget?.config) !== submission.revision ||
+      latest?.revision !== submission.revision
+        ? 'conflict'
+        : latestTarget?.selected !== name
+          ? 'selectionChanged'
+          : latest.submission !== submission ||
+              latest.original !== submission.original ||
+              latestTarget.busy ||
+              latestTarget.readError ||
+              loadoutOf(latestTarget.config, name) === undefined
+            ? 'draftChanged'
+            : null;
+    if (outcome !== null) {
+      change(key, (t) => {
+        const entry = loadoutEditor(t, name);
+        return entry === null
+          ? t
+          : {
+              ...t,
+              editors: {
+                ...t.editors,
+                [name]: {
+                  ...entry,
+                  outcome,
+                  reconcile: entry.reconcile || outcome === 'conflict',
+                  checked: false,
+                },
+              },
+            };
+      });
+      return;
+    }
+    // The click reserved and validated this body. Typing during the context read belongs
+    // to the next draft; it neither replaces nor cancels the reserved submission.
+    api.send(context, name, submission.revision, body);
   };
   const refresh = async () => {
     const { context, key, epoch } = store.getSnapshot();
@@ -491,7 +535,10 @@ export function createEquipmentStore(
       } else
         change(key, (t) => ({
           ...t,
-          editors: { ...t.editors, [name]: { ...e, reconcile: true, checked: true } },
+          editors: {
+            ...t.editors,
+            [name]: { ...e, reconcile: intent.accepted !== true, checked: true },
+          },
         }));
     }
   };
@@ -650,6 +697,15 @@ export function createEquipmentStore(
       const t = currentEquipment(store.getSnapshot());
       const name = t?.selected;
       if (t === null || name == null || t.busy || t.readError) return;
+      const entry = loadoutEditor(t, name);
+      if (
+        entry === null ||
+        !entry.checked ||
+        entry.outcome === 'sending' ||
+        entry.outcome === 'checking' ||
+        loadoutOf(t.config, name) === undefined
+      )
+        return;
       editEntry((e) =>
         !e.checked || e.outcome === 'sending' || own(own(t.config, 'loadouts'), name) === undefined
           ? e
@@ -659,9 +715,10 @@ export function createEquipmentStore(
               revision: configRevision(t.config),
               reconcile: false,
               reviewedVersion: null,
-              outcome: e.outcome === 'unknown' ? null : e.outcome,
+              outcome: e.outcome === 'unknown' ? 'acceptedCurrent' : e.outcome,
             },
       );
+      if (entry.outcome === 'unknown' && entry.intent !== null) api.machine.accept(entry.intent.id);
     },
     approveConversion: (reviewed) => {
       editEntry((e) => ({ ...e, reviewedVersion: reviewed ? e.version : null }));

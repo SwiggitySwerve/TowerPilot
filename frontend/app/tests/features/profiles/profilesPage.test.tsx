@@ -1439,6 +1439,27 @@ describe('F6-14 PE2 editing target foundation', () => {
   const returnButton = () =>
     within(box()).getByRole('button', { name: 'Return editing to the active profile' });
 
+  it('PE1 F6-14c failed profile list keeps second and offers a read-only retry', async () => {
+    let files = target('same_account_inactive_target_listed');
+    const page = await openProfiles({ ...world, files: () => files });
+    await pickSecond(page);
+    files = pages('profile_target_more.profile_files_read_failed_500');
+    page.data.poller.read('profileFiles');
+    await page.advance(0);
+    expect(selectEditingTarget(page.data.store.getSnapshot()).name).toBe('second');
+    expect(
+      within(box()).getByText('The profile list could not be read. Your editing profile is kept.'),
+    ).toBeVisible();
+    files = pages('profile_target_more.profile_files_read_after_the_failure_answers_again');
+    await page.user.click(within(box()).getByRole('button', { name: 'Retry profile list' }));
+    await page.advance(0);
+    expect(selectEditingTarget(page.data.store.getSnapshot())).toMatchObject({
+      name: 'second',
+      blocked: null,
+    });
+    expect(page.fake.writes()).toEqual([]);
+  });
+
   it('PE2 pick second while mine is active sends no request of any kind; generation increases on pick and return', async () => {
     const page = await openProfiles(world);
     const before = page.fake.requests.length;

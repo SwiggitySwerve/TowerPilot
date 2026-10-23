@@ -14,6 +14,11 @@ export const editingTarget = {
   none: entry('none'),
   change: entry('Change the editing profile in Profiles'),
   scope: entry('Choosing a profile to edit does not activate it or change automation.'),
+  listFailed: entry('The profile list could not be read. Your editing profile is kept.'),
+  retryList: entry('Retry profile list'),
+  sourceFailed: entry(
+    'This profile could not be read. Writes are unavailable until a successful read.',
+  ),
   blocked: {
     no_profile: entry('No profile is active; choose a profile to edit'),
     files_unread: entry('The profile list must be read before editing this profile'),

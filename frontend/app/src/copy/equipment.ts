@@ -87,6 +87,12 @@ export const equipment = {
   sending: entry('Saving this selection once… New edits stay in the draft.'),
   checking: entry('Checking the current account and profile… Nothing has been sent.'),
   contextChanged: entry('Not saved: the account or profile changed'),
+  selectionChanged: entry(
+    'Not saved: another loadout was selected during the check. Your draft is kept with this loadout.',
+  ),
+  draftChanged: entry(
+    'Not saved: the editor changed during the check. Review the kept draft before saving again.',
+  ),
   contextUnconfirmed: entry(
     'Not saved: the current account or profile could not be checked. Your draft is kept.',
   ),
@@ -94,6 +100,9 @@ export const equipment = {
   saved: entry('Selection saved in configuration. No game equipment was applied or verified.'),
   unknownResult: entry(
     'The save outcome is unknown. Do not send it again. Read saved result for the original target and loadout.',
+  ),
+  acceptedCurrent: entry(
+    'Continuing from the saved values as read. The earlier save outcome remains unknown. Saving requires a separate click.',
   ),
   refused: entry('The backend refused this save. Your draft is kept.'),
   conflict: entry(

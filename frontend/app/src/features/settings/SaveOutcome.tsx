@@ -15,6 +15,8 @@ function wording(code: SaveOutcomeVM['code']) {
       return t.outcomes.saved;
     case 'refused':
       return t.outcomes.refused;
+    case 'context_changed':
+      return t.outcomes.context_changed;
     case 'unknown':
       return t.outcomes.unknown;
     case 'applied':
@@ -63,7 +65,9 @@ export function SaveOutcome({
           </span>
         }
         {...(entry.why === undefined ? {} : { why: entry.why })}
-        {...(outcome.error === null && outcome.problems.length === 0
+        {...(outcome.error === null &&
+        outcome.problems.length === 0 &&
+        outcome.currentContext === null
           ? {}
           : {
               server: (
@@ -72,6 +76,11 @@ export function SaveOutcome({
                     <span data-refusal="true">
                       <ServerValue kind="message" value={outcome.error} />
                     </span>
+                  )}
+                  {outcome.currentContext === null ? null : (
+                    <pre>
+                      <ServerValue kind="detail" value={outcome.currentContext} />
+                    </pre>
                   )}
                   {outcome.problems.length === 0 ? null : (
                     <Disclosure label={t.outcomes.problems(outcome.problems.length)}>

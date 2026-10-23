@@ -65,6 +65,14 @@ const EDITED_FIELDS = [
 ] as const;
 export type EntryKey = (typeof EDITED_FIELDS)[number];
 
+/** profile_target_more records these inactive entry saves and three explicit deletions.
+ * Quest values and the remaining deletes await their own fenced recordings. */
+export function inactiveEntryRecorded(key: EntryKey, remove: boolean): boolean {
+  return remove
+    ? key === 'perk_bans' || key === 'policies.uw' || key === 'shopping'
+    : key !== 'rides' && key !== 'cycles';
+}
+
 /** Entries come from the edited file, independently of the active /api/runs list. */
 export function runEntryRuns(source: unknown) {
   return entries(ownPath(source, 'profile', 'blueprints')).map(([key, blueprint]) => ({
@@ -96,7 +104,8 @@ export function runEntryFields(
     const spec =
       path.length === 1 ? own(specs, key) : ownPath(specs, 'policies', 'fields', path[1] ?? '');
     if (spec === undefined || (key === 'count' && kind !== 'shard')) return [];
-    if (key === 'dissonant_tab' && own(blueprint, key) === undefined) return [];
+    if (key === 'rides' && kind !== 'uw_grant_quest') return [];
+    if (key === 'cycles' && kind !== 'cycle_quest') return [];
     const policy = key.startsWith('policies.') || key === 'shopping';
     const section =
       key === 'policies.gather'
@@ -139,7 +148,12 @@ export function runEntryFields(
         choices,
         min: finite(range?.[0]) ?? null,
         max: finite(range?.[1]) ?? null,
-        removable: policy || key === 'perk_bans' || key === 'label',
+        removable:
+          policy ||
+          key === 'perk_bans' ||
+          key === 'label' ||
+          key === 'dissonant_tab' ||
+          key === 'rides',
       },
     ];
   });
@@ -149,6 +163,25 @@ export function entryRaw(field: EntryField): string | boolean {
   if (field.type === 'toggle') return field.saved === true;
   if (field.type === 'list') return (stringList(field.saved) ?? []).join('\n');
   return typeof field.saved === 'number' ? String(field.saved) : (text(field.saved) ?? '');
+}
+
+/** RL11: match the recorded validator's non-null, non-off ownership requirement. */
+export function entryNeedsChainLightning(source: unknown, reference: unknown): boolean {
+  const mode = ownPath(
+    source,
+    'profile',
+    'policies',
+    'uw_policies',
+    typeof reference === 'string' ? reference : '',
+    'chain_lightning',
+    'mode',
+  );
+  return (
+    mode !== undefined &&
+    mode !== null &&
+    mode !== 'off' &&
+    ownPath(source, 'profile', 'player', 'uws', 'chain_lightning') !== true
+  );
 }
 
 export type EntryReason =
@@ -161,7 +194,7 @@ export type EntryCheck =
  * removing perk_bans leaves the game's existing bans untouched. Never clamp a value. */
 export function checkEntry(field: EntryField, raw: string | boolean, remove = false): EntryCheck {
   if (remove && field.removable)
-    return field.saved === undefined
+    return field.saved === undefined && field.key !== 'label'
       ? { kind: 'invalid', reason: 'unchanged' }
       : { kind: 'valid', remove: true, value: undefined };
   let value: unknown = raw;
@@ -170,7 +203,15 @@ export function checkEntry(field: EntryField, raw: string | boolean, remove = fa
   } else {
     if (typeof raw !== 'string') return { kind: 'invalid', reason: 'text' };
     if (field.type === 'number') {
-      if (raw === '' && field.key === 'max_wave') value = null;
+      if (field.key === 'rides' || field.key === 'cycles') {
+        // RL13: preserve scalar types; integer/range validation belongs to the server.
+        try {
+          const parsed: unknown = JSON.parse(raw);
+          value = typeof parsed === 'number' || typeof parsed === 'string' ? parsed : raw;
+        } catch {
+          value = raw;
+        }
+      } else if (raw === '' && field.key === 'max_wave') value = null;
       else {
         if (!/^\d+$/u.test(raw) || !Number.isSafeInteger(Number(raw)))
           return { kind: 'invalid', reason: 'number' };

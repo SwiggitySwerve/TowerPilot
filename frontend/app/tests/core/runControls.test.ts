@@ -277,7 +277,7 @@ describe('RL2 F6-11-P2-05 every applied override leaf belongs to reset-all', () 
     ).toEqual(['routines.ad_gems.window_sec']);
   });
 
-  it('RL2 F6-11-P2-05 the recorded mixed read treats shopping_plan as one applied leaf and blocks its reset', () => {
+  it('RL2 the recorded mixed read treats shopping_plan as one applied leaf and enables its reset', () => {
     const read = mixed();
     const found = paths(read);
     expect(found).toEqual([
@@ -286,8 +286,14 @@ describe('RL2 F6-11-P2-05 every applied override leaf belongs to reset-all', () 
       'shopping_plan',
     ]);
     expect(liveResetGate(read, true, found, 'none')).toEqual({
-      enabled: false,
-      reason: 'shopping_plan_reset_unavailable',
+      enabled: true,
+      command: {
+        operationId: read['operation_id'],
+        battleId: read['id'],
+        generation: read['generation'],
+        expectedRevision: read['control_revision'],
+        paths: found,
+      },
     });
     expect(paths(battle('shopping_queue.shopping_plan_read_applied'))).toEqual(['shopping_plan']);
   });

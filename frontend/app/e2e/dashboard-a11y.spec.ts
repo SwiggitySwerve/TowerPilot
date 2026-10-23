@@ -64,6 +64,7 @@ const RANK = [
   'thisBattle',
   'startNext',
   'recent',
+  'preview',
 ] as const;
 
 async function focusOrder(page: Page, stops: number): Promise<string[]> {

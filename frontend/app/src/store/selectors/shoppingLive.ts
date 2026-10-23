@@ -7,7 +7,8 @@ import { settledByRead } from '../fences.ts';
 import { contextIntents, contextScopeKey, unresolvedIntent } from '../intents.ts';
 import { contextReadOf, latestRead, readAgeSec } from '../reads.ts';
 import type { DashboardState } from '../types.ts';
-import { selectQueueEditor } from './shoppingQueue.ts';
+import { queueRefusal, selectQueueEditor } from './shoppingQueue.ts';
+import { selectRunsPage } from './runs.ts';
 
 /** SQ7: independent of routine drafts, fenced by battle and generation. */
 export function shoppingLiveScope(
@@ -80,6 +81,7 @@ export function selectShoppingLive(state: DashboardState) {
   return {
     scope,
     draft,
+    refusal: queueRefusal(state, scope, selectRunsPage(state).live.outcome),
     base,
     editor,
     supported,

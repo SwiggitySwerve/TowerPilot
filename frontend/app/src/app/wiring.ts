@@ -1,4 +1,6 @@
 import { restoreEditTargets, saveEditTargets } from '../api/editTargets.ts';
+import { createPreviewData } from './previewWiring.ts';
+import type { PreviewStore } from '../store/preview.ts';
 import { setupPermit } from '../core/guards.ts';
 import { handoffTarget } from '../core/needs.ts';
 import { finite, own, ownPath, text } from '../core/read.ts';
@@ -13,7 +15,6 @@ import { collectionSavePending } from '../store/selectors/collection.ts';
 import {
   contextKey,
   createContextTracker,
-  expectedContext,
   sameContext,
   type ContextTracker,
   type PageContext,
@@ -33,6 +34,7 @@ import { clickGet, pauseClick, resolvePauseContext, sendTurnOn } from '../api/in
 import { sendInputOff, sendInputOn } from '../api/intents/input.ts';
 import { sendKill } from '../api/intents/kill.ts';
 import { createIntentMachine, type IntentMachine } from '../api/intents/machine.ts';
+import { draftSettlement } from '../api/intents/draftSettlement.ts';
 import { sendReconnect } from '../api/intents/reconnect.ts';
 import { sendRunNow } from '../api/intents/routineAction.ts';
 import { sendLiveReset, sendLiveSave, sendSavedSave } from '../api/intents/runs.ts';
@@ -87,11 +89,12 @@ import { answeredBody, contextReadOf, latestRead } from '../store/reads.ts';
 import { idleForConnectionChange } from '../core/connection.ts';
 import { controlFacts, highestStopRevision } from '../store/selectors/controlFacts.ts';
 import { selectOutcomes } from '../store/selectors/outcomes.ts';
+import { emulatorSwitchPending } from '../store/selectors/emulatorSettings.ts';
 import {
-  emulatorSwitchPending,
-  selectEmulatorSettings,
-} from '../store/selectors/emulatorSettings.ts';
-import { settingsSavePending } from '../store/selectors/settingsModule.ts';
+  currentSettingsView,
+  settingsModuleVM,
+  settingsSavePending,
+} from '../store/selectors/settingsModule.ts';
 import { selectPauseInputs } from '../store/selectors/pauseInputs.ts';
 import { recognitionLaunchReason, selectRecognitionPage } from '../store/selectors/recognition.ts';
 import { keptOperationScope, trackedOperation } from '../store/selectors/recognitionOperation.ts';
@@ -122,6 +125,7 @@ export interface DashboardDataOptions {
 }
 
 export interface DashboardData {
+  readonly preview: PreviewStore;
   readonly store: DashboardStore;
   readonly poller: Poller;
   readonly machine: IntentMachine;
@@ -248,9 +252,13 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
   const settleRecords = () => {
     const state = store.getSnapshot();
     for (const record of machine.snapshot()) {
-      const kept = state.readSettlements[record.id];
-      if (kept !== undefined && record.phase === 'unconfirmed' && record.readSettlement === null) {
-        machine.settleByRead(record.id, kept.settlement);
+      const kept = state.readSettlements[record.id]?.settlement ?? record.readSettlement;
+      if (
+        kept !== null &&
+        record.phase === 'unconfirmed' &&
+        (record.readSettlement === null || draftSettlement(record, kept) === 'applied')
+      ) {
+        machine.settleByRead(record.id, kept);
       }
     }
   };
@@ -269,7 +277,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       const { draftScope, draft } = record.meta;
       if (draftScope === undefined || draft === undefined || draftsCleared.has(record.id)) continue;
       const settled = state.readSettlements[record.id]?.settlement ?? record.readSettlement;
-      if (record.phase !== 'confirmed' && settled !== 'applied' && settled !== 'recorded') continue;
+      if (draftSettlement(record, settled) !== 'applied') continue;
       // F6-12 SQ7 (LIVE-INT-01): a live queue change clears its submitted values at its
       // receipt, as a routine change does: the battle read itself says it is requested and
       // waiting (requested_controls against applied_controls), which a reload keeps, while a
@@ -830,6 +838,9 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     checkRun: () => {
       activePoller.read('runControls');
     },
+    checkRuns: () => {
+      activePoller.read('runs');
+    },
     checkBattle: () => {
       activePoller.read('battlesActive');
     },
@@ -1116,6 +1127,33 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     },
     saveSettings: async (command) => {
       if (!fenced(command)) return;
+      // Rebuild the offer from the current read and the pinned raw draft at both
+      // boundaries. A captured command cannot borrow a newer revision or value.
+      const stillOffered = () => {
+        const state = store.getSnapshot();
+        const view = currentSettingsView(state);
+        const profile =
+          view?.modules.find((module) => module.id === command.module)?.scope === 'profile';
+        const pending =
+          settingsSavePending(state, profile ? ['settings', 'profileSource'] : ['settings']) ||
+          emulatorSwitchPending(state);
+        const offered = settingsModuleVM(state, view, command.module, { pending })?.save.command;
+        return (
+          offered !== undefined &&
+          offered !== null &&
+          offered.epoch === command.epoch &&
+          offered.revision === command.revision &&
+          sameContext(offered.context, command.context) &&
+          JSON.stringify(offered.settingsContext) === JSON.stringify(command.settingsContext) &&
+          offered.draft.scope === command.draft.scope &&
+          JSON.stringify(offered.draft.values) === JSON.stringify(command.draft.values) &&
+          JSON.stringify(offered.values) === JSON.stringify(command.values)
+        );
+      };
+      if (!stillOffered()) {
+        notice('command_not_sent', 'context_changed');
+        return;
+      }
       // The server fences this save itself (its body names the context the settings read
       // named, and the revision); the page sends it only for the context it shows.
       if (!sameContext(tracker.current(), command.context)) {
@@ -1130,7 +1168,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
         notice('command_not_sent', 'collection_write_in_flight');
         return;
       }
-      if (command.module === 'active-instance') {
+      {
         // Reserve this settings write while click-time reads revalidate the reviewed
         // context, revision and exact draft. The confirmation itself never sends.
         const reservation = contextKey(command.context);
@@ -1149,7 +1187,6 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
           let checked = await activePoller.readNow('settings');
           if (checked !== null && checked.startedSeq <= clickedSeq)
             checked = await activePoller.readNow('settings');
-          const offered = selectEmulatorSettings(store.getSnapshot()).active?.save.command;
           if (
             checked === null ||
             checked.startedSeq <= clickedSeq ||
@@ -1157,10 +1194,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
             checked.outcome.status !== 200 ||
             !fenced(command) ||
             !sameContext(tracker.current(), command.context) ||
-            offered === undefined ||
-            offered === null ||
-            offered.revision !== command.revision ||
-            JSON.stringify(offered.values) !== JSON.stringify(command.values) ||
+            !stillOffered() ||
             collectionWriteInFlight(command.context)
           ) {
             notice('command_not_sent', 'context_changed');
@@ -1298,7 +1332,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
             return;
           }
         } else {
-          // D4: preserve the active write's existing click-time config fence and body.
+          // F6-14b: retain the click-time read as a second guard beside the server fence.
           const named = await readClickTimeContext();
           if (named === null) {
             notice('command_not_sent', 'context_unconfirmed');
@@ -1329,12 +1363,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
               target: command.target,
               profile: command.profile,
               path: command.path,
-              ...(command.inactive
-                ? {
-                    expected_context: expectedContext(command.context),
-                    omitDeleteValue: true,
-                  }
-                : {}),
+              omitDeleteValue: true,
               remove: command.remove,
               value: command.value,
               revision: command.revision,
@@ -1427,10 +1456,6 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
               target: command.target,
               profile,
               path: command.path,
-              ...(inactive ||
-              (command.path[0] === 'policies' && command.path[1] === 'shopping_lists')
-                ? { expected_context: expectedContext(command.context) }
-                : {}),
               ...(collectionTarget ? { omitDeleteValue: true } : {}),
               remove: command.remove,
               value: command.value,
@@ -1446,6 +1471,9 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     },
     pickEditingTarget: (command) => {
       store.dispatch({ type: 'edit_target_pick', epoch: command.epoch, name: command.name });
+    },
+    checkEditingProfiles: () => {
+      activePoller.read('profileFiles');
     },
     returnEditingToActive: (command) => {
       store.dispatch({ type: 'edit_target_return', epoch: command.epoch });
@@ -1517,8 +1545,10 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     },
   };
 
+  const previewData = createPreviewData(store);
   return {
     store,
+    preview: previewData.store,
     poller: activePoller,
     machine,
     tracker,
@@ -1527,6 +1557,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     commands,
     start: () => {
       if (unsubscribe.length > 0) return;
+      previewData.start();
       previous = store.getSnapshot();
       unsubscribe = [
         store.subscribe(onStore),
@@ -1541,6 +1572,7 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       activePoller.start();
     },
     stop: () => {
+      previewData.stop();
       savedApplyReadback.stop();
       activePoller.stop();
       machine.dispose();

@@ -1,3 +1,6 @@
+import { assertProfilePatchContexts } from '../../support/profilePatchAssertions.ts';
+import { withRecordedFence } from '../../support/profilePatchFenced.ts';
+import { contextFromConfig } from '../../../src/api/context.ts';
 import { act, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -11,7 +14,18 @@ import {
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import { renderPage, type PageOptions } from '../dashboard/harness.tsx';
 
-const sample = (name: string) => dashboardPagesCase(`run_entry_patch.${name}`);
+const fenceChecks: (() => void)[] = [];
+afterEach(() => {
+  fenceChecks.splice(0).forEach((check) => {
+    check();
+  });
+});
+
+const sample = (name: string) => {
+  const context = contextFromConfig(CONFIG);
+  if (context === null) throw new Error('Missing recorded runtime');
+  return withRecordedFence(dashboardPagesCase(`run_entry_patch.${name}`), context);
+};
 const CONFIG = dashboardPagesCase(
   'run_templates_add_fenced.read_config_the_page_context_comes_from',
 ).body;
@@ -53,6 +67,10 @@ async function openTarget(options: PageOptions = {}, source = () => targetSource
     });
   });
   await page.advance(100);
+  assertProfilePatchContexts(page.data.machine);
+  fenceChecks.push(() => {
+    assertProfilePatchContexts(page.data.machine);
+  });
   return page;
 }
 function root() {
@@ -125,62 +143,71 @@ describe('PE6 target-bound entry editor', () => {
     expect(form().queryByLabelText('Run label')).toBeNull();
     expect(page.fake.writes()).toEqual([]);
   });
-  it.each(names.filter((name) => name.startsWith('saved_')))(
-    'PE6 inactive body rule preserves the recorded active field shape: %s',
-    async (name) => {
-      const entry = sample(name);
-      const path = stringList(own(entry.request.body, 'path')) ?? [];
-      const fieldKey = path.slice(2).join('.');
-      const previous = sourceBefore(entry);
-      // Coverage gap: inactive recordings exist only for label/loadout. Reuse each recorded
-      // active source/profile and revision under second's GET identity to test the same
-      // one-field rule plus D4's inactive name/context fence; this is not a backend recording.
-      const source: DashboardCase = {
-        ...targetCase('same_account_inactive_target_source'),
-        body: { ...Object.fromEntries(entries(previous.body)), name: 'second' },
-      };
-      const page = await openTarget(
-        {
-          before: (fake) => {
-            fake.route('POST', PATCH, () => entry);
-          },
+  it.each(
+    names.filter((name) => name.startsWith('saved_label') || name.startsWith('saved_loadout')),
+  )('PE6 F6-14c existing label/loadout targets keep their original fence: %s', async (name) => {
+    const entry = sample(name);
+    const path = stringList(own(entry.request.body, 'path')) ?? [];
+    const fieldKey = path.slice(2).join('.');
+    const previous = sourceBefore(entry);
+    // Modified recording: retain this older test's active source/profile under second's
+    // identity. runEntryTargetMore covers every new unmodified inactive request body.
+    const source: DashboardCase = {
+      ...targetCase('same_account_inactive_target_source'),
+      body: { ...Object.fromEntries(entries(previous.body)), name: 'second' },
+    };
+    const page = await openTarget(
+      {
+        before: (fake) => {
+          fake.route('POST', PATCH, () => entry);
         },
-        () => source,
-        path[1],
-      );
-      const value = own(entry.request.body, 'value');
-      const raw =
-        typeof value === 'boolean'
-          ? value
-          : value == null
-            ? ''
-            : Array.isArray(value)
-              ? value.join('\n')
-              : typeof value === 'string' || typeof value === 'number'
-                ? String(value)
-                : '';
-      const field = selectRunEntry(page.data.store.getSnapshot()).fields.find(
-        (item) => item.key === fieldKey,
-      );
-      if (field === undefined) throw new Error('missing recorded entry field');
-      act(() => {
-        page.data.commands.editDraft(field.scope, 'value', raw);
-        if (own(entry.request.body, 'op') === 'delete')
-          page.data.commands.editDraft(field.scope, 'remove', true);
-      });
-      await save(page, fieldKey);
-      expect(page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown)).toEqual([
-        {
-          ...Object.fromEntries(entries(entry.request.body)),
-          name: 'second',
-          expected_context: own(
-            targetCase('inactive_run_entry_label_saved').request.body,
-            'expected_context',
-          ),
-        },
-      ]);
-    },
-  );
+      },
+      () => source,
+      path[1],
+    );
+    const value = own(entry.request.body, 'value');
+    const raw =
+      typeof value === 'boolean'
+        ? value
+        : value == null
+          ? ''
+          : Array.isArray(value)
+            ? value.join('\n')
+            : typeof value === 'string' || typeof value === 'number'
+              ? String(value)
+              : '';
+    const field = selectRunEntry(page.data.store.getSnapshot()).fields.find(
+      (item) => item.key === fieldKey,
+    );
+    if (field === undefined) throw new Error('missing recorded entry field');
+    act(() => {
+      page.data.commands.editDraft(field.scope, 'value', raw);
+      if (own(entry.request.body, 'op') === 'delete')
+        page.data.commands.editDraft(field.scope, 'remove', true);
+    });
+    await save(page, fieldKey);
+    if (fieldKey !== 'label' && fieldKey !== 'loadout') {
+      expect(page.fake.writes()).toEqual([]);
+      expect(
+        row(fieldKey).getByText('Return editing to the active profile to change this field.'),
+      ).toBeVisible();
+      expect(
+        selectRunEntry(page.data.store.getSnapshot()).fields.find((item) => item.key === fieldKey)
+          ?.raw,
+      ).toEqual(raw);
+      return;
+    }
+    expect(page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown)).toEqual([
+      {
+        ...Object.fromEntries(entries(entry.request.body)),
+        name: 'second',
+        expected_context: own(
+          targetCase('inactive_run_entry_label_saved').request.body,
+          'expected_context',
+        ),
+      },
+    ]);
+  });
   it.each([
     'read_config_after_editor_active_profile_switch',
     'read_config_after_editor_instance_switch',
@@ -809,7 +836,9 @@ describe('RL3 and RL6 saved entry editor', () => {
     for (const key of ['policies.uw', 'policies.rescue'])
       expect(row(key).getByRole('link', { name: 'Open Abilities' })).toHaveAttribute(
         'href',
-        '#abilities',
+        key === 'policies.uw'
+          ? '#abilities/uw_policies/farm_cl'
+          : '#abilities/rescue_policies/wall_drain',
       );
     expect(row('shopping').queryByRole('link')).toBeNull();
     expect(textOutsideCatalogue(root())).toEqual([]);

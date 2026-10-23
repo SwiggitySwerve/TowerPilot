@@ -313,6 +313,14 @@ export function readTriggers(
     const lost = record.lostReason !== null && record.lostReason !== old?.lostReason;
     if (answered || lost) {
       for (const resource of COLLECTION_READS) wanted.add(resource);
+      // RL9/RL12: active entry patches change the compiled catalogue too (labels,
+      // disabled tabs). Never retain an earlier run label after its explicit clear.
+      if (
+        record.kind === 'profile_patch' &&
+        record.meta.name === record.context?.profile &&
+        record.meta.patchPath?.[0] === 'blueprints'
+      )
+        wanted.add('runs');
       if (record.kind === 'run_add') {
         wanted.add('runs');
         wanted.add('runControls');
@@ -365,6 +373,7 @@ export function readTriggers(
       wanted.add(resource);
   }
   if (next.runsOpen && !previous.runsOpen) {
+    wanted.add('runs');
     wanted.add('settings');
     wanted.add('profileSource');
     wanted.add('profileFiles');

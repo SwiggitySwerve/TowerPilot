@@ -12,6 +12,7 @@ import { pageHref } from '../../ui/routes.ts';
 import { Why } from '../../ui/Why.tsx';
 import { TopBar } from '../dashboard/topBar/TopBar.tsx';
 import { EditingTargetLine } from '../profiles/EditingTargetLine.tsx';
+import { TargetSourceError } from '../profiles/TargetSourceError.tsx';
 import './schedule.css';
 
 function fieldId(key: string, field: string): string {
@@ -242,7 +243,13 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
         ) : null}
         {entry?.busy === true ? <p role="status">{t.reading.short}</p> : null}
         {entry?.readError === true ? <p role="alert">{t.readError.short}</p> : null}
+        <TargetSourceError error={vm.sourceError} />
         {vm.notSent === null ? null : <p role="alert">{t.notSent[vm.notSent].short}</p>}
+        {vm.currentContext === null ? null : (
+          <pre>
+            <ServerValue kind="detail" value={vm.currentContext} />
+          </pre>
+        )}
         {entry?.source !== undefined && !vm.hasDraftPlan ? (
           <p>{vm.target.inactive ? t.missingInactive.short : t.missing.short}</p>
         ) : null}

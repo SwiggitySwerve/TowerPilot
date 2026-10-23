@@ -191,7 +191,6 @@ export function savedSaveGate(
 
 /** Why a live save is not offered. */
 export type LiveSaveReason =
-  | 'shopping_plan_reset_unavailable'
   | 'no_battle'
   | 'battle_not_active'
   | 'report_stale'
@@ -292,11 +291,6 @@ export function liveResetGate(
   const target = liveTarget(battle, reportFresh, request);
   if (!target.enabled) return target;
   if (paths.length === 0) return { enabled: false, reason: 'no_changes' };
-  // RL2 F6-11-P2-05: missing recorded case
-  // run_controls_live_reset_all.accepted_null_for_shopping_plan_and_routine_overrides
-  // with before/after battle reads. Remove this guard when recorded.
-  if (paths.includes('shopping_plan'))
-    return { enabled: false, reason: 'shopping_plan_reset_unavailable' };
   return { enabled: true, command: { ...target.command, paths: [...paths] } };
 }
 

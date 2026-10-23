@@ -7,7 +7,11 @@ import { renderPage } from '../dashboard/harness.tsx';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import { selectRuntimeSettings } from '../../../src/store/selectors/runtime.ts';
 import { selectRunDefaults } from '../../../src/store/selectors/runDefaults.ts';
-import { settingsSaveAnswer } from '../../../src/core/settingsFields.ts';
+import {
+  settingsSaveAnswer,
+  settingsModule,
+  settingsView,
+} from '../../../src/core/settingsFields.ts';
 import {
   RUNTIME_CONFIG_CONTEXT,
   RUNTIME_CONFIG_SAVES,
@@ -83,8 +87,12 @@ async function openConfig(module: Module, initial?: string) {
   };
 }
 type Page = Awaited<ReturnType<typeof openConfig>>;
-async function fillValues(page: Page, module: Module) {
-  const saved = pages(`settings_modules.saved_${RUNTIME_CONFIG_SAVES[module].suffix}`);
+async function fillValues(page: Page, module: Module, overrides = false) {
+  const saved = pages(
+    overrides
+      ? `settings_modules_more.saved_${RUNTIME_CONFIG_SAVES[module].suffix}_with_overrides`
+      : `settings_modules.saved_${RUNTIME_CONFIG_SAVES[module].suffix}`,
+  );
   const body = saved.request.body as SavedBody;
   for (const [key, value] of Object.entries(body.values)) {
     if (typeof value === 'boolean') {
@@ -103,6 +111,40 @@ async function fillValues(page: Page, module: Module) {
   return saved;
 }
 const save = (module: string) => within(box(module)).getByRole('button', { name: 'Save' });
+
+it.each(Object.keys(RUNTIME_CONFIG_SAVES) as Module[])(
+  'C15-5 C15-10 C15-11 C15-12 C15-13 C15-14 C-03 %s saves genuine defaults over distinct instance overrides and keeps dirty override text',
+  async (module) => {
+    const suffix = RUNTIME_CONFIG_SAVES[module].suffix;
+    const page = await openConfig(
+      module,
+      `settings_modules_more.read_before_saved_${suffix}_with_overrides`,
+    );
+    const originalPicker = page.data.store.getSnapshot().selectedRun;
+    const override = module.replace('-defaults', '');
+    const key =
+      module === 'loop-defaults'
+        ? 'fps'
+        : module === 'missions-defaults'
+          ? 'visit_delay_sec#0'
+          : 'hold_window';
+    if (module !== 'run-defaults') {
+      await page.user.clear(part(override, key));
+      await page.user.type(part(override, key), '123');
+    }
+    const saved = await fillValues(page, module, true);
+    await page.user.click(save(module));
+    expect(JSON.parse(page.fake.writes()[0]?.body ?? '{}')).toEqual(saved.request.body);
+    page.setRead(`settings_modules_more.read_after_saved_${suffix}_with_overrides`);
+    page.fake.next('/api/settings', 'POST').respond(saved.status, saved.body);
+    await page.advance(5000);
+    expect(box(module)).toHaveTextContent('Saved');
+    if (module !== 'run-defaults') expect(part(override, key)).toHaveValue('123');
+    if (module === 'loop-defaults') expect(part('loop', 'dry_run')).toBeChecked();
+    expect(page.data.store.getSnapshot().selectedRun).toBe(originalPicker);
+    expect(page.fake.writes()).toHaveLength(1);
+  },
+);
 
 it.each(rows)(
   '$row old read and older save answer preserve newer $field input',
@@ -348,38 +390,52 @@ it('C15-10 inherited effective display refreshes from server metadata without cr
   expect(JSON.parse(page.fake.writes()[0]?.body ?? '') as unknown).toEqual(saved.request.body);
 });
 
-it('C15-5 an unlisted saved preset stays visible; options and labels come from the server', async () => {
-  const initial = 'settings_modules.read_after_saved_instance_defaults';
-  const modified = pages(initial).body as {
-    modules: {
-      id: string;
-      fields: { value: unknown; options: { value: string; label: string }[] }[];
-    }[];
-  };
-  const field = modified.modules.find((m) => m.id === 'run-defaults')?.fields[0];
-  if (field === undefined) throw new Error('missing preset');
-  const unlisted = (pages('settings_modules.invalid_enum_run_defaults').request.body as SavedBody)
-    .values['preset'];
-  if (typeof unlisted !== 'string') throw new Error('Missing recorded unlisted preset');
-  field.value = unlisted;
-  const page = await openConfig('run-defaults');
-  page.fake.route('GET', '/api/settings', () => ({ status: 200, body: modified }));
-  await page.user.click(screen.getByRole('button', { name: 'Read settings again' }));
-  await page.advance();
-  expect(within(box('run-defaults')).getByRole('combobox')).toHaveValue(unlisted);
-  for (const option of field.options)
-    expect(within(box('run-defaults')).getByRole('option', { name: option.label })).toHaveValue(
-      option.value,
-    );
+it('C15-5 C-03 an unlisted saved preset stays visible until a listed choice is explicitly saved', async () => {
+  const initial = 'settings_modules_more.read_with_an_unlisted_saved_run_defaults_preset';
+  const page = await openConfig('run-defaults', initial);
+  const picker = within(box('run-defaults')).getByRole('combobox');
+  expect(picker).toHaveValue('ghost');
+  expect(picker).toHaveAttribute('aria-invalid', 'true');
+  expect(save('run-defaults')).toHaveAttribute('aria-disabled', 'true');
   expect(box('run-defaults')).toHaveTextContent(
     "An emulator's own default preset takes precedence",
   );
-  // Modified recorded compatibility state: options can disappear while the saved value remains.
-  field.options = [];
-  await page.user.click(screen.getByRole('button', { name: 'Read settings again' }));
-  await page.advance();
-  expect(within(box('run-defaults')).getByRole('combobox')).toHaveValue(unlisted);
+  expect(page.fake.writes()).toEqual([]);
+  const saved = pages(
+    'settings_modules_more.run_defaults_choosing_a_listed_preset_replaces_the_unlisted_one',
+  );
+  await page.user.selectOptions(picker, 'coin_farm');
+  await page.user.click(save('run-defaults'));
+  expect(JSON.parse(page.fake.writes()[0]?.body ?? '')).toEqual(saved.request.body);
+  page.setRead('settings_modules_more.read_after_the_unlisted_run_preset_was_replaced');
+  page.fake.next('/api/settings', 'POST').respond(saved.status, saved.body);
+  await page.advance(5000);
+  expect(picker).toHaveValue('coin_farm');
+  expect(picker).not.toHaveAttribute('aria-invalid');
+  expect(page.fake.writes()).toHaveLength(1);
+});
+
+it.each([
+  'read_with_no_runnable_run_defaults_preset_options',
+  'read_with_no_presets_in_the_configuration_the_options_are_empty',
+  'read_with_a_placeholder_preset_in_the_configuration',
+])('C15-5 C-03 %s never chooses a preset automatically or offers placeholders', async (read) => {
+  const page = await openConfig('run-defaults', 'settings_modules_more.' + read);
+  const metadata = settingsModule(
+    settingsView(pages('settings_modules_more.' + read).body),
+    'run-defaults',
+  );
+  const field = metadata?.fields[0];
+  if (field === undefined) throw new Error('Missing recorded preset');
+  const picker = within(box('run-defaults')).getByRole('combobox');
+  expect(picker).toHaveValue(String(field.value));
+  for (const option of field.options)
+    expect(within(picker).getByRole('option', { name: option.label })).toHaveValue(option.value);
+  expect(within(picker).queryByRole('option', { name: 'later' })).toBeNull();
   expect(save('run-defaults')).toHaveAttribute('aria-disabled', 'true');
+  const reason = save('run-defaults').getAttribute('aria-describedby');
+  expect(reason === null ? null : document.getElementById(reason)).toBeVisible();
+  await page.user.click(save('run-defaults'));
   expect(page.fake.writes()).toEqual([]);
 });
 

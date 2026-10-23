@@ -227,7 +227,7 @@ describe('Equipment Wanted rows', () => {
     expect(screen.getByText('null', { selector: '.tp-equipment__result *' })).toBeVisible();
     expect(restored.fake.writes()).toHaveLength(0);
   });
-  it('E4 r10 checks a fresh config per click, freezes the submitted draft, and sends the exact context once', async () => {
+  it('E4 reserves one click-time submission through the context check and saves it while newer typing stays a draft', async () => {
     const s = await setup({ save: 'hold' });
     selectLoadout('plain');
     chooseGlobal();
@@ -248,12 +248,48 @@ describe('Equipment Wanted rows', () => {
       s.fake.next('/api/config').respond(answer.status, answer.body);
     });
     expect(s.fake.writes()).toHaveLength(1);
-    expect(JSON.parse(s.fake.writes()[0]?.body ?? '')).toEqual(
-      requestWithContext('loadout_patch.global_preset_selected', s.context),
-    );
+    expect(s.entry()?.outcome).toBe('sending');
     expect(s.entry()?.draft.values.global_preset).toBe('Tournament');
     expect(s.entry()?.submission?.body).toEqual({ global_preset: 'Farm Run' });
+    expect(own(JSON.parse(s.fake.writes()[0]?.body ?? ''), 'body')).toEqual({
+      global_preset: 'Farm Run',
+    });
+    screen.getByLabelText('Global preset selection').focus();
+    await change(() => {
+      const answer = fixture('loadout_patch.global_preset_selected');
+      s.fake.next('/api/loadout-patch').respond(answer.status, answer.body);
+    });
+    expect(screen.getByText(/Selection saved in configuration/)).toBeVisible();
+    expect(screen.getByLabelText('Global preset selection')).toHaveFocus();
+    expect(screen.getByLabelText('Global preset selection')).toHaveValue('Tournament');
+    expect(s.entry()?.dirty).toBe(true);
+    expect(s.entry()?.original).toEqual({ global_preset: 'Farm Run' });
+    expect(s.fake.writes()).toHaveLength(1);
   });
+  it.each(['selection', 'revision'])(
+    'E4 a changed %s during the click-time check cancels the reserved submission',
+    async (changed) => {
+      const s = await setup();
+      selectLoadout('plain');
+      chooseGlobal();
+      s.readback('hold');
+      fireEvent.click(saveButton());
+      if (changed === 'selection') selectLoadout('spare');
+      await change(() => {
+        const answer = fixture(
+          changed === 'revision'
+            ? 'loadout_patch.read_after_the_saves_holds_every_loadout'
+            : 'loadout_patch.read_before_the_first_save',
+        );
+        s.fake.next('/api/config').respond(answer.status, answer.body);
+      });
+      const reserved =
+        s.equipment.getSnapshot().targets[s.api.targetKey(s.context)]?.editors['plain'];
+      expect(reserved?.outcome).toBe(changed === 'selection' ? 'selectionChanged' : 'conflict');
+      expect(reserved?.draft.values.global_preset).toBe('Farm Run');
+      expect(s.fake.writes()).toHaveLength(0);
+    },
+  );
   it('E4 r10 a changed click-time context keeps the original raw draft, shows the current context, and sends nothing', async () => {
     const s = await setup();
     selectLoadout('plain');
@@ -427,6 +463,11 @@ describe('Equipment Wanted rows', () => {
       s.equipment.mode('global');
       s.equipment.edit('global_preset', 'Farm Run');
       s.equipment.save();
+    });
+    await waitFor(() => {
+      expect(s.fake.writes()).toHaveLength(1);
+    });
+    await change(() => {
       s.equipment.edit('global_preset', 'Tournament');
     });
     s.readback('hold');
@@ -602,6 +643,8 @@ describe('Equipment Wanted rows', () => {
       expect(JSON.parse(s.fake.writes().at(-1)?.body ?? '')).toEqual(
         requestWithContext(`equipment_samples.manual_${name}_saved`, s.context),
       );
+      // The backend's next click-time config must carry this save's recorded revision.
+      s.readback(`equipment_samples.manual_${name}_readback`);
     }
     expect(s.fake.writes()).toHaveLength(4);
   });
@@ -658,6 +701,9 @@ describe('Equipment Wanted rows', () => {
     chooseGlobal();
     fireEvent.click(saveButton());
     fireEvent.click(saveButton());
+    await waitFor(() => {
+      expect(s.fake.writes()).toHaveLength(1);
+    });
     fireEvent.change(screen.getByLabelText('Global preset selection'), {
       target: { value: 'Tournament' },
     });
@@ -745,6 +791,11 @@ describe('Equipment Wanted rows', () => {
       first.equipment.select('plain');
       first.equipment.edit('cards', 'main_farm');
       first.equipment.save();
+    });
+    await waitFor(() => {
+      expect(first.fake.writes()).toHaveLength(1);
+    });
+    await change(() => {
       first.equipment.edit('cards', 'no_card');
     });
     first.equipment.dispose();

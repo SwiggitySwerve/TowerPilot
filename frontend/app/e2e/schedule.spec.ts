@@ -4,7 +4,7 @@ import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { bodiesTo, posts } from './helpers.ts';
 import { dashboardPagesCase as pagesCase } from '../tests/support/dashboardFixture.ts';
-import { own } from '../src/core/read.ts';
+import { own, ownPath, entries } from '../src/core/read.ts';
 import { scheduleRace } from './schedule-race.ts';
 
 function gate() {
@@ -118,12 +118,27 @@ for (const width of widths) {
     await expect(page.getByLabel('Monday', { exact: true })).toHaveValue('unknown_day');
     const sent = await bodiesTo(page, '/api/profile-patch');
     expect(sent).toHaveLength(1);
-    expect(sent[0]).toMatchObject({
+    // Supplementary raw invalid count/week journey: the fenced family has no invalid-plan
+    // request. Preserve the complete recorded initial plan with only these user edits.
+    const initial = pagesCase('profile_patch.read_before_the_first_save').body;
+    const plan = ownPath(initial, 'profile', 'plan');
+    const days = own(plan, 'days');
+    const farm = own(days, 'farm_day') as readonly unknown[];
+    expect(sent[0]).toEqual({
+      expected_context: { instance: 'main', serial: 'fake:1', account: null, profile: 'mine' },
+      expected_revision: own(initial, 'revision'),
       name: 'mine',
       path: ['plan'],
       value: {
-        days: { farm_day: [{ count: '1.9999999999999999999' }, {}] },
-        week: { monday: 'unknown_day' },
+        ...Object.fromEntries(entries(plan)),
+        days: {
+          ...Object.fromEntries(entries(days)),
+          farm_day: [
+            { ...Object.fromEntries(entries(farm[0])), count: '1.9999999999999999999' },
+            ...farm.slice(1),
+          ],
+        },
+        week: { ...Object.fromEntries(entries(own(plan, 'week'))), monday: 'unknown_day' },
       },
     });
     expect(await axe(page)).toEqual([]);
@@ -341,6 +356,7 @@ test('S2 deleting the last block stays an invalid empty day and restores focus t
   await save(page).click();
   await expect(page.getByText(/Schedule save refused/)).toBeVisible();
   expect((await bodiesTo(page, '/api/profile-patch'))[0]).toMatchObject({
+    expected_context: { instance: 'main', serial: 'fake:1', account: null, profile: 'mine' },
     value: { days: { farm_day: [] } },
   });
   await page.getByRole('button', { name: 'Add block' }).click();
@@ -356,6 +372,9 @@ test('S4 a lost answer settles by readback and preserves newer raw typing throug
   });
   await mapSunday(page);
   await save(page).click();
+  // The click checks its context asynchronously; type only after the submitted
+  // snapshot is frozen so this input is definitely newer than the request.
+  await expect.poll(async () => (await bodiesTo(page, '/api/profile-patch')).length).toBe(1);
   await counts(page).first().fill('100.00');
   await expect(page.getByText(/Schedule save outcome unknown/)).toBeVisible();
   await page.reload();

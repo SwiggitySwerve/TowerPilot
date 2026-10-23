@@ -1,3 +1,4 @@
+import { profilePatchFencedSourceAnswerSchema } from '../contract/profilePatchFenced.ts';
 import {
   contextFromConfig,
   contextKey,
@@ -11,11 +12,12 @@ import { readEndpoint } from './client.ts';
 import { createClickTimeContextRead, createClickTimeTargetCheck } from './clickContext.ts';
 import { editTargetScope } from '../core/editingTarget.ts';
 import { createIntentMachine, type IntentMachine } from './intents/machine.ts';
+import { draftSettlement } from './intents/draftSettlement.ts';
 import { sendOnce } from './intents/send.ts';
 import { createSequence } from './sequence.ts';
 import {
   browserSessionStorage,
-  keysWithPrefix,
+  prefixedStorage,
   readJsonItem,
   writeJsonItem,
   type KeyValueStorage,
@@ -25,6 +27,7 @@ import { bodyMembers, ENDPOINTS, type Endpoint } from './wire.ts';
 import {
   profileTargetConfigAnswerSchema,
   profileTargetSourceAnswerSchema,
+  profileTargetMoreSourceAnswerSchema,
 } from '../contract/profileTarget.ts';
 import {
   scheduleConfigAnswerSchema,
@@ -36,6 +39,8 @@ import { scheduleStatusAnswerSchema } from '../contract/dashboard.ts';
 import { planDeleteSourceAnswerSchema } from '../contract/r12Families.ts';
 
 const sourceSchemas = [
+  profileTargetMoreSourceAnswerSchema,
+  profilePatchFencedSourceAnswerSchema,
   profileTargetSourceAnswerSchema,
   scheduleProfileAnswerSchema,
   schedulePatchAnswerSchema,
@@ -61,26 +66,6 @@ const status: Endpoint = {
   strict: [schedulePlanAnswerSchema, scheduleStatusAnswerSchema],
   members: bodyMembers([schedulePlanAnswerSchema, scheduleStatusAnswerSchema]),
 };
-
-/** Keep this editor's unresolved intents separate from the Dashboard machine's records. */
-function intentStorage(storage: KeyValueStorage | null): KeyValueStorage | null {
-  if (storage === null) return null;
-  const prefix = 'tp.schedule:';
-  const keys = () => keysWithPrefix(storage, prefix);
-  return {
-    get length() {
-      return keys().length;
-    },
-    key: (index) => keys()[index]?.slice(prefix.length) ?? null,
-    getItem: (key) => storage.getItem(prefix + key),
-    setItem: (key, value) => {
-      storage.setItem(prefix + key, value);
-    },
-    removeItem: (key) => {
-      storage.removeItem(prefix + key);
-    },
-  };
-}
 
 /** The shared draft/intent scope excludes the active binding and includes the edited name. */
 function scheduleKey(context: PageContext, name = context.profile): string {
@@ -110,7 +95,7 @@ export function sendScheduleRemove(
         path: ['plan'],
         op: 'delete',
         expected_revision: revision,
-        ...(name !== context.profile ? { expected_context: expectedContext(context) } : {}),
+        expected_context: expectedContext(context),
       },
       context,
       key: null,
@@ -140,7 +125,7 @@ export function sendScheduleSave(
         path: ['plan'],
         value: plan,
         expected_revision: revision,
-        ...(name !== context.profile ? { expected_context: expectedContext(context) } : {}),
+        expected_context: expectedContext(context),
       },
       context,
       key: null,
@@ -156,8 +141,8 @@ export function createScheduleApi(
   windowMs?: number,
 ) {
   const sequence = createSequence();
-  // D4: active writes retain their existing click-time config check. Inactive writes also
-  // check the listed target after the click and send the recorded server context fence.
+  // F6-14b: every patch carries the runtime fence; the click-time check stays as a
+  // second guard. Inactive writes also check that the named target is still listed.
   const readClickContext = createClickTimeContextRead(transport, config);
   const checkTarget = createClickTimeTargetCheck(transport, {
     config,
@@ -165,12 +150,13 @@ export function createScheduleApi(
   });
   const machine = createIntentMachine({
     transport,
-    storage: intentStorage(storage),
+    storage: prefixedStorage(storage, 'tp.schedule:'),
     sequence,
     ...(windowMs === undefined ? {} : { windowMs }),
   });
   return {
     machine,
+    draftSettlement,
     sequence,
     targetKey: scheduleKey,
     checkTarget,

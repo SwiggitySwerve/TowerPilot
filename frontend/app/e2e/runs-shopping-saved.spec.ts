@@ -1,9 +1,11 @@
+import { fillBoundsDraft, expectBoundsDraft } from './shopping-bounds.ts';
 import { mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { expect, test, type Page, type Locator } from '@playwright/test';
 import { bodiesTo, posts } from './helpers.ts';
 import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
+import { bounds } from '../tests/support/shoppingBounds.ts';
 import { own } from '../src/core/read.ts';
 
 const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
@@ -180,20 +182,41 @@ for (const width of [1360, 1054, 390]) {
     expect(await posts(page)).toHaveLength(1);
     await check(page, width, 'settled');
   });
-  test(`SQ12 refusal at ${width}: server reason, draft, axe and targets`, async ({ page }) => {
-    await open(page, 'refused', width);
-    const weight = row(page, 'damage').getByLabel('Weight', { exact: true });
-    await weight.fill('101');
-    await root(page).getByRole('button', { name: 'Save queue', exact: true }).click();
-    const result = page.locator('[data-region="runsSaved"] [data-outcome="not_saved"]');
-    await expect(result).toBeVisible();
-    await expect(result).toContainText(
-      String(own(sample('shopping_invalid_weight_refused').body, 'error')),
-    );
-    await expect(weight).toHaveValue('101');
-    expect(await bodiesTo(page, '/api/run-controls')).toEqual([
-      sample('shopping_invalid_weight_refused').request.body,
-    ]);
-    await check(page, width, 'refused');
-  });
+  for (const name of [
+    'saved_weight_above_100_refused',
+    'saved_weight_zero_refused',
+    'saved_wave_range_reversed_refused',
+    'saved_boundary_values_accepted',
+  ]) {
+    test(`SQ5 ${name} at ${width}: exact body, visible server reason, retained draft or boundary readback, axe and targets`, async ({
+      page,
+    }) => {
+      let source = bounds('read_before_the_refusals');
+      const answer = bounds(name);
+      await page.route('**/api/run-controls?*', (route) =>
+        route.fulfill({ status: source.status, json: source.body }),
+      );
+      await page.route('**/api/run-controls', async (route) => {
+        await route.fetch();
+        await route.fulfill({ status: answer.status, json: answer.body });
+      });
+      await open(page, 'refused', width);
+      await fillBoundsDraft(root(page), name);
+      await root(page).getByRole('button', { name: 'Save queue', exact: true }).click();
+      if (answer.status === 400) {
+        const refusal = root(page).locator('[data-queue-refusal] [data-server-text="message"]');
+        await expect(refusal).toBeVisible();
+        await expect(refusal).toHaveText(String(own(answer.body, 'error')));
+        await expect(page.locator('[data-outcome="saved"]')).toHaveCount(0);
+        source = bounds('read_after_the_refusals_nothing_changed');
+      } else source = bounds('read_after_the_boundary_values_were_saved');
+      await page.getByRole('button', { name: 'Check saved values', exact: true }).click();
+      if (answer.status === 400) {
+        await expect(page.locator('[data-outcome="not_saved"]')).toBeVisible();
+        await expectBoundsDraft(root(page), name);
+      } else await expect(page.locator('[data-outcome="saved"]')).toBeVisible();
+      expect(await bodiesTo(page, '/api/run-controls')).toEqual([answer.request.body]);
+      await check(page, width, `bounds-${name}`);
+    });
+  }
 }

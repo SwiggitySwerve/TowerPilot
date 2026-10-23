@@ -221,9 +221,6 @@ export const runs = {
     battle_not_active: entry('The battle has not started yet'),
     report_stale: entry('Waiting for a fresh battle report'),
     change_pending: entry('Waiting for the last change to apply'),
-    shopping_plan_reset_unavailable: entry(
-      'This battle also overrides its shopping plan. Resetting a shopping plan from here is not available yet. Reset routine overrides one at a time.',
-    ),
   },
   outcomes: {
     lead: entry('Last request:'),

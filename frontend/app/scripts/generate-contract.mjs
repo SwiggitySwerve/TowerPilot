@@ -81,6 +81,23 @@ export const HARVEST_DESCRIPTOR = {
   ],
 };
 
+/** F6-13: binary metadata is recorded, never shipped pixels. @type {Descriptor} */
+export const PREVIEW_DESCRIPTOR = {
+  name: 'dashboard_contract_pages_v1_preview',
+  boundTo: 'families',
+  families: [
+    ['preview_status', 'PreviewStatusAnswer'],
+    ['preview_backends', 'PreviewBackendsAnswer'],
+    ['preview_stream', 'PreviewStreamAnswer'],
+    ['preview_frame_png', 'PreviewFramePngAnswer'],
+  ].map(([family, name]) => ({
+    key: `cases.${family ?? ''}`,
+    name: name ?? '',
+    rawPath: 'answer',
+    pick: ['status', 'body'],
+  })),
+};
+
 /**
  * The Dashboard contract fixture (spec 10.3, OD-2): every case is
  * {request: {method, path, body?}, status, body}. The strict schema of a family
@@ -406,6 +423,7 @@ export const CONTRACT_INPUTS = [
     },
   },
   { file: FIXTURE_PATH, descriptor: HARVEST_DESCRIPTOR },
+  { file: DASHBOARD_PAGES_FIXTURE_PATH, descriptor: PREVIEW_DESCRIPTOR },
   { file: DASHBOARD_FIXTURE_PATH, descriptor: DASHBOARD_DESCRIPTOR },
   { file: DASHBOARD_PAGES_FIXTURE_PATH, descriptor: PAGES_RUNS_DESCRIPTOR },
   { file: DASHBOARD_PAGES_FIXTURE_PATH, descriptor: PAGES_PROFILES_DESCRIPTOR },
@@ -462,6 +480,14 @@ export const CONTRACT_INPUTS = [
         ],
         ['run_controls_live_reset_all', 'POST', '/api/operations/', 'ResetAllAnswer'],
         ['run_controls_live_reset_all', 'GET', '/api/battles/active', 'ResetAllReadAnswer'],
+        ['run_controls_live_reset_all_mixed', 'POST', '/api/operations/', 'MixedResetAnswer'],
+        ['run_controls_live_reset_all_mixed', 'GET', '/api/battles/active', 'MixedResetReadAnswer'],
+        ['run_templates_add_coded', 'POST', '/api/run-templates/add', 'CodedAddAnswer'],
+        ['run_templates_add_coded', 'GET', '/api/profile-src/', 'CodedAddSourceAnswer'],
+        ['shopping_queue_bounds', 'POST', '/api/run-controls', 'QueueBoundsSaveAnswer'],
+        ['shopping_queue_bounds', 'GET', '/api/run-controls', 'QueueBoundsReadAnswer'],
+        ['shopping_queue_bounds', 'POST', '/api/operations/', 'QueueBoundsLiveAnswer'],
+        ['shopping_queue_bounds', 'GET', '/api/battles/active', 'QueueBoundsBattleReadAnswer'],
         ['battle_details_runtime', 'GET', '/api/battles/active', 'BattleDetailsReadAnswer'],
         ['run_entry_patch', 'POST', '/api/profile-patch', 'RunEntryPatchAnswer'],
         ['run_entry_patch', 'GET', '/api/profile-src/', 'RunEntrySourceAnswer'],
@@ -619,6 +645,25 @@ export const CONTRACT_INPUTS = [
   {
     file: DASHBOARD_PAGES_FIXTURE_PATH,
     descriptor: {
+      name: 'dashboard_contract_pages_v1_profile_patch_fenced',
+      boundTo: 'families',
+      families: /** @type {const} */ ([
+        ['POST', '/api/profile-patch', 'ProfilePatchFencedPatchAnswer'],
+        ['GET', '/api/profile-src/', 'ProfilePatchFencedSourceAnswer'],
+      ]).map(([method, route, name]) => ({
+        key: `profile_patch_fenced ${method} ${route}`,
+        source: 'cases.profile_patch_fenced',
+        method,
+        pathPrefix: route,
+        name,
+        rawPath: 'answer',
+        pick: ['status', 'body'],
+      })),
+    },
+  },
+  {
+    file: DASHBOARD_PAGES_FIXTURE_PATH,
+    descriptor: {
       // F6-15 configuration fields on their owning pages (brief ui-pages/f6-15-config-fields-brief.md):
       // the typed settings modules, the active-instance switch records and the loadout restore values.
       name: 'dashboard_contract_pages_v1_config_fields',
@@ -642,6 +687,48 @@ export const CONTRACT_INPUTS = [
       ]).map(([family, method, route, name]) => ({
         key: `${family} ${method} ${route}`,
         source: `cases.${family}`,
+        method,
+        pathPrefix: route,
+        name,
+        rawPath: 'answer',
+        pick: ['status', 'body'],
+      })),
+    },
+  },
+  {
+    // r12e (c945da8): F6-15 C-03 recordings, settings_modules_more.
+    file: DASHBOARD_PAGES_FIXTURE_PATH,
+    descriptor: {
+      name: 'dashboard_contract_pages_v1_config_fields_more',
+      boundTo: 'families',
+      families: /** @type {const} */ ([
+        ['GET', '/api/settings', 'ConfigFieldsMoreSettingsReadAnswer'],
+        ['POST', '/api/settings', 'ConfigFieldsMoreSettingsSaveAnswer'],
+        ['GET', '/api/config', 'ConfigFieldsMoreConfigAnswer'],
+      ]).map(([method, route, name]) => ({
+        key: `settings_modules_more ${method} ${route}`,
+        source: 'cases.settings_modules_more',
+        method,
+        pathPrefix: route,
+        name,
+        rawPath: 'answer',
+        pick: ['status', 'body'],
+      })),
+    },
+  },
+  {
+    // r12e (c945da8): F6-14 inactive-target paths not recorded in profile_target.
+    file: DASHBOARD_PAGES_FIXTURE_PATH,
+    descriptor: {
+      name: 'dashboard_contract_pages_v1_profile_target_more',
+      boundTo: 'families',
+      families: /** @type {const} */ ([
+        ['GET', '/api/profile-files', 'ProfileTargetMoreFilesAnswer'],
+        ['GET', '/api/profile-src/', 'ProfileTargetMoreSourceAnswer'],
+        ['POST', '/api/profile-patch', 'ProfileTargetMorePatchAnswer'],
+      ]).map(([method, route, name]) => ({
+        key: `profile_target_more ${method} ${route}`,
+        source: 'cases.profile_target_more',
         method,
         pathPrefix: route,
         name,

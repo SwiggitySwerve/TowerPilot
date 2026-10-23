@@ -35,10 +35,12 @@ export type AbilityOutcome =
   | 'unknown'
   | 'refused'
   | 'conflict'
+  | 'contextChanged'
   | 'readApplied'
   | 'readUnchanged'
   | 'notSent';
 interface Submission {
+  readonly node?: AbilityNode | undefined;
   readonly path: ApiPath;
   readonly body: Readonly<Record<string, unknown>>;
   readonly revision: string;
@@ -46,6 +48,8 @@ interface Submission {
   readonly value: unknown;
   readonly version: number;
   readonly deleted: boolean;
+  readonly dirty: boolean;
+  readonly isNew: boolean;
 }
 export interface AbilityEditor {
   readonly id: string;
@@ -75,6 +79,7 @@ export interface AbilitiesTarget {
   readonly newIds: Readonly<Record<AbilityFamily, string>>;
   readonly busy: boolean;
   readonly error: boolean;
+  readonly sourceError?: unknown;
   readonly readAt: number | null;
   readonly settled: number;
 }
@@ -148,6 +153,14 @@ const settingsMatch = (body: unknown, context: PageContext) =>
   ownPath(body, 'context', 'profile') === context.profile;
 const unresolvedAbility = (e: AbilityEditor) =>
   e.outcome === 'checking' || e.outcome === 'sending' || e.outcome === 'unknown';
+const refusalOutcome = (
+  answer: { readonly body: unknown; readonly status: number } | null | undefined,
+) =>
+  own(answer?.body, 'code') === 'context_changed'
+    ? 'contextChanged'
+    : answer?.status === 409
+      ? 'conflict'
+      : 'refused';
 const pending = (t: AbilitiesTarget) => Object.values(t.editors).some(unresolvedAbility);
 export function abilityReadOnly(s: AbilitiesState): boolean {
   const e = currentAbility(s);
@@ -283,13 +296,46 @@ export function createAbilitiesStore(
     reviewed: false,
   });
   const sync = () => {
+    // A refusal describes the exact frozen submission, even after its runtime epoch
+    // changed. Apply it before considering read settlement; successful answers still
+    // pass the current-epoch checks below.
+    for (const [key, target] of Object.entries(store.getSnapshot().targets)) {
+      for (const [name, e] of Object.entries(target.editors)) {
+        const sub = e.submission;
+        const refusal = sub === null ? null : api.profileRefusal(key, sub.body);
+        if (
+          sub === null ||
+          refusal === null ||
+          (e.outcome === refusalOutcome(refusal.answer) && e.detail === refusal.answer?.body)
+        )
+          continue;
+        change(key, (current) => ({
+          ...current,
+          readAt: null,
+          settled: ++sequence,
+          editors: {
+            ...current.editors,
+            [name]: {
+              ...e,
+              outcome: refusalOutcome(refusal.answer),
+              detail: refusal.answer?.body,
+              original: sub.original,
+              revision: sub.revision,
+              dirty: e.dirty || sub.dirty || e.outcome === 'readApplied',
+              isNew: sub.isNew,
+              deleting: false,
+            },
+          },
+        }));
+      }
+    }
     const s = store.getSnapshot(),
       t = currentAbilities(s);
     if (s.key === null || t === null) return;
     for (const intent of api.machine.snapshot()) {
       if (
         intent.epoch !== s.epoch ||
-        intent.target !== `abilities:${s.key}` ||
+        !intent.target.startsWith(`abilities:${s.key}:`) ||
         intent.supersededBySeq !== null
       )
         continue;
@@ -297,12 +343,17 @@ export function createAbilitiesStore(
         ([, e]) =>
           e.submission !== null &&
           JSON.stringify(e.submission.body) === intent.request.body &&
-          e.outcome === 'sending',
+          (e.outcome === 'sending' || e.outcome === 'unknown' || e.outcome === 'readApplied'),
       );
       if (found === undefined) continue;
       const [name, e] = found,
         sub = e.submission;
-      if (sub === null || intent.phase === 'sending') continue;
+      if (
+        sub === null ||
+        intent.phase === 'sending' ||
+        (intent.phase === 'unconfirmed' && e.outcome !== 'sending')
+      )
+        continue;
       const body = intent.answer?.body,
         revision = sourceRevision(body);
       const value =
@@ -337,9 +388,7 @@ export function createAbilitiesStore(
           ? 'conflict'
           : 'saved'
         : refused
-          ? receipt.status === 409
-            ? 'conflict'
-            : 'refused'
+          ? refusalOutcome(intent.answer)
           : 'unknown';
       const key = s.key;
       change(key, (current) => ({
@@ -369,6 +418,9 @@ export function createAbilitiesStore(
                   isNew: sub.deleted && e.version !== sub.version,
                   dirty: e.version !== sub.version,
                   deleting: sub.deleted && e.version === sub.version,
+                  // Keep deletion provenance for newer edits that now create this policy.
+                  submission:
+                    sub.deleted && e.version !== sub.version ? { ...sub, node: undefined } : null,
                 }
               : {}),
           },
@@ -433,7 +485,12 @@ export function createAbilitiesStore(
       own(vocab.answer.body, 'ok') === true &&
       record(own(vocab.answer.body, 'vocab')) !== undefined;
     if (!valid) {
-      change(key, (t) => ({ ...t, busy: false, error: true }));
+      change(key, (t) => ({
+        ...t,
+        busy: false,
+        error: true,
+        sourceError: own(profile?.answer?.body, 'error'),
+      }));
       return;
     }
     const source = profile.answer.body,
@@ -453,9 +510,12 @@ export function createAbilitiesStore(
         vocab: vocabulary,
         busy: false,
         error: false,
+        sourceError: undefined,
         readAt: now(),
       };
       const editors: Record<string, AbilityEditor> = { ...t.editors };
+      const awaitingAnswer = (e: AbilityEditor) =>
+        e.submission !== null && api.awaitingAnswer(key, e.submission.body);
       const snapshots: [AbilityEditor['family'], string, unknown, string | null][] = [];
       if (!editing.inactive && settingsBody !== undefined)
         snapshots.push([
@@ -470,7 +530,13 @@ export function createAbilitiesStore(
       for (const [family, id, value, revision] of snapshots) {
         const name = abilityKey(family, id),
           e = editors[name];
-        if (e === undefined || (!e.dirty && !unresolvedAbility(e))) {
+        if (
+          e === undefined ||
+          (!e.dirty &&
+            !unresolvedAbility(e) &&
+            !['refused', 'conflict', 'contextChanged'].includes(e.outcome ?? '') &&
+            !awaitingAnswer(e))
+        ) {
           const fresh = editor(family, id, value, revision);
           const merged = e === undefined ? fresh.node : reconcileAbilityNode(e.node, value);
           editors[name] =
@@ -496,6 +562,8 @@ export function createAbilitiesStore(
           !e.isNew &&
           !e.dirty &&
           !unresolvedAbility(e) &&
+          e.outcome !== 'contextChanged' &&
+          !awaitingAnswer(e) &&
           !(e.family === 'global' && settingsBody === undefined) &&
           savedValue(target, e) === undefined
         ) {
@@ -503,7 +571,11 @@ export function createAbilitiesStore(
           continue;
         }
         const sub = e.submission;
-        if (sub === null || e.outcome !== 'unknown') continue;
+        if (
+          sub === null ||
+          (e.outcome !== 'unknown' && !(e.outcome === 'readApplied' && !awaitingAnswer(e)))
+        )
+          continue;
         const value = savedValue(target, e),
           revision = sourceRevision(e.family === 'global' ? settingsBody : source);
         const sent = sentPatch(sub.body);
@@ -531,11 +603,17 @@ export function createAbilitiesStore(
           editors[name] = {
             ...e,
             outcome: 'readApplied',
-            original: value,
-            revision,
-            dirty: e.version !== sub.version,
-            deleting: sub.deleted && e.version === sub.version,
-            isNew: sub.deleted && e.version !== sub.version,
+            ...(awaitingAnswer(e)
+              ? {}
+              : {
+                  original: value,
+                  revision,
+                  dirty: e.version !== sub.version,
+                  deleting: sub.deleted && e.version === sub.version,
+                  isNew: sub.deleted && e.version !== sub.version,
+                  submission:
+                    sub.deleted && e.version !== sub.version ? { ...sub, node: undefined } : null,
+                }),
             detail: undefined,
           };
       }
@@ -577,7 +655,7 @@ export function createAbilitiesStore(
           }
         : {
             name: s.editing.name,
-            ...(s.editing.inactive ? { expected_context: api.expectedContext(s.context) } : {}),
+            expected_context: api.expectedContext(s.context),
             expected_revision: e.revision,
             path: ['policies', e.family, e.id],
             ...(deleting ? { op: 'delete' } : { value }),
@@ -596,14 +674,21 @@ export function createAbilitiesStore(
             };
       });
     };
-    if (s.editing.inactive) {
+    if (e.family !== 'global') {
       updateSubmitted((current) => ({
         ...current,
         outcome: 'checking',
         detail: undefined,
         blockedReason: undefined,
       }));
-      const checked = await api.checkTarget(s.context, s.editing.name);
+      const read = s.editing.inactive ? null : await api.readClickContext();
+      const checked = s.editing.inactive
+        ? await api.checkTarget(s.context, s.editing.name)
+        : read === null
+          ? 'context_unconfirmed'
+          : api.targetKey(read) === api.targetKey(s.context)
+            ? 'same'
+            : 'context_changed';
       const latest = store.getSnapshot();
       if (
         latest.epoch !== s.epoch ||
@@ -636,6 +721,7 @@ export function createAbilitiesStore(
       detail: undefined,
       blockedReason: undefined,
       submission: {
+        node: e.node,
         path,
         body,
         revision: e.revision ?? '',
@@ -643,6 +729,8 @@ export function createAbilitiesStore(
         value,
         version: e.version,
         deleted: deleting,
+        dirty: e.dirty,
+        isNew: e.isNew,
       },
     }));
     sync();
@@ -715,11 +803,15 @@ export function createAbilitiesStore(
             subPath = own(sub, 'path'),
             version = own(raw, 'version'),
             savedOutcome = text(own(raw, 'outcome')),
-            unresolved = savedOutcome === 'sending' || savedOutcome === 'unknown',
+            unresolved =
+              savedOutcome === 'sending' ||
+              savedOutcome === 'unknown' ||
+              savedOutcome === 'readApplied',
             deletedDraft =
               own(raw, 'dirty') === true &&
               own(sub, 'deleted') === true &&
               (savedOutcome === 'saved' || savedOutcome === 'readApplied');
+          const refusal = api.profileRefusal(key, subBody);
           const restored = editor(
             f,
             id,
@@ -742,17 +834,22 @@ export function createAbilitiesStore(
             review: own(raw, 'review') === true,
             reviewed: false,
             stash,
-            ...((unresolved || deletedDraft) &&
+            ...((unresolved || deletedDraft || refusal !== null) &&
             subBody !== undefined &&
             subRevision !== undefined &&
             (subPath === '/api/settings' || subPath === '/api/profile-patch')
               ? {
-                  outcome: unresolved
-                    ? 'unknown'
-                    : savedOutcome === 'readApplied'
-                      ? 'readApplied'
-                      : 'saved',
+                  outcome:
+                    refusal !== null
+                      ? refusalOutcome(refusal.answer)
+                      : unresolved
+                        ? 'unknown'
+                        : savedOutcome === 'readApplied'
+                          ? 'readApplied'
+                          : 'saved',
+                  detail: refusal?.answer?.body,
                   submission: {
+                    node: restoreAbilityNode(own(sub, 'node')) ?? undefined,
                     path: subPath,
                     body: Object.fromEntries(entries(subBody)),
                     revision: subRevision,
@@ -761,6 +858,10 @@ export function createAbilitiesStore(
                     version:
                       typeof own(sub, 'version') === 'number' ? Number(own(sub, 'version')) : 0,
                     deleted: own(sub, 'deleted') === true,
+                    dirty: own(sub, 'dirty') === true,
+                    isNew:
+                      own(sub, 'isNew') === true ||
+                      (own(sub, 'isNew') === undefined && own(raw, 'isNew') === true),
                   },
                 }
               : {}),
@@ -975,15 +1076,20 @@ export function createAbilitiesStore(
       const s = store.getSnapshot(),
         t = currentAbilities(s);
       if (t === null || !canReconcileAbility(s, now())) return;
-      changeEditor((e) => ({
-        ...e,
-        revision: sourceRevision(e.family === 'global' ? t.settings : t.source),
-        original: savedValue(t, e),
-        outcome: null,
-        submission: null,
-        detail: undefined,
-        reviewed: false,
-      }));
+      changeEditor((e) => {
+        const retained =
+          e.outcome === 'contextChanged' ||
+          (s.key !== null && e.submission !== null && api.awaitingAnswer(s.key, e.submission.body));
+        return {
+          ...e,
+          revision: sourceRevision(e.family === 'global' ? t.settings : t.source),
+          original: savedValue(t, e),
+          outcome: retained ? e.outcome : null,
+          submission: retained ? e.submission : null,
+          detail: retained ? e.detail : undefined,
+          reviewed: false,
+        };
+      });
     },
     dispose: () => {
       controller?.abort();

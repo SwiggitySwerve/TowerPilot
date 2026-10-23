@@ -81,6 +81,37 @@ afterEach(() => {
 });
 
 describe('RL4 Add a run', () => {
+  it.each(
+    dashboardPagesCaseNames('run_templates_add_coded').filter(
+      (name) =>
+        own(dashboardPagesCase(`run_templates_add_coded.${name}`).body, 'code') !== undefined,
+    ),
+  )(
+    'RL4 coded refusal %s shows server text, catalogue explanation, and keeps the draft',
+    async (name) => {
+      const answer = dashboardPagesCase(`run_templates_add_coded.${name}`);
+      // Race/validation replay: preserve the recorded refusal while submitting a locally valid
+      // fenced request; malformed choices and unavailable profiles are server boundary cases.
+      const page = await open({
+        before: (fake) => {
+          fake.route('POST', ADD, () => answer);
+        },
+      });
+      await fill(page, fenced('added_with_the_matching_revision_and_context'));
+      await save(page);
+      expect(form().getByText('Run was not added. Your draft is kept.')).toBeVisible();
+      expect(
+        document.querySelector('[data-run-add-outcome] [data-server-text="message"]')?.textContent,
+      ).toBe(String(own(answer.body, 'error')));
+      expect(form().getByLabelText('Run identifier')).toHaveValue('fenced_one');
+      expect(document.querySelector('[data-run-add-outcome]')?.querySelectorAll('p')).toHaveLength(
+        2,
+      );
+      expect(textOutsideCatalogue(page.view.container)).toEqual([]);
+      expect(page.fake.writes()).toHaveLength(1);
+    },
+  );
+
   it.each([
     ['added_a_coin_run_with_every_choice_and_both_optional_policies', 'Tier', 'tier'],
     ['added_a_shard_run', 'Run count', 'count'],
@@ -238,7 +269,7 @@ describe('RL4 Add a run', () => {
       });
       await fill(page, fenced('added_with_the_matching_revision_and_context'));
       await save(page);
-      expect(form().getByText(/^Unknown: the add/u)).toBeVisible();
+      expect(form().getByText('Run was not added. Your draft is kept.')).toBeVisible();
       expect(form().getByRole('link', { name: 'Open Profiles' })).toHaveAttribute(
         'href',
         '#profiles',
@@ -525,3 +556,48 @@ describe('RL4 Add a run', () => {
     expect(await axe(page.view.container)).toHaveNoViolations();
   });
 });
+
+it.each(['missing', 'blank', 'unchanged', 'changed'])(
+  'RL4 F6-11-P3-02 %s revision after a lost add keeps or clears the submitted draft',
+  async (revisionCase) => {
+    let source = SOURCE;
+    const entry = fenced('added_and_the_answer_is_lost');
+    const page = await open(
+      {
+        before: (fake) => {
+          fake.route('POST', ADD, () => 'hold');
+        },
+      },
+      () => source,
+    );
+    await fill(page, entry);
+    await save(page);
+    await act(async () => {
+      page.fake.next(ADD).lose();
+      await Promise.resolve();
+    });
+    await page.advance(100);
+    expect(form().getByText(/^Unknown: the add/u)).toBeVisible();
+    const after = fenced('read_settles_the_lost_answer_the_run_is_there_once');
+    const body = Object.fromEntries(entries(after.body));
+    if (revisionCase === 'missing') delete body['revision'];
+    if (revisionCase === 'blank') body['revision'] = '';
+    if (revisionCase === 'unchanged') body['revision'] = own(SOURCE.body, 'revision');
+    source = { ...after, body };
+    await page.user.click(form().getByRole('button', { name: 'Check profile' }));
+    await page.advance(100);
+    const record = page.data.machine.snapshot().findLast((item) => item.kind === 'run_add');
+    const drafts = Object.values(page.data.store.getSnapshot().runDrafts);
+    if (revisionCase === 'changed') {
+      expect(form().getByText('New run saved.')).toBeVisible();
+      expect(record?.phase).toBe('confirmed');
+      expect(drafts.some((draft) => draft['run_id'] === 'lost_run')).toBe(false);
+    } else {
+      expect(form().getByText(/^Unknown: the add/u)).toBeVisible();
+      expect(record?.phase).toBe('unconfirmed');
+      expect(form().getByLabelText('Run identifier')).toHaveValue('lost_run');
+      expect(drafts.some((draft) => draft['run_id'] === 'lost_run')).toBe(true);
+    }
+    expect(page.fake.writes()).toHaveLength(1);
+  },
+);

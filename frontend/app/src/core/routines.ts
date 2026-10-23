@@ -6,7 +6,7 @@ import {
   type BattleIdentity,
   type RecordDecision,
 } from './battle.ts';
-import { commandTerminal, commandView, type CommandView } from './commands.ts';
+import { commandTerminal, commandView, payloadPaths, type CommandView } from './commands.ts';
 import { planHolds, queuePlan } from './shoppingPlan.ts';
 import type { ContextRead } from './connection.ts';
 import { finite, hasOwn, id, list, own, ownPath, record, revision, stringList } from './read.ts';
@@ -320,6 +320,20 @@ export function settleCommand(
 /** F6-11-IR-01: what a later read of the change's own battle says its command did. */
 export type LiveChangeProgress = 'applied' | 'not_applied' | 'waiting' | 'not_listed';
 
+/** A removed leaf is absent/null only when every reported parent is a readable map. */
+function resetPathGone(overrides: unknown, path: string): boolean {
+  const parts = path.split('.');
+  let parent = overrides;
+  for (const [index, key] of parts.entries()) {
+    if (record(parent) === undefined) return false;
+    const value = own(parent, key);
+    if (value === undefined) return true;
+    if (index === parts.length - 1) return value === null;
+    parent = value;
+  }
+  return false;
+}
+
 /**
  * F6-11-IR-01: a recorded live change (live settings or a reset) is applied only when a read
  * of the battle it was sent to (same battle, generation and operation) lists its command as
@@ -332,6 +346,7 @@ export function liveChangeProgress(
   shown: BattleIdentity,
   answer: unknown,
   requestKey: OpaqueToken | null,
+  resetPaths: readonly string[] = [],
 ): LiveChangeProgress {
   const commandId = id(ownPath(answer, 'command', 'id'));
   const command = listedCommand(read, shown, 'controls', (found) =>
@@ -342,6 +357,25 @@ export function liveChangeProgress(
   if (command === undefined) return 'not_listed';
   const view = commandView(command);
   const row = view.decision.row;
+  // RL2: an applied reset must also show every removed leaf gone from both maps.
+  // A command row alone cannot prove that the reset reached the battle's controls.
+  const sentPayload = ownPath(answer, 'command', 'payload') ?? view.payload;
+  const removed = new Set([
+    ...resetPaths,
+    ...payloadPaths(sentPayload).filter(
+      (path) => ownPath(sentPayload, ...path.split('.')) === null,
+    ),
+  ]);
+  const battle = read?.kind === 'answered' ? own(read.body, 'battle') : undefined;
+  if (
+    row === 'K4' &&
+    [...removed].some(
+      (path) =>
+        !view.appliedPaths?.includes(path) ||
+        ['overrides', 'applied_overrides'].some((key) => !resetPathGone(own(battle, key), path)),
+    )
+  )
+    return 'waiting';
   const plan =
     ownPath(answer, 'command', 'payload', 'shopping_plan') ?? own(view.payload, 'shopping_plan');
   if (

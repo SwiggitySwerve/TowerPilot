@@ -101,12 +101,50 @@ export interface RunAddEvidence {
   readonly baseRevision?: string;
 }
 
-/** A later read proves presence and recipe kind only; absence never proves a lost write failed. */
-export function runAddRecorded(body: unknown, sent: RunAddEvidence): boolean {
+/** RL4: only stable pre-write codes at their recorded HTTP status prove refusal. */
+export function runAddRefusal(answer: { readonly status: number; readonly body: unknown }) {
+  if (own(answer.body, 'ok') !== false) return null;
+  const code = own(answer.body, 'code');
+  if (answer.status === 400) {
+    switch (code) {
+      case 'invalid_request':
+      case 'id_taken':
+      case 'profile_unavailable':
+      case 'recipe_refused':
+      case 'validation_failed':
+      case 'write_failed_nothing_saved':
+        return code;
+    }
+  }
+  if (answer.status === 409) {
+    switch (code) {
+      case 'revision_conflict':
+      case 'context_changed':
+      case 'profile_unavailable':
+        return code;
+    }
+  }
+  return null;
+}
+
+function runAddPresent(body: unknown, sent: RunAddEvidence): boolean {
   return (
     sent.blueprint !== undefined &&
     sent.preset !== undefined &&
     ownPath(body, 'profile', 'blueprints', sent.blueprint, 'kind') === sent.preset
+  );
+}
+
+/** A later read needs an advanced revision and the submitted run/kind; absence proves nothing. */
+export function runAddRecorded(body: unknown, sent: RunAddEvidence): boolean {
+  const revision = id(own(body, 'revision'));
+  return (
+    sent.baseRevision !== undefined &&
+    sent.baseRevision.trim() !== '' &&
+    revision !== undefined &&
+    revision.trim() !== '' &&
+    revision !== sent.baseRevision &&
+    runAddPresent(body, sent)
   );
 }
 
@@ -117,16 +155,11 @@ export function runAddAnswer(
   if (
     answer.status === 200 &&
     own(answer.body, 'ok') === true &&
-    runAddRecorded(answer.body, sent) &&
+    runAddPresent(answer.body, sent) &&
     (sent.baseRevision === undefined || id(own(answer.body, 'revision')) !== undefined)
   )
     return 'confirmed';
   // Only these stable codes guarantee a pre-write refusal. An uncoded 400 can come
   // from backup cleanup or the revision read AFTER saving; error text proves nothing.
-  const code = own(answer.body, 'code');
-  return own(answer.body, 'ok') === false &&
-    ((answer.status === 400 && code === 'invalid_request') ||
-      (answer.status === 409 && (code === 'revision_conflict' || code === 'context_changed')))
-    ? 'refused'
-    : 'unconfirmed';
+  return runAddRefusal(answer) === null ? 'unconfirmed' : 'refused';
 }

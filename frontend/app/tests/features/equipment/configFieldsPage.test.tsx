@@ -45,10 +45,9 @@ async function change(action: () => void | Promise<void>) {
 async function setup(
   configRef = 'loadout_patch.read_before_the_first_save',
   saveRef = 'loadout_restore.saved_cards_restore',
-  prepare: (answer: DashboardCase) => DashboardCase = (answer) => answer,
 ) {
   const fake = createFakeTransport();
-  let config = prepare(fixture(configRef));
+  let config = fixture(configRef);
   let answer: DashboardCase | 'hold' = fixture(saveRef);
   fake.route('GET', '/api/config', () => config);
   fake.route('GET', /\/api\/profile-src\//, () =>
@@ -91,6 +90,62 @@ async function setup(
   };
 }
 const save = () => screen.getByRole('button', { name: 'Save selection' });
+
+for (const row of ['C15-8', 'C15-9']) {
+  it.each(['selection', 'refresh', 'preflight revision', 'new edit'])(
+    `${row} C-02 held preflight fences changed %s and preserves the reserved submission and named draft`,
+    async (race) => {
+      const s = await setup();
+      const before = fixture('loadout_patch.read_before_the_first_save');
+      const after = fixture('loadout_restore.read_after_saved_cards_restore');
+      await change(() => {
+        if (row === 'C15-8') s.equipment.editRestoreCards('no_card');
+        else {
+          s.equipment.addRestoreModule();
+          s.equipment.editRestoreModule('draft:0', 'module', 'black_hole_digestor');
+          s.equipment.editRestoreModule('draft:0', 'slot', 'assist');
+        }
+      });
+      const draft = s.entry()?.draft;
+      s.answer('hold');
+      s.fake.route('GET', '/api/config', () => 'hold');
+      await change(s.equipment.save);
+      const held = s.fake.next('/api/config', 'GET');
+      if (race === 'selection')
+        await change(() => {
+          s.equipment.select('spare');
+        });
+      else if (race === 'refresh') {
+        s.fake.route('GET', '/api/config', () => after);
+        await change(s.equipment.refresh);
+      } else if (race === 'new edit')
+        await change(() => {
+          s.equipment.editRestoreCards('main_farm');
+        });
+      await change(() => {
+        held.respond(200, race === 'preflight revision' ? after.body : before.body);
+      });
+      expect(s.fake.writes()).toHaveLength(race === 'new edit' ? 1 : 0);
+      if (race === 'new edit') {
+        expect(own(JSON.parse(s.fake.writes()[0]?.body ?? ''), 'body')).toEqual(
+          row === 'C15-8'
+            ? { cards_restore: 'no_card' }
+            : { modules_restore: [['black_hole_digestor', 'assist']] },
+        );
+        expect(s.entry()?.outcome).toBe('sending');
+      }
+      await change(() => {
+        s.equipment.select('plain');
+      });
+      expect(s.entry()?.outcome).not.toBe('checking');
+      expect(s.entry()?.dirty).toBe(true);
+      expect(s.entry()?.draft).toEqual(
+        race === 'new edit' ? { ...draft, restoreCards: 'main_farm' } : draft,
+      );
+      expect(screen.getByLabelText('Result for this loadout and target')).toBeVisible();
+    },
+  );
+}
 
 it('C15-8 saves the whole reviewed body with config revision/context and settles only on a later positive read', async () => {
   const s = await setup();
@@ -143,6 +198,31 @@ it('C15-8 a lost restore answer keeps Unknown through unchanged reads, preserves
   expect(s.fake.writes()).toHaveLength(1);
 });
 
+it('C15-8 C15-9 C-04 explicit acceptance keeps Unknown history separate from positive readback and sends nothing', async () => {
+  const s = await setup();
+  s.answer('hold');
+  await change(() => {
+    s.equipment.editRestoreCards('no_card');
+    s.equipment.save();
+  });
+  await waitFor(() => {
+    expect(s.fake.writes()).toHaveLength(1);
+  });
+  await change(() => {
+    s.fake.next('/api/loadout-patch', 'POST').lose();
+  });
+  await change(s.equipment.refresh);
+  expect(s.entry()?.outcome).toBe('unknown');
+  await change(s.equipment.reconcile);
+  expect(s.entry()?.outcome).toBe('acceptedCurrent');
+  expect(s.entry()?.intent?.accepted).toBe(true);
+  expect(s.entry()?.intent?.readSettlement).toBeNull();
+  await change(s.equipment.refresh);
+  expect(s.entry()?.outcome).toBe('acceptedCurrent');
+  expect(s.entry()?.reconcile).toBe(false);
+  expect(s.fake.writes()).toHaveLength(1);
+});
+
 it.each(['cards', 'modules'])(
   'C15-8 C15-9 recorded %s restore refusal is verbatim and keeps the exact raw draft',
   async (kind) => {
@@ -170,50 +250,13 @@ it.each(['cards', 'modules'])(
   },
 );
 
-it('C15-9 raw module/slot rows preserve untouched keys, warn verbatim and require no conversion for restore-only changes', async () => {
+it('C15-9 C-03 a recorded receipt containing an additional manual field stays Unknown for a restore-only submission', async () => {
   const s = await setup(
-    'loadout_restore.read_after_saved_modules_restore',
+    'settings_modules_more.read_before_saved_modules_restore',
     'loadout_restore.saved_modules_restore',
   );
-  // Modified recorded starting config: keep its ordinary modules and remove modules_restore,
-  // using the exact pre-save revision/body recorded by saved_modules_restore.
   const recorded = fixture('loadout_restore.saved_modules_restore');
-  const request = record(recorded.request.body);
-  if (request === undefined) throw new Error('request');
-  const state = s.equipment.getSnapshot();
-  const key = state.key;
-  if (key === null) throw new Error('target');
-  const base = fixture('loadout_restore.read_after_saved_cards_restore');
-  const original = Object.fromEntries(entries(own(request, 'body')));
-  delete original['modules_restore'];
-  await change(() => {
-    s.equipment.update((current) => {
-      const target = current.targets[key];
-      const editor = target?.editors['plain'];
-      if (target === undefined || editor === undefined) return current;
-      return {
-        ...current,
-        targets: {
-          ...current.targets,
-          [key]: {
-            ...target,
-            config: {
-              ...Object.fromEntries(entries(base.body)),
-              loadouts: {
-                ...Object.fromEntries(entries(own(base.body, 'loadouts'))),
-                plain: original,
-              },
-            },
-            editors: {
-              ...target.editors,
-              plain: { ...editor, original, revision: String(own(request, 'expected_revision')) },
-            },
-          },
-        },
-      };
-    });
-    s.equipment.addRestoreModule();
-  });
+  await change(s.equipment.addRestoreModule);
   expect(save()).toHaveAttribute('aria-disabled', 'true');
   const row = screen.getByRole('group', { name: 'Entry 1' });
   const moduleInput = within(row).getByRole('textbox', { name: /Module name/ });
@@ -234,14 +277,62 @@ it('C15-9 raw module/slot rows preserve untouched keys, warn verbatim and requir
   expect(save()).toBeEnabled();
   expect(moduleInput).not.toHaveAttribute('aria-invalid');
   expect(slotInput).not.toHaveAttribute('aria-invalid');
-  // Use the current body as the immutable submission; the click-time read verifies context.
   await change(s.equipment.save);
   await waitFor(() => {
-    expect(s.entry()?.outcome).toBe('saved');
+    expect(s.entry()?.outcome).toBe('unknown');
   });
-  expect(JSON.parse(s.fake.writes()[0]?.body ?? '')).toEqual(recorded.request.body);
-  for (const warning of own(recorded.body, 'warnings') as string[])
-    expect(screen.getAllByText(warning, { exact: true }).length).toBeGreaterThan(0);
+  const sent = JSON.parse(s.fake.writes()[0]?.body ?? '{}') as { body: unknown };
+  expect(sent).toEqual({
+    ...Object.fromEntries(entries(recorded.request.body)),
+    body: {
+      cards: 'main_farm',
+      cards_restore: 'no_card',
+      modules_restore: [['black_hole_digestor', 'assist']],
+    },
+  });
+  expect(own(sent.body, 'modules')).toBeUndefined();
+  s.config('loadout_restore.read_after_saved_modules_restore');
+  await change(s.equipment.refresh);
+  expect(s.entry()?.outcome).toBe('unknown');
+  expect(moduleInput).toHaveValue('black_hole_digestor');
+  expect(slotInput).toHaveValue('assist');
+  expect(s.fake.writes()).toHaveLength(1);
+});
+
+it('C15-9 C-03 changing saved restore rows preserves every recorded manual field without conversion', async () => {
+  const read = 'loadout_restore.read_after_saved_modules_restore';
+  const s = await setup(read, 'loadout_restore.saved_modules_restore');
+  s.answer('hold');
+  await change(() => {
+    s.equipment.removeRestoreModule('saved:0');
+    s.equipment.addRestoreModule();
+  });
+  const row = screen.getByRole('group', { name: 'Entry 1' });
+  fireEvent.change(within(row).getByRole('textbox', { name: /Module name/ }), {
+    target: { value: 'black_hole_digestor' },
+  });
+  fireEvent.change(within(row).getByRole('textbox', { name: /Slot/ }), {
+    target: { value: 'primary' },
+  });
+  expect(save()).toBeEnabled();
+  await change(s.equipment.save);
+  await waitFor(() => {
+    expect(s.fake.writes()).toHaveLength(1);
+  });
+  const recorded = fixture('loadout_restore.saved_modules_restore');
+  expect(JSON.parse(s.fake.writes()[0]?.body ?? '')).toEqual({
+    ...Object.fromEntries(entries(recorded.request.body)),
+    expected_revision: own(fixture(read).body, 'config_revision'),
+    body: {
+      ...Object.fromEntries(entries(own(recorded.request.body, 'body'))),
+      modules_restore: [['black_hole_digestor', 'primary']],
+    },
+  });
+  await change(() => {
+    s.fake.next('/api/loadout-patch', 'POST').lose();
+  });
+  expect(s.entry()?.outcome).toBe('unknown');
+  expect(screen.getByText(/Manual equipment selections are preserved here/)).toBeVisible();
 });
 
 it('C15-8 C15-9 restore_loadout_unused disables changed and cleared restore values while ordinary unused saves remain possible', async () => {
@@ -283,39 +374,31 @@ it('C15-8 C15-9 restore_loadout_unused disables changed and cleared restore valu
   expect(save()).toHaveAttribute('aria-disabled', 'true');
 });
 
-it('C15-8 unchanged stored restore values do not block an ordinary unused-loadout save', async () => {
+it('C15-8 C-03 unchanged stored restore values do not block an ordinary unused-loadout save', async () => {
   const reference =
     'loadout_restore_eligibility.unused_loadout_saved_with_its_stored_restore_value_unchanged';
   const saved = fixture(reference);
-  const request = own(saved.request, 'body');
-  const s = await setup(
-    'loadout_restore_eligibility.read_after_the_clearing_refusal_the_stored_value_remains',
-    reference,
-    (answer) => ({
-      ...answer,
-      // Modified recorded predecessor: no GET exists immediately before this save.
-      // Reuse its recorded starting revision and change only the ordinary cards choice.
-      body: {
-        ...Object.fromEntries(entries(answer.body)),
-        config_revision: own(request, 'expected_revision'),
-        loadouts: {
-          ...Object.fromEntries(entries(own(answer.body, 'loadouts'))),
-          spare: { ...Object.fromEntries(entries(own(request, 'body'))), cards: 'no_card' },
-        },
-      },
-    }),
-  );
+  const s = await setup('settings_modules_more.read_before_the_clearing_refusal', reference);
+  s.answer('hold');
   await change(() => {
     s.equipment.select('spare');
-    s.equipment.edit('cards', 'main_farm');
+    s.equipment.edit('cards', 'no_card');
   });
   expect(save()).toBeEnabled();
   await change(s.equipment.save);
   await waitFor(() => {
-    expect(s.entry()?.outcome).toBe('saved');
+    expect(s.fake.writes()).toHaveLength(1);
   });
-  expect(JSON.parse(s.fake.writes()[0]?.body ?? '')).toEqual(saved.request.body);
-  expect(s.entry()?.intent?.answer?.contract).toBe('exact');
+  expect(JSON.parse(s.fake.writes()[0]?.body ?? '')).toEqual({
+    ...Object.fromEntries(entries(saved.request.body)),
+    expected_revision: own(
+      fixture('settings_modules_more.read_before_the_clearing_refusal').body,
+      'config_revision',
+    ),
+    body: { cards: 'no_card', cards_restore: 'ghost_deck' },
+  });
+  // Transport hold: there is no recorded receipt for this exact ordinary edit.
+  // The stored restore value is preserved in the request; no success is invented.
 });
 
 it('C15-9 unavailable blueprint references defer to the recorded restore_loadout_unused server refusal', async () => {

@@ -74,6 +74,7 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
     | 'unknown'
     | 'removeUnknown'
     | 'refused'
+    | 'contextChanged'
     | 'removeRefused'
     | 'partial'
     | 'confirmed'
@@ -94,9 +95,11 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
               ? 'removeUnknown'
               : 'unknown'
             : intent?.phase === 'refused'
-              ? removal
-                ? 'removeRefused'
-                : 'refused'
+              ? own(intent.answer?.body, 'code') === 'context_changed'
+                ? 'contextChanged'
+                : removal
+                  ? 'removeRefused'
+                  : 'refused'
               : partial
                 ? 'partial'
                 : intent?.phase === 'confirmed'
@@ -159,6 +162,7 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
                     : null;
   return {
     target: editingTargetVM(state.target),
+    sourceError: fromServer('message', e?.sourceError),
     activeProfile: fromServer('name', state.context?.profile),
     entry: e,
     profile: fromServer('name', state.target.name),
@@ -229,6 +233,13 @@ export function selectSchedule(state: ScheduleState, now = Date.now()) {
     checking: e?.checking === true,
     notSent: e?.notSent ?? null,
     error: fromServer('message', own(intent?.answer?.body, 'error')),
+    currentContext:
+      outcome === 'contextChanged'
+        ? fromServer(
+            'detail',
+            JSON.stringify(own(intent?.answer?.body, 'current_context'), null, 2),
+          )
+        : null,
     problems: [
       ...messages(own(e?.source, 'problems')),
       ...messages(own(intent?.answer?.body, 'problems')),

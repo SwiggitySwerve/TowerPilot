@@ -67,7 +67,14 @@ function PartInput({
       )}
       <input
         type="text"
-        inputMode="decimal"
+        inputMode={
+          field.type === 'number' ||
+          field.type === 'integer' ||
+          field.type === 'range' ||
+          field.type === 'point'
+            ? 'decimal'
+            : undefined
+        }
         className="tp-settings__input"
         autoComplete="off"
         spellCheck={false}
@@ -138,6 +145,7 @@ export function SettingsField({
             <input
               id={`${own}-${row.key}`}
               type="text"
+              inputMode="text"
               className="tp-settings__input"
               value={row.raw}
               disabled={scope === null}
@@ -240,6 +248,7 @@ export function SettingsField({
               onEdit(scope, part.key, event.currentTarget.value);
           }}
         >
+          {field.unlistedEmpty ? <option value="">{t.unlistedEmpty.short}</option> : null}
           {field.unlisted === null || typeof part?.raw !== 'string' ? null : (
             <ServerOption key="unlisted" value={part.raw} label={field.unlisted} />
           )}
@@ -410,6 +419,17 @@ export function SettingsModuleForm({
               focusKey={`${vm.id}:discard`}
               onClick={() => {
                 if (vm.scope !== null) onDiscard(vm.scope);
+              }}
+            />
+          ) : null}
+          {vm.reconcile !== null && vm.scope !== null ? (
+            <Button
+              tier="secondary"
+              label={t.reconcile.short}
+              focusKey={`${vm.id}:reconcile`}
+              onClick={() => {
+                if (vm.scope !== null && vm.reconcile !== null)
+                  onEdit(vm.scope, vm.reconcile.key, vm.reconcile.revision);
               }}
             />
           ) : null}

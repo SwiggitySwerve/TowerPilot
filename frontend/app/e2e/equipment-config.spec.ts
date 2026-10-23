@@ -1,13 +1,13 @@
 import { createRequire } from 'node:module';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Route, type Locator } from '@playwright/test';
 import { posts } from './helpers.ts';
 import {
   DASHBOARD_PAGES_FIXTURE_PATH,
   loadJsonWithIdentity,
 } from '../scripts/contract-fixture.mjs';
-import { list, own, ownPath } from '../src/core/read.ts';
+import { entries, list, own, ownPath } from '../src/core/read.ts';
 
 const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT =
@@ -40,7 +40,11 @@ async function open(page: Page, width: number, scenario: string, loadout = 'plai
   await expect(
     page.getByRole('heading', { level: 1, name: 'Equipment', exact: true }),
   ).toBeVisible();
-  if (!['lists', 'invalid', 'stale', 'empty'].includes(scenario))
+  if (
+    !scenario.startsWith('lists') &&
+    !scenario.startsWith('empty') &&
+    !['invalid', 'stale'].includes(scenario)
+  )
     await page.getByRole('button', { name: loadout, exact: true }).click();
 }
 async function add(page: Page, field: string, values: string[]) {
@@ -79,6 +83,46 @@ async function screenshot(page: Page, width: number, state: string) {
     fullPage: true,
   });
 }
+
+/** Replay a complete recorded answer. Only transport timing/loss is changed in these journeys. */
+async function reply(route: Route, reference: string) {
+  const [family = '', key = ''] = reference.split('.');
+  const status = own(ownPath(cases, family, key), 'status');
+  if (typeof status !== 'number') throw new Error(`Missing recording ${reference}`);
+  await route.fulfill({ status, json: body(family, key) });
+}
+async function enter(page: Page, locator: Locator) {
+  // Establish keyboard modality before programmatic focus (focus-visible follows modality).
+  await page.keyboard.press('Tab');
+  await locator.focus();
+  await expect(locator).toBeFocused();
+  expect(
+    await locator.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return (
+        (style.outlineStyle !== 'none' && style.outlineWidth !== '0px') ||
+        style.boxShadow !== 'none'
+      );
+    }),
+  ).toBe(true);
+  await page.keyboard.press('Enter');
+}
+const restoreUnknown = (page: Page) =>
+  page.getByText(
+    'The save outcome is unknown. Do not send it again. Read saved result for the original target and loadout.',
+    { exact: true },
+  );
+const listsUnknown = (page: Page) => tournament(page).locator('[data-outcome="unknown"]');
+const readRestore = (page: Page) =>
+  page.getByRole('button', { name: 'Read saved result', exact: true });
+const readLists = (page: Page) =>
+  page.getByRole('button', { name: 'Read tournament settings', exact: true });
+async function restoreDraft(page: Page) {
+  await page.getByRole('combobox', { name: 'Cards', exact: true }).selectOption('main_farm');
+  await page
+    .getByRole('combobox', { name: 'Restore cards preset', exact: true })
+    .selectOption('no_card');
+}
 interface AxeResult {
   readonly violations: readonly { readonly id: string; readonly nodes: readonly unknown[] }[];
 }
@@ -114,7 +158,318 @@ async function accessibility(page: Page, width: number) {
 }
 
 for (const width of [1360, 1054, 390]) {
-  test(`C15-6 C15-7 explicit empty lists save as arrays and read back empty at ${String(width)}`, async ({
+  for (const field of ['add', 'drop']) {
+    test(`C15-6 C15-7 C-03 emptying only ${field} preserves the other list at ${String(width)}`, async ({
+      page,
+    }) => {
+      await open(page, width, `empty_${field}`);
+      const root = tournament(page).locator(`[data-field="${field}"]`);
+      const sibling = tournament(page).locator(
+        `[data-field="${field === 'add' ? 'drop' : 'add'}"]`,
+      );
+      await expect(root.getByRole('textbox').first()).toBeVisible();
+      await expect(sibling.getByRole('textbox').first()).toBeVisible();
+      const before = await sibling
+        .getByRole('textbox')
+        .evaluateAll((nodes) => nodes.map((node) => (node as HTMLInputElement).value));
+      while (await root.getByRole('button', { name: /^Remove entry/ }).count()) {
+        await enter(page, root.getByRole('button', { name: /^Remove entry/ }).first());
+      }
+      await enter(page, tournament(page).getByRole('button', { name: 'Save', exact: true }));
+      await expect(tournament(page).locator('[data-outcome="saved"]')).toBeVisible();
+      const suffix =
+        field === 'add'
+          ? 'saved_tournament_cards_with_only_the_add_list_empty_the_drop_list_is_kept'
+          : 'saved_tournament_cards_with_only_the_drop_list_empty_the_add_list_is_kept';
+      expect(JSON.parse((await posts(page))[0]?.body ?? '')).toEqual(
+        ownPath(cases, 'settings_modules_more', suffix, 'request', 'body'),
+      );
+      await enter(page, readLists(page));
+      await expect(root.getByRole('textbox')).toHaveCount(0);
+      expect(
+        await sibling
+          .getByRole('textbox')
+          .evaluateAll((nodes) => nodes.map((node) => (node as HTMLInputElement).value)),
+      ).toEqual(before);
+      expect(await posts(page)).toHaveLength(1);
+      await accessibility(page, width);
+      await screenshot(page, width, `only-${field}-empty`);
+    });
+  }
+  for (const path of ['lists', 'cards']) {
+    test(`C15-6 C15-7 C15-8 C15-9 C-03 C-04 ${path} loading and unavailable reads keep drafts and visible reasons at ${String(width)}`, async ({
+      page,
+    }) => {
+      const pattern = path === 'lists' ? '**/api/settings' : '**/api/config';
+      let release = () => {};
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let held = false;
+      const hold = async (route: Route) => {
+        held = true;
+        await gate;
+        await route.continue();
+      };
+      if (path === 'cards') {
+        await open(page, width, path);
+        await restoreDraft(page);
+      }
+      await page.route(pattern, hold);
+      if (path === 'lists') await open(page, width, path);
+      const read = path === 'lists' ? readLists(page) : readRestore(page);
+      const button =
+        path === 'lists'
+          ? tournament(page).getByRole('button', { name: 'Save', exact: true })
+          : save(page);
+      try {
+        if (path === 'cards') await enter(page, read);
+        await expect.poll(() => held).toBe(true);
+        if (path === 'cards') {
+          await expect(button).toBeDisabled();
+          await expect(page.getByText('Reading saved equipment…', { exact: true })).toBeVisible();
+        } else
+          await expect(
+            page.getByText(
+              'Tournament settings have not been read for this context. Kept drafts stay with their original account.',
+              { exact: true },
+            ),
+          ).toBeVisible();
+        await accessibility(page, width);
+        await screenshot(page, width, `${path}-loading`);
+      } finally {
+        release();
+      }
+      if (path === 'lists') await lists(page);
+      await expect(button).toBeEnabled();
+      await page.unroute(pattern, hold);
+      await page.route(pattern, (route) => route.abort('failed'));
+      await enter(page, read);
+      if (path === 'lists') {
+        await expect(
+          page.getByText(
+            'The latest tournament settings read failed. Read again before saving; your draft is kept.',
+            { exact: true },
+          ),
+        ).toBeVisible();
+        await expect(
+          tournament(page).locator('[data-field="drop"]').getByRole('textbox').first(),
+        ).toHaveValue('cash');
+      } else {
+        await expect(page.getByText(/Saved equipment could not be read/)).toBeVisible();
+        await expect(
+          page.getByRole('combobox', { name: 'Restore cards preset', exact: true }),
+        ).toHaveValue('no_card');
+      }
+      await expect(button).toBeDisabled();
+      await accessibility(page, width);
+      await screenshot(page, width, `${path}-unavailable`);
+      expect(await posts(page)).toHaveLength(0);
+    });
+    test(`C15-6 C15-7 C15-8 C15-9 C-03 C-04 ${path} context changes during Save send nothing and keep the old draft at ${String(width)}`, async ({
+      page,
+    }) => {
+      await open(page, width, path);
+      if (path === 'lists') await lists(page);
+      else await restoreDraft(page);
+      let release = () => {};
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let held = false;
+      let replied = false;
+      await page.route(
+        '**/api/config',
+        async (route) => {
+          held = true;
+          await gate;
+          await reply(route, 'settings_modules.read_config_after_saved_active_instance');
+          replied = true;
+        },
+        { times: 1 },
+      );
+      try {
+        await enter(
+          page,
+          path === 'lists'
+            ? tournament(page).getByRole('button', { name: 'Save', exact: true })
+            : save(page),
+        );
+        await expect.poll(() => held).toBe(true);
+        expect(await posts(page)).toHaveLength(0);
+        release();
+        if (path === 'cards')
+          await expect(
+            page.getByText('Not saved: the account or profile changed', { exact: true }),
+          ).toBeVisible();
+        else {
+          await expect.poll(() => replied).toBe(true);
+          // The shared settings owner reports no-send through its command journal;
+          // Equipment keeps its form and raw draft available for a later explicit Save.
+          await page.evaluate(
+            () =>
+              new Promise<void>((resolve) =>
+                requestAnimationFrame(() => {
+                  resolve();
+                }),
+              ),
+          );
+        }
+        expect(await posts(page)).toHaveLength(0);
+        if (path === 'lists')
+          await expect(
+            tournament(page).locator('[data-field="drop"]').getByRole('textbox').first(),
+          ).toHaveValue('cash');
+        else
+          await expect(
+            page.getByRole('combobox', { name: 'Restore cards preset', exact: true }),
+          ).toHaveValue('no_card');
+        await accessibility(page, width);
+        await screenshot(page, width, `${path}-context-changed-no-send`);
+      } finally {
+        release();
+      }
+    });
+  }
+  for (const failed of [false, true]) {
+    const failure = failed ? 'failed' : 'lost';
+    test(`C15-6 C15-7 C-03 C-04 ${failure} reply stays Unknown for unchanged and wrong-target reads, then positive readback preserves newer raw edits at ${String(width)}`, async ({
+      page,
+    }) => {
+      await open(page, width, `lists_${failure}`);
+      let reference = 'settings_modules.read_after_saved_run_defaults';
+      await page.route('**/api/settings', async (route) => {
+        if (route.request().method() === 'GET') await reply(route, reference);
+        else await route.continue();
+      });
+      await lists(page);
+      await enter(page, tournament(page).getByRole('button', { name: 'Save', exact: true }));
+      await expect(listsUnknown(page)).toBeVisible();
+      expect(await posts(page)).toHaveLength(1);
+      const raw = tournament(page).locator('[data-field="drop"]').getByRole('textbox').first();
+      await raw.fill('  newer raw list  ');
+      await enter(page, readLists(page));
+      await expect(listsUnknown(page)).toBeVisible();
+      await expect(raw).toHaveValue('  newer raw list  ');
+      await screenshot(page, width, `lists-${failure}-unchanged-unknown`);
+      reference = 'settings_modules.read_after_saved_active_instance';
+      await enter(page, readLists(page));
+      await expect(tournament(page).getByRole('textbox')).toHaveCount(0);
+      await expect(listsUnknown(page)).toBeVisible();
+      await expect(
+        tournament(page).getByRole('button', { name: 'Continue from the saved values as read' }),
+      ).toHaveCount(0);
+      await accessibility(page, width);
+      await screenshot(page, width, `lists-${failure}-wrong-target-unknown`);
+      reference = 'settings_modules.read_after_saved_tournament_cards';
+      await enter(page, readLists(page));
+      await expect(tournament(page).locator('[data-outcome="applied"]')).toBeVisible();
+      await expect(raw).toHaveValue('  newer raw list  ');
+      expect(await posts(page)).toHaveLength(1);
+      await accessibility(page, width);
+      await screenshot(page, width, `lists-${failure}-positive-newer-raw`);
+    });
+    test(`C15-8 C15-9 C-03 C-04 ${failure} restore reply stays Unknown for unchanged and wrong-target reads, then positive readback preserves raw rows at ${String(width)}`, async ({
+      page,
+    }) => {
+      await open(page, width, `cards_${failure}`);
+      let reference = 'loadout_patch.read_before_the_first_save';
+      let wrongNext = false;
+      await page.route('**/api/config', async (route) => {
+        const selected = wrongNext
+          ? 'settings_modules.read_config_after_saved_active_instance'
+          : reference;
+        wrongNext = false;
+        await reply(route, selected);
+      });
+      await restoreDraft(page);
+      await enter(page, save(page));
+      await expect(restoreUnknown(page)).toBeVisible();
+      expect(await posts(page)).toHaveLength(1);
+      await enter(page, page.getByRole('button', { name: 'Add restore module', exact: true }));
+      const raw = page.getByRole('textbox', { name: /Module name/ });
+      await raw.fill('  newer unfinished module  ');
+      await enter(page, readRestore(page));
+      await expect(readRestore(page)).toBeEnabled();
+      await expect(restoreUnknown(page)).toBeVisible();
+      await expect(raw).toHaveValue('  newer unfinished module  ');
+      await screenshot(page, width, `restore-${failure}-unchanged-unknown`);
+      // Give only this explicit read the unrelated context; the global poll keeps its target.
+      wrongNext = true;
+      await enter(page, readRestore(page));
+      await expect(page.getByText(/Saved equipment could not be read/)).toBeVisible();
+      await expect(restoreUnknown(page)).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: 'Keep draft against this read revision', exact: true }),
+      ).toBeDisabled();
+      await accessibility(page, width);
+      await screenshot(page, width, `restore-${failure}-wrong-target-unknown`);
+      reference = 'loadout_restore.read_after_saved_cards_restore';
+      await enter(page, readRestore(page));
+      await expect(page.getByText(/saved read contains the submitted selection/)).toBeVisible();
+      await expect(raw).toHaveValue('  newer unfinished module  ');
+      await expect(page.getByRole('textbox', { name: /Slot/ })).toHaveValue('');
+      await expect(raw).toHaveAttribute('aria-invalid', 'true');
+      expect(await posts(page)).toHaveLength(1);
+      await accessibility(page, width);
+      await screenshot(page, width, `restore-${failure}-positive-newer-raw`);
+    });
+  }
+  test(`C15-6 C15-7 C-03 C-04 explicit acceptance keeps the earlier outcome Unknown and requires a separate Save at ${String(width)}`, async ({
+    page,
+  }) => {
+    await open(page, width, 'lists_lost');
+    await lists(page);
+    await enter(page, tournament(page).getByRole('button', { name: 'Save', exact: true }));
+    await expect(listsUnknown(page)).toBeVisible();
+    await enter(page, readLists(page));
+    await enter(
+      page,
+      tournament(page).getByRole('button', {
+        name: 'Continue from the saved values as read',
+        exact: true,
+      }),
+    );
+    await expect(listsUnknown(page).locator('[data-accepted="true"]')).toBeVisible();
+    await expect(
+      tournament(page).locator('[data-outcome="applied"], [data-outcome="saved"]'),
+    ).toHaveCount(0);
+    expect(await posts(page)).toHaveLength(1);
+    await accessibility(page, width);
+    await screenshot(page, width, 'lists-accepted-unknown');
+  });
+  test(`C15-8 C15-9 C-03 C-04 explicit acceptance keeps Unknown history with no resend at ${String(width)}`, async ({
+    page,
+  }) => {
+    await open(page, width, 'cards_lost');
+    await restoreDraft(page);
+    await enter(page, save(page));
+    await expect(restoreUnknown(page)).toBeVisible();
+    await enter(page, readRestore(page));
+    await expect(readRestore(page)).toBeEnabled();
+    await enter(
+      page,
+      page.getByRole('button', { name: 'Keep draft against this read revision', exact: true }),
+    );
+    await expect(
+      page.getByText(
+        'Continuing from the saved values as read. The earlier save outcome remains unknown. Saving requires a separate click.',
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        /Selection saved in configuration|saved read contains the submitted selection/,
+      ),
+    ).toHaveCount(0);
+    await enter(page, readRestore(page));
+    await expect(readRestore(page)).toBeEnabled();
+    await expect(page.getByText(/earlier save outcome remains unknown/)).toBeVisible();
+    expect(await posts(page)).toHaveLength(1);
+    await accessibility(page, width);
+    await screenshot(page, width, 'restore-accepted-unknown');
+  });
+  test(`C15-6 C15-7 C-03 explicit empty lists save as arrays and read back empty at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, width, 'empty');
@@ -122,13 +477,28 @@ for (const width of [1360, 1054, 390]) {
     await tournament(page).getByRole('button', { name: 'Save', exact: true }).click();
     await expect(tournament(page).getByText('Saved', { exact: true })).toBeVisible();
     const request: unknown = JSON.parse((await posts(page))[0]?.body ?? '');
-    expect(own(request, 'values')).toEqual({ drop: [], add: [] });
+    expect(request).toEqual(
+      ownPath(
+        cases,
+        'settings_modules_more',
+        'saved_tournament_cards_empty_lists',
+        'request',
+        'body',
+      ),
+    );
     await page.getByRole('button', { name: 'Read tournament settings', exact: true }).click();
     await expect(tournament(page).getByRole('textbox')).toHaveCount(0);
+    // Emptying again changes nothing: keep Save disabled rather than automatically
+    // replaying saved_the_same_empty_lists_again_keeps_the_revision.
+    await expect(
+      tournament(page).getByRole('button', { name: 'Save', exact: true }),
+    ).toBeDisabled();
+    await expect(tournament(page).getByText('No change to save', { exact: true })).toBeVisible();
+    expect(await posts(page)).toHaveLength(1);
     await accessibility(page, width);
     await screenshot(page, width, 'lists-empty');
   });
-  test(`C15-6 C15-7 tournament lists save and read back in order at ${String(width)}`, async ({
+  test(`C15-6 C15-7 C-03 tournament lists save and read back in order at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, width, 'lists');
@@ -149,7 +519,7 @@ for (const width of [1360, 1054, 390]) {
     await accessibility(page, width);
     await screenshot(page, width, 'lists-saved');
   });
-  test(`C15-6 C15-7 invalid list refusal keeps raw entries and server error at ${String(width)}`, async ({
+  test(`C15-6 C15-7 C-03 invalid list refusal keeps raw entries and server error at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, width, 'invalid');
@@ -168,7 +538,9 @@ for (const width of [1360, 1054, 390]) {
     await accessibility(page, width);
     await screenshot(page, width, 'lists-invalid');
   });
-  test(`C15-6 C15-7 stale refusal retains ordered draft at ${String(width)}`, async ({ page }) => {
+  test(`C15-6 C15-7 C-03 stale refusal retains ordered draft at ${String(width)}`, async ({
+    page,
+  }) => {
     await open(page, width, 'stale');
     await lists(page);
     await tournament(page).getByRole('button', { name: 'Save', exact: true }).click();
@@ -183,7 +555,7 @@ for (const width of [1360, 1054, 390]) {
     ).toHaveValue('cash');
     await screenshot(page, width, 'lists-stale');
   });
-  test(`C15-8 restore cards save and readback at ${String(width)}`, async ({ page }) => {
+  test(`C15-8 C-03 restore cards save and readback at ${String(width)}`, async ({ page }) => {
     await open(page, width, 'cards');
     await page.getByRole('combobox', { name: 'Cards', exact: true }).selectOption('main_farm');
     await page
@@ -203,26 +575,72 @@ for (const width of [1360, 1054, 390]) {
     await accessibility(page, width);
     await screenshot(page, width, 'cards-saved');
   });
-  test(`C15-9 restore modules preserve manual fields and show warnings at ${String(width)}`, async ({
+  test(`C15-9 C-03 an extra manual field in the recorded receipt keeps a restore-only save Unknown at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, width, 'modules');
-    await page.getByRole('button', { name: 'Add restore module', exact: true }).focus();
-    await page.keyboard.press('Enter');
+    await enter(page, page.getByRole('button', { name: 'Add restore module', exact: true }));
     const row = page.locator('.tp-equipment__restore-row');
     await row.getByRole('textbox', { name: /Module name/ }).fill('black_hole_digestor');
     await row.getByRole('textbox', { name: /Slot/ }).fill('assist');
     await save(page).click();
-    await expect(page.getByText(/Selection saved in configuration/)).toBeVisible();
-    expect(JSON.parse((await posts(page))[0]?.body ?? '')).toEqual(
-      ownPath(cases, 'loadout_restore', 'saved_modules_restore', 'request', 'body'),
+    await expect(restoreUnknown(page)).toBeVisible();
+    const request = JSON.parse((await posts(page))[0]?.body ?? '{}') as { body: unknown };
+    expect(request).toEqual({
+      ...Object.fromEntries(
+        entries(ownPath(cases, 'loadout_restore', 'saved_modules_restore', 'request', 'body')),
+      ),
+      body: {
+        cards: 'main_farm',
+        cards_restore: 'no_card',
+        modules_restore: [['black_hole_digestor', 'assist']],
+      },
+    });
+    expect(own(request.body, 'modules')).toBeUndefined();
+    await enter(page, readRestore(page));
+    await expect(restoreUnknown(page)).toBeVisible();
+    await expect(row.getByRole('textbox', { name: /Module name/ })).toHaveValue(
+      'black_hole_digestor',
     );
-    await page.getByRole('button', { name: 'Read saved result', exact: true }).click();
-    await expect(page.getByText(/saved read contains the submitted selection/)).toBeVisible();
+    await expect(row.getByRole('textbox', { name: /Slot/ })).toHaveValue('assist');
+    expect(await posts(page)).toHaveLength(1);
     await accessibility(page, width);
-    await screenshot(page, width, 'modules-saved');
+    await screenshot(page, width, 'modules-additional-field-unknown');
   });
-  test(`C15-9 restore refused verbatim without losing the raw module at ${String(width)}`, async ({
+  test(`C15-9 C-03 editing recorded restore rows preserves manual fields and a lost answer stays Unknown at ${String(width)}`, async ({
+    page,
+  }) => {
+    await open(page, width, 'modules_manual');
+    await page.getByRole('button', { name: /Remove restore module/ }).click();
+    await page.getByRole('button', { name: 'Add restore module', exact: true }).click();
+    const row = page.locator('.tp-equipment__restore-row');
+    await row.getByRole('textbox', { name: /Module name/ }).fill('black_hole_digestor');
+    await row.getByRole('textbox', { name: /Slot/ }).fill('primary');
+    await enter(page, save(page));
+    await expect(restoreUnknown(page)).toBeVisible();
+    expect(JSON.parse((await posts(page))[0]?.body ?? '')).toEqual({
+      ...Object(ownPath(cases, 'loadout_restore', 'saved_modules_restore', 'request', 'body')),
+      expected_revision: own(
+        body('loadout_restore', 'read_after_saved_modules_restore'),
+        'config_revision',
+      ),
+      body: {
+        ...Object.fromEntries(
+          entries(
+            ownPath(cases, 'loadout_restore', 'saved_modules_restore', 'request', 'body', 'body'),
+          ),
+        ),
+        modules_restore: [['black_hole_digestor', 'primary']],
+      },
+    });
+    await enter(page, readRestore(page));
+    await expect(restoreUnknown(page)).toBeVisible();
+    await expect(page.getByText(/Manual equipment selections are preserved here/)).toBeVisible();
+    expect(await posts(page)).toHaveLength(1);
+    await accessibility(page, width);
+    await screenshot(page, width, 'modules-manual-preserved');
+  });
+  test(`C15-9 C-03 restore refused verbatim without losing the raw module at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, width, 'refused');
@@ -242,7 +660,7 @@ for (const width of [1360, 1054, 390]) {
     await accessibility(page, width);
     await screenshot(page, width, 'restore-refused');
   });
-  test(`C15-8 C15-9 unused loadout and clearing restore are disabled with a reason at ${String(width)}`, async ({
+  test(`C15-8 C15-9 C-03 unused loadout and clearing restore are disabled with a reason at ${String(width)}`, async ({
     page,
   }) => {
     for (const scenario of ['unused', 'clear_unused']) {
@@ -270,7 +688,7 @@ for (const width of [1360, 1054, 390]) {
       );
     }
   });
-  test(`C15-8 no active profile keeps restore save disabled at ${String(width)}`, async ({
+  test(`C15-8 C-03 no active profile keeps restore save disabled at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, width, 'no_profile');

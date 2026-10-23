@@ -30,17 +30,43 @@ import { AbilityField, AbilityBackendErrors, Json } from './AbilityField.tsx';
 import { RuleEditor } from './RuleEditor.tsx';
 import { SettingsField } from '../settings/SettingsModuleForm.tsx';
 import { EditingTargetLine } from '../profiles/EditingTargetLine.tsx';
+import { TargetSourceError } from '../profiles/TargetSourceError.tsx';
 import { editingTarget as targetCopy } from '../../copy/editingTarget.ts';
 import { editingTargetVM } from '../../store/selectors/editingTarget.ts';
 import './abilities.css';
+import type { PageTarget } from '../../ui/routes.ts';
 
-export function AbilitiesPage({ abilities: store }: { readonly abilities: AbilitiesStore }) {
+export function AbilitiesPage({
+  abilities: store,
+  target: routeTarget = null,
+}: {
+  readonly abilities: AbilitiesStore;
+  readonly target?: PageTarget | null;
+}) {
   const s = useSyncExternalStore(store.subscribe, store.getSnapshot),
     target = currentAbilities(s),
     e = currentAbility(s);
+  const routeKey =
+    routeTarget?.kind === 'ability' ? abilityKey(routeTarget.family, routeTarget.policy) : null;
+  const openedRoute = useRef<string | null>(null);
+  // RL11: wait for this target's source before selecting its specific policy.
+  useEffect(() => {
+    const marker = JSON.stringify([s.key, routeKey]);
+    if (
+      routeKey !== null &&
+      target?.editors[routeKey] !== undefined &&
+      openedRoute.current !== marker
+    ) {
+      openedRoute.current = marker;
+      store.select(routeKey);
+      document.getElementById('abilities-editor')?.focus();
+    }
+  }, [store, routeKey, s.key, target?.editors]);
   const problems = abilityProblems(e),
     errorSummary = useRef<HTMLElement>(null);
-  const [family, setFamily] = useState<AbilityFamily>('uw_policies');
+  const [family, setFamily] = useState<AbilityFamily>(
+    routeTarget?.kind === 'ability' ? routeTarget.family : 'uw_policies',
+  );
   const newId = target?.newIds[family] ?? '';
   const [now, setNow] = useState(Date.now),
     [confirm, setConfirm] = useState<{
@@ -127,6 +153,7 @@ export function AbilitiesPage({ abilities: store }: { readonly abilities: Abilit
           </p>
         ) : null}
         {target?.error === true ? <p role="alert">{t.readError.short}</p> : null}
+        <TargetSourceError error={abilityMessage(target?.sourceError)} />
         {stale ? <p role="status">{t.stale.short}</p> : null}
         {s.editing.name === null || s.context === null ? (
           <p id="abilities-no-target">{t.noTarget.short}</p>

@@ -10,6 +10,24 @@ import {
   type QueueReview,
 } from '../../core/shoppingPlan.ts';
 import { fromServer, type ServerText } from '../../copy/server.ts';
+import { contextIntents } from '../intents.ts';
+import type { DashboardState } from '../types.ts';
+import type { RunOutcomeVM } from './runs.ts';
+
+/** SQ5: show only this queue action's refused answer beside its Save control. */
+export function queueRefusal(
+  state: DashboardState,
+  scope: string | null,
+  outcome: RunOutcomeVM | null,
+): ServerText<'message'> | null {
+  if (
+    outcome === null ||
+    !['not_saved', 'not_saved_changed', 'live_not_recorded'].includes(outcome.code)
+  )
+    return null;
+  const record = contextIntents(state).find((item) => item.id === outcome.line.id);
+  return record?.meta.draftScope === scope ? outcome.line.error : null;
+}
 
 /**
  * F6-12: the view of one shopping queue draft (saved run, live battle or shared policy) for the

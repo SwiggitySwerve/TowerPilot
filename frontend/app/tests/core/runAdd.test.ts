@@ -1,4 +1,9 @@
+import {
+  codedAddAnswerSchema,
+  codedAddSourceAnswerSchema,
+} from '../../src/contract/r12Families.ts';
 import { describe, expect, it } from 'vitest';
+import { ENDPOINTS, parseAnswer } from '../../src/api/wire.ts';
 import {
   runAddAnswer,
   runAddOptions,
@@ -14,6 +19,35 @@ const fenced = (name: string) => dashboardPagesCase(`run_templates_add_fenced.${
 const recipes = runRecipes(sample('read_the_recipes_the_page_offers').body);
 
 describe('RL4 recipe rules', () => {
+  it.each(dashboardPagesCaseNames('run_templates_add_coded'))(
+    'RL4 stable coded pre-write answer: %s',
+    (name) => {
+      const entry = dashboardPagesCase(`run_templates_add_coded.${name}`);
+      expect(
+        parseAnswer(
+          entry.request.method === 'POST' ? ENDPOINTS.runTemplatesAdd : ENDPOINTS.profileSource,
+          entry.status,
+          JSON.stringify(entry.body),
+        ).contract,
+      ).toBe('exact');
+      const schema =
+        entry.request.method === 'POST' ? codedAddAnswerSchema : codedAddSourceAnswerSchema;
+      expect(schema.safeParse({ status: entry.status, body: entry.body }).success).toBe(true);
+      const runId = own(entry.request.body, 'run_id');
+      expect(
+        runAddAnswer(entry, {
+          blueprint: typeof runId === 'string' ? runId : 'new_run',
+          preset: 'coin',
+        }),
+      ).toBe(
+        entry.request.method === 'POST' && entry.status === 200
+          ? 'confirmed'
+          : own(entry.body, 'code') !== undefined
+            ? 'refused'
+            : 'unconfirmed',
+      );
+    },
+  );
   it.each(['', ' ', 'two', 'NaN', 'Infinity', '1.5'])(
     'RL4 an explicitly entered invalid tier %j stays invalid instead of selecting a default',
     (raw) => {
@@ -108,6 +142,12 @@ describe('RL4 recipe rules', () => {
       entry.status === 200
         ? 'confirmed'
         : [
+              'current_revision_with_the_same_bad_recipe_is_refused_by_the_recipe',
+              'scan_draft_refused_with_the_guards',
+              'starter_profile_refused_with_the_guards',
+              'the_resend_without_the_revision_is_refused_by_the_run_identifier',
+              'unknown_profile_with_the_guards',
+              'write_failed_nothing_saved',
               'composed_for_alpha_is_refused_after_the_switch',
               'context_when_config_yaml_is_missing_is_refused_and_creates_nothing',
               'expected_context_missing_the_serial',
@@ -135,19 +175,44 @@ describe('RL4 recipe rules', () => {
       runAddRecorded(fenced('read_before_the_first_add').body, {
         blueprint: 'lost_run',
         preset: 'coin',
+        baseRevision: String(own(fenced('read_before_the_first_add').body, 'revision')),
       }),
     ).toBe(false);
     expect(
       runAddRecorded(fenced('read_settles_the_lost_answer_the_run_is_there_once').body, {
         blueprint: 'lost_run',
         preset: 'coin',
+        baseRevision: String(own(fenced('read_before_the_first_add').body, 'revision')),
       }),
     ).toBe(true);
     expect(
       runAddRecorded(fenced('read_settles_the_lost_answer_the_run_is_there_once').body, {
         blueprint: 'lost_run',
         preset: 'shard',
+        baseRevision: String(own(fenced('read_before_the_first_add').body, 'revision')),
       }),
     ).toBe(false);
   });
 });
+
+// Fault injection retains the recorded positive profile and varies only revision evidence.
+it.each(['missing', 'blank', 'unchanged', 'changed'])(
+  'RL4 F6-11-P3-02 %s revision controls read settlement',
+  (revisionCase) => {
+    const before = dashboardPagesCase('run_templates_add_coded.read_before_any_add');
+    const after = dashboardPagesCase(
+      'run_templates_add_coded.read_after_an_error_that_followed_the_write_holds_the_run',
+    );
+    const body = Object.fromEntries(entries(after.body));
+    if (revisionCase === 'missing') delete body['revision'];
+    if (revisionCase === 'blank') body['revision'] = '';
+    if (revisionCase === 'unchanged') body['revision'] = own(before.body, 'revision');
+    expect(
+      runAddRecorded(body, {
+        blueprint: 'half_run',
+        preset: 'coin',
+        baseRevision: String(own(before.body, 'revision')),
+      }),
+    ).toBe(revisionCase === 'changed');
+  },
+);

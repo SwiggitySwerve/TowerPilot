@@ -15,7 +15,7 @@ import { dashboardCase, dashboardPagesCase as recorded } from '../../support/das
 import { createFakeTransport, createMemoryStorage } from '../../support/fakeTransport.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import { renderRegion } from '../dashboard/harness.tsx';
-const fixture = (name: string) => recorded(`profile_target.${name}`);
+const fixture = (name: string) => recorded(name.includes('.') ? name : `profile_target.${name}`);
 const runtime = must(contextFromConfig(fixture('inactive_editor_context_before_save').body));
 const files = profileFilesView(fixture('same_account_inactive_target_listed').body);
 const target = (generation = 1) => editingTarget(runtime, { name: 'second', generation }, files);
@@ -230,20 +230,106 @@ it('PE3 a valid second target remains editable with no active profile', async ()
   expect(selectSchedule(s.schedule.getSnapshot()).noProfile).toBe(false);
   expect(selectSchedule(s.schedule.getSnapshot()).canSave).toBe(true);
 });
-it('PE3 Remove sends one fenced delete of second and never names active mine', async () => {
+it('PE3 F6-14c whole-plan delete uses the recording and reads second removed with mine untouched', async () => {
   const s = await setup();
-  s.fake.route('POST', '/api/profile-patch', () => 'hold');
+  s.source('profile_target_more.read_before_the_inactive_plan_is_removed');
+  await change(s.schedule.refresh);
+  s.save('profile_target_more.inactive_plan_deleted');
   await change(() => s.schedule.removePlan(must(s.entry().baseRevision)));
-  // No recorded inactive whole-plan delete exists. Compare the existing recorded delete
-  // operation with D4's inactive envelope; hold the response rather than inventing an answer.
-  expect(JSON.parse(must(must(s.fake.writes()[0]).body))).toEqual({
-    name: 'second',
-    path: ['plan'],
-    op: 'delete',
-    expected_revision: own(fixture('same_account_inactive_target_source').body, 'revision'),
-    expected_context: runtime,
+  expect(JSON.parse(must(must(s.fake.writes()[0]).body))).toEqual(
+    fixture('profile_target_more.inactive_plan_deleted').request.body,
+  );
+  expect(selectSchedule(s.schedule.getSnapshot()).outcome).toBe('removed');
+  s.source('profile_target_more.read_after_the_inactive_plan_was_removed');
+  await change(s.schedule.refresh);
+  expect(selectSchedule(s.schedule.getSnapshot()).planMissing).toBe(true);
+  s.fake.route('GET', '/api/profile-src/mine', () =>
+    fixture('profile_target_more.read_the_active_profile_after_the_inactive_plan_was_removed'),
+  );
+  await change(() => {
+    s.schedule.setTarget(runtime, 1);
   });
+  expect(s.entry().source).toEqual(
+    fixture('profile_target_more.read_the_active_profile_after_the_inactive_plan_was_removed').body,
+  );
   expect(s.fake.writes()).toHaveLength(1);
+});
+
+it.each([
+  [
+    'inactive_plan_delete_stale_revision_409',
+    'read_before_the_inactive_plan_is_removed',
+    'read_after_the_stale_delete_the_plan_remains',
+  ],
+  [
+    'inactive_plan_delete_refused_after_account_switch',
+    'read_after_the_stale_delete_the_plan_remains',
+    'read_after_the_stale_delete_the_plan_remains',
+  ],
+])(
+  'PE3 F6-14c %s keeps the plan and refusal through a fresh read',
+  async (answer, before, after) => {
+    const s = await setup();
+    s.source(`profile_target_more.${before}`);
+    await change(s.schedule.refresh);
+    s.save(`profile_target_more.${answer}`);
+    await change(() => s.schedule.removePlan(must(s.entry().baseRevision)));
+    expect(JSON.parse(must(s.fake.writes()[0]?.body))).toEqual(
+      fixture(`profile_target_more.${answer}`).request.body,
+    );
+    expect(s.entry().intent?.phase).toBe('refused');
+    s.source(`profile_target_more.${after}`);
+    await change(s.schedule.refresh);
+    expect(s.entry().intent?.phase).toBe('refused');
+    expect(selectSchedule(s.schedule.getSnapshot()).hasDraftPlan).toBe(true);
+  },
+);
+
+it('PE3 F6-14c absent plan offers no delete and partial week or days deletes are never offered', async () => {
+  const s = await setup();
+  s.source('profile_target_more.read_after_the_inactive_plan_was_removed');
+  await change(s.schedule.refresh);
+  await change(() => s.schedule.removePlan(must(s.entry().baseRevision)));
+  renderRegion(initialDashboardState(), <SchedulePage schedule={s.schedule} />);
+  expect(screen.queryByRole('button', { name: /Remove.*plan/i })).toBeNull();
+  expect(s.fake.writes()).toEqual([]);
+  const absent = fixture(
+    'profile_target_more.inactive_plan_delete_when_the_section_is_already_gone',
+  );
+  expect(own(absent.body, 'revision')).toBe(own(absent.request.body, 'expected_revision'));
+  expect(
+    fixture('profile_target_more.inactive_plan_week_deleted_is_refused_a_plan_with_no_blocks')
+      .status,
+  ).toBe(400);
+});
+
+it('PE3 F6-14c C-01 stale plan deletion stays refused after matching absence and reload', async () => {
+  const storage = createMemoryStorage();
+  const s = await setup(storage);
+  s.source('profile_target_more.read_before_the_inactive_plan_is_removed');
+  await change(s.schedule.refresh);
+  s.save('profile_target_more.inactive_plan_delete_stale_revision_409');
+  const draft = s.entry().draft;
+  await change(() => s.schedule.removePlan(must(s.entry().baseRevision)));
+  expect(JSON.parse(must(s.fake.writes()[0]?.body))).toEqual(
+    fixture('profile_target_more.inactive_plan_delete_stale_revision_409').request.body,
+  );
+  // Later source models another client independently removing the plan at the recorded
+  // advanced revision: absence must not reclassify the answered stale refusal.
+  const matching = fixture('profile_target_more.read_after_the_inactive_plan_was_removed');
+  const check = async (current: Awaited<ReturnType<typeof setup>>) => {
+    current.fake.route('GET', '/api/profile-src/second', () => matching);
+    await change(current.schedule.refresh);
+    expect(current.entry().intent).toMatchObject({ phase: 'refused', readSettlement: null });
+    expect(selectSchedule(current.schedule.getSnapshot()).outcome).toBe('removeRefused');
+    expect(current.entry().draft).toEqual(draft);
+  };
+  await check(s);
+  expect(s.fake.writes()).toHaveLength(1);
+  s.schedule.dispose();
+  const restored = await setup(storage);
+  await check(restored);
+  expect(restored.fake.writes()).toEqual([]);
 });
 it('PE3 a late second answer updates second only, preserving active mine draft', async () => {
   const s = await setup();
@@ -304,6 +390,22 @@ function must<T>(value: T | null | undefined): T {
   if (value === null || value === undefined) throw new Error('Required fixture value');
   return value;
 }
+
+it.each([
+  'inactive_target_source_that_cannot_be_parsed_400',
+  'inactive_target_source_that_is_not_a_mapping_400',
+])('PE3 F6-14c %s shows the server error and blocks writes', async (name) => {
+  const s = await setup();
+  const failed = fixture(`profile_target_more.${name}`);
+  s.fake.route('GET', '/api/profile-src/second', () => failed);
+  await change(s.schedule.refresh);
+  renderRegion(initialDashboardState(), <SchedulePage schedule={s.schedule} />);
+  expect(
+    screen.getByText(String(own(failed.body, 'error')), { normalizer: (value) => value }),
+  ).toBeVisible();
+  expect(selectSchedule(s.schedule.getSnapshot()).canSave).toBe(false);
+  expect(s.fake.writes()).toEqual([]);
+});
 
 it('PE3 a successful save after activating second supersedes its older inactive refusal', async () => {
   const s = await setup();

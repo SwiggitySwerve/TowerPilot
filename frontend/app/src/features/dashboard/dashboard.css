@@ -1,6 +1,6 @@
 /* The Dashboard's layout (spec 2.1 to 2.3). Building blocks are styled in src/ui/ui.css. */
 
-/* The content column, capped at 1100 px so a later emulator aside never reflows it (C-5). */
+/* F6-13: the main column can wrap beside the 300 px preview at desktop widths. */
 .tp-dashboard {
   display: flex;
   flex-direction: column;

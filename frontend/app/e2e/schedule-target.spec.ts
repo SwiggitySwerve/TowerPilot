@@ -4,11 +4,62 @@ import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { bodiesTo, posts } from './helpers.ts';
 import { dashboardPagesCase as recorded } from '../tests/support/dashboardFixture.ts';
+import { moreWorld, openMore, moreCase, invalidSourceTests } from './profile-target-more.ts';
+
+invalidSourceTests('schedule', proof);
 const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT =
   process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('playwright-report/f6-schedule-target-screens');
 mkdirSync(OUT, { recursive: true });
 const fixture = (name: string) => recorded(`profile_target.${name}`);
+
+for (const width of [1360, 1054, 390]) {
+  test(`PE3 F6-14c recorded whole-plan delete, absent plan and active profile at ${width}`, async ({
+    page,
+  }) => {
+    const world = await moreWorld(page, moreCase('read_before_the_inactive_plan_is_removed'));
+    world.answer(moreCase('inactive_plan_deleted'));
+    await openMore(page, width, '#schedule', 'profile_target_schedule_saved');
+    const remove = page.getByRole('button', { name: 'Remove the day plan', exact: true });
+    await expect(remove).toBeVisible();
+    await remove.focus();
+    await page.keyboard.press('Enter');
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Remove day plan', exact: true })
+      .click();
+    await expect(page.getByRole('button', { name: 'Start a day plan', exact: true })).toBeVisible();
+    expect(world.sent).toEqual([moreCase('inactive_plan_deleted').request.body]);
+    await page.getByRole('button', { name: 'Read saved plan and status', exact: true }).click();
+    await expect(remove).toHaveCount(0);
+    await expect(page.locator('.tp-schedule__observed')).toContainText('mine');
+    await proof(page, 'f6-14c-deleted', width);
+  });
+
+  for (const name of [
+    'inactive_plan_delete_stale_revision_409',
+    'inactive_plan_delete_refused_after_account_switch',
+  ]) {
+    test(`PE3 F6-14c ${name} retains refusal and plan at ${width}`, async ({ page }) => {
+      const before = name.includes('stale')
+        ? 'read_before_the_inactive_plan_is_removed'
+        : 'read_after_the_stale_delete_the_plan_remains';
+      const world = await moreWorld(page, moreCase(before));
+      world.answer(moreCase(name));
+      await openMore(page, width, '#schedule', 'profile_target_schedule_saved');
+      await page.getByRole('button', { name: 'Remove the day plan', exact: true }).click();
+      await page
+        .getByRole('dialog')
+        .getByRole('button', { name: 'Remove day plan', exact: true })
+        .click();
+      await expect(page.locator('main')).toContainText(
+        String((moreCase(name).body as Record<string, unknown>)['error']),
+      );
+      expect(world.sent).toEqual([moreCase(name).request.body]);
+      await proof(page, `f6-14c-${name}`, width);
+    });
+  }
+}
 const count = (page: Page) =>
   page.getByRole('textbox', { name: 'Runs/day (blank = unlimited)' }).first();
 const save = (page: Page) => page.getByRole('button', { name: 'Save schedule', exact: true });

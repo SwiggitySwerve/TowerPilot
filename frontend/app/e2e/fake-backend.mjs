@@ -22,12 +22,12 @@ import {
   loadJsonWithIdentity,
 } from '../scripts/contract-fixture.mjs';
 import { DEFAULT_GETS, SCENARIOS } from './scenarios.mjs';
-import { emulatorConfigRead } from './emulators-config-fixtures.mjs';
-import { equipmentConfigRead } from './equipment-config-fixtures.mjs';
+import { servePreview } from './preview-fixtures.mjs';
+import { createPreviewFixtureState } from './preview-replay.mjs';
 import { RUNTIME_SAVES, runtimeSaveRefusal } from './runtime-fixtures.mjs';
-import { runtimeConfigRead } from './runtime-config-fixtures.mjs';
 import { historyAnswer } from './history-fixtures.mjs';
 import { shoppingLibrarySource } from './shopping-library-fixtures.mjs';
+import { profilePatchFencedRead } from './profile-patch-fenced-fixtures.mjs';
 import {
   ABILITIES_FIXTURE_PATH,
   abilitiesRead,
@@ -64,7 +64,7 @@ const CONTENT_TYPES = /** @type {Record<string, string>} */ ({
  * @typedef {import('./scenarios.mjs').WriteChoice} WriteChoice
  * @typedef {{ status: number, body: Record<string, unknown> }} FixtureCase
  * @typedef {{ method: string, path: string, body: string, time: number }} RecordedPost
- * @typedef {{ posts: RecordedPost[], diagnostics: RecordedPost[], harvest?: string, history?: string, schedule?: import('./schedule-fixtures.mjs').ScheduleSession, equipment?: import('./equipment-fixtures.mjs').EquipmentSession, abilities?: import('./abilities-fixtures.mjs').AbilitiesSession, reads?: Record<string, string> }} Session
+ * @typedef {{ posts: RecordedPost[], diagnostics: RecordedPost[], harvest?: string, history?: string, preview?: import('./preview-replay.mjs').PreviewFixtureState, schedule?: import('./schedule-fixtures.mjs').ScheduleSession, equipment?: import('./equipment-fixtures.mjs').EquipmentSession, abilities?: import('./abilities-fixtures.mjs').AbilitiesSession, reads?: Record<string, string> }} Session
  * @typedef {{
  *   scenario?: string,
  *   scenarios?: Readonly<Record<string, Scenario>>,
@@ -522,8 +522,6 @@ export function createApiHandler(fixture, options = {}) {
   };
   /** A reference names a Dashboard case, then a pages case, then a harvest one. @param {string} reference */
   const answerFor = (reference) =>
-    equipmentConfigRead(reference) ??
-    runtimeConfigRead(reference) ??
     runsTargetSource(reference) ??
     fixtureCase(
       lookup(dashboard, reference) !== undefined
@@ -574,6 +572,12 @@ export function createApiHandler(fixture, options = {}) {
         res.setHeader('Location', '/ui/app/');
         res.setHeader('Cache-Control', 'no-store');
         res.end();
+      } else if (url.pathname === '/__fake/preview') {
+        sendJson(res, 200, {
+          bindings: [...(session.preview?.streams.values() ?? [])],
+          activeCount: session.preview?.active.size ?? 0,
+          maxActive: session.preview?.maxActive ?? 0,
+        });
       } else if (url.pathname === '/__fake/set') {
         // A warm change of state (spec 9.1 X3, X10): the next reads answer from the named
         // scenario, in the same session, with no navigation and no reset of recorded writes.
@@ -716,6 +720,10 @@ export function createApiHandler(fixture, options = {}) {
       });
       return;
     }
+    if (url.pathname.startsWith('/api/stream')) {
+      session.preview ??= createPreviewFixtureState();
+      if (servePreview(req, res, url, pages, scenario.preview ?? {}, session.preview)) return;
+    }
     const scheduleReference =
       abilitiesRead(url, session.abilities) ??
       equipmentRead(url, session.equipment) ??
@@ -817,14 +825,9 @@ export function createApiHandler(fixture, options = {}) {
       });
       return;
     }
-    const emulatorSettings = emulatorConfigRead(reference);
-    const equipmentConfig = equipmentConfigRead(reference);
-    if (equipmentConfig !== null) {
-      sendCase(res, equipmentConfig);
-      return;
-    }
-    if (emulatorSettings !== null) {
-      sendCase(res, emulatorSettings);
+    const fencedSource = profilePatchFencedRead(reference);
+    if (fencedSource !== undefined) {
+      sendCase(res, fencedSource);
       return;
     }
     const librarySource = shoppingLibrarySource(reference);

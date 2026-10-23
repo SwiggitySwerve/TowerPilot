@@ -334,6 +334,7 @@ function liveProgress(state: DashboardState, record: IntentView): LiveChangeProg
     { id: battleId, generation, operationId },
     record.answer?.body,
     opaqueToken(record.key),
+    record.meta.resetPaths,
   );
 }
 

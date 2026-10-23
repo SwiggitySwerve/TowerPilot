@@ -10,6 +10,8 @@ import {
   settingsModule,
   settingsSaveAnswer,
   settingsView,
+  settingsDraftRevision,
+  SETTINGS_BASE_REVISION,
   type FieldReason,
   type SettingsContext,
   type SettingsDraft,
@@ -17,6 +19,7 @@ import {
   type SettingsFieldType,
   type SettingsView,
 } from '../../core/settingsFields.ts';
+import { own } from '../../core/read.ts';
 import { profilePatchAnswer } from '../../core/profilePatch.ts';
 import type { StateWord } from '../../core/vocabulary.ts';
 import { fromServer, type ServerText } from '../../copy/server.ts';
@@ -80,6 +83,8 @@ export interface SettingsFieldVM {
    * its own option, so the control shows the raw value instead of silently another one.
    */
   readonly unlisted: ServerText<'name'> | null;
+  /** Keep an empty unlisted value selected instead of the browser's first option. */
+  readonly unlistedEmpty: boolean;
   readonly invalid: { readonly reason: FieldReason; readonly part: 0 | 1 | null } | null;
   /** The saved value differs from what the draft would send. */
   readonly changed: boolean;
@@ -89,7 +94,14 @@ export interface SettingsFieldVM {
 export type ReadOnlyReason = 'starter' | 'draft' | 'no_profile' | 'server';
 
 export type SaveOutcomeCode =
-  'sending' | 'saved' | 'refused' | 'unknown' | 'applied' | 'not_applied' | 'conflict_applied';
+  | 'sending'
+  | 'saved'
+  | 'refused'
+  | 'context_changed'
+  | 'unknown'
+  | 'applied'
+  | 'not_applied'
+  | 'conflict_applied';
 
 /** The newest save of one target: what it proved, the server's reason, and Dismiss. */
 export interface SaveOutcomeVM {
@@ -97,6 +109,7 @@ export interface SaveOutcomeVM {
   readonly code: SaveOutcomeCode;
   readonly word: StateWord | null;
   readonly error: ServerText<'message'> | null;
+  readonly currentContext: ServerText<'detail'> | null;
   readonly problems: readonly ServerText<'message'>[];
   readonly answeredAgeSec: number | null;
   readonly restored: boolean;
@@ -114,6 +127,7 @@ export interface SettingsModuleVM {
   readonly readOnly: ReadOnlyReason | null;
   readonly fields: readonly SettingsFieldVM[];
   readonly dirty: boolean;
+  readonly reconcile: { readonly key: string; readonly revision: string } | null;
   readonly save: CommandVM<SettingsSaveCommand>;
   readonly outcome: SaveOutcomeVM | null;
 }
@@ -132,12 +146,11 @@ export function settingsFieldVM(field: SettingsField, draft: SettingsDraft): Set
   const checked = checkField(field, draft);
   const edited = parts.some((part) => part.edited);
   const shown = parts[0]?.raw;
-  const unlisted =
+  const missingOption =
     field.type === 'enum' &&
     typeof shown === 'string' &&
-    !field.options.some((option) => option.value === shown)
-      ? fromServer('name', shown === '' ? null : shown)
-      : null;
+    !field.options.some((option) => option.value === shown);
+  const unlisted = missingOption && shown !== '' ? fromServer('name', shown) : null;
   const problem =
     checked.kind === 'invalid'
       ? { reason: checked.reason, part: checked.part }
@@ -178,6 +191,7 @@ export function settingsFieldVM(field: SettingsField, draft: SettingsDraft): Set
     })),
     parts,
     unlisted,
+    unlistedEmpty: missingOption && shown === '',
     invalid: problem,
     changed: checked.kind === 'valid',
   };
@@ -210,6 +224,20 @@ export function settingsMatchContext(view: SettingsView | null, context: Context
     named.account === context.account &&
     named.profile === context.profile
   );
+}
+
+/** Only the latest successful read in this epoch may authorize editing or saving. */
+export function currentSettingsView(state: DashboardState): SettingsView | null {
+  const read = state.reads.settings.latest;
+  if (
+    read === null ||
+    read.epoch !== state.epoch ||
+    read.outcome.kind !== 'answered' ||
+    read.outcome.status !== 200
+  )
+    return null;
+  const view = settingsView(read.outcome.body);
+  return view?.revision !== null && settingsMatchContext(view, state.context) ? view : null;
 }
 
 /**
@@ -284,7 +312,9 @@ export function saveOutcome(state: DashboardState, target: string): SaveOutcomeV
             : answer?.kind === 'saved' || answer?.kind === 'done'
               ? 'saved'
               : answer?.kind === 'refused'
-                ? 'refused'
+                ? answer.code === 'context_changed'
+                  ? 'context_changed'
+                  : 'refused'
                 : 'unknown';
   const refusal = answer?.kind === 'refused' ? answer : null;
   const accepted = code === 'unknown' && record.accepted === true;
@@ -311,10 +341,14 @@ export function saveOutcome(state: DashboardState, target: string): SaveOutcomeV
         ? 'waiting'
         : code === 'unknown'
           ? 'unknown'
-          : code === 'refused'
+          : code === 'refused' || code === 'context_changed'
             ? 'blocked'
             : null,
     error: fromServer('message', refusal?.error),
+    currentContext:
+      code === 'context_changed'
+        ? fromServer('detail', JSON.stringify(own(record.answer?.body, 'current_context'), null, 2))
+        : null,
     problems: (answer?.kind === 'refused' && record.kind === 'profile_patch'
       ? profilePatchProblems(record.answer)
       : []
@@ -368,6 +402,7 @@ export function settingsModuleVM(
       readOnly: null,
       fields: [],
       dirty: false,
+      reconcile: null,
       save: commandVM<SettingsSaveCommand>(true, false, 'other_context', options.pending, null),
       outcome: context === null ? null : saveOutcome(state, settingsTarget(context, moduleId)),
     };
@@ -379,30 +414,38 @@ export function settingsModuleVM(
   const invalid = Object.keys(review.invalid).length > 0;
   const revision = view?.revision ?? null;
   const settingsContext = view?.context ?? null;
+  const dirty = Object.keys(draft).some((key) => key !== SETTINGS_BASE_REVISION);
+  const baseRevision = settingsDraftRevision(draft);
+  const current = currentSettingsView(state);
+  const readable = current !== null && current.revision === revision;
+  const pending = options.pending || settingsSavePending(state, ['settings']);
+  const revisionChanged = dirty && (baseRevision === null || baseRevision !== revision);
   const reason = !found.editable
     ? 'read_only'
-    : context === null || settingsContext === null || revision === null
+    : context === null || settingsContext === null || revision === null || !readable
       ? 'context_unknown'
-      : invalid
-        ? 'invalid_value'
-        : changedPaths.length === 0
-          ? 'no_changes'
-          : options.pending
-            ? 'save_pending'
-            : null;
+      : pending
+        ? 'save_pending'
+        : revisionChanged
+          ? 'revision_changed'
+          : invalid
+            ? 'invalid_value'
+            : changedPaths.length === 0
+              ? 'no_changes'
+              : null;
   const sent = new Set(
     found.fields
       .filter((field) => review.values[field.path] !== undefined)
       .flatMap((field) => fieldParts(field, draft)),
   );
   const command: SettingsSaveCommand | null =
-    reason === null && context !== null && settingsContext !== null && revision !== null
+    reason === null && context !== null && settingsContext !== null && baseRevision !== null
       ? {
           epoch: state.epoch,
           context,
           settingsContext,
           module: moduleId,
-          revision,
+          revision: baseRevision,
           values: review.values,
           draft: {
             scope: scope ?? '',
@@ -418,7 +461,11 @@ export function settingsModuleVM(
     applyNotice: fromServer('message', found.applyNotice),
     readOnly: found.editable ? null : readOnlyReason(view?.context ?? null),
     fields,
-    dirty: Object.keys(draft).length > 0,
+    dirty,
+    reconcile:
+      readable && revisionChanged && !pending && revision !== null
+        ? { key: SETTINGS_BASE_REVISION, revision }
+        : null,
     save:
       command === null
         ? commandVM<SettingsSaveCommand>(true, false, reason, options.pending, null)

@@ -1,10 +1,12 @@
 // @ts-check
 /** Fixture choices only; HTTP routing and per-browser state belong to fake-backend.mjs. */
 import { loadFixture } from '../scripts/contract-fixture.mjs';
+import { PREVIEW_SCENARIOS } from './preview-fixtures.mjs';
 import { RUNTIME_SAVES } from './runtime-fixtures.mjs';
 import { EMULATOR_CONFIG_SCENARIOS } from './emulators-config-fixtures.mjs';
 import { RUNTIME_CONFIG_SCENARIOS } from './runtime-config-fixtures.mjs';
 import { EQUIPMENT_CONFIG_SCENARIOS } from './equipment-config-fixtures.mjs';
+import { PROFILE_PATCH_FENCED_SCENARIOS } from './profile-patch-fenced-fixtures.mjs';
 
 /**
  * GET keys are endpoint ids, pathnames, or full paths (including the query).
@@ -17,6 +19,7 @@ import { EQUIPMENT_CONFIG_SCENARIOS } from './equipment-config-fixtures.mjs';
  * @typedef {{ mode?: WriteMode, case?: string, after?: string, reads?: Readonly<Record<string, string>> }} WriteChoice
  * @typedef {{
  *   description: string,
+ *   preview?: import('./preview-fixtures.mjs').PreviewScenario,
  *   harvest: string,
  *   get?: Readonly<Record<string, string>>,
  *   scan?: 'fresh' | 'fixture',
@@ -161,7 +164,9 @@ const e0Samples = Object.fromEntries(
 
 /** @type {Readonly<Record<string, Scenario>>} */
 export const SCENARIOS = Object.freeze({
+  ...PREVIEW_SCENARIOS,
   ...EQUIPMENT_CONFIG_SCENARIOS,
+  ...PROFILE_PATCH_FENCED_SCENARIOS,
   ...EMULATOR_CONFIG_SCENARIOS,
   ...RUNTIME_CONFIG_SCENARIOS,
   profile_target_collection_label: {

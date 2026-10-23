@@ -1,6 +1,7 @@
+import { contextFromConfig } from '../src/api/context.ts';
 import { readFileSync } from 'node:fs';
 import { expect, type BrowserContext, type Route } from '@playwright/test';
-import { finite, own, ownPath } from '../src/core/read.ts';
+import { entries, finite, own, ownPath } from '../src/core/read.ts';
 
 const samples: unknown = JSON.parse(
   readFileSync(new URL('./schedule-race-samples.json', import.meta.url), 'utf8'),
@@ -36,6 +37,15 @@ export async function scheduleRace(context: BrowserContext, first: 'schedule' | 
   await context.route('**/api/config', (route) => reply(route, sample('config')));
   await context.route('**/api/profile-src/mine', (route) => reply(route, current('profile')));
   await context.route('**/api/run-controls?*', (route) => reply(route, current('run')));
+  const expectedBody = (value: ReturnType<typeof sample>) => {
+    const body = own(value.request, 'body');
+    if (own(value.request, 'path') !== '/api/profile-patch') return body;
+    const named = contextFromConfig(sample('config').body);
+    if (named === null) throw new Error('Missing recorded race context');
+    // Modified recorded request: preserve the race's exact value/revision and add the
+    // F6-14b runtime fence. Run-controls requests keep their separate recorded contract.
+    return { ...Object.fromEntries(entries(body)), expected_context: named };
+  };
   const write = async (route: Route) => {
     const body: unknown = route.request().postDataJSON();
     const path = new URL(route.request().url()).pathname;
@@ -43,14 +53,14 @@ export async function scheduleRace(context: BrowserContext, first: 'schedule' | 
     if (own(body, 'expected_revision') !== revision) {
       const refused = sample('second_stale');
       expect(path).toBe(own(refused.request, 'path'));
-      expect(body).toEqual(own(refused.request, 'body'));
+      expect(body).toEqual(expectedBody(refused));
       writes.push({ path, body, status: refused.status });
       await reply(route, refused);
       return;
     }
     const saved = sample(stage === 0 ? 'first_saved' : 'second_saved_after_read');
     expect(path).toBe(own(saved.request, 'path'));
-    expect(body).toEqual(own(saved.request, 'body'));
+    expect(body).toEqual(expectedBody(saved));
     writes.push({ path, body, status: saved.status });
     stage += 1;
     if (stage === 1) {

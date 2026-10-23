@@ -2,7 +2,7 @@
 // Input name: dashboard_contract_pages_v1.json
 // Input families: shopping_queue DFA633334EF1042900C28E75AE78FBC95D539D22488E1C57D29A037514DB4E65
 // Input SHA-256 of these families: 84476b5eef9ba07ed6cc61d7a45bf81a2406e2c0f01c32b3462eef05d1e1ab18
-// Vocabularies also from: dashboard_contract_v1.json 0a5c68fd55f86b3104c48c6b46a9a5b19225be852599fa72e57bc5e85c72620e
+// Vocabularies also from: dashboard_contract_v1.json e9fb6c94f093c067fd09c70c5a1d1314b000d4533d964ca7377b057269141608
 import { z } from 'zod';
 export const fixtureVersionSchema = z.literal(1);
 export type FixtureVersion = z.infer<typeof fixtureVersionSchema>;

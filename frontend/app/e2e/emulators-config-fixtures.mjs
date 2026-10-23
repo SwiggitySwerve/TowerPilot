@@ -18,53 +18,53 @@ export function emulatorConfigCase(name) {
   return structuredClone(found);
 }
 
-/** A synthetic world's pre-save GET was not recorded. Restore the recorded POST's
- * revision and the recorded metadata's default values; keep its
- * server metadata and options exactly. This is the only baseline modification. */
+/** The genuine predecessor of settings_modules.saved_instance_defaults. */
 export function emulatorConfigBefore() {
-  const saved = emulatorConfigCase('settings_modules.saved_instance_defaults');
-  const body = saved.body;
-  const modules =
-    /** @type {{id: string, fields: {path: string, value: unknown, default: unknown}[]}[]} */ (
-      body['modules']
-    );
-  for (const module of modules) {
-    if (module.id !== 'instance-defaults') continue;
-    for (const field of module.fields) field.value = field.default;
-  }
-  body['revision'] = saved.request.body?.['revision'];
-  return { status: 200, body };
-}
-
-/** @param {string | undefined} reference */
-export function emulatorConfigRead(reference) {
-  if (reference === 'config_fields_emulators_before') return emulatorConfigBefore();
-  if (reference === 'config_fields_emulators_unlisted') {
-    const answer = emulatorConfigBefore();
-    const modules = /** @type {{id: string, fields: {path: string, value: unknown}[]}[]} */ (
-      answer.body['modules']
-    );
-    const field = modules
-      .find((module) => module.id === 'instance-defaults')
-      ?.fields.find((field) => field.path === 'preset');
-    // Modified recorded saved choice: reuse the invalid recording's unsupported value
-    // to exercise retained historical values; no such saved-invalid read was recorded.
-    const invalid = emulatorConfigCase('settings_modules.invalid_enum_instance_defaults');
-    const values = /** @type {Record<string, unknown>} */ (invalid.request.body?.['values']);
-    if (field !== undefined) field.value = values['preset'];
-    return answer;
-  }
-  return null;
+  return emulatorConfigCase('settings_modules_more.read_before_saved_instance_defaults');
 }
 
 const base = {
   config: 'settings_switch_records.read_config_after_switching_back_every_record_as_it_was',
-  settings: 'config_fields_emulators_before',
+  settings: 'settings_modules_more.read_before_saved_instance_defaults',
   wizardEmulators: 'wizard_emulators.instances_with_names_and_ports',
 };
 
 /** @type {Readonly<Record<string, import('./scenarios.mjs').Scenario>>} */
 export const EMULATOR_CONFIG_SCENARIOS = {
+  config_fields_emulators_unlisted_fallback: {
+    description: 'C15-2 C-03 explicitly replace the historical preset with machine fallback',
+    harvest: 'off',
+    get: {
+      ...base,
+      settings:
+        'settings_modules_more.read_after_the_partial_instance_save_the_unlisted_preset_remains',
+    },
+    writes: {
+      settingsSave: {
+        case: 'settings_modules_more.instance_defaults_choosing_the_machine_fallback_replaces_the_unlisted_preset',
+        reads: {
+          settings: 'settings_modules_more.read_after_the_unlisted_instance_preset_was_replaced',
+        },
+      },
+    },
+  },
+  config_fields_emulators_no_runnable: {
+    description: 'C15-2 C-03 no runnable presets still offers explicit machine fallback',
+    harvest: 'off',
+    get: {
+      ...base,
+      settings: 'settings_modules_more.read_with_no_runnable_run_defaults_preset_options',
+    },
+    writes: {
+      settingsSave: {
+        case: 'settings_modules_more.instance_defaults_with_no_runnable_preset_still_saves_the_empty_value',
+        reads: {
+          settings:
+            'settings_modules_more.read_after_the_empty_value_was_saved_with_no_runnable_preset',
+        },
+      },
+    },
+  },
   config_fields_emulators_defaults: {
     description: 'C15-1..3 recorded defaults save and readback',
     harvest: 'off',
@@ -87,7 +87,33 @@ export const EMULATOR_CONFIG_SCENARIOS = {
   config_fields_emulators_invalid: {
     description: 'C15-2 historical unsupported preset stays visible with its reason',
     harvest: 'off',
-    get: { ...base, settings: 'config_fields_emulators_unlisted' },
+    get: {
+      ...base,
+      settings: 'settings_modules_more.read_with_an_unlisted_saved_instance_defaults_preset',
+    },
+    writes: {
+      settingsSave: {
+        case: 'settings_modules_more.instance_defaults_saved_without_the_preset_field_keeps_the_unlisted_preset',
+        reads: {
+          settings:
+            'settings_modules_more.read_after_the_partial_instance_save_the_unlisted_preset_remains',
+        },
+      },
+    },
+  },
+  config_fields_emulators_fallback_off: {
+    description: 'C15-2/3 C-03 explicit machine fallback and next tray start off',
+    harvest: 'off',
+    get: { ...base, settings: 'settings_modules.read_after_saved_instance_defaults' },
+    writes: {
+      settingsSave: {
+        case: 'settings_modules_more.saved_instance_defaults_with_fallback_and_autostart_off',
+        reads: {
+          settings:
+            'settings_modules_more.read_after_saved_instance_defaults_with_fallback_and_autostart_off',
+        },
+      },
+    },
   },
   config_fields_emulators_refused: {
     description: 'C15-1 recorded validation refusal keeps input',

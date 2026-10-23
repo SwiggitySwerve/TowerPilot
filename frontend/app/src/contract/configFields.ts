@@ -19,3 +19,9 @@ export {
   switchSettingsReadAnswerSchema,
   switchSettingsSaveAnswerSchema,
 } from './generated/dashboard_contract_pages_v1_config_fields.9cfb7fc4.ts';
+/** r12e (c945da8): settings_modules_more, the F6-15 C-03 recordings. */
+export {
+  configFieldsMoreConfigAnswerSchema,
+  configFieldsMoreSettingsReadAnswerSchema,
+  configFieldsMoreSettingsSaveAnswerSchema,
+} from './generated/dashboard_contract_pages_v1_config_fields_more.cb6e0a1b.ts';

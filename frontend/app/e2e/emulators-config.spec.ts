@@ -71,7 +71,65 @@ async function accessible(page: Page, width: number) {
   expect(small).toEqual([]);
 }
 for (const width of WIDTHS) {
-  test(`C15-4 read-again recovers failed config readback without resend at ${String(width)}`, async ({
+  test(`C15-1 C15-2 C15-3 C-03 an untouched unlisted preset is omitted while label and tray-start save at ${String(width)}`, async ({
+    page,
+  }) => {
+    await open(page, 'invalid', width);
+    const partial = emulatorConfigCase(
+      'settings_modules_more.instance_defaults_saved_without_the_preset_field_keeps_the_unlisted_preset',
+    );
+    await expect(defaults(page).getByRole('combobox')).toHaveValue('ghost');
+    await defaults(page).getByRole('textbox').fill('Tower');
+    await defaults(page).getByRole('checkbox').check();
+    await defaults(page).getByRole('button', { name: 'Save', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    await expect(defaults(page).locator('[data-outcome="saved"]')).toBeVisible();
+    expect(await bodiesTo(page, '/api/settings')).toEqual([partial.request.body]);
+    await page.getByRole('button', { name: 'Read saved settings again' }).click();
+    await expect(defaults(page).getByRole('combobox')).toHaveValue('ghost');
+    await expect(defaults(page).getByRole('textbox')).toHaveValue('Tower');
+    await expect(defaults(page).getByRole('checkbox')).toBeChecked();
+    expect(await bodiesTo(page, '/api/settings')).toHaveLength(1);
+    await accessible(page, width);
+    await shot(page, width, 'unlisted-partial-saved');
+  });
+  for (const scenario of ['fallback_off', 'unlisted_fallback']) {
+    test(`C15-2 C15-3 C-03 ${scenario} saves only explicit fallback and tray-start choices at ${String(width)}`, async ({
+      page,
+    }) => {
+      await open(page, scenario, width);
+      const recorded = emulatorConfigCase(
+        scenario === 'fallback_off'
+          ? 'settings_modules_more.saved_instance_defaults_with_fallback_and_autostart_off'
+          : 'settings_modules_more.instance_defaults_choosing_the_machine_fallback_replaces_the_unlisted_preset',
+      );
+      await defaults(page).getByRole('combobox').selectOption('');
+      if (scenario === 'fallback_off') await defaults(page).getByRole('checkbox').uncheck();
+      await defaults(page).getByRole('button', { name: 'Save', exact: true }).click();
+      await expect(defaults(page).locator('[data-outcome="saved"]')).toBeVisible();
+      expect(await bodiesTo(page, '/api/settings')).toEqual([recorded.request.body]);
+      await page.getByRole('button', { name: 'Read saved settings again' }).click();
+      await expect(defaults(page).getByRole('combobox')).toHaveValue('');
+      await expect(defaults(page).getByRole('checkbox')).toBeChecked({
+        checked: scenario !== 'fallback_off',
+      });
+      expect(await bodiesTo(page, '/api/settings')).toHaveLength(1);
+      await accessible(page, width);
+      await shot(page, width, `${scenario}-saved`);
+    });
+  }
+  test(`C15-2 C-03 no runnable presets retain the saved empty fallback without a write at ${String(width)}`, async ({
+    page,
+  }) => {
+    await open(page, 'no_runnable', width);
+    await expect(defaults(page).getByRole('combobox')).toHaveValue('');
+    await expect(defaults(page).getByRole('combobox').getByRole('option')).toHaveCount(1);
+    await expect(defaults(page).getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
+    expect(await posts(page)).toEqual([]);
+    await accessible(page, width);
+    await shot(page, width, 'no-runnable-kept');
+  });
+  test(`C15-4 C-03 read-again recovers failed config readback without resend at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, 'switch', width);
@@ -119,7 +177,7 @@ for (const width of WIDTHS) {
     await accessible(page, width);
     await shot(page, width, 'switch-config-recovered');
   });
-  test(`C15-4 lost answer settles only from config without resend at ${String(width)}`, async ({
+  test(`C15-4 C-03 lost answer settles only from config without resend at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, 'switch_lost', width);
@@ -135,7 +193,7 @@ for (const width of WIDTHS) {
     await accessible(page, width);
     await shot(page, width, 'switch-lost-readback');
   });
-  test(`C15-4 settings receipt and settings read alone leave the original context at ${String(width)}`, async ({
+  test(`C15-4 C-03 settings receipt and settings read alone leave the original context at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, 'receipt_unverified', width);
@@ -151,7 +209,7 @@ for (const width of WIDTHS) {
     await accessible(page, width);
     await shot(page, width, 'switch-receipt-unverified');
   });
-  test(`C15-1 C15-2 C15-3 defaults save and readback, keyboard, axe and targets at ${String(width)}`, async ({
+  test(`C15-1 C15-2 C15-3 C-03 defaults save and readback, keyboard, axe and targets at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, 'defaults', width);
@@ -173,7 +231,7 @@ for (const width of WIDTHS) {
     await accessible(page, width);
     await shot(page, width, 'defaults-saved');
   });
-  test(`C15-1 C15-2 invalid kept and stale refused at ${String(width)}`, async ({ page }) => {
+  test(`C15-1 C15-2 C-03 invalid kept and stale refused at ${String(width)}`, async ({ page }) => {
     await open(page, 'invalid', width);
     await expect(defaults(page).getByRole('combobox')).toHaveValue('ghost');
     await expect(defaults(page).locator('[aria-invalid="true"]')).toBeVisible();
@@ -204,7 +262,7 @@ for (const width of WIDTHS) {
     expect(await bodiesTo(page, '/api/settings')).toHaveLength(1);
     await shot(page, width, 'stale-refused');
   });
-  test(`C15-4 switch cancel, focus restore, confirm once and verified context at ${String(width)}`, async ({
+  test(`C15-4 C-03 switch cancel, focus restore, confirm once and verified context at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, 'switch', width);
@@ -237,7 +295,7 @@ for (const width of WIDTHS) {
     await accessible(page, width);
     await shot(page, width, 'switch-applied');
   });
-  test(`C15-4 unchanged config keeps Unknown and explicit acceptance separate at ${String(width)}`, async ({
+  test(`C15-4 C-03 unchanged config keeps Unknown and explicit acceptance separate at ${String(width)}`, async ({
     page,
   }) => {
     await open(page, 'switch_unchanged', width);

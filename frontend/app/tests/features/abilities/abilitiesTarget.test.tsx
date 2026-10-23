@@ -39,7 +39,7 @@ async function change(fn: () => void | Promise<void>) {
     await fn();
   });
 }
-async function setup() {
+async function setup(storage = createMemoryStorage()) {
   const fake = createFakeTransport();
   let config = pt('inactive_editor_context_before_save');
   // Modified recorded case: expose the saved profile/revision preceding the UW save
@@ -63,9 +63,7 @@ async function setup() {
   fake.route('GET', '/api/vocab', () => fixture('profile_reads.vocab_ok'));
   fake.route('GET', '/api/settings', () => fixture('settings.populated_account_every_module'));
   fake.route('POST', '/api/profile-patch', () => answer);
-  const store = createAbilitiesStore(
-    createAbilitiesApi(fake.transport, createMemoryStorage(), 100),
-  );
+  const store = createAbilitiesStore(createAbilitiesApi(fake.transport, storage, 100));
   cleanups.push(store.dispose);
   const context = contextFromConfig(config.body);
   if (context === null) throw new Error('Recorded context missing');
@@ -85,6 +83,7 @@ async function setup() {
     store,
     context,
     target,
+    storage,
     source: (value: DashboardCase) => {
       source = value;
     },
@@ -295,33 +294,149 @@ it('PE5 Unknown settles only from a later source read naming the sent target and
   expect(s.fake.writes()).toHaveLength(1);
 });
 
-it('PE5 inactive delete uses the active recorded delete shape plus the recorded inactive fence', async () => {
+it('PE5 F6-14c unused UW and rescue delete exact fenced recordings and read back absent', async () => {
   const s = await setup();
-  const saved = pt('inactive_uw_policy_saved');
-  // Modified source envelope: the policy exists after the recorded create.
-  s.source({
-    ...pt('same_account_inactive_target_source'),
-    body: { ...record(pt('same_account_inactive_target_source').body), ...record(saved.body) },
-  });
+  s.source(fixture('profile_target_more.read_before_the_inactive_policies_are_deleted'));
   await change(s.store.refresh);
-  s.answer('hold');
+  for (const [key, name] of [
+    ['uw_policies/calm', 'inactive_unused_uw_policy_deleted'],
+    ['rescue_policies/extra', 'inactive_unused_rescue_policy_deleted'],
+  ]) {
+    const answer = fixture(`profile_target_more.${name}`);
+    s.answer(answer);
+    await change(() => {
+      s.store.select(key ?? '');
+      s.store.save(true);
+    });
+    await waitFor(() => {
+      expect(currentAbility(s.store.getSnapshot())?.outcome).toBe('saved');
+    });
+    expect(JSON.parse(s.fake.writes().at(-1)?.body ?? '')).toEqual(answer.request.body);
+    // Read the exact patch result through the existing source envelope before the next edit.
+    const envelope = fixture('profile_target_more.read_before_the_inactive_policies_are_deleted');
+    s.source({ ...envelope, body: { ...record(envelope.body), ...record(answer.body) } });
+    await change(s.store.refresh);
+  }
+  s.source(fixture('profile_target_more.read_after_the_unused_policies_were_deleted'));
+  await change(s.store.refresh);
+  expect(
+    ownPath(
+      currentAbilities(s.store.getSnapshot())?.source,
+      'profile',
+      'policies',
+      'uw_policies',
+      'calm',
+    ),
+  ).toBeUndefined();
+  expect(
+    ownPath(
+      currentAbilities(s.store.getSnapshot())?.source,
+      'profile',
+      'policies',
+      'rescue_policies',
+      'extra',
+    ),
+  ).toBeUndefined();
+});
+
+it.each([
+  'inactive_target_source_that_cannot_be_parsed_400',
+  'inactive_target_source_that_is_not_a_mapping_400',
+])('PE5 F6-14c %s shows the server error and blocks writes', async (name) => {
+  const s = await setup();
+  const failed = fixture(`profile_target_more.${name}`);
+  s.source(failed);
+  await change(s.store.refresh);
+  renderRegion(initialDashboardState(), <AbilitiesPage abilities={s.store} />);
+  expect(
+    screen.getByText(String(own(failed.body, 'error')), { normalizer: (value) => value }),
+  ).toBeVisible();
+  expect(canSaveAbility(s.store.getSnapshot(), Date.now())).toBe(false);
+  expect(s.fake.writes()).toEqual([]);
+});
+
+it('PE5 F6-14c rescue rule order saves the recorded whole policy; subpath documents the same server rule', async () => {
+  const s = await setup();
+  s.source(fixture('profile_target_more.read_after_the_unused_policies_were_deleted'));
+  await change(s.store.refresh);
+  const saved = fixture(
+    'profile_target_more.inactive_rescue_policy_saved_with_its_rules_in_another_order',
+  );
+  s.answer(saved);
   await change(() => {
-    s.store.select('uw_policies/calm');
-    s.store.save(true);
+    s.store.select('rescue_policies/wall_drain');
+    s.store.rule('up', 2);
+    s.store.rule('up', 1);
+    s.store.save();
   });
   await waitFor(() => {
-    expect(s.fake.writes()).toHaveLength(1);
+    expect(currentAbility(s.store.getSnapshot())?.outcome).toBe('saved');
   });
-  // Exact inactive UW/rescue deletes are not recorded. Keep the active delete's
-  // omission of value, rebased to the target source and the recorded inactive fence.
-  const active = fixture('ability_policies.unused_uw_policy_deleted').request.body;
-  expect(JSON.parse(s.fake.writes()[0]?.body ?? '')).toEqual({
-    ...record(active),
-    name: 'second',
-    expected_revision: own(saved.body, 'revision'),
-    expected_context: own(saved.request.body, 'expected_context'),
-  });
+  expect(JSON.parse(s.fake.writes()[0]?.body ?? '')).toEqual(saved.request.body);
+  for (const name of [
+    'read_after_the_inactive_rescue_rules_were_reordered_as_a_whole_policy',
+    'read_after_the_inactive_rescue_rules_were_reordered_by_the_subpath',
+  ]) {
+    s.source(fixture(`profile_target_more.${name}`));
+    await change(s.store.refresh);
+    expect(currentAbilities(s.store.getSnapshot())?.source).toEqual(
+      fixture(`profile_target_more.${name}`).body,
+    );
+  }
+  expect(
+    ownPath(
+      fixture('profile_target_more.inactive_rescue_rules_reordered_by_the_rules_subpath').body,
+      'profile',
+    ),
+  ).toEqual(
+    own(
+      fixture(
+        'profile_target_more.read_after_the_inactive_rescue_rules_were_reordered_by_the_subpath',
+      ).body,
+      'profile',
+    ),
+  );
 });
+
+it.each(['uw', 'rescue'])(
+  'PE5 F6-14c %s in-use delete refuses the exact inactive request and retains the policy',
+  async (family) => {
+    const s = await setup();
+    const before = fixture('profile_target_more.read_before_the_inactive_policies_are_deleted');
+    // Modified recording: hide consumers to model one added after this read; the unchanged
+    // inactive server refusal is authoritative and the request still matches it exactly.
+    const profile = record(own(before.body, 'profile'));
+    if (profile !== undefined) Object.assign(profile, { blueprints: {} });
+    s.source(before);
+    await change(s.store.refresh);
+    const answer = fixture(
+      `profile_target_more.inactive_${family}_policy_deleted_while_a_run_uses_it_is_refused`,
+    );
+    s.answer(answer);
+    await change(() => {
+      s.store.select(family === 'uw' ? 'uw_policies/farm_cl' : 'rescue_policies/wall_drain');
+      s.store.save(true);
+    });
+    await waitFor(() => {
+      expect(currentAbility(s.store.getSnapshot())?.outcome).toBe('refused');
+    });
+    expect(JSON.parse(s.fake.writes()[0]?.body ?? '')).toEqual(answer.request.body);
+    renderRegion(initialDashboardState(), <AbilitiesPage abilities={s.store} />);
+    expect(screen.getByRole('link', { name: String(own(answer.body, 'error')) })).toBeVisible();
+    s.source(
+      fixture('profile_target_more.read_after_the_in_use_deletes_were_refused_nothing_changed'),
+    );
+    await change(s.store.refresh);
+    expect(currentAbility(s.store.getSnapshot())?.outcome).toBe('refused');
+    s.store.dispose();
+    const restored = await setup(s.storage);
+    expect(own(currentAbility(restored.store.getSnapshot())?.detail, 'error')).toBe(
+      own(answer.body, 'error'),
+    );
+    expect(currentAbility(restored.store.getSnapshot())?.outcome).toBe('refused');
+    expect(restored.fake.writes()).toEqual([]);
+  },
+);
 
 it('PE5 refreshing during an inactive delete check preserves the pending request and blocks another save', async () => {
   const s = await setup();

@@ -17,7 +17,7 @@ import type { DashboardState } from '../types.ts';
 import { commandVM } from '../viewModels.ts';
 import { runControlsPath } from './gemSlot.ts';
 import { savedScope, selectRunsPage } from './runs.ts';
-import { selectQueueEditor } from './shoppingQueue.ts';
+import { queueRefusal, selectQueueEditor } from './shoppingQueue.ts';
 
 const SCOPE_SUFFIX = ':shopping_plan';
 /** A saved run's queue draft scope (its run's saved scope with this suffix). */
@@ -118,6 +118,7 @@ export function selectShoppingSaved(state: DashboardState) {
   return {
     scope,
     draft,
+    refusal: queueRefusal(state, scope, saved.outcome),
     base,
     editor,
     available,

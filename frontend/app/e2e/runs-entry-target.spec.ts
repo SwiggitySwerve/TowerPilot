@@ -5,6 +5,17 @@ import { expect, test, type Page } from '@playwright/test';
 import { bodiesTo, posts } from './helpers.ts';
 import { own, ownPath } from '../src/core/read.ts';
 import { dashboardPagesCase, type DashboardCase } from '../tests/support/dashboardFixture.ts';
+import {
+  moreWorld,
+  openMore,
+  moreCase,
+  moreNames,
+  moreSourceBefore,
+  moreEntry,
+  invalidSourceTests,
+} from './profile-target-more.ts';
+
+invalidSourceTests('runs', proof);
 
 const AXE = createRequire(import.meta.url).resolve('axe-core/axe.min.js');
 const OUT =
@@ -12,6 +23,99 @@ const OUT =
   path.resolve('../../backend/logs/reviews/frontend-f6-screens');
 mkdirSync(OUT, { recursive: true });
 const sample = (name: string) => dashboardPagesCase(`profile_target.${name}`);
+
+for (const width of [1360, 1054, 390])
+  for (const name of [
+    'inactive_run_entry_stale_revision_409',
+    'inactive_run_entry_refused_after_account_switch',
+    'inactive_perk_bans_thirty_one_entries_is_refused',
+  ]) {
+    test(`PE6 F6-14c ${name} keeps draft and refusal through reload at ${width}`, async ({
+      page,
+    }) => {
+      const answer = moreCase(name),
+        body = record(answer.request.body),
+        path = body['path'] as string[];
+      const world = await moreWorld(page, moreSourceBefore(answer));
+      world.answer(answer);
+      await openMore(page, width, `#runs/saved/${path[1]}`, 'profile_target_runs_saved');
+      const row = moreEntry(page, path.slice(2).join('.'));
+      const value = body['value'],
+        raw = Array.isArray(value)
+          ? value.join('\n')
+          : typeof value === 'number' || typeof value === 'string'
+            ? String(value)
+            : '';
+      await row.getByRole('textbox').fill(raw);
+      await row.getByRole('button', { name: 'Save field', exact: true }).click();
+      await expect(
+        row
+          .locator('[data-server-text="message"]')
+          .filter({ hasText: String(own(answer.body, 'error')) })
+          .first(),
+      ).toBeVisible();
+      expect(world.sent).toEqual([answer.request.body]);
+      await page.reload();
+      await expect(row.getByRole('textbox')).toHaveValue(raw);
+      await expect(
+        row
+          .locator('[data-server-text="message"]')
+          .filter({ hasText: String(own(answer.body, 'error')) })
+          .first(),
+      ).toBeVisible();
+      expect(world.sent).toHaveLength(1);
+      await proof(page, `f6-14c-${name}-reload`, width);
+    });
+  }
+
+for (const width of [1360, 1054, 390])
+  for (const name of moreNames.filter((name) => name.startsWith('inactive_saved_'))) {
+    test(`PE6 F6-14c ${name} exact request and readback at ${width}`, async ({ page }) => {
+      test.setTimeout(30_000);
+      const entry = moreCase(name),
+        body = record(entry.request.body);
+      const path = body['path'] as string[],
+        value = body['value'];
+      const world = await moreWorld(page, moreSourceBefore(entry));
+      world.answer(entry);
+      await openMore(page, width, `#runs/saved/${path[1]}`, 'profile_target_runs_saved');
+      const row = moreEntry(page, path.slice(2).join('.'));
+      await expect(row).toBeVisible();
+      if (body['op'] === 'delete' && path.at(-1) === 'perk_bans')
+        await row.getByRole('checkbox').check();
+      else if (await row.getByRole('combobox').count())
+        await row.getByRole('combobox').selectOption(body['op'] === 'delete' ? '' : String(value));
+      else if (typeof value === 'boolean') await row.getByRole('checkbox').setChecked(value);
+      else
+        await row
+          .getByRole('textbox')
+          .fill(
+            Array.isArray(value)
+              ? value.join('\n')
+              : value === null
+                ? ''
+                : typeof value === 'number' || typeof value === 'string'
+                  ? String(value)
+                  : '',
+          );
+      await row.getByRole('button', { name: 'Save field', exact: true }).click();
+      await expect(row.locator('[data-outcome="saved"]')).toBeVisible();
+      expect(world.sent).toEqual([entry.request.body]);
+      const count = world.reads();
+      await editor(page).getByRole('button', { name: 'Read entry settings', exact: true }).click();
+      await expect.poll(world.reads).toBeGreaterThan(count);
+      if (
+        [
+          'inactive_saved_tier',
+          'inactive_saved_shard_count_zero',
+          'inactive_saved_tournament_gem_cap_zero_never_pays',
+          'inactive_saved_uw_policy_deleted_means_no_uw_plan',
+          'inactive_saved_perk_bans_deleted_leaves_the_games_bans_alone',
+        ].includes(name)
+      )
+        await proof(page, `f6-14c-${name}`, width);
+    });
+  }
 const editor = (page: Page) => page.locator('[data-run-entry]');
 const field = (page: Page, key: string) => editor(page).locator(`[data-entry-field="${key}"]`);
 

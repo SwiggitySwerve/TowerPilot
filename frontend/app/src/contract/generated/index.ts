@@ -2,40 +2,52 @@
 import * as contract0 from './abilities_samples_v1.b46631ae.ts';
 import * as contract1 from './dashboard_contract_pages_v1_abilities.f47a0b03.ts';
 import * as contract2 from './dashboard_contract_pages_v1_collection.4550bec1.ts';
-import * as contract3 from './dashboard_contract_pages_v1_config_fields.9cfb7fc4.ts';
-import * as contract4 from './dashboard_contract_pages_v1_emulators.47341742.ts';
-import * as contract5 from './dashboard_contract_pages_v1_equipment.543d7f37.ts';
-import * as contract6 from './dashboard_contract_pages_v1_profile_target.ed69748c.ts';
-import * as contract7 from './dashboard_contract_pages_v1_profiles.ca56f910.ts';
-import * as contract8 from './dashboard_contract_pages_v1_r12.cc719e93.ts';
-import * as contract9 from './dashboard_contract_pages_v1_recognition_advanced.39d80e69.ts';
-import * as contract10 from './dashboard_contract_pages_v1_recognition.e0cc5344.ts';
-import * as contract11 from './dashboard_contract_pages_v1_runs.bb9316c7.ts';
-import * as contract12 from './dashboard_contract_pages_v1_runtime.7334dcc8.ts';
-import * as contract13 from './dashboard_contract_pages_v1_schedule.0709b095.ts';
-import * as contract14 from './dashboard_contract_pages_v1_shopping.84476b5e.ts';
-import * as contract15 from './dashboard_contract_v1.0a5c68fd.ts';
-import * as contract16 from './equipment_samples_v1.bdd7ca73.ts';
-import * as contract17 from './harvest_status_v1.3be5a1ea.ts';
+import * as contract3 from './dashboard_contract_pages_v1_config_fields_more.cb6e0a1b.ts';
+import * as contract4 from './dashboard_contract_pages_v1_config_fields.9cfb7fc4.ts';
+import * as contract5 from './dashboard_contract_pages_v1_emulators.47341742.ts';
+import * as contract6 from './dashboard_contract_pages_v1_equipment.543d7f37.ts';
+import * as contract7 from './dashboard_contract_pages_v1_preview.350841dc.ts';
+import * as contract8 from './dashboard_contract_pages_v1_profile_patch_fenced.c9e303be.ts';
+import * as contract9 from './dashboard_contract_pages_v1_profile_target_more.a5e5fc7c.ts';
+import * as contract10 from './dashboard_contract_pages_v1_profile_target.ed69748c.ts';
+import * as contract11 from './dashboard_contract_pages_v1_profiles.ca56f910.ts';
+import * as contract12 from './dashboard_contract_pages_v1_r12.bc049116.ts';
+import * as contract13 from './dashboard_contract_pages_v1_r12.cc719e93.ts';
+import * as contract14 from './dashboard_contract_pages_v1_recognition_advanced.39d80e69.ts';
+import * as contract15 from './dashboard_contract_pages_v1_recognition.e0cc5344.ts';
+import * as contract16 from './dashboard_contract_pages_v1_runs.bb9316c7.ts';
+import * as contract17 from './dashboard_contract_pages_v1_runtime.61bf648f.ts';
+import * as contract18 from './dashboard_contract_pages_v1_runtime.7334dcc8.ts';
+import * as contract19 from './dashboard_contract_pages_v1_schedule.0709b095.ts';
+import * as contract20 from './dashboard_contract_pages_v1_shopping.84476b5e.ts';
+import * as contract21 from './dashboard_contract_v1.e9fb6c94.ts';
+import * as contract22 from './equipment_samples_v1.bdd7ca73.ts';
+import * as contract23 from './harvest_status_v1.3be5a1ea.ts';
 const contracts = {
   b46631ae6f207d5bd18edab010fc6b09fa967ac0ef925ef9f75c5abebf4e7a01: contract0,
   f47a0b036f3206d02e6e0049d0af35f075b3e99786b00495c30bf1e7f43f59df: contract1,
   '4550bec1123a32d677b1d0f8e14a7b4074c15b66abbbb24c6acc676829a01324': contract2,
-  '9cfb7fc4ac5883bda2d3a62ad2cb41500707eff3b0b8cbf2a102ee7d8decffed': contract3,
-  '473417425024a926b5dcb15c14758a190d9d1997d16d24bea18a1e1f0d434d62': contract4,
-  '543d7f37012ce68c75a8c990d9969d7f74cdfc75f43040543aa773be5e34fba3': contract5,
-  ed69748cc271e873d9018a2860c662c7cab4a6944ea826b1326047c12c63d2f4: contract6,
-  ca56f910fe570574d22a2ed705e2b5246fdd9ba95462ab2d920d8e957bc30eba: contract7,
-  cc719e93344d81a8a8f4080b114eb6b717354997a68b2be5c83b4bbf91b0a8b6: contract8,
-  '39d80e69a206031909d083a8fd115011fdca21a19854408a232c83f7e5e06623': contract9,
-  e0cc5344fbc5786817184e827cb5375a171987833b932b2cc5c1ca7044c4d34b: contract10,
-  bb9316c761b216fdfc9cbdb14b29608ee70fdf13d17975f7afa26d43633f5dd5: contract11,
-  '7334dcc845bbc16f00b595bcc3048ec980764a3837d9ca9346f1832b4fea159e': contract12,
-  '0709b095431a852946a2fc668035a174751cd40fc9e7c9e8aa9563526dec61b2': contract13,
-  '84476b5eef9ba07ed6cc61d7a45bf81a2406e2c0f01c32b3462eef05d1e1ab18': contract14,
-  '0a5c68fd55f86b3104c48c6b46a9a5b19225be852599fa72e57bc5e85c72620e': contract15,
-  bdd7ca73fc29c1818a201eaa1dcbac863d40172733c1096db7e1ef4a39e2b909: contract16,
-  '3be5a1ea5d633f4e11850b10367905c1745114c9aaf2d2619f97fe5e1d3fd516': contract17,
+  cb6e0a1b5773f14bd91dea7624f54ba741dded7956bf9d2ff075d89ecd49f772: contract3,
+  '9cfb7fc4ac5883bda2d3a62ad2cb41500707eff3b0b8cbf2a102ee7d8decffed': contract4,
+  '473417425024a926b5dcb15c14758a190d9d1997d16d24bea18a1e1f0d434d62': contract5,
+  '543d7f37012ce68c75a8c990d9969d7f74cdfc75f43040543aa773be5e34fba3': contract6,
+  '350841dc1e272c2a2dd17991b64570c168e025321cb81d98a12dd242c383cbd7': contract7,
+  c9e303beb0f3678152c1a0870430ac8070a9d0b81346d7df986d48336d92442f: contract8,
+  a5e5fc7c40c44927ee8e4424638295d3b8037a8b3917ceb740881c8f6a745c29: contract9,
+  ed69748cc271e873d9018a2860c662c7cab4a6944ea826b1326047c12c63d2f4: contract10,
+  ca56f910fe570574d22a2ed705e2b5246fdd9ba95462ab2d920d8e957bc30eba: contract11,
+  bc04911674c599f5443f26c6157f81b12258650a267372fd507bf20c48fa95fc: contract12,
+  cc719e93344d81a8a8f4080b114eb6b717354997a68b2be5c83b4bbf91b0a8b6: contract13,
+  '39d80e69a206031909d083a8fd115011fdca21a19854408a232c83f7e5e06623': contract14,
+  e0cc5344fbc5786817184e827cb5375a171987833b932b2cc5c1ca7044c4d34b: contract15,
+  bb9316c761b216fdfc9cbdb14b29608ee70fdf13d17975f7afa26d43633f5dd5: contract16,
+  '61bf648fb333df0126876b3160c5d18dc6b4d5aac7e8983ce01cc552ec32de5c': contract17,
+  '7334dcc845bbc16f00b595bcc3048ec980764a3837d9ca9346f1832b4fea159e': contract18,
+  '0709b095431a852946a2fc668035a174751cd40fc9e7c9e8aa9563526dec61b2': contract19,
+  '84476b5eef9ba07ed6cc61d7a45bf81a2406e2c0f01c32b3462eef05d1e1ab18': contract20,
+  e9fb6c94f093c067fd09c70c5a1d1314b000d4533d964ca7377b057269141608: contract21,
+  bdd7ca73fc29c1818a201eaa1dcbac863d40172733c1096db7e1ef4a39e2b909: contract22,
+  '3be5a1ea5d633f4e11850b10367905c1745114c9aaf2d2619f97fe5e1d3fd516': contract23,
 };
 /** Unknown identities fail loudly; no default-identity fallback. */
 export function contractForFixture(identity: { readonly path: string; readonly sha256: string }) {

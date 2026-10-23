@@ -141,6 +141,7 @@ export function AddRun() {
                 ? t.notAddedAgain.short
                 : t.outcomes[vm.outcome.phase].short}
             </p>
+            {vm.outcome.refusal === null ? null : <p>{t.refusals[vm.outcome.refusal].short}</p>}
             {vm.outcome.error === null ? null : (
               <ServerValue kind="message" value={vm.outcome.error} />
             )}

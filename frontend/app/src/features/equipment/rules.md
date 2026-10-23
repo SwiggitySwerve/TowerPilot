@@ -31,6 +31,9 @@ behavior. The component renders the selector's results and sends explicit user e
   serializer. Each Save starts a fresh read, freezes the original submission, and sends only
   if the read and page still name its original context. The POST always carries exactly
   `instance`, `account`, `profile` and `serial` in `expected_context`.
+  Changing the selected loadout or the original body/revision before sending cancels the
+  reservation. Newer typing during that read stays a draft and does not cancel or replace
+  the click's validated submission. A late success describes the submitted selection.
 - A server `context_changed` refusal is Not saved, shows the reported current context, and
   retains the original target's draft. It requires a read and explicit reconciliation before
   another Save; it never retries a write.

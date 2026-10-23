@@ -247,3 +247,15 @@ export interface IntentDraft {
 export function unresolved(record: IntentRecord): boolean {
   return record.phase === 'sending' || record.phase === 'unconfirmed';
 }
+
+/** This page can still receive an authoritative answer, even after positive readback. */
+export function lateAnswerPossible(
+  record: Pick<IntentRecord, 'phase' | 'answer' | 'lostReason' | 'restored'>,
+): boolean {
+  return (
+    record.answer === null &&
+    !record.restored &&
+    (record.phase === 'sending' ||
+      (record.phase === 'unconfirmed' && record.lostReason === 'window_expired'))
+  );
+}

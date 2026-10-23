@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, type ErrorInfo } from 'react';
 import type { DashboardCommands } from '../../store/commands.ts';
+import type { PreviewStore } from '../../store/preview.ts';
 import type { DashboardStore } from '../../store/dashboardStore.ts';
 import { useStoreSelector, viewEqual } from '../../store/store.ts';
 import type { DashboardState } from '../../store/types.ts';
@@ -10,6 +11,7 @@ import type { DashboardState } from '../../store/types.ts';
  * reporter (S-090, C-20) and the parts a test asks to fail.
  */
 export interface DashboardContextValue {
+  readonly preview?: PreviewStore;
   readonly store: DashboardStore;
   readonly commands: DashboardCommands;
   /** One diagnostic per distinct fault (the reporter dedupes, never retries). */

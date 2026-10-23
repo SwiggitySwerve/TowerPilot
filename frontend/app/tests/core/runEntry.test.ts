@@ -31,7 +31,9 @@ describe('RL3 entry domain', () => {
       expect(keys).toContain('label');
       expect(keys.includes('gem_entry_max')).toBe(run === 'tourney');
       expect(keys.includes('count')).toBe(run === 'shards');
-      expect(keys.includes('dissonant_tab')).toBe(run === 'dissonance');
+      expect(keys.includes('dissonant_tab')).toBe(
+        ['farm', 'farm_deep', 'dissonance'].includes(run),
+      );
       expect(keys.includes('cancel_sprint')).toBe(
         ['farm', 'farm_deep', 'dissonance'].includes(run),
       );

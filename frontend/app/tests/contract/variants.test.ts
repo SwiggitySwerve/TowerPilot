@@ -192,7 +192,7 @@ describe('R7-02 command schemas accept exactly the wire states of each kind', ()
       }))
       .filter(({ commands }) => commands.length > 0),
   );
-  it('finds commands in exactly the command-bearing Dashboard endpoints', () => {
+  it('RL2 SQ5 finds commands in exactly the command-bearing Dashboard endpoints', () => {
     expect(bearing.map(({ family }) => family.key).sort()).toEqual([
       'cases.battle_actions',
       'cases.battle_detail',
@@ -204,9 +204,13 @@ describe('R7-02 command schemas accept exactly the wire states of each kind', ()
       // F6-11 RL2: a reset of every override and the reads that settle it (r12).
       'run_controls_live_reset_all GET /api/battles/active',
       'run_controls_live_reset_all POST /api/operations/',
+      'run_controls_live_reset_all_mixed GET /api/battles/active',
+      'run_controls_live_reset_all_mixed POST /api/operations/',
       // F6-12: shopping queue changes and Try once commands, and the reads around them.
       'shopping_queue GET /api/battles/active',
       'shopping_queue POST /api/operations/',
+      'shopping_queue_bounds GET /api/battles/active',
+      'shopping_queue_bounds POST /api/operations/',
     ]);
   });
   for (const { input, family, commands } of bearing)

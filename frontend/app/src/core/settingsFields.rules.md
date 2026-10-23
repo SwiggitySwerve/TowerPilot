@@ -6,6 +6,10 @@
 [settingsFields.ts](settingsFields.ts) owns metadata parsing, raw draft validation and
 settings-save readback. Pages use its shared selector and SettingsModuleForm.
 
+- Enum options come only from server metadata. Retain unlisted saved or draft values,
+  including the empty string, with a visible reason; never display another option in
+  their place. Unchanged fields are omitted from partial saves. An empty enum value
+  is valid only when it is listed (the explicit instance preset fallback).
 - String lists use one raw text row per entry. Names and order are preserved; unsupported
   saved names remain editable. Empty lists serialize as `[]`. Only non-blank strings and
   the server's `maxItems` limit are checked; names are never trimmed or coerced.

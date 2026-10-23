@@ -12,6 +12,7 @@ import {
 } from '../../core/read.ts';
 import { queuePlan } from '../../core/shoppingPlan.ts';
 import { contextKey, readStoredContext } from '../context.ts';
+import { profilePatchAnswer } from '../../core/profilePatch.ts';
 import { keysWithPrefix, readJsonItem, writeJsonItem, type KeyValueStorage } from '../storage.ts';
 import type { ApiPath } from '../transport.ts';
 import { WRITE_ENDPOINT_IDS, type WriteEndpointId } from '../wire.ts';
@@ -37,6 +38,9 @@ import {
  * after a reload (R9-01). A restored record is never resent: a request that
  * was in flight when the page went away is restored as unconfirmed ("page
  * reloaded"), and only a person's explicit resend may send it again.
+ * Definite context_changed profile-patch refusals also remain, with their server
+ * context, until a new explicit save supersedes them. They restore as refused:
+ * a matching later read cannot change their outcome and no resend is offered.
  *
  * Sequence points belong to one page, so a restored record is placed before
  * every point of the new page (0): every read of the new page is a later read.
@@ -63,6 +67,41 @@ const LOST_REASONS: readonly LostReason[] = [
   'page_reloaded',
 ];
 
+/** Definite runtime refusals survive reload as refusals, with the server's context.
+ * They cannot be settled by a read or resent; only a new explicit save supersedes them. */
+export function retainedProfilePatchRefusal(item: {
+  readonly kind: unknown;
+  readonly phase: unknown;
+  readonly answer: IntentAnswer | null | undefined;
+  readonly supersededBySeq: number | null;
+}): boolean {
+  if (
+    (item.kind !== 'profile_patch' && item.kind !== 'schedule_save') ||
+    item.phase !== 'refused' ||
+    item.supersededBySeq !== null ||
+    item.answer == null ||
+    item.answer.contract !== 'exact'
+  )
+    return false;
+  const outcome = profilePatchAnswer(item.answer);
+  return (
+    outcome.kind === 'refused' &&
+    (outcome.code !== 'context_changed' ||
+      (item.answer.status === 409 &&
+        readStoredContext(own(item.answer.body, 'current_context')) !== null))
+  );
+}
+
+export function retainedContextRefusal(
+  item: Parameters<typeof retainedProfilePatchRefusal>[0],
+): boolean {
+  return (
+    retainedProfilePatchRefusal(item) &&
+    own(item.answer?.body, 'code') === 'context_changed' &&
+    readStoredContext(own(item.answer?.body, 'current_context')) !== null
+  );
+}
+
 function stored(recordValue: IntentRecord): unknown {
   return {
     id: recordValue.id,
@@ -85,7 +124,7 @@ function stored(recordValue: IntentRecord): unknown {
   };
 }
 
-/** Write every unresolved record (dismissed ones too) under its context's key; remove emptied keys. */
+/** Keep unresolved records and definite runtime refusals under their context; remove empty keys. */
 export function saveUnresolved(
   storage: KeyValueStorage | null,
   records: readonly IntentRecord[],
@@ -93,7 +132,7 @@ export function saveUnresolved(
   if (storage === null) return;
   const groups = new Map<string, unknown[]>();
   for (const item of records) {
-    if (!unresolved(item)) continue;
+    if (!unresolved(item) && !retainedProfilePatchRefusal(item)) continue;
     const key = STORAGE_PREFIX + contextKey(item.context);
     const group = groups.get(key) ?? [];
     group.push(stored(item));
@@ -299,6 +338,12 @@ export function readStoredRecord(value: unknown): IntentRecord | null {
   const attemptRefusal = rawRefusal === null ? null : readAnswer(rawRefusal);
   // Absent in records written before the field existed: the person accepted nothing.
   const accepted = own(value, 'accepted') ?? false;
+  const refused = retainedProfilePatchRefusal({
+    kind,
+    phase,
+    answer,
+    supersededBySeq: superseded === false ? null : 0,
+  });
   if (
     recordId === undefined ||
     kind === undefined ||
@@ -312,7 +357,8 @@ export function readStoredRecord(value: unknown): IntentRecord | null {
     typeof sends !== 'number' ||
     !Number.isSafeInteger(sends) ||
     sends < 1 ||
-    (phase !== 'sending' && phase !== 'unconfirmed') ||
+    (phase !== 'sending' && phase !== 'unconfirmed' && !refused) ||
+    (refused && (readSettlement !== null || lost !== null || accepted !== false)) ||
     answer === undefined ||
     lost === undefined ||
     typeof superseded !== 'boolean' ||
@@ -322,6 +368,14 @@ export function readStoredRecord(value: unknown): IntentRecord | null {
     attemptRefusal === undefined ||
     typeof accepted !== 'boolean'
   ) {
+    return null;
+  }
+  // Consumers parse the frozen body to recover their draft. Reject corrupt storage here,
+  // before any editor can observe it; every write body is a JSON object.
+  try {
+    const parsed: unknown = JSON.parse(body);
+    if (record(parsed) === undefined) return null;
+  } catch {
     return null;
   }
   const apiPath: ApiPath = `/api/${path.slice('/api/'.length)}`;
@@ -337,11 +391,11 @@ export function readStoredRecord(value: unknown): IntentRecord | null {
     firstSentSeq: 0,
     sentSeq: 0,
     sends,
-    phase: 'unconfirmed',
+    phase: refused ? 'refused' : 'unconfirmed',
     answer,
     answerSeq: answer === null ? null : 0,
     answeredAtMs,
-    lostReason: phase === 'sending' ? 'page_reloaded' : (lost ?? 'page_reloaded'),
+    lostReason: refused ? null : phase === 'sending' ? 'page_reloaded' : (lost ?? 'page_reloaded'),
     // A settlement a read proved before the reload stays proven (R8-06): no resend is offered.
     readSettlement,
     supersededBySeq: superseded ? 0 : null,

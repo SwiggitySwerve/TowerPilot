@@ -39,6 +39,15 @@ function targetOf(id: RouteId, rest: readonly string[]): RouteTarget | null | un
     const policy = rest.length === 2 && rest[0] === 'policy' ? decoded(rest[1] ?? '') : null;
     return policy === null || policy === '' ? undefined : { kind: 'policy', policy };
   }
+  if (id === 'abilities' && rest.length === 2) {
+    const family = rest[0];
+    const policy = decoded(rest[1] ?? '');
+    return (family === 'uw_policies' || family === 'rescue_policies') &&
+      policy !== null &&
+      policy !== ''
+      ? { kind: 'ability', family, policy }
+      : undefined;
+  }
   if (id !== 'runs') return undefined;
   if (rest.length === 1 && rest[0] === 'live') return { kind: 'live' };
   if (rest.length === 2 && rest[0] === 'saved') {
