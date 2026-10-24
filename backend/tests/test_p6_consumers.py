@@ -16,6 +16,8 @@ re-applies its hunks over the live file and the last definition wins, so a
 scratch-based test grades code this tree does not run (test_p4_interpreter.py
 and test_p5_scheduler.py carry the same warning).
 """
+
+import paths as test_paths
 import sys
 import textwrap
 import types
@@ -23,9 +25,9 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = test_paths.BACKEND
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(test_paths.TESTS))
 
 from _fakes import (_f, _install_fakes, _patch_flows_shard,   # noqa: E402
                     _rs, patch_module)

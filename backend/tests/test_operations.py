@@ -1,4 +1,6 @@
 """Offline operation contract tests: temporary SQLite/artifacts, no devices."""
+
+import paths as test_paths
 import copy
 from concurrent.futures import ThreadPoolExecutor
 import importlib.util
@@ -343,7 +345,7 @@ def test_clean_driver_exit_ignores_old_setup_errors(tmp_path, monkeypatch):
 
 @pytest.fixture
 def dashboard(tmp_path, monkeypatch):
-    path = Path(__file__).resolve().parents[2] / 'frontend' / 'dashboard.py'
+    path = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location('tp_operation_contract', path)
     dash = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(dash)

@@ -1,5 +1,7 @@
 """The calibrator: structural pill detection, the cut policy, the naming, and
 the dashboard wiring - everything but the emulator, which is faked."""
+
+import paths as test_paths
 import importlib.util
 import json
 from pathlib import Path
@@ -15,7 +17,7 @@ def test_rarity_ocr_star_is_plus_only_for_upgradeable_labels():
     assert parse_rarity('Rare *') == 'rare+'
     assert parse_rarity('ANCESTRAL ***') == 'ancestral'
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 REPO = BACKEND.parent
 
 
@@ -37,7 +39,7 @@ def _pill_frame(labels, y=400, x0=20, w=190, h=75, gap=22, active=0):
 
 @pytest.fixture()
 def dash(tmp_path):
-    path = REPO / "frontend" / "dashboard.py"
+    path = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location("tp_dashboard_cal", str(path))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -295,7 +297,7 @@ def test_calibrate_endpoints_guard_taps_and_report_state(dash, tmp_path, monkeyp
 
 
 def test_calibrator_counts_as_a_runner_for_the_process_guards():
-    src = (REPO / "frontend" / "dashboard.py").read_text(encoding="utf-8")
+    src = (test_paths.DASHBOARD).read_text(encoding="utf-8")
     assert "runners.other_runners(" in src
     from runtime.runners import RUNNER_SCRIPTS
     assert "calibrate.py" in RUNNER_SCRIPTS

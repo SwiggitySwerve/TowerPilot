@@ -3,6 +3,8 @@ modules and the lifecycle host, a temporary-ledger environment, and builders for
 collectors, runs and battles. Plain functions; each test module wraps them in
 its own fixtures.
 """
+
+import paths as test_paths
 import json
 import os
 import sqlite3
@@ -565,7 +567,7 @@ def run_worker(root, monkeypatch, call, frame=None):
 
     from device import capture
     from runtime import logger, operation_worker, runners
-    backend = Path(__file__).resolve().parents[1]
+    backend = test_paths.BACKEND
     cmd, env = call
     assert cmd[1:3] == ['-m', 'runtime.operation_worker'] and Path(cmd[3]).name == 'gem_collector.py'
     for key in ('TOWER_OPERATION_ID', 'TOWER_OPERATION_DB'):

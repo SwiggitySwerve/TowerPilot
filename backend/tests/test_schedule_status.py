@@ -1,4 +1,6 @@
 """The dashboard reads scheduler decisions; it never recreates eligibility."""
+
+import paths as test_paths
 import datetime
 import os
 import subprocess
@@ -168,7 +170,7 @@ def test_no_snapshot_or_retired_scheduler_has_explicit_unavailable_state(schedul
 
 
 def test_accessor_imports_without_scheduler_settings_or_device_modules(tmp_path):
-    backend = Path(__file__).resolve().parents[1]
+    backend = test_paths.BACKEND
     script = """
 import sys
 sys.path.insert(0, sys.argv[1])

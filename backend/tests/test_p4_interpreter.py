@@ -24,6 +24,8 @@ What these tests are really asserting, group by group:
      behaviour test, it is the hard rule: three independent locks, each proven
      to refuse on its own, with zero taps and zero calls into the abandon flow.
 """
+
+import paths as test_paths
 import importlib
 import sys
 import types
@@ -31,9 +33,9 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = test_paths.BACKEND
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(test_paths.TESTS))
 
 from _fakes import (_assert_policies_are_hoisted,              # noqa: E402
                     patch_module,

@@ -11,6 +11,8 @@ Three gates now, and each one is tested refusing on its own: the screen must
 classify as a battle, the GAME must be the window on screen (`dumpsys`
 evidence, not pixels), and the arc must be MOVING - the check that catches an
 in-game panel, which no window list can see."""
+
+import paths as test_paths
 import sys
 import types
 from pathlib import Path
@@ -18,7 +20,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = test_paths.BACKEND
 sys.path.insert(0, str(ROOT))
 
 from flows import shard                                        # noqa: E402

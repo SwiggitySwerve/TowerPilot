@@ -1,4 +1,6 @@
 """Image-free setup: coverage, isolation and no-input startup guards."""
+
+import paths as test_paths
 import cv2
 import numpy as np
 from player import accounts, scan_plan
@@ -47,7 +49,7 @@ def test_plan_does_not_mark_advisory_dialogs_as_required(tmp_path):
 def test_dashboard_plan_loads_without_images_and_automatic_scan_is_blocked(tmp_path, monkeypatch):
     import importlib.util
     from pathlib import Path
-    source = Path(__file__).resolve().parents[2] / "frontend/dashboard.py"
+    source = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location("image_free_dashboard", source)
     dash = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(dash)

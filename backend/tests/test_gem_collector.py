@@ -1,4 +1,6 @@
 """A collection-only worker cannot equip or start a farming run."""
+
+import paths as test_paths
 import importlib.util
 from pathlib import Path
 import types
@@ -6,7 +8,7 @@ import pytest
 
 
 def dashboard():
-    path=Path(__file__).resolve().parents[2]/'frontend/dashboard.py'
+    path=test_paths.DASHBOARD
     spec=importlib.util.spec_from_file_location('dashboard_gems_test',path)
     d=importlib.util.module_from_spec(spec);spec.loader.exec_module(d)
     return d

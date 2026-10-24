@@ -1,4 +1,6 @@
 """Raw diagnostic correlation and safe device-boundary outcomes, offline."""
+
+import paths as test_paths
 from concurrent.futures import ThreadPoolExecutor
 import json
 from pathlib import Path
@@ -19,7 +21,7 @@ def records(directory):
 
 def test_diagnostics_import_has_no_device_or_settings_side_effects():
     source = "import sys; from runtime import diagnostics; assert 'settings' not in sys.modules; assert 'cv2' not in sys.modules; assert 'device.capture' not in sys.modules"
-    result = subprocess.run([sys.executable, '-c', source], cwd=Path(__file__).parents[1],
+    result = subprocess.run([sys.executable, '-c', source], cwd=test_paths.BACKEND,
                             text=True, capture_output=True)
     assert result.returncode == 0, result.stderr
 

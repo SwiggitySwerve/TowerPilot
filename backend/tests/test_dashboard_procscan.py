@@ -8,6 +8,8 @@ walk bootstrap/scan preflights use) and folds a launcher's child into the
 launcher's row.
 """
 
+import paths as test_paths
+
 import importlib.util
 import os
 import sys
@@ -16,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 ME, ME_LAUNCHER = 5000, 4000            # the dashboard process and its own launcher
 
 
@@ -47,7 +49,7 @@ class _Proc:
 
 @pytest.fixture(scope="module")
 def dash():
-    spec = importlib.util.spec_from_file_location("tp_dashboard_procscan", BACKEND.parent / "frontend" / "dashboard.py")
+    spec = importlib.util.spec_from_file_location("tp_dashboard_procscan", test_paths.DASHBOARD)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod

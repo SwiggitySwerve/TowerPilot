@@ -9,6 +9,8 @@ own templates say otherwise, and every weapon plan is refused (live,
 2026-09-08: "mode 'fleet_marks' needs Chain Lightning, which the player does
 not own" for an account whose uw/chain_lightning.png was verified).
 """
+
+import paths as test_paths
 import copy
 import glob
 import importlib.util
@@ -21,7 +23,7 @@ import yaml
 
 from player.calibration_report import owned_uws
 
-BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BACKEND = str(test_paths.BACKEND)
 
 
 def test_owned_uws_reports_only_verified_labels_and_never_marks_unowned():
@@ -39,7 +41,7 @@ def test_owned_uws_reports_only_verified_labels_and_never_marks_unowned():
 
 @pytest.fixture(scope="module")
 def dash():
-    path = os.path.join(os.path.dirname(BACKEND), "frontend", "dashboard.py")
+    path = str(test_paths.DASHBOARD)
     spec = importlib.util.spec_from_file_location("tp_dashboard_apply", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -51,7 +53,7 @@ def bound(dash, tmp_path, monkeypatch):
     """A throwaway copy of the golden profile whose player owns NO Chain
     Lightning, and a calibration state whose verified cuts prove it does."""
     name = "zz_uwapply"
-    src = os.path.join(BACKEND, "tests", "fixtures", "golden_profile.yaml")
+    src = str(test_paths.FIXTURES / "golden_profile.yaml")
     (tmp_path / 'profiles').mkdir()
     dst = str(tmp_path / 'profiles' / f'{name}.yaml')
     with open(src, encoding="utf-8") as fh:

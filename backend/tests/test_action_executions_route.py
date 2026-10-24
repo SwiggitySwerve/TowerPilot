@@ -1,5 +1,7 @@
 """`GET /api/actions/executions`: read-only, context-checked, paged (roadmap item 6, A2-6) and the refresher's
 settlement. All on a temporary ledger and a temporary dashboard root."""
+
+import paths as test_paths
 import importlib.util
 from pathlib import Path
 
@@ -15,7 +17,7 @@ from towerpilot_workflows.operations import Operations
 
 @pytest.fixture
 def dash(tmp_path, monkeypatch):
-    source = Path(__file__).resolve().parents[2] / 'frontend' / 'dashboard.py'
+    source = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location('actions_route_dashboard_test', source)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

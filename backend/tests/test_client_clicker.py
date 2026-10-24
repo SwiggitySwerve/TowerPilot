@@ -1,3 +1,5 @@
+
+import paths as test_paths
 import numpy as np
 from player import clicker
 
@@ -74,7 +76,7 @@ def test_preview_never_taps():
 def test_dashboard_rejects_other_account_and_running_worker(monkeypatch):
     import importlib.util
     from pathlib import Path
-    path=Path(__file__).resolve().parents[2]/'frontend'/'dashboard.py'
+    path=test_paths.DASHBOARD
     spec=importlib.util.spec_from_file_location('clicker_dashboard_test',path)
     dash=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(dash)

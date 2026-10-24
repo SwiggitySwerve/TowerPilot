@@ -1,11 +1,13 @@
 """Generic legacy recipes: isolation, validation, compilation and persistence."""
+
+import paths as test_paths
 import copy
 import sys
 from pathlib import Path
 import pytest
 import yaml
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = test_paths.REPO
 sys.path.insert(0, str(ROOT / 'backend'))
 from player import playerprofile as pp, run_templates as rt
 
@@ -60,7 +62,7 @@ def test_duplicate_refused(profile):
     with pytest.raises(ValueError):rt.instantiate(p,'farm','run')
 
 def test_api_validates_before_writing_and_preserves_existing_runs(profile,tmp_path,monkeypatch):
-    sys.path.insert(0,str(ROOT/'frontend'))
+    sys.path.insert(0,str(test_paths.DASHBOARD.parent))
     import dashboard as d
     monkeypatch.setattr(d,'_profiles_dir',lambda:str(tmp_path))
     monkeypatch.setattr(d,'load_config',lambda:pp.CONFIG)

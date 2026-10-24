@@ -7,11 +7,13 @@ abilities, no rescue policies bound), so the byte-for-byte compiler locks
 would no longer describe a farming account. The fixture keeps that account:
 every rescue policy armed, every v29 preset named, the constant-era plan.
 """
+
+import paths as test_paths
 from pathlib import Path
 
 import yaml
 
-FIXTURE = Path(__file__).resolve().parent / "fixtures" / "golden_profile.yaml"
+FIXTURE = test_paths.FIXTURES / "golden_profile.yaml"
 
 
 def load_golden() -> dict:

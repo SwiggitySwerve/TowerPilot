@@ -25,6 +25,8 @@ for the backend generator" and runs-brief.md section 2) to the cases that satisf
 produce is in NOT_PRODUCIBLE with the source that shows why. test_every_row_is_covered_or_explained fails when a row
 names a case that is not in the fixture and when the fixture holds a case no row names.
 """
+
+import paths as test_paths
 import hashlib
 import json
 import os
@@ -72,7 +74,7 @@ from dashboard_contract_cases_settings import run_settings_cases
 from dashboard_contract_cases_runs import run_controls_live_cases, run_controls_save_cases
 from dashboard_contract_pages_world import PagesGenerator
 
-FIXTURE = Path(__file__).parent / 'fixtures' / 'dashboard_contract_pages_v1.json'
+FIXTURE = test_paths.FIXTURES / 'dashboard_contract_pages_v1.json'
 REGENERATE = 'TP_REGENERATE_DASHBOARD_CONTRACT_PAGES'
 OUTPUT = 'TP_DASHBOARD_CONTRACT_PAGES_OUT'
 

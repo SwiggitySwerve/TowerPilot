@@ -7,6 +7,8 @@ port. `adbclient.get_state` asks the server (one host query, no transport);
 /api/template answered a missing per-account template with a 500.
 """
 
+import paths as test_paths
+
 import importlib.util
 import os
 import socket
@@ -16,7 +18,7 @@ import pytest
 
 from device import adbclient
 
-BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BACKEND = str(test_paths.BACKEND)
 
 
 def _fake_server(monkeypatch, reply: bytes):
@@ -95,7 +97,7 @@ def dash(tmp_path, monkeypatch):
     monkeypatch.setattr(adbclient, "_HOST", s.getsockname())
     s.close()
     monkeypatch.setattr(adbclient, "recover", lambda serial, start_server=None, **kw: "offline")
-    path = os.path.join(os.path.dirname(BACKEND), "frontend", "dashboard.py")
+    path = str(test_paths.DASHBOARD)
     spec = importlib.util.spec_from_file_location("tp_dashboard_devstate", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

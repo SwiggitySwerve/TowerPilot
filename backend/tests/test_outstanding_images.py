@@ -8,6 +8,8 @@ the target from the asset library Full setup extracted (user, 2026-09-08:
 "we do not have a good description what this image is used for ... the
 extracted-from-binary-apk image should be shown so we know what to find").
 """
+
+import paths as test_paths
 import importlib.util
 import json
 import os
@@ -16,7 +18,7 @@ import pytest
 
 from player import readiness, template_docs
 
-BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BACKEND = str(test_paths.BACKEND)
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 16
 
 
@@ -48,7 +50,7 @@ def test_readiness_rows_carry_the_cards_and_the_scan_step(tmp_path):
 
 @pytest.fixture(scope="module")
 def dash():
-    path = os.path.join(os.path.dirname(BACKEND), "frontend", "dashboard.py")
+    path = str(test_paths.DASHBOARD)
     spec = importlib.util.spec_from_file_location("tp_dashboard_outstanding", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

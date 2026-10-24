@@ -11,6 +11,8 @@ regenerates it on purpose and the UI side re-reads it:
     python -m pytest backend/tests/test_harvest_contract.py --regenerate-harvest-fixture
 
 Offline: temporary ledgers and leases, fake process and device boundaries."""
+
+import paths as test_paths
 import copy
 import json
 import os
@@ -28,7 +30,7 @@ from harvest_support import (
     make_env, routine, sealed_unresolved,
 )
 
-FIXTURE = Path(__file__).parent / 'fixtures' / 'harvest_status_v1.json'
+FIXTURE = test_paths.FIXTURES / 'harvest_status_v1.json'
 HOST = dict(reconciler='active', last_tick_at=NOW - 1, last_error=None)
 ON_ROUTINES = {'ad_gems': routine(True), 'floating_gems': routine(False)}
 EVIDENCE = dict(generation='g1', started_at=NOW - 300, coverage='sampled_driver_observations',

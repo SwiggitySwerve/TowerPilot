@@ -4,6 +4,8 @@ smuggled through query strings, and path parameters that leave their folder
 are refused. Flask test client only - no server, no device.
 """
 
+import paths as test_paths
+
 import importlib.util
 import os
 import socket
@@ -12,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 16
 CFG = {"active_instance": "main", "adb": {"exe": "C:\\emu\\adb.exe"},
        "instances": {"main": {"serial": "127.0.0.1:16384", "display": None}}}
@@ -28,7 +30,7 @@ def dash(tmp_path, monkeypatch):
     s.bind(("127.0.0.1", 0))
     monkeypatch.setattr(adbclient, "_HOST", s.getsockname())
     s.close()
-    spec = importlib.util.spec_from_file_location("tp_dashboard_security", BACKEND.parent / "frontend" / "dashboard.py")
+    spec = importlib.util.spec_from_file_location("tp_dashboard_security", test_paths.DASHBOARD)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     root = tmp_path / "backend"

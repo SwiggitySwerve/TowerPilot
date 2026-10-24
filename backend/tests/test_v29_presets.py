@@ -11,6 +11,8 @@ The rules under test are the ones that keep a v29 account's builds safe:
   over parked quest loadouts, but staying silent would let a run rewrite
   the farming preset (v29 presets auto-save; nothing restores contents).
 """
+
+import paths as test_paths
 import copy
 import glob
 import importlib.util
@@ -19,7 +21,7 @@ import shutil
 
 import pytest
 
-BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BACKEND = str(test_paths.BACKEND)
 
 
 @pytest.fixture()
@@ -195,7 +197,7 @@ def test_tourney_setup_skips_card_tweaks_under_global_preset(monkeypatch):
 # ------------------------------------------------------ /api/loadout-patch
 @pytest.fixture(scope="module")
 def dash(tmp_path_factory):
-    path = os.path.join(os.path.dirname(BACKEND), "frontend", "dashboard.py")
+    path = str(test_paths.DASHBOARD)
     spec = importlib.util.spec_from_file_location("tp_dashboard_v29", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

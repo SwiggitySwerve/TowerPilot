@@ -1,5 +1,7 @@
 """Suite-wide fixtures."""
 
+import paths as test_paths
+
 import contextlib
 import copy
 from pathlib import Path
@@ -58,7 +60,7 @@ def _operation_ledger_in_tmp_path(tmp_path, monkeypatch):
     control.operations.ledger_path, so one redirection isolates them all."""
     from control import operations
     original = operations.ledger_path
-    checkout_backend = Path(__file__).resolve().parents[1]
+    checkout_backend = test_paths.BACKEND
 
     def isolated(root):
         if Path(root).resolve() == checkout_backend:
@@ -123,7 +125,7 @@ def _dashboard_diagnostics_in_tmp_path(tmp_path, monkeypatch):
     """Request diagnostics must never contaminate a live dashboard event log."""
     from control import diagnostics
     original = diagnostics.log_root
-    checkout = Path(__file__).resolve().parents[1]
+    checkout = test_paths.BACKEND
 
     def isolated(root):
         return tmp_path / 'dashboard-logs' if Path(root).resolve() == checkout else original(root)
@@ -178,7 +180,7 @@ def dash(tmp_path, monkeypatch):
     s.bind(('127.0.0.1', 0))
     monkeypatch.setattr(adbclient, '_HOST', s.getsockname())  # never the real adb server
     s.close()
-    source = Path(__file__).resolve().parents[2] / 'frontend' / 'dashboard.py'
+    source = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location('admission_dashboard_test', source)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

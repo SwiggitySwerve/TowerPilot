@@ -11,6 +11,8 @@ manual host:connect.
 adbclient.get_state / recover are stubbed; no socket reaches an adb server.
 """
 
+import paths as test_paths
+
 import importlib.util
 import os
 import socket
@@ -25,7 +27,7 @@ from device import adbclient
 _REAL_GET_STATE = adbclient.get_state
 _REAL_RECOVER = adbclient.recover
 
-BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BACKEND = str(test_paths.BACKEND)
 SERIAL = "127.0.0.1:16384"
 ADB = "C:\\emu\\adb.exe"
 
@@ -43,7 +45,7 @@ def dash(tmp_path, monkeypatch):
     # any adbclient call a stub below misses meets a dead loopback port,
     # never the real adb server on 5037
     monkeypatch.setattr(adbclient, "_HOST", _dead_port())
-    path = os.path.join(os.path.dirname(BACKEND), "frontend", "dashboard.py")
+    path = str(test_paths.DASHBOARD)
     spec = importlib.util.spec_from_file_location("tp_dashboard_reconnect", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

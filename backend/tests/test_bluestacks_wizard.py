@@ -1,13 +1,15 @@
 """The BlueStacks side of the Setup wizard: preparing bluestacks.conf (ADB
 switch + display) only while the player is closed, with a backup, and the
 instance rows reporting what the conf says."""
+
+import paths as test_paths
 import importlib.util
 import os
 from pathlib import Path
 
 import pytest
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 
 CONF = '''bst.enable_adb_access="0"
 bst.enable_adb_remote_access="0"
@@ -27,7 +29,7 @@ bst.instance.Other.fb_width="1920"
 
 @pytest.fixture()
 def dash(tmp_path):
-    path = BACKEND.parent / "frontend" / "dashboard.py"
+    path = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location("tp_dashboard_bs", str(path))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

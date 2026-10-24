@@ -1,13 +1,17 @@
 """Who may do what, for the rows of item 7 migrated so far (A3a: R-1 to R-7). Supporting evidence for the behavioural tests of each row, not a substitute for them:
 it fails when a legacy producer comes back or a second copy of a due calculation appears. Later batches extend it with their own rows."""
+
+import paths as test_paths
 import ast
 from pathlib import Path
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 
 
 def production_files():
-    return [path for path in BACKEND.rglob('*.py') if not {'tests', 'logs'} & set(path.relative_to(BACKEND).parts)]
+    files = [path for path in BACKEND.rglob('*.py') if not {'tests', 'logs'} & set(path.relative_to(BACKEND).parts)]
+    assert BACKEND / 'orchestrator.py' in files
+    return files
 
 
 def parse(path):

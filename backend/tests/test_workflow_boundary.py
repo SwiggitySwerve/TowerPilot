@@ -1,4 +1,6 @@
 """The installable workflow core must not acquire runtime dependencies."""
+
+import paths as test_paths
 import ast
 import subprocess
 import sys
@@ -6,8 +8,10 @@ from pathlib import Path
 
 
 def test_core_imports_only_stdlib_and_its_own_package():
-    root = Path(__file__).resolve().parents[1] / 'towerpilot_workflows'
+    root = test_paths.BACKEND / 'towerpilot_workflows'
+    scanned = set()
     for path in root.rglob('*.py'):
+        scanned.add(path.name)
         tree = ast.parse(path.read_text(encoding='utf-8'))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
@@ -19,9 +23,11 @@ def test_core_imports_only_stdlib_and_its_own_package():
             assert all(name in sys.stdlib_module_names or name == 'towerpilot_workflows'
                        for name in names), (path.name, node.lineno, names)
 
+    assert '__init__.py' in scanned
+
 
 def test_core_import_has_no_machine_or_device_side_effects(tmp_path):
-    root = Path(__file__).resolve().parents[1]
+    root = test_paths.BACKEND
     code = """
 import sys
 sys.path.insert(0, sys.argv[1])

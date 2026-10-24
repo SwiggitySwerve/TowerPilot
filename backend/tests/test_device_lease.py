@@ -1,4 +1,6 @@
 """Real OS locking tests using only synthetic serials and temporary files."""
+
+import paths as test_paths
 import json
 import os
 from pathlib import Path
@@ -10,7 +12,7 @@ import pytest
 from runtime import device_lease
 
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 SCRIPT = '''
 import json, sys
 from pathlib import Path

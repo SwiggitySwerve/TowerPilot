@@ -5,6 +5,8 @@ it must change is pinned here: nothing that dispatches a control, accepts or fol
 writes a saved setting names an action any more - each asks the catalog's definition and the binding or saved adapter registered for
 it - and a definition added to a copy of the catalog is dispatched, validated and published by the same code.
 """
+
+import paths as test_paths
 import ast
 import copy
 from pathlib import Path
@@ -22,7 +24,7 @@ from towerpilot_workflows.action_contract import (CATALOG, ActionDefinition, Bin
 from towerpilot_workflows.battles import Battles
 from towerpilot_workflows.operations import Operations
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 ACTIONS = {'ad_gems', 'floating_gems', 'shopping', 'shopping_plan'}
 GATES = {'rewards', 'abilities', 'rescue', 'repeat'}
 
@@ -71,6 +73,7 @@ def test_the_actions_themselves_are_named_only_where_their_binding_or_adapter_is
     """The per-action code is the binding and the saved adapter, each registered once; this is the whole list of those places."""
     registered = {'runtime/action_bindings.py': {'ad_gems', 'floating_gems', 'shopping', 'shopping_plan'},
                   'player/saved_controls.py': {'ad_gems', 'floating_gems', 'shopping', 'shopping_plan'}}
+    assert 'runtime/action_bindings.py' in registered
     for path in registered:
         assert constants(ast.parse((BACKEND / path).read_text(encoding='utf-8'))) & ACTIONS, path
     for path, allowed in (('runtime/battle_session.py', {'_collection_evidence', 'manual_shopping'}), ('control/run_workspace.py', set()), ('player/run_controls.py', set())):

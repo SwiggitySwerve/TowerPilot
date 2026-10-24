@@ -13,6 +13,8 @@ a test side effect:
 
     TP_REGENERATE_ACTION_GOLDEN=1 python -m pytest backend/tests/test_action_golden_capture.py
 """
+
+import paths as test_paths
 import contextlib
 import hashlib
 import itertools
@@ -556,9 +558,9 @@ def harvest_spacing_traces(make_h):
     return out
 
 # ----------------------------------------------------------------- the store
-GOLDEN_PATH = Path(__file__).parent / 'fixtures' / 'action_golden_v1.json'
+GOLDEN_PATH = test_paths.FIXTURES / 'action_golden_v1.json'
 REGENERATE = 'TP_REGENERATE_ACTION_GOLDEN'
-REPO = Path(__file__).resolve().parents[2]
+REPO = test_paths.REPO
 # The callers whose behaviour the traces pin. Their hashes at capture time prove the traces predate the migration.
 SOURCES = ('backend/interactions/ad_gems.py', 'backend/flows/shard.py', 'backend/interactions/shopper.py',
            'backend/control/harvest.py', 'backend/orchestrator.py', 'backend/runtime/battle_session.py',

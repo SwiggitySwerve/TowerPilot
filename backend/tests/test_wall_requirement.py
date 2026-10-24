@@ -6,6 +6,8 @@ raises without it. So: the compiler accepts the binding (the starter's
 is configured, Full setup detects the wall bar from the battle HUD (the bar
 renders only for an account that has a wall) and Apply writes the region.
 """
+
+import paths as test_paths
 import copy
 import glob
 import importlib.util
@@ -19,7 +21,7 @@ import yaml
 
 from player import accounts, readiness
 
-BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BACKEND = str(test_paths.BACKEND)
 CYAN = (255, 255, 0)          # BGR: OpenCV hue 90 - inside the bar's teal band
 
 
@@ -106,7 +108,7 @@ def test_hud_wall_detection_is_positive_only():
 
 @pytest.fixture(scope="module")
 def dash():
-    path = os.path.join(os.path.dirname(BACKEND), "frontend", "dashboard.py")
+    path = str(test_paths.DASHBOARD)
     spec = importlib.util.spec_from_file_location("tp_dashboard_wall", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -115,7 +117,7 @@ def dash():
 
 def test_apply_writes_the_wall_region_to_config_and_the_wall_to_the_profile(dash, tmp_path, monkeypatch):
     name = "zz_wallapply"
-    src = os.path.join(BACKEND, "tests", "fixtures", "golden_profile.yaml")
+    src = str(test_paths.FIXTURES / "golden_profile.yaml")
     (tmp_path / 'profiles').mkdir()
     dst = str(tmp_path / 'profiles' / f'{name}.yaml')
     with open(src, encoding="utf-8") as fh:

@@ -1,6 +1,8 @@
 """A fresh checkout must bootstrap itself, and the two human-driven writers
 the release adds (the template cropper, draft promotion) must stay inside
 their folders and never replace a file unasked."""
+
+import paths as test_paths
 import copy
 import importlib.util
 import os
@@ -12,12 +14,12 @@ import cv2
 import pytest
 import yaml
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 
 
 @pytest.fixture()
 def dash(tmp_path):
-    path = BACKEND.parent / "frontend" / "dashboard.py"
+    path = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location("tp_dashboard_rb", str(path))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

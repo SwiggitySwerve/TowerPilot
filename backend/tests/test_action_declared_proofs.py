@@ -4,6 +4,8 @@ the floating-gem windows, Run now that is never offered for what must not be sta
 Everything runs the real Flask routes over a temporary root and ledger with the real `BattleSession`, `ActionSession` and gem collectors as the driver, on a fake clock
 and a fake device (golden.gem_world): no frame, no input, no device, no live ledger.
 """
+
+import paths as test_paths
 import ast
 import os
 from pathlib import Path
@@ -23,7 +25,7 @@ from towerpilot_workflows.action_contract import CATALOG, ActionDefinition, Bind
 from towerpilot_workflows.actions import Actions
 from towerpilot_workflows.operations import Conflict
 
-TESTS = Path(__file__).resolve().parent
+TESTS = test_paths.TESTS
 
 
 def make_driver(dash, world, key='run-1', *, orbit=True, instance='main', host='collector'):
@@ -273,7 +275,7 @@ def test_a_battle_driver_never_offers_a_tournament_a_ticket_a_surrender_or_a_bat
 
 def test_the_bindings_send_no_input_they_import_nothing_that_could():
     forbidden = {'device', 'cv2', 'settings', 'vision', 'interactions', 'flows', 'adbclient', 'capture', 'act', 'subprocess', 'socket', 'orchestrator'}
-    tree = ast.parse((TESTS.parent / 'runtime' / 'action_bindings.py').read_text(encoding='utf-8'))
+    tree = ast.parse((test_paths.BACKEND / 'runtime' / 'action_bindings.py').read_text(encoding='utf-8'))
     imported = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
@@ -355,12 +357,15 @@ DECLARATION = {
 
 def test_the_declaration_of_item_6_names_only_tests_that_exist():
     missing = []
+    scanned = set()
     for declaration, files in DECLARATION.items():
         for name, tests in files.items():
             path = TESTS / name
             assert path.exists(), (declaration, name)
             defined = {node.name for node in ast.walk(ast.parse(path.read_text(encoding='utf-8'))) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))}
+            scanned.add(name)
             missing += [(declaration, name, test) for test in tests if test not in defined]
+    assert 'test_action_ownership.py' in scanned
     assert not missing, missing
 
 

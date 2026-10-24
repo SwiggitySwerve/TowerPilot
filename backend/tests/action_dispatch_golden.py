@@ -13,6 +13,8 @@ the attributes they already had. Regeneration is an explicit developer command, 
 
     TP_REGENERATE_ACTION_DISPATCH_GOLDEN=1 python -m pytest backend/tests/test_action_dispatch_capture.py
 """
+
+import paths as test_paths
 import copy
 import hashlib
 import json
@@ -23,9 +25,9 @@ from unittest import mock
 import action_golden as golden
 from action_golden import clean
 
-GOLDEN_PATH = Path(__file__).parent / 'fixtures' / 'action_dispatch_golden_v1.json'
+GOLDEN_PATH = test_paths.FIXTURES / 'action_dispatch_golden_v1.json'
 REGENERATE = 'TP_REGENERATE_ACTION_DISPATCH_GOLDEN'
-REPO = Path(__file__).resolve().parents[2]
+REPO = test_paths.REPO
 SOURCES = ('backend/runtime/battle_session.py', 'backend/player/run_controls.py', 'backend/control/run_workspace.py',
            'backend/towerpilot_workflows/control_settings.py', 'backend/towerpilot_workflows/action_contract.py',
            'backend/runtime/action_session.py')

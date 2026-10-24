@@ -1,4 +1,6 @@
 """Offline API checks for immutable discovery evidence and verified persistence."""
+
+import paths as test_paths
 import copy
 import importlib.util
 import json
@@ -13,7 +15,7 @@ from harvest_support import fake_inspect
 
 @pytest.fixture(scope='module')
 def dashboard_module():
-    path = Path(__file__).resolve().parents[2] / 'frontend' / 'dashboard.py'
+    path = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location('tp_setup_apply_api', path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

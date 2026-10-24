@@ -1,5 +1,7 @@
 """The host adapter: recording, failure isolation, battle following, settlement and the `runtime.actions` projection
 (roadmap item 6, A2-1 to A2-3)."""
+
+import paths as test_paths
 import ast
 import sqlite3
 from pathlib import Path
@@ -16,7 +18,7 @@ from towerpilot_workflows.actions import Actions, SchemaTooNew, UnusableRow, new
 from towerpilot_workflows.battles import Battles
 from towerpilot_workflows.operations import Operations
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 CONTEXT = dict(device_key='device', account='account', instance='main', serial='fake', profile='mine')
 
 

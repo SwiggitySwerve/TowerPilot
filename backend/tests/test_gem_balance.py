@@ -1,4 +1,6 @@
 """Strict HUD reads, with optional ignored local counter-only replay fixtures."""
+
+import paths as test_paths
 import os
 from pathlib import Path
 
@@ -117,7 +119,7 @@ def local_counter(monkeypatch):
     # Captured game pixels stay ignored and local (CLAUDE.md rule 8). A release
     # runs the synthetic cases above; offline incident replay supplies this dir.
     configured = os.environ.get('TOWERPILOT_R14_FIXTURES')
-    root = Path(configured) if configured else Path(__file__).parent / 'fixtures/r14-gem-balance'
+    root = Path(configured) if configured else test_paths.FIXTURES / 'r14-gem-balance'
     if not configured and not root.exists():
         pytest.skip('local R14 counter crops and digit templates are not shipped')
     assert root.is_dir(), root

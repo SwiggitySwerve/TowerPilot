@@ -1,4 +1,6 @@
 """Account isolation, pre-run refusals and recoverable calibration, offline."""
+
+import paths as test_paths
 import copy
 import importlib.util
 import json
@@ -11,7 +13,7 @@ import yaml
 
 from player import accounts, readiness
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = test_paths.BACKEND
 
 
 def config():
@@ -134,7 +136,7 @@ def test_display_requires_both_native_pixels_and_density():
 
 @pytest.fixture
 def dash(tmp_path, monkeypatch):
-    spec = importlib.util.spec_from_file_location("account_setup_dashboard", ROOT.parent / "frontend/dashboard.py")
+    spec = importlib.util.spec_from_file_location("account_setup_dashboard", test_paths.DASHBOARD)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     monkeypatch.setattr(mod, "ROOT", str(tmp_path))

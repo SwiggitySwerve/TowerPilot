@@ -4,6 +4,8 @@ Personal-looking strings are synthetic and assembled at runtime: these tests
 themselves ship as source and must pass the same generic content-marker gate.
 No test downloads dependencies, starts the app, or touches machine/account state.
 """
+
+import paths as test_paths
 import hashlib
 import importlib
 import json
@@ -18,7 +20,7 @@ from types import ModuleType
 
 import pytest
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = test_paths.REPO
 APP = 'frontend/webui/app/'
 PACKAGES = 'runtime/Lib/site-packages/'
 Artifact = tuple[Path, str, str, dict[str, bytes]]
@@ -311,7 +313,7 @@ def test_gate_source_and_data_pass_their_own_content_rules(checker: ModuleType, 
     for name in ('check_release_zips.py', 'release_archive_policy.py', 'generate_dependency_images.py',
                  'dependency_images.json', 'portable_pins.json', 'release_marker_allowlist.json'):
         artifact[3]['tools/' + name] = (REPO / 'tools' / name).read_bytes()
-    artifact[3]['backend/tests/test_release_archive_gate.py'] = Path(__file__).read_bytes()
+    artifact[3]['backend/tests/test_release_archive_gate.py'] = (test_paths.TESTS / 'test_release_archive_gate.py').read_bytes()
     assert check(checker, artifact) == 0
 
 

@@ -19,6 +19,8 @@ What an extension still adds beyond the contract: a row in the profile schema wh
 here: the profile schema is closed on purpose). Its `enabled` flag needs none: blueprint `automation` is validated against the
 catalog.
 """
+
+import paths as test_paths
 import ast
 import copy
 import hashlib
@@ -41,7 +43,7 @@ from towerpilot_workflows.action_contract import (CATALOG, ActionDefinition, Bin
                                                   StartToStart, use_catalog)
 from towerpilot_workflows.actions import Actions
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = test_paths.REPO
 CONTEXT = dict(device_key='device', account='account', instance='main', serial='fake', profile='mine')
 KEYS = ('synthetic_probe@probe_a', 'synthetic_probe@probe_b')
 DEFINITION = ActionDefinition(
@@ -480,7 +482,7 @@ def test_the_pilot_catalog_is_not_changed_by_registering_the_extension_in_a_copy
     assert [item.id for item in catalog][:len(list(CATALOG))] == [item.id for item in CATALOG]
 
 def test_the_synthetic_action_is_named_in_no_production_file():
-    for path in list((REPO / 'backend').rglob('*.py')) + [REPO / 'frontend' / 'dashboard.py']:
+    for path in list((REPO / 'backend').rglob('*.py')) + [test_paths.DASHBOARD]:
         if 'tests' in path.parts or '.venv' in path.parts or 'logs' in path.parts:
             continue
         assert 'synthetic_probe' not in path.read_text(encoding='utf-8', errors='ignore'), path

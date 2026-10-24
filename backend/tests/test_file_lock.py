@@ -1,5 +1,7 @@
 """runtime/file_lock.py: the OS byte lock extracted from the device lease. The lease's own tests (test_device_lease.py, test_input_revocation.py) still pass
 unchanged and prove the lease kept its policy; these prove the primitive."""
+
+import paths as test_paths
 import os
 import subprocess
 import sys
@@ -11,7 +13,7 @@ import pytest
 
 from runtime import file_lock
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 
 
 def test_a_second_handle_cannot_take_a_held_lock_and_can_after_it_is_released(tmp_path):

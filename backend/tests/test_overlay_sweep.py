@@ -4,6 +4,8 @@ after boot and the starter scan stopped with "The game must be visible with
 no other app or overlay covering it" while the emulator looked untouched from
 Windows). And the quest CLAIM image is optional: it only exists while a quest
 is finished, so setup lists it and the quest flow learns it during play."""
+
+import paths as test_paths
 import importlib.util
 from pathlib import Path
 
@@ -263,7 +265,7 @@ def test_sometimes_visible_quest_controls_never_block_a_run():
 # ---------------------------------------------------------- release boundary
 def test_release_ships_the_agent_rules_and_skills_but_no_personal_settings():
     spec = importlib.util.spec_from_file_location(
-        "tp_build_release", str(Path(__file__).resolve().parents[2] / "tools" / "build_release.py"))
+        "tp_build_release", str(test_paths.RELEASE_TOOLS / "build_release.py"))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     for name in ("CLAUDE.md", "AGENTS.md", ".claude/settings.json", ".claude/skills/trigger-map.md",

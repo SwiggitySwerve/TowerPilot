@@ -2,6 +2,8 @@
 
 portable_pins.json records upstream evidence; these tests never query a registry.
 """
+
+import paths as test_paths
 import hashlib
 import importlib
 import io
@@ -17,7 +19,7 @@ from types import ModuleType
 import pytest
 from device import tool_install
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = test_paths.REPO
 
 
 @pytest.fixture()

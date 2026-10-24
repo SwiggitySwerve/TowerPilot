@@ -15,6 +15,8 @@ Two things every test here is really asserting:
      week hour by hour and asserts the block scheduler and the original due()
      agree on every single one.
 """
+
+import paths as test_paths
 import datetime
 import importlib
 import sys
@@ -23,9 +25,9 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = test_paths.BACKEND
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(test_paths.TESTS))
 
 from _fakes import (_patch_flows_shard, install_modules,       # noqa: E402
                     patch_module, restore_modules)

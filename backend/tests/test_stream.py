@@ -1,4 +1,6 @@
 """Streaming contracts with synthetic pixels and an injected device clock."""
+
+import paths as test_paths
 import importlib.util
 import struct
 import time
@@ -31,7 +33,7 @@ def raw_frame(header=16):
 @pytest.fixture
 def stream(monkeypatch, tmp_path):
     spec = importlib.util.spec_from_file_location(
-        "tp_dashboard_stream", Path(__file__).resolve().parents[2] / "frontend" / "dashboard.py")
+        "tp_dashboard_stream", test_paths.DASHBOARD)
     dash = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(dash)
     clock = Clock()

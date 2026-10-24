@@ -1,4 +1,6 @@
 """Orbit collection has bounded windows; only verified changes count as hits."""
+
+import paths as test_paths
 from types import SimpleNamespace
 
 import pytest
@@ -463,7 +465,7 @@ def test_local_backoff_frame_replay(cycle, monkeypatch):
     if not configured:
         pytest.skip('Captured game frames stay local; set TOWERPILOT_R14C_FIXTURES for incident replay')
     root = Path(configured)
-    font = Path(__file__).parent / 'fixtures/r14-gem-balance/templates'
+    font = test_paths.FIXTURES / 'r14-gem-balance/templates'
     monkeypatch.setattr(ocr.settings, 'template_files', lambda pattern: sorted(font.glob(pattern)))
     monkeypatch.setattr(ocr, '_glyph_cache', {})
     monkeypatch.setattr(shard, 'read_gem_balance', ocr.read_gem_balance)

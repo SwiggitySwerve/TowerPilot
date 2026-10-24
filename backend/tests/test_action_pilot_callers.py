@@ -4,6 +4,8 @@ Each real host seam is driven with a fake clock, fake capture and fake input, ag
 leave a persisted execution. A host handed no session records nothing, so the source check below counts that as a
 failure: "records nothing" is never a verified state.
 """
+
+import paths as test_paths
 import ast
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,7 +19,7 @@ from harvest_support import NOW, choose, finish_last, make_env
 from runtime.action_session import ActionSession
 from towerpilot_workflows.actions import Actions, new_record
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 CONTEXT = dict(device_key='device', account='account', instance='main', serial='fake', profile='mine')
 HOSTS = {'orchestrator.py': 'orchestrator', 'gem_collector.py': 'collector', 'flows/shard.py': 'shard',
          'flows/quest_sm.py': 'quest_sm', 'flows/quest_ilm.py': 'quest_ilm', 'runtime/harness.py': 'harness'}
@@ -32,6 +34,7 @@ def calls(module, name):
 
 @pytest.mark.parametrize('module,driver', sorted(HOSTS.items()))
 def test_every_production_gem_watch_is_constructed_with_its_hosts_session(module, driver):
+    assert 'orchestrator.py' in HOSTS
     found = calls(module, 'GemWatch')
     assert found, f'{module} no longer constructs a GemWatch: update the host table'
     for node in found:
@@ -41,6 +44,7 @@ def test_every_production_gem_watch_is_constructed_with_its_hosts_session(module
 
 
 def test_the_orchestrators_shopper_is_given_a_recorder_and_the_collector_follows_its_battle():
+    assert calls('orchestrator.py', 'GemWatch')
     assert 'recorder' in (BACKEND / 'orchestrator.py').read_text(encoding='utf-8').split('self.shop = shopper.Shopper(preset())')[1][:200]
     collector = (BACKEND / 'gem_collector.py').read_text(encoding='utf-8')
     assert collector.count('session=actions') == 3 and "ActionSession.for_battle(session, 'collector', tracked_only=True)" in collector

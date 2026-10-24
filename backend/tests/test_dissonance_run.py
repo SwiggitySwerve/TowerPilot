@@ -12,6 +12,8 @@ Three things are pinned here:
 * interactions/perks applies a ban list on the BAN PERKS tab by OCR'd row
   text, verifies every toggle, aborts on anything unexpected and never taps
   once the bans already match."""
+
+import paths as test_paths
 import copy
 import sys
 import types
@@ -21,7 +23,7 @@ import numpy as np
 import pytest
 import yaml
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = test_paths.REPO
 sys.path.insert(0, str(ROOT / "backend"))
 
 from player import playerprofile as pp, run_templates as rt  # noqa: E402

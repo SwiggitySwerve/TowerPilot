@@ -7,6 +7,8 @@ the default display: a text warning ahead of the launcher's pixels, no PNG,
 and a resolution of "[War" x "ning". They now derive the display like
 capture.refresh_display does and strip the warning.
 """
+
+import paths as test_paths
 import importlib.util
 import os
 import struct
@@ -15,7 +17,7 @@ import pytest
 
 from device import displays
 
-BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BACKEND = str(test_paths.BACKEND)
 
 SF = ('Display 4619827820427265280 (HWC display 0): port=0 pnpId=GGL displayName="mumuscreen000"\n'
       'Display 4619827767814508545 (HWC display 1): port=1 pnpId=GGL displayName="mumuscreen001"\n'
@@ -65,7 +67,7 @@ def _no_real_adb_server(monkeypatch):
 
 @pytest.fixture(scope="module")
 def dash():
-    path = os.path.join(os.path.dirname(BACKEND), "frontend", "dashboard.py")
+    path = str(test_paths.DASHBOARD)
     spec = importlib.util.spec_from_file_location("tp_dashboard_display", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

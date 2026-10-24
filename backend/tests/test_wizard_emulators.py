@@ -2,13 +2,15 @@
 daemon twice (`127.0.0.1:16384` and `emulator-5554`), and must still count as
 ONE candidate so the auto-suggestion fires; two real VMs must not."""
 
+import paths as test_paths
+
 import importlib.util
 import socket
 from pathlib import Path
 
 import pytest
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 
 
 class _Done:
@@ -18,7 +20,7 @@ class _Done:
 
 @pytest.fixture()
 def dash(tmp_path, monkeypatch):
-    path = BACKEND.parent / "frontend" / "dashboard.py"
+    path = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location("tp_dashboard_emu", str(path))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

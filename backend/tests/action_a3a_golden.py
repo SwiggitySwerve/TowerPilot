@@ -14,6 +14,8 @@ developer command, never a test side effect:
 
     TP_REGENERATE_ACTION_A3A_GOLDEN=1 python -m pytest backend/tests/test_action_a3a_capture.py
 """
+
+import paths as test_paths
 import contextlib
 import datetime as real_datetime
 import hashlib
@@ -27,9 +29,9 @@ from unittest import mock
 import action_golden as base
 from action_golden import clean
 
-GOLDEN_PATH = Path(__file__).parent / 'fixtures' / 'action_a3a_golden_v1.json'
+GOLDEN_PATH = test_paths.FIXTURES / 'action_a3a_golden_v1.json'
 REGENERATE = 'TP_REGENERATE_ACTION_A3A_GOLDEN'
-REPO = Path(__file__).resolve().parents[2]
+REPO = test_paths.REPO
 SOURCES = ('backend/scheduling/global_rewards.py', 'backend/scheduling/chores.py', 'backend/orchestrator.py', 'backend/scheduling/housekeeping.py',
            'backend/scheduling/daystate.py', 'backend/interactions/missions.py')
 UTC = real_datetime.timezone.utc

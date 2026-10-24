@@ -6,6 +6,8 @@ scheduler that adopts a runner it did not start - and holds a structural guard s
 `proc.terminate()` / `os.kill(pid)` cannot appear anywhere in the source tree without failing a test, however
 it is spelled: called or merely referenced, imported by name (with or without an alias), reached through
 `getattr(os, 'kill')`. A pid that passed to another process is never signalled, whichever caller asks."""
+
+import paths as test_paths
 import ast
 from pathlib import Path
 from types import SimpleNamespace
@@ -120,7 +122,7 @@ def test_an_adopted_runner_the_kernel_will_not_verify_refuses_instead_of_guessin
 
 
 # ---------------------------------------------------------------- the structural guard
-SOURCE_ROOT = Path(__file__).resolve().parents[2]
+SOURCE_ROOT = test_paths.REPO
 SIGNALS = {'terminate', 'kill', 'send_signal', 'killpg', 'wait_procs', 'TerminateProcess', 'TerminateJobObject',
            'NtTerminateProcess'}
 STAR_SOURCES = {'os', 'signal', 'psutil', 'subprocess', 'multiprocessing', 'ctypes'}   # `from os import *` could bring `kill` in unnamed
@@ -160,7 +162,8 @@ def signal_references(tree):
 
 def signalling_calls(root=SOURCE_ROOT):
     found = []
-    files = [*(root / 'backend').rglob('*.py'), root / 'frontend' / 'dashboard.py']
+    scanned = set()
+    files = [*(root / 'backend').rglob('*.py'), root / test_paths.DASHBOARD.relative_to(test_paths.REPO)]
     for path in files:
         if not path.is_file():
             continue
@@ -169,11 +172,14 @@ def signalling_calls(root=SOURCE_ROOT):
                 or relative == 'backend/runtime/process_handle.py'):   # the one module that IS the kernel boundary
             continue
         text = path.read_text(encoding='utf-8-sig')
+        scanned.add(relative)
         for receiver, name, line in signal_references(ast.parse(text, filename=relative)):
             found.append((relative, receiver, name, line))
         for token in ('taskkill', 'Stop-Process', 'TerminateProcess('):
             if token in text:
                 found.append((relative, token, 'text', 0))
+    if root == SOURCE_ROOT:
+        assert 'backend/orchestrator.py' in scanned
     return found
 
 
@@ -256,10 +262,15 @@ TEST_OWNED = {
 
 def signalling_references_in_tests(root=SOURCE_ROOT):
     found = []
+    scanned = set()
     for path in sorted((root / 'backend' / 'tests').rglob('*.py')):
         relative = path.relative_to(root).as_posix()
-        for receiver, name, line in signal_references(ast.parse(path.read_text(encoding='utf-8-sig'), filename=relative)):
+        tree = ast.parse(path.read_text(encoding='utf-8-sig'), filename=relative)
+        scanned.add(relative)
+        for receiver, name, line in signal_references(tree):
             found.append((relative, receiver, name, line))
+    if root == SOURCE_ROOT:
+        assert 'backend/tests/conftest.py' in scanned
     return found
 
 

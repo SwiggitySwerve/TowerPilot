@@ -10,6 +10,8 @@ against a throwaway copy of the default profile, and pin the refusals the
 staged editors rely on (a mode without its required ranges, a dict arm.on:
 always, an empty label).
 """
+
+import paths as test_paths
 import copy
 import glob
 import importlib.util
@@ -21,11 +23,11 @@ from pathlib import Path
 import pytest
 import yaml
 
-BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BACKEND = str(test_paths.BACKEND)
 
 
 def _load_seeds() -> dict:
-    seeds = Path(__file__).parent / "fixtures" / "ui_policy_seeds.json"
+    seeds = test_paths.FIXTURES / "ui_policy_seeds.json"
     return json.loads(seeds.read_text(encoding="utf-8"))
 
 
@@ -190,7 +192,7 @@ def test_bad_labels_refused(profile, bad):
 @pytest.fixture(scope="module")
 def dash(tmp_path_factory):
     """The real dashboard app, driven exactly like the browser does."""
-    path = os.path.join(os.path.dirname(BACKEND), "frontend", "dashboard.py")
+    path = str(test_paths.DASHBOARD)
     spec = importlib.util.spec_from_file_location("tp_dashboard", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -206,7 +208,7 @@ def dash(tmp_path_factory):
 @pytest.fixture()
 def ui_profile(dash):
     """A throwaway copy of the default profile for real patch round-trips."""
-    src = os.path.join(BACKEND, "tests", "fixtures", "golden_profile.yaml")
+    src = str(test_paths.FIXTURES / "golden_profile.yaml")
     dst = os.path.join(dash.ROOT, "profiles", "zz_uitest.yaml")
     shutil.copyfile(src, dst)
     yield "zz_uitest"

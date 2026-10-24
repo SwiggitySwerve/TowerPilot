@@ -4,6 +4,8 @@ the week, not just today - and an unready one is named with its block.
 Before, api_control skipped the check for combo and /api/runs left it out, so
 an unready block surfaced only at the handoff (combo.py readiness.require)."""
 
+import paths as test_paths
+
 import importlib.util
 import os
 
@@ -12,7 +14,7 @@ import yaml
 
 from player import readiness
 
-BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BACKEND = str(test_paths.BACKEND)
 
 PROFILE = {
     "blueprints": {"coin": {"kind": "coin"}, "shard": {"kind": "shard"}},
@@ -78,7 +80,7 @@ def test_check_plan_is_ready_when_every_plan_run_is(monkeypatch):
 
 @pytest.fixture()
 def dash(tmp_path, monkeypatch):
-    path = os.path.join(os.path.dirname(BACKEND), "frontend", "dashboard.py")
+    path = str(test_paths.DASHBOARD)
     spec = importlib.util.spec_from_file_location("tp_dashboard_combo", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

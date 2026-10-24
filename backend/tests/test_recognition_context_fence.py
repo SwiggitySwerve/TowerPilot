@@ -6,6 +6,8 @@ account or profile between that read and the write put the observations on the w
 when the configuration now names another; a request without it behaves exactly as before. Every test drives the real Flask route of
 frontend/dashboard.py over a temporary root (conftest `dash`): no live file, device, ledger or lease.
 """
+
+import paths as test_paths
 import hashlib
 import json
 import os
@@ -217,7 +219,7 @@ def test_the_fence_is_declared_on_the_apply_route():
     """The decorator is what makes the route refuse; the behaviour tests above fail without it, this names why (source check of the route's decorators)."""
     import ast
     import pathlib
-    source = (pathlib.Path(__file__).resolve().parents[2] / 'frontend' / 'dashboard.py').read_text(encoding='utf-8')
+    source = (test_paths.DASHBOARD).read_text(encoding='utf-8')
     tree = ast.parse(source)
     route = next(node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef) and node.name == 'api_calibrate_apply')
     assert '_fenced_by_page_context' in {getattr(item, 'id', None) for item in route.decorator_list}

@@ -3,6 +3,8 @@ guards for screens setup cannot produce on demand (tournament, welcome-back,
 reward skip) are advisory - listed, never blocking - except for the run kind
 that drives that screen. The Control view opens once a scan has finished,
 attention or not; the run picker greys out the runs that truly lack images."""
+
+import paths as test_paths
 import json
 
 import cv2
@@ -102,7 +104,7 @@ def test_control_gate_opens_after_a_scan_that_finished_with_attention(tmp_path):
 
 def test_api_runs_carries_per_run_readiness(monkeypatch):
     import sys, os
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
+    sys.path.insert(0, str(test_paths.DASHBOARD.parent))
     import dashboard as dash
     runs = {"bp_coin": {"kind": "coin", "label": "Coin"},
             "bp_tourney": {"kind": "tournament", "label": "Tournament"},

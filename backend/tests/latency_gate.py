@@ -21,6 +21,8 @@ garbage collector is off during a replay, `time.sleep` is a no-op, and the first
 WHAT IT DOES NOT MEASURE. Detection, capture and the real adb round trip are fakes: absolute latency of a real rescue is dominated by them and is not claimed here, only what a migration adds.
 The timing replay stubs `BattleSession.checkpoint` (its body is in the baseline and identical on both sides); the structural gate runs the REAL checkpoint over a temporary ledger.
 """
+
+import paths as test_paths
 import ast
 import builtins
 import contextlib
@@ -44,8 +46,8 @@ from types import SimpleNamespace
 
 from _fakes import _install_fakes, _rs, install_modules, restore_modules
 
-BACKEND = Path(__file__).resolve().parents[1]
-FIXTURES = Path(__file__).parent / 'fixtures' / 'latency_gate'
+BACKEND = test_paths.BACKEND
+FIXTURES = test_paths.FIXTURES / 'latency_gate'
 CANDIDATE_PATH = BACKEND / 'orchestrator.py'
 SNAPSHOT_PATH = FIXTURES / 'orchestrator_unmigrated.py.txt'
 BASELINE_PATH = FIXTURES / 'baseline_structural_v1.json'
@@ -622,7 +624,7 @@ def artifact(gate, structural, baseline, candidate=CANDIDATE_PATH, snapshot=SNAP
         sources=dict(candidate=dict(path=str(Path(candidate).relative_to(BACKEND.parent)).replace(os.sep, '/') if Path(candidate).is_relative_to(BACKEND.parent) else str(candidate),
                                     sha256=sha256(candidate), fast_functions=candidate_functions),
                      unmigrated_snapshot=dict(path='backend/tests/fixtures/latency_gate/orchestrator_unmigrated.py.txt', sha256=sha256(snapshot), fast_functions=function_hashes(snapshot)),
-                     harness=dict(path='backend/tests/latency_gate.py', sha256=sha256(__file__)), fakes=dict(path='backend/tests/_fakes.py', sha256=sha256(Path(__file__).parent / '_fakes.py'))),
+                     harness=dict(path='backend/tests/latency_gate.py', sha256=sha256(test_paths.TESTS / 'latency_gate.py')), fakes=dict(path='backend/tests/_fakes.py', sha256=sha256(test_paths.TESTS / '_fakes.py'))),
         migrated_fast_functions=sorted(name for name, digest in candidate_functions.items() if digest != baseline['captured_on']['functions'].get(name)),
         method=dict(iterations=replay['iterations'], warmup_dropped=replay['warmup'], repeats_min_of=replay['repeats'], seed=replay['seed'], gc='disabled during the replay', sleep='no-op',
                     order='baseline and candidate alternate which goes first by iteration and repeat',

@@ -27,6 +27,8 @@ Each case is {request: {method, path, body?}, status, body}. A JSON body is the 
 exact answer (keys sorted by Flask); a body that is not JSON (Flask's default 500 page,
 which an unhandled exception produces in production) is {text}. Ids are aliased in order
 of appearance and the scenario root is `<root>`."""
+
+import paths as test_paths
 import contextlib
 import copy
 import json
@@ -52,7 +54,7 @@ from towerpilot_workflows import harvest as ledger_h
 from towerpilot_workflows import operations as ledger_ops
 
 REAL_READINESS_CHECK = readiness_api.check   # the world replaces readiness.check; the readiness cases put it back
-FIXTURE = Path(__file__).parent / 'fixtures' / 'dashboard_contract_v1.json'
+FIXTURE = test_paths.FIXTURES / 'dashboard_contract_v1.json'
 REGENERATE = 'TP_REGENERATE_DASHBOARD_CONTRACT'
 OUTPUT = 'TP_DASHBOARD_CONTRACT_OUT'
 PYW = 'C:/Python/pythonw.exe'

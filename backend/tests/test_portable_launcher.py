@@ -5,6 +5,8 @@ have to hold: output goes to a file instead of raising, a second launch does
 not start a second dashboard on a taken port, and a machine with no usable
 tray still serves. The icon is drawn, never loaded from a file (the
 image-free release boundary)."""
+
+import paths as test_paths
 import importlib.util
 import hashlib
 import json
@@ -17,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = test_paths.REPO
 
 
 @pytest.fixture

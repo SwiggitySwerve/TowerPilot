@@ -1,4 +1,6 @@
 """Saved and live HTTP transactions use temporary profiles and real SQLite."""
+
+import paths as test_paths
 import copy
 import importlib.util
 import time
@@ -14,7 +16,7 @@ from harvest_support import fake_inspect
 
 @pytest.fixture
 def dash(tmp_path, monkeypatch):
-    source = Path(__file__).resolve().parents[2] / 'frontend' / 'dashboard.py'
+    source = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location('battle_dashboard_test', source)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

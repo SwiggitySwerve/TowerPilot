@@ -5,6 +5,8 @@ The app's sources ship too (ADR-001 decision 2); npm and test state never do.
 Each test builds the real ZIP writers' output from a small temporary git
 checkout. The portable test runs the same staging and ZIP code build() uses;
 the embedded Python download and pip install are not exercised here."""
+
+import paths as test_paths
 import hashlib
 import importlib
 import shutil
@@ -17,7 +19,7 @@ from types import ModuleType
 
 import pytest
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = test_paths.REPO
 BUILD = {
     "frontend/webui/app/index.html": (
         b'<!doctype html><div id=root></div>'

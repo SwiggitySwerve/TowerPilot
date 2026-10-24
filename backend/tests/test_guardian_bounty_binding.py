@@ -12,6 +12,8 @@ chips' shared search it located at [801, 1232, 129, 96]. On that frame every
 bound chip sat 120 px above its reference_rect, so Bounty's reference_rect is
 that rect moved down by the same 120 px.
 """
+
+import paths as test_paths
 import json
 from pathlib import Path
 
@@ -28,7 +30,7 @@ def _center(rect):
 
 
 def test_every_guardian_chip_the_scan_lists_has_an_artwork_binding():
-    targets = json.loads((Path(__file__).parents[1] / "player" / "scan_targets.json").read_text(encoding="utf-8"))
+    targets = json.loads((test_paths.BACKEND / "player" / "scan_targets.json").read_text(encoding="utf-8"))
     chips = {t["rel"] for t in targets if t["rel"].startswith("guardian/chip_")}
     bindings = manifest()["asset_bindings"]
     assert BOUNTY in chips

@@ -4,6 +4,8 @@ the complete old file or the complete new one, never a truncated one.
 _save_yaml_backup used to open the target with "w" (truncate) and write in
 place; the draft-promotion writer did the same."""
 
+import paths as test_paths
+
 import builtins
 import importlib.util
 import os
@@ -14,7 +16,7 @@ import yaml
 
 from runtime import files
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 
 
 @pytest.fixture()
@@ -77,7 +79,7 @@ def test_atomic_text_publishes_whole_text_and_leaves_no_temp(tmp_path, reader):
 
 @pytest.fixture()
 def dash():
-    path = BACKEND.parent / "frontend" / "dashboard.py"
+    path = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location("tp_dashboard_atomic", str(path))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

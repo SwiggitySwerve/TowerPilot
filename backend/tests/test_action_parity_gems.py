@@ -8,6 +8,8 @@ windows, observation polls, claims, re-anchors), every random draw in its origin
 collector state after each step. The explicit tests below name the behaviours the specification lists, so
 a reader can see what the traces pin.
 """
+
+import paths as test_paths
 import hashlib
 import json
 from pathlib import Path
@@ -24,7 +26,7 @@ def captured():
     expected = golden.load()
     # Keep the migration proof intact. Only R14i's intentional confirmation
     # timing differences have separate, versioned expectations.
-    delta = json.loads((Path(__file__).parent / 'fixtures' / 'action_orbit_confirmation_v1.json').read_text(encoding='utf-8'))
+    delta = json.loads((test_paths.FIXTURES / 'action_orbit_confirmation_v1.json').read_text(encoding='utf-8'))
     # This recorded parent pin hashes CRLF bytes; the repository blob uses LF.
     # Reconstruct those recorded line endings while preserving every other byte.
     parent = golden.GOLDEN_PATH.read_bytes().replace(b'\r\n', b'\n')

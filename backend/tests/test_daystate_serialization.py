@@ -9,6 +9,8 @@ INSIDE its write step - after it has loaded the file, before it saves - and the 
 
 The same tests were run against the unchanged module (the lost update is real today): see characterization in the package.
 """
+
+import paths as test_paths
 import json
 import os
 import subprocess
@@ -22,8 +24,8 @@ import pytest
 from runtime import file_lock
 from scheduling import daystate
 
-BACKEND = Path(__file__).resolve().parents[1]
-CHILD = Path(__file__).with_name("daystate_child.py")
+BACKEND = test_paths.BACKEND
+CHILD = test_paths.TESTS / "daystate_child.py"
 
 
 def start(tmp_path, **spec):

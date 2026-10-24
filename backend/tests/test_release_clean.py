@@ -3,6 +3,8 @@ able to scan any user's account, not just mine" / "do not assume the names of
 the presets for the cards or any presets"). Everything account-specific is
 produced per install - by the Calibrate cropper, the scan and the config
 editor - and these tests fail the moment something slips back in."""
+
+import paths as test_paths
 import importlib.util
 import os
 import shutil
@@ -12,13 +14,13 @@ from pathlib import Path
 import pytest
 import yaml
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 REPO = BACKEND.parent
 
 
 @pytest.fixture()
 def dash(tmp_path):
-    path = REPO / "frontend" / "dashboard.py"
+    path = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location("tp_dashboard_clean", str(path))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

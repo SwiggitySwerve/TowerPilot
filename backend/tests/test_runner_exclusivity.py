@@ -7,6 +7,8 @@ launcher used to match as "the other runner" and the calibrate worker
 refused itself on every Learn screens attempt.
 """
 
+import paths as test_paths
+
 import json
 import os
 import subprocess
@@ -19,7 +21,7 @@ import pytest
 
 import settings
 
-BACKEND = Path(__file__).resolve().parents[1]
+BACKEND = test_paths.BACKEND
 ME, LAUNCHER, SHELL = 5000, 4000, 3000
 
 

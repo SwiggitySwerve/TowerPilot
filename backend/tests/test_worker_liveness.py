@@ -9,6 +9,8 @@ emulator also refuse while any process holds it, whatever the ledger says.
 
 Real psutil identity of this test process, real temporary device lease, temporary ledger.
 No device and no process is ever signalled."""
+
+import paths as test_paths
 import ast
 import copy
 import os
@@ -326,8 +328,9 @@ def test_the_detector_flags_the_idioms_that_would_read_unknown_as_dead():
 
 
 def test_no_source_reads_a_liveness_answer_by_truthiness():
-    root = Path(__file__).resolve().parents[2]
+    root = test_paths.REPO
     files = [p for p in (root / 'backend').rglob('*.py') if not {'tests', 'logs'} & set(p.relative_to(root).parts)]
-    files.append(root / 'frontend' / 'dashboard.py')
+    files.append(root / test_paths.DASHBOARD.relative_to(test_paths.REPO))
     offenders = {str(p.relative_to(root)): truthiness_uses(p.read_text(encoding='utf-8')) for p in files}
+    assert str((root / 'backend' / 'orchestrator.py').relative_to(root)) in offenders
     assert {name: lines for name, lines in offenders.items() if lines} == {}

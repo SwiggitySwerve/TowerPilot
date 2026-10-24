@@ -5,6 +5,8 @@ at wave 1, so most of these tests assert on REFUSALS: the exact conditions the
 schema says the compiler must not let through. The rest pin the compiled shape,
 because orchestrator.py reads it by key and a renamed key is a silently dead rescue.
 """
+
+import paths as test_paths
 import copy
 import datetime
 import json
@@ -15,7 +17,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(test_paths.BACKEND))
 
 from player import playerprofile as profile_mod
 from player.playerprofile import ProfileError
@@ -1289,7 +1291,7 @@ def _schema_blocks() -> list[tuple[int, object]]:
     into a test is a doc example that can drift from the file the player
     actually reads. Both of the ones that drifted were real traps, not typos.
     """
-    path = Path(__file__).resolve().parents[1] / "profiles" / "SCHEMA.md"
+    path = test_paths.BACKEND / "profiles" / "SCHEMA.md"
     text = path.read_text(encoding="utf-8")
     out = []
     for m in re.finditer(r"^```yaml\n(.*?)^```", text, re.S | re.M):
@@ -2881,7 +2883,7 @@ def test_plan_sim_says_so_for_a_rules_only_profile(prof, profile_dir, capsys):
     """The other caller of compile_plan. It assumed a dict, and a rules-only
     profile would have crashed it on `plan["week"]` - so the tri-state is
     exercised through the tool, not only through the function."""
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+    sys.path.insert(0, str(test_paths.BACKEND_TOOLS))
     import plan_sim
     del prof["plan"]
     _write(profile_dir, "rules_only", prof)
@@ -3298,7 +3300,7 @@ def test_a_rescue_less_preset_needs_nothing_but_is_still_checked():
 # ------------------------------------------ the live-test profile on disk
 
 def _acct2(name: str = "acct2") -> dict:
-    path = Path(__file__).resolve().parents[1] / "profiles" / f"{name}.yaml"
+    path = test_paths.BACKEND / "profiles" / f"{name}.yaml"
     if not path.exists():
         pytest.skip(f"profiles/{name}.yaml not present")
     return profile_mod.load(name)
@@ -3359,7 +3361,7 @@ def test_golden_plan_compiles_bit_for_bit():
     for the same reason the preset snapshot is: the day a block moves, an hour
     changes or an id shifts, some counter in daystate is keyed on the old name
     and a day silently reruns or silently skips."""
-    path = Path(__file__).resolve().parent / "golden_default_plan.json"
+    path = test_paths.TESTS / "golden_default_plan.json"
     if not path.exists():
         pytest.skip("plan snapshot not generated")
     frozen = json.loads(path.read_text(encoding="utf-8"))
@@ -3420,7 +3422,7 @@ def test_golden_profile_compiles_bit_for_bit(prof):
     2026-08-31: `coin_dissonance` ADDED (Dissonance event: tournament
     loadout + nets, no-utility sweep) - again purely a new entry.
     """
-    path = Path(__file__).resolve().parent / "golden_default_compiled.json"
+    path = test_paths.TESTS / "golden_default_compiled.json"
     if not path.exists():
         pytest.skip("golden snapshot not generated")
     frozen = json.loads(path.read_text(encoding="utf-8"))
@@ -3488,7 +3490,7 @@ def test_plan_sim_reports_no_drift_from_the_constants():
     combo.py's constant ladder make the SAME decision on the golden profile.
     Zero disagreements is the whole claim; anything else is a plan that would
     schedule the farm differently than the constants it replaces."""
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+    sys.path.insert(0, str(test_paths.BACKEND_TOOLS))
     import plan_sim
     const = plan_sim.constants()
     # ...read out of combo.py's SOURCE, so a constant that moves is caught
@@ -3518,7 +3520,7 @@ def test_plan_sim_probes_the_block_id_and_preset_too():
     id and the preset catch the RIGHT block name being backed by the wrong
     thing - and the id is the daystate counter key, so an id that moves under
     a steady name is a counter that silently restarts."""
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+    sys.path.insert(0, str(test_paths.BACKEND_TOOLS))
     import plan_sim
     plan = profile_mod.compile_plan(_golden())
     at = datetime.datetime(2026, 8, 19, 20, 0)          # Wednesday, 20:00
@@ -3532,7 +3534,7 @@ def test_plan_sim_probes_the_block_id_and_preset_too():
 def test_plan_sim_walks_the_counter_switchover(capsys):
     """The counter path has a minute too: --fill says when the quota fills,
     and the switchover is diffed against the constant era's own."""
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+    sys.path.insert(0, str(test_paths.BACKEND_TOOLS))
     import plan_sim
     assert plan_sim._fills("shards=14:30") == {"shards": 870}
     rc = plan_sim.walk("default", datetime.date(2026, 8, 17), set(), False,
@@ -3548,7 +3550,7 @@ def test_plan_sim_walks_the_counter_switchover(capsys):
 
 
 def test_plan_sim_refuses_a_profile_that_does_not_validate(capsys):
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+    sys.path.insert(0, str(test_paths.BACKEND_TOOLS))
     import plan_sim
     _acct2("acct2_refused")     # skips when the fixture profile is absent
     rc = plan_sim.walk("acct2_refused", datetime.date(2026, 8, 17), set(),
@@ -3615,7 +3617,7 @@ def test_vocab_top_level_keys_are_the_documented_set():
     a section added without being documented fails here."""
     v = profile_mod.vocab()
     assert tuple(v) == profile_mod.VOCAB_SECTIONS
-    schema = (Path(__file__).resolve().parents[1] / "profiles" / "SCHEMA.md"
+    schema = (test_paths.BACKEND / "profiles" / "SCHEMA.md"
               ).read_text(encoding="utf-8")
     for name in profile_mod.VOCAB_SECTIONS:
         assert f"`{name}`" in schema, f"SCHEMA.md does not document {name}"

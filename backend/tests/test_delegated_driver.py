@@ -1,4 +1,6 @@
 """Real child-environment handoff, frozen source and exit fencing, offline."""
+
+import paths as test_paths
 import copy
 import importlib.util
 import json
@@ -526,7 +528,7 @@ def test_scheduler_exit_branch_reconciles_while_no_successor_is_scheduled(delega
 
 def test_direct_dashboard_acceptance_freezes_resolved_inherited_body(delegation):
     d = delegation
-    source = Path(__file__).resolve().parents[2] / 'frontend' / 'dashboard.py'
+    source = test_paths.DASHBOARD
     spec = importlib.util.spec_from_file_location('f04_dashboard', source)
     dash = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(dash)

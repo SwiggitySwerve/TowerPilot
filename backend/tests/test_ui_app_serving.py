@@ -7,6 +7,8 @@ are resolved: a junction or symlink inside the build, or a linked build folder,
 never serves a file outside the real build folder. Flask test client against a
 temporary webui folder - no server, no device, and the checkout's own build (if
 any) is never read; the redirect checks read the checkout's real index.html."""
+
+import paths as test_paths
 import importlib.util
 import json
 import os
@@ -18,7 +20,7 @@ from types import ModuleType
 
 import pytest
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = test_paths.REPO
 BUILD_HINT = b"cd frontend/app; npm ci; npm run build"
 STATIC_PAGE = b"<p>static redirect page</p>"
 
@@ -31,7 +33,7 @@ def dash(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
     s.bind(("127.0.0.1", 0))
     monkeypatch.setattr(adbclient, "_HOST", s.getsockname())   # never the real adb server
     s.close()
-    spec = importlib.util.spec_from_file_location("tp_dashboard_ui_app", REPO / "frontend" / "dashboard.py")
+    spec = importlib.util.spec_from_file_location("tp_dashboard_ui_app", test_paths.DASHBOARD)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
