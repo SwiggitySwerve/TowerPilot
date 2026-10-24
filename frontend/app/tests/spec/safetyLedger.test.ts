@@ -1,6 +1,6 @@
+import { APP } from '../support/paths.ts';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { isBrowserProof, isProvedHere, proofFailures } from './ledger.ts';
 import { SAFETY_LEDGER, type TestReference } from './specData.ts';
@@ -14,7 +14,7 @@ import { SAFETY_LEDGER, type TestReference } from './specData.ts';
  * proved here too; the e2e references are proved by Playwright, and this file
  * checks that each named e2e spec holds a test titled with its rule id.
  */
-const APP = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
 const R6_LAYERS = new Set(['core', 'contract']);
 const R6_DIRS = ['tests/core/', 'tests/contract/'];
 const R8_DIRS = ['tests/api/', 'tests/store/'];

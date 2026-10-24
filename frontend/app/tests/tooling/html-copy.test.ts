@@ -1,10 +1,12 @@
 // @vitest-environment node
+import { APP } from '../support/paths.ts';
+import path from 'node:path';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { escapeHtml, fillHtmlCopy } from '../../scripts/html-copy.ts';
 import { copy } from '../../src/copy/catalogue.ts';
 
-const INDEX_HTML = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+const INDEX_HTML = readFileSync(path.join(APP, 'index.html'), 'utf8');
 
 describe('index.html copy', () => {
   it('fills the title and noscript wording from the catalogue', () => {

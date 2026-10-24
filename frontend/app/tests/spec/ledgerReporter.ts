@@ -1,22 +1,28 @@
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import type { Reporter, TestModule } from 'vitest/node';
+import type { Reporter, TestModule, TestSpecification, Vitest } from 'vitest/node';
+import { APP } from '../support/paths.ts';
 import { capabilityFailures, proofFailures, WANTED_BASELINE } from './ledger.ts';
 import { SAFETY_LEDGER } from './specData.ts';
 
-/**
- * The ledgers' run-time gate (F1-01, spec 9 items 1 and 2): at the end of
- * every run it reads which tests PASSED per file, in this same run, and fails
- * the run when a file the safety ledger names has no passing test titled with
- * a rule id it is named for, or, in a run that includes
- * tests/spec/capabilityLedger.test.ts (every full run), when a Wanted-baseline
- * F-id has no passing test titled with it. Files that were not part of the run
- * (a partial run) are not judged here.
- */
-const APP = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+/** Judge passing proofs from this run; a full run must cover every named runtime file. */
 const CAPABILITY_FILE = 'tests/spec/capabilityLedger.test.ts';
 
 export default class LedgerReporter implements Reporter {
+  private vitest: Vitest | undefined;
+  private fullRun = false;
+
+  onInit(vitest: Vitest): void {
+    this.vitest = vitest;
+  }
+
+  async onTestRunStart(specifications: readonly TestSpecification[]): Promise<void> {
+    if (this.vitest === undefined) throw new Error('Ledger reporter was not initialized');
+    const all = await this.vitest.globTestSpecifications();
+    const selected = new Set(specifications.map((spec) => spec.moduleId));
+    this.fullRun =
+      all.length === specifications.length && all.every((spec) => selected.has(spec.moduleId));
+  }
+
   onTestRunEnd(testModules: readonly TestModule[]): void {
     const passed = new Map<string, string[]>();
     for (const module of testModules) {
@@ -27,7 +33,30 @@ export default class LedgerReporter implements Reporter {
       }
       passed.set(file, titles);
     }
-    const failures = proofFailures(SAFETY_LEDGER, (file) => passed.get(file));
+    const judged = new Set<string>();
+    const failures = proofFailures(SAFETY_LEDGER, (file) => {
+      if (passed.has(file)) judged.add(file);
+      return passed.get(file);
+    });
+    if (this.fullRun) {
+      // Derive this independently of ledger.ts's directory classifier: a stale prefix
+      // must not turn a full run into a successful check of zero files.
+      const expected = new Set(
+        SAFETY_LEDGER.flatMap((row) => row.tests)
+          .filter((ref) => ref.ruleId !== null && /\.test\.tsx?$/u.test(ref.file))
+          .map((ref) => ref.file),
+      );
+      const missing = [...expected].filter((file) => !judged.has(file));
+      if (expected.size === 0 || judged.size !== expected.size || missing.length > 0) {
+        failures.push(
+          `judged ${String(judged.size)} of ${String(expected.size)} ledger files; missing: ${missing.join(', ')}`,
+        );
+      }
+      if (!passed.has(CAPABILITY_FILE)) failures.push(`full run is missing ${CAPABILITY_FILE}`);
+      console.info(
+        `Ledgers: judged ${String(judged.size)} of ${String(expected.size)} named runtime files`,
+      );
+    }
     if (passed.has(CAPABILITY_FILE)) {
       failures.push(...capabilityFailures(WANTED_BASELINE, [...passed.values()].flat()));
     }

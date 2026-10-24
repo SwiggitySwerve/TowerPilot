@@ -1,7 +1,7 @@
 // @vitest-environment node
+import { SRC } from '../support/paths.ts';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -10,7 +10,6 @@ import { describe, expect, it } from 'vitest';
  * built only by the client's `postEndpoint`, which only the write-intent
  * machine (a person's click or explicit resend) and the C-20 diagnostics call.
  */
-const SRC = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../src');
 
 function files(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {

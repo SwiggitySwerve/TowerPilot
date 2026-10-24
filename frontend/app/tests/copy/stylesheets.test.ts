@@ -1,7 +1,7 @@
 // @vitest-environment node
+import { SRC } from '../support/paths.ts';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { parse } from 'postcss';
 import { describe, expect, it } from 'vitest';
 
@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
  * read by a CSS parser (postcss), so comments are skipped, and property names
  * are compared as CSS does: case-insensitive, with escapes resolved.
  */
-const SRC = path.resolve(fileURLToPath(import.meta.url), '../../../src');
+
 const ALLOWED = new Set(['""', "''", 'none', 'normal']);
 
 function stylesheets(folder: string): string[] {

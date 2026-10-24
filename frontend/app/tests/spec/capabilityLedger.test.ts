@@ -1,7 +1,7 @@
 // @vitest-environment node
+import { REPO } from '../support/paths.ts';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { capabilityFailures, WANTED_BASELINE } from './ledger.ts';
 import { SPEC } from './specData.ts';
@@ -18,8 +18,8 @@ import { SPEC } from './specData.ts';
  * comparison is skipped (it says so below), and wherever the spec is present the comparison runs
  * in full, so the committed list cannot drift from the spec.
  */
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
-const SPEC_FILE = path.join(ROOT, SPEC.name);
+
+const SPEC_FILE = path.join(REPO, SPEC.name);
 const HAVE_SPEC = existsSync(SPEC_FILE);
 if (!HAVE_SPEC) {
   console.warn(

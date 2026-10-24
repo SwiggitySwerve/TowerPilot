@@ -1,3 +1,4 @@
+import { APP } from '../tests/support/paths.ts';
 import { defineConfig, devices } from '@playwright/test';
 import { E2E_NODE } from './runtime.ts';
 
@@ -17,7 +18,7 @@ export default defineConfig({
   use: { baseURL: `http://127.0.0.1:${PORT}`, trace: 'off' },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    cwd: new URL('..', import.meta.url).pathname.replace(/^\/(?:([A-Za-z]):)/, '$1:'),
+    cwd: APP.split('\\').join('/') + '/',
     command: `${E2E_NODE} e2e/fake-backend.mjs --port ${PORT} --build-dir playwright-report/recognition-advanced-build`,
     url: `http://127.0.0.1:${PORT}/ui/app/`,
     reuseExistingServer: false,

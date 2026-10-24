@@ -1,7 +1,7 @@
 // @vitest-environment node
+import { APP } from '../support/paths.ts';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { satisfies } from 'semver';
 import { describe, expect, it } from 'vitest';
 
@@ -10,7 +10,6 @@ import { describe, expect, it } from 'vitest';
  * locked dependency accepts - no wider (Node 23 and 25 were admitted before),
  * no narrower.
  */
-const APP = path.resolve(fileURLToPath(import.meta.url), '../../..');
 
 function json(file: string): unknown {
   return JSON.parse(readFileSync(path.join(APP, file), 'utf8'));

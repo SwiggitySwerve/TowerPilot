@@ -1,7 +1,7 @@
 // @vitest-environment node
+import { SRC } from '../support/paths.ts';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { parse } from 'postcss';
 import { describe, expect, it } from 'vitest';
 
@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
  * layout in a browser (visible line breaks, wrapping at 390 px) is checked by
  * the R10 end-to-end tests (dashboard-spec 8.9), not here.
  */
-const UI = path.resolve(fileURLToPath(import.meta.url), '../../../src/ui');
+const UI = path.join(SRC, 'ui');
 const CSS = readFileSync(path.join(UI, 'ServerValue.css'), 'utf8');
 
 /** Declarations per selector; quotes dropped and spaces collapsed in selectors. */

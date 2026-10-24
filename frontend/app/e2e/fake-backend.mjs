@@ -12,7 +12,8 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { APP } from '../tests/support/paths.ts';
+import { pathToFileURL } from 'node:url';
 import { crc32, deflateSync } from 'node:zlib';
 import {
   DASHBOARD_FIXTURE_PATH,
@@ -44,8 +45,7 @@ import {
 
 export { FIXTURE_PATH, loadFixture };
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-export const BUILD_DIR = path.resolve(HERE, '../../webui/app');
+export const BUILD_DIR = path.resolve(APP, '../webui/app');
 export const DEFAULT_SCENARIO = 'collecting';
 
 const CONTENT_TYPES = /** @type {Record<string, string>} */ ({

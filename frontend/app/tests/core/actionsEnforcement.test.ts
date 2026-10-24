@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { SRC } from '../support/paths.ts';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, it } from 'vitest';
@@ -10,7 +11,7 @@ import { expect, it } from 'vitest';
  * with its exact count. A new hardcoded routine list, or a new quoted id in an allowed file,
  * fails here. This supports the behavioural proof (AC7); it does not replace it.
  */
-const SRC = path.resolve(import.meta.dirname, '../../src');
+
 const OWNER = 'core/actions.ts';
 const QUOTED_ID = /['"`](?:ad_gems|floating_gems|shopping)['"`:]/g;
 

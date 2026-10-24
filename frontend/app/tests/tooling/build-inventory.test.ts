@@ -1,13 +1,12 @@
 // @vitest-environment node
+import { APP } from '../support/paths.ts';
 import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { build, type Rolldown } from 'vite';
 import { afterEach, describe, expect, it } from 'vitest';
 import { graphProblems, INVENTORY_FILE, inventoryOf } from '../../scripts/build-inventory.ts';
 
-const APP = path.resolve(fileURLToPath(import.meta.url), '../../..');
 const temporary: string[] = [];
 
 afterEach(() => {

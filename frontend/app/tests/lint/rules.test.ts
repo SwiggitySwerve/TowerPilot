@@ -1,6 +1,7 @@
 // @vitest-environment node
+import { APP } from '../support/paths.ts';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import { Linter, RuleTester } from 'eslint';
 import { configs as tsConfigs, parser } from 'typescript-eslint';
 import { describe, expect, it } from 'vitest';
@@ -12,7 +13,7 @@ import towerPilot from '../../eslint-rules/index.js';
  * off: the probes are not files of the TypeScript project), plus RuleTester
  * cases for the one custom rule. Guardrails against honest mistakes only.
  */
-const APP = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
 // Loaded at run time: the config is a Node module outside the test program's type check.
 const { default: config } = (await import(
   pathToFileURL(path.join(APP, 'eslint.config.js')).href

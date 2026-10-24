@@ -1,8 +1,8 @@
 // @vitest-environment node
+import { APP } from '../support/paths.ts';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { build, type Plugin } from 'vite';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
@@ -12,8 +12,6 @@ import {
   packageDirOf,
   readPackage,
 } from '../../scripts/licence-notices.ts';
-
-const APP = path.resolve(fileURLToPath(import.meta.url), '../../..');
 
 const temporary: string[] = [];
 
