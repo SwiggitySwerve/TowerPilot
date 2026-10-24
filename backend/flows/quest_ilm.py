@@ -157,7 +157,8 @@ def one_cycle(n: int, last: bool, run) -> None:
     # wait and let shard.GemWatch claim - same rules as every other loop.
     # The ~350ms grab paces the loop; overshooting the deadline by one grab
     # is fine (25s is the user's MINIMUM, "22.4s proved too soon").
-    gems = shard.GemWatch(guard=run.guard)
+    from runtime.action_session import ActionSession
+    gems = shard.GemWatch(guard=run.guard, session=ActionSession.for_operation('quest_ilm'))
     while cycle_sec - (time.monotonic() - t0) > 0:
         frame = run.check(capture.grab())
         run.observe(gems.poll(frame))

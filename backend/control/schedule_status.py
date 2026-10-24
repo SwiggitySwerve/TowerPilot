@@ -23,7 +23,7 @@ def read(root, *, instance: str, account=None, serial=None, profile=None,
                   next_clock_boundary=None, handoff='natural_run_boundary',
                   operation_id=None, operation_status=None, step=None, recovery_action=None,
                   server_time=epoch, fresh_for_sec=FRESH_FOR_SEC)
-    candidates = [op for op in operations.ledger(root).active(device_key)
+    candidates = [op for op in operations.Operations.active_readonly(operations.ledger_path(root), device_key)
                   if op['kind'] == 'run'
                   and all(op['context'].get(key) == value for key, value in context.items())
                   and isinstance(op.get('progress', {}).get('schedule'), dict)]
@@ -38,7 +38,7 @@ def read(root, *, instance: str, account=None, serial=None, profile=None,
     age = epoch - observed if type(observed) in (int, float) else None
     if operation['status'] != 'running':
         result.update(availability='unavailable', reason='scheduler_not_running')
-    elif not operations.worker_alive(operation.get('worker')):
+    elif operations.worker_alive(operation.get('worker')) is not True:   # gone or unverifiable: no worker is vouched for
         result.update(availability='unavailable', reason='scheduler_worker_unavailable')
     elif age is None or not 0 <= age <= FRESH_FOR_SEC:
         result.update(availability='stale', reason='scheduler_observation_stale')

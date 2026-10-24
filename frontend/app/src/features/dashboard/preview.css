@@ -1,0 +1,110 @@
+.tp-dashboard-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--tp-space-3);
+  align-items: start;
+}
+.tp-preview {
+  min-width: 0;
+  max-width: 100%;
+  padding: var(--tp-space-3);
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface-raised);
+  overflow-wrap: anywhere;
+}
+.tp-preview h2 {
+  margin-top: 0;
+}
+.tp-preview p {
+  margin: var(--tp-space-2) 0;
+}
+.tp-preview__content,
+.tp-preview__settings {
+  min-width: 0;
+}
+.tp-preview button,
+.tp-preview select,
+.tp-preview summary,
+.tp-preview a {
+  min-height: 32px;
+  min-width: 24px;
+}
+.tp-preview button,
+.tp-preview select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface-strong);
+  color: var(--tp-color-text);
+  font: inherit;
+  max-width: 100%;
+}
+.tp-preview button:disabled {
+  color: var(--tp-color-text-muted);
+  cursor: not-allowed;
+}
+.tp-preview :focus-visible {
+  outline: 2px solid var(--tp-color-text);
+  outline-offset: 3px;
+}
+.tp-preview__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-2);
+  margin-block: var(--tp-space-2);
+}
+.tp-preview label {
+  display: grid;
+  gap: var(--tp-space-1);
+  margin-block: var(--tp-space-2);
+}
+.tp-preview__picture {
+  display: grid;
+  justify-items: center;
+}
+.tp-preview canvas {
+  display: block;
+  width: auto;
+  height: 55svh;
+  max-width: 100%;
+  max-height: 55svh;
+  object-fit: contain;
+}
+.tp-preview__settings > div > span + span {
+  margin-inline-start: 0.35rem;
+}
+.tp-preview canvas[hidden] {
+  display: none;
+}
+.tp-preview dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--tp-space-1);
+  font-variant-numeric: tabular-nums;
+}
+.tp-preview dd {
+  margin: 0;
+}
+.tp-preview a {
+  display: inline-flex;
+  align-items: center;
+}
+@media (min-width: 1200px) {
+  .tp-dashboard-layout {
+    grid-template-columns: minmax(0, 1100px) 300px;
+  }
+}
+@media (max-width: 480px) {
+  .tp-preview button {
+    min-height: 44px;
+    width: 100%;
+  }
+  .tp-preview select {
+    min-height: 44px;
+    width: 100%;
+  }
+  .tp-preview__actions {
+    display: grid;
+  }
+}

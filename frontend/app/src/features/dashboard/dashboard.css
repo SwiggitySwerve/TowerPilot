@@ -1,0 +1,158 @@
+/* The Dashboard's layout (spec 2.1 to 2.3). Building blocks are styled in src/ui/ui.css. */
+
+/* F6-13: the main column can wrap beside the 300 px preview at desktop widths. */
+.tp-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  max-width: 1100px;
+  min-width: 0;
+}
+
+/* Control: three slots side by side when the card is at least 840 px wide, one column below. */
+.tp-region[data-region='control'] {
+  container-type: inline-size;
+  min-width: 0;
+}
+.tp-control__slots {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--tp-space-2);
+  margin-bottom: var(--tp-space-2);
+}
+@container (min-width: 840px) {
+  .tp-control__slots {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(4, auto);
+  }
+}
+/* Narrow: each slot's label and revocation share its first line (spec 2.2, 390 px). */
+@container (max-width: 839.98px) {
+  .tp-control__slots .tp-slot {
+    grid-template-rows: none;
+    grid-row: auto;
+    /* The label keeps its longest word (at most 40% wide); the action wraps beside it, never over it. */
+    grid-template-columns: fit-content(40%) minmax(0, 1fr);
+    grid-template-areas:
+      'label action'
+      'facts facts'
+      'meta meta';
+  }
+  .tp-control__slots .tp-slot__label {
+    grid-area: label;
+    align-self: center;
+  }
+  .tp-control__slots .tp-slot__action {
+    grid-area: action;
+    justify-content: flex-end;
+  }
+  .tp-control__slots .tp-slot__facts {
+    grid-area: facts;
+  }
+  .tp-control__slots .tp-slot__meta {
+    grid-area: meta;
+  }
+  /* A slot that failed to draw: its fallback takes a full row under the label (F4-01 at 390). */
+  .tp-control__slots .tp-slot > .tp-fallback {
+    grid-column: 1 / -1;
+  }
+}
+
+/* A list of rows inside a region or slot (routines, outcome lines, needs). */
+.tp-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+.tp-rows > li {
+  min-width: 0;
+}
+
+/* The outcome strip under the slots (C-9). */
+.tp-outcomes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  min-width: 0;
+}
+
+/* A slot's Seen now line: chip, line, a second line. */
+.tp-seen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.4rem;
+  margin: 0;
+  min-width: 0;
+}
+.tp-seen__extra {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+p.tp-seen__extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.4rem;
+  margin: 0;
+}
+
+/* The gem source line and the pickers. */
+.tp-source {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.4rem;
+  margin: 0;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+.tp-picker {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--tp-font-size-13);
+}
+.tp-picker select {
+  min-height: var(--tp-control-height);
+  max-width: 100%;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface-strong);
+  color: var(--tp-color-text);
+  font: inherit;
+}
+.tp-age {
+  font-variant-numeric: tabular-nums;
+}
+.tp-source {
+  flex-basis: 100%;
+}
+
+/* F-107: toasts, bottom right, never covering the Control slots' buttons on wide screens. */
+.tp-toasts {
+  position: fixed;
+  inset-inline-end: var(--tp-space-4);
+  bottom: var(--tp-space-4);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tp-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-3);
+  padding: var(--tp-space-2) var(--tp-space-3);
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface-raised);
+}

@@ -14,42 +14,36 @@ import tempfile
 import threading
 import time
 
+from runtime import file_lock
+
 
 class DeviceBusy(RuntimeError):
     pass
 
 
+class InputRevoked(DeviceBusy):
+    """A person revoked automation input for this device (tap permission off)."""
+
+
 _ROOT = (Path(os.environ.get("PROGRAMDATA", tempfile.gettempdir())) / "TowerPilot" / "device-leases"
          if os.name == "nt" else Path(tempfile.gettempdir()) / "towerpilot-device-leases")
 _ENV = "TOWER_DEVICE_DELEGATION"
+INPUT_GATE = 1   # the one advertised gate version: what grant() writes and what lease_state accepts
 _current = None
 _guard = threading.RLock()
+_gate_depth = 0
 
 
 def _lock(path):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    handle = open(path, "a+b", buffering=0)
+    """The OS lock of runtime/file_lock.py, taken once and never waited for: a busy lock is another owner (policy of the lease: never wait, never steal)."""
     try:
-        handle.seek(0)
-        if os.name == "nt":
-            import msvcrt
-            # Windows permits locking a byte beyond EOF.
-            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
-        else:
-            import fcntl
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except OSError as exc:
-        handle.close()
+        return file_lock.try_lock(path)
+    except file_lock.LockBusy as exc:
         raise DeviceBusy("Another process owns this emulator") from exc
-    return handle
 
 
 def _unlock(handle):
-    if os.name == "nt":
-        import msvcrt
-        handle.seek(0)
-        msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
-    handle.close()
+    file_lock.unlock(handle)
 
 
 class Lease:
@@ -71,8 +65,13 @@ class Lease:
                 continue
 
     def grant(self):
+        # input_gate: this owner dispatches every input through input_scope(),
+        # so a revocation recorded by revoke_input() reaches it and fence_input()
+        # can prove that no call is still in flight. Owners without the field
+        # predate the gate and cannot be fenced.
         return {"key": self.key, "pid": self.pid, "token": self.token,
-                "creation_time": self.creation_time, "launchers": self.launchers}
+                "creation_time": self.creation_time, "launchers": self.launchers,
+                "input_gate": INPUT_GATE}
 
     def check(self):
         if self.handle.closed or self.pid != os.getpid():
@@ -186,19 +185,193 @@ def prepare_instance(name=None):
     return acquire(settings.instance(name)["serial"], *adbclient._HOST)
 
 
+def _stem(key):
+    return _ROOT / (hashlib.sha256(json.dumps(list(key)).encode()).hexdigest() + ".lock")
+
+
+def _lock_wait(path, timeout):
+    """Take a short-held lock, waiting for its current holder to finish."""
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            return _lock(path)
+        except DeviceBusy:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(0.005)
+
+
+def revocation(key):
+    """The recorded revocation for a device, or None. An unreadable marker is
+    still a revocation: only an explicit enable removes it."""
+    path = _stem(key).with_suffix(".revoked")
+    if not path.exists():
+        return None
+    try:
+        record = json.loads(path.read_text())
+        return record if isinstance(record, dict) else {"unreadable": True}
+    except (OSError, ValueError):
+        return {"unreadable": True}
+
+
+def is_revoked(serial, host="127.0.0.1", port=5037):
+    return bool(serial) and revocation(_device_key(serial, host, port)) is not None
+
+
+def revoke_input(serial, host="127.0.0.1", port=5037, reason="tap_permission_revoked"):
+    """Refuse every later game input on this device, from every accepted worker
+    and delegated child that dispatches through input_scope(). Atomic; the
+    observation loop and the battle are untouched. Call fence_input() to learn
+    when calls already in flight have finished."""
+    key = _device_key(serial, host, port)
+    path = _stem(key).with_suffix(".revoked")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    record = {"key": list(key), "reason": reason, "revoked_at": time.time(), "token": secrets.token_hex(8)}
+    temporary = path.with_suffix(".revoked.tmp")
+    try:
+        temporary.write_text(json.dumps(record))
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+    # Success is what a reader sees, not that the calls returned.
+    stored = revocation(key)
+    if stored is None or stored.get("token") != record["token"]:
+        raise OSError("The revocation marker could not be read back after it was written")
+    return record
+
+
+def clear_revocation(serial, host="127.0.0.1", port=5037):
+    """An explicit tap enable: input is permitted again."""
+    _stem(_device_key(serial, host, port)).with_suffix(".revoked").unlink(missing_ok=True)
+
+
+def fence_input(serial, host="127.0.0.1", port=5037, timeout=3.0):
+    """True once every input call that began before the revocation has ended.
+
+    Every dispatch holds the device's input gate from its revocation check to
+    its last byte, so taking the gate after revoke_input() proves that nothing
+    already started is still on the wire and everything later sees the
+    revocation. False when a call is still in flight after the timeout.
+    """
+    path = _stem(_device_key(serial, host, port)).with_suffix(".input")
+    try:
+        gate = _lock_wait(path, timeout)
+    except DeviceBusy:
+        return False
+    _unlock(gate)
+    return True
+
+
+def lease_state(serial, host="127.0.0.1", port=5037):
+    """Who holds this device, without taking it: {owned, delegated, input_gate, holders}.
+
+    "Not owned" is ONE observation of both locks, never two. child_environment() promotes a delegated child
+    by taking the primary lock BEFORE it lets go of the activity lock, so the device is never unowned, but a
+    reader that probed the primary lock, let it go, and only then probed the activity lock could see the
+    primary free (before the promotion) and the activity free (after it) and report an owned device free.
+    A free primary is therefore kept taken while the activity lock is probed: no promotion (nor any owner,
+    all of whom hold the primary lock or the activity lock) can slip between the two probes, and when both
+    probes succeeded there was a moment at which this reader held both: nobody else held either.
+
+    input_gate: 'enforced' when the owner dispatches through the gate,
+    'unsupported' when it predates it, None when nobody owns the device.
+    holders: [{pid, role}] for each held lock whose metadata names a LIVE process whose pid and
+    creation time both match (role 'primary' or 'delegated'). A holder whose metadata is missing,
+    corrupt or stale is simply not named: the lock is still held, so `owned` stays true. Nothing
+    is ever signalled on the strength of this list."""
+    key = _device_key(serial, host, port)
+    path = _stem(key)
+    held = []   # (lock held, the metadata file that holder must have written)
+    free_primary = None
+    try:
+        for lock_path, metadata in ((path, path.with_suffix(".json")),
+                                    (path.with_suffix(".activity"), path.with_suffix(".activity.json"))):
+            try:
+                probe = _lock(lock_path)
+            except DeviceBusy:
+                held.append((lock_path, metadata))
+            else:
+                if lock_path == path:
+                    free_primary = probe    # a free primary stays taken until the activity probe is done (below)
+                else:
+                    _unlock(probe)
+    finally:
+        if free_primary is not None:
+            _unlock(free_primary)
+    if not held:
+        return {"owned": False, "delegated": False, "input_gate": None, "holders": []}
+    # Every lock that is held must belong to a holder that positively advertises
+    # the gate. A holder whose metadata is missing, corrupt, stale (its process
+    # is gone) or pre-gate proves nothing, so it is reported 'unsupported'.
+    enforced = all(_advertises_gate(metadata) for _, metadata in held)
+    holders = []
+    for lock, metadata in held:
+        named = _live_holder(metadata)
+        if named is not None:
+            holders.append({"pid": named, "role": "delegated" if lock.suffix == ".activity" else "primary"})
+    return {"owned": True, "delegated": any(lock.suffix == ".activity" for lock, _ in held),
+            "input_gate": "enforced" if enforced else "unsupported", "holders": holders}
+
+
+def _live_holder(metadata):
+    """The pid a lock's metadata names, only when that process is running with the recorded creation
+    time (a read-only question); otherwise None."""
+    from runtime import process_identity
+    try:
+        grant = json.loads(metadata.read_text())
+        pid, created = grant["pid"], grant["creation_time"]
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return None
+    return pid if process_identity.matches(pid, created) else None
+
+
+def _advertises_gate(metadata):
+    """True only when this file names a live process (pid and creation time
+    match) that declares, with the exact advertised token, that it dispatches input
+    through the gate. Truthiness proves nothing: "false", 2 or 1.0 are not it."""
+    from runtime import process_identity
+    try:
+        grant = json.loads(metadata.read_text())
+        pid, created, gate = grant["pid"], grant["creation_time"], grant["input_gate"]
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return False
+    if not (gate is True or (type(gate) is int and gate == INPUT_GATE)):
+        return False
+    return process_identity.matches(pid, created)   # a read-only question: nothing is acted on
+
+
+def lease_free(serial, host="127.0.0.1", port=5037):
+    """True when no process owns this device, which proves a stopped worker is gone."""
+    return not lease_state(serial, host, port)["owned"]
+
+
 @contextmanager
-def input_scope():
-    """Fence the complete input call against scheduler-child takeover."""
+def input_scope(*, game_input=True):
+    """Fence the complete input call against scheduler-child takeover and
+    against a person's revocation. game_input=False (an ad owner's force-stop)
+    still queues behind the gate but is not game input."""
+    global _gate_depth
     with _guard:
         lease = ensure_current()
-        if lease.delegated:
-            yield lease
-        else:
-            handle = _lock(lease.path.with_suffix(".activity"))
-            try:
+        # Re-entrant inside one process: only the outermost call takes the gate.
+        gate = _lock_wait(_stem(lease.key).with_suffix(".input"), 3.0) if _gate_depth == 0 else None
+        _gate_depth += 1
+        try:
+            if game_input and revocation(lease.key) is not None:
+                raise InputRevoked("Automation input was revoked for this emulator")
+            if lease.delegated:
                 yield lease
-            finally:
-                _unlock(handle)
+            else:
+                handle = _lock(lease.path.with_suffix(".activity")) if _gate_depth == 1 else None
+                try:
+                    yield lease
+                finally:
+                    if handle is not None:
+                        _unlock(handle)
+        finally:
+            _gate_depth -= 1
+            if gate is not None:
+                _unlock(gate)
 
 
 def child_environment():

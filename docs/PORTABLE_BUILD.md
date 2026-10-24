@@ -13,9 +13,11 @@ Python and dependency license files remain inside the package.
 
 ## Rebuild
 
-On Windows with 64-bit Python 3.12:
+On Windows with 64-bit Python 3.12 and Node.js 22.13+ (22.x), 24.x or 26+, build the dashboard
+app first; both release scripts refuse to run without it:
 
 ```powershell
+cd frontend/app; npm ci; npm run build; cd ../..
 py -3.12 tools/build_portable.py
 ```
 

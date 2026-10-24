@@ -17,6 +17,13 @@ def run_hidden(args, **kw):
     kw.setdefault("creationflags", NO_WINDOW)
     return subprocess.run(args, **kw)
 
+
+def spawn_hidden(args, **kw):
+    """subprocess.Popen counterpart of run_hidden, for a long-lived helper
+    process (the warm OCR reader); the same no-console rule applies."""
+    kw.setdefault("creationflags", NO_WINDOW)
+    return subprocess.Popen(args, **kw)
+
 ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = ROOT / "config.yaml"
 CONFIG_EXAMPLE = ROOT / "config.example.yaml"

@@ -49,7 +49,10 @@ def plan(root, cfg, requirements=()):
         report = json.loads((accounts.calibration_dir(root,cfg)/"calibrate_report.json").read_text(encoding="utf-8"))
     except (OSError,ValueError):
         report = {}
-    evidence = {e["rel"]:e for e in report.get("entries",[]) if e.get("rel")}
+    # a report that is valid JSON but not the object of entries the calibrator writes is no evidence, like a corrupt one
+    entries = report.get("entries") if isinstance(report, dict) else None
+    entries = [e for e in entries if isinstance(e, dict) and isinstance(e.get("rel"), str) and e["rel"]] if isinstance(entries, list) else []
+    evidence = {e["rel"]:e for e in entries}
     from player import learned
     learned_rows = learned.known({"state": str(accounts.calibration_dir(root,cfg)/"calibrate_state.json")})
     automatic = writable_targets()
@@ -69,7 +72,7 @@ def plan(root, cfg, requirements=()):
             required=rel in required, status=status, learned=learned_rows.get(rel)))
     from player.interface_manifest import coverage
     from player.manifest_driver import plan as mapping_plan
-    interface = coverage(lambda rel: accounts.template_path(root, cfg, rel), report.get("entries", []))
+    interface = coverage(lambda rel: accounts.template_path(root, cfg, rel), entries)
     return {"mapping":mapping_plan(), "interface":interface, "native_frame":[1080,2560], "bootstrap":{"steps":scan_steps(), "version":manifest()["version"], "screens":list(manifest()["screens"]), "targets":sorted(automatic)}, "steps":list(groups.values()),
         "captured":sum(t["status"] != "Missing" for g in groups.values() for t in g["targets"]),
         "total":sum(len(g["targets"]) for g in groups.values()),

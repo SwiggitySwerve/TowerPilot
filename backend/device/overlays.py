@@ -215,9 +215,12 @@ def _tap(serial: str, frame, x: int, y: int, reason: str) -> dict:
     ev = {"type": "tap", "x": jx, "y": jy, "reason": reason,
           "dry_run": bool(CONFIG["loop"]["dry_run"])}
     if not ev["dry_run"]:
-        from runtime.device_lease import input_scope
-        with input_scope():
-            adbclient.shell(serial, f"input tap {jx} {jy}")
+        from runtime.device_lease import InputRevoked, input_scope
+        try:
+            with input_scope():
+                adbclient.shell(serial, f"input tap {jx} {jy}")
+        except InputRevoked as exc:
+            raise act.TapRefused(str(exc)) from None
     return ev
 
 
@@ -261,7 +264,7 @@ def clean(rounds: int = 3, settle: float = 4.0) -> bool:
         # below threshold) or the tap did not take: kill the owner. Data
         # loss is not a concern for a store/ad process.
         from runtime.device_lease import input_scope
-        with input_scope():
+        with input_scope(game_input=False):   # closing an ad's process sends no game input
             adbclient.shell(serial, f"am force-stop {pkg}")
         logger.event("overlay_close", window=win, via="force_stop",
                      close_button_seen=bool(hit))

@@ -1,0 +1,49 @@
+.tp-run-add {
+  min-width: 0;
+  margin-block-start: var(--tp-space-2);
+}
+.tp-run-add__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--tp-space-3);
+}
+.tp-run-add__fields label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: var(--tp-space-1);
+}
+.tp-run-add__fields input,
+.tp-run-add__fields select,
+.tp-run-add__fields textarea {
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--tp-control-height);
+  font: inherit;
+}
+.tp-run-add__fields input[type='checkbox'] {
+  align-self: start;
+  width: 24px;
+  height: 24px;
+}
+.tp-run-add__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-2);
+  margin-block: var(--tp-space-3);
+}
+@media (max-width: 600px) {
+  .tp-run-add {
+    --tp-control-height-small: var(--tp-control-height-touch);
+  }
+  .tp-run-add__fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tp-run-add button,
+  .tp-run-add summary {
+    min-height: var(--tp-control-height-touch);
+  }
+  .tp-run-add__actions {
+    flex-direction: column;
+  }
+}

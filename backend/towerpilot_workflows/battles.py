@@ -8,7 +8,7 @@ import json
 import time
 import uuid
 
-from towerpilot_workflows.control_settings import flatten, merge_patch, validate_patch
+from towerpilot_workflows.control_settings import documents, flatten, merge_patch, validate_patch
 from towerpilot_workflows.operations import Conflict, Operations, digest
 
 LIVE = ('prepared', 'active')
@@ -220,6 +220,26 @@ class Battles(Operations):
             return json.loads(row[0])
         return None
 
+    @staticmethod
+    def controls_fingerprint(battle_id, operation_id, generation, expected_revision, patch):
+        return digest(dict(battle_id=battle_id, operation_id=operation_id, generation=generation,
+                           expected_revision=expected_revision, patch=validate_patch(patch)))
+
+    @staticmethod
+    def action_fingerprint(battle_id, operation_id, generation, action, expected_revision=None):
+        return digest(dict(battle_id=battle_id, operation_id=operation_id, generation=generation,
+                           action=action, expected_revision=expected_revision))
+
+    def recorded_command(self, idempotency_key, fingerprint):
+        """The command an identical earlier request recorded, or None. Read-only.
+
+        The fingerprint binds battle, operation, generation and payload, so a
+        receipt is returned only to the exact request that was recorded; the
+        same key with another request is a Conflict.
+        """
+        with self._db() as db:
+            return self._replay(db, idempotency_key, fingerprint)
+
     def _command(self, db, battle, kind, payload, key, fingerprint):
         command = dict(id=str(uuid.uuid4()), battle_id=battle['id'], operation_id=battle['operation_id'],
                        generation=battle['generation'], kind=kind, payload=copy.deepcopy(payload),
@@ -230,12 +250,18 @@ class Battles(Operations):
         self._event(db, battle, 'command_requested', command=command)
         return command
 
-    def request_controls(self, battle_id, operation_id, generation, expected_revision, patch, idempotency_key):
+    def request_controls(self, battle_id, operation_id, generation, expected_revision, patch, idempotency_key,
+                         admit=None):
+        """Record one revisioned control command. admit(db, battle), when given,
+        runs inside the same BEGIN IMMEDIATE transaction as the insert, after an
+        identical retry has been answered from its receipt, and may raise
+        Conflict to refuse. A decision another writer can change (a person's
+        later choice) is therefore re-checked atomically with the command, not
+        before it."""
         patch = validate_patch(patch)
         if not isinstance(idempotency_key, str) or not idempotency_key:
             raise ValueError('An idempotency key is required')
-        fingerprint = digest(dict(battle_id=battle_id, operation_id=operation_id, generation=generation,
-                                  expected_revision=expected_revision, patch=patch))
+        fingerprint = self.controls_fingerprint(battle_id, operation_id, generation, expected_revision, patch)
         with self._db() as db:
             battle = self._battle(db, battle_id)
             self._scope(battle, generation, operation_id)
@@ -245,6 +271,8 @@ class Battles(Operations):
                 return replay
             if type(expected_revision) is not int or expected_revision != battle['control_revision']:
                 raise Conflict('Control revision changed')
+            if admit is not None:
+                admit(db, battle)
             unsupported = set(flatten(patch)) - set(battle['capabilities'].get('controls', []))
             if unsupported:
                 raise ValueError('Unsupported controls: ' + ', '.join(sorted(unsupported)))
@@ -265,7 +293,7 @@ class Battles(Operations):
     @staticmethod
     def _set_overrides(target, patch):
         for key, value in patch.items():
-            if key == 'shopping_plan' and value is not None:
+            if key in documents() and value is not None:
                 target[key] = copy.deepcopy(value)
             elif isinstance(value, dict):
                 Battles._set_overrides(target.setdefault(key, {}), value)
@@ -277,8 +305,7 @@ class Battles(Operations):
     def request_action(self, battle_id, operation_id, generation, action, idempotency_key, expected_revision=None):
         if not isinstance(idempotency_key, str) or not idempotency_key:
             raise ValueError('An idempotency key is required')
-        fingerprint = digest(dict(battle_id=battle_id, operation_id=operation_id, generation=generation,
-                                  action=action, expected_revision=expected_revision))
+        fingerprint = self.action_fingerprint(battle_id, operation_id, generation, action, expected_revision)
         with self._db() as db:
             battle = self._battle(db, battle_id)
             self._scope(battle, generation, operation_id)
@@ -311,11 +338,29 @@ class Battles(Operations):
             return [c for c in commands.values() if c['state'] not in TERMINAL_COMMANDS]
 
     def commands(self, battle_id):
-        """Current command states, deduplicating idempotency aliases."""
+        """Current command states, deduplicating idempotency aliases.
+
+        Each command lists request_keys: every client idempotency key recorded
+        for it, in recording order (an action alias adds a key to the command it
+        joined). Keys are client-chosen request identities, not credentials. A
+        row joins a command only when it names the same command, battle,
+        operation and generation; anything else is left out rather than mixed in.
+        """
         with self._db() as db:
-            self._battle(db, battle_id)
-            rows = db.execute('SELECT body FROM battle_commands WHERE battle_id=? ORDER BY rowid', (battle_id,)).fetchall()
-            return list({c['id']: c for c in (json.loads(row[0]) for row in rows)}.values())
+            battle = self._battle(db, battle_id)
+            rows = db.execute('SELECT request_key,body FROM battle_commands WHERE battle_id=? ORDER BY rowid',
+                              (battle_id,)).fetchall()
+        # Commands are only ever created under their battle's own operation and
+        # generation (_scope), so the battle row is the reference identity.
+        identity = dict(battle_id=battle_id, operation_id=battle['operation_id'], generation=battle['generation'])
+        commands, keys = {}, {}
+        for key, raw in rows:
+            command = json.loads(raw)
+            if any(command.get(field) != value for field, value in identity.items()):
+                continue
+            commands[command['id']] = command   # aliases hold the same current body
+            keys.setdefault(command['id'], []).append(key)
+        return [dict(command, request_keys=keys[command_id]) for command_id, command in commands.items()]
 
     def acknowledge(self, battle_id, generation, command_id, *, applied_paths=None,
                     state='applied', reason=None, evidence=None):

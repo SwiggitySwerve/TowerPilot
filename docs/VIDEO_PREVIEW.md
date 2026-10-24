@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** Configuration guide
 > **Created:** 2026-10-19
-> **Updated:** 2026-10-19
+> **Updated:** 2026-10-24
 
 ## Choosing a source
 
@@ -119,6 +119,15 @@ specific stream's active backend, fallback reasons, rate and errors. Changing
 quality still controls the JPEG sent by the dashboard, including when scrcpy
 provides the source pixels.
 
+Each part of `GET /api/stream.mjpg` carries four headers made with that part's own
+pixels: `X-Preview-Frame-Kind` (`frame`, or `error` for the marker drawn when a
+capture fails), `X-Preview-Sequence` (successful frames so far; an error marker
+repeats the last number and never advances it), `X-Preview-Backend` (`mumu`,
+`scrcpy`, `adb` or `unknown`) and `X-Preview-Source-Age-Ms` (the source's own
+age estimate in milliseconds, or `unknown`; only scrcpy estimates one). They
+identify the picture on screen; the status record is a separate snapshot that
+can race a fallback and cannot say which part is displayed.
+
 Implementation: [preview package](../backend/device/preview/),
 [settings catalog](../backend/control/settings_catalog.py), and
-[stream endpoint](../frontend/dashboard.py).
+[stream endpoint](../backend/dashboard.py).

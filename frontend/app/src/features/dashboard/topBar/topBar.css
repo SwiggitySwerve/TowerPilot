@@ -1,0 +1,125 @@
+.tp-topbar__row.tp-topbar-content {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--tp-space-2) var(--tp-space-3);
+  font-size: var(--tp-font-size-13);
+}
+
+.tp-topbar-identity {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--tp-space-2) var(--tp-space-3);
+  min-width: 0;
+}
+
+.tp-topbar-account,
+.tp-topbar-connection,
+.tp-topbar-reconnect {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-1) var(--tp-space-2);
+  min-width: 0;
+}
+
+.tp-topbar-meta,
+.tp-topbar-reconnect > span {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+}
+
+/* F4-02: Why and Details sit on the bar's one line, before Pages, on wide windows. */
+.tp-topbar-extra {
+  grid-column: 4;
+  grid-row: 1;
+  align-self: start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-2);
+  min-height: var(--tp-control-height);
+}
+
+.tp-topbar-extra:empty {
+  display: none;
+}
+
+.tp-pages {
+  grid-column: 5;
+  grid-row: 1;
+  position: relative;
+  align-self: start;
+}
+
+.tp-pages > summary {
+  cursor: pointer;
+  min-height: var(--tp-control-height);
+  padding: var(--tp-space-1) var(--tp-space-2);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
+}
+
+.tp-pages nav {
+  position: absolute;
+  z-index: 5;
+  inset-inline-end: 0;
+  min-width: 12rem;
+  padding: var(--tp-space-2);
+  background: var(--tp-color-surface-raised);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
+}
+
+.tp-pages ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tp-pages a {
+  display: block;
+  margin-block: 0;
+  padding: var(--tp-space-1) var(--tp-space-2);
+}
+
+.tp-topbar-why p,
+.tp-topbar-details .tp-server {
+  margin: var(--tp-space-1) 0;
+}
+
+@media (max-width: 600px) {
+  .tp-topbar__row.tp-topbar-content {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .tp-topbar-content > .tp-brand {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .tp-topbar-content > h1 {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .tp-pages {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+  .tp-pages nav {
+    inset-inline-start: 0;
+    inset-inline-end: auto;
+  }
+  .tp-topbar-identity {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-start;
+  }
+  .tp-topbar-extra {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    min-height: 0;
+  }
+}

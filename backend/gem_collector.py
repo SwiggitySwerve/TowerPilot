@@ -1,4 +1,9 @@
-"""Collect diamonds on an existing battle; never start, equip or end a run."""
+"""Collect diamonds on an existing battle; never start, equip or end a run.
+
+Between battles a collector that harvesting launched also claims the Ad Gem
+offer on the exact Home screen (`AdGemCollector.poll_home`): one recognized
+CLAIM tap per window, nothing else on Home, and nothing at all on any other
+screen."""
 import argparse
 import time
 from types import SimpleNamespace
@@ -10,24 +15,65 @@ from scheduling import runflag
 from flows.shard import GemWatch
 
 
+FENCE_RECHECK_SEC = 5
+
+
+def automatic_fence():
+    """For a collector the lifecycle host launched (request.harvest), a check
+    that the person's choice still names exactly this launch; None for a
+    collector a person started. Reads the operation ledger the worker was
+    accepted into, never the environment's say-so."""
+    from runtime.operations import environment_operation
+    ledger, operation_id = environment_operation()
+    if ledger is None:
+        return None
+    operation = ledger.get(operation_id)
+    if operation['request'].get('harvest') is not True:
+        return None
+    from towerpilot_workflows.harvest import CollectorRefused, automatic_launch_valid
+
+    def check():
+        ok, code = automatic_launch_valid(ledger.path, operation)
+        if not ok:
+            logger.event('gem_collector_refused', reason=code)
+            raise CollectorRefused(f'Harvesting no longer asks for this collector ({code}); no input was sent')
+    return check
+
+
 def main(instance, preset):
     from runtime.device_lease import prepare_instance
     prepare_instance(instance)
     settings.select_instance(instance,preset)
+    # The collector always adopts the battle on screen. Before any runner
+    # check, session or frame: the collection-scope setup guard for the bound
+    # (accepted workers: restored) device and account, logged under this
+    # instance. A person's collection-only handoff is read from the ledger,
+    # never from the environment.
+    from control.battles import require_runner_entry
+    require_runner_entry(settings.ROOT, settings.CONFIG, instance, scope='collection', event=logger.event)
     from runtime.runners import other_runners
     if next(other_runners(), None) is not None:
         raise RuntimeError('Another runner owns the emulator; stop it before collecting gems')
+    fence = automatic_fence()
+    if fence is not None:
+        fence()   # the person's Off, a new revision or a context change since acceptance: before any input
+    fence_checked = time.monotonic()
     from runtime.battle_session import BattleSession
     from orchestrator import preset as resolved_preset
     session = BattleSession.from_environment(resolved_preset(), settings.CONFIG, origin='adopted')
     body = session.effective_preset() if session is not None else resolved_preset()
-    gems=GemWatch(body.get('gather', {}))
+    from runtime.action_session import ActionSession
+    actions = ActionSession.for_battle(session, 'collector', tracked_only=True) if session is not None else None
+    gems=GemWatch(body.get('gather', {}), session=actions)
     state = SimpleNamespace(gems=gems, tracker=wave_reader.WaveTracker(), mission=None, shop=None)
     wave_hwm = None
     logger.event('gem_collector_started',preset=preset,ad_gems=gems.ad_gems.enabled,orbit=gems.orbit.enabled)
     last_status=None
     saw_battle=False
     while True:
+        if fence is not None and time.monotonic() - fence_checked >= FENCE_RECHECK_SEC:
+            fence()
+            fence_checked = time.monotonic()
         frame=capture.grab()
         sc=screen.identify(frame)
         live=sc.name == 'battle' and wave_reader.read_wave(frame) is not None
@@ -41,7 +87,7 @@ def main(instance, preset):
                 previous = session.battle['id']
                 session.finish('wave_went_backwards', evidence={'previous_wave': wave_hwm, 'observed_wave': wave})
                 session.prepare_next(origin='partial_adoption', previous_battle_id=previous)
-            gems = GemWatch(body.get('gather', {}))
+            gems = GemWatch(body.get('gather', {}), session=actions)
             state.gems = gems
             state.tracker = wave_reader.WaveTracker()
             wave_hwm = None
@@ -57,15 +103,30 @@ def main(instance, preset):
                 logger.event('gem_collector_stopped',reason=reason)
                 return
         saw_battle=saw_battle or live
-        label='collecting' if live else 'waiting_for_battle'
+        # Home claims: only a collector harvesting launched (its fence proves
+        # the person's choice still asks for it), on the exact Home screen,
+        # with the routine enabled and no battle active.
+        home = (fence is not None and not live and sc.name == 'home' and gems.ad_gems.enabled
+                and (session is None or session.battle['status'] != 'active'))
+        label='collecting' if live else 'claiming_home_offer' if home else 'waiting_for_battle'
         if label!=last_status:
             logger.event('gem_collector_state',state=label)
             last_status=label
+        if home:
+            fence()     # immediately before any Home input decision, not only every FENCE_RECHECK_SEC
+            fence_checked = time.monotonic()
+            gems.ad_gems.poll_home(frame)
+            if session is not None and session.battle['status'] == 'prepared':
+                session.checkpoint(state, battle_visible=False, observed=('ad_gems',))
+            time.sleep(1)
+            continue
+        if fence is not None and not live:
+            gems.ad_gems.leave_home()
         if live:
             if session is not None:
                 if session.battle['status'] not in ('prepared', 'active'):
                     session.prepare_next(origin='adopted')
-                    gems = GemWatch(body.get('gather', {}))
+                    gems = GemWatch(body.get('gather', {}), session=actions)
                     state.gems = gems
                     state.tracker = wave_reader.WaveTracker()
                     wave_hwm = None

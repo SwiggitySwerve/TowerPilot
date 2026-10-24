@@ -1,0 +1,187 @@
+.tp-history {
+  min-width: 0;
+}
+.tp-history__toolbar,
+.tp-history__toolbar nav,
+.tp-history__detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-2);
+}
+.tp-history__toolbar label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-2);
+}
+.tp-history button,
+.tp-history select {
+  font: inherit;
+  color: var(--tp-color-text);
+  background: var(--tp-color-surface-strong);
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: var(--tp-radius-control);
+  padding: var(--tp-space-2) var(--tp-space-3);
+  min-height: 2rem;
+  max-width: 100%;
+}
+.tp-history button {
+  cursor: pointer;
+}
+.tp-history button:disabled,
+.tp-history button[aria-disabled='true'] {
+  color: var(--tp-color-text-muted);
+  cursor: default;
+}
+.tp-history__columns {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+  align-items: start;
+  gap: var(--tp-space-4);
+}
+.tp-history__panel {
+  min-width: 0;
+  padding: var(--tp-space-4);
+  background: var(--tp-color-surface);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+}
+.tp-history h2 {
+  font-size: var(--tp-font-size-title);
+  margin-top: 0;
+  scroll-margin-block-start: var(--tp-space-4);
+}
+.tp-history h3 {
+  font-size: var(--tp-font-size-body);
+  margin-block: var(--tp-space-4) var(--tp-space-2);
+}
+.tp-history__note,
+.tp-history dt {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-small);
+}
+.tp-history__notice {
+  color: var(--tp-color-warn);
+  border-inline-start: 2px solid var(--tp-color-warn);
+  padding-inline-start: var(--tp-space-3);
+}
+.tp-history__records {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--tp-space-2);
+  max-height: 70dvh;
+  overflow: auto;
+}
+.tp-history .tp-history__record {
+  width: 100%;
+  text-align: start;
+  display: grid;
+  gap: var(--tp-space-1);
+  background: var(--tp-color-surface-inner);
+  overflow-wrap: anywhere;
+}
+.tp-history .tp-history__record[aria-pressed='true'] {
+  border-color: var(--tp-color-focus);
+  background: var(--tp-color-surface-active);
+}
+.tp-history__record-name {
+  font-weight: 600;
+}
+.tp-history__row-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-2);
+  font-size: var(--tp-font-size-small);
+}
+.tp-history__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--tp-space-3);
+}
+.tp-history__facts > div,
+.tp-history__evidence,
+.tp-history__activity li {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tp-history dd {
+  margin: 0;
+}
+.tp-history pre {
+  max-width: 100%;
+  max-height: 26rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: var(--tp-space-3);
+  background: var(--tp-color-surface-inner);
+  border-radius: var(--tp-radius-control);
+  font: var(--tp-font-size-small) / 1.5 var(--tp-font-mono);
+}
+.tp-history pre .tp-server {
+  display: inline;
+}
+.tp-history__activity {
+  padding-inline-start: var(--tp-space-4);
+}
+/* A2-7 AC4: recorded action executions, one card per row, facts wrapping inside it. */
+.tp-history__executions {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--tp-space-2);
+}
+.tp-history__execution {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: var(--tp-space-3);
+  background: var(--tp-color-surface-inner);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
+}
+.tp-history__execution-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--tp-space-2);
+  margin-block-end: var(--tp-space-2);
+}
+.tp-history__code {
+  font-family: var(--tp-font-mono);
+}
+.tp-history__block {
+  display: block;
+}
+.tp-history .tp-history__older {
+  margin-block-start: var(--tp-space-3);
+}
+.tp-history__activity time {
+  display: block;
+}
+.tp-history .tp-server {
+  min-width: 0;
+  max-width: 100%;
+}
+.tp-history .tp-server bdi {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .tp-history__columns,
+  .tp-history__facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tp-history__panel {
+    padding: var(--tp-space-3);
+  }
+}
+/* The touch-target rule shares the breakpoint of src/ui/ui.css; the column collapse above keeps its own. */
+@media (pointer: coarse), (max-width: 600px) {
+  .tp-history button,
+  .tp-history select,
+  .tp-history summary {
+    min-height: var(--tp-control-height-touch);
+  }
+}

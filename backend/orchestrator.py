@@ -13,8 +13,6 @@ Normal Run policy:
     watch the wall overheal; if it declines despite x10 regen -> Nuke;
     still declining dm_confirm_sec later -> Demon Mode.
 """
-import datetime
-from scheduling import daystate
 from scheduling import global_rewards
 import json
 import math
@@ -37,10 +35,15 @@ from interactions import shopper
 from interactions import missions
 from vision import screen
 from interactions import store
+from towerpilot_workflows import action_contract
+from towerpilot_workflows.action_contract import shopping_interval
 from scheduling import runflag
 from runtime import runlog
 
 _battle_session = None
+_action_session = None      # the ActionSession of the tracked battle driver; None outside a ledger operation
+_rewards_history = None     # the FlowHistory of its reward flows (runtime/flow_history.py); None records nothing
+_chore_session = False      # the operation-scoped ActionSession the between-run chores record into: False = not looked for yet, None = no ledger operation
 
 
 def preset() -> dict:
@@ -58,47 +61,18 @@ def automation_enabled(routine: str) -> bool:
     return preset().get('automation', {}).get(routine, True)
 
 
-# P0 (2026-08-18): daily_state IO delegates to daystate.py (single writer,
-# absolute path, atomic saves).
-#
-# v29 (2026-08-27): the store's Ad Gem is no longer a once-daily claim - it
-# can be collected up to 60 times per day (6 gems each, 360/day), and the
-# game resets that cap at 00:00 UTC. So the once-a-day 4-5 AM scheme became
-# a UTC-keyed counter: the collection visits keep going all day, paced by
-# the caller's jittered retry clock, and stop dead at the cap.
-AD_GEMS_DAILY_CAP = 60          # game constant, not a preference
+# Daily state IO is scheduling/daystate.py (single writer, absolute path, atomic locked saves). When a reward clock or the daily store is due is the schedule
+# policy of its catalog definition (towerpilot_workflows/action_contract.py), reached through scheduling/global_rewards.py; this module keeps only the state a
+# policy reads (item 7, A3a). The v29 Ad-Gem cap helpers (a 60-per-UTC-day counter the free-gems claim never reached) are gone: nothing called them.
 
 
-def free_gems_due() -> bool:
-    """May another Ad-Gem claim be attempted right now? (v29: 60/UTC-day.)"""
-    count = daystate.get_utc_today("ad_gems_claimed_utc")
-    if count >= AD_GEMS_DAILY_CAP:
-        if not daystate.flag_today("ad_gems_cap_logged"):
-            daystate.mark_today("ad_gems_cap_logged")
-            logger.event("ad_gems_cap_reached", count=count,
-                         cap=AD_GEMS_DAILY_CAP)
-        return False
-    return True
-
-
-# quest_scan_due()/quest_scan_mark_done() removed: superseded by chores.py,
-# which owns every between-run chore and one daily-state scheme for all of them.
-
-
-def free_gems_mark_claimed():
-    count = daystate.bump_utc_today("ad_gems_claimed_utc")
-    logger.event("ad_gems_claimed", count=count, cap=AD_GEMS_DAILY_CAP)
-    # legacy daily flag kept for the dashboard's daily-state display
-    daystate.set_raw("free_gems_claimed", datetime.date.today().isoformat())
-
-
-def store_gems_due():
-    return global_rewards.store_due()
-
-
-def store_gems_mark_claimed():
-    global_rewards.store_claimed()
+def store_gems_mark_claimed(rs=None):
+    """The daily free-gems claim was confirmed: close this account's UTC day, and tell the flow's history what it proved."""
+    global_rewards.store_settle()
     logger.event("store_gems_claimed", schedule='01:00 UTC +/-10 minutes')
+    history = getattr(rs, 'rewards_history', None)
+    if history is not None:
+        history.proved('cooldown_shown')
 
 
 def run_tier() -> int | None:
@@ -231,7 +205,7 @@ class RunState:
         self.cl_always_above: int | None = None   # rolled per run from a range
         self.cl_blocked_logged = False   # edge-log for "toggle wanted but gated"
         from flows import shard
-        self.gems = shard.GemWatch(preset().get("gather", {}))
+        self.gems = shard.GemWatch(preset().get("gather", {}), session=_action_session)
         self.last_shop = 0.0
         self.sprint_prev: bool | None = None
         self.no_wave = 0              # consecutive frames without a wave read
@@ -285,6 +259,11 @@ class RunState:
         self.in_run_tries: dict = {}          # id -> attempts (same ledger
                                               # shape as rule_cards_tries)
         self.shop = shopper.Shopper(preset())
+        if _action_session is not None:
+            self.shop.recorder = _action_session.recorder('shopping')
+        self.rewards_history = _rewards_history
+        if _rewards_history is not None:
+            self.mission.on_end = lambda how: reward_flow_ended(self, how)
         from player.run_controls import resolve
         live = resolve(preset(), CONFIG)['routines']
         self.shopping_enabled = live['shopping']['enabled']
@@ -435,6 +414,15 @@ def _in_ability_row(pt: tuple[int, int], margin: int = 25) -> bool:
             and y - margin <= pt[1] <= y + h + margin)
 
 
+def chore_history():
+    """The history session of the between-run chores (operation-scoped: a chore runs on Home, between battles). None outside a ledger operation: they record nothing."""
+    global _chore_session
+    if _chore_session is False:
+        from runtime.action_session import ActionSession
+        _chore_session = ActionSession.for_operation('orchestrator')
+    return _chore_session
+
+
 def restart_from_home(frame, tier: int | None) -> bool:
     """Death -> HOME -> set the tier -> BATTLE, instead of tapping RETRY.
 
@@ -482,7 +470,7 @@ def restart_from_home(frame, tier: int | None) -> bool:
         # chore. chores.run_due() takes at most ONE per gap so a restart never
         # becomes a ten-minute menu expedition, and it never raises.
         from scheduling import chores
-        if chores.run_due() and not tourney.on_home(capture.grab()):
+        if chores.run_due(session=chore_history()) and not tourney.on_home(capture.grab()):
             after = capture.grab()
             if tourney.live_run(after):
                 # Someone started a run while the chores had the menus.
@@ -2361,16 +2349,180 @@ def advance_shopping(rs, frame, wave, sprint: bool, now: float, interval: float)
             rs.shop_done_logged = True
 
 
+VISIT_ACTIONS = {'quests': 'quest_visit', 'guild': 'guild_visit'}   # the side-menu badge -> the catalog action a visit to it is
+
+
+def visit_schedule(badge):
+    """The Cooldown of a visit to the side-menu `badge` (a sampled delay after it is seen; a repeat soon after a visit waits longer)."""
+    return action_contract.catalog().get(VISIT_ACTIONS[badge]).schedule
+
+
+def store_follow_up_schedule():
+    """The guild-store follow-up is an event (a guild claim landed), never a time: EventOnly."""
+    return action_contract.catalog().get('guild_store').schedule
+
+
+def open_reward_row(rs, action, **fields):
+    """The reward flow just started: open its history row (nothing when this run records none, or no flow started)."""
+    history = getattr(rs, 'rewards_history', None)
+    if history is not None and rs.mission.active:
+        history.opened(action, **fields)
+
+
+def reward_checked_row(rs, action):
+    """A badge check that started no flow: one aggregated no-op row."""
+    history = getattr(rs, 'rewards_history', None)
+    if history is not None:
+        history.checked(action)
+
+
+def reward_flow_ended(rs, how):
+    """`Mission.on_end`: the flow ended; close its history row. A guild flow that claimed something has proved a game effect."""
+    history = getattr(rs, 'rewards_history', None)
+    if history is None:
+        return
+    if how == 'completed' and history.action in ('guild_visit', 'guild_progress') and missions.last_guild_claims > 0:
+        history.proved('milestones_claimed', missions.last_guild_claims)
+    history.ended(how)
+
+
+def advance_rewards(rs, frame, now, wave, _global) -> bool:
+    """The side-menu reward upkeep of one monitoring pass (moved out of main() unchanged: item 7 batch A3a).
+
+    Returns True when the pass is spent (main() `continue`s: a flow started, so the frame is stale), False to fall through to the
+    rest of the loop."""
+    rs.menu_closed_frames = 0
+    rs.menu_open_frames += 1
+    if rs.menu_open_frames >= 2 and not rs.shop.active:
+        from interactions import event_rewards
+        reward_stepped = False
+        for key, detector, flow in (
+                ('daily_missions', missions.quests_badge, missions.quest_flow),
+                ('guild_progress', missions.guild_badge, missions.guild_flow),
+                ('event_missions', missions.events_badge, event_rewards.event_flow)):
+            if _global.get(key) is not True or global_rewards.decide(key).kind != 'due':
+                continue
+            present = bool(detector(frame))
+            global_rewards.settle(key)
+            logger.event('global_reward_check', behavior=key, badge=present, next_in=global_rewards.check_interval(key))
+            if present:
+                rs.mission.start(flow)
+                open_reward_row(rs, key)
+                rs.mission.step(frame)
+                reward_stepped = True
+                break
+            reward_checked_row(rs, key)
+        if reward_stepped:
+            return True
+    if rs.menu_open_frames < 2:
+        # menu may still be sliding in (EXIT BATTLE renders
+        # early) - let it settle before any flow taps tiles
+        badge = None
+    else:
+        # gather gates. ONE visit claims the 8h quests and
+        # their rewards together, so the quest flow runs while
+        # EITHER is wanted; both absent = legacy True.
+        _g = preset().get("gather", {})
+        _want_q = (_g.get("quests_8h", True)
+                   or _g.get("quest_rewards", True))
+        _want_q = _want_q and 'daily_missions' not in _global
+        badge = ("quests"
+                 if _want_q and missions.quests_badge(frame) else
+                 "guild"
+                 if _g.get("guild", True) and 'guild_progress' not in _global
+                 and missions.guild_badge(frame) else None)
+    if badge is None:
+        rs.quest_due = None
+    elif rs.quest_due is None or rs.quest_due[0] != badge:
+        # human-like: wander over within the next 1-10 minutes.
+        # If we JUST visited and the badge persists (nothing was
+        # claimable), back off instead of ping-ponging.
+        schedule = visit_schedule(badge)
+        lo, hi = CONFIG["missions"]["visit_delay_sec"]
+        due = schedule.after(now, random.uniform(*schedule.delay_range(now, rs.last_visit.get(badge), (lo, hi))))
+        rs.quest_due = (badge, due)
+        logger.event("quest_seen", kind_of=badge, wave=wave,
+                     due_in=round(due - now))
+    elif visit_schedule(badge).evaluate(now, {'next_at': rs.quest_due[1]})[0].kind == 'due' and not rs.shop.active:
+        rs.mission.start(missions.quest_flow
+                         if badge == "quests"
+                         else missions.guild_flow)
+        open_reward_row(rs, VISIT_ACTIONS[badge])
+        rs.mission.step(frame)
+        rs.last_visit[badge] = now
+        rs.quest_due = None
+        if badge == "guild":
+            rs.await_guild_result = True
+        return True  # flow completion also invalidates this frame
+    # ---- guild store: ONLY after a guild claim landed (the
+    # balance can't change otherwise - no point checking)
+    if not rs.mission.active and not rs.shop.active \
+            and rs.menu_open_frames >= 2 \
+            and store_follow_up_schedule().evaluate(now, {'pending': rs.pending_store})[0].kind == 'due':
+        rs.pending_store = store_follow_up_schedule().consumed({'pending': rs.pending_store})['pending']
+        rs.mission.start(store.store_flow)
+        open_reward_row(rs, 'guild_store', trigger='dependency', parent='guild_visit')
+        rs.mission.step(frame)
+        return True
+    # ---- once per UTC day, 01:00 +/-10 minutes; catch up when online
+    if not rs.mission.active and not rs.shop.active \
+            and rs.menu_open_frames >= 2 \
+            and _global.get('free_store_gems', _g.get('free_store_gems', False)):
+        store_day = global_rewards.store_decide(time.time(), retry_at=rs.free_gems_try_at, retry_now=now)
+        if store_day.kind == 'due':
+            # Failed/unavailable claims can retry after five minutes;
+            # a confirmed cooldown closes this account's UTC day.
+            rs.free_gems_try_at = global_rewards.store_attempt(now)
+            rs.mission.start(lambda: missions.free_gems_flow(
+                on_success=lambda: store_gems_mark_claimed(rs)))
+            open_reward_row(rs, 'free_store_gems', occurrence_key=store_day.occurrence_key)
+            rs.mission.step(frame)
+            return True
+    return False
+
+
+def step_reward_mission(rs, frame) -> bool:
+    """Advance the running reward flow by one action (moved out of main() unchanged: item 7 batch A3a).
+
+    Returns True when a flow was running (the pass is spent: nothing else acts mid-flow), False otherwise.
+    """
+    if rs.mission.active:
+        rs.mission.step(frame)
+        if not rs.mission.active and rs.await_guild_result:
+            rs.await_guild_result = False
+            # only a flow that actually CLAIMED something changes the
+            # balance - only then is a store visit worth anything
+            follow_up = store_follow_up_schedule()
+            rs.pending_store = (follow_up.raised({}) if (missions.last_guild_claims > 0
+                                                         and preset().get("gather", {}).get("guild_store", False))
+                                else follow_up.consumed({}))['pending']
+        time.sleep(random.uniform(0.15, 0.55))   # 0.5-1s step spacing
+        return True                  # nothing else acts mid-flow
+    return False
+
+
 def main():
-    global _battle_session
+    global _battle_session, _action_session, _rewards_history, _chore_session
     _battle_session = None
+    _action_session = None
+    _rewards_history = None
+    _chore_session = False
     from runtime.device_lease import ensure_current
     ensure_current()
+    # Before the first frame and any adoption: an unresolved setup battle is
+    # never adopted, whoever started this process. Read-only, no device I/O.
+    from control.battles import require_runner_entry
+    require_runner_entry(settings.ROOT, CONFIG, event=logger.event)
     from player import readiness
     from runtime.battle_session import BattleSession
     initial = capture.grab()
     _battle_session = BattleSession.from_environment(preset(), CONFIG,
         origin='adopted' if wave_reader.read_wave(initial) is not None else 'started')
+    if _battle_session is not None:
+        from runtime.action_session import ActionSession
+        from runtime.flow_history import FlowHistory
+        _action_session = ActionSession.for_battle(_battle_session, 'orchestrator')
+        _rewards_history = FlowHistory(_action_session)
     readiness.require(settings.ROOT, CONFIG, preset())
     rs = RunState()
     period = 1.0 / CONFIG["loop"]["fps"]
@@ -2685,16 +2837,8 @@ def main():
                 continue        # the cards screen moved: judge a fresh frame
 
             # ---- side menu upkeep + reward collection (least-priority flows)
-            if rs.mission.active:
-                rs.mission.step(frame)
-                if not rs.mission.active and rs.await_guild_result:
-                    rs.await_guild_result = False
-                    # only a flow that actually CLAIMED something changes the
-                    # balance - only then is a store visit worth anything
-                    rs.pending_store = (missions.last_guild_claims > 0
-                                        and preset().get("gather", {}).get("guild_store", False))
-                time.sleep(random.uniform(0.15, 0.55))   # 0.5-1s step spacing
-                continue                     # nothing else acts mid-flow
+            if step_reward_mission(rs, frame):
+                continue
             # hands_off gathering (2026-09-05): when the blueprint wants
             # nothing that lives in the side menu, the menu is never opened -
             # on a human's run that tap is theirs to make, not ours.
@@ -2749,89 +2893,8 @@ def main():
                     rs.menu_open_try = now
                     continue  # the menu moved; observe it before any other action
             elif rs.rewards_enabled:
-                rs.menu_closed_frames = 0
-                rs.menu_open_frames += 1
-                if rs.menu_open_frames >= 2 and not rs.shop.active:
-                    from interactions import event_rewards
-                    reward_stepped = False
-                    for key, detector, flow in (
-                            ('daily_missions', missions.quests_badge, missions.quest_flow),
-                            ('guild_progress', missions.guild_badge, missions.guild_flow),
-                            ('event_missions', missions.events_badge, event_rewards.event_flow)):
-                        if _global.get(key) is not True or not global_rewards.check_due(key):
-                            continue
-                        present = bool(detector(frame))
-                        global_rewards.checked(key)
-                        logger.event('global_reward_check', behavior=key, badge=present, next_in=300)
-                        if present:
-                            rs.mission.start(flow)
-                            rs.mission.step(frame)
-                            reward_stepped = True
-                            break
-                    if reward_stepped:
-                        continue
-                if rs.menu_open_frames < 2:
-                    # menu may still be sliding in (EXIT BATTLE renders
-                    # early) - let it settle before any flow taps tiles
-                    badge = None
-                else:
-                    # gather gates. ONE visit claims the 8h quests and
-                    # their rewards together, so the quest flow runs while
-                    # EITHER is wanted; both absent = legacy True.
-                    _g = preset().get("gather", {})
-                    _want_q = (_g.get("quests_8h", True)
-                               or _g.get("quest_rewards", True))
-                    _want_q = _want_q and 'daily_missions' not in _global
-                    badge = ("quests"
-                             if _want_q and missions.quests_badge(frame) else
-                             "guild"
-                             if _g.get("guild", True) and 'guild_progress' not in _global
-                             and missions.guild_badge(frame) else None)
-                if badge is None:
-                    rs.quest_due = None
-                elif rs.quest_due is None or rs.quest_due[0] != badge:
-                    # human-like: wander over within the next 1-10 minutes.
-                    # If we JUST visited and the badge persists (nothing was
-                    # claimable), back off instead of ping-ponging.
-                    recent = now - rs.last_visit.get(badge, -1e9) < 1200
-                    lo, hi = CONFIG["missions"]["visit_delay_sec"]
-                    due = now + (random.uniform(1500, 2400) if recent
-                                 else random.uniform(lo, hi))
-                    rs.quest_due = (badge, due)
-                    logger.event("quest_seen", kind_of=badge, wave=wave,
-                                 due_in=round(due - now))
-                elif now >= rs.quest_due[1] and not rs.shop.active:
-                    rs.mission.start(missions.quest_flow
-                                     if badge == "quests"
-                                     else missions.guild_flow)
-                    rs.mission.step(frame)
-                    rs.last_visit[badge] = now
-                    rs.quest_due = None
-                    if badge == "guild":
-                        rs.await_guild_result = True
-                    continue  # flow completion also invalidates this frame
-                # ---- guild store: ONLY after a guild claim landed (the
-                # balance can't change otherwise - no point checking)
-                if not rs.mission.active and not rs.shop.active \
-                        and rs.menu_open_frames >= 2 and rs.pending_store:
-                    rs.pending_store = False
-                    rs.mission.start(store.store_flow)
-                    rs.mission.step(frame)
+                if advance_rewards(rs, frame, now, wave, _global):
                     continue
-                # ---- once per UTC day, 01:00 +/-10 minutes; catch up when online
-                if not rs.mission.active and not rs.shop.active \
-                        and rs.menu_open_frames >= 2 \
-                        and _global.get('free_store_gems', _g.get('free_store_gems', False)) \
-                        and store_gems_due() \
-                        and now >= rs.free_gems_try_at:
-                    # Failed/unavailable claims can retry after five minutes;
-                    # a confirmed cooldown closes this account's UTC day.
-                    rs.free_gems_try_at = now + 300
-                    rs.mission.start(lambda: missions.free_gems_flow(
-                        on_success=store_gems_mark_claimed))
-                    rs.mission.step(frame)
-                    continue
-
             # ---- CL normalization: first thing each run, force the preset's
             # baseline state (OFF for high-tier farm, ON for low_tier_farm) -
             # the previous run may have died in the other state
@@ -2936,7 +2999,7 @@ def main():
             if sprint != rs.sprint_prev and rs.sprint_prev is not None:
                 logger.event("sprint", active=sprint, wave=wave)
             rs.sprint_prev = sprint
-            interval = (preset().get('shopping_plan') or {}).get('interval_sec', preset()['shop_interval_sec']) if _battle_session is not None else 20 if sprint else preset()['shop_interval_sec']
+            interval = shopping_interval(preset(), tracked=_battle_session is not None, sprint=sprint)
             if not rs.shopping_enabled and not (_battle_session is not None and _battle_session.manual_shopping):
                 rs.shop.abort()
                 continue

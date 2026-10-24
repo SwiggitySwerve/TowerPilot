@@ -7,18 +7,60 @@ import sys
 import tempfile
 import urllib.request
 import zipfile
+from collections.abc import Iterable
 from pathlib import Path
 
-from build_release import ROOT, allowed
+from build_release import APP_BUILD, APP_NOTICES, ROOT, release_files
 
 PYTHON = '3.12.10'
 URL = f'https://www.python.org/ftp/python/{PYTHON}/python-{PYTHON}-embed-amd64.zip'
 SHA256 = '4acbed6dd1c744b0376e3b1cf57ce906f9dc9e95e68824584c8099a63025a3c3'
+SOURCE_LAUNCHERS = {'Start-TowerPilot.ps1', 'Start Tower Pilot.cmd'}
+SOURCE_BUILD_NOTICE = (
+    'Source-build exception: tpk_ar==0.2.4 has no wheel on PyPI; its sdist SHA-256 is pinned.\n'
+    'A compiler may be needed on the build machine for source builds.\n'
+    'Isolated build dependencies and the locally built wheel are not hash-locked.\n')
+
+
+def install_dependencies(target: Path, lock: Path = ROOT / 'requirements-portable.lock') -> None:
+    """Let pip verify every runtime artifact; only tpk_ar may build from source."""
+    subprocess.run([sys.executable, '-m', 'pip', 'install', '--require-hashes',
+                    '--only-binary=:all:', '--no-binary=tpk_ar', '--no-cache-dir',
+                    '--no-compile', '--target', str(target), '-r', str(lock)], check=True)
+
+
+def stage_tree(stage: Path, root: Path = ROOT, files: Iterable[str] | None = None) -> None:
+    """Copy the release files - full source, tests, agent rules, skills and the
+    dashboard app build - into the portable tree, so the extracted folder is
+    also a working checkout. Only the source launchers are left out; build()
+    writes the portable ones."""
+    for name in release_files(root) if files is None else files:
+        if name in SOURCE_LAUNCHERS:
+            continue
+        dest = stage / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(root / name, dest)
+
+
+def write_zip(stage: Path, output: Path, prefix: str) -> Path:
+    """ZIP the staged tree under `prefix/` with a SHA256SUMS.txt inventory."""
+    inventory = []
+    with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
+        for path in sorted(stage.rglob('*')):
+            if not path.is_file() or '__pycache__' in path.parts:
+                continue
+            name = path.relative_to(stage).as_posix()
+            data = path.read_bytes()
+            archive.writestr(prefix + '/' + name, data)
+            inventory.append(hashlib.sha256(data).hexdigest() + '  ' + name)
+        archive.writestr(prefix + '/SHA256SUMS.txt', '\n'.join(inventory)+'\n')
+    return output
 
 
 def build():
     if sys.platform != 'win32' or sys.version_info[:2] != (3, 12) or platform.architecture()[0] != '64bit':
         raise RuntimeError('Build with 64-bit Python 3.12 on Windows')
+    files = release_files(ROOT)          # refuses early when the dashboard app is not built
     version = (ROOT / 'VERSION').read_text().strip()
     dist = ROOT / 'dist'
     cache = dist / 'downloads'
@@ -33,26 +75,13 @@ def build():
     with tempfile.TemporaryDirectory(prefix='portable-build-', dir=dist) as work:
         stage = Path(work) / prefix
         stage.mkdir()
-        names = subprocess.check_output(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard'], cwd=ROOT).decode().split('\0')
-        # The portable tree carries the full source, tests, agent rules and
-        # skills included (0.2-beta), so the extracted folder is also a
-        # working checkout. Only the source launchers are replaced below.
-        for name in sorted(set(names)):
-            if not name or not allowed(name) or not (ROOT / name).is_file():
-                continue
-            if name in {'Start-TowerPilot.ps1', 'Start Tower Pilot.cmd'}:
-                continue
-            dest = stage / name
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(ROOT / name, dest)
+        stage_tree(stage, ROOT, files)
         runtime = stage / 'runtime'
         with zipfile.ZipFile(runtime_zip) as archive:
             archive.extractall(runtime)
         (runtime / 'python312._pth').write_text(
             'python312.zip\n.\nLib/site-packages\n../backend\n../frontend\n..\nimport site\n')
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '--only-binary=:all:', '--no-binary=tpk_ar',
-                        '--no-compile', '--target', str(runtime / 'Lib/site-packages'),
-                        '-r', str(ROOT / 'requirements-portable.lock')], check=True)
+        install_dependencies(runtime / 'Lib/site-packages', ROOT / 'requirements-portable.lock')
         (stage / 'tools').mkdir(exist_ok=True)
         shutil.copyfile(ROOT / 'tools/portable_launcher.py', stage / 'tools/portable_launcher.py')
         shutil.copyfile(ROOT / 'requirements-portable.lock', stage / 'requirements-portable.lock')
@@ -80,19 +109,12 @@ def build():
         (stage / 'THIRD_PARTY.txt').write_text(
             'Python '+PYTHON+' from '+URL+'\nSHA256: '+SHA256+'\n'
             'Python license: runtime/LICENSE.txt\n'
-            'Package versions: requirements-portable.lock\n'
-            'Dependency licenses/notices: runtime/Lib/site-packages/*.dist-info/\n')
-        output = dist / (prefix + '.zip')
-        inventory = []
-        with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
-            for path in sorted(stage.rglob('*')):
-                if not path.is_file() or '__pycache__' in path.parts:
-                    continue
-                name = path.relative_to(stage).as_posix()
-                data = path.read_bytes()
-                archive.writestr(prefix + '/' + name, data)
-                inventory.append(hashlib.sha256(data).hexdigest() + '  ' + name)
-            archive.writestr(prefix + '/SHA256SUMS.txt', '\n'.join(inventory)+'\n')
+            'Package versions and artifact hashes: requirements-portable.lock\n'
+            'Upstream pin evidence: tools/portable_pins.json\n'
+            + SOURCE_BUILD_NOTICE +
+            'Dependency licenses/notices: runtime/Lib/site-packages/*.dist-info/\n'
+            'Dashboard app npm packages and their licenses: '+APP_BUILD+'/'+APP_NOTICES+'\n')
+        output = write_zip(stage, dist / (prefix + '.zip'), prefix)
         output.with_suffix('.zip.sha256').write_text(hashlib.sha256(output.read_bytes()).hexdigest()+'  '+output.name+'\n')
         print(output)
         return output
