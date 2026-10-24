@@ -25,7 +25,11 @@ def captured():
     # Keep the migration proof intact. Only R14i's intentional confirmation
     # timing differences have separate, versioned expectations.
     delta = json.loads((Path(__file__).parent / 'fixtures' / 'action_orbit_confirmation_v1.json').read_text(encoding='utf-8'))
-    assert hashlib.sha256(golden.GOLDEN_PATH.read_bytes()).hexdigest().upper() == delta['parent_fixture_sha256']
+    # This recorded parent pin hashes CRLF bytes; the repository blob uses LF.
+    # Reconstruct those recorded line endings while preserving every other byte.
+    parent = golden.GOLDEN_PATH.read_bytes().replace(b'\r\n', b'\n')
+    recorded_parent = parent.replace(b'\n', b'\r\n')
+    assert hashlib.sha256(recorded_parent).hexdigest().upper() == delta['parent_fixture_sha256']
     for group, traces in delta['floating_gems'].items():
         expected['floating_gems'][group].update(traces)
     return expected
