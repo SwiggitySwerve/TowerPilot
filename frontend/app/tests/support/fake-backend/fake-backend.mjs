@@ -27,6 +27,7 @@ import { servePreview } from './preview-fixtures.mjs';
 import { createPreviewFixtureState } from './preview-replay.mjs';
 import { RUNTIME_SAVES, runtimeSaveRefusal } from './runtime-fixtures.mjs';
 import { actionsCase, historyAnswer } from '../history-fixtures.mjs';
+import { syntheticAnswer } from '../synthetic-action-fixtures.mjs';
 import { shoppingLibrarySource } from '../shopping-library-fixtures.mjs';
 import { profilePatchFencedRead } from './profile-patch-fenced-fixtures.mjs';
 import {
@@ -522,6 +523,7 @@ export function createApiHandler(fixture, options = {}) {
   };
   /** A reference names a Dashboard case, then a pages case, then a harvest one. @param {string} reference */
   const answerFor = (reference) =>
+    (reference.startsWith('b1:') ? syntheticAnswer(reference) : undefined) ??
     // A2-7: `r17b:<family>.<case>` names a landed r17b recording (backend/tests/fixtures/dashboard_contract_pages_v1.json).
     (reference.startsWith('r17b:') ? actionsCase(reference.slice('r17b:'.length)) : undefined) ??
     runsTargetSource(reference) ??

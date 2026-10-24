@@ -1,3 +1,4 @@
+import { required as must } from '../support/required.ts';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
@@ -231,9 +232,4 @@ for (const width of [1360, 1054, 390]) {
       await proof(page, must(scenario), width);
     });
   }
-}
-
-function must<T>(value: T | null | undefined): T {
-  if (value === null || value === undefined) throw new Error('Required fixture value');
-  return value;
 }

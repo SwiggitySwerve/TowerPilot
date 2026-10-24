@@ -1,3 +1,4 @@
+import { required as must } from '../../../support/required.ts';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, expect, it } from 'vitest';
@@ -388,11 +389,6 @@ it.each(['active', 'instance', 'serial', 'account'])(
     expect(must(must(must(s.entry().draft).days[s.entry().day])[0]).count).toBe('66');
   },
 );
-
-function must<T>(value: T | null | undefined): T {
-  if (value === null || value === undefined) throw new Error('Required fixture value');
-  return value;
-}
 
 it.each([
   'inactive_target_source_that_cannot_be_parsed_400',

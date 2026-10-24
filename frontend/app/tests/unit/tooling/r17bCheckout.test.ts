@@ -1,4 +1,7 @@
 // @vitest-environment node
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   DASHBOARD_FIXTURE_PATH,
@@ -13,6 +16,7 @@ import {
   familyIdentity,
   record,
 } from '../../../scripts/generate-contract.mjs';
+import { REPO } from '../../support/paths.ts';
 
 /** Approved e02b205 fixtures. Pins fail closed on changed or missing checkout bytes. */
 describe('AC6 landed r17b checkout provenance', () => {
@@ -56,5 +60,29 @@ describe('AC6 landed r17b checkout provenance', () => {
     const cases = record(fixture['cases']);
     expect(Object.keys(cases)).toEqual(['synthetic_action']);
     expect(Object.keys(record(cases['synthetic_action']))).toHaveLength(24);
+  });
+
+  it('AC7 the synthetic action id appears in no non-test frontend file', () => {
+    const fixture = record(loadJsonWithIdentity(SYNTHETIC_ACTION_FIXTURE_PATH).fixture);
+    const cases = record(record(fixture['cases'])['synthetic_action']);
+    const request = record(record(cases['synthetic_run_now_accepted'])['request']);
+    const token = record(request['body'])['action'];
+    expect(typeof token).toBe('string');
+    const id = String(token).split('@')[0];
+    expect(id).toBeTruthy();
+    // Includes untracked source, honors .gitignore (builds and dependencies are not source).
+    const files = execFileSync(
+      'git',
+      ['ls-files', '-z', '--cached', '--others', '--exclude-standard', 'frontend'],
+      { cwd: REPO, encoding: 'utf8' },
+    )
+      .split('\0')
+      .filter(Boolean);
+    const found = files.filter(
+      (file) =>
+        !/(?:^|\/)(?:tests|e2e)(?:\/|$)|\.(?:test|spec)\.[cm]?[jt]sx?$/u.test(file) &&
+        readFileSync(path.join(REPO, file)).includes(String(id)),
+    );
+    expect(found).toEqual([]);
   });
 });

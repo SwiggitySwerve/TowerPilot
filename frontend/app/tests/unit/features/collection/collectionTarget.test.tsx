@@ -1,3 +1,4 @@
+import { required } from '../../../support/required.ts';
 import { act, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
@@ -13,11 +14,6 @@ import { selectCollectionPage } from '../../../../src/store/selectors/collection
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 
 const recorded = (name: string) => dashboardPagesCase(`profile_target.${name}`);
-
-function required<T>(value: T | null | undefined): T {
-  if (value == null) throw new Error('required test value missing');
-  return value;
-}
 
 // Keep the accessible-role/name checks local to the label form, rather than
 // computing names for every input and Save button in the settings modules.

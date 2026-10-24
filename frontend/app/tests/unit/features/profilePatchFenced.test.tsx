@@ -1,3 +1,4 @@
+import { required } from '../../support/required.ts';
 import { act, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createScheduleApi } from '../../../src/api/schedule.ts';
@@ -38,10 +39,6 @@ const PATCH = '/api/profile-patch';
 const SOURCE = '/api/profile-src/mine';
 const config = () => dashboardPagesCase('profile_target.inactive_editor_context_before_save');
 const cleanups: (() => void)[] = [];
-function required<T>(value: T | null | undefined): T {
-  if (value == null) throw new Error('Missing test value');
-  return value;
-}
 async function change(action: () => unknown) {
   await act(async () => {
     await action();

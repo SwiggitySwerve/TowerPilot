@@ -180,11 +180,19 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-/** Scenarios that serve malformed bodies on purpose (an incomplete Stop target, F4-01). */
+/**
+ * Scenarios that serve bodies outside the generated contract on purpose: an incomplete Stop target
+ * (F4-01), and the AC7 B1 recordings, whose synthetic routine instances the contract does not know.
+ */
 const MALFORMED: Readonly<Record<string, readonly string[]>> = {
   x9: ['status'],
   x9_taps: ['status'],
   stopping_no_revision: ['status', 'harvest'],
+  ...Object.fromEntries(
+    Object.keys(SCENARIOS)
+      .filter((name) => name.startsWith('a2_7_b1_'))
+      .map((name) => [name, ['battlesActive']]),
+  ),
 };
 
 describe.each(Object.entries(SCENARIOS))('scenario %s', (name) => {
