@@ -218,8 +218,12 @@ def test_roundtrip_inventory_waits_for_bound_artwork_before_saving(tmp_path, mon
     from types import SimpleNamespace
     from device import capture, act
     from interactions import inventory
-    from player import asset_verify
+    from player import asset_verify, catalogue
     from vision import pills, textocr
+
+    # This synthetic name is learned per install, so seed only this test's catalogue.
+    monkeypatch.setattr(catalogue, 'LOCAL', tmp_path / 'catalogue.yaml')
+    catalogue.learn('Diamond Nanowall')
 
     frames = [np.full((2560, 1080, 3), n, np.uint8) for n in (1, 2, 3, 4)]
     icon = np.random.default_rng(32).integers(0, 256, (150, 150, 3), dtype=np.uint8)
