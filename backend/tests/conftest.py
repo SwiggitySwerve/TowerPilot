@@ -169,7 +169,7 @@ def seed_root(root):
 
 @pytest.fixture
 def dash(tmp_path, monkeypatch):
-    """frontend/dashboard.py loaded against a temporary backend root: its own
+    """backend/dashboard.py loaded against a temporary backend root: its own
     config, profile, digit font and ledger; adb pointed at a closed local port."""
     import importlib.util
     import socket

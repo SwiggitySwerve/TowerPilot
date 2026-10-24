@@ -1,7 +1,7 @@
 """The page contract: what the routes behind the remaining pages of the new app answer.
 
 backend/tests/fixtures/dashboard_contract_pages_v1.json is generated here exactly like dashboard_contract_v1.json (the
-Dashboard contract, test_dashboard_contract.py): the REAL Flask routes of frontend/dashboard.py driven over
+Dashboard contract, test_dashboard_contract.py): the REAL Flask routes of backend/dashboard.py driven over
 synthetic state in the isolated world of dashboard_contract_world.py - a temporary root, ledger and lease directory, one
 fixed clock, an in-memory process table, adb socket and process creation. It never reads or touches the live
 backend, device, lease, process table or a running dashboard (127.0.0.1:8630 included). It is a separate file so

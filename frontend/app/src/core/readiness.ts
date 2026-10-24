@@ -31,7 +31,7 @@ export interface ReadinessView {
 
 /** F-039: count requirement rows, not filenames or missing[] strings. */
 export function readiness(entry: unknown, source: 'runs' | 'check' = 'runs'): ReadinessView {
-  // frontend/dashboard.py _runs_readiness; backend/player/readiness.py check.
+  // backend/dashboard.py _runs_readiness; backend/player/readiness.py check.
   const raw = {
     missing: own(entry, 'missing'),
     message: own(entry, 'message'),
@@ -151,7 +151,7 @@ export function collectGate(
   if (combo) return { enabled: false, reason: 'pick_single_run' };
   if (permit === null || !Number.isFinite(collectionPermitObservedAt(permit)))
     return { enabled: false, reason: 'guard_unconfirmed' };
-  // frontend/dashboard.py api_run_controls strips bp_ before run_workspace.read.
+  // backend/dashboard.py api_run_controls strips bp_ before run_workspace.read.
   const blueprint = selectedRun.startsWith('bp_') ? selectedRun.slice(3) : selectedRun;
   if (
     preview?.kind !== 'answered' ||

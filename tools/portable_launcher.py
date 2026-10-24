@@ -103,7 +103,7 @@ def report_startup_failure(message: str) -> None:
 
 def serve():
     os.chdir(ROOT)
-    runpy.run_path(str(ROOT / 'frontend/dashboard.py'), run_name='__main__')
+    runpy.run_path(str(ROOT / 'backend/dashboard.py'), run_name='__main__')
 
 
 def icon_image(size=64):

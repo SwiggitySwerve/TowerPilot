@@ -103,9 +103,7 @@ def test_control_gate_opens_after_a_scan_that_finished_with_attention(tmp_path):
 
 
 def test_api_runs_carries_per_run_readiness(monkeypatch):
-    import sys, os
-    sys.path.insert(0, str(test_paths.DASHBOARD.parent))
-    import dashboard as dash
+    import dashboard as dash      # backend/ is on the pytest pythonpath
     runs = {"bp_coin": {"kind": "coin", "label": "Coin"},
             "bp_tourney": {"kind": "tournament", "label": "Tournament"},
             "combo": {"runner": "scheduling/combo.py"}}

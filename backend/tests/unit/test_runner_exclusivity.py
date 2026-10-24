@@ -81,7 +81,7 @@ def test_a_second_copy_of_the_same_runner_is_still_found(monkeypatch):
 def test_non_python_and_non_runner_processes_are_ignored(monkeypatch):
     from runtime import runners
     _fake_psutil(monkeypatch, [_Proc(1, ["notepad.exe", "shard.py"], "notepad.exe"),
-                               _Proc(2, ["python.exe", "frontend/dashboard.py"]),
+                               _Proc(2, ["python.exe", "backend/dashboard.py"]),
                                _Proc(3, None)])
     assert list(runners.other_runners()) == []
 

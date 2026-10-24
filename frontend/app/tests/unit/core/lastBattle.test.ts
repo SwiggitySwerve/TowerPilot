@@ -37,7 +37,7 @@ it.each(Object.entries(fixtureHistory))(
 import { lastBattleView } from '../../../src/core/lastBattle.ts';
 import type { ContextRead } from '../../../src/core/connection.ts';
 
-// frontend/dashboard.py api_battle_history, backend/control/battles.py public;
+// backend/dashboard.py api_battle_history, backend/control/battles.py public;
 // workflows/battles.py finish: only ended/interrupted are backend final statuses.
 const answer = (battles: unknown): ContextRead => ({
   kind: 'answered',

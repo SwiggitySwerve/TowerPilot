@@ -47,7 +47,7 @@ export function lastBattleView(
     }
     return { line: 'unavailable', battle: unknownFact('history_unavailable') };
   }
-  // frontend/dashboard.py api_battle_history -> control/battles.py public.
+  // backend/dashboard.py api_battle_history -> control/battles.py public.
   const rows = list(own(read.body, 'battles'));
   if (rows === undefined) return { line: 'unavailable', battle: unknownFact('battles_invalid') };
   if (rows.length === 0) return { line: 'no_battle_recorded', battle: unknownFact('no_record') };

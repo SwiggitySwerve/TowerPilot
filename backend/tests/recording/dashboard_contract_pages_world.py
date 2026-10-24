@@ -1,7 +1,7 @@
 """Shared pieces of the page-contract generator (dashboard_contract_pages_v1.json).
 
 The page contract is generated exactly like dashboard_contract_v1.json: the REAL Flask routes of
-frontend/dashboard.py driven over synthetic state (the World of test_dashboard_contract.py), never the live
+backend/dashboard.py driven over synthetic state (the World of test_dashboard_contract.py), never the live
 backend, device, lease, process table or a running dashboard. This module only adds what the page families
 need on top of that world:
 

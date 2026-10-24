@@ -4,7 +4,7 @@ The route writes the profile IN FORCE, and the page composes the request from a 
 account or profile between that read and the write put the observations on the wrong profile. A request that carries `expected_context`
 {instance, account, profile, serial} is refused 409 context_changed (with current_context), writing nothing and recording no operation,
 when the configuration now names another; a request without it behaves exactly as before. Every test drives the real Flask route of
-frontend/dashboard.py over a temporary root (conftest `dash`): no live file, device, ledger or lease.
+backend/dashboard.py over a temporary root (conftest `dash`): no live file, device, ledger or lease.
 """
 
 import paths as test_paths

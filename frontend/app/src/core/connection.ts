@@ -25,7 +25,7 @@ export function connectionView(
   if (read?.kind !== 'answered' || !read.sameContext || age === undefined || age < 0 || age > 10) {
     return decide('C1', 'unknown', 'connection_unconfirmed', null, { ageSec: age ?? null });
   }
-  // frontend/dashboard.py api_status/_device_state; adbclient.py _ask_state.
+  // backend/dashboard.py api_status/_device_state; adbclient.py _ask_state.
   switch (own(read.body, 'device_state')) {
     case 'device':
       return decide('C2', null, 'connected', 'EV-11');

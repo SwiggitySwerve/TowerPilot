@@ -330,7 +330,7 @@ def test_the_detector_flags_the_idioms_that_would_read_unknown_as_dead():
 def test_no_source_reads_a_liveness_answer_by_truthiness():
     root = test_paths.REPO
     files = [p for p in (root / 'backend').rglob('*.py') if not {'tests', 'logs'} & set(p.relative_to(root).parts)]
-    files.append(root / test_paths.DASHBOARD.relative_to(test_paths.REPO))
     offenders = {str(p.relative_to(root)): truthiness_uses(p.read_text(encoding='utf-8')) for p in files}
     assert str((root / 'backend' / 'orchestrator.py').relative_to(root)) in offenders
+    assert str(test_paths.DASHBOARD.relative_to(root)) in offenders      # the dashboard is scanned by the backend walk
     assert {name: lines for name, lines in offenders.items() if lines} == {}

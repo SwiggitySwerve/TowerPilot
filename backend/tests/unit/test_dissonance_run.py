@@ -386,7 +386,8 @@ def test_ensure_bans_remembers_the_applied_set_and_degrades_on_failure(dialog, m
 
 
 def test_ensure_bans_is_wired_into_enter_run_only():
-    src = (ROOT / "backend").rglob("*.py")
+    src = list((ROOT / "backend").rglob("*.py"))
+    assert ROOT / "backend" / "dashboard.py" in src      # the dashboard is read by this walk too
     # production sources only: not the tests, and not what is kept under backend/logs (run logs and review artifacts: a side tree there
     # carries whole copies of the modules, which are not wiring; test_worker_liveness and the release allowlist skip `logs` the same way)
     users = [p for p in src if "ensure_bans(" in p.read_text(encoding="utf-8") and not {"tests", "logs"} & set(p.relative_to(ROOT).parts)]

@@ -111,8 +111,8 @@ def test_rows_stay_scoped_to_this_tree(dash, table, tmp_path):
     procs, _ = table
     procs += [_Proc(700, [BASE] + SHARD, cwd=str(tmp_path)),             # the other tree's farm
               _Proc(800, [BASE] + CAL, cwd=None),                         # unreadable cwd: ours
-              _Proc(ME_LAUNCHER, [VENV, "frontend/dashboard.py"], cwd=dash.ROOT),
-              _Proc(ME, [BASE, "frontend/dashboard.py"], ppid=ME_LAUNCHER, cwd=dash.ROOT),
+              _Proc(ME_LAUNCHER, [VENV, "backend/dashboard.py"], cwd=dash.ROOT),
+              _Proc(ME, [BASE, "backend/dashboard.py"], ppid=ME_LAUNCHER, cwd=dash.ROOT),
               _Proc(900, ["notepad.exe", "shard.py"], name="notepad.exe", cwd=dash.ROOT)]
     assert [r["pid"] for r in dash._scan_procs()] == [800]
 

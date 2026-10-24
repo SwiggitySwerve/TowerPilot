@@ -62,8 +62,7 @@ def test_duplicate_refused(profile):
     with pytest.raises(ValueError):rt.instantiate(p,'farm','run')
 
 def test_api_validates_before_writing_and_preserves_existing_runs(profile,tmp_path,monkeypatch):
-    sys.path.insert(0,str(test_paths.DASHBOARD.parent))
-    import dashboard as d
+    import dashboard as d      # backend/ is on the pytest pythonpath
     monkeypatch.setattr(d,'_profiles_dir',lambda:str(tmp_path))
     monkeypatch.setattr(d,'load_config',lambda:pp.CONFIG)
     target=tmp_path/'test.yaml'

@@ -40,10 +40,11 @@ APP_NOTICES = 'THIRD_PARTY_NOTICES.txt'
 APP_INVENTORY = 'BUILD_INVENTORY.txt'
 APP_BUILD_SUFFIXES = {'.html', '.js', '.css'}
 APP_BUILD_HINT = 'cd frontend/app; npm ci; npm run build'
-# Outside the app, the frontend is the Flask server and the static page that
-# redirects old /ui/index.html bookmarks onto the app (plan R17, option A). The
+# Outside the app, the frontend is the static page that redirects old
+# /ui/index.html bookmarks onto the app (plan R17, option A); the Flask server
+# that serves it is backend/dashboard.py, shipped by the backend rule. The
 # previous dashboard's pages, modules and node tests are retired and never ship.
-FRONTEND_FILES = {'frontend/dashboard.py', 'frontend/webui/index.html'}
+FRONTEND_FILES = {'frontend/webui/index.html'}
 
 
 def allowed(name):

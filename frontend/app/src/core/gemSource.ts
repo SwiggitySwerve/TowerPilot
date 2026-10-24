@@ -68,7 +68,7 @@ export function policyCollects(policy: GemPolicy | null): boolean {
   return policy?.adGems?.enabled === true || policy?.floatingGems?.enabled === true;
 }
 
-/** The run-controls blueprint of a run key (frontend/dashboard.py strips `bp_`). */
+/** The run-controls blueprint of a run key (backend/dashboard.py strips `bp_`). */
 export function blueprintOf(run: string): string {
   return run.startsWith('bp_') ? run.slice(3) : run;
 }

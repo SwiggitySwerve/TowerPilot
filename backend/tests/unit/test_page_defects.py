@@ -1,6 +1,6 @@
 """Regression tests for the page-contract defects F6-1..F6-8 (backend/logs/reviews/dashboard-contract-pages-report.json).
 
-Every test drives the REAL routes of frontend/dashboard.py over the isolated world of the page contract
+Every test drives the REAL routes of backend/dashboard.py over the isolated world of the page contract
 (dashboard_contract_pages_world.PagesGenerator: a temporary root, ledger and lease folder, a fixed clock, an in-memory process
 table, adb server and Popen); nothing touches the machine. Each test names the defect it pins and fails when its fix is reverted
 (backend/logs/reviews/ui-backend-pages-defects-r9/mutation-results.json lists the mutants).

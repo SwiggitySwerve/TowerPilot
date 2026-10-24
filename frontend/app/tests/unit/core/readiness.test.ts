@@ -136,7 +136,7 @@ import { classifyStartAnswer } from '../../../src/core/outcomes/start.ts';
 import { answered, sample, statusBody } from '../../support/fixture.ts';
 import type { ContextRead } from '../../../src/core/connection.ts';
 
-// Constructed frontend/dashboard.py _runs_readiness/api_readiness/api_run_controls;
+// Constructed backend/dashboard.py _runs_readiness/api_readiness/api_run_controls;
 // backend/player/readiness.py check; backend/control/run_workspace.py read.
 const context = { instance: 'main', account: 'a', serial: 'fake:1', rendering: 'r', profile: 'p' };
 const answer = (body: unknown): ContextRead => ({ kind: 'answered', sameContext: true, body });

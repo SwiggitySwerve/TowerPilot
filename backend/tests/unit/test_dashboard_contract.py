@@ -1,4 +1,4 @@
-"""The Dashboard contract: what the baseline routes of frontend/dashboard.py answer.
+"""The Dashboard contract: what the baseline routes of backend/dashboard.py answer.
 
 backend/tests/fixtures/dashboard_contract_v1.json is what the new Dashboard's strict
 schemas, its fake backend and its tests bind to. It is GENERATED here by driving the real

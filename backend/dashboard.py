@@ -15,7 +15,7 @@ Design rules:
     on. The wizard scans the known install paths and probes each daemon for
     devices; whatever answers `adb devices` can be driven.
 
-Start:  python dashboard.py           (or pythonw for headless)
+Start:  python backend/dashboard.py   (or pythonw for headless)
 """
 import copy
 import datetime
@@ -40,13 +40,14 @@ from contextlib import ExitStack
 import yaml
 from flask import Flask, Response, jsonify, redirect, request, send_file, g, has_request_context
 
-# The FRONTEND lives here (dashboard.py + webui/); everything it serves and
-# controls - config.yaml, logs, profiles, templates, the runner scripts -
-# lives in the BACKEND directory next door. ROOT is the backend: it is the
-# working directory every runner is spawned with and the tree that
-# _proc_in_tree scopes process ownership to.
-ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                    "backend")
+# This module lives in the BACKEND directory, next to everything it controls -
+# config.yaml, logs, profiles, templates, the runner scripts. ROOT is that
+# directory: the working directory every runner is spawned with and the tree
+# that _proc_in_tree scopes process ownership to.
+ROOT = os.path.dirname(os.path.abspath(__file__))
+# What it serves is the FRONTEND's static folder, a sibling of the backend. The
+# path is absolute: a relative one would resolve against this module's folder.
+WEBUI = os.path.join(os.path.dirname(ROOT), "frontend", "webui")
 # The compiler-side imports (playerprofile.vocab, the flow registry) resolve
 # from the backend too.
 sys.path.insert(0, ROOT)
@@ -70,7 +71,7 @@ def _run(args, **kw):
     kw.setdefault("creationflags", NO_WINDOW)
     return subprocess.run(args, **kw)
 
-app = Flask(__name__, static_folder="webui", static_url_path="/ui")
+app = Flask(__name__, static_folder=WEBUI, static_url_path="/ui")
 
 from control import operations as operation_api
 from control import battles as battle_api

@@ -163,7 +163,7 @@ def signal_references(tree):
 def signalling_calls(root=SOURCE_ROOT):
     found = []
     scanned = set()
-    files = [*(root / 'backend').rglob('*.py'), root / test_paths.DASHBOARD.relative_to(test_paths.REPO)]
+    files = list((root / 'backend').rglob('*.py'))
     for path in files:
         if not path.is_file():
             continue
@@ -180,6 +180,7 @@ def signalling_calls(root=SOURCE_ROOT):
                 found.append((relative, token, 'text', 0))
     if root == SOURCE_ROOT:
         assert 'backend/orchestrator.py' in scanned
+        assert 'backend/dashboard.py' in scanned      # the dashboard is scanned by the backend walk
     return found
 
 

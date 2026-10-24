@@ -195,7 +195,7 @@ import type { BattleIdentity } from '../../../src/core/battle.ts';
 import type { ContextRead } from '../../../src/core/connection.ts';
 
 // backend/control/battles.py public; backend/runtime/battle_session.py publish
-// and _manual_progress; frontend/dashboard.py api_battle_command.
+// and _manual_progress; backend/dashboard.py api_battle_command.
 const shown: BattleIdentity = { id: 'b', generation: 'g', operationId: 'op' };
 const base = (patch: object = {}) => ({
   id: 'b',

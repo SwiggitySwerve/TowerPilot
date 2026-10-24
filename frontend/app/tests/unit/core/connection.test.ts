@@ -71,7 +71,7 @@ it('F-004 every fixture reconnect answer is handled without attributing later co
 });
 import { connectionView, reconnectGate, type ContextRead } from '../../../src/core/connection.ts';
 
-// Constructed api_status bodies: frontend/dashboard.py api_status/_device_state;
+// Constructed api_status bodies: backend/dashboard.py api_status/_device_state;
 // backend/device/adbclient.py _ask_state (refusal and timeout both => no_server).
 const answer = (body: unknown): ContextRead => ({ kind: 'answered', sameContext: true, body });
 

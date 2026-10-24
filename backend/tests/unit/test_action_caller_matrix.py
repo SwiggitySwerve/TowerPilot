@@ -11,6 +11,7 @@ BACKEND = test_paths.BACKEND
 def production_files():
     files = [path for path in BACKEND.rglob('*.py') if not {'tests', 'logs'} & set(path.relative_to(BACKEND).parts)]
     assert BACKEND / 'orchestrator.py' in files
+    assert test_paths.DASHBOARD in files      # the dashboard is a production file of the backend walk
     return files
 
 

@@ -381,7 +381,7 @@ export type ApplyBlock =
 /**
  * R1, R4: an apply of an operation's discoveries writes the profile: only an operation the
  * server accepts an apply for (awaiting apply, or a failed or interrupted capture whose
- * completed discoveries are kept: frontend/dashboard.py api_calibrate_apply require_revision)
+ * completed discoveries are kept: backend/dashboard.py api_calibrate_apply require_revision)
  * that has not been applied yet, at a known revision, with no restoration pending, one apply
  * at a time, never over an apply whose outcome is unknown, and never while a saved-settings
  * editor of this context holds unsaved values (the apply would change what it was based on).

@@ -108,7 +108,7 @@ import {
 } from '../../../src/core/needs.ts';
 import type { ContextRead } from '../../../src/core/connection.ts';
 
-// frontend/dashboard.py api_status/api_calibrate_status; backend/control/battles.py
+// backend/dashboard.py api_status/api_calibrate_status; backend/control/battles.py
 // _setup_guard/_collection_release and record_collection_handoff.
 const setup = {
   scope: 'run',

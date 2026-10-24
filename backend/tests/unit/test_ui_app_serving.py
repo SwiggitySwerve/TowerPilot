@@ -23,6 +23,7 @@ import pytest
 REPO = test_paths.REPO
 BUILD_HINT = b"cd frontend/app; npm ci; npm run build"
 STATIC_PAGE = b"<p>static redirect page</p>"
+SIBLING_SECRET = b"SIBLING-SECRET-OUTSIDE-WEBUI"
 
 
 @pytest.fixture()
@@ -46,6 +47,7 @@ def webui(dash: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
     folder.mkdir()
     (folder / "index.html").write_bytes(STATIC_PAGE)
     monkeypatch.setattr(dash.app, "static_folder", str(folder))
+    (tmp_path / "dashboard.py").write_bytes(SIBLING_SECRET)    # what a traversal out of webui/ would reach
     return folder
 
 
@@ -110,7 +112,7 @@ def test_app_urls_never_leave_the_build_folder(dash: ModuleType, webui: Path, pa
         body = r.data
         r.close()
     assert r.status_code == 404
-    assert STATIC_PAGE not in body and b"import " not in body
+    assert STATIC_PAGE not in body and b"import " not in body and SIBLING_SECRET not in body
 
 
 def test_build_output_and_node_modules_are_git_ignored() -> None:
@@ -300,7 +302,7 @@ def test_static_paths_with_drive_stream_backslash_or_parent_syntax_are_refused(
         dash: ModuleType, webui: Path, path: str) -> None:
     _build(webui)
     status, body, frame = _get(dash, path)
-    assert status == 404 and STATIC_PAGE not in body and frame == "DENY", path
+    assert status == 404 and STATIC_PAGE not in body and SIBLING_SECRET not in body and frame == "DENY", path
 
 
 def test_only_the_static_route_and_ui_app_serve_files_under_ui(dash: ModuleType) -> None:
@@ -356,10 +358,13 @@ def test_the_redirect_maps_the_old_anchors_onto_app_pages() -> None:
         assert f"'{target}'," in pages, target                     # every target is an app page
 
 
-def test_the_dashboard_serves_the_real_redirect_page(dash: ModuleType, monkeypatch: pytest.MonkeyPatch) -> None:
-    # this fixture loads dashboard.py by path, so Flask resolves "webui" against
-    # the working directory; point it at the checkout's real folder
-    monkeypatch.setattr(dash.app, "static_folder", str(REDIRECT.parent))
+def test_the_dashboard_serves_the_real_redirect_page(
+        dash: ModuleType, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # The module is loaded by path and the static folder is NOT patched: the
+    # default must be the checkout's real frontend/webui, whatever the working directory.
+    monkeypatch.chdir(tmp_path)
+    assert Path(dash.app.static_folder) == REDIRECT.parent and Path(dash.app.static_folder).is_absolute()
+    assert Path(dash.ROOT) == test_paths.BACKEND and Path(dash.__file__) == test_paths.DASHBOARD
     with dash.app.test_client() as c:
         r = c.get("/ui/index.html")
         body = r.data

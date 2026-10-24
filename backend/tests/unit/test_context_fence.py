@@ -4,7 +4,7 @@ A page composes a write for one emulator, account and profile. The routes below 
 that context, so a switch between the page's last read and its write sent the write to whatever was current. A
 request that carries `expected_context` {instance, account, profile, serial} is refused 409 context_changed, writing
 nothing, when the configuration now names another; a request without it behaves exactly as before. Every test
-drives the real Flask routes of frontend/dashboard.py over a temporary root (conftest `dash`): no live file,
+drives the real Flask routes of backend/dashboard.py over a temporary root (conftest `dash`): no live file,
 device, ledger or lease.
 """
 import copy

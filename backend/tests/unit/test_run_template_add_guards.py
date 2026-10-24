@@ -4,7 +4,7 @@ Absent, the request is exactly what it always was. `expected_revision` (the prof
 under the profile lock BEFORE the recipe and its choices are looked at: a stale one is 409 revision_conflict with the current revision, writing
 nothing; a request that carries it also gets the new `revision` back. `expected_context` {instance, account, profile, serial} is the page
 fence of the other context-dependent writes: 409 context_changed + current_context, judged first, writing nothing. Every test drives the
-real Flask route of frontend/dashboard.py over a temporary root (conftest `dash`): no live file, device, ledger or lease.
+real Flask route of backend/dashboard.py over a temporary root (conftest `dash`): no live file, device, ledger or lease.
 """
 import hashlib
 import os

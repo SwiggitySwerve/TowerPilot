@@ -11,7 +11,7 @@ everything the report reads under the repository root (platform-tools and their 
 release identity) is a file this scenario creates under <root>/install/. The `adb`, platform-tools and scrcpy versions in the answers are
 the pins of the code (device.tool_install, device.preview.scrcpy_package), not the version of anything installed here.
 
-What the routes do (read from runtime/environment.py and frontend/dashboard.py, then recorded):
+What the routes do (read from runtime/environment.py and backend/dashboard.py, then recorded):
   * a report never spawns, downloads, contacts adb or opens a device; it states which local prerequisites exist. `available` does not
     mean an emulator is connected or a capture works. A locator that finds nothing is `unknown`: another install may exist.
   * the platform-tools version comes only from an install receipt that matches the pin; a missing, unreadable or different receipt leaves

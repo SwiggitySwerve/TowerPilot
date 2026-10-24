@@ -44,7 +44,7 @@ SOURCES = {
     "VERSION": b"9.9.9\n",
     "README.md": b"# test\n",
     "docs/RELEASE_9.9.9.md": b"# Release\n\n## Environment limits\nSynthetic test only.\n",
-    "frontend/dashboard.py": b"# dashboard\n",
+    "backend/dashboard.py": b"# dashboard\n",
     "frontend/webui/index.html": (b"<script>window.location.replace('/ui/app/')</script>"
                                   b'<a href="/ui/app/">open the dashboard</a>'),
     "frontend/app/package.json": b"{}\n",
@@ -118,8 +118,9 @@ def _assert_release_contents(entries: Mapping[str, bytes]) -> None:
         assert entries.get(name) == data, name
     for name in ("frontend/app/package.json", "frontend/app/package-lock.json", "frontend/app/.npmrc",
                  "frontend/app/src/app/main.tsx", "frontend/app/tests/support/fake-backend/fake-backend.mjs",
-                 "frontend/webui/index.html", "frontend/dashboard.py"):
+                 "frontend/webui/index.html", "backend/dashboard.py"):
         assert name in entries, name
+    assert "frontend/dashboard.py" not in entries
     for name in NEVER:
         assert name not in entries, name
     assert entries["frontend/webui/index.html"] == SOURCES["frontend/webui/index.html"]
@@ -183,9 +184,9 @@ def test_allowed_admits_app_sources_and_leaves_the_build_to_the_filesystem(
     for name in ("frontend/app/node_modules/react/index.js", "frontend/app/test-results/x.txt",
                  "frontend/app/playwright-report/index.html", "frontend/app/coverage/index.html",
                  "frontend/webui/app/index.html", "frontend/app", *RETIRED,
-                 "frontend/webui/dashboard-view.js", "frontend/webui/new-page.html", "frontend/other.py"):
+                 "frontend/webui/dashboard-view.js", "frontend/webui/new-page.html", "frontend/other.py", "frontend/dashboard.py"):
         assert not build_release.allowed(name), name
-    assert build_release.allowed("frontend/webui/index.html") and build_release.allowed("frontend/dashboard.py")
+    assert build_release.allowed("frontend/webui/index.html") and build_release.allowed("backend/dashboard.py")
 
 
 def test_this_checkout_ships_the_redirect_and_no_retired_dashboard(tools: tuple[ModuleType, ModuleType]) -> None:
@@ -198,11 +199,11 @@ def test_this_checkout_ships_the_redirect_and_no_retired_dashboard(tools: tuple[
     listed = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard"],
                             cwd=REPO, capture_output=True, text=True, check=True).stdout.splitlines()
     names = {name for name in listed if build_release.allowed(name) and (REPO / name).is_file()}
-    assert {"frontend/webui/index.html", "frontend/dashboard.py",
+    assert {"frontend/webui/index.html", "backend/dashboard.py",
             "backend/tests/fixtures/ui_policy_seeds.json"} <= names
     outside_app = {name for name in names if name.startswith("frontend/")
                    and not name.startswith(("frontend/app/", "frontend/webui/app/"))}
-    assert outside_app == {"frontend/webui/index.html", "frontend/dashboard.py"}
+    assert outside_app == {"frontend/webui/index.html"}
 
 
 def test_every_app_source_in_this_checkout_ships(tools: tuple[ModuleType, ModuleType]) -> None:

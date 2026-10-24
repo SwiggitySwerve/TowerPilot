@@ -2,7 +2,7 @@
 
 `synthetic_probe` is registered, twice (two configured instances), only in a COPY of the catalog that a test swaps in with
 `use_catalog`. It is named in no other file of the checkout: no route, no endpoint and no dashboard branch changes. Everything
-below goes through the real Flask routes of frontend/dashboard.py over a temporary root and ledger, with the real `BattleSession`
+below goes through the real Flask routes of backend/dashboard.py over a temporary root and ledger, with the real `BattleSession`
 as the driver (the test is the driver: no frame, no input, no device):
 
   * the handler actually runs - Run now makes the binding start, and its own `progress()` (not a collector's or the shopper's
@@ -482,7 +482,9 @@ def test_the_pilot_catalog_is_not_changed_by_registering_the_extension_in_a_copy
     assert [item.id for item in catalog][:len(list(CATALOG))] == [item.id for item in CATALOG]
 
 def test_the_synthetic_action_is_named_in_no_production_file():
-    for path in list((REPO / 'backend').rglob('*.py')) + [test_paths.DASHBOARD]:
+    files = list((REPO / 'backend').rglob('*.py'))
+    assert test_paths.DASHBOARD in files      # the dashboard is scanned by the backend walk
+    for path in files:
         if 'tests' in path.parts or '.venv' in path.parts or 'logs' in path.parts:
             continue
         assert 'synthetic_probe' not in path.read_text(encoding='utf-8', errors='ignore'), path
