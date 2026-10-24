@@ -20,6 +20,11 @@ device, ledger, lease or process.
     newer schema             a projection written by a driver of a newer build (schema_version 2)
     next unknown             an action that cannot say when it is next due: `next.due_at` null with `next.reason`
     harvest                  turning Harvest on with the action present: the overlay is for the two gem routines only
+    collector (AC7)          a standalone collector that Harvest launched, running, whose battle publishes the two instances beside the gem routines:
+                             harvest.operation.routines holds all four, and collection evidence still rests on the gem routines alone
+    pre-enable (AC7)         GET /api/status in the disabled world just before Harvest is turned on: harvesting off (choice unset), no overlay requested
+    disabled (AC7)           the two instances switched off in the saved run before the battle starts; turning Harvest on targets the gem routines only,
+                             and the reads after the overlay applies (the battle, and harvest.owner in the status) show both instances still disabled
 """
 import contextlib
 from types import SimpleNamespace
@@ -27,6 +32,7 @@ from types import SimpleNamespace
 from control import battles as battle_api
 from control import harvest
 from player import playerprofile, saved_controls
+from player.run_controls import resolve
 from runtime import action_session as action_session_module
 from runtime.action_session import ActionSession
 from towerpilot_workflows import actions as actions_module
@@ -59,12 +65,23 @@ def world(gen, name):
 class Host:
     """The run driver of one world: the contract's driver (the real BattleSession launched through POST /api/control) with the extension's two instances bound to it."""
 
-    def __init__(self, w, key):
+    def __init__(self, w, key, *, op=None):
+        """op: a standalone collector that Harvest launched and that is already running; None launches a run through POST /api/control.
+
+        A collector host is shaped as backend/gem_collector.py builds its own: it adopts the battle on screen (origin `adopted`) and holds the gem
+        collectors and nothing else (`shop=None`, `mission=None`), so it publishes no shopping and none of a run's gates - only the gem routines and
+        whatever it registered (here the extension's two instances)."""
         self.w = w
-        self.d = Driver(w, key, origin='started')
+        self.d = Driver(w, key, origin='started' if op is None else 'adopted', op=op)
+        if op is not None:
+            self.d.rs = SimpleNamespace(gems=self.d.rs.gems, tracker=self.d.rs.tracker, mission=None, shop=None)
         self.session = ActionSession.for_battle(self.d.session, 'test')
         clock = self.session.clock = SimpleNamespace(mono=w.clock.monotonic, wall=w.clock.time)
         self.probes = {name: Probe(self.session, name.partition('@')[2], clock, interval=interval) for name, interval in zip(KEYS, (60, 90))}
+        # each handler starts with the settings its battle froze (the saved run's, through the action's saved adapter), as the Driver's gates do
+        frozen = resolve(self.d.session.base_preset, self.d.session.config)['routines']
+        for name, probe in self.probes.items():
+            probe.configure(frozen[name])
         self.d.rs.action_bindings = {name: ProbeBinding(probe) for name, probe in self.probes.items()}
         self.d.observe()
 
@@ -220,6 +237,76 @@ def synthetic_action_cases(gen):
         sent = [entry for entry in active['commands'] if entry['kind'] == 'controls' and entry['request_keys'][0].startswith(harvest.OVERLAY_PREFIX)]
         assert len(sent) == 1 and sent[0]['state'] == 'applied' and list(sent[0]['payload']['routines']) == ['floating_gems'], sent
         assert {key: active['effective']['routines'][key] for key in KEYS} == synthetic_before and active['effective']['routines']['floating_gems']['enabled'] is True
+    with world(gen, 'synthetic_collector') as w:
+        # AC7 (a): Harvest launches the standalone collector; its battle publishes the gem routines AND the two instances
+        turn_on_harvest(w, 'synthetic_collector_harvest_on_accepted', 'turn-on-collector')
+        w.dash._harvest_tick()
+        launched = w.client.get('/api/status').get_json()['harvest']['operation']
+        assert launched is not None and launched['kind'] == 'gems' and launched['status'] == 'accepted' and launched['harvest_managed'] is True, launched
+        op = w.store.get(launched['id'])
+        op = w.store.transition(op['id'], op['revision'], 'running')            # the worker's own first transition
+        h = Host(w, 'collector', op=op)
+        h.d.publish()
+        status = status_case(gen, w, 'synthetic_collector_running_routines_include_the_instances')
+        harvest_view = status['body']['harvest']
+        shown = harvest_view['operation']
+        assert (harvest_view['state'], shown['status'], shown['worker_alive'], shown['kind']) == ('collecting', 'running', True, 'gems'), (harvest_view['state'], shown)
+        assert list(shown['routines']) == [*harvest.GEM_ROUTINES, *KEYS], list(shown['routines'])        # a collector publishes its gem routines and its own registrations only
+        assert {key: shown['routines'][key]['enabled'] for key in KEYS} == {A: True, B: True} and shown['routines']['ad_gems']['enabled'] is True, shown['routines']
+        assert shown['battle']['fresh'] is True and shown['battle']['id'] == h.battle['id']
+        battle = h.read('synthetic_collector_battle_read')
+        assert {A, B, 'ad_gems', 'floating_gems'} <= set(h.items(battle)) and battle['operation_id'] == op['id']
+        assert shown['routines'] == battle['runtime']['routines'], 'harvest.operation.routines is the battle\'s own publication'
+    with world(gen, 'synthetic_harvest_disabled') as w:
+        # AC7 (b): the two instances start disabled (the saved run switches them off), then Harvest is turned on over the run
+        w.edit_profile(lambda profile: profile['blueprints']['farm'].setdefault('automation', {}).update({A: False, B: False}))
+        h = Host(w, 'harvest-disabled')
+        w.edit_profile(with_orbit)         # as in synthetic_harvest: after the battle froze its settings, the run's gathering settings gained timed orbit clicks
+        h.tick(polls=False)
+        before = h.read('synthetic_disabled_before_harvest_on')
+        assert {key: (h.items(before)[key]['state'], h.items(before)[key]['enabled'], before['effective']['routines'][key]['enabled']) for key in KEYS} == {
+            A: ('disabled', False, False), B: ('disabled', False, False)}, [h.items(before)[key] for key in KEYS]
+        assert not any(probe.opened for probe in h.probes.values())
+        synthetic_before = {key: dict(h.d.battle['applied_controls']['routines'][key]) for key in KEYS}
+        pre = status_case(gen, w, 'synthetic_disabled_status_before_harvest_on')['body']['harvest']       # AC7 (c): the status the UI's Turn on starts from
+        assert (pre['desired']['choice'], pre['desired']['enabled'], pre['overlay'], pre['operation']) == ('unset', None, None, None), (pre['desired'], pre['overlay'])
+        assert {key: pre['owner']['routines'][key]['enabled'] for key in KEYS} == {A: False, B: False}
+        turn_on_harvest(w, 'synthetic_disabled_harvest_on_accepted', 'turn-on-disabled')
+        w.dash._harvest_tick()
+        status = status_case(gen, w, 'synthetic_disabled_harvest_on_targets_the_gem_routines_only')
+        overlay = status['body']['harvest']['overlay']
+        assert overlay['state'] == 'requested' and overlay['paths'] == ['routines.floating_gems.enabled'] and set(overlay['targets']) == set(harvest.GEM_ROUTINES), overlay
+        assert not [path for path in overlay['paths'] if 'synthetic_probe' in path]
+        h.tick()                                                                  # the checkpoint applies the overlay; the handlers poll and stay idle
+        after = h.read('synthetic_disabled_after_harvest_on')
+        sent = [entry for entry in after['commands'] if entry['kind'] == 'controls' and entry['request_keys'][0].startswith(harvest.OVERLAY_PREFIX)]
+        assert len(sent) == 1 and sent[0]['state'] == 'applied' and list(sent[0]['payload']['routines']) == ['floating_gems'], sent
+        assert {key: after['effective']['routines'][key] for key in KEYS} == synthetic_before and after['effective']['routines']['floating_gems']['enabled'] is True
+        assert {key: (h.items(after)[key]['state'], h.items(after)[key]['enabled'], h.items(after)[key]['values']['enabled']) for key in KEYS} == {
+            A: ('disabled', False, False), B: ('disabled', False, False)}
+        assert {key: after['runtime']['routines'][key]['enabled'] for key in KEYS} == {A: False, B: False} and not any(probe.opened for probe in h.probes.values())
+        h.d.publish()
+        later = status_case(gen, w, 'synthetic_disabled_status_after_harvest_on')['body']['harvest']
+        assert later['operation'] is None and later['owner']['kind'] == 'operation' and later['overlay']['state'] == 'applied', (later['operation'], later['overlay'])
+        assert {key: later['owner']['routines'][key]['enabled'] for key in KEYS} == {A: False, B: False} and later['owner']['routines']['floating_gems']['enabled'] is True
+
+
+def turn_on_harvest(w, case, key):
+    """POST /api/harvest enabled:true for the world's own context, recorded as `case`."""
+    ident = harvest.identity_for(w.cfg)
+    body = dict(enabled=True, preset='bp_farm', expected_revision=0, idempotency_key=key,
+                expected_context={name: ident[name] for name in ('instance', 'account', 'serial', 'profile')})
+    reply = w.post(SA, case, '/api/harvest', body)
+    assert reply.status_code == 200, reply.get_json()
+    return reply
+
+
+def status_case(gen, w, case):
+    """GET /api/status recorded as `case`, with the members the harvest views read (harvest, battle, operations), as synthetic_harvest_on_keeps_collection_gem_only."""
+    status = dashboard.answer(w.client.get('/api/status'), 'GET', '/api/status')
+    status['body'] = {key: value for key, value in status['body'].items() if key in ('harvest', 'battle', 'operations')}
+    gen.cases.setdefault(SA, {})[case] = status
+    return status
 
 
 # B1 case id of the brief (backend/logs/reviews/ui-pages/a2-7-actions-brief.md section 11) -> the case of the fixture that satisfies it
@@ -246,3 +333,12 @@ B1 = {
 }
 EXTRAS = ['synthetic_live_field_unknown_refused', 'synthetic_live_instance_unknown_refused', 'synthetic_next_unknown_due_at_null', 'synthetic_harvest_on_accepted',
           'synthetic_harvest_on_battle_read']
+# AC7 review of A2-7 (r17c): the recordings that let the UI prove collection evidence stays gem-only -> the cases that satisfy them
+AC7 = {
+    'collector_running_with_the_synthetic_instances_in_its_routines': 'synthetic_collector_running_routines_include_the_instances',
+    'synthetic_disabled_then_harvest_on_targets_the_gem_routines_only': 'synthetic_disabled_harvest_on_targets_the_gem_routines_only',
+    'synthetic_still_disabled_after_the_overlay_applied': 'synthetic_disabled_after_harvest_on',
+    'pre_enable_status_harvesting_off_no_overlay': 'synthetic_disabled_status_before_harvest_on',
+}
+AC7_EXTRAS = ['synthetic_collector_harvest_on_accepted', 'synthetic_collector_battle_read', 'synthetic_disabled_before_harvest_on', 'synthetic_disabled_harvest_on_accepted',
+              'synthetic_disabled_status_after_harvest_on']

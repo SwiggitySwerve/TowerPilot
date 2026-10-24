@@ -10,7 +10,7 @@ import pytest
 
 import test_dashboard_contract as dashboard
 from dashboard_contract_pages_world import PagesGenerator
-from synthetic_action_contract import A, B, B1, EXTRAS, NOTE, SA, synthetic_action_cases
+from synthetic_action_contract import A, AC7, AC7_EXTRAS, B, B1, EXTRAS, NOTE, SA, synthetic_action_cases
 from test_dashboard_contract_pages import pin_process_identity
 
 FIXTURES = test_paths.FIXTURES
@@ -56,9 +56,11 @@ def test_every_case_the_brief_asks_for_is_in_the_fixture():
     cases = fixture()['cases'][SA]
     missing = {brief: key for brief, key in B1.items() if key not in cases}
     assert not missing, f'B1 cases the fixture lacks: {missing}'
-    unnamed = sorted(set(cases) - set(B1.values()) - set(EXTRAS))
-    assert not unnamed, f'cases no B1 row and no declared extra names: {unnamed}'
-    assert not [extra for extra in EXTRAS if extra not in cases]
+    unnamed = sorted(set(cases) - set(B1.values()) - set(EXTRAS) - set(AC7.values()) - set(AC7_EXTRAS))
+    assert not unnamed, f'cases no B1 or AC7 row and no declared extra names: {unnamed}'
+    assert not [extra for extra in EXTRAS + AC7_EXTRAS if extra not in cases]
+    missing = {row: key for row, key in AC7.items() if key not in cases}
+    assert not missing, f'AC7 cases the fixture lacks: {missing}'
 
 
 def test_the_answers_are_the_ones_the_brief_describes():
@@ -86,3 +88,30 @@ def test_the_synthetic_action_is_in_no_production_contract():
         if path.exists():
             assert 'synthetic_probe' not in path.read_text(encoding='utf-8'), f'{name} names the test-only action'
     assert FIXTURE.name not in {path.name for path in FIXTURES.glob('dashboard_contract*.json')}
+
+
+def test_the_ac7_recordings_let_the_ui_prove_that_collection_evidence_stays_gem_only():
+    """A2-7 AC7 review: collection evidence reads harvest.operation (a running collector, its fresh battle, its routines); the synthetic instances are in
+    those routines, but only the gem routines decide collecting, and turning Harvest on targets the gem routines only, leaving a disabled instance disabled."""
+    cases = fixture()['cases'][SA]
+    running = cases[AC7['collector_running_with_the_synthetic_instances_in_its_routines']]['body']['harvest']
+    operation = running['operation']
+    assert (running['state'], running['input_revoked'], operation['kind'], operation['status'], operation['worker_alive']) == ('collecting', False, 'gems', 'running', True)
+    assert operation['battle']['fresh'] is True and operation['evidence']['generation'] == operation['battle']['generation']
+    assert set(operation['routines']) == {A, B, 'ad_gems', 'floating_gems'} and operation['routines']['ad_gems']['enabled'] is True     # collector-shaped: no shopping, no run gates
+    assert operation['battle']['origin'] == 'adopted'
+    assert operation['routines'][A]['enabled'] is True and operation['routines'][B]['enabled'] is True
+    overlay = cases[AC7['synthetic_disabled_then_harvest_on_targets_the_gem_routines_only']]['body']['harvest']['overlay']
+    assert set(overlay['targets']) == {'ad_gems', 'floating_gems'} and overlay['paths'] == ['routines.floating_gems.enabled']
+    before = cases['synthetic_disabled_before_harvest_on']['body']['battle']
+    after = cases[AC7['synthetic_still_disabled_after_the_overlay_applied']]['body']['battle']
+    for battle in (before, after):
+        items = {entry['key']: entry for entry in battle['runtime']['actions']['items']}
+        for key in (A, B):
+            assert (items[key]['state'], items[key]['enabled'], items[key]['values']['enabled'], battle['effective']['routines'][key]['enabled']) == ('disabled', False, False, False)
+    assert after['effective']['routines']['floating_gems']['enabled'] is True and before['effective']['routines']['floating_gems']['enabled'] is False
+    pre = cases[AC7['pre_enable_status_harvesting_off_no_overlay']]['body']['harvest']
+    assert pre['desired']['enabled'] is not True and pre['overlay'] is None and pre['operation'] is None and pre['owner']['kind'] == 'operation'
+    assert pre['owner']['battle']['id'] == before['id'] and pre['owner']['routines'][A]['enabled'] is False and pre['owner']['routines'][B]['enabled'] is False
+    owner = cases['synthetic_disabled_status_after_harvest_on']['body']['harvest']['owner']
+    assert owner['routines'][A]['enabled'] is False and owner['routines'][B]['enabled'] is False and owner['routines']['floating_gems']['enabled'] is True
