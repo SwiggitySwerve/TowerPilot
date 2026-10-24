@@ -147,4 +147,4 @@ def test_generate_abilities_samples(tmp_path, monkeypatch, dash):
             assert gen.cases[family][f'{scenario}_committed']['request']['body'] == committed_request
             assert gen.cases[family][f'{scenario}_saved']['request']['body'] == changed_request
     document = scrub(dict(version=1, generated_by='frontend/app/e2e/abilities_fixture_cases.py', cases=gen.cases), gen.base)
-    Path(__file__).with_name('abilities-samples.json').write_text(json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')
+    (Path(__file__).parents[1] / "tests" / "fixtures" / 'abilities-samples.json').write_text(json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')

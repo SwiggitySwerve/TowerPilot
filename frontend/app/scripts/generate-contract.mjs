@@ -344,7 +344,7 @@ export const PAGES_RECOGNITION_ADVANCED_DESCRIPTOR = {
  * `battle.runtime.actions` of GET /api/battles/active (`battle_actions_projection`) and the
  * execution history (`action_executions`, `action_executions_more`): the `executions` block of
  * GET /api/battles/<id> and the generic GET /api/actions/executions. Bound to the landed r17b
- * recordings in the checkout pages fixture (tests/tooling/r17bCheckout.test.ts).
+ * recordings in the checkout pages fixture (tests/unit/tooling/r17bCheckout.test.ts).
  * The projection reads carry battle commands, so their
  * states come from the backend's one serializer for each kind (F-058), as for run_controls_live.
  * Bound to these families' hashes like the Runs module.
@@ -380,7 +380,7 @@ export const PAGES_ACTIONS_DESCRIPTOR = {
  */
 export const CONTRACT_INPUTS = [
   {
-    file: path.join(APP, 'e2e/abilities-samples.json'),
+    file: path.join(APP, 'tests/fixtures/abilities-samples.json'),
     descriptor: {
       name: 'abilities_samples_v1',
       boundTo: 'families',
@@ -420,7 +420,7 @@ export const CONTRACT_INPUTS = [
     },
   },
   {
-    file: path.join(APP, 'e2e/equipment-samples.json'),
+    file: path.join(APP, 'tests/fixtures/equipment-samples.json'),
     descriptor: {
       name: 'equipment_samples_v1',
       boundTo: 'families',

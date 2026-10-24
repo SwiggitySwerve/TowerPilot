@@ -4,7 +4,7 @@
  * wording in components, no type assertions outside the brand homes, network
  * only from src/api/, and a few dangerous builtins. Guardrails against honest
  * mistakes, not a security boundary (ADR Amendment 1). eslint.config.js
- * applies these entries; tests/lint/rules.test.ts lints probes with the same
+ * applies these entries; tests/unit/lint/rules.test.ts lints probes with the same
  * entries, so the test and the config cannot drift apart.
  */
 

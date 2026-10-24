@@ -9,4 +9,4 @@ src/contract/generated/
 # puts the metadata blockquote directly under the H1; Prettier would separate them.
 *.md
 # A2-7 reviewed output dumps are compared byte for byte by the dump test.
-tests/store/__dumps__/
+tests/unit/store/__dumps__/

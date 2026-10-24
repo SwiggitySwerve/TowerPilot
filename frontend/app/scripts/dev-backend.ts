@@ -1,5 +1,5 @@
 import type { Plugin, ProxyOptions } from 'vite';
-import { createApiHandler, loadFixture } from '../e2e/fake-backend.mjs';
+import { createApiHandler, loadFixture } from '../tests/support/fake-backend/fake-backend.mjs';
 
 /**
  * Where `npm run dev` sends /api requests.
