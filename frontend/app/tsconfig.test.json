@@ -7,5 +7,5 @@
     "allowJs": true,
     "checkJs": true
   },
-  "include": ["src", "tests/unit", "tests/support"]
+  "include": ["src", "tests/unit", "tests/support/**/*.ts"]
 }

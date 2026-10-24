@@ -6,5 +6,5 @@ export default isolatedConfig({
   buildDir: 'playwright-report/runtime-config-build',
   outputDir: '../playwright-report/runtime-config-e2e',
   workers: 2,
-  reporter: [['list'], ['json', { outputFile: 'playwright-report/runtime-config-results.json' }]],
+  jsonReport: 'playwright-report/runtime-config-results.json',
 });

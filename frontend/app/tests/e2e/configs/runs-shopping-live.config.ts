@@ -10,5 +10,5 @@ export default isolatedConfig({
   testMatch: 'runs-shopping-live.spec.ts',
   buildDir: 'playwright-report/runs-shopping-live-build',
   outputDir: '../playwright-report/runs-shopping-live-e2e',
-  reporter: [['list'], ['json', { outputFile: 'playwright-report/shopping-live-browser.json' }]],
+  jsonReport: 'playwright-report/shopping-live-browser.json',
 });

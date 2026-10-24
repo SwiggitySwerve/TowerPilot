@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import { expect, type Page, type Request } from '@playwright/test';
 
-/** Shared steps of the Dashboard browser checks against the fake backend (e2e/fake-backend.mjs). */
+/** Shared steps of the Dashboard browser checks against the fake backend (tests/support/fake-backend/fake-backend.mjs). */
 
 export interface Posted {
   readonly method: string;

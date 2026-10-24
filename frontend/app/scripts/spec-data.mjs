@@ -60,6 +60,7 @@ function between(text, start, end) {
 function testReferences(cell) {
   /** @type {{ file: string, ruleId: string | null }[]} */
   const refs = [];
+  // Keep legacy prefixes visible so the safety-ledger validator can reject stale paths.
   for (const match of cell.matchAll(/`((?:tests|e2e)\/[^`]+)`(?:\s*>\s*(S-\d{3}))?/g)) {
     refs.push({ file: match[1] ?? '', ruleId: match[2] ?? null });
   }

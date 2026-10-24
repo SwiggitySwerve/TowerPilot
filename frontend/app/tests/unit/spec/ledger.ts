@@ -2,8 +2,8 @@ import type { TestReference } from './specData.ts';
 
 /**
  * Spec section 5, the safety ledger, as one rule shared by the ledger test and
- * the ledger reporter: every test file the ledger names under tests/core,
- * tests/contract, tests/api, tests/store or tests/features must hold, for each
+ * the ledger reporter: every test file the ledger names under tests/unit/core,
+ * tests/unit/contract, tests/unit/api, tests/unit/store or tests/unit/features must hold, for each
  * rule that names it, a test titled with the rule id that PASSED in this run
  * (F1-01: a skipped, todo or commented-out test is no proof). References to
  * tests/e2e/ files are proved by Playwright (`npm run e2e`); this suite checks that
@@ -17,12 +17,12 @@ const PROVED_DIRS = [
   'tests/unit/features/',
 ];
 
-/** A reference this suite proves: a tests/core, tests/contract, tests/api, tests/store or tests/features file. */
+/** A reference this suite proves: a tests/unit/core, tests/unit/contract, tests/unit/api, tests/unit/store or tests/unit/features file. */
 export function isProvedHere(reference: TestReference): boolean {
   return PROVED_DIRS.some((dir) => reference.file.startsWith(dir));
 }
 
-/** A reference Playwright proves (an tests/e2e/ spec). */
+/** A reference Playwright proves (a tests/e2e/ spec). */
 export function isBrowserProof(reference: TestReference): boolean {
   return reference.file.startsWith('tests/e2e/');
 }

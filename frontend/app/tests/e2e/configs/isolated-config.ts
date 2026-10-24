@@ -5,11 +5,12 @@ import { E2E_NODE } from '../helpers/runtime.ts';
 
 type IsolatedOptions = Pick<
   PlaywrightTestConfig,
-  'testMatch' | 'workers' | 'timeout' | 'fullyParallel' | 'reporter'
+  'testMatch' | 'workers' | 'timeout' | 'fullyParallel'
 > & {
   readonly port: number;
   readonly buildDir: string;
   readonly outputDir: string;
+  readonly jsonReport?: string;
   readonly buildFirst?: boolean;
   readonly webServerTimeout?: number;
 };
@@ -19,6 +20,7 @@ export function isolatedConfig({
   port,
   buildDir,
   outputDir,
+  jsonReport,
   buildFirst = false,
   webServerTimeout = 30_000,
   ...options
@@ -28,7 +30,10 @@ export function isolatedConfig({
     testDir: path.join(APP, 'tests/e2e'),
     forbidOnly: true,
     retries: 0,
-    reporter: [['list']],
+    reporter:
+      jsonReport === undefined
+        ? [['list']]
+        : [['list'], ['json', { outputFile: path.resolve(APP, 'e2e', jsonReport) }]],
     ...options,
     use: { baseURL: `http://127.0.0.1:${String(port)}`, trace: 'off' },
     projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
