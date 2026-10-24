@@ -1,6 +1,6 @@
 // @ts-check
 /** Strict fixture schemas only. R8 owns the deliberately tolerant runtime wire boundary. */
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { format, resolveConfig } from 'prettier';
@@ -1312,34 +1312,55 @@ export function contractForFixture(identity: { readonly path: string; readonly s
   );
 }
 
-/** @param {boolean} check */
-export async function generate(check) {
-  const modules = new Map(
-    existsSync(GENERATED_DIR)
-      ? readdirSync(GENERATED_DIR)
-          .filter((name) => /^.+\.[a-f\d]{8}\.ts$/.test(name))
-          .map((name) => [name, readFileSync(path.join(GENERATED_DIR, name), 'utf8')])
-      : [],
-  );
-  /** @type {[string, string][]} */
-  const outputs = [];
-  const inputs = loadContractInputs();
-  for (const { fixture, identity, descriptor } of inputs) {
-    const file = generatedFile(identity, descriptor);
-    const moduleText = await generateModule(fixture, identity, descriptor);
-    modules.set(path.basename(file), moduleText);
-    outputs.push([file, moduleText]);
-  }
-  outputs.push([path.join(GENERATED_DIR, 'index.ts'), await generateIndex(modules)]);
+/** A hash-named generated module: `<descriptor>.<first 8 hex of its input hash>.ts`. */
+const GENERATED_MODULE = /^.+\.[a-f\d]{8}\.ts$/;
+
+/**
+ * Write (or, under check, compare) a generator's outputs, and remove every hash-named module in
+ * `dir` that no current input produces: a superseded module is never imported by the app, only
+ * listed in the index, so keeping it would let the index answer for an input that no longer
+ * exists. Under check a leftover is drift, reported with `command` like any other.
+ * @param {string} dir @param {readonly (readonly [string, string])[]} outputs @param {boolean} check
+ * @param {string} command
+ */
+export function writeGenerated(dir, outputs, check, command) {
   for (const [target, content] of outputs) {
     if (check) {
       if (!existsSync(target) || readFileSync(target, 'utf8') !== content)
-        throw new Error(`Contract drift in ${target}; run npm run contract:generate`);
+        throw new Error(`Contract drift in ${target}; run ${command}`);
     } else {
       mkdirSync(path.dirname(target), { recursive: true });
       writeFileSync(target, content);
     }
   }
+  const produced = new Set(
+    outputs
+      .filter(([target]) => path.dirname(target) === dir)
+      .map(([target]) => path.basename(target)),
+  );
+  const stale = existsSync(dir)
+    ? readdirSync(dir).filter((name) => GENERATED_MODULE.test(name) && !produced.has(name))
+    : [];
+  if (check && stale.length > 0)
+    throw new Error(
+      `Stale generated modules in ${dir} that no current input produces: ${stale.join(', ')}; run ${command}`,
+    );
+  for (const name of stale) rmSync(path.join(dir, name));
+}
+
+/** @param {boolean} check */
+export async function generate(check) {
+  /** @type {Map<string, string>} */
+  const modules = new Map();
+  const inputs = loadContractInputs();
+  for (const { fixture, identity, descriptor } of inputs) {
+    const file = generatedFile(identity, descriptor);
+    modules.set(path.basename(file), await generateModule(fixture, identity, descriptor));
+  }
+  /** @type {[string, string][]} */
+  const outputs = [...modules].map(([name, text]) => [path.join(GENERATED_DIR, name), text]);
+  outputs.push([path.join(GENERATED_DIR, 'index.ts'), await generateIndex(modules)]);
+  writeGenerated(GENERATED_DIR, outputs, check, 'npm run contract:generate');
   for (const { identity, descriptor } of inputs) {
     console.log(
       `${check ? 'Checked' : 'Generated'} ${generatedFile(identity, descriptor)}\nFixture: ${identity.path}\nSHA-256: ${identity.sha256}`,
