@@ -222,6 +222,105 @@ it('F-004: without a configured serial Choose emulator links to the Emulators pa
   await check(page.view.container);
 });
 
+it.each(['enabled', 'process', 'unread'])(
+  'F-004: a focused Choose emulator link transfers focus to %s Reconnect without sending',
+  async (availability) => {
+    const page = top();
+    const user = userEvent.setup();
+    await user.tab();
+    expect(screen.getByRole('link', { name: 'Account details' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('link', { name: 'Choose emulator' })).toHaveFocus();
+
+    const state = addCase(
+      addCase(regionState(), 'config', 'config.taps_true'),
+      'status',
+      availability === 'process' ? 'status.processes_linked_collector' : 'status.processes_empty',
+    );
+    page.setState(availability === 'unread' ? addFailure(state, 'status') : state);
+    const reconnect = screen.getByRole('button', { name: 'Reconnect' });
+    expect(screen.queryByRole('link', { name: 'Choose emulator' })).not.toBeInTheDocument();
+    expect(reconnect).toHaveFocus();
+    expect(page.commands.reconnect).not.toHaveBeenCalled();
+    if (availability !== 'enabled') expect(reconnect).toHaveAttribute('aria-disabled', 'true');
+
+    await user.keyboard('{Enter}');
+    if (availability === 'enabled') {
+      expect(page.commands.reconnect).toHaveBeenCalledExactlyOnceWith(
+        selectTopBarVM(state).reconnect.command,
+      );
+    } else {
+      await user.keyboard(' ');
+      expect(page.commands.reconnect).not.toHaveBeenCalled();
+    }
+    await user.tab();
+    expect(screen.getByText('Pages')).toHaveFocus();
+  },
+);
+
+it('F-004: a focused Reconnect transfers focus back to the Choose emulator anchor', async () => {
+  const page = top(
+    addCase(
+      addCase(regionState(), 'config', 'config.taps_true'),
+      'status',
+      'status.processes_empty',
+    ),
+  );
+  const user = userEvent.setup();
+  await user.tab();
+  await user.tab();
+  expect(screen.getByRole('button', { name: 'Reconnect' })).toHaveFocus();
+  page.setState(regionState());
+  const choose = screen.getByRole('link', { name: 'Choose emulator' });
+  expect(choose).toHaveAttribute('href', '#emulators');
+  expect(choose).toHaveFocus();
+  expect(page.commands.reconnect).not.toHaveBeenCalled();
+  await user.tab();
+  expect(screen.getByText('Pages')).toHaveFocus();
+});
+
+it('F-004: replacing the slot in either direction preserves focus outside it', async () => {
+  const page = top();
+  const user = userEvent.setup();
+  await user.tab();
+  const account = screen.getByRole('link', { name: 'Account details' });
+  expect(account).toHaveFocus();
+  page.setState(
+    addCase(
+      addCase(regionState(), 'config', 'config.taps_true'),
+      'status',
+      'status.processes_empty',
+    ),
+  );
+  expect(screen.getByRole('button', { name: 'Reconnect' })).toBeInTheDocument();
+  expect(account).toHaveFocus();
+  page.setState(regionState());
+  expect(screen.getByRole('link', { name: 'Choose emulator' })).toBeInTheDocument();
+  expect(account).toHaveFocus();
+  expect(page.commands.reconnect).not.toHaveBeenCalled();
+});
+
+it('F-004: read-only top bars omit both slot controls across config changes', async () => {
+  const page = renderRegion(
+    regionState(),
+    <TopBar title={copy.dashboard.shell.pageName.short} readOnly />,
+  );
+  const user = userEvent.setup();
+  await user.tab();
+  const account = screen.getByRole('link', { name: 'Account details' });
+  page.setState(
+    addCase(
+      addCase(regionState(), 'config', 'config.taps_true'),
+      'status',
+      'status.processes_empty',
+    ),
+  );
+  expect(account).toHaveFocus();
+  expect(screen.queryByRole('button', { name: 'Reconnect' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Choose emulator' })).not.toBeInTheDocument();
+  expect(page.commands.reconnect).not.toHaveBeenCalled();
+});
+
 it('F-004 F6M-C-02: a runner listed while the click-time config read is in flight stops the Reconnect send', async () => {
   vi.useFakeTimers();
   let runner = false;

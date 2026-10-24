@@ -1,4 +1,4 @@
-import { useId, useRef } from 'react';
+import { useId, useLayoutEffect, useRef } from 'react';
 import type { CopyEntry, CopyText } from '../../../copy/text.ts';
 import { copy } from '../../../copy/catalogue.ts';
 import { lastRead } from '../../../copy/dashboard/shell.ts';
@@ -25,7 +25,16 @@ export function TopBar({
   const vm = useView(selectTopBarVM);
   const { commands } = useDashboard();
   const menu = useRef<HTMLDetailsElement>(null);
+  const reconnectSlot = useRef<HTMLSpanElement>(null);
+  const focusedReconnect = useRef<HTMLElement | null>(null);
   const reasonId = useId();
+  useLayoutEffect(() => {
+    const previous = focusedReconnect.current;
+    if (previous === null || previous.isConnected) return;
+    focusedReconnect.current = null;
+    // A read can replace the focused link with a command, or the command with a link.
+    reconnectSlot.current?.querySelector<HTMLElement>('a[href], button')?.focus();
+  }, [vm.reconnectAction, readOnly]);
   const connectionLine = connectionLines[vm.connection.line];
   const reason =
     vm.reconnect.reason === 'process_listed'
@@ -56,20 +65,40 @@ export function TopBar({
           {vm.connection.word === null ? null : <Chip state={vm.connection.word} />}
           <span>{connectionLine?.short ?? words.connection.connection_unconfirmed.short}</span>
         </span>
-        {readOnly ? null : vm.reconnectAction === 'choose_emulator' ? (
-          <a href={pageHref('emulators')}>{words.chooseEmulator.short}</a>
-        ) : (
-          <span className="tp-topbar-reconnect">
-            <Button
-              tier="secondary"
-              label={words.reconnect.short}
-              onClick={() => {
-                if (vm.reconnect.command !== null) void commands.reconnect(vm.reconnect.command);
-              }}
-              busy={vm.reconnect.sending}
-              {...(vm.reconnect.enabled ? {} : { disabled: true, reasonId })}
-            />
-            {vm.reconnect.enabled ? null : <span id={reasonId}>{reason.short}</span>}
+        {readOnly ? null : (
+          <span
+            className="tp-topbar-reconnect"
+            ref={reconnectSlot}
+            onFocusCapture={(event) => {
+              focusedReconnect.current = event.target;
+            }}
+            onBlurCapture={(event) => {
+              if (
+                event.target.isConnected &&
+                (!(event.relatedTarget instanceof Node) ||
+                  !event.currentTarget.contains(event.relatedTarget))
+              ) {
+                focusedReconnect.current = null;
+              }
+            }}
+          >
+            {vm.reconnectAction === 'choose_emulator' ? (
+              <a href={pageHref('emulators')}>{words.chooseEmulator.short}</a>
+            ) : (
+              <>
+                <Button
+                  tier="secondary"
+                  label={words.reconnect.short}
+                  onClick={() => {
+                    if (vm.reconnect.command !== null)
+                      void commands.reconnect(vm.reconnect.command);
+                  }}
+                  busy={vm.reconnect.sending}
+                  {...(vm.reconnect.enabled ? {} : { disabled: true, reasonId })}
+                />
+                {vm.reconnect.enabled ? null : <span id={reasonId}>{reason.short}</span>}
+              </>
+            )}
           </span>
         )}
       </div>

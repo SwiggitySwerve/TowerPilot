@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { loadFixture } from '../scripts/contract-fixture.mjs';
-import { axeCounts, bodiesTo, openScenario } from './helpers.ts';
+import { axeCounts, bodiesTo, openScenario, posts } from './helpers.ts';
 
 /**
  * Spec 8 in a real browser: axe in the main scenarios at 1360, 1054 and 390
@@ -50,10 +50,15 @@ const RANK = [
   'preview',
 ] as const;
 
-async function focusOrder(page: Page, stops: number): Promise<string[]> {
+async function focusOrder(
+  page: Page,
+  stops: number,
+  afterTab?: () => Promise<void>,
+): Promise<string[]> {
   const order: string[] = [];
   for (let n = 0; n < stops; n += 1) {
     await page.keyboard.press('Tab');
+    await afterTab?.();
     const where = await page.evaluate(() => {
       const active = document.activeElement;
       if (active === null || active === document.body) return 'body';
@@ -76,26 +81,74 @@ for (const [scenario, faults] of [
   ['collecting', ['slot:gem']],
 ] as const) {
   for (const width of [1360, 390]) {
-    test(`8.3: tab order follows the region order, revocations first (${scenario}${faults.length > 0 ? ', gem fallback' : ''} at ${String(width)})`, async ({
-      page,
-    }) => {
-      await openScenario(page, scenario, { width, faults: [...faults] });
-      const order = await focusOrder(page, 80);
-      expect(order[0]).toBe('skip');
-      const ranks = order.map((where) => RANK.indexOf(where as (typeof RANK)[number]));
-      expect(
-        ranks.every((rank) => rank >= 0),
-        order.join(' '),
-      ).toBe(true);
-      for (let n = 1; n < ranks.length; n += 1) {
-        expect(ranks[n], `${order[n - 1] ?? ''} -> ${order[n] ?? ''}`).toBeGreaterThanOrEqual(
-          ranks[n - 1] ?? 0,
-        );
-      }
-      // The first stop inside main is a Control slot's revocation, never a region link.
-      const firstMain = order.find((where) => where !== 'skip' && where !== 'header');
-      expect(['automation', 'input', 'gem']).toContain(firstMain);
-    });
+    for (const heldConfig of [false, true]) {
+      test(`8.3: tab order follows the region order, revocations first (${scenario}${faults.length > 0 ? ', gem fallback' : ''} at ${String(width)})${heldConfig ? ' with config arriving on focused Choose emulator' : ''}`, async ({
+        page,
+      }) => {
+        let releaseConfig: (() => void) | undefined;
+        let configHeld = false;
+        const replacementFocused: boolean[] = [];
+        if (heldConfig) {
+          const released = new Promise<void>((resolve) => {
+            releaseConfig = resolve;
+          });
+          // Control only the first response boundary; keep its fixture and all polling unchanged.
+          await page.route('**/api/config', async (route) => {
+            if (configHeld) {
+              await route.continue();
+              return;
+            }
+            configHeld = true;
+            const response = await route.fetch();
+            await released;
+            await route.fulfill({ response });
+          });
+        }
+        try {
+          await openScenario(page, scenario, { width, faults: [...faults] });
+          const order = await focusOrder(
+            page,
+            80,
+            heldConfig
+              ? async () => {
+                  if (replacementFocused.length > 0) return;
+                  const choose = page.getByRole('link', { name: 'Choose emulator', exact: true });
+                  if (await choose.evaluate((element) => element === document.activeElement)) {
+                    releaseConfig?.();
+                    await expect(choose).toHaveCount(0);
+                    replacementFocused.push(
+                      await page
+                        .getByRole('button', { name: 'Reconnect', exact: true })
+                        .evaluate((element) => element === document.activeElement),
+                    );
+                    expect(await posts(page)).toEqual([]);
+                  }
+                }
+              : undefined,
+          );
+          expect(order[0]).toBe('skip');
+          const ranks = order.map((where) => RANK.indexOf(where as (typeof RANK)[number]));
+          expect(
+            ranks.every((rank) => rank >= 0),
+            order.join(' '),
+          ).toBe(true);
+          for (let n = 1; n < ranks.length; n += 1) {
+            expect(ranks[n], `${order[n - 1] ?? ''} -> ${order[n] ?? ''}`).toBeGreaterThanOrEqual(
+              ranks[n - 1] ?? 0,
+            );
+          }
+          // The first stop inside main is a Control slot's revocation, never a region link.
+          const firstMain = order.find((where) => where !== 'skip' && where !== 'header');
+          expect(['automation', 'input', 'gem']).toContain(firstMain);
+          if (heldConfig) {
+            expect(replacementFocused).toEqual([true]);
+            expect(await posts(page)).toEqual([]);
+          }
+        } finally {
+          releaseConfig?.();
+        }
+      });
+    }
   }
 }
 
