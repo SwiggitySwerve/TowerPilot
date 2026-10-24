@@ -248,15 +248,15 @@ def test_the_one_allowed_popen_kill_is_still_there_so_the_allowance_cannot_go_st
 # process_handle.terminate_tree(pid, created), as test_process_handle.stop_identities does.
 TEST_OWNED = {
     'backend/tests/recording/dashboard_contract_world.py': {('kernel', 'terminate')},
-    'backend/tests/test_daystate_serialization.py': {('child', 'kill')},      # a Popen the test started: a child that holds the daily-state lock, killed to show the OS frees it
-    'backend/tests/test_delegated_driver.py': {('child', 'terminate'), ('child', 'kill')},
-    'backend/tests/test_device_lease.py': {('first', 'kill')},
-    'backend/tests/test_file_lock.py': {('child', 'kill')},                    # the same, for the primitive
-    'backend/tests/test_harvest_contract.py': {('out', 'kill'), ('stop', 'kill')},
-    'backend/tests/test_preview_mumu.py': {('launcher', 'kill'), ('process', 'kill')},
-    'backend/tests/test_process_handle.py': {('FakeKernel', 'terminate'), ('process_handle.KERNEL', 'terminate'),
+    'backend/tests/unit/test_daystate_serialization.py': {('child', 'kill')},      # a Popen the test started: a child that holds the daily-state lock, killed to show the OS frees it
+    'backend/tests/unit/test_delegated_driver.py': {('child', 'terminate'), ('child', 'kill')},
+    'backend/tests/unit/test_device_lease.py': {('first', 'kill')},
+    'backend/tests/unit/test_file_lock.py': {('child', 'kill')},                    # the same, for the primitive
+    'backend/tests/unit/test_harvest_contract.py': {('out', 'kill'), ('stop', 'kill')},
+    'backend/tests/unit/test_preview_mumu.py': {('launcher', 'kill'), ('process', 'kill')},
+    'backend/tests/unit/test_process_handle.py': {('FakeKernel', 'terminate'), ('process_handle.KERNEL', 'terminate'),
                                              ('process_handle.kernel()', 'terminate'), ('child', 'kill')},
-    'backend/tests/test_process_signal_sites.py': {('adopted()', 'terminate'), ('adopted()', 'kill')},
+    'backend/tests/unit/test_process_signal_sites.py': {('adopted()', 'terminate'), ('adopted()', 'kill')},
 }
 
 

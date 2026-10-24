@@ -9,7 +9,7 @@ device, lease, process table or a running dashboard. A normal run only compares:
 in a field, a code or a status fails until a developer regenerates it on purpose and the
 UI side re-reads it:
 
-    TP_REGENERATE_DASHBOARD_CONTRACT=1 python -m pytest backend/tests/test_dashboard_contract.py
+    TP_REGENERATE_DASHBOARD_CONTRACT=1 python -m pytest backend/tests/unit/test_dashboard_contract.py
 
 TP_DASHBOARD_CONTRACT_OUT=<path> writes the generated contract to that path instead of
 comparing (how a second tree, such as the r6 candidate, is generated; the committed fixture

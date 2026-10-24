@@ -11,7 +11,7 @@ What a migration must not do, and how this file holds it to that:
     when both sides are the same code.
 
 Regenerate the structural baseline only on the unmigrated snapshot, as an explicit command (it erases the proof if run after a migration):
-    TP_REGENERATE_LATENCY_BASELINE=1 python -m pytest backend/tests/test_action_latency_gate.py -k capture_the_structural_baseline
+    TP_REGENERATE_LATENCY_BASELINE=1 python -m pytest backend/tests/unit/test_action_latency_gate.py -k capture_the_structural_baseline
 Keep the artifact of a run: TP_LATENCY_GATE_ARTIFACT=<path> (the test writes one to a temporary folder either way).
 """
 import builtins

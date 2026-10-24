@@ -8,7 +8,7 @@ ids aliased in order of appearance), never edited by hand. A normal run only
 compares: any change in a field name, a code or a state fails until a developer
 regenerates it on purpose and the UI side re-reads it:
 
-    python -m pytest backend/tests/test_harvest_contract.py --regenerate-harvest-fixture
+    python -m pytest backend/tests/unit/test_harvest_contract.py --regenerate-harvest-fixture
 
 Offline: temporary ledgers and leases, fake process and device boundaries."""
 

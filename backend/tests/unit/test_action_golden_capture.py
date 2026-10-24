@@ -1,6 +1,6 @@
 """Explicit developer command: capture the golden traces from the CURRENT code.
 
-    TP_REGENERATE_ACTION_GOLDEN=1 python -m pytest backend/tests/test_action_golden_capture.py
+    TP_REGENERATE_ACTION_GOLDEN=1 python -m pytest backend/tests/unit/test_action_golden_capture.py
 
 It is skipped in every normal run. The committed fixture was captured on the tree BEFORE the action modules
 existed (`captured_on` holds the hashes of the callers it pinned); regenerating it after a migration would

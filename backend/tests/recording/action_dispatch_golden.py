@@ -11,7 +11,7 @@ migration cannot change what a control, a Run now or a saved edit does.
 This module imports none of the modules batch 2 adds (action_bindings, saved_controls). It drives the callers only through
 the attributes they already had. Regeneration is an explicit developer command, never a test side effect:
 
-    TP_REGENERATE_ACTION_DISPATCH_GOLDEN=1 python -m pytest backend/tests/test_action_dispatch_capture.py
+    TP_REGENERATE_ACTION_DISPATCH_GOLDEN=1 python -m pytest backend/tests/unit/test_action_dispatch_capture.py
 """
 
 import paths as test_paths

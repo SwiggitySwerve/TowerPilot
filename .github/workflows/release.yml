@@ -33,15 +33,24 @@ jobs:
           "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Install build and test dependencies
         run: python -m pip install -r requirements-portable.lock pytest
+      - name: Select backend release tests by layout
+        shell: pwsh
+        run: |
+          foreach ($file in @('test_release_clean.py', 'test_release_bootstrap.py', 'test_release_app_build.py', 'test_ui_app_serving.py')) {
+            $moved = "backend/tests/unit/$file"
+            $selected = if (Test-Path $moved) { $moved } else { "backend/tests/$file" }
+            $key = $file.Replace('.py', '').ToUpperInvariant()
+            "$key=$selected" | Out-File -FilePath $env:GITHUB_ENV -Append
+          }
       - name: Check source release boundary
-        run: python -m pytest backend/tests/test_release_clean.py backend/tests/test_release_bootstrap.py
+        run: python -m pytest $env:TEST_RELEASE_CLEAN $env:TEST_RELEASE_BOOTSTRAP
       # The dashboard app (frontend/app, ADR-001), built before the ZIPs. One
       # step per command so any failure stops the release. The steps run when
       # the checked-out release has the app; a tag from before it has none,
       # and from it on tools/build_release.py refuses a release without the build.
       - name: Check dashboard app release boundary
         if: hashFiles('frontend/app/package-lock.json') != ''
-        run: python -m pytest backend/tests/test_release_app_build.py backend/tests/test_ui_app_serving.py
+        run: python -m pytest $env:TEST_RELEASE_APP_BUILD $env:TEST_UI_APP_SERVING
       - name: Install dashboard app dependencies
         if: hashFiles('frontend/app/package-lock.json') != ''
         working-directory: frontend/app

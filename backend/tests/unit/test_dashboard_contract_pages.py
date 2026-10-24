@@ -12,7 +12,7 @@ this module gives each family's own hash) when a family is appended after it.
 A normal run only compares: any change in a field, a code or a status fails until a developer regenerates it on
 purpose and the UI side re-reads it:
 
-    TP_REGENERATE_DASHBOARD_CONTRACT_PAGES=1 python -m pytest backend/tests/test_dashboard_contract_pages.py
+    TP_REGENERATE_DASHBOARD_CONTRACT_PAGES=1 python -m pytest backend/tests/unit/test_dashboard_contract_pages.py
 
 TP_DASHBOARD_CONTRACT_PAGES_OUT=<path> writes the generated contract to that path instead of comparing (how a
 second tree is generated; the committed fixture is untouched).

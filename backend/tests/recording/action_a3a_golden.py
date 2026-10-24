@@ -12,7 +12,7 @@ module-level producers it calls by name (`check_due`, `checked`, `store_due`, `s
 `PRODUCERS` maps each to the new entry point (`decide` / `settle`) and the driver uses whichever exists. Regeneration is an explicit
 developer command, never a test side effect:
 
-    TP_REGENERATE_ACTION_A3A_GOLDEN=1 python -m pytest backend/tests/test_action_a3a_capture.py
+    TP_REGENERATE_ACTION_A3A_GOLDEN=1 python -m pytest backend/tests/unit/test_action_a3a_capture.py
 """
 
 import paths as test_paths

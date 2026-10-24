@@ -143,18 +143,18 @@ export function familyHashes(file) {
  * @type {ReadonlyMap<string, readonly [string, string]>}
  */
 const FIXTURE_SOURCES = new Map([
-  ['harvest_status_v1.json', [FIXTURE_NAME, 'backend/tests/test_harvest_contract.py']],
+  ['harvest_status_v1.json', [FIXTURE_NAME, 'backend/tests/unit/test_harvest_contract.py']],
   [
     'dashboard_contract_v1.json',
-    [DASHBOARD_FIXTURE_NAME, 'backend/tests/test_dashboard_contract.py'],
+    [DASHBOARD_FIXTURE_NAME, 'backend/tests/unit/test_dashboard_contract.py'],
   ],
   [
     'dashboard_contract_pages_v1.json',
-    [DASHBOARD_PAGES_FIXTURE_NAME, 'backend/tests/test_dashboard_contract_pages.py'],
+    [DASHBOARD_PAGES_FIXTURE_NAME, 'backend/tests/unit/test_dashboard_contract_pages.py'],
   ],
   [
     'synthetic_action_contract_v1.json',
-    [SYNTHETIC_ACTION_FIXTURE_NAME, 'backend/tests/test_synthetic_action_contract.py'],
+    [SYNTHETIC_ACTION_FIXTURE_NAME, 'backend/tests/unit/test_synthetic_action_contract.py'],
   ],
 ]);
 
@@ -165,7 +165,7 @@ export class MissingContractFixture extends Error {
   constructor(file) {
     const [name, generator] = FIXTURE_SOURCES.get(path.basename(file)) ?? [
       FIXTURE_NAME,
-      'backend/tests/test_harvest_contract.py',
+      'backend/tests/unit/test_harvest_contract.py',
     ];
     super(
       `Contract fixture missing: ${name} (looked for ${file}). ` +

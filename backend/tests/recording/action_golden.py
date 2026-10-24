@@ -11,7 +11,7 @@ drives the callers only through the attributes they already had (poll, configure
 tick), so the scenarios stay valid after the migration. Regeneration is an explicit developer command, never
 a test side effect:
 
-    TP_REGENERATE_ACTION_GOLDEN=1 python -m pytest backend/tests/test_action_golden_capture.py
+    TP_REGENERATE_ACTION_GOLDEN=1 python -m pytest backend/tests/unit/test_action_golden_capture.py
 """
 
 import paths as test_paths

@@ -1,6 +1,6 @@
 """Explicit developer command: capture the A3a golden traces from the CURRENT code.
 
-    TP_REGENERATE_ACTION_A3A_GOLDEN=1 python -m pytest backend/tests/test_action_a3a_capture.py
+    TP_REGENERATE_ACTION_A3A_GOLDEN=1 python -m pytest backend/tests/unit/test_action_a3a_capture.py
 
 Skipped in every normal run. The committed fixture was captured BEFORE the A3a producers were replaced by schedule policies (`captured_on` holds the
 hashes of the callers it pinned); regenerating it after the migration would erase the proof, so the parity tests only ever compare."""

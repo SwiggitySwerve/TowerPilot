@@ -313,7 +313,7 @@ def test_gate_source_and_data_pass_their_own_content_rules(checker: ModuleType, 
     for name in ('check_release_zips.py', 'release_archive_policy.py', 'generate_dependency_images.py',
                  'dependency_images.json', 'portable_pins.json', 'release_marker_allowlist.json'):
         artifact[3]['tools/' + name] = (REPO / 'tools' / name).read_bytes()
-    artifact[3]['backend/tests/test_release_archive_gate.py'] = (test_paths.TESTS / 'test_release_archive_gate.py').read_bytes()
+    artifact[3]['backend/tests/unit/test_release_archive_gate.py'] = (test_paths.TESTS / 'unit' / 'test_release_archive_gate.py').read_bytes()
     assert check(checker, artifact) == 0
 
 

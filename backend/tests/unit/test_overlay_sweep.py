@@ -270,7 +270,7 @@ def test_release_ships_the_agent_rules_and_skills_but_no_personal_settings():
     spec.loader.exec_module(mod)
     for name in ("CLAUDE.md", "AGENTS.md", ".claude/settings.json", ".claude/skills/trigger-map.md",
                  ".claude/skills/adb-craft/SKILL.md", ".claude/hooks/skills-reminder.js",
-                 ".codex/config.toml", ".github/workflows/release.yml", "backend/tests/test_overlay_sweep.py",
+                 ".codex/config.toml", ".github/workflows/release.yml", "backend/tests/unit/test_overlay_sweep.py",
                  "docs/RELEASE_0.2_BETA.md"):
         assert mod.allowed(name), name
     for name in (".claude/settings.local.json", ".claude/cache/frame.png", "backend/config.yaml",

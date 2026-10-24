@@ -360,7 +360,7 @@ def test_the_declaration_of_item_6_names_only_tests_that_exist():
     scanned = set()
     for declaration, files in DECLARATION.items():
         for name, tests in files.items():
-            path = TESTS / name
+            path = TESTS / 'unit' / name
             assert path.exists(), (declaration, name)
             defined = {node.name for node in ast.walk(ast.parse(path.read_text(encoding='utf-8'))) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))}
             scanned.add(name)

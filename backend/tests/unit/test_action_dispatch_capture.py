@@ -1,6 +1,6 @@
 """Explicit developer command: capture the dispatch golden traces from the CURRENT code.
 
-    TP_REGENERATE_ACTION_DISPATCH_GOLDEN=1 python -m pytest backend/tests/test_action_dispatch_capture.py
+    TP_REGENERATE_ACTION_DISPATCH_GOLDEN=1 python -m pytest backend/tests/unit/test_action_dispatch_capture.py
 
 It is skipped in every normal run. The committed fixture was captured on the tree BEFORE the dispatch was derived from the
 catalog (`captured_on` holds the hashes of the callers it pinned); regenerating it after the migration would erase the proof,
