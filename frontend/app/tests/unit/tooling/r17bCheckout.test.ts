@@ -18,7 +18,10 @@ import {
 } from '../../../scripts/generate-contract.mjs';
 import { REPO } from '../../support/paths.ts';
 
-/** Approved e02b205 fixtures. Pins fail closed on changed or missing checkout bytes. */
+/**
+ * Approved e02b205 dashboard fixtures and the r17c-landed (b23bf8c) synthetic fixture.
+ * Pins fail closed on changed or missing checkout bytes.
+ */
 describe('AC6 landed r17b checkout provenance', () => {
   it.each([
     [DASHBOARD_FIXTURE_PATH, '0d230c8a1d3442bcde9b3e007c6e7729bf2f2e08c91ea03a15619a07df981e73'],
@@ -28,7 +31,7 @@ describe('AC6 landed r17b checkout provenance', () => {
     ],
     [
       SYNTHETIC_ACTION_FIXTURE_PATH,
-      '2696d743887d5e0edac1ff950d63cf73e32d06fa3e22d006d32b5e784cb20f7f',
+      '4f5c9ef9abe08349658fe4604150c7a279dd92b1304e1b1aaeba06d86284c3e8',
     ],
   ])('pins the approved checkout bytes at %s', (file, sha256) => {
     expect(loadJsonWithIdentity(file).identity.sha256).toBe(sha256);
@@ -55,11 +58,11 @@ describe('AC6 landed r17b checkout provenance', () => {
     expect(fixture['generated_by']).toBe('backend/tests/test_synthetic_action_contract.py');
     expect(CONTRACT_INPUTS.some(({ file }) => file === SYNTHETIC_ACTION_FIXTURE_PATH)).toBe(false);
     expect(familyHashes(SYNTHETIC_ACTION_FIXTURE_PATH)).toEqual({
-      synthetic_action: '51E6F61470687F19A322E6A623EEA238B219FF4A52A73C5E24DBE11565B2CD7C',
+      synthetic_action: 'F661EE52D80D60FDAD302A34795E22A0D812A7C9EE1274A7C134584A54D6E1BD',
     });
     const cases = record(fixture['cases']);
     expect(Object.keys(cases)).toEqual(['synthetic_action']);
-    expect(Object.keys(record(cases['synthetic_action']))).toHaveLength(24);
+    expect(Object.keys(record(cases['synthetic_action']))).toHaveLength(33);
   });
 
   it('AC7 the synthetic action id appears in no non-test frontend file', () => {
