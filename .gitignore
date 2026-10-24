@@ -67,17 +67,10 @@ Thumbs.db
 *.resource
 *.resS
 
-# Images never enter git: captures, templates, screenshots and evidence are
-# machine or account state (CLAUDE.md rule 8). If the app ever needs a shipped
-# image, add an explicit "!path" exception below this block.
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.bmp
-*.webp
+# Further image and recording types (common image types are listed near the top).
+# Captures, screenshots and evidence are machine or account state (CLAUDE.md rule 8);
+# a shipped file would need an explicit "!path" exception.
 *.tif
 *.tiff
-*.ico
 *.webm
 *.mp4
