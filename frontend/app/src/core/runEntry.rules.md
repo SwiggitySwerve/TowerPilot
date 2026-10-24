@@ -42,3 +42,17 @@ matches the recorded validator's non-null, non-off mode predicate; it does not r
 When rides is absent, the disabled quest-default action references visible catalogue copy
 explaining that the quest already uses its default. Its gate includes the deletion check,
 independently of the ordinary field save. Statistics is catalogue text with no control.
+
+When the current source read fails, the entry selector may show the last answered
+source through the existing editing-target selector, including its inactive
+selection generation check. Reads belong to the current context epoch. This
+history supplies field shape and retained drafts/outcomes only; it never grants
+save, clear or continuation authority. The whole retained field is disabled and
+the read failure uses existing client copy; server error text remains on the
+editing-target line. A current successful source without a revision keeps its
+fields editable but cannot offer Save. A healthy read for the same target restores
+the existing explicit-action rules without sending.
+Captured commands recheck the same entry selector's current source authority
+immediately before sending, after click-time and target checks, so a failed read
+cannot be bypassed by an older handler. Their reserved draft is unchanged; newer
+typing does not replace it.

@@ -4,6 +4,7 @@ export const runEntry = {
   title: entry('Entry and equipment'),
   scope: entry('Saved for this run. Save one field at a time; this does not change a live battle.'),
   unavailable: entry('Read this profile and its field vocabulary to edit entry settings.'),
+  readFailed: entry('The last read is shown read-only. Your draft and save result are kept.'),
   check: entry('Read entry settings'),
   continue: entry('Continue from the read'),
   discard: entry('Discard field draft'),

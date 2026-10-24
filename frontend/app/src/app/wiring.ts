@@ -8,10 +8,11 @@ import { finite, own, ownPath, text } from '../core/read.ts';
 import { startGate } from '../core/readiness.ts';
 import { savedSaveAnswer } from '../core/runControls.ts';
 import { runAddSource, runIdCheck } from '../core/runAdd.ts';
+import { selectRunEntry } from '../store/selectors/runEntry.ts';
 import { selectRunsAdd } from '../store/selectors/runsAdd.ts';
 import { sendRunAdd } from '../api/intents/runAdd.ts';
 import { sendRunEntryPatch } from '../api/intents/runEntry.ts';
-import { selectEditingTarget } from '../store/selectors/editingTarget.ts';
+import { editingSourceResource, selectEditingTarget } from '../store/selectors/editingTarget.ts';
 import { collectionSavePending } from '../store/selectors/collection.ts';
 import {
   contextKey,
@@ -1291,14 +1292,15 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       }
     },
     checkRunEntry: () => {
-      activePoller.read(
-        selectEditingTarget(store.getSnapshot()).inactive ? 'targetSource' : 'profileSource',
-      );
+      activePoller.read(editingSourceResource(selectEditingTarget(store.getSnapshot())));
       activePoller.read('profileFiles');
       activePoller.read('vocab');
     },
     patchRunEntry: async (command) => {
       if (!fenced(command)) return;
+      // Reuse the form's current source authority without substituting newer
+      // draft text for the submission already reserved by this command.
+      const sourceReadable = () => selectRunEntry(store.getSnapshot()).readable;
       const currentTarget = () => {
         const target = selectEditingTarget(store.getSnapshot());
         return (
@@ -1355,6 +1357,10 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
         }
         if (collectionWriteInFlight(command.context)) {
           notice('command_not_sent', 'collection_write_in_flight');
+          return;
+        }
+        if (!sourceReadable()) {
+          notice('command_not_sent', 'target_unconfirmed');
           return;
         }
         report(

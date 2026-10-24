@@ -18,7 +18,12 @@ import { settledByRead } from '../fences.ts';
 import type { DashboardState } from '../types.ts';
 import type { ProfilePatchCommand } from './collection.ts';
 import { saveOutcome, settingsSavePending, type SaveOutcomeVM } from './settingsModule.ts';
-import { editorSource, editingTargetVM, selectEditingTarget } from './editingTarget.ts';
+import {
+  editorSource,
+  editingSourceResource,
+  editingTargetVM,
+  selectEditingTarget,
+} from './editingTarget.ts';
 
 export interface RunEntryCommand extends ProfilePatchCommand {
   readonly profile: string;
@@ -31,7 +36,11 @@ export function selectRunEntry(state: DashboardState) {
   const context = state.context;
   const target = selectEditingTarget(state);
   const sourceRead = editorSource(state);
-  const source = sourceRead?.outcome.kind === 'answered' ? sourceRead.outcome.body : undefined;
+  const slot = state.reads[editingSourceResource(target)];
+  // Reuse the selection owner for history, including inactive-selection generation.
+  // History supplies display only; sourceRead remains the sole current evidence.
+  const displayRead = sourceRead ?? editorSource(state, 'lastAnswered');
+  const source = displayRead?.outcome.kind === 'answered' ? displayRead.outcome.body : undefined;
   const runs = runEntryRuns(source);
   // An explicitly selected missing run stays named; never silently edit a different entry.
   const run = state.runsRun ?? runs[0]?.key ?? null;
@@ -178,6 +187,7 @@ export function selectRunEntry(state: DashboardState) {
                   : null));
           return {
             key: field.key,
+            readOnly: sourceRead === null && displayRead !== null,
             needsChainLightning:
               field.key === 'policies.uw' && entryNeedsChainLightning(source, raw),
             clearReason,
@@ -237,6 +247,12 @@ export function selectRunEntry(state: DashboardState) {
     runs: runs.map((entry) => ({ key: entry.key, label: fromServer('name', entry.label) })),
     fields,
     readable,
+    readFailure:
+      displayRead !== null && sourceRead === null && slot.latest?.outcome.kind === 'failed'
+        ? {
+            network: slot.latest.outcome.reason === 'network',
+          }
+        : null,
     run,
     notSent: state.notices.some(
       (notice) =>

@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { own, ownPath } from '../src/core/read.ts';
@@ -372,3 +372,139 @@ for (const width of [1360, 1054, 390]) {
     }
   }
 }
+
+test('RunEntry refused draft survives failed source reread and recovery without another POST', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1054, height: 900 });
+  await page.clock.install();
+  await page.goto('/__fake/use?scenario=profile_patch_fenced_active_run_entry_label_saved_refused');
+  await page.evaluate(() => {
+    location.hash = '#runs/saved/farm';
+  });
+  const row = page.locator('[data-entry-field="label"]');
+  const input = row.getByLabel('Run label', { exact: true });
+  const refusal = page.getByText('Not saved: the account or profile changed', { exact: true });
+  await send(page, 'active_run_entry_label_saved');
+  await expect(refusal).toBeVisible();
+  await read(page, 'active_run_entry_label_saved');
+  await completedRead(page, 'active_run_entry_label_saved');
+  let failedReads = 0;
+  await page.route('**/api/profile-src/mine', async (route) => {
+    failedReads += 1;
+    await route.abort('failed');
+  });
+  await read(page, 'active_run_entry_label_saved');
+  await expect(page.getByText('The server could not be reached.', { exact: true })).toBeVisible();
+  expect(failedReads).toBeGreaterThan(0);
+  await expect(input).toHaveValue('Offline farm');
+  await expect(input).toBeDisabled();
+  await expect(page.getByText('network', { exact: true })).toHaveCount(0);
+  await expect(refusal).toBeVisible();
+  await expect(
+    page.locator('main pre').filter({ hasText: '"account": "beta"' }).first(),
+  ).toContainText('theirs');
+  for (const button of await page
+    .locator('[data-run-entry]')
+    .getByRole('button', { name: 'Save field', exact: true })
+    .all()) {
+    await expect(button).toBeDisabled();
+  }
+  await expect(row.getByRole('button', { name: 'Clear label', exact: true })).toBeDisabled();
+  await expect(
+    row.getByRole('button', { name: 'Discard field draft', exact: true }),
+  ).toBeDisabled();
+  await check(page, 1054);
+  await page.clock.fastForward(60_000);
+  expect(await bodiesTo(page, PATCH)).toEqual([
+    fencedCase('active_run_entry_label_saved').request.body,
+  ]);
+  const failure = {
+    value: await input.inputValue(),
+    disabled: await input.isDisabled(),
+    refusalVisible: await refusal.isVisible(),
+    posts: await bodiesTo(page, PATCH),
+    failedReads,
+  };
+  await page.screenshot({
+    path: path.join(OUT, 'runentry-refusal-read-failed.png'),
+    fullPage: true,
+  });
+  await page.unroute('**/api/profile-src/mine');
+  await read(page, 'active_run_entry_label_saved');
+  await completedRead(page, 'active_run_entry_label_saved');
+  await expect(input).toHaveValue('Offline farm');
+  await expect(input).toBeEnabled();
+  await expect(row.getByRole('button', { name: 'Save field', exact: true })).toBeEnabled();
+  await expect(refusal).toBeVisible();
+  await expect(page.getByText('The server could not be reached.', { exact: true })).toHaveCount(0);
+  await page.clock.fastForward(60_000);
+  expect(await bodiesTo(page, PATCH)).toEqual([
+    fencedCase('active_run_entry_label_saved').request.body,
+  ]);
+  writeFileSync(
+    path.join(OUT, 'runentry-refusal-read-recovery.json'),
+    JSON.stringify(
+      {
+        failure,
+        recovered: {
+          value: await input.inputValue(),
+          disabled: await input.isDisabled(),
+          refusalVisible: await refusal.isVisible(),
+          posts: await bodiesTo(page, PATCH),
+        },
+      },
+      null,
+      2,
+    ),
+  );
+  await page.screenshot({
+    path: path.join(OUT, 'runentry-refusal-read-recovered.png'),
+    fullPage: true,
+  });
+});
+
+test('RunEntry current source without a revision stays editable with Save blocked', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1054, height: 900 });
+  await page.route('**/api/profile-src/mine', async (route) => {
+    const recorded = profilePatchFencedRead(
+      'profile_patch_fenced_before:active_run_entry_label_saved',
+    );
+    if (recorded === undefined) throw new Error('missing recorded entry source');
+    await route.fulfill({
+      status: 200,
+      json: Object.fromEntries(Object.entries(recorded.body).filter(([key]) => key !== 'revision')),
+    });
+  });
+  await page.goto('/__fake/use?scenario=profile_patch_fenced_active_run_entry_label_saved_refused');
+  await page.evaluate(() => {
+    location.hash = '#runs/saved/farm';
+  });
+  const row = page.locator('[data-entry-field="label"]');
+  const input = row.getByLabel('Run label', { exact: true });
+  await expect(input).toBeEnabled();
+  await input.fill('Keep editing');
+  await expect(input).toHaveValue('Keep editing');
+  await expect(row.getByRole('button', { name: 'Save field', exact: true })).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  );
+  expect(await bodiesTo(page, PATCH)).toEqual([]);
+  await page.screenshot({
+    path: path.join(OUT, 'runentry-current-source-no-revision.png'),
+    fullPage: true,
+  });
+  writeFileSync(
+    path.join(OUT, 'runentry-current-source-no-revision.json'),
+    JSON.stringify({
+      value: await input.inputValue(),
+      disabled: await input.isDisabled(),
+      saveDisabled: await row
+        .getByRole('button', { name: 'Save field', exact: true })
+        .getAttribute('aria-disabled'),
+      posts: await bodiesTo(page, PATCH),
+    }),
+  );
+});

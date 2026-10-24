@@ -1,5 +1,9 @@
 import { assertProfilePatchContexts } from '../../support/profilePatchAssertions.ts';
-import { withRecordedFence } from '../../support/profilePatchFenced.ts';
+import {
+  fencedCase,
+  fencedSourceBefore,
+  withRecordedFence,
+} from '../../support/profilePatchFenced.ts';
 import { contextFromConfig } from '../../../src/api/context.ts';
 import { act, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
@@ -847,5 +851,257 @@ describe('RL3 and RL6 saved entry editor', () => {
     act(() => {
       page.data.stop();
     });
+  });
+});
+
+describe('refused RunEntry draft after a failed source reread', () => {
+  it.each([false, true])(
+    'keeps a current HTTP 200 source without a revision editable but unsavable; inactive=%s',
+    async (inactive) => {
+      const current = inactive ? targetSource() : INITIAL;
+      const malformed = {
+        ...current,
+        body: Object.fromEntries(entries(current.body).filter(([key]) => key !== 'revision')),
+      };
+      const page = inactive
+        ? await openTarget({}, () => malformed)
+        : await open('farm', {}, () => malformed);
+      const input = row('label').getByLabelText('Run label');
+      expect(input).toBeEnabled();
+      await page.user.clear(input);
+      await page.user.type(input, 'Keep editing');
+      expect(input).toHaveValue('Keep editing');
+      const vm = selectRunEntry(page.data.store.getSnapshot());
+      expect(vm.readable).toBe(false);
+      expect(vm.readFailure).toBeNull();
+      expect(vm.fields.every((field) => !field.readOnly)).toBe(true);
+      expect(vm.fields.every((field) => field.command === null)).toBe(true);
+      expect(row('label').getByRole('button', { name: 'Save field' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+      await save(page, 'label');
+      expect(page.fake.writes()).toEqual([]);
+    },
+  );
+
+  async function refused() {
+    const original = fencedCase('active_run_entry_label_saved');
+    const before = fencedSourceBefore('active_run_entry_label_saved');
+    const page = await open(
+      'farm',
+      {
+        before: (fake) => {
+          fake.route('POST', PATCH, () => fencedCase('active_patch_refused_after_account_switch'));
+        },
+      },
+      () => before,
+    );
+    await page.user.clear(row('label').getByLabelText('Run label'));
+    await page.user.type(row('label').getByLabelText('Run label'), 'Offline farm');
+    const captured = selectRunEntry(page.data.store.getSnapshot()).fields.find(
+      (field) => field.key === 'label',
+    )?.command;
+    if (captured == null) throw new Error('missing valid original command');
+    await save(page, 'label');
+    expect(page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown)).toEqual([
+      original.request.body,
+    ]);
+    await page.user.click(form().getByRole('button', { name: 'Read entry settings' }));
+    await page.advance(100);
+    expect(row('label').getByLabelText('Run label')).toHaveValue('Offline farm');
+    expect(form().getByText('Not saved: the account or profile changed')).toBeVisible();
+    return { page, captured, before };
+  }
+
+  async function failRead(page: Awaited<ReturnType<typeof open>>) {
+    page.fake.route('GET', PROFILE, () => 'hold');
+    await page.user.click(form().getByRole('button', { name: 'Read entry settings' }));
+    await page.advance(100);
+    act(() => {
+      page.fake.next(PROFILE).lose();
+    });
+    await page.advance(100);
+  }
+
+  it('retains the refused raw draft read-only, explains failure and recovers without resending', async () => {
+    const { page, before } = await refused();
+    await failRead(page);
+    expect(row('label').getByLabelText('Run label')).toHaveValue('Offline farm');
+    expect(row('label').getByLabelText('Run label')).toBeDisabled();
+    expect(form().getByText('Not saved: the account or profile changed')).toBeVisible();
+    expect(form().getByText('The server could not be reached.')).toBeVisible();
+    expect(form().queryByText('network', { exact: true })).toBeNull();
+    expect(
+      form().getByText('The last read is shown read-only. Your draft and save result are kept.'),
+    ).toBeVisible();
+    expect(form().queryByRole('button', { name: 'Continue from the read' })).toBeNull();
+    for (const button of form().getAllByRole('button', { name: 'Save field' }))
+      expect(button).toBeDisabled();
+    expect(row('label').getByRole('button', { name: 'Clear label' })).toBeDisabled();
+    expect(row('label').getByRole('button', { name: 'Discard field draft' })).toBeDisabled();
+    const vm = selectRunEntry(page.data.store.getSnapshot());
+    expect(
+      vm.fields.every(
+        (field) =>
+          field.command === null && field.clearCommand === null && field.continuation === null,
+      ),
+    ).toBe(true);
+    await page.advance(60_000);
+    expect(page.fake.writes()).toHaveLength(1);
+    page.fake.route('GET', PROFILE, () => before);
+    await page.user.click(form().getByRole('button', { name: 'Read entry settings' }));
+    await page.advance(100);
+    expect(row('label').getByLabelText('Run label')).toHaveValue('Offline farm');
+    expect(row('label').getByLabelText('Run label')).toBeEnabled();
+    expect(row('label').getByRole('button', { name: 'Save field' })).toBeEnabled();
+    expect(form().getByText('Not saved: the account or profile changed')).toBeVisible();
+    expect(form().queryByText('The server could not be reached.')).toBeNull();
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it('refuses a captured RunEntry command after source failure without an additional POST', async () => {
+    const { page, captured } = await refused();
+    await failRead(page);
+    await act(async () => {
+      await page.data.commands.patchRunEntry(captured);
+    });
+    await page.advance(100);
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it.each(['http', 'invalid body'])(
+    'keeps the refusal and explains the %s read failure using client copy',
+    async (failure) => {
+      const { page } = await refused();
+      page.fake.route('GET', PROFILE, () =>
+        failure === 'http'
+          ? { status: 503, body: { error: 'Profile source temporarily unavailable' } }
+          : { status: 200, body: 'not JSON' },
+      );
+      await page.user.click(form().getByRole('button', { name: 'Read entry settings' }));
+      await page.advance(100);
+      expect(row('label').getByLabelText('Run label')).toHaveValue('Offline farm');
+      expect(row('label').getByLabelText('Run label')).toBeDisabled();
+      expect(form().getByText('The endpoint did not return a readable result.')).toBeVisible();
+      expect(form().queryByText(failure === 'http' ? 'http_503' : 'body_not_json')).toBeNull();
+      if (failure === 'http')
+        expect(form().getByText('Profile source temporarily unavailable')).toBeVisible();
+      expect(form().getByText('Not saved: the account or profile changed')).toBeVisible();
+      expect(textOutsideCatalogue(root())).toEqual([]);
+      expect(page.fake.writes()).toHaveLength(1);
+    },
+  );
+
+  it.each([false, true])(
+    'rechecks a reserved command after click-time reads; source failure=%s',
+    async (failure) => {
+      const page = await open();
+      await page.user.type(row('label').getByLabelText('Run label'), 'Reserved label');
+      const captured = selectRunEntry(page.data.store.getSnapshot()).fields.find(
+        (field) => field.key === 'label',
+      )?.command;
+      if (captured == null) throw new Error('missing reserved command');
+      page.fake.route('GET', '/api/config', () => 'hold');
+      page.fake.route('POST', PATCH, () => sample('saved_label'));
+      let sending: Promise<void> | undefined;
+      act(() => {
+        sending = page.data.commands.patchRunEntry(captured);
+      });
+      await page.advance(100);
+      const check = page.fake.next('/api/config');
+      // Invalid newer text must not replace or invalidate the reserved submission.
+      await page.user.clear(row('label').getByLabelText('Run label'));
+      if (failure) await failRead(page);
+      await act(async () => {
+        check.respond(200, CONFIG);
+        await sending;
+      });
+      await page.advance(100);
+      expect(page.fake.writes()).toHaveLength(failure ? 0 : 1);
+      if (!failure)
+        expect(JSON.parse(page.fake.writes()[0]?.body ?? '{}')).toMatchObject({
+          value: 'Reserved label',
+        });
+    },
+  );
+
+  it.each([
+    'read_config_after_editor_active_profile_switch',
+    'read_config_after_editor_instance_switch',
+    'read_config_after_editor_serial_change',
+  ])('hides failed-read history and refuses captured commands after %s', async (name) => {
+    const { page, captured } = await refused();
+    await failRead(page);
+    page.fake.route('GET', '/api/config', () => targetCase(name));
+    await act(async () => {
+      await page.data.poller.readNow('config');
+    });
+    await page.advance(100);
+    expect(form().queryByDisplayValue('Offline farm')).toBeNull();
+    expect(form().queryByText('Not saved: the account or profile changed')).toBeNull();
+    await act(async () => {
+      await page.data.commands.patchRunEntry(captured);
+    });
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it('does not retain history across an account change or a fresh context epoch', async () => {
+    const { page, captured } = await refused();
+    await failRead(page);
+    const previous = page.data.store.getSnapshot();
+    act(() => {
+      page.data.store.dispatch({
+        type: 'context',
+        context: { ...captured.context, account: 'other-account' },
+        epoch: previous.epoch + 1,
+        confirmed: true,
+        sessionContext: null,
+      });
+    });
+    expect(selectRunEntry(page.data.store.getSnapshot()).fields).toEqual([]);
+    expect(form().queryByDisplayValue('Offline farm')).toBeNull();
+    await act(async () => {
+      await page.data.commands.patchRunEntry(captured);
+    });
+    expect(page.fake.writes()).toHaveLength(1);
+  });
+
+  it('does not expose retained fields from an earlier inactive-target selection', async () => {
+    const page = await openTarget();
+    await page.user.type(row('label').getByLabelText('Run label'), ' retained draft');
+    const captured = selectRunEntry(page.data.store.getSnapshot()).fields.find(
+      (field) => field.key === 'label',
+    )?.command;
+    if (captured == null) throw new Error('missing original selection command');
+    page.fake.route('GET', '/api/profile-src/second', () => 'hold');
+    await page.user.click(form().getByRole('button', { name: 'Read entry settings' }));
+    await page.advance(100);
+    act(() => {
+      page.fake.next('/api/profile-src/second').lose();
+    });
+    await page.advance(100);
+    expect(row('label').getByLabelText('Run label')).toHaveValue('Second farm retained draft');
+    for (const input of root().querySelectorAll('input, textarea, select')) {
+      if (input !== form().getByLabelText('Entry run')) expect(input).toBeDisabled();
+    }
+    act(() => {
+      page.data.commands.returnEditingToActive({ epoch: page.data.store.getSnapshot().epoch });
+      page.data.commands.pickEditingTarget({
+        epoch: page.data.store.getSnapshot().epoch,
+        name: 'second',
+      });
+    });
+    await page.advance(100);
+    expect(form().queryByDisplayValue('Second farm retained draft')).toBeNull();
+    expect(selectRunEntry(page.data.store.getSnapshot()).fields).toEqual([]);
+    await act(async () => {
+      await page.data.commands.patchRunEntry(captured);
+    });
+    expect(page.data.store.getSnapshot().notices.at(-1)).toMatchObject({
+      kind: 'command_not_sent',
+      reason: 'target_changed',
+    });
+    expect(page.fake.writes()).toEqual([]);
   });
 });

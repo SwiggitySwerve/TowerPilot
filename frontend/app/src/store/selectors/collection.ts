@@ -14,7 +14,12 @@ import { editTargetScope } from '../../core/editingTarget.ts';
 import { gatherDefaults } from '../../core/runTemplates.ts';
 import { fromServer, type ServerText } from '../../copy/server.ts';
 import type { Fenced } from '../commands.ts';
-import { editorSource, editingTargetVM, selectEditingTarget } from './editingTarget.ts';
+import {
+  editorSource,
+  editingSourceResource,
+  editingTargetVM,
+  selectEditingTarget,
+} from './editingTarget.ts';
 import { readAgeSec } from '../reads.ts';
 import type { ContextView, DashboardState, ReadRecord } from '../types.ts';
 import { commandVM, type CommandVM } from '../viewModels.ts';
@@ -254,7 +259,7 @@ export function selectCollectionPage(
   const source: CollectionSource | null =
     read !== null && context !== null && read.profile === target.name ? read : null;
   const pending = collectionSavePending(state);
-  const sourceState = readState(state.reads[target.inactive ? 'targetSource' : 'profileSource']);
+  const sourceState = readState(state.reads[editingSourceResource(target)]);
   const sourceRead = source !== null ? 'ready' : sourceState === 'ready' ? 'not_read' : sourceState;
   const settingsRead: ReadState =
     view === null

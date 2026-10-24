@@ -56,10 +56,15 @@ export function editingFilesFailed(state: DashboardState) {
   return read !== null && (read.outcome.kind === 'failed' || read.outcome.status !== 200);
 }
 
+/** The selected profile owns one source slot for both reads and presentation. */
+export function editingSourceResource(target: EditingTarget) {
+  return target.inactive ? 'targetSource' : 'profileSource';
+}
+
 /** A failed selection read must not expose an older successful source as current evidence. */
 export function editingSourceError(state: DashboardState) {
   const target = selectEditingTarget(state);
-  const read = state.reads[target.inactive ? 'targetSource' : 'profileSource'].latest;
+  const read = state.reads[editingSourceResource(target)].latest;
   if (
     target.inactive &&
     (read?.targetSelection?.name !== target.name ||
@@ -71,10 +76,13 @@ export function editingSourceError(state: DashboardState) {
 }
 
 /** Editors use evidence for their selection; journal settlement independently uses the raw read. */
-export function editorSource(state: DashboardState): ReadRecord | null {
+export function editorSource(
+  state: DashboardState,
+  basis: 'latest' | 'lastAnswered' = 'latest',
+): ReadRecord | null {
   const target = selectEditingTarget(state);
   if (target.blocked !== null || target.name === null) return null;
-  const read = state.reads[target.inactive ? 'targetSource' : 'profileSource'].latest;
+  const read = state.reads[editingSourceResource(target)][basis];
   if (
     target.inactive &&
     (read?.targetSelection?.name !== target.name ||

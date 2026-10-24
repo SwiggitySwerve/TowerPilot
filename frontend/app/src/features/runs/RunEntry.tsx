@@ -42,7 +42,11 @@ function EntryField({ field }: { readonly field: FieldVM }) {
           : null;
   const label = t.fields[field.key];
   return (
-    <fieldset className="tp-run-entry__field" data-entry-field={field.key}>
+    <fieldset
+      className="tp-run-entry__field"
+      data-entry-field={field.key}
+      disabled={field.readOnly}
+    >
       <legend tabIndex={-1}>{label.short}</legend>
       <label htmlFor={inputId} className="tp-visually-hidden">
         {label.short}
@@ -233,6 +237,14 @@ export function RunEntry() {
       </div>
       <Button tier="quiet" label={t.check.short} onClick={commands.checkRunEntry} />
       {!vm.readable || vm.fields.length === 0 ? <p>{t.unavailable.short}</p> : null}
+      {vm.readFailure === null ? null : (
+        <div role="status">
+          <p>{t.readFailed.short}</p>
+          <p>
+            {vm.readFailure.network ? copy.runtime.network.short : copy.runtime.unavailable.short}
+          </p>
+        </div>
+      )}
       {vm.notSent ? <div role="status">{t.notSent.short}</div> : null}
       <div className="tp-run-entry__grid">
         {vm.fields.map((field) => (
