@@ -28,6 +28,11 @@ OBSERVATION_TIMEOUT_SEC = 2.0
 HOME_REWARD = 6                  # the amount find_claim_rect verified beside CLAIM
 HOME_CONFIRMATION_SEC = 3.0      # Home counter reading after the tap; reads only, never input
 HOME_CONFIRMATION_GAP_SEC = 0.5
+# Under load one read (capture, exact-Home check, counter) took about 2 s, so
+# 3 s held one or two reads and a real +6 went unconfirmed (r15d). Reading
+# goes on to this many reads, within HOME_CONFIRMATION_MAX_SEC.
+HOME_CONFIRMATION_MIN_READS = 3
+HOME_CONFIRMATION_MAX_SEC = 10.0
 
 
 class RecognitionIncomplete(Exception):
@@ -106,8 +111,8 @@ def find_claim_rect(frame, *, deadline=None):
         # deadline; a top-to-bottom count cap starves lower HUD offers.
         crops = [rail[y:y+h,x:x+w] for x,y,w,h in candidates]
         try:
-            texts = textocr.read_texts(crops, scales=(2,),
-                                       timeout=_remaining(deadline), raise_on_error=True)
+            texts = textocr.read_texts(crops, scales=(2,), timeout=_remaining(deadline),
+                                       raise_on_error=True, urgent=True)
         except subprocess.TimeoutExpired as exc:
             raise RecognitionIncomplete('ocr_timeout') from exc
         except (OSError, ValueError, subprocess.SubprocessError) as exc:
@@ -217,22 +222,27 @@ class AdGemCollector:
         return dict(window_id=self.window_id, offer_id=self.offer_id,
                     claim_attempt_id=self.claim_attempt_id)
 
-    def mark_unknown(self, reason='not_battle'):
-        """Invalidate visibility without reading the device or claiming absence."""
+    def mark_unknown(self, reason='not_battle', *, keep_response=False):
+        """Invalidate visibility without reading the device or claiming absence.
+
+        keep_response keeps a visible offer's response schedule when nothing
+        suggests the screen changed (no read was possible). It never permits
+        input: a tap still needs a visible read, then a fresh verified capture.
+        """
         if self.visibility != 'unknown' or self.visibility_reason != reason:
             self.visibility = 'unknown'
             self.visibility_reason = reason
             logger.event('ad_gems_offer_unknown', reason=reason,
                          last_observed_at=self._epoch(self.last_observed_at),
                          last_seen_at=self._epoch(self.last_seen_at), **self._context())
-        if reason != 'observations_lapsed':
+        if not keep_response:
             self._forget_offer()
 
     def _expire_observation(self, now):
         if (self.last_observed_at is not None
                 and now-self.last_observed_at > self.options['poll_sec'][1]*2
                 and self.visibility != 'unknown'):
-            self.mark_unknown('observations_lapsed')
+            self.mark_unknown('observations_lapsed', keep_response=True)
 
     def _observe(self, frame, *, deadline=None):
         """Recognize only the supplied frame; callers own all capture decisions."""
@@ -258,7 +268,10 @@ class AdGemCollector:
             point = find_claim_rect(frame, deadline=deadline)
             _remaining(deadline)
         except RecognitionIncomplete as exc:
-            self.mark_unknown(str(exc))
+            # An unfinished read (OCR timeout or error, spent budget) says
+            # nothing about the screen, like a lapse: keep a visible offer's
+            # response schedule. Only an absent read or a changed screen resets it.
+            self.mark_unknown(str(exc), keep_response=True)
             logger.event('ad_gems_recognition_incomplete', reason=str(exc),
                          duration_sec=round(time.monotonic()-now, 3), **self._context())
             return None
@@ -725,12 +738,14 @@ class AdGemCollector:
 
     def _confirm_home(self, baseline, latest):
         """Read the Home counter after the tap, without input, for at most
-        HOME_CONFIRMATION_SEC. Only two consecutive exact baseline+6 reads on the
+        HOME_CONFIRMATION_SEC (at least HOME_CONFIRMATION_MIN_READS reads, never
+        past HOME_CONFIRMATION_MAX_SEC). Only two consecutive exact baseline+6 reads on the
         exact Home screen confirm. Any other readable amount is a conflict; a
         screen that is not Home, or an unreadable or unchanged counter, proves
         nothing. Leaving Home or a conflict ends the window."""
         expected = baseline + HOME_REWARD
-        ends_at = time.monotonic() + HOME_CONFIRMATION_SEC
+        started = time.monotonic()
+        ends_at, gives_up_at = started + HOME_CONFIRMATION_SEC, started + HOME_CONFIRMATION_MAX_SEC
         reads, after, reason = [], latest, None
         while reason is None:
             time.sleep(.35 if not reads else HOME_CONFIRMATION_GAP_SEC)
@@ -750,7 +765,8 @@ class AdGemCollector:
                 reason = 'balance_changed_without_confirmation'
             elif value == expected and reads[-2:] == [expected, expected]:
                 reason = 'balance_increased'
-            elif time.monotonic() >= ends_at:
+            elif time.monotonic() >= ends_at and (len(reads) >= HOME_CONFIRMATION_MIN_READS
+                                                  or time.monotonic() >= gives_up_at):
                 reason = ('post_claim_balance_unreadable' if value is None else
                           'balance_unchanged' if value == baseline else 'balance_unstable')
         confirmed = reason == 'balance_increased'

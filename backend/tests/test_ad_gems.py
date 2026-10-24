@@ -756,8 +756,9 @@ def test_fallback_batches_all_candidates_with_one_shared_budget(monkeypatch, obs
     from vision import textocr
     now = observation_clock
     timeouts = []
-    def read_texts(crops, *, scales, timeout, raise_on_error):
+    def read_texts(crops, *, scales, timeout, raise_on_error, urgent):
         assert raise_on_error is True
+        assert urgent is True
         assert scales == (2,)
         assert len(crops) == 3
         timeouts.append(timeout)

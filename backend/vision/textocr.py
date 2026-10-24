@@ -14,9 +14,11 @@ ambiguity seen is l/1 in a label such as "Tourney P1" (2026-09-06), so
 import base64
 import json
 import os
+import queue
 import re
 import subprocess
 import tempfile
+import threading
 import time
 from collections import Counter
 from pathlib import Path
@@ -26,6 +28,18 @@ import cv2
 import settings
 
 WINOCR = settings.ROOT / "tools" / "winocr.ps1"
+# One class above normal for the warm reader: CPU-bound work at normal
+# priority (builds, test suites) otherwise starves a short-deadline read.
+URGENT_PRIORITY = getattr(subprocess, "ABOVE_NORMAL_PRIORITY_CLASS", 0)
+# An abandoned warm reader gets this long to exit on its stdin EOF. One still
+# running after it (a WinRT call that never returns) is terminated, the bound
+# subprocess.run gives a cold read. No new warm reader starts while an
+# abandoned one is alive: that read takes the cold path instead.
+ABANDON_GRACE_SEC = 1.0
+
+
+class _WarmUnavailable(Exception):
+    """No warm reader may start now; the caller reads cold."""
 
 
 def _decode(raw: bytes) -> str:
@@ -107,14 +121,146 @@ def _majority_text(readings):
     return fix_l1(best[0])
 
 
+class _WarmReader:
+    """One long-lived hidden `winocr.ps1 -Serve` process for short-deadline reads.
+
+    A cold read starts PowerShell and loads the WinRT OCR types on every call
+    (about 1 s of a 2 s budget under load); this process pays that once. It
+    recognizes with the same Read-Image function as a cold read. A reply that
+    misses its deadline, or any malformed reply, abandons the process: its
+    stdin is closed, so it exits after its current image, and the next read
+    starts a fresh one; a late reply is never read. An abandoned reader still
+    running after ABANDON_GRACE_SEC is terminated through runtime.process_handle
+    (our own held Popen). A new reader starts only when no abandoned one is
+    alive, so at most one abandoned reader exists at a time; otherwise
+    recognize raises _WarmUnavailable and read_texts reads cold.
+    """
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._proc = None
+        self._lines = None
+        self._next_id = 0
+        self._abandoned = []          # (Popen, monotonic time it was abandoned)
+
+    def _reclaim(self):
+        """True when no abandoned reader is alive (terminating any past its grace)."""
+        from runtime import process_handle
+        alive = []
+        for proc, since in self._abandoned:
+            if proc.poll() is None and time.monotonic() - since >= ABANDON_GRACE_SEC:
+                process_handle.terminate_owned(proc.pid, timeout=1.0)
+                try:
+                    proc.wait(timeout=.5)      # termination is asynchronous; reap it before counting
+                except subprocess.TimeoutExpired:
+                    pass
+            if proc.poll() is None:
+                alive.append((proc, since))
+        self._abandoned = alive
+        return not alive
+
+    def _start(self):
+        proc = settings.spawn_hidden(
+            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+             "-File", str(WINOCR), "-Serve"],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            creationflags=settings.NO_WINDOW | URGENT_PRIORITY)
+        lines = queue.Queue()
+
+        def drain():            # keeps the pipe empty even after the process is abandoned
+            for raw in iter(proc.stdout.readline, b""):
+                lines.put(_decode(raw).rstrip("\r\n"))
+            lines.put(None)
+        threading.Thread(target=drain, name="winocr-warm", daemon=True).start()
+        self._proc, self._lines = proc, lines
+
+    def abandon(self):
+        proc, self._proc, self._lines = self._proc, None, None
+        if proc is None:
+            return
+        if proc.stdin is not None:
+            try:
+                proc.stdin.close()
+            except OSError:
+                pass
+        self._abandoned.append((proc, time.monotonic()))
+
+    def recognize(self, entries, deadline):
+        """stdout lines of one reply, in the cold batch's TP_OCR_IMAGE framing."""
+        if not self._lock.acquire(timeout=max(0.0, deadline - time.monotonic())):
+            raise subprocess.TimeoutExpired("Windows OCR warm reader (busy)", 0)
+        try:
+            try:
+                if self._proc is None or self._proc.poll() is not None:
+                    self.abandon()
+                    if not self._reclaim():
+                        raise _WarmUnavailable()
+                    self._start()
+                self._next_id += 1
+                request_id = str(self._next_id)
+                self._proc.stdin.write((json.dumps({"id": request_id, "images": entries}) + "\n").encode("utf-8"))
+                self._proc.stdin.flush()
+                reply, begun = [], False
+                while True:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        raise subprocess.TimeoutExpired("Windows OCR warm reader", 0)
+                    try:
+                        line = self._lines.get(timeout=remaining)
+                    except queue.Empty:
+                        raise subprocess.TimeoutExpired("Windows OCR warm reader", remaining) from None
+                    if line is None:
+                        raise subprocess.SubprocessError("Windows OCR warm reader exited")
+                    if line == "TP_OCR_BEGIN\t" + request_id and not begun:
+                        begun = True
+                    elif line == "TP_OCR_DONE\t" + request_id and begun:
+                        return reply
+                    elif begun and not line.startswith(("TP_OCR_BEGIN", "TP_OCR_DONE", "TP_OCR_ERROR")):
+                        reply.append(line)
+                    else:
+                        raise subprocess.SubprocessError(f"Windows OCR warm reader replied {line!r}")
+            except _WarmUnavailable:
+                raise
+            except BaseException:
+                self.abandon()
+                raise
+        finally:
+            self._lock.release()
+
+
+_WARM = _WarmReader()
+
+
+def _batch_rows(lines, count):
+    """Rows per image from TP_OCR_IMAGE-framed reader output (cold or warm)."""
+    rows = [[] for _ in range(count)]
+    active = None
+    markers = []
+    for line in lines:
+        if line.startswith('TP_OCR_IMAGE\t'):
+            active = int(line.split('\t', 1)[1])
+            if active != len(markers) or active >= len(rows):
+                raise ValueError('Windows OCR returned an invalid image index')
+            markers.append(active)
+            continue
+        parts = line.split('\t', 2)
+        if active is not None and len(parts) == 3:
+            rows[active].append((int(parts[0]), int(parts[1]), parts[2].strip()))
+    if len(markers) != count:
+        raise ValueError('Windows OCR batch ended before all images were recognized')
+    return rows
+
+
 def read_texts(crops, scales=(2.0, 3.0, 4.0), *, timeout=120,
-               raise_on_error=False):
+               raise_on_error=False, urgent=False):
     """OCR independent crops/scales with one hidden PowerShell invocation.
 
     Every image is recognized separately by the same winocr.ps1 reader used
     by read_lines. This preserves crop context and wrapped text without OCR
     merging adjacent labels in a contact sheet. Only process startup is shared;
     each crop still votes across all requested scales exactly as read_text does.
+    `urgent` sends the batch to the warm reader (_WarmReader, URGENT_PRIORITY)
+    for a read whose deadline is a few seconds; the reading itself is the same.
     """
     crops, scales = list(crops), tuple(scales)
     if not crops:
@@ -125,7 +271,9 @@ def read_texts(crops, scales=(2.0, 3.0, 4.0), *, timeout=120,
         raise ValueError('Cannot batch an empty OCR crop')
     deadline = time.monotonic() + timeout if raise_on_error else None
     try:
-        with tempfile.TemporaryDirectory(prefix='tp_ocr_batch_') as directory:
+        # An abandoned warm reader may still hold its current image for a moment;
+        # its leftover crop must not turn a timeout into a different failure.
+        with tempfile.TemporaryDirectory(prefix='tp_ocr_batch_', ignore_cleanup_errors=urgent) as directory:
             entries = []
             for index, crop in enumerate(crops):
                 for scale_index, scale in enumerate(scales):
@@ -135,6 +283,15 @@ def read_texts(crops, scales=(2.0, 3.0, 4.0), *, timeout=120,
                     if not cv2.imwrite(str(path), image):
                         raise OSError('Windows OCR crop write failed')
                     entries.append({'path': str(path), 'index': len(entries)})
+            if urgent:
+                remaining = timeout if deadline is None else deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired('Windows OCR preparation', 0)
+                try:
+                    rows = _batch_rows(_WARM.recognize(entries, time.monotonic() + remaining), len(entries))
+                    return _vote(rows, len(crops), scales)
+                except _WarmUnavailable:
+                    pass                     # an abandoned reader is still alive: read cold, as before r15d
             manifest = Path(directory) / 'images.json'
             manifest.write_text(json.dumps(entries), encoding='utf-8')
             # EncodedCommand keeps native paths out of shell interpolation.
@@ -158,35 +315,24 @@ def read_texts(crops, scales=(2.0, 3.0, 4.0), *, timeout=120,
             if p.returncode != 0 or p.stderr.strip():
                 raise subprocess.CalledProcessError(p.returncode, p.args,
                                                     output=p.stdout, stderr=p.stderr)
-            rows = [[] for _ in entries]
-            active = None
-            markers = []
-            for line in _decode(p.stdout).splitlines():
-                if line.startswith('TP_OCR_IMAGE\t'):
-                    active = int(line.split('\t', 1)[1])
-                    if active != len(markers) or active >= len(rows):
-                        raise ValueError('Windows OCR returned an invalid image index')
-                    markers.append(active)
-                    continue
-                parts = line.split('\t', 2)
-                if active is not None and len(parts) == 3:
-                    rows[active].append((int(parts[0]), int(parts[1]), parts[2].strip()))
-            if len(markers) != len(entries):
-                raise ValueError('Windows OCR batch ended before all images were recognized')
-            result = []
-            for index in range(len(crops)):
-                readings = []
-                for scale_index in range(len(scales)):
-                    text = ' '.join(text for _, _, text in sorted(rows[index * len(scales) + scale_index]))
-                    text = ' '.join(text.split())
-                    if text:
-                        readings.append(text)
-                result.append(_majority_text(readings))
-            return result
+            return _vote(_batch_rows(_decode(p.stdout).splitlines(), len(entries)), len(crops), scales)
     except (OSError, ValueError, subprocess.SubprocessError):
         if raise_on_error:
             raise
         return [''] * len(crops)
+
+
+def _vote(rows, count, scales):
+    result = []
+    for index in range(count):
+        readings = []
+        for scale_index in range(len(scales)):
+            text = ' '.join(text for _, _, text in sorted(rows[index * len(scales) + scale_index]))
+            text = ' '.join(text.split())
+            if text:
+                readings.append(text)
+        result.append(_majority_text(readings))
+    return result
 
 
 def fix_l1(text: str) -> str:

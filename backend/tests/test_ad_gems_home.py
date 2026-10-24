@@ -270,3 +270,44 @@ def test_a_battle_offer_never_carries_over_to_home(world):
     world.now[0] = 104
     c.poll_home(home())
     assert c.claim_at == 109 and world.taps == []     # observed again on Home, with its own response delay
+
+# ------------------------------------------------------------ confirmation under load (r15d)
+def slow_reads(world, seconds):
+    """Each confirmation capture takes `seconds`, as one read did under load (2026-10-23 13:43: about 2 s)."""
+    grab = ad_gems.capture.grab
+    def slow():
+        world.now[0] += seconds
+        return grab()
+    return slow
+
+
+def test_slow_reads_still_get_three_reads_so_a_real_plus_six_confirms(world, monkeypatch):
+    """13:43 live: reads [2566, 2572] ended at 3 s as balance_unstable; the next window's baseline was 2572."""
+    c = collector()
+    world.queue = [home(2566), home(2566, offer=False), home(2572, offer=False), home(2572, offer=False)]
+    monkeypatch.setattr(ad_gems.capture, 'grab', slow_reads(world, 2.0))
+    c.poll_home(home(2566))
+    claim = named(world, 'ad_gems_claim')[0]
+    assert (claim['reason'], claim['reads']) == ('balance_increased', [2566, 2572, 2572])
+    assert len(world.taps) == 1 and world.queue == []
+
+
+def test_slow_reads_stop_at_the_ceiling_and_prove_nothing(world, monkeypatch):
+    c = collector()
+    world.queue = [home(966)]
+    world.repeat = home(None, offer=False)
+    monkeypatch.setattr(ad_gems.capture, 'grab', slow_reads(world, 6.0))
+    c.poll_home(home(966))
+    claim = named(world, 'ad_gems_claim')[0]
+    assert claim['reason'] == 'post_claim_balance_unreadable' and claim['confirmed'] is False
+    assert claim['reads'] == [None, None]               # reads at +6 s and +12 s: the 10 s ceiling ends it after the second
+    assert len(world.taps) == 1
+
+
+def test_fast_reads_keep_the_three_second_period(world):
+    c = collector()
+    world.queue = [home(966)]
+    world.repeat = home(966, offer=False)
+    c.poll_home(home(966))
+    claim = named(world, 'ad_gems_claim')[0]
+    assert claim['reason'] == 'balance_unchanged' and len(claim['reads']) == 7
