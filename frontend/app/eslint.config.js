@@ -17,6 +17,7 @@ import {
   coreImports,
   coreSyntax,
   domTextSinks,
+  htmlStringSyntax,
   layerZones,
   copyRestrictedImports,
   networkOutsideApi,
@@ -90,6 +91,8 @@ export default defineConfig([
       '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
       'no-restricted-globals': ['error', networkOutsideApi],
       'no-restricted-properties': ['error', ...domTextSinks],
+      // core/ sets this rule again below with the same selectors: the later entry replaces this one.
+      'no-restricted-syntax': ['error', ...htmlStringSyntax],
       'no-restricted-imports': ['error', srcRestrictedImports],
       'no-alert': 'error',
       'no-eval': 'error',

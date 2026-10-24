@@ -126,17 +126,37 @@ export const coreImports = {
   paths: ['react', 'react-dom', 'zod'].map((name) => ({ name, message: coreMessage })),
   patterns: [{ group: ['react/*', 'react-dom/*'], message: coreMessage }],
 };
+
+const htmlStringMessage =
+  'React renders the page; no HTML strings (srcDoc, dangerouslySetInnerHTML) (ADR-001 rule 5).';
+/**
+ * The HTML-string sinks that are syntax rather than a property read: the JSX
+ * srcDoc attribute and a dangerouslySetInnerHTML key, as in createElement props
+ * (ADR Amendment 2). A coarse ban on the name, wherever it appears in src/.
+ */
+export const htmlStringSyntax = [
+  { selector: "JSXAttribute[name.name='srcDoc']", message: htmlStringMessage },
+  { selector: "Property[key.name='dangerouslySetInnerHTML']", message: htmlStringMessage },
+];
+/**
+ * no-restricted-syntax is one rule: an entry that sets it replaces every earlier
+ * entry's selectors (ADR-R2-01). core/ therefore carries the HTML-string selectors
+ * itself, next to its JSX ban, and the src/ entry carries them for everything else.
+ */
 export const coreSyntax = [
   { selector: 'JSXElement', message: coreMessage },
   { selector: 'JSXFragment', message: coreMessage },
+  ...htmlStringSyntax,
 ];
 
 /** React renders the page: no HTML strings into the DOM. */
 export const domTextSinks = [
   'innerHTML',
   'outerHTML',
+  'srcdoc',
   'insertAdjacentHTML',
   'insertAdjacentText',
+  'createContextualFragment',
   'write',
   'writeln',
 ].map((property) => ({
@@ -158,8 +178,14 @@ const copyEntryPattern = {
 export const srcRestrictedImports = { patterns: [fromServerPattern, copyEntryPattern] };
 /** Store selectors make server text, never wording. */
 export const selectorRestrictedImports = { patterns: [copyEntryPattern] };
-/** The catalogue chooses wording, never server text. */
-export const copyRestrictedImports = { patterns: [fromServerPattern] };
+/**
+ * The catalogue chooses wording, never server text. Inside copy/ the file is
+ * also reached by relative paths ('./server.ts', '../server.ts'), which the
+ * copy/server.ts pattern above does not name (ADR-R2-03).
+ */
+export const copyRestrictedImports = {
+  patterns: [fromServerPattern, { ...fromServerPattern, group: ['**/server.ts', '**/server'] }],
+};
 
 /**
  * The homes of the type-only brands: only they may assert their brand

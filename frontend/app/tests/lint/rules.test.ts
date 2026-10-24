@@ -33,6 +33,13 @@ function lint(file: string, code: string): string[] {
     .map((message) => message.ruleId ?? `fatal: ${message.message}`);
 }
 
+/** The `ruleId: message` pairs a probe at `file` reports, to tell two selectors of one rule apart. */
+function lintMessages(file: string, code: string): string[] {
+  return linter
+    .verify(code, untyped, { filename: path.join(APP, file) })
+    .map((message) => `${message.ruleId ?? 'fatal'}: ${message.message}`);
+}
+
 // The first lint of a run loads the TypeScript resolver: seconds on a loaded machine, not a hang.
 describe('the layer zones (ADR-001 rule 1)', { timeout: 30_000 }, () => {
   it('refuse a component importing api/, and core/ importing store/', () => {
@@ -80,6 +87,26 @@ describe('no wording in components (ADR-001 rule 5)', () => {
     expect(lint('src/store/fences/probe.ts', code)).toContain('no-restricted-imports');
   });
 
+  it('keeps fromServer out of copy/ however the file is named (ADR-R2-03)', () => {
+    for (const [file, from] of [
+      ['src/copy/probe.ts', './server.ts'],
+      ['src/copy/probe.ts', './server'],
+      ['src/copy/dashboard/probe.ts', '../server.ts'],
+      ['src/copy/dashboard/probe.ts', '../../copy/server.ts'],
+    ] as const) {
+      expect(
+        lint(file, `import { fromServer } from '${from}';\nexport { fromServer };\n`),
+      ).toContain('no-restricted-imports');
+    }
+    // The branded type is not the maker: copy/ may still name ServerText.
+    expect(
+      lint(
+        'src/copy/probe.ts',
+        "import type { ServerText } from './server.ts';\nexport type S = ServerText;\n",
+      ),
+    ).toEqual([]);
+  });
+
   it('refuses dangerouslySetInnerHTML and HTML strings into the DOM', () => {
     expect(
       lint(
@@ -93,6 +120,61 @@ describe('no wording in components (ADR-001 rule 5)', () => {
         "export function set(node: HTMLElement) {\n  node.innerHTML = '<b>x</b>';\n}\n",
       ),
     ).toContain('no-restricted-properties');
+  });
+});
+
+describe('no HTML strings (ADR Amendment 2, coarse bans by name)', () => {
+  const syntax = 'no-restricted-syntax';
+  it('refuses the JSX srcDoc attribute', () => {
+    expect(
+      lint(
+        'src/features/dashboard/Probe.tsx',
+        'export const P = (html: string) => <iframe title="x" srcDoc={html} />;\n',
+      ),
+    ).toContain(syntax);
+  });
+
+  it('refuses a dangerouslySetInnerHTML key outside JSX, as in createElement props', () => {
+    expect(
+      lint(
+        'src/app/probe.ts',
+        "export const props = { dangerouslySetInnerHTML: { __html: '<b>x</b>' } };\n",
+      ),
+    ).toContain(syntax);
+  });
+
+  it('refuses the srcdoc property and createContextualFragment', () => {
+    expect(
+      lint(
+        'src/ui/probe.ts',
+        "export function set(frame: HTMLIFrameElement) {\n  frame.srcdoc = '<b>x</b>';\n}\n",
+      ),
+    ).toContain('no-restricted-properties');
+    expect(
+      lint(
+        'src/ui/probe.ts',
+        "export const f = (r: Range) => r.createContextualFragment('<b>x</b>');\n",
+      ),
+    ).toContain('no-restricted-properties');
+  });
+
+  it('puts the same bans in core/ and leaves its JSX ban on (ADR-R2-01)', () => {
+    // A later entry that sets no-restricted-syntax replaces an earlier one, so core/ must
+    // carry both sets: the JSX ban and the HTML-string selectors.
+    expect(
+      lintMessages('src/core/probe.tsx', 'export const P = () => <p />;\n').join('\n'),
+    ).toMatch(/no-restricted-syntax: src\/core\/ is pure TypeScript/);
+    expect(
+      lintMessages(
+        'src/core/probe.ts',
+        "export const props = { dangerouslySetInnerHTML: { __html: 'x' } };\n",
+      ).join('\n'),
+    ).toMatch(/no-restricted-syntax: React renders the page; no HTML strings/);
+    expect(
+      lintMessages('src/core/probe.tsx', 'export const P = () => <iframe srcDoc="x" />;\n').join(
+        '\n',
+      ),
+    ).toMatch(/no-restricted-syntax: React renders the page; no HTML strings/);
   });
 });
 

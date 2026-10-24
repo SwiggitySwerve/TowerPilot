@@ -72,4 +72,6 @@ part of the repository, so it is named here rather than linked.
   through `overrides` in `package.json`; both declare ESLint 9 at most. Remove the
   overrides when they declare ESLint 10. `eslint.config.js` explains the one
   workaround (React version read from the package, not detected).
-- Contract tests read `backend/tests/fixtures/harvest_status_v1.json`.
+- Contract tests read three backend fixtures in `backend/tests/fixtures/` (`harvest_status_v1.json`,
+  `dashboard_contract_v1.json`, `dashboard_contract_pages_v1.json`) through
+  `scripts/contract-fixture.mjs` and fail on drift.
