@@ -1,7 +1,7 @@
 # Profile schema (v1) - the contract for P2 builders
 > **Status:** Active
 > **Type:** Knowledge
-> **Updated:** 2026-10-20
+> **Updated:** 2026-10-24
 > **Tags:** profiles, schema, validator, presets
 
 One YAML file per player: `profiles/<name>.yaml`. Four top-level sections.
@@ -858,7 +858,7 @@ name backed by the wrong preset - and takes `--minutes` for a full
 1440x7 walk (the 15-minute default grid cannot see a 07:59 drift) and
 `--fill block=HH:MM` to put the counter switchover on the clock as well. An
 empty diff on `profiles/default.yaml` is P5's core verification, and
-`tests/golden_default_plan.json` freezes that plan.
+`tests/fixtures/golden_default_plan.json` freezes that plan.
 
 ## Compilation contract (profile.py)
 `compile_preset(profile, blueprint_name) -> dict` produces a FLAT preset
@@ -967,7 +967,7 @@ starter's 1 is not knowledge, and the tier arrows stop at the real ceiling. `in_
 is written as a LIST of its shape, which its doc says); `policies` nests
 `uw`/`rescue`/`gather`.
 
-`tests/test_playerprofile.py` cross-checks this section against a
+`tests/unit/test_playerprofile.py` cross-checks this section against a
 validation probe per kind: every listed field is fed a legal value and the
 profile must validate clean, and every field the kind does NOT list is fed
 one and the profile must be refused by name.

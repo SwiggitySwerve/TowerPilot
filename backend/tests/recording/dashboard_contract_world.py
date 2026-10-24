@@ -1,7 +1,7 @@
 """The isolated world the Dashboard contract is generated in.
 
 Everything the dashboard touches is replaced by a controllable stand-in, so
-backend/tests/test_dashboard_contract.py can drive the REAL Flask routes of
+backend/tests/unit/test_dashboard_contract.py can drive the REAL Flask routes of
 backend/dashboard.py and publish what they answer:
 
   * the backend root (config, profile, wizard state, ledger, device leases) is a

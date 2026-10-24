@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** User guide
 > **Created:** 2026-10-19
-> **Updated:** 2026-10-23
+> **Updated:** 2026-10-24
 > **Tags:** diagnostics, collection, streaming
 
 ## Understand an Ad Gem wait
@@ -63,7 +63,7 @@ specific outcome.
 
 Source: [diagnostic writer](../backend/runtime/diagnostics.py),
 [command acknowledgements](../backend/runtime/battle_session.py), and
-[dashboard request handling](../frontend/dashboard.py).
+[dashboard request handling](../backend/dashboard.py).
 
 ---
 
@@ -125,5 +125,5 @@ Changing FPS or quality replaces the stream request; ordinary status ticks retai
 the selected settings. Switching pages, hiding the browser tab or turning streaming
 off releases the stream request.
 
-Source: [stream server](../frontend/dashboard.py) and
+Source: [stream server](../backend/dashboard.py) and
 [stream controls](../frontend/app/src/features/dashboard/Preview.tsx) (the Dashboard preview).

@@ -7,7 +7,7 @@ import type { CopyEntry, CopyText } from './text.ts';
  *
  * Who is told about each CopyText made: nobody by default, so nothing
  * accumulates in the running app. The runtime render check
- * (tests/copy/renderedText.ts) listens, so formatter output such as
+ * (tests/unit/copy/renderedText.ts) listens, so formatter output such as
  * `elapsedSeconds(12)` counts as catalogue text and anything else does not.
  */
 const observers = new Set<(text: string) => void>();

@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** Project guidance
 > **Created:** 2026-09-05
-> **Updated:** 2026-10-20
+> **Updated:** 2026-10-24
 
 Vision-driven autopilot for "The Tower" in an Android emulator: adb
 screencaps in, human-like taps out. No memory reading, no modded APK.
@@ -74,7 +74,7 @@ portrait at 360 dpi.
    data**: no preset names, no module icons or equipped/inventory tables,
    no tiers above 1, no deck tweaks - `config.example.yaml` loadouts are
    empty, `backend/profiles/default.yaml` owns nothing, and
-   `backend/tests/test_release_clean.py` fails when something slips back.
+   `backend/tests/unit/test_release_clean.py` fails when something slips back.
    The Calibrate cropper, the scan and the config editor produce all of it
    per install. The compiler regression fixture is
    `backend/tests/fixtures/golden_profile.yaml`.
@@ -172,7 +172,8 @@ and skills apply.
 ## Verification habits
 
 - After edits: `python -m py_compile <files>` before any relaunch.
-- `python -m pytest` from the repo root (offline; setup in README.md Development).
+- `python -m pytest backend/tests/unit` from the repo root (offline; `pytest.ini` makes
+  that the default, test layout in README.md Development).
 - Template work: self-match must score ~1.0, next-best clearly below.
 - New behavior: watch the first live occurrence in the events log before
   trusting it.

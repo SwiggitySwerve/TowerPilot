@@ -1,7 +1,7 @@
 # Settings field rules
 > **Status:** Active
 > **Type:** Domain rules
-> **Updated:** 2026-10-23
+> **Updated:** 2026-10-24
 
 [settingsFields.ts](settingsFields.ts) owns metadata parsing, raw draft validation and
 settings-save readback. Pages use its shared selector and SettingsModuleForm.
@@ -23,6 +23,6 @@ settings-save readback. Pages use its shared selector and SettingsModuleForm.
   raw draft and exact server error. A lost answer needs a later matching-context read
   holding every submitted value, or explicit reconciliation; it never retries itself.
 
-[settingsStringList.test.ts](../../tests/core/settingsStringList.test.ts) exercises list
+[settingsStringList.test.ts](../../tests/unit/core/settingsStringList.test.ts) exercises list
 validation and settlement. Equipment's component and browser tests exercise the shared
 control through the recorded tournament module.

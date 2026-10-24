@@ -3,7 +3,7 @@
  * The backend's harvest status contract fixture (ADR-001 rule 8), read in one
  * place by the contract tests, the fake backend and the dev server.
  *
- * The fixture is produced by the backend (backend/tests/test_harvest_contract.py)
+ * The fixture is produced by the backend (backend/tests/unit/test_harvest_contract.py)
  * and must be committed together with frontend/app: without it the contract
  * tests, `npm run dev` and the Playwright suite cannot run. A missing file
  * fails loudly with this name and that instruction, never with a bare ENOENT.

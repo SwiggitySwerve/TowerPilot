@@ -247,7 +247,7 @@ export function hasLiveBounds(view: ActionsView | null): boolean {
  */
 export function liveConstraints(view: ActionsView | null, saved: unknown): unknown {
   // A descriptor bound of null means the descriptor publishes no bound for that side; it is
-  // not filled from the saved run (equal on every recorded pair, tests/core/actions.test.ts).
+  // not filled from the saved run (equal on every recorded pair, tests/unit/core/actions.test.ts).
   if (view === null) return saved;
   const bounds: Record<string, { readonly min: number | null; readonly max: number | null }> = {};
   for (const item of view.items) {

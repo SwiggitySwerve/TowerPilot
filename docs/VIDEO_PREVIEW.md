@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** Configuration guide
 > **Created:** 2026-10-19
-> **Updated:** 2026-10-19
+> **Updated:** 2026-10-24
 
 ## Choosing a source
 
@@ -130,4 +130,4 @@ can race a fallback and cannot say which part is displayed.
 
 Implementation: [preview package](../backend/device/preview/),
 [settings catalog](../backend/control/settings_catalog.py), and
-[stream endpoint](../frontend/dashboard.py).
+[stream endpoint](../backend/dashboard.py).

@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** Rules
 > **Created:** 2026-10-22
-> **Updated:** 2026-10-22
+> **Updated:** 2026-10-24
 
 ## Ownership
 
@@ -40,4 +40,4 @@ An absent/null rescue `rules` member is a valid empty list for explicit first-ru
 
 ## Verification
 
-Wanted rows A1, A2, A3, A4, A5 and A7 are exercised in [component and API tests](../../../tests/features/abilities/abilitiesPage.test.tsx) and [browser tests](../../../e2e/abilities.spec.ts). Supplemental answers are produced by [isolated real Flask routes](../../../e2e/abilities_fixture_cases.py); retired rules use local draft tests because the backend cannot produce A-01 retired-rule reads.
+Wanted rows A1, A2, A3, A4, A5 and A7 are exercised in [component and API tests](../../../tests/unit/features/abilities/abilitiesPage.test.tsx) and [browser tests](../../../tests/e2e/abilities.spec.ts). Supplemental answers are produced by [isolated real Flask routes](../../../../../backend/tests/recording/abilities_fixture_cases.py); retired rules use local draft tests because the backend cannot produce A-01 retired-rule reads.

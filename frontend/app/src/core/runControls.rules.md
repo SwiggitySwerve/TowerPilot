@@ -1,7 +1,7 @@
 # Run control rules
 > **Status:** Active
 > **Created:** 2026-10-23
-> **Updated:** 2026-10-23
+> **Updated:** 2026-10-24
 
 `runControls.ts` owns saved and live routine draft checks, write eligibility and override
 discovery. `routines.ts` owns live command settlement; `commands.ts` owns payload path
@@ -58,5 +58,5 @@ discovery, including a whole shopping plan as one leaf.
 
 `recordedRunFamilies.test.ts`, the Runs component tests and the Runs browser suites cover the
 `run_controls_live_reset_all_mixed` and `shopping_queue_bounds` recordings;
-`tests/core/actionsLiveFields.test.ts` and `tests/features/runs/actionsLiveEditor.test.tsx` cover
+`tests/unit/core/actionsLiveFields.test.ts` and `tests/unit/features/runs/actionsLiveEditor.test.tsx` cover
 AC2 over the landed r17b projection.

@@ -8,17 +8,18 @@ How the pieces of Tower Pilot connect end to end. Verified against the code on
 - [ACCOUNT_SETUP.md](ACCOUNT_SETUP.md) - the operator's setup path
 - [SCAN_PLAN.md](SCAN_PLAN.md) - obtaining recognition images from zero
 - [BLUESTACKS.md](BLUESTACKS.md) - BlueStacks specifics
-- [backend/BEHAVIORS.md](../backend/BEHAVIORS.md) - in-run behaviors
+- [BEHAVIORS.md](BEHAVIORS.md) - in-run behaviors
 - [backend/flows/README.md](../backend/flows/README.md) - the FLOW contract
 - [backend/profiles/SCHEMA.md](../backend/profiles/SCHEMA.md) - profile schema
 
-Two trees: `frontend/` (the Flask control panel) and `backend/` (everything that
+Two trees: `frontend/` (the dashboard app and its static redirect page) and
+`backend/` (the Flask server in `backend/dashboard.py` and everything that
 touches the emulator). Coordinates everywhere are native 1080x2560 @ 360 dpi.
 
 ## 1. Big picture
 
 ```
- browser  --HTTP-->  frontend/dashboard.py  --pythonw spawn-->  backend process
+ browser  --HTTP-->  backend/dashboard.py  --pythonw spawn-->  backend process
  (/ui/app/, frontend/app) Flask :8620             |  calibrate.py / scan.py / orchestrator.py
                      (TOWER_PILOT_PORT)          |  flows/*.py / scheduling/combo.py / device/boot.py
                                                  v
@@ -211,14 +212,14 @@ POST /api/calibrate/start {bootstrap:true, flows:true}
   it in `_compiled_runs`.
 - `runtime/logger.py` - `event()` / `shot()` into the newest
   `logs/<instance>/events_<stamp>.jsonl` (one file per process start).
-
-### Frontend - `frontend/`
-- `dashboard.py` - Flask, port `TOWER_PILOT_PORT` (default 8620). Process
-  control (`/api/control`, `/api/scan/start`, `/api/calibrate/start`), status
+- `dashboard.py` - the control panel server (Flask), port `TOWER_PILOT_PORT`
+  (default 8620). Process control (`/api/control`, `/api/scan/start`, `/api/calibrate/start`), status
   (`/api/status`, `/api/readiness`, `/api/runs`), the emulator wizard
   (`/api/wizard/emulators|launch|prepare|adopt|reconnect|resolution`), accounts
   (`/api/accounts`), the cropper (`/api/frame.png`, `POST /api/template/<rel>`),
   profile editing (`/api/profile*`).
+
+### Frontend - `frontend/`
 - `app/` - the dashboard app (React, TypeScript, Vite; layers and commands in
   [frontend/app/README.md](../frontend/app/README.md)). It builds into the
   git-ignored `webui/app/`, which Flask serves at `/ui/app/`; `/` opens it.
@@ -247,12 +248,12 @@ never run against each other (protocol mismatch kills the daemon).
 | `backend/profiles/*.yaml` | player profiles (`default.yaml` ships owning nothing) |
 
 Nothing under `accounts/`, `templates/`, `logs/`, `runs/` or `config.yaml` is
-tracked; `tests/test_release_clean.py` fails if account data slips into git.
+tracked; `tests/unit/test_release_clean.py` fails if account data slips into git.
 
 ## 5. Tests
-`python -m pytest` from the repo root (offline; setup in
-[README.md - Development](../README.md#development)).
-`backend/tests/_fakes.py` fakes every screen-touching module.
+`python -m pytest backend/tests/unit` from the repo root (offline; setup and the
+test folders in [README.md - Development](../README.md#development)).
+`backend/tests/support/_fakes.py` fakes every screen-touching module.
 `backend/tests/conftest.py` replaces `settings.CONFIG` with the shipped
 `config.example.yaml` before any test module imports it (retaking
 `bind_device()`'s snapshots from it) and points `runtime.logger` events and

@@ -1,7 +1,7 @@
 # Learning and preparation flow contract
 > **Status:** Implemented; live emulator acceptance not exercised
 > **Type:** Domain rules and verification record
-> **Updated:** 2026-10-23
+> **Updated:** 2026-10-24
 
 ## Ownership
 
@@ -128,8 +128,8 @@ this contract makes no exactly-once claim about game input.
 ## Verification
 
 Current checks: from `frontend/app`, `npm test` (Recognition unit and component tests
-under `tests/core/` and `tests/features/recognition/`) and `npm run e2e`
-(`e2e/recognition*.spec.ts`, fixture backend). History (2026-10-19, the retired
+under `tests/unit/core/` and `tests/unit/features/recognition/`) and `npm run e2e`
+(`tests/e2e/recognition*.spec.ts`, fixture backend). History (2026-10-19, the retired
 `frontend/tests` node suite): that session's offline run passed 195 tests. Coverage includes reversed observations,
 request ordering, profile/account switches, reload with the same operation,
 revision-bound apply and Stop, duplicate completion, restoration, busy apply,

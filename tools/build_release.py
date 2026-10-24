@@ -14,7 +14,7 @@ TOP = {'VERSION', 'LICENSE', 'README.md', 'requirements.txt', 'requirements-dev.
        # agent rules and skills ship with the source (0.2-beta): CLAUDE.md is
        # the rule book, AGENTS.md points Codex and others at it
        'CLAUDE.md', 'AGENTS.md', 'DESIGN.md'}
-DOCS = {'README.md', 'ACCOUNT_SETUP.md', 'BLUESTACKS.md', 'GLOBAL_REWARDS.md',
+DOCS = {'README.md', 'ACCOUNT_SETUP.md', 'BEHAVIORS.md', 'BLUESTACKS.md', 'GLOBAL_REWARDS.md',
         'RUN_TEMPLATES.md', 'RELEASE_0.1_BETA.md', 'RELEASE_0.2_BETA.md', 'RELEASE_0.3_BETA.md', 'RELEASE_0.4_BETA.md', 'RELEASE_0.5_BETA.md', 'RUNTIME_GEOMETRY.md',
         'PORTABLE_BUILD.md', 'SETTINGS.md', 'LEARNING_FLOWS.md', 'OBSERVABILITY.md',
         'WORKFLOW_ARCHITECTURE_PROPOSAL.md', 'RUN_LIFECYCLE_PLAN.md',

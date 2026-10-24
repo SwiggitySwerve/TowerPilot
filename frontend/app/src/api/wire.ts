@@ -180,7 +180,7 @@ import {
  *    `drift`, with the first issues. The strict level describes the recorded
  *    samples exactly - fixed instance names, `null` where the fixture had no
  *    account - so ordinary production values fail it; it detects drift, it is
- *    not what the page acts on (tests/api/wire.test.ts shows both).
+ *    not what the page acts on (tests/unit/api/wire.test.ts shows both).
  *  - wire (runtime): derived mechanically from the SAME generated schemas: the
  *    envelope must be a JSON object, and each top-level member is kept only
  *    when its JSON type is one the contract records for that member name. A

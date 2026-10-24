@@ -119,7 +119,7 @@ describe('RUN-05 RUN-06 RUN-07 every recorded saved-run save answer', () => {
     });
   });
 
-  /** A save of `changes` made against the read `read` (backend/tests/dashboard_contract_cases_runs.py). */
+  /** A save of `changes` made against the read `read` (backend/tests/recording/dashboard_contract_cases_runs.py). */
   function sentAt(read: string, changes: Record<string, boolean | number>): SentSave {
     const body = dashboardPagesCase(`${SAVE}.${read}`).body as {
       blueprint: string;

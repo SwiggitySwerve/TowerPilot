@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** Knowledge
 > **Created:** 2026-08-24
-> **Updated:** 2026-10-20
+> **Updated:** 2026-10-24
 > **Tags:** orchestrator, behaviors, rules, policies, configuration
 
 Every click the autopilot makes during a live run, what triggers it, why it
@@ -21,7 +21,7 @@ The architecture is **declare-then-execute, in four latency rings**:
 | run boundary / day | between runs | run history, acknowledged stop requests, chores (quest scan, shatter), day plan |
 
 Behaviors are **not** hardcoded per user - they compile from a per-player
-profile ([profiles/SCHEMA.md](profiles/SCHEMA.md)): `policies` (uw, rescue,
+profile ([profiles/SCHEMA.md](../backend/profiles/SCHEMA.md)): `policies` (uw, rescue,
 gather, shopping, chores) + per-blueprint knobs + composable `rules`. The
 compiler refuses anything the account cannot do (**capability gating**) and
 anything no code reads (**no accepted-but-ignored keys**).
@@ -52,7 +52,7 @@ The legacy `death_screen` trigger and `stop_after_run` policy action are
 retired. Saved rules using either are excluded from active compilation;
 precompiled death-phase rules are refused by the runtime. Explicit live
 run controls and scheduler boundary handoffs retain their own lifecycle.
-See the [profile schema](profiles/SCHEMA.md) for the compilation contract.
+See the [profile schema](../backend/profiles/SCHEMA.md) for the compilation contract.
 
 Three locks make `surrender_retry` unreachable from a tournament (blueprint
 kind, `tournament_setup`, the on-screen trophy badge) - a tournament run is
@@ -197,7 +197,7 @@ tower leaves the screen.
 
 ### Preset selection (v29 - the pre-run equip layer)
 Loadouts now prefer *selecting* over *equipping*:
-[interactions/presets.py](interactions/presets.py) drives the home-screen
+[interactions/presets.py](../backend/interactions/presets.py) drives the home-screen
 Global Preset picker and the per-category Preset 1/2 tabs with the same
 verified-tap discipline as cards (locate template, comparative
 green-vs-cyan active check, tap, re-grab, re-verify; Abort on mismatch).
@@ -208,11 +208,11 @@ permanently rewrite the active preset (v29 presets auto-save) - the
 profile validator warns unless the loadout declares its `<cat>_preset`
 target first. Preset names are account data (user-renameable), so their
 templates are per-account, like card presets. See
-[profiles/SCHEMA.md](profiles/SCHEMA.md) "v29 presets" for the body
+[profiles/SCHEMA.md](../backend/profiles/SCHEMA.md) "v29 presets" for the body
 shapes and validator rules.
 
 ### Between-run chores
-[scheduling/chores.py](scheduling/chores.py) registry (quest_scan, shatter,
+[scheduling/chores.py](../backend/scheduling/chores.py) registry (quest_scan, shatter,
 housekeeping): once per day,
 only from Home, at most one per gap, never fatal. Per-profile opt-out via
 `policies.chores` - an **opt-out list**, unknown names refused, disabled
@@ -262,11 +262,11 @@ fire only on screens a bot flow can strand itself on.
 ## Why the modules are shaped this way
 
 The *actions* live in one file per concern, foldered by type
-([interactions/](interactions/) for menu flows, [scheduling/](scheduling/)
-for time, [device/](device/) and [vision/](vision/) for the emulator and
-the pixels, [runtime/](runtime/) for plumbing); the
+([interactions/](../backend/interactions/) for menu flows, [scheduling/](../backend/scheduling/)
+for time, [device/](../backend/device/) and [vision/](../backend/vision/) for the emulator and
+the pixels, [runtime/](../backend/runtime/) for plumbing); the
 *variance* lives in data (policies/rules/gather/chores, compiled per
-player); what remains in [orchestrator.py](orchestrator.py) is scheduling -
+player); what remains in [orchestrator.py](../backend/orchestrator.py) is scheduling -
 which behavior may act on this frame - plus the two hot paths
 (`watch_frame`, `_fast_wall_watch`) whose sub-second timing is the reason
 the rescue works at all. Physically extracting those hot paths (or the
@@ -276,5 +276,5 @@ move - the suite pins the *watch's* internal structure (config reads are
 banned inside the sampling loop; policies must be hoisted) precisely
 because latency regressions there lose real runs. **New behavior therefore
 enters as data first** (a rule, a policy, a chore registry entry, a flow
-spec - see [flows/README.md](flows/README.md)), and only earns new engine
+spec - see [flows/README.md](../backend/flows/README.md)), and only earns new engine
 code when the vocabulary genuinely cannot express it.

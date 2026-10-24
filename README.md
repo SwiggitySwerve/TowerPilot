@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** Project guide
 > **Created:** 2026-08-24
-> **Updated:** 2026-10-19
+> **Updated:** 2026-10-24
 > **Tags:** autopilot, the-tower, distribution
 
 **0.5-beta — Windows x64 portable release.** Download the `windows-x64` ZIP,
@@ -171,8 +171,8 @@ in the folder it belongs to, never a patch inside a monolith.
 
 | Path | What lives there |
 |---|---|
-| [frontend/](frontend/) | The control panel: `dashboard.py` (Flask, port 8620, `TOWER_PILOT_PORT` overrides) and the dashboard app's sources in [frontend/app/](frontend/app/), built into the git-ignored `webui/app/` and served at `/ui/app/`. `webui/index.html` only redirects old `/ui/index.html#...` bookmarks to the matching app page. |
-| [backend/orchestrator.py](backend/orchestrator.py) | The engine: the observe-decide-act loop that schedules everything below. Deliberately the one root-level module. |
+| [frontend/](frontend/) | The dashboard app's sources in [frontend/app/](frontend/app/), built into the git-ignored `webui/app/` and served at `/ui/app/` by `backend/dashboard.py`. Its generated endpoint contract is `app/src/contract/generated/` (written by the generators, never edited by hand). `webui/index.html` only redirects old `/ui/index.html#...` bookmarks to the matching app page. |
+| [backend/](backend/) root modules | Four loose modules, each for one reason. [settings.py](backend/settings.py) is the import anchor: config loading, paths and the hidden-window subprocess helper that the packages import. The other three are entry points started by path, not imported as libraries: [orchestrator.py](backend/orchestrator.py) (the engine: the observe-decide-act loop that schedules everything below), [gem_collector.py](backend/gem_collector.py) (the diamond collector that harvesting launches) and [dashboard.py](backend/dashboard.py) (the control panel: Flask, port 8620, `TOWER_PILOT_PORT` overrides; it serves the app built from `frontend/`). |
 | [backend/flows/](backend/flows/) | **One file per type of run** (coin, tournament, shard, quests). Each declares a `FLOW` spec; the registry makes it schedulable everywhere ([guide](backend/flows/README.md)). |
 | [backend/device/](backend/device/) | Talking to the emulator: adb socket client, screen capture, taps/swipes, boot pipeline, ad-overlay cleanup. |
 | [backend/vision/](backend/vision/) | Reading pixels: template matching, screen identification, wave-counter OCR, structural pill detection (`pills.py`) and Windows text OCR (`textocr.py`) for the calibrator. |
@@ -180,11 +180,13 @@ in the folder it belongs to, never a patch inside a monolith.
 | [backend/scheduling/](backend/scheduling/) | Time: the day scheduler (combo), between-run chores, daily counters, the stop-flag contract. |
 | [backend/player/](backend/player/) | The account: profile compiler + validator, account scanner (`scan.py`), module/card catalogue. |
 | [backend/runtime/](backend/runtime/) | Process plumbing: event log, run-stats collector, tray launcher, test harness. |
-| [backend/BEHAVIORS.md](backend/BEHAVIORS.md) | **The in-run behavior map**: every click family (rescue, gems, rewards, UW toggles, sprint, chores), why it exists, and which knob configures it. |
+| [docs/BEHAVIORS.md](docs/BEHAVIORS.md) | **The in-run behavior map**: every click family (rescue, gems, rewards, UW toggles, sprint, chores), why it exists, and which knob configures it. |
 | [backend/config.example.yaml](backend/config.example.yaml) | The machine config template. Copied to `config.yaml` (git-ignored) on first start; the dashboard edits it with timestamped backups. |
 | [backend/profiles/](backend/profiles/) | Player profiles. [default.yaml](backend/profiles/default.yaml) is the generic starter; account creation writes a local profile and scanning updates its discoveries. |
 | [backend/templates/](backend/templates/) | Image templates the vision layer matches against, cut at native 1080x2560. `cards/preset_*`, `presets/*` and `modules/*` are account-specific. |
-| [docs/](docs/) | Emulator setup guides. |
+| [backend/tests/](backend/tests/) | Backend tests, in separate folders by role. `unit/` holds the test modules (pytest's default path): unit tests plus in-process route tests that run the Flask app over temporary roots with no device. `support/` holds helpers and fakes the tests import (`paths.py` owns the checkout roots). `recording/` holds the generators that write the recorded files in `fixtures/` and the frontend's `tests/fixtures/`. `fixtures/` holds the recorded data, golden profile and frozen traces; `conftest.py` stays at the tests root. |
+| [frontend/app/tests/](frontend/app/tests/) | Dashboard app tests, split the same way: `unit/` (Vitest), `e2e/` (Playwright specs, helpers and configs), `support/` (readers and the fake backend shared by both) and `fixtures/` (recorded samples). See [the app README](frontend/app/README.md#test-layout). |
+| [docs/](docs/) | Emulator setup guides and the in-run behavior map. |
 
 ---
 
@@ -257,8 +259,10 @@ cd frontend/app; npm ci; npm run typecheck; npm run lint; npm test; npm run buil
 
 `requirements-dev.txt` pulls in `requirements.txt` and adds pytest;
 `requirements.txt` alone has no test runner. Run pytest from the repo root
-with no path: `pytest.ini` points it at `backend/tests`, puts `backend` and
-`backend/tests` on the import path and adds `-q -p no:cacheprovider`.
+with no path: `pytest.ini` points it at `backend/tests/unit`, puts `backend` and
+the `backend/tests` folders (`support`, `recording`, `unit`) on the import path and
+adds `-q -p no:cacheprovider`. To run it explicitly:
+`.venv\Scripts\python.exe -m pytest backend/tests/unit`.
 
 The dashboard app needs [Node.js](https://nodejs.org/) 22.13+ (22.x), 24.x or
 26+; the release workflow runs its checks on Node 22. `npm test` runs the unit
@@ -273,7 +277,7 @@ for its build command and dependency boundary. The application retains one
 local launcher and release.
 
 The backend suite runs offline and needs no emulator.
-The runner tests use `backend/tests/_fakes.py`, which replaces the
+The runner tests use `backend/tests/support/_fakes.py`, which replaces the
 screen-touching modules, so they capture and tap nothing; download paths are
 monkeypatched.
 `backend/tests/conftest.py` swaps the in-memory `settings.CONFIG` for the

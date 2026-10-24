@@ -5,7 +5,7 @@ Nothing here reads a clock, a random source, a file or a device. A driver that a
 through `towerpilot_workflows.actions`. There is no central scheduler. The host owns the state dict (its own
 attributes today), so reset scope and restart behaviour do not change.
 
-Stdlib and this package only (`tests/test_workflow_boundary.py`): the package is installed without the rest of
+Stdlib and this package only (`tests/unit/test_workflow_boundary.py`): the package is installed without the rest of
 the backend. Policies not yet used by a migrated caller are declared as parameters only; each gets an
 `evaluate` when its first caller moves.
 """

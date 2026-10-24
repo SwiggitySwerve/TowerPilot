@@ -8,7 +8,7 @@ import { own, record, text } from './read.ts';
  * missing guard, a missing field or a record of the other scope is
  * unconfirmed. The two permits carry distinct type-only brands made only
  * here, so one can never be passed where the other is required
- * (tests/core/guards.test-d.ts).
+ * (tests/unit/core/guards.test-d.ts).
  */
 declare const setupBrand: unique symbol;
 declare const collectionBrand: unique symbol;

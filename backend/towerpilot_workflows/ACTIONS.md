@@ -3,7 +3,7 @@
 > **Status:** Active (item 6: the pilot, and the control surface generated from the catalog)
 > **Type:** Rules
 > **Created:** 2026-10-22
-> **Updated:** 2026-10-23 (item 7, A3a; item 6, A2-7: what a page reads)
+> **Updated:** 2026-10-24 (item 7, A3a; item 6, A2-7: what a page reads)
 > **Owner:** Backend
 > **Spec:** [roadmap-items-6-7/spec.md](../logs/reviews/roadmap-items-6-7/spec.md)
 > **Tags:** actions, scheduling, history, gems, shopping, harvest
@@ -121,9 +121,9 @@ drives it through the real routes.
 ## Tests
 
 Golden traces captured before any edit pin the cadence of every pilot caller (`backend/tests/fixtures/action_golden_v1.json`,
-explicit regeneration only: `TP_REGENERATE_ACTION_GOLDEN=1 python -m pytest backend/tests/test_action_golden_capture.py`).
+explicit regeneration only: `TP_REGENERATE_ACTION_GOLDEN=1 python -m pytest backend/tests/unit/test_action_golden_capture.py`).
 Golden traces of the control dispatch, the Run now acknowledgements, the published routines and the saved-setting transforms were captured
 the same way before the dispatch was generated (`backend/tests/fixtures/action_dispatch_golden_v1.json`, `TP_REGENERATE_ACTION_DISPATCH_GOLDEN=1
-python -m pytest backend/tests/test_action_dispatch_capture.py`); `test_action_dispatch_parity.py` replays them.
-Parity, interruption, ownership, ledger, session, route and synthetic-extension tests are the `backend/tests/test_action_*.py` files;
+python -m pytest backend/tests/unit/test_action_dispatch_capture.py`); `test_action_dispatch_parity.py` replays them.
+Parity, interruption, ownership, ledger, session, route and synthetic-extension tests are the `backend/tests/unit/test_action_*.py` files;
 `test_action_declared_proofs.py` holds the proofs the declaration of item 6 still needed and the map from the declaration to the tests.

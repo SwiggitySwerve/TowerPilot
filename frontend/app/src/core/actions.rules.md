@@ -1,7 +1,7 @@
 # Timed action rules
 > **Status:** Active
 > **Created:** 2026-10-23
-> **Updated:** 2026-10-23 (AC5 reading; AC4 vocabulary consolidation)
+> **Updated:** 2026-10-24 (AC5 reading; AC4 vocabulary consolidation)
 
 `actions.ts` owns what the app knows about a timed action (brief
 `backend/logs/reviews/ui-pages/a2-7-actions-brief.md`, refactor R1). Consumers call it; no other
@@ -33,7 +33,7 @@ module names a routine in a list, a field order or a name lookup.
   their addressable item's descriptor (`min`, `max`; null is no bound); every other path keeps
   the saved run's `constraints` as read, and a battle without a projection uses only those. On
   every recorded pair in the landed checkout the two sources are equal, so the switch
-  changed no recorded output (`tests/core/actions.test.ts`). With a projection the live editor's
+  changed no recorded output (`tests/unit/core/actions.test.ts`). With a projection the live editor's
   bounds are known before the saved run is read (`hasLiveBounds`), so `boundsKnown` and its
   notice follow both sources.
 - **Name and label lookups.** `actionName` and `fieldLabel` take the caller's code-keyed copy
@@ -55,7 +55,7 @@ module names a routine in a list, a field order or a name lookup.
   is required. No number of its own. `actionControlsBlocked(reading)` is the reason code that
   disables Run now and live edits (root decision Q2): `action_report_old` for `old`, the reason
   for `unknown` and `read_only`, null for `current` and `absent` (their own gates apply).
-  Tests: `tests/core/actionsReading.test.ts` over every r17b projection case.
+  Tests: `tests/unit/core/actionsReading.test.ts` over every r17b projection case.
 - **Item rows (AC1, brief section 6 rules 1, 2 and 6).** This battle renders each item from its
   own fields, in server order, with no branch per action.
   - `actionNext(item, now)` decides the Next cell, in this order: `disabled` is Off; `running` is
@@ -89,7 +89,7 @@ module names a routine in a list, a field order or a name lookup.
   and `ACTION_EFFECTS` from this owner. Its execution states add `running` to the finished
   results; its existing result reader also accepts that word. Live `ACTION_STATES` remain a
   distinct vocabulary. History's exported state and effect types derive from these lists.
-- **Enforcement.** `tests/core/actionsEnforcement.test.ts` fails when a quoted `ad_gems`,
+- **Enforcement.** `tests/unit/core/actionsEnforcement.test.ts` fails when a quoted `ad_gems`,
   `floating_gems` or `shopping` appears in `src` outside this module and the S1 to S4 allowlist,
-  or when an allowed file's count changes. `tests/store/actionsDump.test.tsx` holds the deliberate
+  or when an allowed file's count changes. `tests/unit/store/actionsDump.test.tsx` holds the deliberate
   current-behavior regression dump over every recorded battle and saved read.
