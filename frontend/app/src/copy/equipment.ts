@@ -13,9 +13,7 @@ export const equipment = {
   limit: entry(
     'Save checks the current emulator, account, profile and connection, then sends that target and the configuration revision for the server to check before writing.',
   ),
-  empty: entry(
-    'No saved loadouts. Create loadouts in the previous dashboard before editing them here.',
-  ),
+  empty: entry('No saved loadouts. Creating loadouts for this account is not available yet.'),
   reading: entry('Reading saved equipment…'),
   readError: entry(
     'Saved equipment could not be read for this target. Kept drafts are unchanged. Read saved result before saving.',

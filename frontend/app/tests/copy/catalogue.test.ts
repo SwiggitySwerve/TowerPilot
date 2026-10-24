@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as catalogueModule from '../../src/copy/catalogue.ts';
 import { copy, documentTitle, elapsedSeconds, observeCopy } from '../../src/copy/catalogue.ts';
+import { equipment } from '../../src/copy/equipment.ts';
 import * as textModule from '../../src/copy/text.ts';
 
 /** Every {short, why?} entry of the catalogue, read as plain data (no CopyText is made here). */
@@ -41,6 +42,12 @@ describe('copy catalogue', () => {
 
   it('says the Dashboard is being rebuilt', () => {
     expect(copy.dashboard.placeholder.short).toBe('Dashboard (rebuild in progress)');
+  });
+
+  it('states that creating loadouts for this account is unavailable', () => {
+    expect(equipment.empty.short).toBe(
+      'No saved loadouts. Creating loadouts for this account is not available yet.',
+    );
   });
 
   it('keeps the CopyText constructor private to the catalogue', () => {
