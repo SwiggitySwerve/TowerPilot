@@ -3,7 +3,7 @@ import hashlib
 import cv2
 import numpy as np
 
-from player.manifest_matcher import LocalMatcher
+from manifest_matcher import LocalMatcher
 
 
 def make_matcher(**changes):
