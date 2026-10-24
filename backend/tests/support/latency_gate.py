@@ -624,7 +624,7 @@ def artifact(gate, structural, baseline, candidate=CANDIDATE_PATH, snapshot=SNAP
         sources=dict(candidate=dict(path=str(Path(candidate).relative_to(BACKEND.parent)).replace(os.sep, '/') if Path(candidate).is_relative_to(BACKEND.parent) else str(candidate),
                                     sha256=sha256(candidate), fast_functions=candidate_functions),
                      unmigrated_snapshot=dict(path='backend/tests/fixtures/latency_gate/orchestrator_unmigrated.py.txt', sha256=sha256(snapshot), fast_functions=function_hashes(snapshot)),
-                     harness=dict(path='backend/tests/latency_gate.py', sha256=sha256(test_paths.TESTS / 'latency_gate.py')), fakes=dict(path='backend/tests/_fakes.py', sha256=sha256(test_paths.TESTS / '_fakes.py'))),
+                     harness=dict(path='backend/tests/latency_gate.py', sha256=sha256(test_paths.TESTS / 'support' / 'latency_gate.py')), fakes=dict(path='backend/tests/_fakes.py', sha256=sha256(test_paths.TESTS / 'support' / '_fakes.py'))),
         migrated_fast_functions=sorted(name for name, digest in candidate_functions.items() if digest != baseline['captured_on']['functions'].get(name)),
         method=dict(iterations=replay['iterations'], warmup_dropped=replay['warmup'], repeats_min_of=replay['repeats'], seed=replay['seed'], gc='disabled during the replay', sleep='no-op',
                     order='baseline and candidate alternate which goes first by iteration and repeat',

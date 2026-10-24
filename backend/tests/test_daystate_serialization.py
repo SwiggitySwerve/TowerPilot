@@ -25,7 +25,7 @@ from runtime import file_lock
 from scheduling import daystate
 
 BACKEND = test_paths.BACKEND
-CHILD = test_paths.TESTS / "daystate_child.py"
+CHILD = test_paths.TESTS / "support" / "daystate_child.py"
 
 
 def start(tmp_path, **spec):

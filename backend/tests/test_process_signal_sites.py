@@ -247,7 +247,7 @@ def test_the_one_allowed_popen_kill_is_still_there_so_the_allowance_cannot_go_st
 # of one, a method of a fake kernel, or a dictionary key spelled like a signal. A scanned process is stopped with
 # process_handle.terminate_tree(pid, created), as test_process_handle.stop_identities does.
 TEST_OWNED = {
-    'backend/tests/dashboard_contract_world.py': {('kernel', 'terminate')},
+    'backend/tests/recording/dashboard_contract_world.py': {('kernel', 'terminate')},
     'backend/tests/test_daystate_serialization.py': {('child', 'kill')},      # a Popen the test started: a child that holds the daily-state lock, killed to show the OS frees it
     'backend/tests/test_delegated_driver.py': {('child', 'terminate'), ('child', 'kill')},
     'backend/tests/test_device_lease.py': {('first', 'kill')},
