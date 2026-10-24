@@ -1,7 +1,7 @@
 # Timed action rules
 > **Status:** Active
 > **Created:** 2026-10-23
-> **Updated:** 2026-10-23
+> **Updated:** 2026-10-23 (AC5 reading; AC4 vocabulary consolidation)
 
 `actions.ts` owns what the app knows about a timed action (brief
 `backend/logs/reviews/ui-pages/a2-7-actions-brief.md`, refactor R1). Consumers call it; no other
@@ -28,18 +28,68 @@ module names a routine in a list, a field order or a name lookup.
 - **Field order.** A live editor row lists a routine's fields in its item's live descriptor
   order, else in `COMPAT_FIELDS` order, then every other reported field in its reported order
   (`liveFieldOrder`, `orderedFields`); the saved editor uses `COMPAT_FIELDS` until the saved read
-  carries descriptors (B12). The column header stays `COMPAT_FIELDS` until C2.
+  carries descriptors (B12).
 - **Live bounds (R2).** `liveConstraints` gives a battle's live number fields the bounds of
   their addressable item's descriptor (`min`, `max`; null is no bound); every other path keeps
   the saved run's `constraints` as read, and a battle without a projection uses only those. On
-  every recorded pair (checkout and the r17b candidate) the two sources are equal, so the switch
+  every recorded pair in the landed checkout the two sources are equal, so the switch
   changed no recorded output (`tests/core/actions.test.ts`). With a projection the live editor's
   bounds are known before the saved run is read (`hasLiveBounds`), so `boundsKnown` and its
   notice follow both sources.
 - **Name and label lookups.** `actionName` and `fieldLabel` take the caller's code-keyed copy
   table and its fallback entry (`copy.actions`); a code read only as an OWN key of the table
   (`core/read.ts` `ownOr`), so an inherited name such as `constructor` is never a name.
+- **Reading (AC5, brief section 6 rules 5 and 6).** `actionsReading(read, elapsedSec)` takes the
+  answered body of GET /api/battles/active (`{server_time, battle}`) and the monotonic seconds since
+  it arrived. In order: the battle report must be fresh by EV-9 (`core/battle` `battleReportAge`,
+  the one 0..`BATTLE_REPORT_MAX_AGE_SEC` rule, shared with `freshBattleReport`), else `unknown`
+  with its reason (`battle_report_old`, `battle_time_invalid`); no `runtime.actions` is `absent`
+  (S5 rows); a `schema_version` other than 1 is `read_only` `action_schema_newer`; an envelope
+  `context` whose `device_key`, `account`, `instance_name` or `profile` differs from the battle
+  context's `device_key`, `account`, `instance` or `profile` (or is missing) is `read_only`
+  `action_context_mismatch`; an `observed_at` that is not finite or is later than
+  `runtime.server_time` is `unknown` `action_report_time_invalid`; `observed_at ===
+  runtime.server_time` is `current` (a publish that builds the projection writes the same epoch to
+  both); an earlier one is `old` with `ageSec = server_time - observed_at + elapsed`. The 15 s
+  rule alone calls the recorded stale case fresh (the projection is 2 s behind), so the equality
+  is required. No number of its own. `actionControlsBlocked(reading)` is the reason code that
+  disables Run now and live edits (root decision Q2): `action_report_old` for `old`, the reason
+  for `unknown` and `read_only`, null for `current` and `absent` (their own gates apply).
+  Tests: `tests/core/actionsReading.test.ts` over every r17b projection case.
+- **Item rows (AC1, brief section 6 rules 1, 2 and 6).** This battle renders each item from its
+  own fields, in server order, with no branch per action.
+  - `actionNext(item, now)` decides the Next cell, in this order: `disabled` is Off; `running` is
+    open with the seconds to `active.window_ends_at`; then a blocker (`eligibility.blocker`) comes
+    before the state; `due` is Due; `waiting` counts down to `next.due_at` (Next not reported
+    when null); `yielded`, `blocked`, `unknown` read as their word. `now` is
+    `runtime.server_time` plus the time since the read arrived (F-050/F-055). Only a `current`
+    reading shows this cell; `old` shows last known with its age, any other reading not current.
+  - `actionOutcome(last)` reads `last.result` and `last.effect` against `ACTION_RESULTS` and
+    `ACTION_EFFECTS`. Only the effect `confirmed` reads as confirmed (rule 2); no count is read
+    from an action row.
+  - Codes (`ActionCode`): `known`, `unreported` (absent or null: nothing was sent) or
+    `unrecognised` (the value as sent). Each cell shows its own unrecognised code under Why: the
+    state in Next, a field type in its Settings line (`fieldType`), the result and effect in
+    Last result. `unrecognisedCode(item)` (an absent state counts, an absent result or effect
+    does not) disables that item's controls (`action_code_unrecognised`).
+  - `settingFields(item)` lists the descriptor fields except the switch `enabled`, whose value
+    is the item's own `enabled`; `fieldValue` reads a field's value in force from `values.<path>`
+    (B2), else `battle.effective.routines.<key>.<path>` (gap G1).
+- **Run now (AC3, rule 3).** `itemRunNowRefusal(item)` is the item's own refusal: no routine key
+  (`control_path_unpublished`), an unrecognised code (`action_code_unrecognised`), or a
+  descriptor whose `capabilities.run_now` is not `true` (a reason string is shown as sent,
+  `server_reason`; anything else `run_now_unsupported`). `runNowReason` is the one order of a
+  This battle Run now or Try once reason: the battle-wide `actionGate` reasons
+  (`report_unavailable`, `battle_not_active`, `no_tracked_battle`), then `actionControlsBlocked`
+  of the reading (the S5 rows pass no reading), then the item's refusal, then any other gate
+  reason, then `sending`. Admission of the token stays `actionGate` (`battle.capabilities.actions`)
+  and settlement stays `core/routines`. A Run now command's outcome is the item whose
+  `last.command_id` names it, once the command is terminal (`commandViewTerminal`).
+- **History vocabulary (AC4).** [historyActions.ts](historyActions.ts) imports `ACTION_RESULTS`
+  and `ACTION_EFFECTS` from this owner. Its execution states add `running` to the finished
+  results; its existing result reader also accepts that word. Live `ACTION_STATES` remain a
+  distinct vocabulary. History's exported state and effect types derive from these lists.
 - **Enforcement.** `tests/core/actionsEnforcement.test.ts` fails when a quoted `ad_gems`,
   `floating_gems` or `shopping` appears in `src` outside this module and the S1 to S4 allowlist,
-  or when an allowed file's count changes. `tests/store/actionsDump.test.tsx` holds the R1/R2
-  output dump over every recorded battle and saved read.
+  or when an allowed file's count changes. `tests/store/actionsDump.test.tsx` holds the deliberate
+  current-behavior regression dump over every recorded battle and saved read.

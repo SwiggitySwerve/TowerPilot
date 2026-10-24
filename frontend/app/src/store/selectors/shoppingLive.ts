@@ -1,3 +1,4 @@
+import { actionControlsBlocked, actionsReading } from '../../core/actions.ts';
 import { battleIdentity, freshBattleReport, type BattleIdentity } from '../../core/battle.ts';
 import { own, ownPath, stringList, text } from '../../core/read.ts';
 import { liveSaveGate, type SaveRequest } from '../../core/runControls.ts';
@@ -72,6 +73,7 @@ export function selectShoppingLive(state: DashboardState) {
       invalid: review.problems > 0 ? { shopping_plan: 'not_a_number' } : {},
     },
     request,
+    actionControlsBlocked(actionsReading(body, last === null ? 0 : readAgeSec(state, last))),
   );
   const command: SaveLiveCommand | null =
     supported && gate.enabled

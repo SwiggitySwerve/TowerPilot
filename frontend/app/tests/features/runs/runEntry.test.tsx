@@ -16,7 +16,7 @@ import {
   dashboardPagesCaseNames,
 } from '../../support/dashboardFixture.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
-import { renderPage, type PageOptions } from '../dashboard/harness.tsx';
+import { enterText, renderPage, type PageOptions } from '../dashboard/harness.tsx';
 
 const fenceChecks: (() => void)[] = [];
 afterEach(() => {
@@ -421,7 +421,8 @@ describe('RL3 and RL6 saved entry editor', () => {
     );
     const input = row('perk_bans').getByLabelText('Perk bans (one per line)');
     await page.user.clear(input);
-    await page.user.type(input, raw);
+    // One input event: 237 keystrokes each redrew the page and alone exceeded the timeout under load.
+    await enterText(page.user, input, raw);
     const before = selectRunEntry(page.data.store.getSnapshot()).fields.find(
       (field) => field.key === 'perk_bans',
     );
@@ -500,7 +501,9 @@ describe('RL3 and RL6 saved entry editor', () => {
               : typeof value === 'number' || typeof value === 'string'
                 ? String(value)
                 : '';
-        if (raw !== '') await page.user.type(control, raw);
+        // A list arrives in one input event (see enterText); a single value is typed.
+        if (raw !== '' && Array.isArray(value)) await enterText(page.user, control, raw);
+        else if (raw !== '') await page.user.type(control, raw);
       }
       await save(page, field);
       expect(page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown)).toEqual([

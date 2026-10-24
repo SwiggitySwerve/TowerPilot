@@ -111,7 +111,11 @@ export function commandView(command: unknown): CommandView {
 
 /** True only for a recognised terminal state of this command's own kind. */
 export function commandTerminal(command: unknown): boolean {
-  const view = commandView(command);
+  return commandViewTerminal(commandView(command));
+}
+
+/** `commandTerminal` for a command already read into its view (a receipt or a listed row). */
+export function commandViewTerminal(view: CommandView): boolean {
   const state = text(view.state);
   return (
     view.decision.row !== 'K7' && state !== undefined && TERMINAL_COMMAND_STATES.includes(state)

@@ -1,5 +1,17 @@
 import { entry, made } from '../entry.ts';
+import { isoText } from '../format.ts';
 import { automation } from './automation.ts';
+
+/**
+ * The UTC instant of an epoch-seconds time through the one epoch-to-ISO rule (format.ts isoText).
+ * A time no date can hold throws the RangeError `toISOString` threw here before, so the region's
+ * fallback still takes over exactly as it did.
+ */
+function iso(seconds: number): string {
+  const text = isoText(seconds * 1000);
+  if (text === null) throw new RangeError('Invalid time value');
+  return text;
+}
 
 /** Catalogue entries of the Dashboard's recent part (spec section 6.2). Owned by its region. */
 export const recent = {
@@ -49,7 +61,7 @@ export const recent = {
   wave: automation.wave,
   nextCheck: (at: number, offsetSec: number | null) =>
     made(
-      `next check ${new Date((at + (offsetSec ?? 0)) * 1000).toISOString().slice(11, 16)}${offsetSec === null ? ' UTC' : ''}`,
+      `next check ${iso(at + (offsetSec ?? 0)).slice(11, 16)}${offsetSec === null ? ' UTC' : ''}`,
     ),
   inDuration: (seconds: number) => {
     const whole = Math.max(0, Math.floor(seconds));
@@ -63,5 +75,5 @@ export const recent = {
           : `(in ${whole} s)`,
     );
   },
-  recordedAt: (at: number) => made(`Recorded end time: ${new Date(at * 1000).toISOString()}`),
+  recordedAt: (at: number) => made(`Recorded end time: ${iso(at)}`),
 } as const;

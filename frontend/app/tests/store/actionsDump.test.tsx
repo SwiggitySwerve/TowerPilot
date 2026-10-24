@@ -4,7 +4,6 @@ import {
   DASHBOARD_PAGES_FIXTURE_PATH,
   loadJsonWithIdentity,
 } from '../../scripts/contract-fixture.mjs';
-import { R17B_SAMPLES_FILE } from '../../scripts/generate-contract.mjs';
 import { copy } from '../../src/copy/catalogue.ts';
 import { ThisBattle } from '../../src/features/dashboard/thisBattle/ThisBattle.tsx';
 import { BattleDetails } from '../../src/features/runs/BattleDetails.tsx';
@@ -18,15 +17,17 @@ import type { DashboardCase } from '../support/dashboardFixture.ts';
 import { addBody, addCase, regionState } from './regionHelpers.ts';
 
 /**
- * A2-7 R1/R2 output dump (development rules: refactor, then change). Every recorded
+ * A2-7 output dump (development rules: refactor, then change). Every recorded
  * GET /api/battles/active case of the checkout fixtures (dashboard_contract_v1.json and
  * dashboard_contract_pages_v1.json), with the battle run's saved bounds read as the Runs page
  * reads them, is serialized as the This battle and Runs live view models and the rendered This
  * battle, live editor and battle details; every recorded GET /api/run-controls read is
- * serialized as the saved editor. The snapshot was written on the code before R1 and must stay
- * byte-identical through the behaviour-preserving R1 and R2 steps. The r17b candidate's
+ * serialized as the saved editor. The original snapshot stayed byte-identical through the
+ * behaviour-preserving R1 and R2 steps. The AC1/AC2/AC3/AC5 behavior phase deliberately
+ * replaces that baseline: descriptor rows/fields, result/effect output and shared reading gates.
+ * The reviewed per-case diff is recorded in frontend-a2-7.json ac1_ac2_finalization. The landed r17b's
  * projection cases are a separate snapshot of their own. The dump is a refactor gate over the
- * recordings as they are: when the fixtures change (r17b landing) or a C step changes behaviour by
+ * recordings as they are: when the fixtures change or a C step changes behaviour by
  * design, it is regenerated deliberately (vitest -u) and the diff reviewed with that change.
  */
 type Fixture = Readonly<Record<string, Readonly<Record<string, DashboardCase>>>>;
@@ -158,8 +159,8 @@ function dumpText(value: unknown): string {
   return `${JSON.stringify(value, null, 1)}\n`;
 }
 
-describe('A2-7 R1 R2 output dump', () => {
-  it('R1 dumps every recorded checkout battle read and saved read byte-identically', async () => {
+describe('A2-7 reviewed behavior output dump', () => {
+  it('dumps every recorded checkout battle read and saved read against the reviewed baseline', async () => {
     const battles = reads(CHECKOUT, battleRead);
     const saved = reads(
       CHECKOUT,
@@ -168,7 +169,7 @@ describe('A2-7 R1 R2 output dump', () => {
         found.request.path.startsWith('/api/run-controls') &&
         found.status === 200,
     );
-    expect(battles.length).toBe(59);
+    expect(battles.length).toBe(65);
     expect(saved.length).toBe(46);
     const text = dumpText({
       battles: battles.map(([name, found]) => battleDump(name, found)),
@@ -177,11 +178,17 @@ describe('A2-7 R1 R2 output dump', () => {
     await expect(text).toMatchFileSnapshot('./__dumps__/actions-dump.json');
   }, 120_000);
 
-  it('R1 dumps the r17b candidate projection reads byte-identically (separate snapshot)', async () => {
-    const candidate: readonly (readonly [string, Fixture])[] = [
-      ['R17B', casesOf(R17B_SAMPLES_FILE)],
+  it('dumps the landed r17b projection reads against the reviewed baseline (separate snapshot)', async () => {
+    const projection: readonly (readonly [string, Fixture])[] = [
+      [
+        'R17B',
+        {
+          battle_actions_projection:
+            casesOf(DASHBOARD_PAGES_FIXTURE_PATH)['battle_actions_projection'] ?? {},
+        },
+      ],
     ];
-    const battles = reads(candidate, battleRead);
+    const battles = reads(projection, battleRead);
     expect(battles.length).toBe(14);
     const text = dumpText({ battles: battles.map(([name, found]) => battleDump(name, found)) });
     await expect(text).toMatchFileSnapshot('./__dumps__/actions-dump-r17b.json');

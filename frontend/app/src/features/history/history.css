@@ -126,6 +126,37 @@
 .tp-history__activity {
   padding-inline-start: var(--tp-space-4);
 }
+/* A2-7 AC4: recorded action executions, one card per row, facts wrapping inside it. */
+.tp-history__executions {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--tp-space-2);
+}
+.tp-history__execution {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: var(--tp-space-3);
+  background: var(--tp-color-surface-inner);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
+}
+.tp-history__execution-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--tp-space-2);
+  margin-block-end: var(--tp-space-2);
+}
+.tp-history__code {
+  font-family: var(--tp-font-mono);
+}
+.tp-history__block {
+  display: block;
+}
+.tp-history .tp-history__older {
+  margin-block-start: var(--tp-space-3);
+}
 .tp-history__activity time {
   display: block;
 }
@@ -146,7 +177,8 @@
     padding: var(--tp-space-3);
   }
 }
-@media (pointer: coarse) {
+/* The touch-target rule shares the breakpoint of src/ui/ui.css; the column collapse above keeps its own. */
+@media (pointer: coarse), (max-width: 600px) {
   .tp-history button,
   .tp-history select,
   .tp-history summary {

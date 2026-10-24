@@ -25,7 +25,7 @@ import { DEFAULT_GETS, SCENARIOS } from './scenarios.mjs';
 import { servePreview } from './preview-fixtures.mjs';
 import { createPreviewFixtureState } from './preview-replay.mjs';
 import { RUNTIME_SAVES, runtimeSaveRefusal } from './runtime-fixtures.mjs';
-import { historyAnswer } from './history-fixtures.mjs';
+import { actionsCase, historyAnswer } from './history-fixtures.mjs';
 import { shoppingLibrarySource } from './shopping-library-fixtures.mjs';
 import { profilePatchFencedRead } from './profile-patch-fenced-fixtures.mjs';
 import {
@@ -522,6 +522,8 @@ export function createApiHandler(fixture, options = {}) {
   };
   /** A reference names a Dashboard case, then a pages case, then a harvest one. @param {string} reference */
   const answerFor = (reference) =>
+    // A2-7: `r17b:<family>.<case>` names a landed r17b recording (backend/tests/fixtures/dashboard_contract_pages_v1.json).
+    (reference.startsWith('r17b:') ? actionsCase(reference.slice('r17b:'.length)) : undefined) ??
     runsTargetSource(reference) ??
     fixtureCase(
       lookup(dashboard, reference) !== undefined
@@ -734,7 +736,9 @@ export function createApiHandler(fixture, options = {}) {
     }
     if (
       session.history !== undefined &&
-      (url.pathname === '/api/battles' || /^\/api\/battles\/(?!active$)[^/]+$/.test(url.pathname))
+      (url.pathname === '/api/battles' ||
+        url.pathname === '/api/actions/executions' ||
+        /^\/api\/battles\/(?!active$)[^/]+$/.test(url.pathname))
     ) {
       sendCase(res, historyAnswer(url, session.history || undefined));
       return;

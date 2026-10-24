@@ -1,4 +1,6 @@
+import { actions as sharedActions } from './actions.ts';
 import { entry, made } from './entry.ts';
+import { durationText, isoText } from './format.ts';
 import type { CopyText } from './text.ts';
 
 export const history = {
@@ -120,6 +122,75 @@ export const history = {
   collectionRecord: entry('Collection evidence record'),
   gapRecord: entry('Recorded gap intervals'),
   eventRecord: (index: number) => made(`Activity record ${index}`),
+  /**
+   * A2-7 AC4: recorded executions of timed actions. A history is a read, not a status: an open row
+   * says what it was when read, and a missing list never says that nothing ran.
+   */
+  actions: {
+    heading: entry('Actions in this battle'),
+    list: entry('Recorded action executions'),
+    readNote: entry(
+      'Executions of timed actions recorded for this battle, newest first. This is a read, not a live status.',
+    ),
+    states: {
+      not_reported: entry('This server did not report action history for this record.'),
+      before_history: entry(
+        'Recorded before action history existed. This does not mean that no action ran.',
+      ),
+      newer_schema: entry(
+        'Written by a newer version of Tower Pilot, so it is not shown. This does not mean that no action ran.',
+      ),
+      unreadable: entry('Action history could not be read for this record.'),
+      empty: entry('No action executions are recorded for this battle.'),
+    },
+    reasonCode: entry('Recorded reason code'),
+    truncated: entry('Older executions exist. Only the newest ones are shown.'),
+    truncatedNoCursor: entry('Older executions exist, but the server named no way to read them.'),
+    complete: entry('All recorded executions for this battle are shown.'),
+    older: entry('Older executions'),
+    olderBusy: entry('Loading older executions…'),
+    olderRetry: entry('Retry older executions'),
+    olderLoaded: (count: number) =>
+      made(count === 1 ? '1 older execution loaded' : `${count} older executions loaded`),
+    skipped: (count: number) =>
+      made(
+        count === 1
+          ? '1 damaged record was skipped by the server.'
+          : `${count} damaged records were skipped by the server.`,
+      ),
+    code: entry('Action code'),
+    instance: entry('Instance'),
+    finished: entry('Finished'),
+    trigger: entry('Trigger'),
+    state: entry('State'),
+    result: entry('Result'),
+    effect: entry('Effect'),
+    duration: entry('Duration'),
+    coverage: entry('Coverage'),
+    checks: entry('Occurrences in this entry'),
+    firstCheck: entry('First check'),
+    lastCheck: entry('Last check'),
+    notFinished: entry('Not finished when read'),
+    noFinish: entry('Not recorded: stopped before it finished'),
+    noDuration: entry('Not recorded'),
+    notRecognised: entry('Not recognised'),
+    triggers: {
+      automatic: entry('Automatic'),
+      manual: entry('Manual (Run now)'),
+    },
+    // A state is a result word, except an open row, which History reads rather than watches.
+    stateWords: { running: entry('Open when read'), ...sharedActions.results },
+    coverages: {
+      full: entry('Full record'),
+      since_adoption: entry('Since this automation adopted the battle'),
+      unknown: entry('Coverage unknown'),
+    },
+    readAt: (at: number | null) => {
+      const instant = at === null ? null : isoText(at);
+      return instant === null ? history.unknown.short : made(`Read ${instant}`);
+    },
+    durationValue: (ms: number) => made(durationText(ms / 1000)),
+  },
   boundary: entry('End evidence'),
   noTotal: entry('The server publishes no total record count.'),
   page: (page: number) => made(`Page ${page}`),
@@ -128,9 +199,11 @@ export const history = {
   seconds: (value: number | null): CopyText =>
     value === null ? history.unknown.short : made(`${value} seconds observed`),
   time: (value: number | null): CopyText => {
-    if (value === null || !Number.isFinite(value) || Math.abs(value * 1000) > 8.64e15)
-      return history.unknown.short;
-    return made(new Date(value * 1000).toISOString());
+    const instant = value === null ? null : isoText(value * 1000);
+    return instant === null ? history.unknown.short : made(instant);
   },
-  loaded: (at: number) => made(`Last loaded ${new Date(at).toISOString()}`),
+  loaded: (at: number): CopyText => {
+    const instant = isoText(at);
+    return instant === null ? history.unknown.short : made(`Last loaded ${instant}`);
+  },
 } as const;

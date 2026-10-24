@@ -1,4 +1,6 @@
 import {
+  actionControlsBlocked,
+  actionsReading,
   actionsView,
   COMPAT_FIELDS,
   hasLiveBounds,
@@ -12,6 +14,8 @@ import { entries, finite, own, ownPath, text } from '../../core/read.ts';
 import { readiness, runDefined, type ReadinessView } from '../../core/readiness.ts';
 import {
   controlGroups,
+  liveControls,
+  liveFieldNullable,
   liveMark,
   liveOverrideLeaves,
   liveResetGate,
@@ -22,6 +26,7 @@ import {
   type ControlGroup,
   type DraftValues,
   type InvalidReason,
+  type LiveFieldDescription,
   type LiveMark,
   type LiveOverrideLeaf,
   type SaveRequest,
@@ -77,17 +82,59 @@ export interface RunFieldVM {
   readonly max: number | null;
   /** Live rows only: changed for this battle, waiting to apply, or as saved. */
   readonly mark: LiveMark | null;
+  /** A2-7 AC2: the descriptor's label (live rows of a described item), else null (copy label). */
+  readonly label: ServerText<'name'> | null;
+  /** A2-7 AC2: the unit after a number: seconds (copy), none, or the descriptor's unit as sent. */
+  readonly unit: RunUnitVM;
 }
+
+export type RunUnitVM =
+  | { readonly kind: 'seconds' }
+  | { readonly kind: 'none' }
+  | { readonly kind: 'other'; readonly text: ServerText<'name'> };
+
+/** A2-7 AC2: a listed control whose descriptor type the page does not know (never editable). */
+export interface UnrecognisedFieldVM {
+  readonly path: string;
+  readonly field: string;
+  readonly label: ServerText<'name'> | null;
+  readonly type: ServerText<'id'> | null;
+}
+
+/** A2-7 AC2: one cell of a row in field order: an editable field or an unrecognised one. */
+export type RunCellVM =
+  | { readonly kind: 'field'; readonly field: RunFieldVM }
+  | { readonly kind: 'unrecognised'; readonly field: UnrecognisedFieldVM };
 
 export interface RunGroupVM {
   readonly routine: string;
+  /** A2-7 AC2: the projection's label of the item, else null (copy name). */
+  readonly label: ServerText<'name'> | null;
   readonly fields: readonly RunFieldVM[];
+  /** A2-7 AC2: `fields` and the unrecognised fields together, in the routine's field order. */
+  readonly cells: readonly RunCellVM[];
+}
+
+/** A2-7 AC2 (gap G2): an item whose controls the battle does not address; read-only. */
+export interface UnaddressableVM {
+  readonly id: string;
+  readonly instance: string;
+  readonly label: ServerText<'name'> | null;
+  readonly reason: 'control_path_unpublished';
 }
 
 export interface EditorVM<C> {
   /** The draft's scope (store `runDrafts` key). */
   readonly scope: string;
   readonly groups: readonly RunGroupVM[];
+  /**
+   * A2-7 AC2: where field labels come from. `copy`: catalogue labels, named once by the column
+   * header (the saved editor, Q5, and a battle without a projection); `descriptor`: some row
+   * carries descriptor labels, so every field shows its own.
+   */
+  readonly labels: 'copy' | 'descriptor';
+  /** A2-7 AC2: items of the battle that cannot be edited here (empty for the saved editor). */
+  readonly unaddressable: readonly UnaddressableVM[];
   readonly save: CommandVM<C>;
   /** Discard is offered while the scope holds any draft. */
   readonly discard: boolean;
@@ -106,14 +153,25 @@ export interface EditorVM<C> {
   readonly resetAll: LiveResetAllVM | null;
 }
 
+/** One override of a reset, with the projection's names when the battle sends them (A2-7 AC2). */
+export type LiveOverrideVM =
+  | (Extract<LiveOverrideLeaf, { readonly kind: 'routine' }> & OverrideNamesVM)
+  | Extract<LiveOverrideLeaf, { readonly kind: 'shopping_plan' }>;
+
+/** The item and field labels of an override (null: the catalogue's names apply). */
+export interface OverrideNamesVM {
+  readonly routineLabel: ServerText<'name'> | null;
+  readonly label: ServerText<'name'> | null;
+}
+
 export interface LiveResetAllVM {
-  readonly items: readonly LiveOverrideLeaf[];
+  readonly items: readonly LiveOverrideVM[];
   /** The target the reset would be sent to (core liveResetKey), or null while it is not offered. */
   readonly target: string | null;
   readonly reset: CommandVM<ResetLiveCommand>;
 }
 
-export interface LiveResetVM {
+export interface LiveResetVM extends OverrideNamesVM {
   readonly path: string;
   readonly routine: string;
   readonly field: string;
@@ -490,6 +548,39 @@ function submittedDraft(
   );
 }
 
+/** What a described live editor knows beyond the fields (A2-7 AC2); the saved editor has none. */
+interface Described {
+  readonly description: (path: string) => LiveFieldDescription | undefined;
+  readonly itemLabel: (routine: string) => unknown;
+  readonly unrecognised: (routine: string) => readonly UnrecognisedFieldVM[];
+}
+
+const UNDESCRIBED: Described = {
+  description: () => undefined,
+  itemLabel: () => undefined,
+  unrecognised: () => [],
+};
+
+function unitVM(
+  field: ControlGroup['fields'][number],
+  description: LiveFieldDescription | undefined,
+): RunUnitVM {
+  if (field.kind !== 'number') return { kind: 'none' };
+  // A field no descriptor describes is in seconds, as every run control was before A2-7.
+  const unit = description?.unit ?? { kind: 'seconds' };
+  if (unit.kind !== 'other') return unit;
+  const text = fromServer('name', unit.text);
+  return text === null ? { kind: 'none' } : { kind: 'other', text };
+}
+
+function fieldCell(field: RunFieldVM): RunCellVM {
+  return { kind: 'field', field };
+}
+
+function unrecognisedCell(field: UnrecognisedFieldVM): RunCellVM {
+  return { kind: 'unrecognised', field };
+}
+
 function fieldsVM(
   groups: readonly ControlGroup[],
   draft: DraftValues,
@@ -497,12 +588,13 @@ function fieldsVM(
   changes: Readonly<Record<string, boolean | number>>,
   mark: (field: ControlGroup['fields'][number]) => LiveMark | null,
   order: (routine: string) => readonly string[],
+  described: Described = UNDESCRIBED,
 ): readonly RunGroupVM[] {
-  return groups.map((group) => ({
-    routine: group.routine,
+  return groups.map((group) => {
     // H9: each routine's fields in its field order (descriptor or compatibility), then the rest.
-    fields: orderedFields(group.fields, order(group.routine)).map((field) => {
+    const fields = orderedFields(group.fields, order(group.routine)).map((field): RunFieldVM => {
       const typed = draft[field.path];
+      const description = described.description(field.path);
       return {
         path: field.path,
         routine: field.routine,
@@ -524,9 +616,25 @@ function fieldsVM(
         min: field.min,
         max: field.max,
         mark: mark(field),
+        label: fromServer('name', description?.label),
+        unit: unitVM(field, description),
       };
-    }),
-  }));
+    });
+    const entries: { readonly field: string; readonly cell: RunCellVM }[] = [
+      ...fields.map((field) => ({ field: field.field, cell: fieldCell(field) })),
+      ...described.unrecognised(group.routine).map((field) => ({
+        field: field.field,
+        cell: unrecognisedCell(field),
+      })),
+    ];
+    const cells = orderedFields(entries, order(group.routine)).map((entry) => entry.cell);
+    return {
+      routine: group.routine,
+      label: fromServer('name', described.itemLabel(group.routine)),
+      fields,
+      cells,
+    };
+  });
 }
 
 function answered(read: ReadRecord | null): boolean {
@@ -612,6 +720,9 @@ function savedSection(state: DashboardState, lines: readonly OutcomeLineVM[]): S
         () => null,
         () => COMPAT_FIELDS,
       ),
+      // Root decision Q5: the saved editor keeps the catalogue labels until B12.
+      labels: 'copy',
+      unaddressable: [],
       save: gate.enabled
         ? commandVM<SaveRunCommand>(true, true, null, false, {
             epoch: state.epoch,
@@ -756,32 +867,66 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
   if (shown === null)
     return { ...withDetails, boundsKnown: boundsBody !== undefined, editor: null };
   const actions = actionsView(battle);
-  // R2 (H10): a live field's bounds are its item's descriptor bounds, else the saved run's.
-  const groups = controlGroups(
+  // A2-7 AC2: the fields of each described routine are its item's live descriptor fields, of the
+  // descriptor's type; R2 (H10): their bounds are the descriptor's, else the saved run's.
+  const controls = liveControls(
     ownPath(battle, 'capabilities', 'controls'),
     own(battle, 'effective'),
     liveConstraints(actions, own(boundsBody, 'constraints')),
+    actions,
   );
+  const unrecognised = controls.unrecognised.map((field) => ({
+    routine: field.routine,
+    vm: {
+      path: field.path,
+      field: field.field,
+      label: fromServer('name', field.label),
+      type: fromServer('id', field.type),
+    },
+  }));
+  // A routine whose every described field is unrecognised still gets its row.
+  const groups = [
+    ...controls.groups,
+    ...[...new Set(unrecognised.map((field) => field.routine))]
+      .filter((routine) => !controls.groups.some((group) => group.routine === routine))
+      .map((routine) => ({ routine, fields: [] })),
+  ];
+  const described: Described = {
+    description: (path) => controls.descriptions.get(path),
+    itemLabel: (routine) => controls.itemLabels.get(routine),
+    unrecognised: (routine) =>
+      unrecognised.filter((field) => field.routine === routine).map((field) => field.vm),
+  };
   const scope = liveScope(shown.id, shown.generation);
   const draft = state.runDrafts[scope] ?? {};
   const review = reviewDraft(groups, draft);
   const elapsed = last === null ? 0 : readAgeSec(state, last);
   const fresh = freshBattleReport(contextReadOf(last), shown, elapsed).kind === 'known';
+  // Root decision Q2 (AC5 rule of core/actions): old, unreadable or foreign action readings
+  // close live changes with their reason.
+  const blocked = actionControlsBlocked(actionsReading(body, elapsed));
   const request = requestOn(state, records, last?.startedSeq ?? 0);
   // SQ5 (core/runControls.rules.md): a live write waits for the config read that confirms
   // the page context. A battle read can answer first; the confirming read then starts a new
   // epoch that drops it, so a save or reset offered before then would vanish under the
   // person's hand (an open reset confirmation closed by itself).
   const contextReady = hasConfirmedContext(state);
-  const gate = liveSaveGate(battle, fresh, review, request);
+  const gate = liveSaveGate(battle, fresh, review, request, blocked);
   // F6-11 RL1/RL2: the applied overrides of this battle, and the reset of some of them (one
   // path, or every path at once), bound to the target it would be sent to.
   const changed = groups.flatMap((group) =>
     group.fields.filter((field) => liveMark(battle, field) === 'changed'),
   );
-  const leaves = liveOverrideLeaves(battle);
+  // A2-7 AC2: a reset sends null, so only a field its descriptor marks nullable may be reset.
+  const leaves = liveOverrideLeaves(battle).filter(
+    (leaf) => leaf.kind !== 'routine' || liveFieldNullable(actions, leaf.routine, leaf.field),
+  );
+  const names = (routine: string, field: string): OverrideNamesVM => ({
+    routineLabel: fromServer('name', controls.itemLabels.get(routine)),
+    label: fromServer('name', controls.descriptions.get(`routines.${routine}.${field}`)?.label),
+  });
   const resetOf = (paths: readonly string[]) => {
-    const reset = liveResetGate(battle, fresh, paths, request);
+    const reset = liveResetGate(battle, fresh, paths, request, blocked);
     return contextReady && reset.enabled
       ? {
           target: liveResetKey(reset.command),
@@ -816,7 +961,15 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
         review.changes,
         (field) => liveMark(battle, field),
         (routine) => liveFieldOrder(actions, routine),
+        described,
       ),
+      labels: controls.descriptions.size > 0 || unrecognised.length > 0 ? 'descriptor' : 'copy',
+      unaddressable: controls.unaddressable.map((item) => ({
+        id: item.id,
+        instance: item.instance,
+        label: fromServer('name', item.label),
+        reason: 'control_path_unpublished',
+      })),
       save:
         contextReady && gate.enabled
           ? commandVM<SaveLiveCommand>(true, true, null, false, {
@@ -840,13 +993,21 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
         path: field.path,
         routine: field.routine,
         field: field.field,
-        ...resetOf([field.path]),
+        ...names(field.routine, field.field),
+        ...(liveFieldNullable(actions, field.routine, field.field)
+          ? resetOf([field.path])
+          : {
+              target: null,
+              reset: commandVM<ResetLiveCommand>(true, false, 'not_nullable', false, null),
+            }),
       })),
       resetAll:
         leaves.length < 2
           ? null
           : {
-              items: leaves,
+              items: leaves.map((leaf) =>
+                leaf.kind === 'routine' ? { ...leaf, ...names(leaf.routine, leaf.field) } : leaf,
+              ),
               ...resetOf(leaves.map((leaf) => leaf.path)),
             },
     },

@@ -5,9 +5,10 @@ import {
   historyRows,
   historyStatsState,
 } from '../../core/history.ts';
+import { executionsView, type Coded, type ExecutionRow } from '../../core/historyActions.ts';
 import { finite, id, list, own, ownPath } from '../../core/read.ts';
 import { fromServer } from '../../copy/server.ts';
-import type { HistoryState } from '../history.ts';
+import type { HistoryRead, HistoryState, OlderRead } from '../history.ts';
 
 function json(value: unknown) {
   return value === null || value === undefined
@@ -32,7 +33,53 @@ export function historyRow(raw: unknown) {
   };
 }
 
-function historyDetail(raw: unknown, events: unknown) {
+function codedVM<K extends string>(word: Coded<K>) {
+  return { kind: word.kind, code: fromServer('detail', word.code) };
+}
+/** Text first, then `instance` only when it names something other than the action itself. */
+function executionRowVM(row: ExecutionRow) {
+  return {
+    key: row.key,
+    action: fromServer('id', row.action),
+    instance: row.instance === row.action ? null : fromServer('id', row.instance),
+    label: fromServer('name', row.label),
+    trigger: codedVM(row.trigger),
+    open: row.open,
+    state: codedVM(row.state),
+    result: row.result === null ? null : codedVM(row.result),
+    effect: row.effect === null ? null : codedVM(row.effect),
+    reason: fromServer('message', row.reason),
+    startedAt: row.startedAt,
+    finishedAt: row.finishedAt,
+    durationMs: row.durationMs,
+    showsDuration: row.showsDuration,
+    coverage: codedVM(row.coverage),
+    aggregate: row.aggregate,
+  };
+}
+
+/** A2-7 AC4: the executions of the selected battle, as the block and the older pages read so far say. */
+function historyExecutions(block: unknown, older: OlderRead, detail: HistoryRead) {
+  const view = executionsView(block, older);
+  const rows = view.kind === 'rows' ? view : null;
+  return {
+    state: view.kind,
+    reason: view.kind === 'unreadable' ? fromServer('detail', view.reason) : null,
+    rows: rows === null ? [] : rows.rows.map(executionRowVM),
+    truncated: rows?.truncated ?? false,
+    canLoadOlder: rows !== null && rows.cursor !== null,
+    skipped: rows?.unusable ?? 0,
+    loadedOlder: older.loaded,
+    older: { busy: older.busy, error: older.error, reason: fromServer('detail', older.reason) },
+    readAtMs: detail.loadedAt,
+  };
+}
+
+function historyDetail(
+  raw: unknown,
+  events: unknown,
+  executions: ReturnType<typeof historyExecutions>,
+) {
   const setup = ownPath(raw, 'runtime', 'setup');
   const stats = ownPath(raw, 'runtime', 'stats_capture');
   return {
@@ -66,6 +113,7 @@ function historyDetail(raw: unknown, events: unknown) {
       raw: json(stats),
     },
     collection: historyCollection(raw),
+    executions,
     collectionRaw: json(ownPath(raw, 'runtime', 'collection_evidence')),
     gaps: json(ownPath(raw, 'runtime', 'observation_gaps')),
     openGap: number(ownPath(raw, 'runtime', 'observation_gap_started_at')),
@@ -94,7 +142,11 @@ export function selectHistory(state: HistoryState) {
     detail:
       state.detail.loadedAt === null
         ? null
-        : historyDetail(own(state.detail.body, 'battle'), own(state.detail.body, 'events')),
+        : historyDetail(
+            own(state.detail.body, 'battle'),
+            own(state.detail.body, 'events'),
+            historyExecutions(own(state.detail.body, 'executions'), state.older, state.detail),
+          ),
   };
 }
 export type HistoryVM = ReturnType<typeof selectHistory>;

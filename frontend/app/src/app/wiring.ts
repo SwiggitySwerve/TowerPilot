@@ -3,6 +3,7 @@ import { createPreviewData } from './previewWiring.ts';
 import type { PreviewStore } from '../store/preview.ts';
 import { isShoppingAction } from '../core/actions.ts';
 import { setupPermit } from '../core/guards.ts';
+import { sameJson } from '../core/json.ts';
 import { handoffTarget } from '../core/needs.ts';
 import { finite, own, ownPath, text } from '../core/read.ts';
 import { startGate } from '../core/readiness.ts';
@@ -58,6 +59,7 @@ import { fetchTransport, type Transport } from '../api/transport.ts';
 import { ENDPOINTS, type Endpoint, type EndpointId } from '../api/wire.ts';
 import { readEndpoint } from '../api/client.ts';
 import { selectShoppingLive } from '../store/selectors/shoppingLive.ts';
+import { selectRunsPage } from '../store/selectors/runs.ts';
 import { isSavedShoppingScope } from '../store/selectors/shoppingSaved.ts';
 import { selectThisBattle } from '../store/selectors/thisBattle.ts';
 import { settleCommand } from '../core/routines.ts';
@@ -81,7 +83,12 @@ import {
 } from '../api/intents/recognition.ts';
 import { CONNECTION_WRITES } from '../core/emulators.ts';
 import { opaqueToken } from '../core/tokens.ts';
-import type { DashboardCommands, Fenced, ProfileWriteCommand } from '../store/commands.ts';
+import type {
+  DashboardCommands,
+  Fenced,
+  ProfileWriteCommand,
+  RunNowCommand,
+} from '../store/commands.ts';
 import {
   createDashboardStore,
   initialDashboardState,
@@ -141,6 +148,24 @@ export interface DashboardData {
 
 /** A read stamped with the epoch it belongs to (the config answer that names a new context). */
 const inEpoch = (arrival: ReadArrival, epoch: number): ReadArrival => ({ ...arrival, epoch });
+
+/** A captured live command still addresses the exact target offered by the newest selector. */
+function sameLiveTarget(
+  current:
+    | Pick<RunNowCommand, 'operationId' | 'battleId' | 'generation' | 'expectedRevision'>
+    | null
+    | undefined,
+  captured: Pick<RunNowCommand, 'operationId' | 'battleId' | 'generation' | 'expectedRevision'>,
+): boolean {
+  return (
+    current !== null &&
+    current !== undefined &&
+    current.operationId === captured.operationId &&
+    current.battleId === captured.battleId &&
+    current.generation === captured.generation &&
+    current.expectedRevision === captured.expectedRevision
+  );
+}
 
 export function createDashboardData(options: DashboardDataOptions = {}): DashboardData {
   const transport = options.transport ?? fetchTransport;
@@ -705,19 +730,15 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     },
     runNow: (command) => {
       if (!fenced(command)) return Promise.resolve();
-      if (isShoppingAction(command.action)) {
-        const current = selectThisBattle(store.getSnapshot()).tryOnce.find(
-          (item) => item.action === command.action,
-        )?.button;
-        if (
-          current?.enabled !== true ||
-          current.command?.battleId !== command.battleId ||
-          current.command.generation !== command.generation ||
-          current.command.expectedRevision !== command.expectedRevision
-        ) {
-          notice('command_not_sent', current?.reason ?? 'battle_changed');
-          return Promise.resolve();
-        }
+      const battle = selectThisBattle(store.getSnapshot());
+      const current = isShoppingAction(command.action)
+        ? battle.tryOnce.find((item) => item.action === command.action)?.button
+        : battle.actions === null
+          ? battle.routines.find((item) => item.routine === command.action)?.runNow
+          : battle.actions.find((item) => item.token === command.action)?.runNow;
+      if (current?.enabled !== true || !sameLiveTarget(current.command, command)) {
+        notice('command_not_sent', current?.reason ?? 'battle_changed');
+        return Promise.resolve();
       }
       report(sendRunNow(machine, command, tracker.current(), newKey));
       return Promise.resolve();
@@ -790,13 +811,24 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
       if (!fenced(command)) return Promise.resolve();
       if (own(command.changes, 'shopping_plan') !== undefined) {
         const current = selectShoppingLive(store.getSnapshot());
-        if (
-          current.command === null ||
-          current.command.battleId !== command.battleId ||
-          current.command.generation !== command.generation ||
-          current.command.expectedRevision !== command.expectedRevision
-        ) {
+        if (!sameLiveTarget(current.command, command)) {
           notice('command_not_sent', current.reason ?? 'battle_changed');
+          return Promise.resolve();
+        }
+      } else {
+        const state = store.getSnapshot();
+        // Judge the reserved submission against the latest reading, without replacing it
+        // with (or rejecting it because of) text entered after the command was captured.
+        const current = selectRunsPage({
+          ...state,
+          runDrafts: { ...state.runDrafts, [command.scope]: command.draft },
+        }).live.editor?.save;
+        if (
+          current?.enabled !== true ||
+          !sameLiveTarget(current.command, command) ||
+          !sameJson(current.command?.changes, command.changes)
+        ) {
+          notice('command_not_sent', current?.reason ?? 'battle_changed');
           return Promise.resolve();
         }
       }
@@ -820,6 +852,19 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
     },
     resetLive: (command) => {
       if (!fenced(command)) return Promise.resolve();
+      const editor = selectRunsPage(store.getSnapshot()).live.editor;
+      const current =
+        command.paths.length === 1
+          ? editor?.resets.find((item) => item.path === command.paths[0])?.reset
+          : editor?.resetAll?.reset;
+      if (
+        current?.enabled !== true ||
+        !sameLiveTarget(current.command, command) ||
+        !sameJson(current.command?.paths, command.paths)
+      ) {
+        notice('command_not_sent', current?.reason ?? 'battle_changed');
+        return Promise.resolve();
+      }
       report(
         sendLiveReset(
           machine,

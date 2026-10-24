@@ -35,5 +35,28 @@ discovery, including a whole shopping plan as one leaf.
   scopes this feedback to the action's draft scope. Saved and live readback rules stay shared
   with the routine editor.
 
+- A2-7 AC2 (brief `backend/logs/reviews/ui-pages/a2-7-actions-brief.md`): `liveControls`
+  builds the live editor's fields. A path is a field only when `capabilities.controls` lists
+  it. When an addressable item of `runtime.actions` describes its routine (core/actions
+  `itemOfKey`), the path is a field only if that item's descriptor lists it as `live`; its kind
+  is the descriptor `type` (`bool` a switch, `number` a number). Any other type is listed in
+  `unrecognised`, shown with its code and never editable (a draft for it is `not_editable`).
+  Bounds come from core/actions `liveConstraints`; values stay those of the battle's
+  `effective` (gap G1), so drafts, Save, Discard and settlement are unchanged. A unit `s` is
+  seconds (the catalogue's unit and duration note); another unit is shown as sent with no
+  duration; no unit shows none. Routines no item describes (the S4 gates) and a battle without
+  a projection keep `controlGroups` as before. An item without a key is `unaddressable`
+  (`control_path_unpublished`), read-only.
+- A2-7 AC2: a reset sends `null`, so `liveFieldNullable` offers it only where the describing
+  field is `nullable` (undescribed fields as before); a single override of a field that is not
+  nullable keeps its row with its reset closed (`not_nullable`), and the reset of all leaves it
+  out.
+- A2-7 AC2 (root decision Q2): `liveSaveGate` and `liveResetGate` take the reason code of
+  core/actions `actionControlsBlocked`; after the battle-report check it closes live Save and
+  every reset with that code. The shopping plan editor passes the same block
+  (`selectShoppingLive`).
+
 `recordedRunFamilies.test.ts`, the Runs component tests and the Runs browser suites cover the
-`run_controls_live_reset_all_mixed` and `shopping_queue_bounds` recordings.
+`run_controls_live_reset_all_mixed` and `shopping_queue_bounds` recordings;
+`tests/core/actionsLiveFields.test.ts` and `tests/features/runs/actionsLiveEditor.test.tsx` cover
+AC2 over the landed r17b projection.

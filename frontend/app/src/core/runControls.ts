@@ -1,3 +1,9 @@
+import {
+  itemOfKey,
+  type ActionControlBlock,
+  type ActionFieldView,
+  type ActionsView,
+} from './actions.ts';
 import { controlApplication } from './battle.ts';
 import { sameJson } from './json.ts';
 import { planHolds, queuePlan } from './shoppingPlan.ts';
@@ -60,16 +66,27 @@ export function controlGroups(
   controls: unknown,
   settings: unknown,
   constraints: unknown,
+  /**
+   * A2-7 AC2: the kind a describing source names for a path (`skip`: not a field here); when
+   * it names none (undefined) the kind is read from the bounds and the value as before.
+   */
+  kindOf: (routine: string, field: string) => ControlField['kind'] | 'skip' | undefined = () =>
+    undefined,
 ): readonly ControlGroup[] {
   const groups = new Map<string, ControlField[]>();
   for (const path of stringList(controls) ?? []) {
     const parts = splitPath(path);
     if (parts === null) continue;
+    const named = kindOf(parts.routine, parts.field);
+    if (named === 'skip') continue;
     const raw = ownPath(settings, 'routines', parts.routine, parts.field);
     const bounds = own(constraints, path);
     const min = finite(own(bounds, 'min')) ?? null;
     const max = finite(own(bounds, 'max')) ?? null;
-    const isNumber = bounds !== undefined || (typeof raw === 'number' && parts.field !== 'enabled');
+    const isNumber =
+      named === undefined
+        ? bounds !== undefined || (typeof raw === 'number' && parts.field !== 'enabled')
+        : named === 'number';
     const field: ControlField = {
       path,
       routine: parts.routine,
@@ -84,6 +101,127 @@ export function controlGroups(
     groups.set(parts.routine, fields);
   }
   return [...groups].map(([routine, fields]) => ({ routine, fields }));
+}
+
+/** A2-7 AC2: the unit a descriptor gives a number: seconds (`s`), none, or another unit as sent. */
+export type ControlUnit =
+  | { readonly kind: 'seconds' }
+  | { readonly kind: 'none' }
+  | { readonly kind: 'other'; readonly text: unknown };
+
+/** What a live field's descriptor says beyond its kind and bounds (server text stays raw). */
+export interface LiveFieldDescription {
+  readonly label: unknown;
+  readonly unit: ControlUnit;
+  readonly nullable: boolean;
+}
+
+/** A listed control whose descriptor type the page does not know: shown, never editable. */
+export interface UnrecognisedField {
+  readonly path: string;
+  readonly routine: string;
+  readonly field: string;
+  readonly type: unknown;
+  readonly label: unknown;
+}
+
+/** An item whose controls cannot be addressed (brief gap G2: no key, not its action's only instance). */
+export interface UnaddressableItem {
+  readonly id: string;
+  readonly instance: string;
+  readonly label: unknown;
+}
+
+/** The live editor's fields of one battle (A2-7 AC2). */
+export interface LiveControls {
+  /** The editable fields, grouped by routine in the order `capabilities.controls` lists them. */
+  readonly groups: readonly ControlGroup[];
+  /** The descriptor of each described editable field, by control path. */
+  readonly descriptions: ReadonlyMap<string, LiveFieldDescription>;
+  /** The projection's label of each addressable item, by routine key. */
+  readonly itemLabels: ReadonlyMap<string, unknown>;
+  readonly unrecognised: readonly UnrecognisedField[];
+  readonly unaddressable: readonly UnaddressableItem[];
+}
+
+/** The descriptor field of `routines.<routine>.<field>`, when an addressable item describes it. */
+function describedField(
+  view: ActionsView | null,
+  routine: string,
+  field: string,
+): { readonly described: boolean; readonly field: ActionFieldView | undefined } {
+  const item = itemOfKey(view, routine);
+  return {
+    described: item !== undefined,
+    field: item?.fields.find((found) => found.path === field),
+  };
+}
+
+function unitOf(unit: string | null): ControlUnit {
+  if (unit === null) return { kind: 'none' };
+  return unit === 's' ? { kind: 'seconds' } : { kind: 'other', text: unit };
+}
+
+/**
+ * A2-7 AC2 (brief section 6 rule 4): the live fields of a battle. A path `capabilities.controls`
+ * lists is a field only as before (no other path is ever offered); when an addressable item of
+ * the projection describes its routine, the path is a field only if that item's descriptor
+ * lists it as `live`, and its kind is the descriptor's `type` (`bool` a switch, `number` a
+ * number; any other type is shown apart and never editable). Bounds come from `constraints`
+ * (core/actions liveConstraints gives the descriptor's); values from `settings` (the battle's
+ * `effective`, gap G1). Routines no item describes (the S4 gates) and a battle without a
+ * projection keep the fields as `controlGroups` reads them; a routine whose only items have no
+ * key offers no field (its read-only row says why).
+ */
+export function liveControls(
+  controls: unknown,
+  settings: unknown,
+  constraints: unknown,
+  view: ActionsView | null,
+): LiveControls {
+  const descriptions = new Map<string, LiveFieldDescription>();
+  const unrecognised: UnrecognisedField[] = [];
+  const groups = controlGroups(controls, settings, constraints, (routine, name) => {
+    const { described, field } = describedField(view, routine, name);
+    // An action whose every item names no addressable key is read-only (gap G2): none of its
+    // listed controls is offered beside its read-only row.
+    if (!described)
+      return view?.items.some((item) => item.key === null && item.id === routine) === true
+        ? 'skip'
+        : undefined;
+    if (field === undefined || !field.live) return 'skip';
+    const path = `routines.${routine}.${name}`;
+    if (field.type !== 'bool' && field.type !== 'number') {
+      unrecognised.push({ path, routine, field: name, type: field.type, label: field.label });
+      return 'skip';
+    }
+    descriptions.set(path, {
+      label: field.label,
+      unit: field.type === 'number' ? unitOf(field.unit) : { kind: 'none' },
+      nullable: field.nullable,
+    });
+    return field.type === 'bool' ? 'toggle' : 'number';
+  });
+  const itemLabels = new Map<string, unknown>();
+  const unaddressable: UnaddressableItem[] = [];
+  for (const item of view?.items ?? []) {
+    if (item.key === null)
+      unaddressable.push({ id: item.id, instance: item.instance, label: item.label });
+    else if (!itemLabels.has(item.key)) itemLabels.set(item.key, item.label);
+  }
+  return { groups, descriptions, itemLabels, unrecognised, unaddressable };
+}
+
+/**
+ * A2-7 AC2: an override of `routines.<routine>.<field>` may be reset to the battle's starting
+ * value (sent as null) unless an addressable item describes that field as not `nullable`.
+ */
+export function liveFieldNullable(
+  view: ActionsView | null,
+  routine: string,
+  field: string,
+): boolean {
+  return describedField(view, routine, field).field?.nullable ?? true;
 }
 
 /** Judge one draft value against its field: never clamped, never rounded. */
@@ -147,9 +285,19 @@ export type SavedSaveReason =
   | 'invalid_value'
   | 'no_changes';
 
+/**
+ * A2-7 AC2 (root decision Q2): a reason code of core/actions `actionControlsBlocked` that closes
+ * live changes while the battle's action readings are old, unreadable or of another context.
+ */
+export type ActionsBlockReason = ActionControlBlock;
+
 export type SaveGate<C> =
   | { readonly enabled: true; readonly command: C }
-  | { readonly enabled: false; readonly reason: SavedSaveReason | LiveSaveReason };
+  | {
+      readonly enabled: false;
+      /** A `SavedSaveReason`, a `LiveSaveReason` or an `ActionsBlockReason` (all codes). */
+      readonly reason: SavedSaveReason | LiveSaveReason | ActionsBlockReason;
+    };
 
 /** The body facts of a saved-settings save (POST /api/run-controls). */
 export interface SavedSave {
@@ -224,8 +372,10 @@ export function liveSaveGate<C extends Readonly<Record<string, unknown>>>(
   reportFresh: boolean,
   review: { readonly changes: C; readonly invalid: DraftReview['invalid'] },
   request: SaveRequest,
+  /** AC2: the shared actions block (`actionControlsBlocked`), or null. */
+  blocked: ActionsBlockReason | null = null,
 ): SaveGate<LiveSave<C>> {
-  const target = liveTarget(battle, reportFresh, request);
+  const target = liveTarget(battle, reportFresh, request, blocked);
   if (!target.enabled) return target;
   if (Object.keys(review.invalid).length > 0) return { enabled: false, reason: 'invalid_value' };
   if (Object.keys(review.changes).length === 0) return { enabled: false, reason: 'no_changes' };
@@ -287,8 +437,10 @@ export function liveResetGate(
   reportFresh: boolean,
   paths: readonly string[],
   request: SaveRequest,
+  /** AC2: the actions block (`actionControlsBlocked`), or null. */
+  blocked: ActionsBlockReason | null = null,
 ): SaveGate<LiveReset> {
-  const target = liveTarget(battle, reportFresh, request);
+  const target = liveTarget(battle, reportFresh, request, blocked);
   if (!target.enabled) return target;
   if (paths.length === 0) return { enabled: false, reason: 'no_changes' };
   return { enabled: true, command: { ...target.command, paths: [...paths] } };
@@ -313,6 +465,7 @@ function liveTarget(
   battle: unknown,
   reportFresh: boolean,
   request: SaveRequest,
+  blocked: ActionsBlockReason | null,
 ): SaveGate<LiveTarget> {
   if (battle === null || battle === undefined) return { enabled: false, reason: 'no_battle' };
   if (own(battle, 'status') !== 'active') return { enabled: false, reason: 'battle_not_active' };
@@ -331,6 +484,8 @@ function liveTarget(
   if (request === 'unresolved') return { enabled: false, reason: 'save_unresolved' };
   if (request === 'refreshing') return { enabled: false, reason: 'refreshing' };
   if (!reportFresh) return { enabled: false, reason: 'report_stale' };
+  // AC2 (root decision Q2): old, unreadable or foreign action readings close live changes.
+  if (blocked !== null) return { enabled: false, reason: blocked };
   // RUN-09, SR-6: only `applied_revision == control_revision` (core/battle.ts B5) opens a change.
   const application = controlApplication(battle);
   if (application === 'pending') return { enabled: false, reason: 'change_pending' };

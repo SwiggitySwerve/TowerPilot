@@ -35,7 +35,8 @@ async function openRuns(hash: string, options: PageOptions = {}) {
     config: () => e0Config(true),
     ...options,
   });
-  await page.advance(1_000);
+  // Drain the reads started by mounting; setup needs no elapsed polling time.
+  await page.advance();
   return page;
 }
 

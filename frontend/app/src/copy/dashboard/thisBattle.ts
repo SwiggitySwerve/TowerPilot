@@ -1,3 +1,4 @@
+import { actions } from '../actions.ts';
 import { entry, made } from '../entry.ts';
 import { durationText as duration } from '../format.ts';
 import { ageAgo } from './shell.ts';
@@ -100,7 +101,52 @@ export const thisBattle = {
     commands_unreadable: entry('Run now needs readable command status'),
     earlier_outcome_unknown: entry('An earlier Run now outcome is unknown'),
     sending: entry('Sending'),
+    /** A2-7 AC5 (root decision Q2): the action readings' own reasons, one sentence each. */
+    ...actions.blocked,
+    /** A2-7 AC3: an item's own refusal. */
+    control_path_unpublished: entry(
+      'Run now cannot reach this action',
+      'The automation does not say where the controls of this action live.',
+    ),
+    action_code_unrecognised: entry(
+      'Run now is off: this action reports a code this version does not recognise',
+    ),
+    run_now_unsupported: entry('Run now is not offered for this action'),
+    server_reason: entry('Run now is not offered for this action'),
   },
+  /** A2-7 AC5: why the action readings are not current, once above the rows. */
+  readings: {
+    action_report_old: entry(
+      'Action readings stopped updating',
+      'Every row shows what was last known. Run now stays off until the readings are current again.',
+    ),
+    action_schema_newer: entry(
+      'Action readings are read only',
+      'A newer version of TowerPilot wrote them. This version shows them and does not act on them.',
+    ),
+    action_context_mismatch: entry(
+      'Action readings are read only',
+      'They name another emulator, account or profile than this battle.',
+    ),
+    action_report_time_invalid: entry(
+      'Action readings have no readable time',
+      'Run now stays off until a reading says when it was made.',
+    ),
+  },
+  /** A2-7 AC1: the Next cell of an action row. */
+  itemNext: {
+    due: entry('Due'),
+    running: entry('Running'),
+    notReported: entry('Next not reported'),
+    notCurrent: entry('Not current'),
+    yielded: entry('Yielded to another action'),
+    blocked: entry('Blocked'),
+    unknown: entry('Unknown'),
+  },
+  notRecognised: entry('Not recognised'),
+  settings: entry('Settings'),
+  fromRunNow: entry('from Run now'),
+  outcome: entry('Outcome'),
   /** F-055: the routine blocker codes the runtime publishes (backend/interactions/ad_gems.py, runtime/battle_session.py). */
   blockers: {
     not_observed: entry('not seen on screen yet'),
@@ -163,6 +209,9 @@ export const thisBattle = {
       `Paused until ${new Date(n * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`,
     ),
   oldReport: (n: number) => made(`old report, ${ageAgo(n)}`),
+  runningFor: (n: number) => made(`Running, window ends in ${duration(n)}`),
+  lastKnown: (n: number) => made(`Last known, ${ageAgo(n)}`),
+  fieldNumber: (n: number) => made(n.toLocaleString('en-US', { maximumFractionDigits: 3 })),
   reported: (n: number) => made(`reported ${ageAgo(n)}`),
   reserve: (n: number) => made(`Keep a cash reserve of ${n.toLocaleString('en-US')}`),
   tapCap: (n: number) => made(`Tap cap: ${String(n)}`),

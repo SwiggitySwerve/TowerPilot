@@ -2,7 +2,7 @@ import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { axeCounts, bodiesTo, expectAppStyles, posts, WCAG_AA_TAGS } from './helpers.ts';
-import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
+import { dashboardCase, dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
 
 /**
  * F6-11 Runs leftovers in a real browser on the fake backend
@@ -405,5 +405,173 @@ for (const width of WIDTHS) {
     ]);
     await page.waitForTimeout(2_000);
     expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
+  });
+}
+
+/**
+ * A2-7 AC2: the live editor from the landed r17b projection reads (descriptor labels, units,
+ * bounds; the stale and test-local read-only cases), with axe, reflow, targets and screenshots
+ * a2-7-runs-<state>-<width>.png.
+ */
+const projection = (name: string) => dashboardPagesCase(`battle_actions_projection.${name}`);
+const LIVE_WRITE = dashboardCase('battle_actions.live_controls_accepted_command_requested');
+
+/** The duration notes that wrap onto a second line (root note: none at 390). */
+async function wrappedDurations(page: Page): Promise<string[]> {
+  return live(page)
+    .locator('.tp-run-cell__duration')
+    .evaluateAll((notes) =>
+      notes
+        .filter((note) => {
+          const size = Number.parseFloat(getComputedStyle(note).fontSize);
+          return note.getBoundingClientRect().height >= size * 2;
+        })
+        .map((note) => note.textContent),
+    );
+}
+
+for (const width of WIDTHS) {
+  test(`AC2 the live editor from the descriptors at ${String(width)}: labels, units, bounds, one exact POST, axe and screenshot`, async ({
+    page,
+  }) => {
+    const read = projection('values_carry_every_field_in_force');
+    await page.route('**/api/battles/active', (route) =>
+      route.fulfill({ status: read.status, json: read.body }),
+    );
+    await page.route('**/api/operations/*/live-controls', async (route) => {
+      // The fake backend records the request; the answer is the recorded receipt.
+      await route.fetch();
+      await route.fulfill({ status: LIVE_WRITE.status, json: LIVE_WRITE.body });
+    });
+    const problems = await openRunsLive(page, 'runs_live_reset_all', width);
+    const tap = live(page).getByRole('textbox', {
+      name: 'Floating gems Time between tap sets while seeking',
+      exact: true,
+    });
+    await expect(tap).toHaveValue('5');
+    await expect(
+      live(page).getByText('Retry spacing after unconfirmed taps', { exact: true }),
+    ).toBeVisible();
+    await expect(live(page).locator('.tp-run-columns')).toHaveCount(0);
+    await expect(live(page).locator('.tp-run-cell__duration')).not.toHaveCount(0);
+    expect(await wrappedDurations(page)).toEqual([]);
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
+    expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+    if (width === 390)
+      for (const button of await live(page).locator('.tp-run-editor__actions button:visible').all())
+        expect((await button.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await live(page).screenshot({
+      path: path.join(OUT, `a2-7-runs-descriptor-${String(width)}.png`),
+    });
+    // A value below the descriptor's 0.5 stays typed with its error and is never sent.
+    await tap.fill('0.4');
+    await expect(live(page).getByText('Below the allowed range', { exact: true })).toBeVisible();
+    await expect(
+      live(page).getByRole('button', { name: 'Save changes to this battle' }),
+    ).toHaveAttribute('aria-disabled', 'true');
+    await live(page).screenshot({
+      path: path.join(OUT, `a2-7-runs-out-of-bounds-${String(width)}.png`),
+    });
+    expect(await posts(page)).toEqual([]);
+    await tap.fill('5');
+    await live(page).getByRole('checkbox', { name: 'Floating gems Enabled', exact: true }).check();
+    await live(page).getByRole('button', { name: 'Save changes to this battle' }).click();
+    await expect
+      .poll(async () => (await posts(page)).filter((p) => p.path.endsWith('/live-controls')).length)
+      .toBe(1);
+    const [sent] = (await posts(page)).filter((p) => p.path.endsWith('/live-controls'));
+    expect((JSON.parse(sent?.body ?? '{}') as { changes?: unknown }).changes).toEqual(
+      (LIVE_WRITE.request.body as { changes: unknown }).changes,
+    );
+    await page.waitForTimeout(2_000);
+    expect((await posts(page)).filter((p) => p.path.endsWith('/live-controls'))).toHaveLength(1);
+    expect(problems).toEqual([]);
+  });
+
+  test(`AC2 old action readings at ${String(width)}: Save and resets closed with the visible reason, nothing sent`, async ({
+    page,
+  }) => {
+    const read = projection('projection_fails_later_the_last_projection_stays_and_its_stamps_stop');
+    await page.route('**/api/battles/active', (route) =>
+      route.fulfill({ status: read.status, json: read.body }),
+    );
+    const contextRead = page.waitForResponse(
+      (response) => new URL(response.url()).pathname === '/api/config',
+    );
+    const problems = await openRunsLive(page, 'runs_live_reset_all', width);
+    expect((await contextRead).status()).toBe(200);
+    // The first config response may follow a transport retry. Wait for the app to
+    // publish its confirmed context, then a battle request STARTED in that context.
+    // A response from a provisional request (or document networkidle) cannot prove this.
+    await expect
+      .poll(() => page.evaluate(() => sessionStorage.getItem('tp.context.v1')))
+      .not.toBeNull();
+    const battleRequest = await page.waitForRequest(
+      (request) =>
+        request.method() === 'GET' && new URL(request.url()).pathname === '/api/battles/active',
+    );
+    const battleResponse = await battleRequest.response();
+    expect(battleResponse?.status()).toBe(200);
+    await battleResponse?.finished();
+    await expect(
+      live(page)
+        .getByRole('button', { name: /starting value/u })
+        .first(),
+    ).toBeVisible();
+    const interval = live(page).getByRole('textbox', { name: 'Ad gems Interval', exact: true });
+    await interval.fill('600');
+    const save = live(page).getByRole('button', { name: 'Save changes to this battle' });
+    await expect(save).toHaveAttribute('aria-disabled', 'true');
+    await expect(
+      live(page)
+        .getByText('The action readings are old; Run now and changes wait for a current reading')
+        .first(),
+    ).toBeVisible();
+    const resets = await live(page)
+      .getByRole('button', { name: /starting value/u })
+      .all();
+    expect(resets.length).toBeGreaterThan(0);
+    for (const reset of resets) await expect(reset).toHaveAttribute('aria-disabled', 'true');
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
+    expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+    await live(page).screenshot({ path: path.join(OUT, `a2-7-runs-stale-${String(width)}.png`) });
+    await page.waitForTimeout(2_000);
+    expect(await posts(page)).toEqual([]);
+    expect(problems).toEqual([]);
+  });
+
+  test(`AC2 test-local read-only parts at ${String(width)}: an unaddressable item and an unknown field type, axe and screenshot`, async ({
+    page,
+  }) => {
+    // Test-local: the recorded read with a second ad gems instance that names no key, and the
+    // floating gems window described with a type this page does not know.
+    const read = projection('values_carry_every_field_in_force');
+    const items = (
+      read.body as { battle: { runtime: { actions: { items: Record<string, unknown>[] } } } }
+    ).battle.runtime.actions.items;
+    const other = structuredClone(items[0] ?? {});
+    delete other['key'];
+    other['instance'] = 'ad_gems_two';
+    items.push(other);
+    const floating = items.find((item) => item['key'] === 'floating_gems') as {
+      descriptor: { fields: Record<string, unknown>[] };
+    };
+    const window = floating.descriptor.fields.find((field) => field['path'] === 'window_sec');
+    if (window !== undefined) window['type'] = 'duration';
+    await page.route('**/api/battles/active', (route) =>
+      route.fulfill({ status: read.status, json: read.body }),
+    );
+    const problems = await openRunsLive(page, 'runs_live_reset_all', width);
+    await expect(live(page).locator('[data-unaddressable]')).toContainText(
+      "Its settings can't be changed here",
+    );
+    await expect(live(page).locator('[data-unrecognised]')).toContainText('Not recognised');
+    expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
+    expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
+    await live(page).screenshot({
+      path: path.join(OUT, `a2-7-runs-read-only-${String(width)}.png`),
+    });
+    expect(await posts(page)).toEqual([]);
+    expect(problems).toEqual([]);
   });
 }

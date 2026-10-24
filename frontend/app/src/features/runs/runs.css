@@ -155,8 +155,54 @@
 
 .tp-run-number {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--tp-space-1);
+}
+
+/*
+ * The Runs regions sit in a run-entry fieldset whose field rule stretches every text input to
+ * the full width (run-entry.css); a run number keeps its own width so its unit and duration stay
+ * beside it (root note, 390).
+ */
+.tp-run-cell .tp-run-number > .tp-run-input {
+  width: 6rem;
+}
+
+/* Root note (390): "= 12 m" is one unbroken note; it moves below the input whole if it must. */
+.tp-run-cell__duration {
+  white-space: nowrap;
+}
+
+/* A2-7 AC2: descriptor labels; every field shows its own name, in descriptor order. */
+.tp-run-fields {
+  grid-column: 2 / 6;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  align-items: start;
+  gap: var(--tp-space-2);
+  min-width: 0;
+}
+
+.tp-run-fields > .tp-run-cell[data-field] {
+  grid-column: auto;
+  grid-row: auto;
+  justify-content: flex-start;
+}
+
+.tp-run-cell__name {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+  overflow-wrap: anywhere;
+}
+
+.tp-run-row--read-only .tp-run-row__reason {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-1) var(--tp-space-2);
+  font-size: var(--tp-font-size-13);
 }
 
 .tp-run-input {
@@ -263,7 +309,8 @@
   .tp-run-row__mark {
     grid-column: 1 / -1;
   }
-  .tp-run-input {
+  .tp-run-input,
+  .tp-run-cell .tp-run-number > .tp-run-input {
     width: 5rem;
   }
   /* Brief section 5: Save and its neighbours stack as full-width touch targets. */
@@ -277,6 +324,14 @@
   .tp-run-cell__label {
     color: var(--tp-color-text-muted);
     font-size: var(--tp-font-size-13);
+  }
+  /* A2-7 AC2 (brief section 8, 390): each described field is a labelled block of its own. */
+  .tp-run-fields,
+  .tp-run-row--read-only .tp-run-row__reason {
+    grid-column: 1 / -1;
+  }
+  .tp-run-fields {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

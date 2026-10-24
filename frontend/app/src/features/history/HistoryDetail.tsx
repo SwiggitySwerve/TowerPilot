@@ -3,6 +3,7 @@ import type { ServerText } from '../../copy/server.ts';
 import type { CopyText, CopyNode } from '../../copy/text.ts';
 import type { HistoryDetailVM } from '../../store/selectors/history.ts';
 import { Disclosure } from '../../ui/Disclosure.tsx';
+import { ActionExecutions } from './ActionExecutions.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
 
 export function HistoryText({ value }: { readonly value: ServerText<'detail'> | null }) {
@@ -33,7 +34,13 @@ function Evidence({
 }
 
 /** Presentation of checked historical evidence. No collection arithmetic or outcome inference. */
-export function HistoryDetail({ vm }: { readonly vm: HistoryDetailVM }) {
+export function HistoryDetail({
+  vm,
+  onOlder,
+}: {
+  readonly vm: HistoryDetailVM;
+  readonly onOlder: () => void;
+}) {
   return (
     <div className="tp-history__evidence">
       <h3>{vm.name === null ? t.unnamed.short : <ServerValue kind="name" value={vm.name} />}</h3>
@@ -149,6 +156,7 @@ export function HistoryDetail({ vm }: { readonly vm: HistoryDetailVM }) {
           <Evidence value={vm.collectionRaw} label={t.collectionRecord.short} />
         </Disclosure>
       </section>
+      <ActionExecutions vm={vm.executions} onOlder={onOlder} />
       <section aria-label={t.gaps.short}>
         <h3>{t.gaps.short}</h3>
         <p className="tp-history__note">{t.gapNote.short}</p>

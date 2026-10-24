@@ -8,7 +8,5 @@ src/contract/generated/
 # Markdown follows the repository's own format (.claude/skills/markdown-format), which
 # puts the metadata blockquote directly under the H1; Prettier would separate them.
 *.md
-# A2-7: the r17b candidate families copied byte for byte (their family hashes are tested), and the
-# R1/R2 output dumps the dump test compares byte for byte.
-e2e/r17b-candidate-samples.json
+# A2-7 reviewed output dumps are compared byte for byte by the dump test.
 tests/store/__dumps__/

@@ -112,7 +112,9 @@
   margin-block: var(--tp-space-2);
 }
 @media (max-width: 480px) {
-  .tp-battle__queue-entry .tp-button {
+  .tp-battle__queue-entry .tp-button,
+  .tp-battle__action .tp-button,
+  .tp-shopping-try__action .tp-button {
     min-height: 44px;
   }
 }
@@ -166,4 +168,36 @@
 .tp-battle__setting > span:not(.tp-battle__column-label),
 .tp-battle__header > span > span {
   margin-inline-start: 0.3em;
+}
+
+/* A2-7 AC1: an action's Settings, one "label value unit" line each; long labels wrap. */
+.tp-battle__settings {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tp-battle__settings > li {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.3em;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* The one Run now reason the region's buttons share, above the rows (never one per button). */
+.tp-battle__shared-reason {
+  font-size: var(--tp-font-size-small);
+  margin-block-end: var(--tp-space-1);
+}
+/* Rule 6: "Not recognised" with its Why, in line with the cell's other words. */
+.tp-battle__inline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.3em;
+}
+.tp-battle__outcome {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.3em;
 }

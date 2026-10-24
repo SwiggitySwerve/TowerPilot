@@ -1,5 +1,6 @@
+import { actions } from './actions.ts';
 import { entry, made } from './entry.ts';
-import { durationText, serverDateText } from './format.ts';
+import { durationText, fractionalDurationText, serverDateText } from './format.ts';
 
 function number(value: number): string {
   return String(value);
@@ -17,9 +18,15 @@ function dueText(since: number | null): string {
 function stamp(at: number, since: number | null): string {
   return `${serverDateText(at)} (${when(since)})`;
 }
-/** The appearance interval as reported, to a tenth of a second (legacy run-workspace.js:264). */
-function gapText(seconds: number): string {
-  return Number.isInteger(seconds) ? durationText(seconds) : `${seconds.toFixed(1)} s`;
+/** A number's allowed range in words, without its unit (one rule for `range` and `bounds`). */
+function rangeWords(min: number | null, max: number | null): string {
+  return min !== null && max !== null
+    ? `${number(min)} to ${number(max)}`
+    : min !== null
+      ? `at least ${number(min)}`
+      : max !== null
+        ? `at most ${number(max)}`
+        : 'range not reported';
 }
 function capital(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
@@ -45,6 +52,16 @@ export const runs = {
     prepared: entry('The battle has not started yet; live settings open when it is active'),
     save: entry('Save changes to this battle'),
     check: entry('Check this battle'),
+    /** A2-7 AC2 (gap G2): an item whose control paths the battle does not publish. */
+    unaddressable: entry(
+      "Its settings can't be changed here",
+      'The battle runs more than one copy of this action and does not say which settings belong to this copy, so no change is offered.',
+    ),
+    /** A2-7 AC2 (brief section 6 rule 6): a setting whose kind of value this page does not know. */
+    unrecognised: entry(
+      'Not recognised',
+      "The battle describes this setting with a kind of value this page doesn't know, so it is shown but can't be changed here.",
+    ),
     boundsUnknown: entry(
       'Allowed ranges not read yet',
       'The ranges come from the saved settings of this battle run; the server checks every value either way.',
@@ -106,10 +123,11 @@ export const runs = {
         afterSince: number | null,
         byAt: number,
         bySince: number | null,
+        /** The appearance interval as reported, to a tenth of a second (legacy run-workspace.js:264). */
         gapSec: number,
       ) =>
         made(
-          `After ${stamp(afterAt, afterSince)}, seen by ${stamp(byAt, bySince)}; ${gapText(gapSec)} between looks`,
+          `After ${stamp(afterAt, afterSince)}, seen by ${stamp(byAt, bySince)}; ${fractionalDurationText(gapSec)} between looks`,
         ),
       lastLook: entry('Last look at the battle'),
       noLook: entry('No look recorded'),
@@ -174,15 +192,13 @@ export const runs = {
   seconds: entry('s'),
   notReported: entry('Not reported'),
   range: (min: number | null, max: number | null) =>
-    made(
-      min !== null && max !== null
-        ? `${number(min)} to ${number(max)} s`
-        : min !== null
-          ? `at least ${number(min)} s`
-          : max !== null
-            ? `at most ${number(max)} s`
-            : 'range not reported',
-    ),
+    made(`${rangeWords(min, max)}${min !== null || max !== null ? ' s' : ''}`),
+  /**
+   * A2-7 AC2: the bounds of a number whose unit is not seconds; when its unit (server text)
+   * follows, the bounds end with the space before it.
+   */
+  bounds: (min: number | null, max: number | null, unitFollows: boolean) =>
+    made(`${rangeWords(min, max)}${unitFollows && (min !== null || max !== null) ? ' ' : ''}`),
   duration: (seconds: number) => made(`= ${durationText(seconds)}`),
   edited: entry('Edited, not saved'),
   invalid: {
@@ -208,6 +224,10 @@ export const runs = {
     battle_not_active: entry('The battle has not started yet'),
     report_stale: entry('Waiting for a fresh battle report'),
     change_pending: entry('Waiting for the last change to apply'),
+    /** A2-7 AC2: the reset of a field the descriptor does not mark nullable. */
+    not_nullable: entry('This setting has no starting value to go back to'),
+    /** A2-7 AC2 (root decision Q2): core/actions actionControlsBlocked codes. */
+    ...actions.blocked,
   },
   outcomes: {
     lead: entry('Last request:'),

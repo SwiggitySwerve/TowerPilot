@@ -6,7 +6,7 @@ import { historyDetailAnswerSchema, historyListAnswerSchema } from '../contract/
 import { HISTORY_PAGE_SIZE } from '../core/history.ts';
 import { readEndpoint, type ReadOutcome } from './client.ts';
 import { fetchTransport, type Transport } from './transport.ts';
-import { bodyMembers, type Endpoint } from './wire.ts';
+import { bodyMembers, ENDPOINTS, type Endpoint } from './wire.ts';
 
 export interface HistoryTarget {
   readonly instance: string;
@@ -25,6 +25,13 @@ export interface HistoryReader {
     signal: AbortSignal,
   ) => Promise<ReadOutcome>;
   readonly detail: (target: HistoryTarget, id: string, signal: AbortSignal) => Promise<ReadOutcome>;
+  /** A2-7 AC4: the executions of one battle older than the cursor a read named as `next_before`. */
+  readonly executionsBefore: (
+    target: HistoryTarget,
+    battleId: string,
+    before: string,
+    signal: AbortSignal,
+  ) => Promise<ReadOutcome>;
 }
 
 const listEndpoint: Endpoint = {
@@ -61,6 +68,13 @@ export function createHistoryReader(transport: Transport = fetchTransport): Hist
         transport,
         detailEndpoint,
         `/api/battles/${encodeURIComponent(id)}?instance=${encodeURIComponent(target.instance)}`,
+        signal,
+      ),
+    executionsBefore: (target, battleId, before, signal) =>
+      readEndpoint(
+        transport,
+        ENDPOINTS.actionExecutions,
+        `/api/actions/executions?battle_id=${encodeURIComponent(battleId)}&before=${encodeURIComponent(before)}&instance=${encodeURIComponent(target.instance)}`,
         signal,
       ),
   };

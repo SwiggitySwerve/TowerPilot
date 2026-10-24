@@ -1,6 +1,25 @@
-import { COMPAT_ROUTINES, isShoppingAction, type ActionKey } from '../../core/actions.ts';
+import {
+  ACTION_EFFECTS,
+  ACTION_RESULTS,
+  actionNext,
+  actionOutcome,
+  actionsReading,
+  actionsView,
+  COMPAT_ROUTINES,
+  fieldType,
+  fieldValue,
+  isShoppingAction,
+  itemRunNowRefusal,
+  runNowReason,
+  settingFields,
+  type ActionCode,
+  type ActionItemView,
+  type ActionKey,
+  type ActionLastView,
+  type ActionsView,
+} from '../../core/actions.ts';
 import { battleIdentity, battleView } from '../../core/battle.ts';
-import { commandView, type CommandView } from '../../core/commands.ts';
+import { commandView, commandViewTerminal, type CommandView } from '../../core/commands.ts';
 import { entries, finite, id, list, own, ownPath, revision, text } from '../../core/read.ts';
 import {
   actionGate,
@@ -41,9 +60,83 @@ export interface RoutineRowVM {
   readonly runNow: CommandVM<RunNowCommand>;
 }
 
+/** A server code for its cell: one this build reads, none sent, or one it does not read (as sent). */
+export type ActionCodeVM<K extends string> =
+  | { readonly kind: 'known'; readonly code: K }
+  | { readonly kind: 'unreported' }
+  | { readonly kind: 'unrecognised'; readonly code: ServerText<'id'> | null };
+
+/** AC1 (rule 2): an item's last execution: the result and effect this build reads, its age and reason. */
+export interface ActionLastVM {
+  readonly result: ActionCodeVM<(typeof ACTION_RESULTS)[number]>;
+  readonly effect: ActionCodeVM<(typeof ACTION_EFFECTS)[number]>;
+  readonly ageSec: number | null;
+  readonly reason: ServerText<'message'> | null;
+  /** Started by a Run now command. */
+  readonly manual: boolean;
+}
+
+/** AC1/AC5: the Next cell of an item row. */
+export type ActionNextVM =
+  | { readonly kind: 'off' }
+  | { readonly kind: 'running'; readonly endsInSec: number | null }
+  | { readonly kind: 'blocker'; readonly code: ServerText<'message'> | null }
+  | { readonly kind: 'due' }
+  | { readonly kind: 'in'; readonly sec: number }
+  | { readonly kind: 'not_reported' }
+  | { readonly kind: 'state'; readonly code: 'yielded' | 'blocked' | 'unknown' }
+  /** Rule 6: a state this build does not read; the code as sent goes under Why. */
+  | { readonly kind: 'unrecognised'; readonly code: ServerText<'id'> | null }
+  /** AC5: the projection stopped advancing; the row is what was known `ageSec` ago. */
+  | { readonly kind: 'last_known'; readonly ageSec: number }
+  /** AC5: a reading that is not current (read-only, unreadable time, or an old battle report). */
+  | { readonly kind: 'not_current' }
+  /** A prepared battle: nothing is scheduled before its waves start. */
+  | { readonly kind: 'prepared' };
+
+/** AC1: one descriptor field other than the switch, with its value in force. */
+export interface ActionSettingVM {
+  readonly path: string;
+  readonly label: ServerText<'name'> | null;
+  readonly unit: ServerText<'name'> | null;
+  /** A number or On/Off as in force, or null when not reported. */
+  readonly value: number | boolean | null;
+  /** Rule 6: the field's type when this build does not read it (its value is then not shown). */
+  readonly unrecognisedType: ServerText<'id'> | null;
+}
+
+/** AC1/AC3: one row of This battle per `runtime.actions` item, in server order. */
+export interface ActionRowVM {
+  /** The row's key: `<id>/<instance>`. */
+  readonly key: string;
+  /** The item's routine key (its Run now token), or null when it cannot be addressed. */
+  readonly token: string | null;
+  readonly label: ServerText<'name'> | null;
+  /** The action id as sent, shown when the item has no label. */
+  readonly code: ServerText<'id'> | null;
+  readonly enabled: boolean | null;
+  readonly settings: readonly ActionSettingVM[];
+  readonly next: ActionNextVM;
+  readonly last: ActionLastVM | null;
+  readonly runNow: CommandVM<RunNowCommand>;
+  /** The descriptor's own reason when it offers no Run now (`run_now` is a string). */
+  readonly runNowServerReason: ServerText<'message'> | null;
+  readonly shopping: boolean;
+}
+
 export interface ThisBattleVM {
   readonly header: ChipVM;
+  /** S5 compatibility rows: only when the battle publishes no `runtime.actions`. */
   readonly routines: readonly RoutineRowVM[];
+  /** AC1: one row per `runtime.actions` item, or null when the battle publishes no projection. */
+  readonly actions: readonly ActionRowVM[] | null;
+  /** AC5: why the action readings are not current, shown once above the rows (null: current). */
+  readonly actionsNotice: { readonly reason: string; readonly ageSec: number | null } | null;
+  /**
+   * The one reason every Run now and Try once button shares, shown once for the region (each
+   * disabled button's description points at it); null when they differ or some are enabled.
+   */
+  readonly sharedReason: string | null;
   readonly commands: readonly BattleCommandVM[];
   readonly noTrackedBattle: boolean;
   readonly battleKey: string;
@@ -111,20 +204,60 @@ export interface BattleCommandVM extends ChipVM {
     readonly reason: ServerText<'message'> | null;
     readonly confirmedPurchases: number | null;
   };
+  /**
+   * AC3: the execution this Run now started, from the item whose `last.command_id` names this
+   * command (B4), once the command is finished (K4 to K6); null when no item links it. Never
+   * inferred from the command's own state.
+   */
+  readonly outcome: ActionLastVM | null;
 }
 
-/** Project a command read or receipt through the same command and routine rules. */
+function codeVM<K extends string>(code: ActionCode<K>): ActionCodeVM<K> {
+  return code.kind === 'unrecognised' ? { kind: 'unrecognised', code: codeText(code.raw) } : code;
+}
+
+function lastVM(last: ActionLastView, age: (at: number | null) => number | null): ActionLastVM {
+  const outcome = actionOutcome(last);
+  return {
+    result: codeVM(outcome.result),
+    effect: codeVM(outcome.effect),
+    ageSec: age(last.finishedAt),
+    reason: fromServer('message', last.reason),
+    manual: last.trigger === 'manual',
+  };
+}
+
+/** The raw code as display text (a non-string code shows as JSON; an absent one as nothing). */
+function codeText(raw: unknown): ServerText<'id'> | null {
+  return fromServer('id', typeof raw === 'string' ? raw : JSON.stringify(raw));
+}
+
+/**
+ * Project a command read or receipt through the same command and routine rules. With a
+ * projection, an action command's outcome is the execution it started (AC3); without one, the
+ * S5 compatibility rows read the command's evidence as before.
+ */
 function commandRow(
   view: CommandView,
   index: number,
   age: (at: number | null) => number | null,
+  projection: ActionsView | null,
 ): BattleCommandVM {
   const action = text(own(view.payload, 'action')) ?? null;
-  const routine = COMPAT_ROUTINES.find((routine) => routine === action);
+  const routine =
+    projection === null ? COMPAT_ROUTINES.find((routine) => routine === action) : undefined;
   const result =
     routine === undefined || view.kind !== 'action'
       ? null
       : routineResult({ routines: { [routine]: { last_outcome: view.evidence } } }, routine);
+  const commandId = text(view.id);
+  const linked =
+    projection === null ||
+    view.kind !== 'action' ||
+    commandId === undefined ||
+    !commandViewTerminal(view)
+      ? undefined
+      : projection.items.find((item) => item.last?.commandId === commandId)?.last;
   return {
     ...chipVM(view.decision),
     key: text(view.id) ?? String(index),
@@ -153,6 +286,7 @@ function commandRow(
       reason: fromServer('message', result?.reason),
       confirmedPurchases: result?.confirmedPurchases ?? null,
     },
+    outcome: linked === undefined || linked === null ? null : lastVM(linked, age),
   };
 }
 
@@ -169,6 +303,13 @@ export function selectThisBattle(state: DashboardState): ThisBattleVM {
   const body = read?.outcome.kind === 'answered' ? read.outcome.body : undefined;
   const battle = own(body, 'battle');
   const header = chipVM(battleView(contextRead, shown, elapsed));
+  const projection = actionsView(battle);
+  const reading =
+    contextRead?.kind === 'answered' && contextRead.sameContext
+      ? actionsReading(body, elapsed)
+      : null;
+  // AC5: the compatibility rows (no projection) publish no readings to block on.
+  const rowReading = projection === null ? null : reading;
   const intents = contextIntents(state);
   const serverTime = finite(own(body, 'server_time'));
   const age = (timestamp: number | null): number | null =>
@@ -225,10 +366,16 @@ export function selectThisBattle(state: DashboardState): ThisBattleVM {
             action,
             epoch: state.epoch,
           };
+    const reason = runNowReason({
+      gate: gate.enabled ? null : gate.reason,
+      reading: rowReading,
+      refusal: null,
+      sending: false,
+    });
     return commandVM(
       true,
-      gate.enabled && command !== null,
-      gate.reason === 'ready' ? null : gate.reason,
+      reason === null && command !== null,
+      reason,
       shoppingOptions.pendingAction,
       command,
     );
@@ -270,11 +417,108 @@ export function selectThisBattle(state: DashboardState): ThisBattleVM {
           : runNowAnswer({ kind: 'answered', status: answer.status, body: answer.body });
       return {
         ...line,
-        command: settled?.kind === 'recorded' ? commandRow(settled.command, 0, age) : null,
+        command:
+          settled?.kind === 'recorded' ? commandRow(settled.command, 0, age, projection) : null,
       };
     });
-  return {
+  const runtimeTime = finite(ownPath(battle, 'runtime', 'server_time'));
+  const runtimeNow = runtimeTime === undefined ? null : runtimeTime + elapsed;
+  const nextOf = (item: ActionItemView): ActionNextVM => {
+    if (own(battle, 'status') === 'prepared') return { kind: 'prepared' };
+    if (reading?.kind === 'old') return { kind: 'last_known', ageSec: reading.ageSec };
+    if (reading?.kind !== 'current' || runtimeNow === null) return { kind: 'not_current' };
+    const next = actionNext(item, runtimeNow);
+    switch (next.kind) {
+      case 'blocker':
+        return { kind: 'blocker', code: fromServer('message', next.code) };
+      case 'unrecognised':
+        return { kind: 'unrecognised', code: codeText(next.raw) };
+      default:
+        return next;
+    }
+  };
+  const actionRow = (item: ActionItemView): ActionRowVM => {
+    const token = item.key;
+    const matching = intents.filter(
+      (r) =>
+        r.kind === 'run_now' &&
+        token !== null &&
+        shown !== null &&
+        r.meta.operationId === shown.operationId &&
+        r.meta.battleId === shown.id &&
+        r.meta.generation === shown.generation &&
+        r.meta.action === token,
+    );
+    const sending = matching.some((r) => r.phase === 'sending');
+    const gate =
+      token === null
+        ? null
+        : actionGate(
+            contextRead,
+            shown,
+            token,
+            matching.some((r) => r.phase === 'unconfirmed' && settledByRead(state, r) === null),
+            elapsed,
+            isShoppingAction(token) ? shoppingOptions : {},
+          );
+    const refusal = itemRunNowRefusal(item);
+    const reason = runNowReason({
+      gate: gate === null || gate.enabled ? null : gate.reason,
+      reading: rowReading,
+      refusal,
+      sending,
+    });
+    const expectedRevision = revision(own(battle, 'control_revision'));
+    const command: RunNowCommand | null =
+      shown === null || expectedRevision === undefined || token === null
+        ? null
+        : {
+            operationId: shown.operationId,
+            battleId: shown.id,
+            generation: shown.generation,
+            expectedRevision,
+            action: token,
+            epoch: state.epoch,
+          };
+    return {
+      key: `${item.id}/${item.instance}`,
+      token,
+      label: fromServer('name', item.label),
+      code: fromServer('id', item.id),
+      enabled: item.enabled,
+      settings: settingFields(item).map((field) => {
+        const value = fieldValue(item, battle, field.path);
+        const type = fieldType(field);
+        return {
+          path: field.path,
+          label: fromServer('name', field.label),
+          unit: fromServer('name', field.unit),
+          value: typeof value === 'boolean' ? value : (finite(value) ?? null),
+          unrecognisedType: type.kind === 'known' ? null : codeText(field.type),
+        };
+      }),
+      next: nextOf(item),
+      last: item.last === null ? null : lastVM(item.last, age),
+      runNow: commandVM(true, reason === null && command !== null, reason, sending, command),
+      runNowServerReason: refusal?.kind === 'server' ? fromServer('message', refusal.reason) : null,
+      shopping: token !== null && isShoppingAction(token),
+    };
+  };
+  const actionRows =
+    projection === null || header.row === 'B2' ? null : projection.items.map(actionRow);
+  const actionsNotice =
+    actionRows === null || reading === null
+      ? null
+      : reading.kind === 'old'
+        ? { reason: 'action_report_old', ageSec: reading.ageSec }
+        : reading.kind === 'read_only' ||
+            (reading.kind === 'unknown' && reading.reason === 'action_report_time_invalid')
+          ? { reason: reading.reason, ageSec: null }
+          : null;
+  const vm: Omit<ThisBattleVM, 'sharedReason'> = {
     header,
+    actions: actionRows,
+    actionsNotice,
     tryOnce,
     battleKey: shown === null ? 'untracked' : `${shown.id}/${shown.generation}`,
     runKey: id(own(battle, 'blueprint')) ?? null,
@@ -312,7 +556,7 @@ export function selectThisBattle(state: DashboardState): ThisBattleVM {
     },
     noTrackedBattle: header.row === 'B2',
     routines:
-      header.row === 'B2'
+      header.row === 'B2' || projection !== null
         ? []
         : COMPAT_ROUTINES.map((routine): RoutineRowVM => {
             const matching = intents.filter(
@@ -375,7 +619,34 @@ export function selectThisBattle(state: DashboardState): ThisBattleVM {
             };
           }),
     commands: (list(ownPath(body, 'battle', 'commands')) ?? []).map((row, index) =>
-      commandRow(commandView(row), index, age),
+      commandRow(commandView(row), index, age, projection),
     ),
   };
+  return { ...vm, sharedReason: sharedReason(vm) };
+}
+
+/**
+ * The reason every shown Run now and Try once button shares, or null. Try once buttons are shown
+ * only with a shopping row. A descriptor's own reason and Sending stay with their row.
+ */
+function sharedReason(vm: Omit<ThisBattleVM, 'sharedReason'>): string | null {
+  const rows = vm.actions ?? vm.routines;
+  const shopping =
+    vm.actions === null
+      ? vm.routines.some((row) => isShoppingAction(row.routine))
+      : vm.actions.some((row) => row.shopping);
+  const buttons = [
+    ...rows.map((row) => row.runNow),
+    ...(shopping ? vm.tryOnce.map((item) => item.button) : []),
+  ];
+  const reasons = new Set(buttons.map((button) => (button.enabled ? null : button.reason)));
+  const [reason] = [...reasons];
+  return buttons.length > 1 &&
+    reasons.size === 1 &&
+    reason !== undefined &&
+    reason !== null &&
+    reason !== 'server_reason' &&
+    reason !== 'sending'
+    ? reason
+    : null;
 }

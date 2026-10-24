@@ -1,4 +1,4 @@
-import { act, fireEvent, within } from '@testing-library/react';
+import { fireEvent, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { expect, it, vi } from 'vitest';
 import { ThisBattle } from '../../../src/features/dashboard/thisBattle/ThisBattle.tsx';
@@ -219,9 +219,7 @@ it('SQ8 unknown upgrade never repeats spending automatically and an explicit rep
       unknown.request.body,
       unknown.request.body,
     ]);
-    await act(async () => {
-      await page.advance(100);
-    });
+    await page.advance(100);
     page.view.unmount();
     page.data.stop();
   } finally {

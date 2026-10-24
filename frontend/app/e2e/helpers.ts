@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module';
-import { expect, type Page } from '@playwright/test';
+import { expect, type Page, type Request } from '@playwright/test';
 
 /** Shared steps of the Dashboard browser checks against the fake backend (e2e/fake-backend.mjs). */
 
@@ -66,34 +66,86 @@ export const WCAG_AA_TAGS: readonly string[] = [
   'wcag22aa',
 ];
 
+/** Read metadata only; response.body() can refetch a body Chromium no longer retains. */
+async function stylesheetRequest(request: Request, hrefs: ReadonlySet<string>) {
+  let url: string | null = null;
+  try {
+    url = request.url();
+    if (!hrefs.has(url)) return null;
+    // Only ask for an already-started response. Never wait for pending headers. The
+    // request's failure/responseEnd fields need prior event listeners, so omit them.
+    const response = request.timing().responseStart >= 0 ? await request.response() : null;
+    return response === null
+      ? { url, responseMetadata: 'not observed' }
+      : { url, status: response.status(), headers: response.headers() };
+  } catch (error) {
+    return { url, metadataError: String(error) };
+  }
+}
+
 /**
  * Fail unless the built app stylesheet applies to the page. On an unstyled page axe and the
  * geometry checks report contrast, target-size and overflow faults the app does not have, so
  * every such check runs this first. Each linked stylesheet must have loaded with rules.
  */
 export async function expectAppStyles(page: Page): Promise<void> {
-  const sheets = await page.evaluate(() =>
-    [...document.querySelectorAll<HTMLLinkElement>('link[rel~="stylesheet"]')].map((link) => {
-      let rules: number;
-      try {
-        rules = link.sheet?.cssRules.length ?? 0;
-      } catch {
-        rules = 0;
-      }
-      return { href: link.href, rules };
-    }),
-  );
+  const state = await page.evaluate(() => ({
+    url: location.href,
+    readyState: document.readyState,
+    clocks: {
+      timeOrigin: performance.timeOrigin,
+      now: performance.now(),
+      dateNow: Date.now(),
+    },
+    sheets: [...document.querySelectorAll<HTMLLinkElement>('link[rel~="stylesheet"]')].map(
+      (link) => {
+        let rules = 0;
+        let cssomError: string | null = null;
+        try {
+          rules = link.sheet?.cssRules.length ?? 0;
+        } catch (error) {
+          cssomError = String(error);
+        }
+        return {
+          href: link.href,
+          rules,
+          hasSheet: link.sheet !== null,
+          cssomError,
+          disabled: link.disabled,
+          media: link.media,
+        };
+      },
+    ),
+    resources: performance
+      .getEntriesByType('resource')
+      .filter(
+        (entry) => entry instanceof PerformanceResourceTiming && entry.initiatorType === 'link',
+      )
+      .map((entry) => entry.toJSON() as unknown),
+  }));
+  const { sheets } = state;
   const app = sheets.filter((sheet) => /\/ui\/app\/assets\/[^/]+\.css$/u.test(sheet.href));
   if (app.length > 0 && sheets.every((sheet) => sheet.rules > 0)) return;
-  // Name the browser's own reason (for example net::ERR_NO_BUFFER_SPACE) when it still holds the
-  // request; page.requests() keeps only the most recent ones.
+  // Metadata failure must not replace the primary CSSOM/resource evidence.
   const hrefs = new Set(sheets.map((sheet) => sheet.href));
-  const reasons = (await page.requests())
-    .filter((request) => hrefs.has(request.url()))
-    .map((request) => `${request.url()}: ${request.failure()?.errorText ?? 'no load failure'}`);
+  let retained;
+  try {
+    const requests = (
+      await Promise.all((await page.requests()).map((request) => stylesheetRequest(request, hrefs)))
+    ).filter((request) => request !== null);
+    retained = { requests };
+  } catch (error) {
+    retained = { lookupError: String(error) };
+  }
   throw new Error(
-    `app stylesheet not loaded: ${JSON.stringify(sheets)}; ` +
-      (reasons.length > 0 ? reasons.join('; ') : 'the stylesheet request is no longer retained'),
+    `app stylesheet not loaded: ${JSON.stringify(state)}; ` +
+      `retained request metadata: ${JSON.stringify(retained)}; ` +
+      'request failure/completion events: not observed by this diagnostic; ' +
+      'response bodies: not read (body retrieval can refetch); ' +
+      'retention limits: page.requests() keeps only recent requests; resource timing has a ' +
+      'finite buffer and entries may be absent, evicted or cleared. Missing entries do not ' +
+      'prove no request or pending I/O. Resource times are relative to clocks.timeOrigin; ' +
+      'clocks.dateNow is epoch milliseconds.',
   );
 }
 

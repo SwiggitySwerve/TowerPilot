@@ -162,6 +162,21 @@ const e0Samples = Object.fromEntries(
   ]),
 );
 
+/**
+ * A2-7 AC1/AC3/AC5: This battle rendered from a landed r17b projection recording.
+ * @param {string} recorded the case of battle_actions_projection @returns {Scenario}
+ */
+function actionScenario(recorded) {
+  return {
+    description: `This battle from battle_actions_projection.${recorded} (landed r17b).`,
+    harvest: 'owned_by_run_gathers',
+    get: {
+      battlesActive: `r17b:battle_actions_projection.${recorded}`,
+      battles: 'battles_history.ended_with_final_wave',
+    },
+  };
+}
+
 /** @type {Readonly<Record<string, Scenario>>} */
 export const SCENARIOS = Object.freeze({
   ...PREVIEW_SCENARIOS,
@@ -1230,6 +1245,14 @@ export const SCENARIOS = Object.freeze({
       battles: 'battles_history.ended_with_final_wave',
     },
   },
+  a2_7_actions_idle: actionScenario('idle_ad_and_floating_gems_due_shopping_waiting'),
+  a2_7_actions_finished: actionScenario('a_finished_execution_is_the_last_of_its_instance'),
+  a2_7_actions_running: actionScenario('ad_window_open_is_running'),
+  a2_7_actions_run_now: actionScenario('run_now_completed_links_its_execution'),
+  a2_7_actions_stale: actionScenario(
+    'projection_fails_later_the_last_projection_stays_and_its_stamps_stop',
+  ),
+  a2_7_actions_newer: actionScenario('projection_written_by_a_newer_driver_is_read_only'),
   runs_live_overrides: {
     description:
       'Runs page: an active battle with a controls change partly applied (marks Changed and Waiting).',

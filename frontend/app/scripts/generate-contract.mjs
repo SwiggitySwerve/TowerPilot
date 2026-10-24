@@ -15,8 +15,6 @@ import {
 
 const APP = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const GENERATED_DIR = path.join(APP, 'src/contract/generated');
-/** The r17b candidate's action families, copied unchanged (e2e/r17b-candidate-samples.mjs). */
-export const R17B_SAMPLES_FILE = path.join(APP, 'e2e/r17b-candidate-samples.json');
 export { DASHBOARD_FIXTURE_PATH };
 
 /**
@@ -345,10 +343,9 @@ export const PAGES_RECOGNITION_ADVANCED_DESCRIPTOR = {
  * A2-7 timed actions (brief ui-pages/a2-7-actions-brief.md, R0): the action projection
  * `battle.runtime.actions` of GET /api/battles/active (`battle_actions_projection`) and the
  * execution history (`action_executions`, `action_executions_more`): the `executions` block of
- * GET /api/battles/<id> and the generic GET /api/actions/executions. Bound to the r17b CANDIDATE
- * recordings through their unchanged copy e2e/r17b-candidate-samples.json (source path and
- * SHA-256 inside; e2e/r17b-candidate-samples.mjs); it moves to the pages fixture when r17b lands
- * (tests/tooling/r17bCandidate.test.ts). The projection reads carry battle commands, so their
+ * GET /api/battles/<id> and the generic GET /api/actions/executions. Bound to the landed r17b
+ * recordings in the checkout pages fixture (tests/tooling/r17bCheckout.test.ts).
+ * The projection reads carry battle commands, so their
  * states come from the backend's one serializer for each kind (F-058), as for run_controls_live.
  * Bound to these families' hashes like the Runs module.
  * @type {Descriptor}
@@ -560,7 +557,7 @@ export const CONTRACT_INPUTS = [
     },
   },
   { file: DASHBOARD_PAGES_FIXTURE_PATH, descriptor: PAGES_RECOGNITION_ADVANCED_DESCRIPTOR },
-  { file: R17B_SAMPLES_FILE, descriptor: PAGES_ACTIONS_DESCRIPTOR },
+  { file: DASHBOARD_PAGES_FIXTURE_PATH, descriptor: PAGES_ACTIONS_DESCRIPTOR },
   {
     file: DASHBOARD_PAGES_FIXTURE_PATH,
     descriptor: {

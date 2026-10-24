@@ -4,6 +4,7 @@ import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { entries, own, ownPath } from '../src/core/read.ts';
 import { dashboardPagesCase } from '../tests/support/dashboardFixture.ts';
+import { copy } from '../src/copy/catalogue.ts';
 import { bounds } from '../tests/support/shoppingBounds.ts';
 import { axeIds, bodiesTo, posts } from './helpers.ts';
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
@@ -137,6 +138,85 @@ async function edit(page: Page) {
     .locator('.tp-shop__entry[data-upgrade="damage"]')
     .getByRole('textbox', { name: 'Tap attempts this battle', exact: true })
     .fill('');
+}
+
+/** Test-local: a pre-admission shopping read with the recorded action projection and its relative age. */
+function shoppingReading(kind: 'old' | 'current') {
+  const body = before('shopping_plan_read_requested');
+  const projection = dashboardPagesCase(
+    `battle_actions_projection.${kind === 'old' ? 'projection_fails_later_the_last_projection_stays_and_its_stamps_stop' : 'values_carry_every_field_in_force'}`,
+  ).body;
+  const actions = record(ownPath(projection, 'battle', 'runtime', 'actions'));
+  const age =
+    Number(ownPath(projection, 'battle', 'runtime', 'server_time')) -
+    Number(actions['observed_at']);
+  const runtime = record(ownPath(body, 'battle', 'runtime'));
+  return {
+    ...body,
+    battle: {
+      ...body.battle,
+      runtime: {
+        ...runtime,
+        actions: { ...actions, observed_at: Number(runtime['server_time']) - age },
+      },
+    },
+  };
+}
+
+for (const width of [1360, 1054, 390]) {
+  for (const initial of ['old', 'current'] as const) {
+    test(`AC2 Q2 shopping ${initial}-old-current retains raw draft and requires explicit save at ${String(width)}`, async ({
+      page,
+    }, testInfo) => {
+      let source = shoppingReading(initial);
+      await page.route('**/api/battles/active', (route) =>
+        route.fulfill({ status: 200, json: source }),
+      );
+      await open(page, 'shopping_live_save', width);
+      const editor = page.locator('.tp-shopping-live');
+      const field = editor.getByRole('textbox', { name: 'Cash reserve', exact: true });
+      const save = editor.getByRole('button', { name: 'Save queue for this battle', exact: true });
+      await expect(field).toBeEnabled();
+      await field.fill('00750.50');
+      if (initial === 'current') await expect(save).not.toHaveAttribute('aria-disabled', 'true');
+      source = shoppingReading('old');
+      await page.getByRole('button', { name: 'Check this battle', exact: true }).click();
+      await expect(save).toHaveAttribute('aria-disabled', 'true');
+      await expect(save).toHaveAccessibleDescription(copy.runs.reasons.action_report_old.short);
+      await expect(field).toHaveValue('00750.50');
+      await save.focus();
+      await page.keyboard.press('Enter');
+      const accepted = sample('shopping_plan_accepted');
+      const oldPosts = await posts(page);
+      expect(oldPosts).toEqual([]);
+      await check(page, width, `q2-${initial}-old`);
+      source = shoppingReading('current');
+      await page.getByRole('button', { name: 'Check this battle', exact: true }).click();
+      await expect(save).not.toHaveAttribute('aria-disabled', 'true');
+      await expect(field).toHaveValue('00750.50');
+      const refreshPosts = await posts(page);
+      expect(refreshPosts).toEqual([]);
+      const expectedPlan = {
+        ...record(ownPath(source, 'battle', 'effective', 'shopping_plan')),
+        cash_reserve: 750.5,
+      };
+      await save.click();
+      await expect(page.locator('[data-outcome="live_recorded"]')).toBeVisible();
+      const sent = await bodiesTo(page, accepted.request.path);
+      expect(sent).toEqual([
+        {
+          ...record(accepted.request.body),
+          changes: { shopping_plan: expectedPlan },
+          idempotency_key: expect.any(String),
+        },
+      ]);
+      await testInfo.attach('q2-shopping-gate', {
+        body: JSON.stringify({ initial, width, oldPosts, refreshPosts, sent }, null, 2),
+        contentType: 'application/json',
+      });
+      await check(page, width, `q2-${initial}-saved`);
+    });
+  }
 }
 for (const width of [1360, 1054, 390]) {
   for (const name of [

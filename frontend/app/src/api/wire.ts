@@ -21,6 +21,8 @@ import {
 import { z } from 'zod';
 import { previewBackendsAnswerSchema, previewStatusAnswerSchema } from '../contract/preview.ts';
 import {
+  actionExecutionsAnswerSchema,
+  actionExecutionsMoreAnswerSchema,
   actionsBattleDetailAnswerSchema,
   actionsMoreBattleDetailAnswerSchema,
   actionsProjectionReadAnswerSchema,
@@ -358,6 +360,7 @@ export type ReadEndpointId =
   | 'battlesActive'
   | 'battles'
   | 'battleDetail'
+  | 'actionExecutions'
   | 'schedule'
   | 'wizardTools'
   | 'wizardState'
@@ -561,6 +564,11 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       contract.battleDetail,
       actionsBattleDetailAnswerSchema,
       actionsMoreBattleDetailAnswerSchema,
+    ]),
+    // A2-7 AC4: GET /api/actions/executions, the generic route behind History's older executions.
+    actionExecutions: endpoint('actionExecutions', 'GET', [
+      actionExecutionsAnswerSchema,
+      actionExecutionsMoreAnswerSchema,
     ]),
     schedule: endpoint('schedule', 'GET', [contract.schedule]),
     wizardTools: endpoint('wizardTools', 'GET', [contract.wizardTools, emulatorsToolsAnswerSchema]),

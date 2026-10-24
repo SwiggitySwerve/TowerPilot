@@ -3,27 +3,76 @@ import { copy } from '../../copy/catalogue.ts';
 import type { CopyEntry, CopyNode } from '../../copy/text.ts';
 import { actionName, COMPAT_FIELDS, fieldLabel } from '../../core/actions.ts';
 import { ownOr } from '../../core/read.ts';
+import type { ServerText } from '../../copy/server.ts';
 import type {
   EditorVM,
   LiveResetAllVM,
   LiveResetVM,
   RunFieldVM,
   RunGroupVM,
+  UnaddressableVM,
+  UnrecognisedFieldVM,
 } from '../../store/selectors/runs.ts';
 import { Button } from '../../ui/Button.tsx';
 import { ConfirmDialog } from '../../ui/ConfirmDialog.tsx';
+import { ServerValue } from '../../ui/ServerValue.tsx';
 import { Why } from '../../ui/Why.tsx';
 import { useDashboard } from '../dashboard/context.ts';
 
 const t = copy.runs;
 const a = copy.actions;
 
-function FieldLabel({ field, id }: { readonly field: RunFieldVM; readonly id: string }) {
-  const label = fieldLabel(a.fields, field.field, a.otherField);
+/** A2-7 AC2: the descriptor's label when the battle sends one, else the catalogue's (Q5). */
+function Label({
+  server,
+  code,
+  table,
+  other,
+}: {
+  readonly server: ServerText<'name'> | null;
+  readonly code: string;
+  readonly table: Readonly<Record<string, CopyEntry>>;
+  readonly other: CopyEntry;
+}) {
+  return server === null ? (
+    <>{fieldLabel(table, code, other).short}</>
+  ) : (
+    <ServerValue kind="name" value={server} />
+  );
+}
+
+/**
+ * A field's name. With catalogue labels the header names the columns on wide layouts and the
+ * cell's label is for screen readers there; with descriptor labels every field shows its own.
+ */
+function FieldLabel({
+  field,
+  id,
+  shown,
+}: {
+  readonly field: { readonly field: string; readonly label: ServerText<'name'> | null };
+  readonly id: string;
+  readonly shown: boolean;
+}) {
   return (
-    <span id={id} className="tp-run-cell__label">
-      {label.short}
+    <span id={id} className={shown ? 'tp-run-cell__name' : 'tp-run-cell__label'}>
+      <Label server={field.label} code={field.field} table={a.fields} other={a.otherField} />
     </span>
+  );
+}
+
+/** An action's name: the projection's label when the battle sends one, else the catalogue's. */
+function ActionName({
+  routine,
+  label,
+}: {
+  readonly routine: string;
+  readonly label: ServerText<'name'> | null;
+}) {
+  return label === null ? (
+    <>{actionName(a.names, routine, a.otherName).short}</>
+  ) : (
+    <ServerValue kind="name" value={label} />
   );
 }
 
@@ -32,17 +81,19 @@ function ToggleCell({
   field,
   scope,
   nameId,
+  shown,
 }: {
   readonly field: RunFieldVM;
   readonly scope: string;
   readonly nameId: string;
+  readonly shown: boolean;
 }) {
   const { commands } = useDashboard();
   const own = useId();
   const checked = field.shown === true;
   return (
     <span className="tp-run-cell" data-field={field.field} data-edited={field.edited}>
-      <FieldLabel field={field} id={`${own}-label`} />
+      <FieldLabel field={field} id={`${own}-label`} shown={shown} />
       <input
         type="checkbox"
         className="tp-run-toggle"
@@ -68,10 +119,12 @@ function NumberCell({
   field,
   scope,
   nameId,
+  shown: labelShown,
 }: {
   readonly field: RunFieldVM;
   readonly scope: string;
   readonly nameId: string;
+  readonly shown: boolean;
 }) {
   const { commands } = useDashboard();
   const own = useId();
@@ -84,7 +137,7 @@ function NumberCell({
       data-edited={field.edited}
       data-invalid={field.invalid !== null}
     >
-      <FieldLabel field={field} id={`${own}-label`} />
+      <FieldLabel field={field} id={`${own}-label`} shown={labelShown} />
       <span className="tp-run-number">
         <input
           type="text"
@@ -101,13 +154,14 @@ function NumberCell({
             commands.editDraft(scope, field.path, event.currentTarget.value);
           }}
         />
-        <span className="tp-run-cell__unit">{t.seconds.short}</span>
-        {Number.isFinite(parsed) && parsed >= 60 ? (
-          <span className="tp-run-cell__note">{t.duration(parsed)}</span>
+        <Unit field={field} />
+        {field.unit.kind === 'seconds' && Number.isFinite(parsed) && parsed >= 60 ? (
+          // Root note (390): the duration is one unbroken note beside the unit.
+          <span className="tp-run-cell__note tp-run-cell__duration">{t.duration(parsed)}</span>
         ) : null}
       </span>
       <span id={`${own}-range`} className="tp-run-cell__note">
-        {t.range(field.min, field.max)}
+        <Range field={field} />
       </span>
       {field.invalid === null ? null : (
         <span id={`${own}-invalid`} className="tp-run-cell__invalid">
@@ -118,14 +172,60 @@ function NumberCell({
   );
 }
 
+/** A2-7 AC2: the unit after a number: seconds from the catalogue, else the descriptor's as sent. */
+function Unit({ field }: { readonly field: RunFieldVM }) {
+  if (field.unit.kind === 'none') return null;
+  return (
+    <span className="tp-run-cell__unit">
+      {field.unit.kind === 'seconds' ? (
+        t.seconds.short
+      ) : (
+        <ServerValue kind="name" value={field.unit.text} />
+      )}
+    </span>
+  );
+}
+
+/** A number's range with its unit (seconds as before; another unit as sent; none without one). */
+function Range({ field }: { readonly field: RunFieldVM }) {
+  if (field.unit.kind === 'seconds') return <>{t.range(field.min, field.max)}</>;
+  const bounded = field.min !== null || field.max !== null;
+  return (
+    <>
+      {t.bounds(field.min, field.max, field.unit.kind === 'other')}
+      {field.unit.kind === 'other' && bounded ? (
+        <ServerValue kind="name" value={field.unit.text} />
+      ) : null}
+    </>
+  );
+}
+
+/** A2-7 AC2: a setting whose descriptor type the page does not know: its name, never an input. */
+function UnrecognisedCell({ field }: { readonly field: UnrecognisedFieldVM }) {
+  const own = useId();
+  return (
+    <span className="tp-run-cell" data-field={field.field} data-unrecognised={field.path}>
+      <FieldLabel field={field} id={`${own}-label`} shown />
+      <span className="tp-run-cell__note">
+        <span>{t.live.unrecognised.short}</span>
+        {t.live.unrecognised.why === undefined ? null : <Why why={t.live.unrecognised.why} />}
+        {field.type === null ? null : <ServerValue kind="id" value={field.type} />}
+      </span>
+    </span>
+  );
+}
+
 function RoutineRow({
   group,
   scope,
   live,
+  described,
 }: {
   readonly group: RunGroupVM;
   readonly scope: string;
   readonly live: boolean;
+  /** A2-7 AC2: descriptor labels: every field shows its name, in descriptor order. */
+  readonly described: boolean;
 }) {
   const own = useId();
   const nameId = `${own}-name`;
@@ -138,14 +238,20 @@ function RoutineRow({
   return (
     <li className="tp-run-row" data-routine={group.routine} data-edited={edited}>
       <strong id={nameId} className="tp-run-row__name">
-        {actionName(a.names, group.routine, a.otherName).short}
+        <ActionName routine={group.routine} label={group.label} />
       </strong>
-      {group.fields.map((field) =>
-        field.kind === 'toggle' ? (
-          <ToggleCell key={field.path} field={field} scope={scope} nameId={nameId} />
-        ) : (
-          <NumberCell key={field.path} field={field} scope={scope} nameId={nameId} />
-        ),
+      {described ? (
+        <span className="tp-run-fields">
+          {group.cells.map((cell) =>
+            cell.kind === 'field' ? (
+              fieldCell(cell.field, scope, nameId, true)
+            ) : (
+              <UnrecognisedCell key={cell.field.path} field={cell.field} />
+            ),
+          )}
+        </span>
+      ) : (
+        group.fields.map((field) => fieldCell(field, scope, nameId, false))
       )}
       <span className="tp-run-row__mark">
         {mark === null ? null : (
@@ -160,9 +266,35 @@ function RoutineRow({
   );
 }
 
+function fieldCell(field: RunFieldVM, scope: string, nameId: string, shown: boolean) {
+  return field.kind === 'toggle' ? (
+    <ToggleCell key={field.path} field={field} scope={scope} nameId={nameId} shown={shown} />
+  ) : (
+    <NumberCell key={field.path} field={field} scope={scope} nameId={nameId} shown={shown} />
+  );
+}
+
 /** A routine whose only control is its switch (Rewards, Abilities, Rescue, Repeat). */
 function switchOnly(group: RunGroupVM): boolean {
-  return group.fields.length === 1 && group.fields[0]?.kind === 'toggle';
+  return (
+    group.cells.length === 1 && group.fields.length === 1 && group.fields[0]?.kind === 'toggle'
+  );
+}
+
+/** A2-7 AC2 (gap G2): an action whose settings the battle does not address: its name and why. */
+function UnaddressableRow({ item }: { readonly item: UnaddressableVM }) {
+  const why = t.live.unaddressable.why;
+  return (
+    <li className="tp-run-row tp-run-row--read-only" data-unaddressable={item.reason}>
+      <strong className="tp-run-row__name">
+        <ActionName routine={item.id} label={item.label} />
+      </strong>
+      <span className="tp-run-row__reason">
+        <span>{t.live.unaddressable.short}</span>
+        {why === undefined ? null : <Why why={why} />}
+      </span>
+    </li>
+  );
 }
 
 /**
@@ -201,7 +333,9 @@ function SwitchRow({
                   commands.editDraft(scope, field.path, event.currentTarget.checked);
                 }}
               />
-              <span>{actionName(a.names, group.routine, a.otherName).short}</span>
+              <span>
+                <ActionName routine={group.routine} label={group.label} />
+              </span>
               {field.value === null && field.shown === null ? (
                 <span id={`${own}-${group.routine}`} className="tp-run-cell__note">
                   {t.notReported.short}
@@ -269,13 +403,23 @@ function OverrideName({
   item,
 }: {
   readonly item:
-    { readonly routine: string; readonly field: string } | { readonly kind: 'shopping_plan' };
+    | {
+        readonly routine: string;
+        readonly field: string;
+        readonly routineLabel: ServerText<'name'> | null;
+        readonly label: ServerText<'name'> | null;
+      }
+    | { readonly kind: 'shopping_plan' };
 }) {
   if (!('routine' in item)) return <span>{t.live.overrides.shoppingPlan.short}</span>;
   return (
     <>
-      <span>{actionName(a.names, item.routine, a.otherName).short}</span>
-      <span>{fieldLabel(a.fields, item.field, a.otherField).short}</span>
+      <span>
+        <ActionName routine={item.routine} label={item.routineLabel} />
+      </span>
+      <span>
+        <Label server={item.label} code={item.field} table={a.fields} other={a.otherField} />
+      </span>
     </>
   );
 }
@@ -437,20 +581,37 @@ export function RunEditor<C>({
   const save = editor.save;
   const command = save.command;
   const reasons: Readonly<Record<string, CopyEntry>> = t.reasons;
+  const described = editor.labels === 'descriptor';
   return (
-    <div className="tp-run-editor" data-scope-kind={live ? 'live' : 'saved'}>
-      <div className="tp-run-columns" aria-hidden="true">
-        <span>{copy.dashboard.thisBattle.columns.routine.short}</span>
-        {COMPAT_FIELDS.map((column) => (
-          <span key={column}>{fieldLabel(a.fields, column, a.otherField).short}</span>
-        ))}
-      </div>
+    <div
+      className="tp-run-editor"
+      data-scope-kind={live ? 'live' : 'saved'}
+      data-labels={editor.labels}
+    >
+      {described ? null : (
+        // Catalogue labels (the saved editor, Q5; a battle without a projection): one header.
+        <div className="tp-run-columns" aria-hidden="true">
+          <span>{copy.dashboard.thisBattle.columns.routine.short}</span>
+          {COMPAT_FIELDS.map((column) => (
+            <span key={column}>{fieldLabel(a.fields, column, a.otherField).short}</span>
+          ))}
+        </div>
+      )}
       <ul className="tp-run-rows">
         {editor.groups
           .filter((group) => !switchOnly(group))
           .map((group) => (
-            <RoutineRow key={group.routine} group={group} scope={editor.scope} live={live} />
+            <RoutineRow
+              key={group.routine}
+              group={group}
+              scope={editor.scope}
+              live={live}
+              described={described}
+            />
           ))}
+        {editor.unaddressable.map((item) => (
+          <UnaddressableRow key={`${item.id}@${item.instance}`} item={item} />
+        ))}
         {editor.groups.some(switchOnly) ? (
           <SwitchRow groups={editor.groups.filter(switchOnly)} scope={editor.scope} live={live} />
         ) : null}

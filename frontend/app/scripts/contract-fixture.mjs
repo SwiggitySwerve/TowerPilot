@@ -63,6 +63,15 @@ export const DASHBOARD_PAGES_FIXTURE_PATH = path.resolve(
   DASHBOARD_PAGES_FIXTURE_NAME,
 );
 
+/** Test-only route recordings; never added to the app's generated contracts (AC7 is separate). */
+export const SYNTHETIC_ACTION_FIXTURE_NAME =
+  'backend/tests/fixtures/synthetic_action_contract_v1.json';
+export const SYNTHETIC_ACTION_FIXTURE_PATH = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../..',
+  SYNTHETIC_ACTION_FIXTURE_NAME,
+);
+
 /** A number as the fixture writes it (Python's own text: 60.0 stays 60.0). */
 class RawNumber {
   /** @param {string} text */
@@ -142,6 +151,10 @@ const FIXTURE_SOURCES = new Map([
   [
     'dashboard_contract_pages_v1.json',
     [DASHBOARD_PAGES_FIXTURE_NAME, 'backend/tests/test_dashboard_contract_pages.py'],
+  ],
+  [
+    'synthetic_action_contract_v1.json',
+    [SYNTHETIC_ACTION_FIXTURE_NAME, 'backend/tests/test_synthetic_action_contract.py'],
   ],
 ]);
 

@@ -48,11 +48,34 @@ export function freshBattleReport(
     own(battle, 'operation_id') !== shown.operationId
   )
     return unknownFact('battle_identity_changed');
-  const serverTime = finite(own(read.body, 'server_time'));
-  const runtimeTime = finite(ownPath(battle, 'runtime', 'server_time'));
+  const age = battleReportAge(read.body, elapsedSec);
+  if (age.kind !== 'fresh') return unknownFact(age.reason);
+  const { serverTime, runtimeTime, ageSec } = age;
+  return knownFact({ battle, serverTime, runtimeTime, ageSec }, serverTime);
+}
+
+/** The EV-9 age of a battle read, before its identity is checked (see `battleReportAge`). */
+export type BattleReportAge =
+  | {
+      readonly kind: 'fresh';
+      readonly serverTime: number;
+      readonly runtimeTime: number;
+      readonly ageSec: number;
+    }
+  | { readonly kind: 'not_fresh'; readonly reason: 'battle_time_invalid' | 'battle_report_old' };
+
+/**
+ * EV-9 and F-055, the one age rule of a battle read: `server_time - battle.runtime.server_time +
+ * elapsed` (elapsed is monotonic time since arrival) must lie in 0..BATTLE_REPORT_MAX_AGE_SEC.
+ * `body` is the answered body of GET /api/battles/active. `freshBattleReport` adds the identity
+ * checks; core/actions `actionsReading` builds the timed-action reading on it.
+ */
+export function battleReportAge(body: unknown, elapsedSec: number): BattleReportAge {
+  const serverTime = finite(own(body, 'server_time'));
+  const runtimeTime = finite(ownPath(body, 'battle', 'runtime', 'server_time'));
   const elapsed = finite(elapsedSec);
   if (serverTime === undefined || runtimeTime === undefined || elapsed === undefined || elapsed < 0)
-    return unknownFact('battle_time_invalid');
+    return { kind: 'not_fresh', reason: 'battle_time_invalid' };
   const ageSec = serverTime - runtimeTime + elapsed;
   if (
     serverTime < runtimeTime ||
@@ -60,8 +83,8 @@ export function freshBattleReport(
     ageSec < 0 ||
     ageSec > BATTLE_REPORT_MAX_AGE_SEC
   )
-    return unknownFact('battle_report_old');
-  return knownFact({ battle, serverTime, runtimeTime, ageSec }, serverTime);
+    return { kind: 'not_fresh', reason: 'battle_report_old' };
+  return { kind: 'fresh', serverTime, runtimeTime, ageSec };
 }
 
 /**

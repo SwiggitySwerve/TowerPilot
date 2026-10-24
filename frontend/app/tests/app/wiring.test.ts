@@ -4,6 +4,7 @@ import { own, ownPath } from '../../src/core/read.ts';
 import { answeredBody } from '../../src/store/reads.ts';
 import { selectOutcomes } from '../../src/store/selectors/outcomes.ts';
 import { selectReadPlan } from '../../src/store/selectors/readPlan.ts';
+import { selectThisBattle } from '../../src/store/selectors/thisBattle.ts';
 import { bootDashboard, E0_CONTEXT, e0Config, flush, fence } from '../support/dataLayer.ts';
 import { dashboardBody, dashboardCase } from '../support/dashboardFixture.ts';
 import { sample, statusBody } from '../support/fixture.ts';
@@ -59,28 +60,58 @@ describe('fake-transport cases the backend cannot produce', () => {
   });
 
   it('an overlapping /api/battles/active read (row before the close, commands after) settles a Run now as recorded, never as done, and sends nothing', async () => {
-    const active = dashboardCase('battles_active.commands_controls_requested_action_requested')
-      .body as Record<string, unknown>;
+    // Admit from a recorded ready battle: pending controls/actions do not permit Run now.
+    const active = dashboardCase(
+      'battles_active.commands_controls_applied_with_overrides_action_failed',
+    ).body as Record<string, unknown>;
     const battle = active['battle'] as Record<string, unknown>;
+    const context = battle['context'] as Record<string, unknown>;
     const { fake, data } = bootDashboard({
       before: (transport) => {
         transport.route('GET', '/api/battles/active', () => ({ status: 200, body: active }));
       },
     });
     await flush();
-    await data.commands.runNow({
+    expect(data.store.getSnapshot().context).toEqual({
+      instance: context['instance'],
+      serial: context['serial'],
+      account: context['account'],
+      profile: context['profile'],
+    });
+    const runNow = selectThisBattle(data.store.getSnapshot()).routines.find(
+      (row) => row.routine === 'ad_gems',
+    )?.runNow;
+    expect(runNow).toMatchObject({ enabled: true, reason: null });
+    const command = runNow?.command;
+    if (command === null || command === undefined) throw new Error('missing admitted Run now');
+    expect(command).toEqual({
       ...fence(data),
-      operationId: String(battle['operation_id']),
-      battleId: String(battle['id']),
-      generation: String(battle['generation']),
-      expectedRevision: 0,
+      operationId: battle['operation_id'],
+      battleId: battle['id'],
+      generation: battle['generation'],
+      expectedRevision: battle['control_revision'],
       action: 'ad_gems',
     });
+    await data.commands.runNow(command);
+    expect(fake.writes()).toHaveLength(1);
+    expect(fake.writes()[0]?.path).toBe(`/api/operations/${command.operationId}/actions`);
     const sent = JSON.parse(fake.writes()[0]?.body ?? '{}') as Record<string, unknown>;
+    expect(sent).toEqual({
+      action: command.action,
+      battle_id: command.battleId,
+      generation: command.generation,
+      expected_revision: command.expectedRevision,
+      idempotency_key: 'key-0001',
+    });
     fake.last(/\/actions$/).respond(500, '<!doctype html>');
     await flush();
-    // The overlapping read: the row still active, its commands already expired by the close,
-    // one of them carrying this request's key.
+    expect(selectOutcomes(data.store.getSnapshot()).lines[0]).toMatchObject({
+      kind: 'run_now',
+      phase: 'unconfirmed',
+      settledByRead: null,
+    });
+    // Synthetic overlap: keep the recorded active battle row, but add a new expired command
+    // for this admitted request. The prior command supplies only the record shape, not evidence.
     const recorded = (battle['commands'] as Record<string, unknown>[]).find(
       (entry) => entry['kind'] === 'action',
     );
@@ -91,6 +122,9 @@ describe('fake-transport cases the backend cannot produce', () => {
         commands: [
           {
             ...recorded,
+            id: 'overlapping-action',
+            revision: command.expectedRevision,
+            evidence: null,
             state: 'expired',
             reason: 'battle_ended',
             request_keys: [sent['idempotency_key']],
@@ -104,8 +138,9 @@ describe('fake-transport cases the backend cannot produce', () => {
     // Answered unknown (500): no answer can still arrive, so the read resolves the record.
     expect(line).toMatchObject({ kind: 'run_now', phase: 'confirmed', resendOffered: false });
     expect(line?.settledByRead).toBe('recorded');
-    const command = ownPath(overlapping, 'battle', 'commands');
-    expect(commandView(Array.isArray(command) ? command[0] : undefined).decision).toMatchObject({
+    expect(data.machine.resend(line?.id ?? '')).toBe('not_unknown');
+    const commands = ownPath(overlapping, 'battle', 'commands');
+    expect(commandView(Array.isArray(commands) ? commands[0] : undefined).decision).toMatchObject({
       row: 'K6',
       line: 'battle_record_closed',
     });

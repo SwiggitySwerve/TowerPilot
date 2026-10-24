@@ -7,6 +7,11 @@ import { ownOr } from '../../../core/read.ts';
 import type { ServerText } from '../../../copy/server.ts';
 import {
   selectThisBattle,
+  type ActionCodeVM,
+  type ActionLastVM,
+  type ActionNextVM,
+  type ActionRowVM,
+  type ActionSettingVM,
   type BattleCommandVM,
   type QueueVM,
   type RoutineRowVM,
@@ -29,6 +34,20 @@ import './thisBattle.css';
 import '../../runs/shoppingLive.css';
 
 const words = copy.dashboard.thisBattle;
+
+/** The one element that states the region's shared Run now reason (see `SharedReason`). */
+const SHARED_REASON_ID = 'battle-run-now-reason';
+
+/** The words of a disabled Run now or Try once reason code. */
+function reasonEntry(reason: string | null): CopyEntry {
+  return ownOr(words.disabled, reason ?? 'report_unavailable', words.disabled.report_unavailable);
+}
+
+/** The id a disabled button's description points at: the shared reason, else its own. */
+function describedBy(enabled: boolean, shared: string | null, own: string): string | undefined {
+  if (enabled) return undefined;
+  return shared === null ? own : SHARED_REASON_ID;
+}
 
 /**
  * F-055: "the blocker word": a routine's blocker is a code the runtime
@@ -116,18 +135,16 @@ function RoutineRow({
   queue,
   run,
   battleKey,
+  sharedReason,
 }: {
   readonly row: RoutineRowVM;
   readonly queue: QueueVM | null;
   readonly run: ServerText<'name'> | null;
   readonly battleKey: string;
+  readonly sharedReason: string | null;
 }) {
   const { commands } = useDashboard();
-  const reason = ownOr(
-    words.disabled,
-    row.runNow.reason ?? 'report_unavailable',
-    words.disabled.report_unavailable,
-  );
+  const reason = reasonEntry(row.runNow.reason);
   const nameId = `battle-${row.routine}-name`;
   const reasonId = `battle-${row.routine}-reason`;
   const unsupported = row.runNow.reason === 'action_unsupported';
@@ -182,7 +199,7 @@ function RoutineRow({
           data-focus-key={`run-now-${row.routine}`}
           aria-labelledby={`${nameId}-run ${nameId}-now ${nameId}`}
           aria-disabled={row.runNow.enabled ? undefined : true}
-          aria-describedby={row.runNow.enabled ? undefined : reasonId}
+          aria-describedby={describedBy(row.runNow.enabled, sharedReason, reasonId)}
           onClick={() => {
             if (row.runNow.enabled && row.runNow.command !== null)
               void commands.runNow(row.runNow.command);
@@ -192,18 +209,276 @@ function RoutineRow({
           <span id={`${nameId}-now`}>{words.now.short}</span>
         </button>
       </div>
-      {row.runNow.enabled ? null : (
+      {row.runNow.enabled || sharedReason !== null ? null : (
         <div id={reasonId} className="tp-battle__reason">
           {reason.short}
           <Why why={reason.why} />
         </div>
       )}
-      {queue === null ? null : <Queue key={battleKey} value={queue} run={run} />}
+      {queue === null ? null : (
+        <Queue key={battleKey} value={queue} run={run} sharedReason={sharedReason} />
+      )}
     </li>
   );
 }
 
-function ShoppingTryOnceAction({ item }: { readonly item: ShoppingTryOnceVM }) {
+/** Rule 6: "Not recognised", with the code as sent under Why. */
+function NotRecognised({ code }: { readonly code: ServerText<'id'> | null }) {
+  return (
+    <div className="tp-battle__inline">
+      <span>{words.notRecognised.short}</span>
+      {code === null ? null : (
+        <Disclosure label={copy.common.why.short}>
+          <ServerValue value={code} kind="id" />
+        </Disclosure>
+      )}
+    </div>
+  );
+}
+
+/** One result or effect code in its words: known, not sent, or not recognised with its code. */
+function CodeWords<K extends string>({
+  code,
+  table,
+}: {
+  readonly code: ActionCodeVM<K>;
+  readonly table: Readonly<Record<string, CopyEntry>>;
+}) {
+  switch (code.kind) {
+    case 'known':
+      return <span>{ownOr(table, code.code, words.notRecognised).short}</span>;
+    case 'unreported':
+      return <span>{words.unknown.short}</span>;
+    case 'unrecognised':
+      return <NotRecognised code={code.code} />;
+  }
+}
+
+/** AC1/AC3: a result, its effect (rule 2: only `confirmed` reads as confirmed), age and reason. */
+function LastWords({ last }: { readonly last: ActionLastVM }) {
+  return (
+    <>
+      <CodeWords code={last.result} table={copy.actions.results} />
+      <CodeWords code={last.effect} table={copy.actions.effects} />
+      {last.ageSec === null ? null : <span>{ageAgo(last.ageSec)}</span>}
+      {last.manual ? <span>{words.fromRunNow.short}</span> : null}
+      {last.reason === null ? null : (
+        <Disclosure label={copy.common.why.short}>
+          <ServerValue value={last.reason} kind="message" />
+        </Disclosure>
+      )}
+    </>
+  );
+}
+
+/** AC1/AC5: the Next cell of an action row; an old reading has no Due word and no countdown. */
+function NextWords({ next }: { readonly next: ActionNextVM }) {
+  switch (next.kind) {
+    case 'off':
+      return <span>{words.off.short}</span>;
+    case 'running':
+      return (
+        <span>
+          {next.endsInSec === null
+            ? words.itemNext.running.short
+            : words.runningFor(next.endsInSec)}
+        </span>
+      );
+    case 'blocker':
+      return next.code === null ? (
+        <span>{words.blockers.other.short}</span>
+      ) : (
+        <Blocker code={next.code} />
+      );
+    case 'due':
+      return <span>{words.itemNext.due.short}</span>;
+    case 'in':
+      return <span>{words.next(next.sec)}</span>;
+    case 'not_reported':
+      return <span>{words.itemNext.notReported.short}</span>;
+    case 'state':
+      return <span>{words.itemNext[next.code].short}</span>;
+    case 'unrecognised':
+      return <NotRecognised code={next.code} />;
+    case 'last_known':
+      return <span>{words.lastKnown(next.ageSec)}</span>;
+    case 'not_current':
+      return <span>{words.itemNext.notCurrent.short}</span>;
+    case 'prepared':
+      return <span>{words.dash.short}</span>;
+  }
+}
+
+/** AC1: one descriptor field: "label value unit", or not recognised when its type is not read. */
+function SettingLine({ field }: { readonly field: ActionSettingVM }) {
+  return (
+    <li>
+      {field.label === null ? (
+        <span>{copy.actions.otherField.short}</span>
+      ) : (
+        <ServerValue value={field.label} kind="name" />
+      )}
+      {field.unrecognisedType !== null ? (
+        <NotRecognised code={field.unrecognisedType} />
+      ) : (
+        <>
+          <span>
+            {field.value === null
+              ? words.unknown.short
+              : typeof field.value === 'boolean'
+                ? field.value
+                  ? words.on.short
+                  : words.off.short
+                : words.fieldNumber(field.value)}
+          </span>
+          {field.unit === null ? null : <ServerValue value={field.unit} kind="name" />}
+        </>
+      )}
+    </li>
+  );
+}
+
+/** AC1/AC3: one `runtime.actions` item, rendered from the item alone (no branch per action). */
+function ActionRow({
+  row,
+  index,
+  queue,
+  run,
+  battleKey,
+  sharedReason,
+}: {
+  readonly row: ActionRowVM;
+  readonly index: number;
+  readonly queue: QueueVM | null;
+  readonly run: ServerText<'name'> | null;
+  readonly battleKey: string;
+  readonly sharedReason: string | null;
+}) {
+  const { commands } = useDashboard();
+  const reason = reasonEntry(row.runNow.reason);
+  const nameId = `battle-action-${String(index)}-name`;
+  const reasonId = `battle-action-${String(index)}-reason`;
+  return (
+    <li className="tp-battle__routine">
+      <strong className="tp-battle__name" id={nameId}>
+        {row.label !== null ? (
+          <ServerValue value={row.label} kind="name" />
+        ) : row.code !== null ? (
+          <ServerValue value={row.code} kind="id" />
+        ) : (
+          copy.actions.otherName.short
+        )}
+      </strong>
+      <div className="tp-battle__setting">
+        <span className="tp-battle__column-label">{words.columns.battle.short}</span>
+        <span>
+          {row.enabled === null
+            ? words.unknown.short
+            : row.enabled
+              ? words.on.short
+              : words.off.short}
+        </span>
+        {row.settings.length === 0 ? null : (
+          <Disclosure label={words.settings.short}>
+            <ul className="tp-battle__settings">
+              {row.settings.map((field) => (
+                <SettingLine key={field.path} field={field} />
+              ))}
+            </ul>
+          </Disclosure>
+        )}
+      </div>
+      <div className="tp-battle__next">
+        <span className="tp-battle__column-label">{words.columns.next.short}</span>
+        <NextWords next={row.next} />
+      </div>
+      <div className="tp-battle__last">
+        <span className="tp-battle__column-label">{words.columns.result.short}</span>
+        <div className="tp-battle__result">
+          {row.last === null ? (
+            <span>{words.lines.no_result_yet.short}</span>
+          ) : (
+            <LastWords last={row.last} />
+          )}
+          {queue === null ? null : <ShoppingDecision value={queue} />}
+        </div>
+      </div>
+      <div className="tp-battle__action">
+        {/* Name = visible label + target ("Run now Ad gems"): WCAG 2.5.3 label in name. */}
+        <button
+          type="button"
+          className="tp-button"
+          data-tier="secondary"
+          data-focus-key={`run-now-${row.key}`}
+          aria-labelledby={`${nameId}-run ${nameId}-now ${nameId}`}
+          aria-disabled={row.runNow.enabled ? undefined : true}
+          aria-describedby={describedBy(row.runNow.enabled, sharedReason, reasonId)}
+          onClick={() => {
+            if (row.runNow.enabled && row.runNow.command !== null)
+              void commands.runNow(row.runNow.command);
+          }}
+        >
+          <span id={`${nameId}-run`}>{words.run.short}</span>
+          <span id={`${nameId}-now`}>{words.now.short}</span>
+        </button>
+      </div>
+      {row.runNow.enabled || sharedReason !== null ? null : (
+        <div id={reasonId} className="tp-battle__reason">
+          {reason.short}
+          {row.runNowServerReason === null ? null : (
+            <>
+              {words.separator.short}
+              <ServerValue value={row.runNowServerReason} kind="message" />
+            </>
+          )}
+          <Why why={reason.why} />
+        </div>
+      )}
+      {queue === null ? null : (
+        <Queue key={battleKey} value={queue} run={run} sharedReason={sharedReason} />
+      )}
+    </li>
+  );
+}
+
+/**
+ * The one reason every Run now and Try once button shares, stated once for the region; each
+ * disabled button's description points here (root's visual note: never seven copies).
+ */
+function SharedReason({ reason }: { readonly reason: string }) {
+  const entry = reasonEntry(reason);
+  return (
+    <div id={SHARED_REASON_ID} className="tp-battle__shared-reason">
+      {entry.short}
+      <Why why={entry.why} />
+    </div>
+  );
+}
+
+/** AC5: why the action readings are not current, once above the rows, with a fresh read. */
+function ReadingsNotice({ value }: { readonly value: NonNullable<ThisBattleVM['actionsNotice']> }) {
+  const { commands } = useDashboard();
+  const entry = ownOr(words.readings, value.reason, words.readings.action_report_time_invalid);
+  return (
+    <Notice
+      state="unknown"
+      line={entry.short}
+      {...(value.ageSec === null ? {} : { age: ageAgo(value.ageSec) })}
+      {...(entry.why === undefined ? {} : { why: entry.why })}
+      actions={
+        <Button tier="quiet" label={copy.shoppingLive.check.short} onClick={commands.checkBattle} />
+      }
+    />
+  );
+}
+
+function ShoppingTryOnceAction({
+  item,
+  sharedReason,
+}: {
+  readonly item: ShoppingTryOnceVM;
+  readonly sharedReason: string | null;
+}) {
   const { commands } = useDashboard();
   const id = `shopping-try-${item.action}`;
   return (
@@ -213,7 +488,7 @@ function ShoppingTryOnceAction({ item }: { readonly item: ShoppingTryOnceVM }) {
         className="tp-button"
         aria-labelledby={`${id}-label ${id}-target`}
         aria-disabled={item.button.enabled ? undefined : true}
-        aria-describedby={item.button.enabled ? undefined : `${id}-reason`}
+        aria-describedby={describedBy(item.button.enabled, sharedReason, `${id}-reason`)}
         onClick={() => {
           if (item.button.enabled && item.button.command !== null)
             void commands.runNow(item.button.command);
@@ -221,22 +496,20 @@ function ShoppingTryOnceAction({ item }: { readonly item: ShoppingTryOnceVM }) {
       >
         <span id={`${id}-label`}>{words.tryOnce.short}</span>
       </button>
-      {item.button.enabled ? null : (
-        <div id={`${id}-reason`}>
-          {
-            ownOr(
-              words.disabled,
-              item.button.reason ?? 'report_unavailable',
-              words.disabled.report_unavailable,
-            ).short
-          }
-        </div>
+      {item.button.enabled || sharedReason !== null ? null : (
+        <div id={`${id}-reason`}>{reasonEntry(item.button.reason).short}</div>
       )}
     </div>
   );
 }
 
-function ShoppingTryOnce({ value }: { readonly value: readonly ShoppingTryOnceVM[] }) {
+function ShoppingTryOnce({
+  value,
+  sharedReason,
+}: {
+  readonly value: readonly ShoppingTryOnceVM[];
+  readonly sharedReason: string | null;
+}) {
   return (
     <div className="tp-shopping-try">
       <p>{words.tryNotice.short}</p>
@@ -253,7 +526,7 @@ function ShoppingTryOnce({ value }: { readonly value: readonly ShoppingTryOnceVM
               words.tryTargets[item.known].short
             )}
           </span>
-          <ShoppingTryOnceAction item={item} />
+          <ShoppingTryOnceAction item={item} sharedReason={sharedReason} />
         </div>
       ))}
     </div>
@@ -263,14 +536,20 @@ function ShoppingTryOnce({ value }: { readonly value: readonly ShoppingTryOnceVM
 function Queue({
   value,
   run,
+  sharedReason,
 }: {
   readonly value: QueueVM;
   readonly run: ServerText<'name'> | null;
+  /** The region's shared Run now reason, passed down from its row. */
+  readonly sharedReason: string | null;
 }) {
   const { tryOnce } = useView(selectThisBattle);
   return (
     <div className="tp-battle__queue">
-      <ShoppingTryOnce value={tryOnce.filter((item) => item.known !== null)} />
+      <ShoppingTryOnce
+        value={tryOnce.filter((item) => item.known !== null)}
+        sharedReason={sharedReason}
+      />
       {value.warnings.map((warning) => {
         const entry = ownOr(
           {
@@ -349,7 +628,9 @@ function Queue({
                   {value.mode === 'weighted_split' && item.weight !== null ? (
                     <span>{words.weight(item.weight)}</span>
                   ) : null}
-                  {item.tryOnce === null ? null : <ShoppingTryOnceAction item={item.tryOnce} />}
+                  {item.tryOnce === null ? null : (
+                    <ShoppingTryOnceAction item={item.tryOnce} sharedReason={sharedReason} />
+                  )}
                 </div>
               </li>
             ))}
@@ -406,6 +687,12 @@ function CommandRow({ value }: { readonly value: BattleCommandVM }) {
       {value.row === 'K4' && value.resultChip !== null ? (
         <Decision value={value.resultChip} />
       ) : null}
+      {value.outcome === null ? null : (
+        <div className="tp-battle__outcome">
+          <span>{words.outcome.short}</span>
+          <LastWords last={value.outcome} />
+        </div>
+      )}
       {value.resultAgeSec === null ? null : <span>{ageAgo(value.resultAgeSec)}</span>}
       {value.row === 'K4' && value.result.confirmedPurchases !== null ? (
         <span>{words.purchases(value.result.confirmedPurchases)}</span>
@@ -508,7 +795,9 @@ function BattleContent() {
             <ScopedLinks run={vm.label} />
           </div>
         ) : null}
-        {vm.routines.length === 0 ? null : (
+        {vm.actionsNotice === null ? null : <ReadingsNotice value={vm.actionsNotice} />}
+        {vm.sharedReason === null ? null : <SharedReason reason={vm.sharedReason} />}
+        {vm.routines.length === 0 && (vm.actions?.length ?? 0) === 0 ? null : (
           // F4-02, spec 2.2 sketch: the column labels once, on wide layouts; each cell keeps
           // its own label for screen readers and for the narrow layout.
           <div className="tp-battle__columns" aria-hidden="true">
@@ -527,6 +816,18 @@ function BattleContent() {
               queue={isShoppingAction(row.routine) ? vm.queue : null}
               run={vm.label}
               battleKey={vm.battleKey}
+              sharedReason={vm.sharedReason}
+            />
+          ))}
+          {(vm.actions ?? []).map((row, index) => (
+            <ActionRow
+              key={row.key}
+              row={row}
+              index={index}
+              queue={row.shopping ? vm.queue : null}
+              run={vm.label}
+              battleKey={vm.battleKey}
+              sharedReason={vm.sharedReason}
             />
           ))}
         </ul>

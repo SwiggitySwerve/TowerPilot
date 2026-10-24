@@ -238,7 +238,9 @@ export function HistoryPage({ history }: { readonly history: HistoryStore }) {
             </div>
             <ReadState read={vm.detailRead} reading={t.readingDetail.short} />
             {vm.selected === null ? <p>{t.choose.short}</p> : null}
-            {vm.detail === null ? null : <HistoryDetail key={vm.selected} vm={vm.detail} />}
+            {vm.detail === null ? null : (
+              <HistoryDetail key={vm.selected} vm={vm.detail} onOlder={history.loadOlder} />
+            )}
           </section>
         </div>
       </main>

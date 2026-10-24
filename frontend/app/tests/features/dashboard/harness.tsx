@@ -1,7 +1,8 @@
+import { clearTimeout as clearRealTimeout, setTimeout as setRealTimeout } from 'node:timers';
 import { act, render, type RenderResult } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';
-import { vi, type Mock } from 'vitest';
+import { afterEach, onTestFinished, vi, type Mock } from 'vitest';
 import { App } from '../../../src/app/App.tsx';
 import type { DashboardCommands } from '../../../src/store/commands.ts';
 import { createDashboardStore, type DashboardStore } from '../../../src/store/dashboardStore.ts';
@@ -78,17 +79,105 @@ export interface PageHarness extends ReturnType<typeof bootDashboard> {
   readonly advance: (ms?: number) => Promise<void>;
 }
 
+/**
+ * A page belongs to the test that drew it. When that test ends, passed, failed or
+ * timed out, the page is drained before RTL cleanup: advances and user
+ * events still in flight (with an act() scope open) are awaited. The page refuses
+ * further advances and user events, then stops its data layer.
+ * Otherwise the timed-out test keeps running beside the next one, their act()
+ * scopes overlap, and React stops flushing updates for every later test in the file.
+ * Teardown gets its own real-time bound, leaving time to stop data before the
+ * hook's bound (TEARDOWN_MS, not a test timeout). An unsettled act cannot be cancelled.
+ * A second renderPage that the orphaned body reaches is not torn down; its first
+ * advance then fails on real timers.
+ */
+const TEARDOWN_MS = 60_000;
+const DRAIN_MS = TEARDOWN_MS - 1_000;
+const PAGE_ENDED =
+  'renderPage: this page belongs to a test that has ended (timed out?); it no longer advances or takes input.';
+const pageTeardowns = new Set<() => Promise<void>>();
+
+// Vitest's stack ordering runs this before the earlier setup.ts RTL cleanup.
+afterEach(async () => {
+  // Finish every page even if one fails. Rethrow each cached failure from its
+  // onTestFinished backstop so a drain failure cannot skip the other afterEach hooks.
+  await Promise.allSettled([...pageTeardowns].map((finish) => finish()));
+}, TEARDOWN_MS);
+
+/** `user` that throws once `ended()` is true, before any event is dispatched. */
+function guardUser(
+  user: UserEvent,
+  ended: () => boolean,
+  track: <T>(step: Promise<T>) => Promise<T>,
+): UserEvent {
+  return new Proxy(user, {
+    get(target, key, receiver): unknown {
+      const value: unknown = Reflect.get(target, key, receiver);
+      if (typeof value !== 'function') return value;
+      return (...args: unknown[]): unknown => {
+        if (ended()) throw new Error(PAGE_ENDED);
+        const result: unknown = Reflect.apply(value, target, args);
+        return result instanceof Promise ? track(result) : result;
+      };
+    },
+  });
+}
+
 /** The whole App on the fake transport; call `vi.useFakeTimers()` first. */
 export async function renderPage(options: PageOptions = {}): Promise<PageHarness> {
   installDialogPolyfill();
   shimJestTimers();
   const booted = bootDashboard(options);
+  let ended = false;
+  const inFlight = new Set<Promise<unknown>>();
+  const track = async <T,>(step: Promise<T>): Promise<T> => {
+    // React's act result is a thenable: subscribe once, or draining it can pop
+    // the same act scope a second time while the original caller is awaiting it.
+    const pending = Promise.resolve(step);
+    inFlight.add(pending);
+    try {
+      return await pending;
+    } finally {
+      inFlight.delete(pending);
+    }
+  };
+  let finishing: Promise<void> | undefined;
+  const finish = (): Promise<void> => {
+    ended = true;
+    finishing ??= (async () => {
+      let deadline: ReturnType<typeof setRealTimeout> | undefined;
+      try {
+        if (inFlight.size > 0) {
+          await Promise.race([
+            Promise.allSettled([...inFlight]),
+            new Promise<never>((_, reject) => {
+              deadline = setRealTimeout(() => {
+                reject(
+                  new Error(`renderPage: in-flight work did not settle within ${DRAIN_MS} ms`),
+                );
+              }, DRAIN_MS);
+            }),
+          ]);
+        }
+      } finally {
+        clearRealTimeout(deadline);
+        pageTeardowns.delete(finish);
+        booted.data.stop();
+      }
+    })();
+    return finishing;
+  };
+  pageTeardowns.add(finish);
+  onTestFinished(finish, TEARDOWN_MS);
   const faults = options.faults instanceof Set ? options.faults : new Set(options.faults ?? []);
   const view = render(<App data={booted.data} faults={faults} />);
   const advance = async (ms = 0) => {
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(ms);
-    });
+    if (ended) throw new Error(PAGE_ENDED);
+    await track(
+      act(async () => {
+        await vi.advanceTimersByTimeAsync(ms);
+      }),
+    );
   };
   await advance(0);
   const user = userEvent.setup({
@@ -97,7 +186,21 @@ export async function renderPage(options: PageOptions = {}): Promise<PageHarness
       vi.advanceTimersByTime(ms);
     },
   });
-  return { ...booted, view, user, advance };
+  return { ...booted, view, user: guardUser(user, () => ended, track), advance };
+}
+
+/**
+ * Enter `text` into `element` as one input event: the click `user.type` starts with, then a
+ * paste at the caret it leaves. For steps whose subject is the entered value rather than each
+ * keystroke: every keystroke redraws the page, which on a loaded machine made a long value
+ * alone exceed the test timeout.
+ */
+export async function enterText(user: UserEvent, element: Element, text: string): Promise<void> {
+  await user.click(element);
+  // user.type ignores a disabled control; a paste would land in whatever has focus instead.
+  if (element.ownerDocument.activeElement !== element)
+    throw new Error('enterText: element did not take focus');
+  await user.paste(text);
 }
 
 export type RecordingCommands = {

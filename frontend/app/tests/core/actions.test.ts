@@ -4,7 +4,6 @@ import {
   DASHBOARD_PAGES_FIXTURE_PATH,
   loadJsonWithIdentity,
 } from '../../scripts/contract-fixture.mjs';
-import { R17B_SAMPLES_FILE } from '../../scripts/generate-contract.mjs';
 import {
   actionName,
   actionsView,
@@ -21,7 +20,6 @@ import {
 import { controlGroups } from '../../src/core/runControls.ts';
 import { entries, own, ownPath } from '../../src/core/read.ts';
 import { dashboardPagesCase } from '../support/dashboardFixture.ts';
-import { r17bCase } from '../support/r17bCandidate.ts';
 
 type Cases = Readonly<
   Record<
@@ -42,7 +40,6 @@ function recorded(file: string, tag: string) {
 const ALL = [
   ...recorded(DASHBOARD_FIXTURE_PATH, 'D'),
   ...recorded(DASHBOARD_PAGES_FIXTURE_PATH, 'P'),
-  ...recorded(R17B_SAMPLES_FILE, 'R17B'),
 ];
 const battles = ALL.filter(
   ({ found }) =>
@@ -62,8 +59,8 @@ describe('A2-7 core/actions projection views', () => {
     const projected = battles.filter(
       ({ found }) => actionsView(own(found.body, 'battle')) !== null,
     );
-    // Checkout P: 7 projection cases; r17b candidate: 13 (one case per family has no actions key).
-    expect(projected.length).toBe(20);
+    // Landed pages: 13 projection cases; the absent-actions case exercises compatibility.
+    expect(projected.length).toBe(13);
     for (const { found } of projected) {
       const view = actionsView(own(found.body, 'battle'));
       const items = view?.items ?? [];
@@ -100,7 +97,7 @@ describe('A2-7 core/actions projection views', () => {
   });
 
   it('R1 field order: descriptor live order when the routine has an item, else the compatibility order', () => {
-    const found = r17bCase(
+    const found = dashboardPagesCase(
       'battle_actions_projection.idle_ad_and_floating_gems_due_shopping_waiting',
     );
     const view = actionsView(own(found.body, 'battle'));
@@ -156,7 +153,7 @@ describe('A2-7 R2 live bounds source', () => {
   });
 
   it('R2 descriptor bounds apply without a saved read; no projection keeps the saved constraints', () => {
-    const found = r17bCase(
+    const found = dashboardPagesCase(
       'battle_actions_projection.idle_ad_and_floating_gems_due_shopping_waiting',
     );
     const battle = own(found.body, 'battle');

@@ -3,7 +3,12 @@ import { axe } from 'jest-axe';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { dashboardPagesCase } from '../../support/dashboardFixture.ts';
 import { postBodies } from '../../support/dataLayer.ts';
-import { renderPage, type PageOptions } from '../dashboard/harness.tsx';
+import {
+  enterText,
+  renderPage,
+  type PageHarness,
+  type PageOptions,
+} from '../dashboard/harness.tsx';
 import { selectCollectionPage } from '../../../src/store/selectors/collection.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 
@@ -12,6 +17,12 @@ const recorded = (name: string) => dashboardPagesCase(`profile_target.${name}`);
 function required<T>(value: T | null | undefined): T {
   if (value == null) throw new Error('required test value missing');
   return value;
+}
+
+// Keep the accessible-role/name checks local to the label form, rather than
+// computing names for every input and Save button in the settings modules.
+function labelForm(page: PageHarness) {
+  return within(required(page.view.container.querySelector<HTMLElement>('[data-form="label"]')));
 }
 
 type Source = { profile: { policies: { gather: Record<string, unknown> } }; revision: string };
@@ -67,7 +78,7 @@ async function openTarget(
       options.before?.(fake);
     },
   });
-  await page.advance(1_000);
+  await page.advance();
   if (!pick) return page;
   act(() => {
     page.data.commands.pickEditingTarget({
@@ -75,7 +86,7 @@ async function openTarget(
       name: 'second',
     });
   });
-  await page.advance(1_000);
+  await page.advance();
   return page;
 }
 
@@ -87,8 +98,12 @@ afterEach(() => {
 
 it('PE4 policy commands use the editing target source, scope and runtime fence', async () => {
   const page = await openTarget();
-  await page.user.type(page.view.getByRole('textbox', { name: 'Name shown' }), 'Offline');
-  await page.user.click(page.view.getByRole('button', { name: /Save name/u }));
+  await enterText(
+    page.user,
+    labelForm(page).getByRole('textbox', { name: 'Name shown' }),
+    'Offline',
+  );
+  await page.user.click(labelForm(page).getByRole('button', { name: /Save name/u }));
   await page.advance();
   expect(postBodies(page.fake, '/api/profile-patch')).toEqual([
     {
@@ -116,7 +131,11 @@ it('PE4 active settings retain their active heading and disable Save with a visi
 
 it('PE4 Save controls and outcomes name second beside the action', async () => {
   const page = await openTarget(sourceAfter('inactive_plan_saved_while_runner_listed'));
-  await page.user.type(page.view.getByRole('textbox', { name: 'Name shown' }), 'Offline');
+  await enterText(
+    page.user,
+    labelForm(page).getByRole('textbox', { name: 'Name shown' }),
+    'Offline',
+  );
   await page.user.click(page.view.getByRole('button', { name: /Save name.*second/u }));
   page.fake
     .next('/api/profile-patch', 'POST')
@@ -138,8 +157,12 @@ it('PE4 an inactive target can save twice with no active profile or active setti
       },
     },
   );
-  await page.user.type(page.view.getByRole('textbox', { name: 'Name shown' }), 'Offline');
-  await page.user.click(page.view.getByRole('button', { name: /Save name/u }));
+  await enterText(
+    page.user,
+    labelForm(page).getByRole('textbox', { name: 'Name shown' }),
+    'Offline',
+  );
+  await page.user.click(labelForm(page).getByRole('button', { name: /Save name/u }));
   page.fake.route('GET', '/api/profile-src/second', () =>
     sourceAfter('inactive_gather_label_saved'),
   );
@@ -149,12 +172,16 @@ it('PE4 an inactive target can save twice with no active profile or active setti
     .next('/api/profile-patch', 'POST')
     .respond(200, recorded('inactive_gather_label_saved').body);
   await page.advance(1_000);
-  await page.user.clear(page.view.getByRole('textbox', { name: 'Name shown' }));
-  await page.user.type(page.view.getByRole('textbox', { name: 'Name shown' }), 'Another label');
+  await page.user.clear(labelForm(page).getByRole('textbox', { name: 'Name shown' }));
+  await enterText(
+    page.user,
+    labelForm(page).getByRole('textbox', { name: 'Name shown' }),
+    'Another label',
+  );
   const command = selectCollectionPage(page.data.store.getSnapshot(), null).editor?.saveLabel;
   expect(command?.reason).toBeNull();
   expect(command?.enabled).toBe(true);
-  await page.user.click(page.view.getByRole('button', { name: /Save name/u }));
+  await page.user.click(labelForm(page).getByRole('button', { name: /Save name/u }));
   await page.advance();
   expect(page.fake.writes()).toHaveLength(2);
 });
@@ -185,17 +212,26 @@ for (const [operation, before, saved] of operations) {
     const vm = () => selectCollectionPage(page.data.store.getSnapshot(), null);
     const posted = recorded(saved);
     if (operation === 'label') {
-      await page.user.type(page.view.getByRole('textbox', { name: 'Name shown' }), 'Offline');
-      await page.user.click(page.view.getByRole('button', { name: /Save name/u }));
+      await enterText(
+        page.user,
+        labelForm(page).getByRole('textbox', { name: 'Name shown' }),
+        'Offline',
+      );
+      await page.user.click(labelForm(page).getByRole('button', { name: /Save name/u }));
     } else if (operation === 'copy') {
-      await page.user.type(page.view.getByRole('textbox', { name: 'New identifier' }), 'spare');
+      await enterText(
+        page.user,
+        page.view.getByRole('textbox', { name: 'New identifier' }),
+        'spare',
+      );
       await page.user.click(page.view.getByRole('button', { name: /Save copy/u }));
     } else if (operation === 'create') {
       await page.user.selectOptions(
         page.view.getByRole('combobox', { name: 'Template gathering default' }),
         JSON.stringify(['farm', 'all_on']),
       );
-      await page.user.type(
+      await enterText(
+        page.user,
         page.view.getByRole('textbox', { name: 'New policy identifier' }),
         'fresh',
       );
@@ -223,8 +259,8 @@ for (const [operation, before, saved] of operations) {
 
 it('PE4 target switch and return restore only that target draft and revision; catalogue and axe', async () => {
   const page = await openTarget();
-  const name = () => page.view.getByRole('textbox', { name: 'Name shown' });
-  await page.user.type(name(), 'Offline');
+  const name = () => labelForm(page).getByRole('textbox', { name: 'Name shown' });
+  await enterText(page.user, name(), 'Offline');
   const scope = required(
     required(selectCollectionPage(page.data.store.getSnapshot(), null).editor).labelScope,
   );
@@ -233,7 +269,7 @@ it('PE4 target switch and return restore only that target draft and revision; ca
   });
   await page.advance(1_000);
   expect(name()).toHaveValue('');
-  await page.user.type(name(), 'Active draft');
+  await enterText(page.user, name(), 'Active draft');
   act(() => {
     page.data.commands.pickEditingTarget({
       epoch: page.data.store.getSnapshot().epoch,
@@ -254,13 +290,19 @@ it('PE4 target switch and return restore only that target draft and revision; ca
 it('PE4 reload restores only the original target draft and starting revision', async () => {
   const source = sourceAfter('inactive_plan_saved_while_runner_listed');
   const page = await openTarget(source);
-  await page.user.type(page.view.getByRole('textbox', { name: 'Name shown' }), 'Unsaved label');
+  await enterText(
+    page.user,
+    labelForm(page).getByRole('textbox', { name: 'Name shown' }),
+    'Unsaved label',
+  );
   page.view.unmount();
   page.data.stop();
   const again = await openTarget(sourceAfter('inactive_gather_copy_saved'), '#collection', {
     storage: page.storage,
   });
-  expect(again.view.getByRole('textbox', { name: 'Name shown' })).toHaveValue('Unsaved label');
+  expect(labelForm(again).getByRole('textbox', { name: 'Name shown' })).toHaveValue(
+    'Unsaved label',
+  );
   const command = required(
     selectCollectionPage(again.data.store.getSnapshot(), null).editor?.saveLabel.command,
   );
@@ -309,14 +351,18 @@ for (const refusal of [
 ] as const) {
   it(`PE4 ${refusal} keeps the draft and never retries`, async () => {
     const page = await openTarget();
-    await page.user.type(page.view.getByRole('textbox', { name: 'Name shown' }), 'Offline');
-    await page.user.click(page.view.getByRole('button', { name: /Save name/u }));
+    await enterText(
+      page.user,
+      labelForm(page).getByRole('textbox', { name: 'Name shown' }),
+      'Offline',
+    );
+    await page.user.click(labelForm(page).getByRole('button', { name: /Save name/u }));
     const response = recorded(refusal);
     // Modified recorded response: the refusal/failed-write envelope is path independent;
     // the recorded producer requests plan, this journey requests a gathering label.
     page.fake.next('/api/profile-patch', 'POST').respond(response.status, response.body);
     await page.advance(10_000);
-    expect(page.view.getByRole('textbox', { name: 'Name shown' })).toHaveValue('Offline');
+    expect(labelForm(page).getByRole('textbox', { name: 'Name shown' })).toHaveValue('Offline');
     expect(page.fake.writes()).toHaveLength(1);
     expect(page.view.container.querySelector('[data-outcome]')).toHaveAttribute(
       'data-outcome',
@@ -327,8 +373,12 @@ for (const refusal of [
 
 it('PE4 lost inactive label stays Unknown on unchanged second; matching later target source alone settles it', async () => {
   const page = await openTarget(sourceAfter('inactive_plan_saved_while_runner_listed'));
-  await page.user.type(page.view.getByRole('textbox', { name: 'Name shown' }), 'Offline');
-  await page.user.click(page.view.getByRole('button', { name: /Save name/u }));
+  await enterText(
+    page.user,
+    labelForm(page).getByRole('textbox', { name: 'Name shown' }),
+    'Offline',
+  );
+  await page.user.click(labelForm(page).getByRole('button', { name: /Save name/u }));
   page.fake.next('/api/profile-patch', 'POST').lose();
   await page.advance(2_000);
   expect(page.view.container.querySelector('[data-outcome]')).toHaveAttribute(
@@ -355,9 +405,9 @@ for (const target of ['second', 'mine'] as const) {
       const open = (options: PageOptions = {}) =>
         openTarget(source, '#collection', options, inactive);
       let page = await open();
-      const save = () => page.view.getByRole('button', { name: /Save name/u });
-      const name = () => page.view.getByRole('textbox', { name: 'Name shown' });
-      await page.user.type(name(), 'Offline');
+      const save = () => labelForm(page).getByRole('button', { name: /Save name/u });
+      const name = () => labelForm(page).getByRole('textbox', { name: 'Name shown' });
+      await enterText(page.user, name(), 'Offline');
       const drawn = required(
         selectCollectionPage(page.data.store.getSnapshot(), null).editor?.saveLabel.command,
       );
@@ -455,7 +505,7 @@ for (const target of ['second', 'mine'] as const) {
         'applied',
       );
       await page.user.clear(name());
-      await page.user.type(name(), 'Next label');
+      await enterText(page.user, name(), 'Next label');
       expect(save()).not.toHaveAttribute('aria-disabled', 'true');
       expect(page.fake.writes()).toEqual([]);
     });
@@ -465,7 +515,11 @@ for (const target of ['second', 'mine'] as const) {
 for (const change of ['context', 'generation', 'deleted'] as const) {
   it(`PE4 click-time ${change} change sends nothing and retains the draft`, async () => {
     const page = await openTarget();
-    await page.user.type(page.view.getByRole('textbox', { name: 'Name shown' }), 'Offline');
+    await enterText(
+      page.user,
+      labelForm(page).getByRole('textbox', { name: 'Name shown' }),
+      'Offline',
+    );
     if (change === 'context')
       page.fake.route('GET', '/api/config', () =>
         recorded('read_config_after_editor_active_profile_switch'),
@@ -475,7 +529,7 @@ for (const change of ['context', 'generation', 'deleted'] as const) {
         recorded('inactive_target_list_after_deletion'),
       );
     if (change === 'generation') page.fake.route('GET', '/api/profile-files', () => 'hold');
-    await page.user.click(page.view.getByRole('button', { name: /Save name/u }));
+    await page.user.click(labelForm(page).getByRole('button', { name: /Save name/u }));
     if (change === 'generation') {
       act(() => {
         page.data.commands.returnEditingToActive({ epoch: page.data.store.getSnapshot().epoch });
