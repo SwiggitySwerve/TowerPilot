@@ -15,6 +15,7 @@ the attributes they already had. Regeneration is an explicit developer command, 
 """
 
 import paths as test_paths
+from fixture_json import write_fixture_json
 import copy
 import hashlib
 import json
@@ -57,8 +58,7 @@ def roundtrip(value):
 
 
 def write(document):
-    GOLDEN_PATH.parent.mkdir(parents=True, exist_ok=True)
-    GOLDEN_PATH.write_bytes((json.dumps(document, indent=1, sort_keys=True) + '\n').encode('utf-8'))     # bytes: the file is LF on every platform
+    write_fixture_json(GOLDEN_PATH, document)
 
 
 def digest(value):

@@ -10,3 +10,8 @@ src/contract/generated/
 *.md
 # A2-7 reviewed output dumps are compared byte for byte by the dump test.
 tests/unit/store/__dumps__/
+# Recorded samples are written by backend/tests/support/fixture_json.py, one case member per line;
+# Prettier would expand them again (252k lines for the abilities sample).
+tests/fixtures/abilities-samples.json
+tests/fixtures/equipment-samples.json
+tests/fixtures/schedule-race-samples.json

@@ -16,6 +16,7 @@ developer command, never a test side effect:
 """
 
 import paths as test_paths
+from fixture_json import write_fixture_json
 import contextlib
 import datetime as real_datetime
 import hashlib
@@ -52,8 +53,7 @@ def roundtrip(value):
 
 
 def write(document):
-    GOLDEN_PATH.parent.mkdir(parents=True, exist_ok=True)
-    GOLDEN_PATH.write_bytes((json.dumps(document, indent=1, sort_keys=True) + '\n').encode('utf-8'))
+    write_fixture_json(GOLDEN_PATH, document)
 
 
 def digest(value):

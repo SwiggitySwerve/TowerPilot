@@ -13,6 +13,7 @@ regenerates it on purpose and the UI side re-reads it:
 Offline: temporary ledgers and leases, fake process and device boundaries."""
 
 import paths as test_paths
+from fixture_json import render_fixture_json
 import copy
 import json
 import os
@@ -836,7 +837,7 @@ def build(tmp_path, monkeypatch, dash, launches):
 
 def test_the_published_fixture_matches_what_the_code_produces(tmp_path, monkeypatch, dash, launches, request):
     generated = build(tmp_path, monkeypatch, dash, launches)
-    text = json.dumps(generated, indent=1, sort_keys=True, ensure_ascii=False) + '\n'
+    text = render_fixture_json(generated)
     assert str(tmp_path) not in text and str(Path(dash.__file__).parents[1]) not in text, 'a machine path leaked into the contract'
     assert 'NaN' not in text and 'Infinity' not in text
     if request.config.getoption('--regenerate-harvest-fixture'):

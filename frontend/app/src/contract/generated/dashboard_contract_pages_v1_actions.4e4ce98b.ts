@@ -2,7 +2,7 @@
 // Input name: dashboard_contract_pages_v1.json
 // Input families: action_executions 79FCD89F7BF6333FE08CAD8136A22188D5D57D49E2C3F47D9DDEBCE8EB51F3EA, action_executions_more 182029CE0D48BF812E4D3453DBE7F877C9F8D663D94EA836DDDBA9BAEE066819, battle_actions_projection 7F4933F644E7A6B07D4FF57679F0B4681987D03CA7A36C4D316D0CAEB1F6A1C5
 // Input SHA-256 of these families: 4e4ce98b263238f6e389342fab3a985a419e95054c84ca8ead8f7387ca640fd8
-// Vocabularies also from: dashboard_contract_v1.json 0d230c8a1d3442bcde9b3e007c6e7729bf2f2e08c91ea03a15619a07df981e73
+// Vocabularies also from: dashboard_contract_v1.json 17002fa1fdda1a8b32048978dfcc9e6d4cac8f0163ffcc83cf11d2534dde975e
 import { z } from 'zod';
 export const fixtureVersionSchema = z.literal(1);
 export type FixtureVersion = z.infer<typeof fixtureVersionSchema>;

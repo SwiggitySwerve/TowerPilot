@@ -29,6 +29,7 @@ which an unhandled exception produces in production) is {text}. Ids are aliased 
 of appearance and the scenario root is `<root>`."""
 
 import paths as test_paths
+from fixture_json import render_fixture_json
 import contextlib
 import copy
 import json
@@ -1275,7 +1276,7 @@ def build(dash, base, monkeypatch):
 
 
 def render(document):
-    return json.dumps(document, indent=1, sort_keys=True, ensure_ascii=False) + '\n'
+    return render_fixture_json(document)
 
 # -------------------------------------------------- 10.3 of the Dashboard spec
 # Each row of the table in section 10.3 (and of its "Unknown outcomes of the baseline writes" table) with the

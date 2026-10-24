@@ -24,14 +24,14 @@ import { REPO } from '../../support/paths.ts';
  */
 describe('AC6 landed r17b checkout provenance', () => {
   it.each([
-    [DASHBOARD_FIXTURE_PATH, '0d230c8a1d3442bcde9b3e007c6e7729bf2f2e08c91ea03a15619a07df981e73'],
+    [DASHBOARD_FIXTURE_PATH, '17002fa1fdda1a8b32048978dfcc9e6d4cac8f0163ffcc83cf11d2534dde975e'],
     [
       DASHBOARD_PAGES_FIXTURE_PATH,
-      'da4ee1e2974fb0a7c8f545aeb16304d1bfb94a139f239a0d2a5b92ff050bc864',
+      '9da4c075711141cdef553891056dbf8bb4364f9c4f55de7b48c6d42705799512',
     ],
     [
       SYNTHETIC_ACTION_FIXTURE_PATH,
-      '4f5c9ef9abe08349658fe4604150c7a279dd92b1304e1b1aaeba06d86284c3e8',
+      'f6ef2c6360f6b053302c8c3b5abae588c666d2e326a535c1a2a7c19d5a2b838b',
     ],
   ])('pins the approved checkout bytes at %s', (file, sha256) => {
     expect(loadJsonWithIdentity(file).identity.sha256).toBe(sha256);
@@ -74,13 +74,19 @@ describe('AC6 landed r17b checkout provenance', () => {
     const id = String(token).split('@')[0];
     expect(id).toBeTruthy();
     // Includes untracked source, honors .gitignore (builds and dependencies are not source).
-    const files = execFileSync(
-      'git',
-      ['ls-files', '-z', '--cached', '--others', '--exclude-standard', 'frontend'],
-      { cwd: REPO, encoding: 'utf8' },
-    )
-      .split('\0')
-      .filter(Boolean);
+    const listFiles = (...options: string[]) =>
+      execFileSync('git', ['ls-files', '-z', ...options, 'frontend'], {
+        cwd: REPO,
+        encoding: 'utf8',
+      })
+        .split('\0')
+        .filter(Boolean);
+    // A file the working tree already deleted (a pruned generated module) is still listed as
+    // cached until its removal is staged; it holds no source, so it is not read.
+    const deleted = new Set(listFiles('--deleted'));
+    const files = listFiles('--cached', '--others', '--exclude-standard').filter(
+      (file) => !deleted.has(file),
+    );
     const found = files.filter(
       (file) =>
         !/(?:^|\/)(?:tests|e2e)(?:\/|$)|\.(?:test|spec)\.[cm]?[jt]sx?$/u.test(file) &&

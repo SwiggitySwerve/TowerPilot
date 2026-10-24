@@ -15,6 +15,7 @@ a test side effect:
 """
 
 import paths as test_paths
+from fixture_json import write_fixture_json
 import contextlib
 import hashlib
 import itertools
@@ -580,8 +581,7 @@ def roundtrip(value):
 
 
 def write(document):
-    GOLDEN_PATH.parent.mkdir(parents=True, exist_ok=True)
-    GOLDEN_PATH.write_text(json.dumps(document, indent=1, sort_keys=True) + '\n', encoding='utf-8')
+    write_fixture_json(GOLDEN_PATH, document)
 
 # ---------------------------------------------------------------- snapshots
 def baseline_snapshots(tmp_path, dash):

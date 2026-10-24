@@ -49,4 +49,4 @@ export {
   type WizardStateAnswer,
   type WizardToolsAnswer,
   type WriteUnknownOutcomeAnswer,
-} from './generated/dashboard_contract_v1.0d230c8a.ts';
+} from './generated/dashboard_contract_v1.17002fa1.ts';

@@ -1468,7 +1468,7 @@
       }
     }
   },
-  "parent_fixture_sha256": "4CD53CF267D061D16F85F8F772ECFED0A9C47F8A8EC7A32CE9F6BAB1F45CFE2E",
+  "parent_fixture_sha256": "9923AB00EE4C08CF4DF2E737867AD78F6E6D0E98B19DA1479201F32B45476D8D",
   "reason": "R14i intentionally retains bounded confirmation after input stops.",
   "version": 1
 }

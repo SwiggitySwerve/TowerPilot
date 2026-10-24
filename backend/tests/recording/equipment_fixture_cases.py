@@ -9,6 +9,7 @@ import copy
 import json
 
 import paths
+from fixture_json import write_fixture_json
 from conftest import dash  # noqa: F401 - pytest fixture, temporary backend root
 from dashboard_contract_cases_editors import equipped
 from dashboard_contract_pages_world import PagesGenerator
@@ -111,5 +112,4 @@ def test_generate_equipment_samples(tmp_path, monkeypatch, dash):
         source_family, case = source.split('.', 1)
         gen.cases[family][name] = copy.deepcopy(pages[source_family][case])
     document = scrub(dict(version=1, generated_by='backend/tests/recording/equipment_fixture_cases.py', cases=gen.cases), gen.base)
-    destination = paths.FRONTEND_FIXTURES / 'equipment-samples.json'
-    destination.write_text(json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')
+    write_fixture_json(paths.FRONTEND_FIXTURES / 'equipment-samples.json', document)
