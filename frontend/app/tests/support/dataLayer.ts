@@ -58,6 +58,8 @@ export interface BootOptions {
   readonly config?: () => unknown;
   readonly storage?: KeyValueStorage & { readonly entries?: () => Record<string, string> };
   readonly hidden?: boolean;
+  /** Leave the visibility option out, so the wiring's production default (the real document) is under test. */
+  readonly documentVisibility?: boolean;
   readonly fake?: FakeTransport;
   /** Routes added before start (e.g. holding /api/status). */
   readonly before?: (fake: FakeTransport) => void;
@@ -116,7 +118,7 @@ export function bootDashboard(options: BootOptions = {}) {
   const data = createDashboardData({
     transport: fake.transport,
     storage,
-    visibility,
+    ...(options.documentVisibility === true ? {} : { visibility }),
     newId: counter('rec'),
     newKey: options.newKey ?? counter('key'),
   });
