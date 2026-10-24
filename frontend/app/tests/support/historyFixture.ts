@@ -1,4 +1,4 @@
-import { historyCase, HISTORY_RECORDS } from '../../e2e/history-fixtures.mjs';
+import { historyCase, HISTORY_RECORDS } from './history-fixtures.mjs';
 import { createHistoryReader, type HistoryTarget } from '../../src/api/history.ts';
 import type { Transport, TransportRequest } from '../../src/api/transport.ts';
 

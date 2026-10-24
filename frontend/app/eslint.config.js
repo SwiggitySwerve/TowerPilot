@@ -37,7 +37,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REACT_VERSION = reactPackage.version;
 
 // The policy itself (layers, network, brands, copy) lives in eslint-rules/policy.js,
-// shared with tests/lint/rules.test.ts.
+// shared with tests/unit/lint/rules.test.ts.
 export default defineConfig([
   // The generated contract modules are checked by `generate-contract.mjs --check`, not linted.
   globalIgnores([
@@ -182,13 +182,19 @@ export default defineConfig([
 
   // ------------------------------------------------------------ tests
   {
-    files: ['tests/**/*.{ts,tsx}'],
+    files: ['tests/unit/**/*.{ts,tsx}', 'tests/support/**/*.{ts,tsx}'],
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
   },
 
   // --------------------------------------------- tooling (Node, not shipped)
   {
-    files: ['*.{js,ts}', 'scripts/**/*.{ts,mjs}', 'e2e/**/*.{ts,mjs}', 'eslint-rules/**/*.js'],
+    files: [
+      '*.{js,ts}',
+      'scripts/**/*.{ts,mjs}',
+      'tests/e2e/**/*.{ts,mjs}',
+      'tests/support/**/*.{ts,mjs}',
+      'eslint-rules/**/*.js',
+    ],
     languageOptions: { globals: globals.node },
   },
 ]);

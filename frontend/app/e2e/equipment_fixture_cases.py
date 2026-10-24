@@ -111,5 +111,5 @@ def test_generate_equipment_samples(tmp_path, monkeypatch, dash):
         source_family, case = source.split('.', 1)
         gen.cases[family][name] = copy.deepcopy(pages[source_family][case])
     document = scrub(dict(version=1, generated_by='frontend/app/e2e/equipment_fixture_cases.py', cases=gen.cases), gen.base)
-    destination = Path(__file__).with_name('equipment-samples.json')
+    destination = (Path(__file__).parents[1] / "tests" / "fixtures" / 'equipment-samples.json')
     destination.write_text(json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')

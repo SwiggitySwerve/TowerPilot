@@ -5,7 +5,7 @@ import type { Transport, TransportRequest, TransportResult } from '../../src/api
  * The fake transport of spec OD-8 for Vitest: every request is recorded with
  * its exact body text, and a test decides per request whether it is answered
  * at once (a route), held (answered, lost or dropped later, in any order) or
- * failed. No socket is opened (tests/setup.ts refuses them).
+ * failed. No socket is opened (tests/unit/setup.ts refuses them).
  */
 export interface Recorded {
   readonly method: 'GET' | 'POST';

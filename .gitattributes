@@ -10,6 +10,6 @@
 # and hash tests, not line by line.
 backend/tests/fixtures/*.json linguist-generated=true
 frontend/app/src/contract/generated/** linguist-generated=true
-frontend/app/e2e/*-samples.json linguist-generated=true
-frontend/app/tests/store/__dumps__/** linguist-generated=true
+frontend/app/tests/fixtures/*.json linguist-generated=true
+frontend/app/tests/unit/store/__dumps__/** linguist-generated=true
 frontend/app/package-lock.json linguist-generated=true

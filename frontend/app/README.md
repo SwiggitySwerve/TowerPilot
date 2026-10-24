@@ -2,7 +2,7 @@
 > **Status:** Active (Phase 0 scaffold)
 > **Type:** Knowledge
 > **Created:** 2026-10-21
-> **Updated:** 2026-10-23
+> **Updated:** 2026-10-24
 > **Decision record:** ADR-001, frontend stack and structure (2026-10-21)
 
 ## Purpose
@@ -58,12 +58,35 @@ text and no plain-`string` JSX child (`react/jsx-no-literals` and
 [eslint-rules/no-string-jsx-child.js](eslint-rules/no-string-jsx-child.js)), no type
 assertions outside the homes of the type-only brands, the network only from
 `src/api/`, and no `eval`, `new Function` or `dangerouslySetInnerHTML`. The
-render check in [tests/copy/renderedText.ts](tests/copy/renderedText.ts) backs
-this up at runtime, and [tests/lint/rules.test.ts](tests/lint/rules.test.ts) holds
+render check in [tests/unit/copy/renderedText.ts](tests/unit/copy/renderedText.ts) backs
+this up at runtime, and [tests/unit/lint/rules.test.ts](tests/unit/lint/rules.test.ts) holds
 one probe per rule.
 
 The ADR-001 decision record is kept with the project's review logs, which are not
 part of the repository, so it is named here rather than linked.
+---
+
+## Test layout
+
+| Path | Purpose |
+| --- | --- |
+| `tests/unit/` | Vitest unit, component, DOM and type tests; setup and local helpers stay with their tests |
+| `tests/e2e/` | Playwright browser specs, with browser helpers in `helpers/` and isolated configs in `configs/` |
+| `tests/support/` | Recorded-case readers and test helpers shared by unit and browser tests |
+| `tests/support/fake-backend/` | Fixture API server and scenario data used by Playwright and the dev server |
+| `tests/fixtures/` | Recorded abilities, equipment and schedule-race samples |
+
+Unit and browser tests share readers through `tests/support/`; support may import
+`src/` and `scripts/`. The browser constraint tests also consume the generated
+ledger in `tests/unit/spec/specData.ts`. The dev server imports the fake backend
+through [scripts/dev-backend.ts](scripts/dev-backend.ts).
+
+[playwright.config.ts](playwright.config.ts) stays at the app root for default
+Playwright discovery. Isolated configs use
+[one factory](tests/e2e/configs/isolated-config.ts) and retain their own ports,
+builds and output directories. [tests/support/paths.ts](tests/support/paths.ts)
+owns the app, source and repository roots used by test tooling.
+
 ---
 
 ## Notes

@@ -57,7 +57,7 @@ SOURCES = {
     "frontend/app/src/app/main.tsx": b"export {};\n",
     "frontend/app/src/core/facts.ts": b"export {};\n",
     "frontend/app/src/ui/tokens.css": b":root{}\n",
-    "frontend/app/e2e/fake-backend.mjs": b"export {};\n",
+    "frontend/app/tests/support/fake-backend/fake-backend.mjs": b"export {};\n",
 }
 NEVER = {
     "frontend/app/node_modules/react/index.js": b"module.exports = {}",
@@ -117,7 +117,7 @@ def _assert_release_contents(entries: Mapping[str, bytes]) -> None:
     for name, data in BUILD.items():
         assert entries.get(name) == data, name
     for name in ("frontend/app/package.json", "frontend/app/package-lock.json", "frontend/app/.npmrc",
-                 "frontend/app/src/app/main.tsx", "frontend/app/e2e/fake-backend.mjs",
+                 "frontend/app/src/app/main.tsx", "frontend/app/tests/support/fake-backend/fake-backend.mjs",
                  "frontend/webui/index.html", "frontend/dashboard.py"):
         assert name in entries, name
     for name in NEVER:
@@ -178,7 +178,7 @@ def test_allowed_admits_app_sources_and_leaves_the_build_to_the_filesystem(
     build_release, _ = tools
     for name in ("frontend/app/package.json", "frontend/app/src/app/App.tsx", "frontend/app/src/core/facts.ts",
                  "frontend/app/vite.config.ts", "frontend/app/.npmrc", "frontend/app/README.md",
-                 "frontend/app/e2e/fake-backend.mjs"):
+                 "frontend/app/tests/support/fake-backend/fake-backend.mjs"):
         assert build_release.allowed(name), name
     for name in ("frontend/app/node_modules/react/index.js", "frontend/app/test-results/x.txt",
                  "frontend/app/playwright-report/index.html", "frontend/app/coverage/index.html",

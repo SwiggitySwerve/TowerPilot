@@ -50,6 +50,6 @@ def test_generate_schedule_revision_races(tmp_path, monkeypatch, dash):
             assert final_run['settings']['routines']['ad_gems']['enabled'] is False
     document = scrub(dict(version=1, generated_by='frontend/app/e2e/schedule_fixture_cases.py',
                           cases=gen.cases), gen.base)
-    destination = Path(__file__).with_name('schedule-race-samples.json')
+    destination = (Path(__file__).parents[1] / "tests" / "fixtures" / 'schedule-race-samples.json')
     destination.write_text(json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')
     assert all(len(cases) == 10 for cases in document['cases'].values())
