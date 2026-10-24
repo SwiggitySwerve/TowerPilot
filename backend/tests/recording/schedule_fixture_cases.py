@@ -1,12 +1,12 @@
 """Record both Schedule/Runs save orders through real routes in the isolated contract world.
 
 No running dashboard, device, live ledger, lease or process is used. Generate from
-the repository root with python -m pytest frontend/app/e2e/schedule_fixture_cases.py.
+the repository root with python -m pytest backend/tests/recording/schedule_fixture_cases.py.
 """
 import copy
 import json
-from pathlib import Path
 
+import paths
 from conftest import dash  # noqa: F401 - fixture with an isolated backend root
 from dashboard_contract_pages_world import PagesGenerator, populate
 from test_dashboard_contract import scrub
@@ -48,8 +48,8 @@ def test_generate_schedule_revision_races(tmp_path, monkeypatch, dash):
             assert final['revision'] == final_run['profile_revision'] != latest['revision']
             assert final['profile']['plan']['days']['farm_day'][0]['count'] == 60
             assert final_run['settings']['routines']['ad_gems']['enabled'] is False
-    document = scrub(dict(version=1, generated_by='frontend/app/e2e/schedule_fixture_cases.py',
+    document = scrub(dict(version=1, generated_by='backend/tests/recording/schedule_fixture_cases.py',
                           cases=gen.cases), gen.base)
-    destination = (Path(__file__).parents[1] / "tests" / "fixtures" / 'schedule-race-samples.json')
+    destination = paths.FRONTEND_FIXTURES / 'schedule-race-samples.json'
     destination.write_text(json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')
     assert all(len(cases) == 10 for cases in document['cases'].values())

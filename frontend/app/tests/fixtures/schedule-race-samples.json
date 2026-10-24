@@ -8014,6 +8014,6 @@
       }
     }
   },
-  "generated_by": "frontend/app/e2e/schedule_fixture_cases.py",
+  "generated_by": "backend/tests/recording/schedule_fixture_cases.py",
   "version": 1
 }

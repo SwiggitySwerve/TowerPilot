@@ -5507,6 +5507,6 @@
       }
     }
   },
-  "generated_by": "frontend/app/e2e/equipment_fixture_cases.py",
+  "generated_by": "backend/tests/recording/equipment_fixture_cases.py",
   "version": 1
 }

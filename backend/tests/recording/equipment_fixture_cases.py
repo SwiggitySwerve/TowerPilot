@@ -3,18 +3,18 @@
 The published page family has no GET of a manual/global loadout or of the discovered
 inventory used by its saves. These samples add those browser states without inventing
 backend answers. Run from the repository root:
-python -m pytest frontend/app/e2e/equipment_fixture_cases.py
+python -m pytest backend/tests/recording/equipment_fixture_cases.py
 """
 import copy
 import json
-from pathlib import Path
 
+import paths
 from conftest import dash  # noqa: F401 - pytest fixture, temporary backend root
 from dashboard_contract_cases_editors import equipped
 from dashboard_contract_pages_world import PagesGenerator
 from test_dashboard_contract import scrub
 
-PAGES_FIXTURE = Path(__file__).resolve().parents[3] / 'backend/tests/fixtures/dashboard_contract_pages_v1.json'
+PAGES_FIXTURE = paths.FIXTURES / 'dashboard_contract_pages_v1.json'
 # Equipment sample name -> recorded pages-fixture case it repeats.
 CONTEXT_ALIASES = {
     'context_config': 'context_fence.read_config_before_the_loadout_save',
@@ -110,6 +110,6 @@ def test_generate_equipment_samples(tmp_path, monkeypatch, dash):
     for name, source in CONTEXT_ALIASES.items():
         source_family, case = source.split('.', 1)
         gen.cases[family][name] = copy.deepcopy(pages[source_family][case])
-    document = scrub(dict(version=1, generated_by='frontend/app/e2e/equipment_fixture_cases.py', cases=gen.cases), gen.base)
-    destination = (Path(__file__).parents[1] / "tests" / "fixtures" / 'equipment-samples.json')
+    document = scrub(dict(version=1, generated_by='backend/tests/recording/equipment_fixture_cases.py', cases=gen.cases), gen.base)
+    destination = paths.FRONTEND_FIXTURES / 'equipment-samples.json'
     destination.write_text(json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')

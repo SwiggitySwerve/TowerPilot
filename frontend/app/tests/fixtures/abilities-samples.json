@@ -252629,6 +252629,6 @@
       }
     }
   },
-  "generated_by": "frontend/app/e2e/abilities_fixture_cases.py",
+  "generated_by": "backend/tests/recording/abilities_fixture_cases.py",
   "version": 1
 }

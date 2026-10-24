@@ -27,8 +27,7 @@ AGENT_DIRS = {'.claude', '.codex', '.github'}
 AGENT_EXCLUDE = {'.claude/settings.local.json'}
 # The dashboard app (ADR-001). Its sources ship so a release can be rebuilt
 # and reviewed (decision 2); npm and test state never do.
-# .py: the e2e fixture generators that record genuine route answers.
-APP_SOURCE_SUFFIXES = {'.ts', '.tsx', '.mjs', '.cjs', '.js', '.json', '.css', '.html', '.md', '.py'}
+APP_SOURCE_SUFFIXES = {'.ts', '.tsx', '.mjs', '.cjs', '.js', '.json', '.css', '.html', '.md'}
 APP_SOURCE_NAMES = {'.npmrc', '.prettierignore', '.gitignore'}
 APP_SOURCE_EXCLUDE = {'node_modules', 'test-results', 'playwright-report', 'coverage'}
 # Its build is git-ignored, so it is added from the filesystem: index.html,

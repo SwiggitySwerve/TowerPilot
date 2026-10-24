@@ -1,14 +1,14 @@
 """Supplement whole-policy editor answers with REAL Flask route calls in isolated worlds.
 
 Never calls the running dashboard, device, ledger or lease. Run from the repo root:
-python -m pytest frontend/app/e2e/abilities_fixture_cases.py
+python -m pytest backend/tests/recording/abilities_fixture_cases.py
 Then format the captured JSON from frontend/app:
-npx prettier --write e2e/abilities-samples.json
+npx prettier --write tests/fixtures/abilities-samples.json
 """
 import copy
 import json
-from pathlib import Path
 
+import paths
 from conftest import dash  # noqa: F401
 from dashboard_contract_cases_editors import with_abilities
 from dashboard_contract_pages_world import PagesGenerator
@@ -146,5 +146,5 @@ def test_generate_abilities_samples(tmp_path, monkeypatch, dash):
             # Recording later edits must never rewrite the request that produced an earlier answer.
             assert gen.cases[family][f'{scenario}_committed']['request']['body'] == committed_request
             assert gen.cases[family][f'{scenario}_saved']['request']['body'] == changed_request
-    document = scrub(dict(version=1, generated_by='frontend/app/e2e/abilities_fixture_cases.py', cases=gen.cases), gen.base)
-    (Path(__file__).parents[1] / "tests" / "fixtures" / 'abilities-samples.json').write_text(json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')
+    document = scrub(dict(version=1, generated_by='backend/tests/recording/abilities_fixture_cases.py', cases=gen.cases), gen.base)
+    (paths.FRONTEND_FIXTURES / 'abilities-samples.json').write_text(json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')
