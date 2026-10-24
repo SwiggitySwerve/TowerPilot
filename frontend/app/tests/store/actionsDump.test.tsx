@@ -26,7 +26,7 @@ import { addBody, addCase, regionState } from './regionHelpers.ts';
  * behaviour-preserving R1 and R2 steps. The AC1/AC2/AC3/AC5 behavior phase deliberately
  * replaces that baseline: descriptor rows/fields, result/effect output and shared reading gates.
  * The reviewed per-case diff is recorded in frontend-a2-7.json ac1_ac2_finalization. The landed r17b's
- * projection cases are a separate snapshot of their own. The dump is a refactor gate over the
+ * projection cases are the P:battle_actions_projection rows. The dump is a refactor gate over the
  * recordings as they are: when the fixtures change or a C step changes behaviour by
  * design, it is regenerated deliberately (vitest -u) and the diff reviewed with that change.
  */
@@ -176,22 +176,6 @@ describe('A2-7 reviewed behavior output dump', () => {
       saved: saved.map(([name, found]) => savedDump(name, found)),
     });
     await expect(text).toMatchFileSnapshot('./__dumps__/actions-dump.json');
-  }, 120_000);
-
-  it('dumps the landed r17b projection reads against the reviewed baseline (separate snapshot)', async () => {
-    const projection: readonly (readonly [string, Fixture])[] = [
-      [
-        'R17B',
-        {
-          battle_actions_projection:
-            casesOf(DASHBOARD_PAGES_FIXTURE_PATH)['battle_actions_projection'] ?? {},
-        },
-      ],
-    ];
-    const battles = reads(projection, battleRead);
-    expect(battles.length).toBe(14);
-    const text = dumpText({ battles: battles.map(([name, found]) => battleDump(name, found)) });
-    await expect(text).toMatchFileSnapshot('./__dumps__/actions-dump-r17b.json');
   }, 120_000);
 
   it('R2 a projection gives the live editor its bounds before the saved run is read', () => {
