@@ -65,6 +65,7 @@ from dashboard_contract_cases_settings_modules_more import SMM, settings_modules
 from dashboard_contract_cases_settings_modules_more_2 import MODULES_ONLY, PAGE_CONTEXT, SM2, settings_modules_more_2_cases
 from dashboard_contract_cases_profile_target_more_2 import PM2, STEPS as PM2_STEPS, case_names as pm2_names, profile_target_more_2_cases
 from dashboard_contract_cases_action_executions import AX, FAMILY_ROW as AX_ROW, NOTE as AX_NOTE, ROWS as AX_ROWS, action_executions_cases
+from dashboard_contract_cases_action_executions_more import AXM, FAMILY_ROW as AXM_ROW, NOTE as AXM_NOTE, ROWS as AXM_ROWS, action_executions_more_cases
 from dashboard_contract_cases_action_projection import BP as AP_FAMILY, FAMILY_ROW as AP_ROW, NOTE as AP_NOTE, ROWS as AP_ROWS, battle_actions_projection_cases
 from dashboard_contract_cases_profile import run_profile_cases, run_schedule_cases
 from dashboard_contract_cases_settings import run_settings_cases
@@ -87,7 +88,8 @@ FAMILIES = [run_controls_save_cases, run_controls_live_cases, run_history_cases,
             runtime_environment_cases, run_preview_cases, settings_modules_cases, loadout_restore_eligibility_cases, settings_switch_records_cases,
             run_templates_add_coded_cases, run_controls_live_reset_all_mixed_cases, run_entry_patch_parity_cases, shopping_queue_bounds_cases,
             run_kind_guard_cases, profile_patch_fenced_cases, ad_gems_failed_attempt_poll_cases, plan_removal_effects_cases, profile_target_more_cases,
-            settings_modules_more_cases, settings_modules_more_2_cases, profile_target_more_2_cases, action_executions_cases, battle_actions_projection_cases]
+            settings_modules_more_cases, settings_modules_more_2_cases, profile_target_more_2_cases, action_executions_cases, battle_actions_projection_cases,
+            action_executions_more_cases]
 UNNAMED_ALLOWED = 49      # cases no row names (the settling reads of one scenario); report.json lists them
 
 NOTES = dict(
@@ -1419,10 +1421,11 @@ NOTES.update(
                            'and the profile read afterwards is the one before with exactly that path changed. Deleting the gathering policy leaves `policies` as a mapping without it; deleting dissonant_tab leaves a plain coin run (its kind is not touched, so the kind guard does not apply). No refusal occurs for these seven in this world; the refusals of the same fields are in run_entry_patch and run_entry_patch_parity. '
                            'A last request repeats the delete of the rescue policy once it is gone: 200 with the SAME revision (an absent key is popped, the file keeps its bytes). The active profile `mine` and config.yaml are byte-identical after the whole sequence (asserted).'),
 )
-NOTES.update(action_executions=AX_NOTE.strip(), battle_actions_projection=AP_NOTE)
+NOTES.update(action_executions=AX_NOTE.strip(), battle_actions_projection=AP_NOTE, action_executions_more=AXM_NOTE)
 COVERAGE.update({row: keys(AX, *cases) for row, cases in AX_ROWS.items()})
 COVERAGE.update({row: keys(AP_FAMILY, *cases) for row, cases in AP_ROWS.items()})
-FAMILY_ROWS = {AP_FAMILY: AP_ROW, AX: AX_ROW, PM2: 'F6-14 follow-up recordings (r12f: seven more run-entry edits of an inactive profile)', SM2: 'F6-15 follow-up recordings (r12f: a modules restore alone, a profile with no blueprints, a malformed tournament list)', SMM: 'F6-15 open recordings (r12e: more of the settings modules)', PTM: 'F6-14 open recordings (r12e: more of an inactive profile)', AP: 'F6-11 6.4 (r12d: the failed Ad gems attempt through the collector own poll)', PRE: 'F6-11 6.5 (r12d: what removing the plan changes)', KG: 'F6-11 RL12 (r12d: a run kind is fixed)', PFD: 'F6-14b (brief section 7: fenced writes to the active profile)', TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
+COVERAGE.update({row: keys(AXM, *cases) for row, cases in AXM_ROWS.items()})
+FAMILY_ROWS = {AXM: AXM_ROW, AP_FAMILY: AP_ROW, AX: AX_ROW, PM2: 'F6-14 follow-up recordings (r12f: seven more run-entry edits of an inactive profile)', SM2: 'F6-15 follow-up recordings (r12f: a modules restore alone, a profile with no blueprints, a malformed tournament list)', SMM: 'F6-15 open recordings (r12e: more of the settings modules)', PTM: 'F6-14 open recordings (r12e: more of an inactive profile)', AP: 'F6-11 6.4 (r12d: the failed Ad gems attempt through the collector own poll)', PRE: 'F6-11 6.5 (r12d: what removing the plan changes)', KG: 'F6-11 RL12 (r12d: a run kind is fixed)', PFD: 'F6-14b (brief section 7: fenced writes to the active profile)', TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
                RESET: 'F6-11 RL2 (6.1)', TF: 'F6-11 RL4 guarded (root decision: run-templates/add gains expected_revision and expected_context)', SQ: 'F6-12 (brief section 8)', PTG: 'F6-14 (brief section 6)', ENTRY: 'F6-11 RL3 (6.2)', TEMPLATES: 'F6-11 RL4 (6.3)', DETAILS: 'F6-11 RL7 (6.4)', PLAN_DELETE: 'F6-11 RL8 (6.5)', SAVE: 'RUN-04..07', LIVE: 'RUN-08..11', HL: 'H-01', HD: 'H-01, H-02', CFG: 'G-01', PR: 'G-02', PP: 'G-03', SP: 'S-01', ST: 'G-04', LO: 'E-01', CO: 'C-01', AB: 'A-01', AC: 'P-01', PF: 'P-02', EI: 'M-01', EA: 'M-02', ET: 'M-03', RS: 'T-01', RD: 'T-02', RR: 'R-01, R-02, R-06', CW: 'R-02', RI: 'R-03', SA: 'R-04', RL: 'R-05'}
 
 
@@ -1466,7 +1469,8 @@ PUBLISHED_ORDER = ['run_controls_save_cases', 'run_controls_live_cases', 'run_hi
                    'runtime_environment_cases', 'run_preview_cases', 'settings_modules_cases', 'loadout_restore_eligibility_cases', 'settings_switch_records_cases',
                    'run_templates_add_coded_cases', 'run_controls_live_reset_all_mixed_cases', 'run_entry_patch_parity_cases', 'shopping_queue_bounds_cases',
                    'run_kind_guard_cases', 'profile_patch_fenced_cases', 'ad_gems_failed_attempt_poll_cases', 'plan_removal_effects_cases', 'profile_target_more_cases',
-                   'settings_modules_more_cases', 'settings_modules_more_2_cases', 'profile_target_more_2_cases', 'action_executions_cases', 'battle_actions_projection_cases']
+                   'settings_modules_more_cases', 'settings_modules_more_2_cases', 'profile_target_more_2_cases', 'action_executions_cases', 'battle_actions_projection_cases',
+                   'action_executions_more_cases']
 
 
 CODED_PATHS = frozenset({'/api/calibrate/start', '/api/calibrate/observe', '/api/calibrate/apply', '/api/calibrate/stop', '/api/calibrate/status',
@@ -1645,4 +1649,12 @@ def test_the_r17a_projection_family_is_made_by_the_real_routes_and_is_the_same_t
     first = render(build(dash, tmp_path / 'one', monkeypatch, [battle_actions_projection_cases]))
     assert render(build(dash, tmp_path / 'two', monkeypatch, [battle_actions_projection_cases])) == first
     families = json.loads(first)['cases']
-    assert {name: len(cases) for name, cases in families.items()} == {AP_FAMILY: 8}
+    assert {name: len(cases) for name, cases in families.items()} == {AP_FAMILY: 14}
+
+
+def test_the_r17b_executions_family_is_made_by_the_real_routes_and_is_the_same_twice(dash, tmp_path, monkeypatch):
+    """The family r17b added (the Run now execution, a cut-off battle, a settled row, the harvest launch attempts) on its own: every assertion of its generator runs, and two runs are byte-identical."""
+    first = render(build(dash, tmp_path / 'one', monkeypatch, [action_executions_more_cases]))
+    assert render(build(dash, tmp_path / 'two', monkeypatch, [action_executions_more_cases])) == first
+    families = json.loads(first)['cases']
+    assert {name: len(cases) for name, cases in families.items()} == {AXM: 9}

@@ -154,9 +154,7 @@ class ActionSession:
         row = self._actions().finish(execution_id, result=result, reason=reason, effect=effect, attempts=attempts,
                                      confirmed=confirmed, evidence=evidence, finished_at=self.clock.wall(),
                                      duration_ms=duration, refs=refs)
-        self.last[row['instance']] = dict(execution_id=row['id'], started_at=row['started_at'], finished_at=row['finished_at'],
-                                          duration_ms=row['duration_ms'], result=result, reason=reason, effect=effect,
-                                          trigger=row['trigger'])
+        self._remember(row, result=result, reason=reason, effect=effect, trigger=row['trigger'], duration_ms=row['duration_ms'])
         return row
 
     @contained('check')
@@ -167,8 +165,7 @@ class ActionSession:
             self._body(action, instance, trigger=trigger, occurrence_key=None, scheduled_for=scheduled_for,
                        command_id=None, request_key=None, refs=refs, config_revision=config_revision,
                        policy_revision=policy_revision), result=result, reason=reason)
-        self.last[row['instance']] = dict(execution_id=row['id'], started_at=row['started_at'], finished_at=row['finished_at'],
-                                          duration_ms=None, result=result, reason=reason, effect='none', trigger=trigger)
+        self._remember(row, result=result, reason=reason, effect='none', trigger=trigger, duration_ms=None)
         return row
 
     @contained('record')
@@ -182,9 +179,15 @@ class ActionSession:
                        policy_revision=policy_revision),
             result=result, reason=reason, effect=effect, attempts=attempts, confirmed=confirmed, evidence=evidence,
             finished_at=self.clock.wall())
-        self.last[row['instance']] = dict(execution_id=row['id'], started_at=row['started_at'], finished_at=row['finished_at'],
-                                          duration_ms=None, result=result, reason=reason, effect=effect, trigger=trigger)
+        self._remember(row, result=result, reason=reason, effect=effect, trigger=trigger, duration_ms=None)
         return row
+
+    def _remember(self, row, *, result, reason, effect, trigger, duration_ms):
+        """The newest finished execution of an instance, as the projection's `last`. `command_id` is the Run now command that started it
+        (None for an automatic one), so one read links a command to its execution."""
+        self.last[row['instance']] = dict(execution_id=row['id'], command_id=row.get('command_id'), started_at=row['started_at'],
+                                          finished_at=row['finished_at'], duration_ms=duration_ms, result=result, reason=reason,
+                                          effect=effect, trigger=trigger)
 
     @contained('settle', default=list)
     def settle(self):
@@ -199,9 +202,11 @@ class ActionSession:
         return Recorder(self, action, instance or action)
 
     # --------------------------------------------------------- projection
-    def project(self, routines, *, observed_at=None, control_revision=None, variants=None):
+    def project(self, routines, *, observed_at=None, control_revision=None, variants=None, effective=None):
         """`runtime.actions`, derived from the same routine statuses `runtime.routines` is built from. A routine the
-        catalog does not know is not projected. Unknown is None plus a reason, never zero."""
+        catalog does not know is not projected. Unknown is None plus a reason, never zero. `effective` is the controls in force
+        (`{routine key: {field path: value}}`, the ledger's applied controls): `values` carries each descriptor field's value in force,
+        None where nothing says (a field the controls do not hold is unknown, not zero)."""
         now = self.clock.wall()
         items = []
         known = {definition.id: definition for definition in self._catalog_in_force()}
@@ -220,8 +225,12 @@ class ActionSession:
             else:
                 state = 'due' if isinstance(due, (int, float)) and due <= now else 'waiting'
             last = self.last.get(instance)
+            applied = (effective or {}).get(key)
+            applied = applied if isinstance(applied, dict) else {}
+            values = {field.path: applied.get(field.path) for field in definition.fields}
+            values['enabled'] = bool(status.get('enabled'))               # the routine's own gate is what runs; the applied value may still be waiting
             items.append(dict(
-                id=definition.id, instance=instance, label=definition.label, state=state, enabled=bool(status.get('enabled')),
+                id=definition.id, key=key, instance=instance, label=definition.label, state=state, enabled=bool(status.get('enabled')),
                 eligibility=dict(blocker=status.get('blocker'), reason=None),
                 last=None if last is None else dict(last),
                 active=dict(window_ends_at=status.get('window_ends_at')) if active else None,
@@ -230,7 +239,7 @@ class ActionSession:
                 descriptor=dict(definition.descriptor(),
                                 variants=[dict(token=token, label=token, refusal=None)
                                           for token in (variants or {}).get(instance, (variants or {}).get(definition.id, []))]),
-                values=dict(enabled=bool(status.get('enabled'))), counters=dict(status.get('counters') or {}),
+                values=values, counters=dict(status.get('counters') or {}),
                 coverage='full'))
         meta = dict(self.context)
         return dict(schema_version=SCHEMA_VERSION, published_at=now, observed_at=observed_at or now,

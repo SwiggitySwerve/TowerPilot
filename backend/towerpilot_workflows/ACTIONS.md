@@ -3,7 +3,7 @@
 > **Status:** Active (item 6: the pilot, and the control surface generated from the catalog)
 > **Type:** Rules
 > **Created:** 2026-10-22
-> **Updated:** 2026-10-23 (item 7, A3a)
+> **Updated:** 2026-10-23 (item 7, A3a; item 6, A2-7: what a page reads)
 > **Owner:** Backend
 > **Spec:** [roadmap-items-6-7/spec.md](../logs/reviews/roadmap-items-6-7/spec.md)
 > **Tags:** actions, scheduling, history, gems, shopping, harvest
@@ -57,6 +57,23 @@ second input owner: the device lease and the operations ledger stay the only own
 | `floating_gems` | `AppearanceDriven` | the same six hosts (r14g made the tapper appearance-driven; the contract follows the shipped behaviour) |
 | `shopping` | `AfterCompletion` | the orchestrator's `Shopper` (a sweep that sends input is a row; input-free sweeps are counted checks) |
 | `harvest_launch` | `Backoff` | the dashboard's reconciler: every accepted launch, refusal and failure |
+
+## What a page reads (A2-7)
+
+A page renders any timed action from one item of `battle.runtime.actions` (built only by `ActionSession.project`) and the history reads, with no table of its own:
+
+- **The item** names the action (`id`, `label`) and the configured instance (`instance`); `key` is the routine key, which is both the prefix of its live-control paths
+  (`routines.<key>.<field>`) and its Run now token (`<key>[:<variant>]`). `descriptor.fields` lists what can be edited; `values` carries the value in force of EVERY listed field
+  (the ledger's applied controls, so a control still waiting is not yet in force; a field the controls do not hold is `null`, unknown, never zero; `enabled` is the routine's own gate).
+- **`last`** is the newest finished execution of the instance. `last.command_id` is the Run now command that started it (`null` for an automatic one), so one read links a command to its execution.
+- **Staleness:** a publish that builds the projection stamps it `observed_at` with the epoch it writes as `runtime.server_time`; a publish that cannot build it leaves the last projection
+  and its stamp behind, so a reader that sees `observed_at` older than `server_time` knows the item is not current.
+- **History rows** (`GET /api/actions/executions`, and `executions.items` of `GET /api/battles/<id>`) carry `label`, the label the action has in the catalog in force (`null` for an action
+  it no longer holds), added when the row is read and never stored. A battle block cut off at a page says `truncated` and hands out `next_before`, the cursor that
+  `GET /api/actions/executions?battle_id=<id>&before=<next_before>` continues from (a complete block has no `next_before` key).
+- **Recordings** for a page's tests: `dashboard_contract_pages_v1.json` (`battle_actions_projection`, `action_executions`, `action_executions_more`) for the production actions, and the TEST-ONLY
+  `synthetic_action_contract_v1.json` for an action no production file names (`synthetic_action_contract.py` generates it through the real routes with `use_catalog`; it must never be copied
+  into the app's own generated contract).
 
 ## Item 7, A3a: rewards and chores
 

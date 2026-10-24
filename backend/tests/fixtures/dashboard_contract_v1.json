@@ -445,7 +445,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -474,7 +474,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000002.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -979,7 +979,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -1008,7 +1008,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000002.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -1475,7 +1475,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -1504,7 +1504,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000002.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -1957,7 +1957,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -1986,7 +1986,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000002.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -2435,7 +2435,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -2464,7 +2464,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000002.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -2944,7 +2944,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -2973,7 +2973,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000002.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -3446,7 +3446,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -3475,7 +3475,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000002.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -3924,7 +3924,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -3953,7 +3953,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000002.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -4460,7 +4460,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -4489,7 +4489,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000002.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -4999,7 +4999,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -5028,7 +5028,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000002.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -5218,7 +5218,7 @@
          },
          "shopping": {
           "blocker": null,
-          "enabled": true,
+          "enabled": false,
           "last_outcome": {
            "active": false,
            "attempts": {},
@@ -5247,7 +5247,7 @@
           },
           "next_due_at": 1800000080.0,
           "server_time": 1800000002.0,
-          "state": "scheduled",
+          "state": "off",
           "window_ends_at": null
          }
         },
@@ -5756,7 +5756,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -5785,7 +5785,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000002.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -5975,7 +5975,7 @@
          },
          "shopping": {
           "blocker": null,
-          "enabled": true,
+          "enabled": false,
           "last_outcome": {
            "active": false,
            "attempts": {},
@@ -6004,7 +6004,7 @@
           },
           "next_due_at": 1800000080.0,
           "server_time": 1800000002.0,
-          "state": "scheduled",
+          "state": "off",
           "window_ends_at": null
          }
         },
@@ -6720,7 +6720,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -6749,7 +6749,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000012.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -8094,7 +8094,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -8123,7 +8123,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000012.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -9286,7 +9286,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -9315,7 +9315,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000006.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -10530,7 +10530,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -10559,7 +10559,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000010.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -11859,7 +11859,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -11888,7 +11888,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000012.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -13016,7 +13016,7 @@
         },
         "shopping": {
          "blocker": null,
-         "enabled": true,
+         "enabled": false,
          "last_outcome": {
           "active": false,
           "attempts": {},
@@ -13045,7 +13045,7 @@
          },
          "next_due_at": 1800000080.0,
          "server_time": 1800000002.0,
-         "state": "scheduled",
+         "state": "off",
          "window_ends_at": null
         }
        },
@@ -23164,7 +23164,7 @@
          },
          "shopping": {
           "blocker": null,
-          "enabled": true,
+          "enabled": false,
           "last_outcome": {
            "active": false,
            "attempts": {},
@@ -23193,7 +23193,7 @@
           },
           "next_due_at": 1800000086.0,
           "server_time": 1800000008.0,
-          "state": "scheduled",
+          "state": "off",
           "window_ends_at": null
          }
         },
@@ -23590,7 +23590,7 @@
          },
          "shopping": {
           "blocker": null,
-          "enabled": true,
+          "enabled": false,
           "last_outcome": {
            "active": false,
            "attempts": {},
@@ -23619,7 +23619,7 @@
           },
           "next_due_at": 1800000084.0,
           "server_time": 1800000006.0,
-          "state": "scheduled",
+          "state": "off",
           "window_ends_at": null
          }
         },
@@ -24013,7 +24013,7 @@
          },
          "shopping": {
           "blocker": null,
-          "enabled": true,
+          "enabled": false,
           "last_outcome": {
            "active": false,
            "attempts": {},
@@ -24042,7 +24042,7 @@
           },
           "next_due_at": 1800000080.0,
           "server_time": 1800000004.0,
-          "state": "scheduled",
+          "state": "off",
           "window_ends_at": null
          }
         },
@@ -24472,7 +24472,7 @@
          },
          "shopping": {
           "blocker": null,
-          "enabled": true,
+          "enabled": false,
           "last_outcome": {
            "active": false,
            "attempts": {},
@@ -24501,7 +24501,7 @@
           },
           "next_due_at": 1800000080.0,
           "server_time": 1800000002.0,
-          "state": "scheduled",
+          "state": "off",
           "window_ends_at": null
          }
         },
@@ -24937,7 +24937,7 @@
          },
          "shopping": {
           "blocker": null,
-          "enabled": true,
+          "enabled": false,
           "last_outcome": {
            "active": false,
            "attempts": {},
@@ -24966,7 +24966,7 @@
           },
           "next_due_at": 1800000080.0,
           "server_time": 1800000002.0,
-          "state": "scheduled",
+          "state": "off",
           "window_ends_at": null
          }
         },
@@ -25431,7 +25431,7 @@
          },
          "shopping": {
           "blocker": null,
-          "enabled": true,
+          "enabled": false,
           "last_outcome": {
            "active": false,
            "attempts": {},
@@ -25460,7 +25460,7 @@
           },
           "next_due_at": 1800000080.0,
           "server_time": 1800000002.0,
-          "state": "scheduled",
+          "state": "off",
           "window_ends_at": null
          }
         },

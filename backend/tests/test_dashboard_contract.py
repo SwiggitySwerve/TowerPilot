@@ -662,6 +662,7 @@ class Driver:
         import random
         from flows.shard import GemWatch
         from interactions.shopper import Shopper
+        from player.run_controls import resolve
         from runtime.battle_session import BattleSession
         self.w = w
         if op is None:
@@ -680,9 +681,12 @@ class Driver:
         else:
             self.session = BattleSession(battle_api.ledger(w.root), op['id'], preset, envelope['config'],
                                          envelope=envelope, origin=origin, previous_battle_id=previous)
+        # Resolve the same initial gates as orchestrator.RunState; a run without
+        # a shopping plan must not publish an invented enabled shopper.
+        live = resolve(preset, envelope['config'])['routines']
         self.rs = SimpleNamespace(gems=GemWatch(preset['gather']), shop=Shopper(preset),
-                                  mission=SimpleNamespace(active=False), shopping_enabled=True, rewards_enabled=True,
-                                  repeat_enabled=True, tracker=SimpleNamespace(last=wave),
+                                  mission=SimpleNamespace(active=False), shopping_enabled=live['shopping']['enabled'],
+                                  rewards_enabled=live['rewards']['enabled'], repeat_enabled=live['repeat']['enabled'], tracker=SimpleNamespace(last=wave),
                                   last_shop=w.clock.monotonic() - 10)
         self.wave = wave
 

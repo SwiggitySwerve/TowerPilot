@@ -24,10 +24,13 @@ is proved through the real routes in test_action_synthetic_extension.py; it is t
 from types import SimpleNamespace
 
 from flows.shard import GemWatch
+from interactions import ad_gems
+from runtime import action_session as action_session_module
 from runtime.action_session import ActionSession
 
+from dashboard_contract_cases_ad_gems_poll import Scene
 from dashboard_contract_cases_run_leftovers import active
-from test_dashboard_contract import PLAN_V2, Driver, with_orbit, with_shopping
+from test_dashboard_contract import PLAN_V2, Driver, action_body, action_url, with_orbit, with_shopping
 
 BP = 'battle_actions_projection'
 
@@ -48,6 +51,23 @@ def read(w, case):
 
 def items(runtime):
     return {item['id']: item for item in runtime['actions']['items']}
+
+
+def run_now_ad_gems(w, driver):
+    """A Run now of Ad gems through the real route, carried out by the real collector's own poll (only the device boundary is faked): the
+    command is requested, the checkpoint hands it to the binding, the collector opens a manual window that records the command id, claims
+    and confirms, and the next checkpoint acknowledges it completed. Returns the scene and the completed command."""
+    scene = Scene(w, 'confirmed', driver=driver)
+    reply = w.plain_post(action_url(driver.op), action_body(driver, 'ad_gems', 'run-now-1'))
+    assert reply.status_code == 200, reply.get_json()
+    command_id = reply.get_json()['command']['id']
+    for _ in range(80):
+        scene.ad.poll(scene.frame)
+        driver.checkpoint()
+        command = next(entry for entry in driver.store.commands(driver.battle['id']) if entry['id'] == command_id)
+        if command['state'] == 'completed':
+            return scene, command
+    raise AssertionError('the Run now command never completed')
 
 
 def battle_actions_projection_cases(gen):
@@ -106,6 +126,54 @@ def battle_actions_projection_cases(gen):
         d.publish()
         broken = read(w, 'projection_never_built_the_actions_key_is_absent')
         assert 'actions' not in broken and set(broken['routines']) >= {'ad_gems', 'floating_gems', 'shopping'}
+    with gen.world('actions_values') as w:
+        d = Driver(w, 'values', origin='started')
+        attach(d)
+        d.go_live()
+        applied = d.battle['applied_controls']['routines']
+        idle = items(read(w, 'values_carry_every_field_in_force'))
+        for key, entry in idle.items():
+            assert entry['values'] == applied[key], (key, entry['values'], applied[key])
+        assert [item['key'] for item in read(w, 'each_item_names_its_routine_key')['actions']['items']] == ['ad_gems', 'floating_gems', 'shopping']
+        d.controls({'routines': {'ad_gems': {'interval_sec': 900}}}, 'slower-ad-gems')
+        d.checkpoint()
+        changed = items(read(w, 'a_live_control_changes_the_value_in_force'))
+        assert changed['ad_gems']['values']['interval_sec'] == 900 and changed['floating_gems']['values'] == applied['floating_gems']
+    with gen.world('actions_run_now') as w:
+        w.edit_profile(with_orbit)
+        d = Driver(w, 'run-now', origin='started')
+        session = attach(d)
+        d.go_live()
+        scene, command = run_now_ad_gems(w, d)
+        runtime = read(w, 'run_now_completed_links_its_execution')
+        last = items(runtime)['ad_gems']['last']
+        row = next(entry for entry in d.store.commands(d.battle['id']) if entry['id'] == command['id'])
+        assert row['state'] == 'completed' and row['kind'] == 'action' and row['payload'] == dict(action='ad_gems'), row
+        assert last['command_id'] == command['id'] and last['trigger'] == 'manual' and (last['result'], last['effect']) == ('succeeded', 'confirmed'), last
+        assert last['execution_id'] == session.last['ad_gems']['execution_id'] and len(scene.taps) == 1
+    with gen.world('actions_failed_unconfirmed') as w:
+        d = Driver(w, 'failed', origin='started')
+        session = attach(d)
+        scene = Scene(w, 'unconfirmed', driver=d)
+        w.mp.setattr(ad_gems.capture, 'grab', lambda: (w.advance(2), scene.after)[1])      # the offer stays on screen after every tap: the window keeps trying until it ends
+        for _ in range(120):
+            scene.ad.poll(scene.frame)
+            d.checkpoint()
+            if 'ad_gems' in session.last:
+                break
+        else:
+            raise AssertionError('the window never ended')
+        last = items(read(w, 'a_failed_unconfirmed_execution_is_the_last_of_its_instance'))['ad_gems']['last']
+        assert (last['result'], last['effect'], last['trigger'], last['command_id']) == ('failed', 'unconfirmed', 'automatic', None) and last['reason'] == 'offer_still_visible', last
+        assert len(scene.taps) >= 1
+    with gen.world('actions_newer_driver') as w:
+        d = Driver(w, 'newer', origin='started')
+        attach(d)
+        d.go_live()
+        w.mp.setattr(action_session_module, 'SCHEMA_VERSION', 2)       # a driver of a newer build writes the projection with its own version
+        d.publish()
+        newer = read(w, 'projection_written_by_a_newer_driver_is_read_only')
+        assert newer['actions']['schema_version'] == 2 and [item['id'] for item in newer['actions']['items']] == ['ad_gems', 'floating_gems', 'shopping']
 
 
 NOTE = (__doc__ or '').strip()
@@ -116,5 +184,12 @@ ROWS = {
         'ad_gems_paused_by_a_control_is_disabled', 'shopping_switched_off_by_a_control_is_disabled', 'game_not_on_screen_every_routine_waits_for_the_game_state'],
     'item 6 (r17a): a battle whose projection cannot be built publishes the routines; no actions key until one was built, then the last one with its own stamps': [
         'projection_never_built_the_actions_key_is_absent', 'projection_fails_later_the_last_projection_stays_and_its_stamps_stop'],
+    'item 6 (r17b, B2, B3): `values` carries the value in force of every descriptor field (the ledger applied controls) and a live control changes it; each item names its routine key': [
+        'values_carry_every_field_in_force', 'each_item_names_its_routine_key', 'a_live_control_changes_the_value_in_force'],
+    'item 6 (r17b, B4): one read links a Run now command to the execution it started (`last.command_id`, trigger manual, the command completed)': [
+        'run_now_completed_links_its_execution'],
+    'item 6 (r17b, B5): a failed, unconfirmed execution is the last of its instance': ['a_failed_unconfirmed_execution_is_the_last_of_its_instance'],
+    'item 6 (r17b, B10): a projection written by a newer driver (schema_version above this build) is published as it is; the page reads it read-only': [
+        'projection_written_by_a_newer_driver_is_read_only'],
 }
 FAMILY_ROW = 'item 6 batch 2 (r17a): the runtime.actions projection of a battle (the descriptor-driven row and editor read this)'

@@ -4,6 +4,7 @@ Plain values in and out; nothing here builds an HTTP response. The query reads t
 GET on a checkout with no ledger (or none of this schema) answers an empty history and creates nothing.
 """
 from control import operations
+from towerpilot_workflows import action_contract
 from towerpilot_workflows.action_contract import SCHEMA_VERSION
 from towerpilot_workflows.actions import Actions, SchemaTooNew
 
@@ -52,6 +53,13 @@ def _newer(meta):
     return meta is not None and meta['schema_version'] is not None and meta['schema_version'] > SCHEMA_VERSION
 
 
+def _labelled(rows):
+    """Each row with the label its action has in the catalog in force (None for an action the catalog does not hold), so a page names an action
+    without a table of its own. Added when a row is read; nothing is stored."""
+    catalog = action_contract.catalog()
+    return [dict(row, label=getattr(catalog.find(row.get('action')), 'label', None)) for row in rows]
+
+
 def for_battle(root, battle, *, limit=DEFAULT_LIMIT):
     """The executions that ran under one battle, newest first.
 
@@ -64,10 +72,14 @@ def for_battle(root, battle, *, limit=DEFAULT_LIMIT):
     meta = Actions.read_meta(path)
     if _newer(meta):
         return dict(items=None, reason='newer_schema', truncated=False)
-    rows, truncated = ([], False) if meta is None else Actions.read(
-        path, device=battle['context']['device_key'], battle_id=battle['id'], limit=limit)
+    rows, truncated, cursor = [], False, None
+    if meta is not None:
+        rows, truncated, _, cursor = Actions.read_page(path, device=battle['context']['device_key'], battle_id=battle['id'], limit=limit)
     if rows:
-        return dict(items=rows, reason=None, truncated=truncated)
+        block = dict(items=_labelled(rows), reason=None, truncated=truncated)
+        if truncated:        # the rest is one generic read away: GET /api/actions/executions?battle_id=<id>&before=<next_before>
+            block['next_before'] = cursor
+        return block
     if meta is None or (meta.get('created_at') is not None and battle['created_at'] < meta['created_at']):
         return dict(items=None, reason='recorded_before_action_history', truncated=False)
     return dict(items=[], reason=None, truncated=False)
@@ -88,4 +100,4 @@ def executions(root, context, *, action=None, instance=None, battle_id=None, bef
     rows, truncated, unusable, cursor = Actions.read_page(path, device=context['device_key'], action=action, instance=instance,
                                                           battle_id=battle_id, account=context.get('account'), before=before, limit=limit)
     return dict(schema_version=SCHEMA_VERSION, ledger_id=None if meta is None else meta['ledger_id'], context=context,
-                executions=rows, truncated=truncated, next_before=cursor, unusable=unusable)
+                executions=_labelled(rows), truncated=truncated, next_before=cursor, unusable=unusable)

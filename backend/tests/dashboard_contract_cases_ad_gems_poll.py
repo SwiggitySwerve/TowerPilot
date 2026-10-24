@@ -35,9 +35,10 @@ TIMING = ('scheduling_wait_sec', 'response_delay_sec', 'response_wait_sec', 'res
 class Scene:
     """One run driver with its real Ad gems collector and the faked device boundary of one failure mode."""
 
-    def __init__(self, w, mode):
+    def __init__(self, w, mode, driver=None):
+        """`driver`: a run driver the caller built (with its recorders attached); the default is a plain one. Mode `confirmed`: the offer is gone from the frame after the tap."""
         self.w, self.mode, self.taps = w, mode, []
-        self.d = Driver(w)
+        self.d = driver or Driver(w)
         self.d.observe()
         self.ad = self.d.rs.gems.ad_gems
         # the collector mints window / offer / attempt ids from a 12-hex trace id taken from uuid4; the contract's id aliasing only normalises whole UUIDs, so the
@@ -61,7 +62,7 @@ class Scene:
         if frame is self.fresh:
             return {'missing': None, 'moved': MOVED}.get(self.mode, RECT)
         if frame is self.after:
-            return RECT
+            return None if self.mode == 'confirmed' else RECT
         return RECT if self.w.clock.monotonic() >= self.start + APPEARS else None
 
     def windows(self, serial, **kwargs):

@@ -48418,6 +48418,7 @@
       "enabled": false,
       "id": "ad_gems",
       "instance": "ad_gems",
+      "key": "ad_gems",
       "label": "Ad gems",
       "last": null,
       "next": {
@@ -48429,7 +48430,9 @@
       },
       "state": "disabled",
       "values": {
-       "enabled": false
+       "enabled": false,
+       "interval_sec": 720,
+       "window_sec": 60
       }
      },
      {
@@ -48502,6 +48505,7 @@
       "enabled": false,
       "id": "floating_gems",
       "instance": "floating_gems",
+      "key": "floating_gems",
       "label": "Floating gems",
       "last": null,
       "next": {
@@ -48513,7 +48517,10 @@
       },
       "state": "disabled",
       "values": {
-       "enabled": false
+       "enabled": false,
+       "interval_sec": 960,
+       "tap_interval_sec": 5,
+       "window_sec": 60
       }
      },
      {
@@ -48562,6 +48569,7 @@
       "enabled": true,
       "id": "shopping",
       "instance": "shopping",
+      "key": "shopping",
       "label": "Shopping",
       "last": null,
       "next": {
@@ -48573,7 +48581,8 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 90
       }
      }
     ],
@@ -48799,6 +48808,7 @@
       "enabled": true,
       "id": "ad_gems",
       "instance": "ad_gems",
+      "key": "ad_gems",
       "label": "Ad gems",
       "last": null,
       "next": {
@@ -48810,7 +48820,9 @@
       },
       "state": "running",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 720,
+       "window_sec": 60
       }
      },
      {
@@ -48883,6 +48895,7 @@
       "enabled": true,
       "id": "floating_gems",
       "instance": "floating_gems",
+      "key": "floating_gems",
       "label": "Floating gems",
       "last": null,
       "next": {
@@ -48894,7 +48907,10 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 960,
+       "tap_interval_sec": 5,
+       "window_sec": 60
       }
      },
      {
@@ -48943,6 +48959,7 @@
       "enabled": true,
       "id": "shopping",
       "instance": "shopping",
+      "key": "shopping",
       "label": "Shopping",
       "last": null,
       "next": {
@@ -48954,7 +48971,8 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 90
       }
      }
     ],
@@ -49178,6 +49196,7 @@
       "enabled": true,
       "id": "ad_gems",
       "instance": "ad_gems",
+      "key": "ad_gems",
       "label": "Ad gems",
       "last": null,
       "next": {
@@ -49189,7 +49208,9 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 720,
+       "window_sec": 60
       }
      },
      {
@@ -49262,6 +49283,7 @@
       "enabled": true,
       "id": "floating_gems",
       "instance": "floating_gems",
+      "key": "floating_gems",
       "label": "Floating gems",
       "last": null,
       "next": {
@@ -49273,7 +49295,10 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 960,
+       "tap_interval_sec": 5,
+       "window_sec": 60
       }
      },
      {
@@ -49322,6 +49347,7 @@
       "enabled": true,
       "id": "shopping",
       "instance": "shopping",
+      "key": "shopping",
       "label": "Shopping",
       "last": null,
       "next": {
@@ -49333,7 +49359,8 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 90
       }
      }
     ],
@@ -49557,6 +49584,7 @@
       "enabled": false,
       "id": "ad_gems",
       "instance": "ad_gems",
+      "key": "ad_gems",
       "label": "Ad gems",
       "last": null,
       "next": {
@@ -49568,7 +49596,9 @@
       },
       "state": "disabled",
       "values": {
-       "enabled": false
+       "enabled": false,
+       "interval_sec": 720,
+       "window_sec": 60
       }
      },
      {
@@ -49641,6 +49671,7 @@
       "enabled": false,
       "id": "floating_gems",
       "instance": "floating_gems",
+      "key": "floating_gems",
       "label": "Floating gems",
       "last": null,
       "next": {
@@ -49652,7 +49683,10 @@
       },
       "state": "disabled",
       "values": {
-       "enabled": false
+       "enabled": false,
+       "interval_sec": 960,
+       "tap_interval_sec": 5,
+       "window_sec": 60
       }
      },
      {
@@ -49701,6 +49735,7 @@
       "enabled": true,
       "id": "shopping",
       "instance": "shopping",
+      "key": "shopping",
       "label": "Shopping",
       "last": null,
       "next": {
@@ -49712,7 +49747,8 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 90
       }
      }
     ],
@@ -50008,6 +50044,7 @@
       "enabled": true,
       "id": "ad_gems",
       "instance": "ad_gems",
+      "key": "ad_gems",
       "label": "Ad gems",
       "last": null,
       "next": {
@@ -50019,7 +50056,9 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 720,
+       "window_sec": 60
       }
      },
      {
@@ -50092,6 +50131,7 @@
       "enabled": true,
       "id": "floating_gems",
       "instance": "floating_gems",
+      "key": "floating_gems",
       "label": "Floating gems",
       "last": null,
       "next": {
@@ -50103,7 +50143,10 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 960,
+       "tap_interval_sec": 5,
+       "window_sec": 60
       }
      },
      {
@@ -50152,6 +50195,7 @@
       "enabled": true,
       "id": "shopping",
       "instance": "shopping",
+      "key": "shopping",
       "label": "Shopping",
       "last": null,
       "next": {
@@ -50163,7 +50207,8 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 90
       }
      }
     ],
@@ -50387,6 +50432,7 @@
       "enabled": true,
       "id": "ad_gems",
       "instance": "ad_gems",
+      "key": "ad_gems",
       "label": "Ad gems",
       "last": null,
       "next": {
@@ -50398,7 +50444,9 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 720,
+       "window_sec": 60
       }
      },
      {
@@ -50471,6 +50519,7 @@
       "enabled": true,
       "id": "floating_gems",
       "instance": "floating_gems",
+      "key": "floating_gems",
       "label": "Floating gems",
       "last": null,
       "next": {
@@ -50482,7 +50531,10 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 960,
+       "tap_interval_sec": 5,
+       "window_sec": 60
       }
      },
      {
@@ -50531,6 +50583,7 @@
       "enabled": true,
       "id": "shopping",
       "instance": "shopping",
+      "key": "shopping",
       "label": "Shopping",
       "last": null,
       "next": {
@@ -50542,7 +50595,8 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 90
       }
      }
     ],
@@ -50766,6 +50820,7 @@
       "enabled": true,
       "id": "ad_gems",
       "instance": "ad_gems",
+      "key": "ad_gems",
       "label": "Ad gems",
       "last": null,
       "next": {
@@ -50777,7 +50832,9 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 720,
+       "window_sec": 60
       }
      },
      {
@@ -50852,6 +50909,7 @@
       "enabled": true,
       "id": "floating_gems",
       "instance": "floating_gems",
+      "key": "floating_gems",
       "label": "Floating gems",
       "last": null,
       "next": {
@@ -50863,7 +50921,10 @@
       },
       "state": "running",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 960,
+       "tap_interval_sec": 5,
+       "window_sec": 60
       }
      },
      {
@@ -50912,6 +50973,7 @@
       "enabled": true,
       "id": "shopping",
       "instance": "shopping",
+      "key": "shopping",
       "label": "Shopping",
       "last": null,
       "next": {
@@ -50923,7 +50985,8 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 90
       }
      }
     ],
@@ -51147,6 +51210,7 @@
       "enabled": true,
       "id": "ad_gems",
       "instance": "ad_gems",
+      "key": "ad_gems",
       "label": "Ad gems",
       "last": null,
       "next": {
@@ -51158,7 +51222,9 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 720,
+       "window_sec": 60
       }
      },
      {
@@ -51231,6 +51297,7 @@
       "enabled": true,
       "id": "floating_gems",
       "instance": "floating_gems",
+      "key": "floating_gems",
       "label": "Floating gems",
       "last": null,
       "next": {
@@ -51242,7 +51309,10 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 960,
+       "tap_interval_sec": 5,
+       "window_sec": 60
       }
      },
      {
@@ -51291,6 +51361,7 @@
       "enabled": true,
       "id": "shopping",
       "instance": "shopping",
+      "key": "shopping",
       "label": "Shopping",
       "last": null,
       "next": {
@@ -51302,7 +51373,8 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 90
       }
      }
     ],
@@ -51526,6 +51598,7 @@
       "enabled": true,
       "id": "ad_gems",
       "instance": "ad_gems",
+      "key": "ad_gems",
       "label": "Ad gems",
       "last": null,
       "next": {
@@ -51537,7 +51610,9 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 720,
+       "window_sec": 60
       }
      },
      {
@@ -51610,6 +51685,7 @@
       "enabled": true,
       "id": "floating_gems",
       "instance": "floating_gems",
+      "key": "floating_gems",
       "label": "Floating gems",
       "last": null,
       "next": {
@@ -51621,7 +51697,10 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 960,
+       "tap_interval_sec": 5,
+       "window_sec": 60
       }
      },
      {
@@ -51670,6 +51749,7 @@
       "enabled": true,
       "id": "shopping",
       "instance": "shopping",
+      "key": "shopping",
       "label": "Shopping",
       "last": null,
       "next": {
@@ -51681,7 +51761,8 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 90
       }
      }
     ],
@@ -51905,6 +51986,7 @@
       "enabled": true,
       "id": "ad_gems",
       "instance": "ad_gems",
+      "key": "ad_gems",
       "label": "Ad gems",
       "last": null,
       "next": {
@@ -51916,7 +51998,9 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 720,
+       "window_sec": 60
       }
      },
      {
@@ -51989,6 +52073,7 @@
       "enabled": true,
       "id": "floating_gems",
       "instance": "floating_gems",
+      "key": "floating_gems",
       "label": "Floating gems",
       "last": null,
       "next": {
@@ -52000,7 +52085,10 @@
       },
       "state": "due",
       "values": {
-       "enabled": true
+       "enabled": true,
+       "interval_sec": 960,
+       "tap_interval_sec": 5,
+       "window_sec": 60
       }
      },
      {
@@ -52049,6 +52137,7 @@
       "enabled": false,
       "id": "shopping",
       "instance": "shopping",
+      "key": "shopping",
       "label": "Shopping",
       "last": null,
       "next": {
@@ -52060,7 +52149,8 @@
       },
       "state": "disabled",
       "values": {
-       "enabled": false
+       "enabled": false,
+       "interval_sec": 90
       }
      }
     ],

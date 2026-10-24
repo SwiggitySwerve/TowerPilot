@@ -308,7 +308,7 @@ class BattleSession:
                 listed = {(action_contract.split_key(key)[1] or key): binding.descriptor_variants()
                           for key, binding in bindings.items() if binding.descriptor_variants()}
                 status['actions'] = self.actions.project(routines, observed_at=epoch, control_revision=self.battle.get('control_revision'),
-                                                         variants=listed or None)
+                                                         variants=listed or None, effective=(self.battle.get('applied_controls') or {}).get('routines'))
             except Exception as exc:     # noqa: BLE001 - a projection that cannot be built must never stop the driver
                 from runtime import logger
                 logger.event('action_projection_failed', error=str(exc), error_type=type(exc).__name__)
