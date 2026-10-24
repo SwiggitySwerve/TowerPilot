@@ -3361,7 +3361,7 @@ def test_golden_plan_compiles_bit_for_bit():
     for the same reason the preset snapshot is: the day a block moves, an hour
     changes or an id shifts, some counter in daystate is keyed on the old name
     and a day silently reruns or silently skips."""
-    path = test_paths.TESTS / "golden_default_plan.json"
+    path = test_paths.FIXTURES / "golden_default_plan.json"
     if not path.exists():
         pytest.skip("plan snapshot not generated")
     frozen = json.loads(path.read_text(encoding="utf-8"))
@@ -3422,7 +3422,7 @@ def test_golden_profile_compiles_bit_for_bit(prof):
     2026-08-31: `coin_dissonance` ADDED (Dissonance event: tournament
     loadout + nets, no-utility sweep) - again purely a new entry.
     """
-    path = test_paths.TESTS / "golden_default_compiled.json"
+    path = test_paths.FIXTURES / "golden_default_compiled.json"
     if not path.exists():
         pytest.skip("golden snapshot not generated")
     frozen = json.loads(path.read_text(encoding="utf-8"))
