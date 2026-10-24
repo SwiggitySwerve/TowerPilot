@@ -14,6 +14,30 @@ from dashboard_contract_cases_editors import equipped
 from dashboard_contract_pages_world import PagesGenerator
 from test_dashboard_contract import scrub
 
+PAGES_FIXTURE = Path(__file__).resolve().parents[3] / 'backend/tests/fixtures/dashboard_contract_pages_v1.json'
+# Equipment sample name -> recorded pages-fixture case it repeats.
+CONTEXT_ALIASES = {
+    'context_config': 'context_fence.read_config_before_the_loadout_save',
+    'context_match_saved': 'context_fence.loadout_with_the_matching_context_is_written',
+    'context_match_readback': 'context_fence.read_config_after_the_matching_loadout_holds_it',
+    'context_malformed_null': 'context_fence.loadout_expected_context_null_is_refused_not_read_as_absent',
+    'context_malformed_missing_fields': 'context_fence.loadout_expected_context_missing_the_serial',
+    'context_malformed_extra_field': 'context_fence.loadout_expected_context_with_an_unknown_key',
+    'context_malformed_wrong_value_type': 'context_fence.loadout_expected_context_serial_not_text',
+    'context_malformed_not_an_object': 'context_fence.loadout_expected_context_not_an_object',
+    'context_refusals_readback': 'context_fence.read_config_after_the_malformed_loadout_requests_unchanged',
+    'context_changed_config': 'context_fence.read_config_after_the_matching_loadout_holds_it',
+    'context_changed_refused': 'context_fence.loadout_composed_for_alpha_is_refused_with_its_expected_revision',
+    'context_changed_readback': 'context_fence.read_config_after_the_loadout_refusals_nothing_was_written',
+    'context_stale_and_changed': 'context_fence.loadout_with_a_stale_context_and_a_stale_revision_is_told_the_context_changed',
+    'context_stale_revision': 'context_fence.loadout_for_the_current_context_with_a_stale_revision_is_a_revision_conflict',
+    'context_legacy': 'context_fence.loadout_without_the_field_is_not_fenced_the_legacy_page',
+    'context_profile': 'ability_policies.read_before_the_first_save',
+    'context_match_profile': 'ability_policies.read_before_the_first_save',
+    'context_changed_profile': 'ability_policies.read_before_the_first_save',
+    'context_unknown_refused': 'context_fence.tier_when_the_configuration_names_an_unknown_account_is_refused',
+}
+
 
 def test_generate_equipment_samples(tmp_path, monkeypatch, dash):
     gen = PagesGenerator(dash, tmp_path / 'equipment', monkeypatch)
@@ -80,12 +104,12 @@ def test_generate_equipment_samples(tmp_path, monkeypatch, dash):
         assert proto.status_code == 200, proto.get_json()
         w.get('equipment_edge', 'proto_readback', '/api/config')
     assert len(gen.cases[family]) == 34
-    # These are unmodified recorded answers from the backend author's r10 candidate.
-    # The snapshot records the original fixture hash and case aliases; no new answer is invented.
-    context_fixture = Path(__file__).with_name('equipment-context-r10.json')
-    context_samples = json.loads(context_fixture.read_text(encoding='utf-8'))
-    for name, case in context_samples['cases']['equipment_context'].items():
-        gen.cases[family][name] = copy.deepcopy(case)
+    # The context-fence answers are recorded by the backend's pages fixture; copy them unchanged
+    # under the names the Equipment specs use. No new answer is invented.
+    pages = json.loads(PAGES_FIXTURE.read_text(encoding='utf-8'))['cases']
+    for name, source in CONTEXT_ALIASES.items():
+        source_family, case = source.split('.', 1)
+        gen.cases[family][name] = copy.deepcopy(pages[source_family][case])
     document = scrub(dict(version=1, generated_by='frontend/app/e2e/equipment_fixture_cases.py', cases=gen.cases), gen.base)
     destination = Path(__file__).with_name('equipment-samples.json')
     destination.write_text(json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + '\n', encoding='utf-8')
