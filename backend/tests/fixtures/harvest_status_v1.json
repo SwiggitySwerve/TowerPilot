@@ -1898,6 +1898,7 @@
    },
    "failures": 0,
    "host": {
+    "collector_at_start": {"adopted": false, "code": "untracked", "found_at": 1800000000.0, "operation_id": null, "pid": 4711, "reason": "not_tracked", "started_at": 1799999400.0},
     "last_error": null,
     "last_tick_at": null,
     "reconciler": "inactive"
@@ -2627,6 +2628,7 @@
    },
    "failures": 0,
    "host": {
+    "collector_at_start": {"adopted": true, "code": "adopted", "found_at": 1800000000.0, "operation_id": "00000024-0000-4000-8000-000000000000", "pid": 1, "reason": "running", "started_at": 1},
     "last_error": null,
     "last_tick_at": 1799999999.0,
     "reconciler": "active"
@@ -2691,6 +2693,7 @@
    },
    "failures": 0,
    "host": {
+    "collector_at_start": {"adopted": false, "code": "dead", "found_at": 1800000000.0, "operation_id": "00000025-0000-4000-8000-000000000000", "pid": 1, "reason": "worker_not_running", "started_at": 1},
     "last_error": null,
     "last_tick_at": 1799999999.0,
     "reconciler": "active"

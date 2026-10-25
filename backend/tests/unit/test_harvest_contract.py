@@ -44,6 +44,12 @@ def sample_unset(h):
     return h.status(host=HOST)
 
 
+def found_at_start(h, rows=()):
+    """The host of a dashboard that has just started: what it found of a collector from before it (change 2b)."""
+    report = harvest.collector_at_start(h.root, h.cfg, processes=list(rows), resolve_source=h.resolve_source, now=NOW)
+    return dict(HOST, collector_at_start=report)
+
+
 def sample_off(h):
     choose(h)
     choose(h, enabled=False)
@@ -52,7 +58,9 @@ def sample_off(h):
 
 def sample_reconciler_inactive(h):
     choose(h)
-    return h.status(host=dict(reconciler='inactive', last_tick_at=None, last_error=None))
+    row = dict(pid=4711, runner='gem_collector', cmdline='gem_collector.py', created=NOW - 600)
+    host = dict(found_at_start(h, [row]), reconciler='inactive', last_tick_at=None)   # just started: no tick yet, and a collector it cannot take over
+    return h.status(host=host)
 
 
 def sample_reconciler_failing(h):
@@ -81,7 +89,7 @@ def sample_collecting(h):
 def sample_waiting_for_battle(h):
     choose(h)
     _collector(h)
-    return h.status(host=HOST)
+    return h.status(host=found_at_start(h))        # the collector the dashboard found at its start, and kept
 
 
 def sample_live_paused(h):
@@ -100,7 +108,7 @@ def sample_worker_not_running(h):
     choose(h)
     _battle(h, _collector(h), routines=ON_ROUTINES)
     h.alive['value'] = False
-    return h.status(host=HOST)
+    return h.status(host=found_at_start(h))        # found at start with its worker gone: reported, not adopted
 
 
 def sample_worker_unverified(h):

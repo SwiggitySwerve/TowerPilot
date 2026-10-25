@@ -1330,3 +1330,97 @@ def test_the_generic_bookkeeping_writer_cannot_overwrite_the_overlay_decisions_o
         with pytest.raises(ValueError):
             harvest_store.update_runtime(device, 1, **{forbidden: {}})
 
+
+
+# ---- a dashboard that starts over a collector from before it says what it found (change 2b)
+def found(h, rows=()):
+    return harvest.collector_at_start(h.root, h.cfg, processes=list(rows), resolve_source=h.resolve_source, now=NOW)
+
+
+def test_a_live_collector_from_before_the_start_is_adopted_and_reported(h):
+    choose(h)
+    op = _collector(h)
+    report = found(h)
+    assert report == dict(code='adopted', adopted=True, reason='running', operation_id=op['id'], pid=1,
+                          started_at=1, found_at=NOW)
+    assert h.tick()['action'] == 'none' and h.spawned == []                   # the tick that follows keeps it: no second collector
+    assert [o['id'] for o in active_ops(h)] == [op['id']]
+
+
+def test_no_collector_from_before_the_start_reports_nothing(h):
+    assert found(h) is None                                                   # no ledger at all
+    assert not operations.ledger_path(h.root).exists(), 'the check must not create the ledger'
+    choose(h)
+    assert found(h) is None                                                   # a choice and nothing running
+    assert found(h, [dict(pid=7, runner='coin', cmdline='', created=3.0)]) is None   # another runner is not a collector
+
+
+def test_a_collector_record_whose_worker_is_gone_is_reported_dead_and_not_adopted(h):
+    choose(h)
+    op = _collector(h)
+    h.alive['value'] = False
+    report = found(h)
+    assert (report['code'], report['adopted'], report['reason'], report['operation_id']) == (
+        'dead', False, 'worker_not_running', op['id'])
+    assert operations.ledger(h.root).get(op['id'])['status'] == 'running', 'reporting must not retire it: the tick does'
+
+
+def test_a_collector_whose_worker_cannot_be_checked_is_reported_unverified(h):
+    choose(h)
+    _collector(h)
+    h.alive['value'] = None
+    report = found(h)
+    assert (report['code'], report['adopted'], report['reason']) == ('unverified', False, 'worker_unverified')
+
+
+def test_a_live_collector_that_the_choice_stops_is_reported_will_stop_not_adopted(h):
+    choose(h)
+    choose(h, enabled=False)
+    op = _collector(h)                                                        # started while harvesting was on, Off recorded since
+    report = found(h)
+    assert (report['code'], report['adopted'], report['reason'], report['operation_id']) == (
+        'will_stop', False, 'harvest_off', op['id'])
+
+
+def test_a_collector_process_the_ledger_does_not_know_is_reported_untracked(h):
+    choose(h)
+    row = dict(pid=4711, runner='gem_collector', cmdline='gem_collector.py', created=1790000000.5)
+    report = found(h, [row])
+    assert report == dict(code='untracked', adopted=False, reason='not_tracked', operation_id=None, pid=4711,
+                          started_at=1790000000.5, found_at=NOW)
+    tracked = dict(row, operation_id='abc')
+    assert found(h, [tracked]) is None                                        # a tracked row is the ledger's business
+
+def test_the_report_is_one_assessment_so_a_changing_liveness_cannot_contradict_it(h):
+    choose(h)
+    _collector(h)
+    answers = iter([True, False, None])
+    asked = []
+    report = harvest.collector_at_start(h.root, h.cfg, processes=[], resolve_source=h.resolve_source, now=NOW,
+                                        alive=lambda worker: asked.append(worker) or next(answers))
+    assert (report['code'], report['adopted']) == ('adopted', True) and len(asked) == 1
+
+
+def test_a_start_that_could_not_read_the_ledger_is_unchecked_not_empty(h):
+    choose(h)
+    with operations.ledger(h.root)._db() as db:
+        db.execute('UPDATE harvest_choices SET body=?', ('not json',))
+    with pytest.raises(ValueError):
+        found(h)
+
+
+def test_the_other_reasons_a_live_or_pending_collector_is_not_adopted(h, psutil_fake):
+    choose(h)
+    op = _collector(h)
+    h.source['valid'] = False                                                 # the chosen run can no longer collect
+    assert (found(h)['code'], found(h)['reason']) == ('will_stop', 'policy_invalid')
+    h.source['valid'] = True
+    operations.ledger(h.root).transition(op['id'], op['revision'], 'cancelling', step='stop_requested')
+    assert (found(h)['code'], found(h)['reason']) == ('will_stop', 'stopping')
+
+
+def test_a_collector_accepted_but_not_started_is_reported_unverified_starting(h):
+    choose(h)
+    h.tick()                                                                  # launches: accepted, no worker yet
+    report = found(h)
+    assert (report['code'], report['adopted'], report['reason']) == ('unverified', False, 'starting')

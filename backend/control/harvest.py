@@ -530,6 +530,58 @@ def status(root, cfg, *, processes, resolve_source, alive=None, now=None, host=N
     return evaluate(root, cfg, processes=processes, resolve_source=resolve_source, alive=alive, now=now, host=host)[0]
 
 
+# --------------------------------------------- a collector found at start
+COLLECTOR_RUNNER = 'gem_collector'
+
+
+def _found(code, adopted, reason, op=None, row=None, now=None):
+    worker = (op or {}).get('worker') or {}
+    row = row or {}
+    started = worker.get('creation_time') if op else row.get('created')
+    return dict(code=code, adopted=adopted, reason=reason, operation_id=(op or {}).get('id'),
+                pid=worker.get('pid') if op else row.get('pid'), started_at=started if finite(started) else None,
+                found_at=now)
+
+
+def collector_at_start(root, cfg, *, processes, resolve_source, alive=None, now=None):
+    """What a dashboard that has just started found of a collector from before it: None when there was none,
+    else one report {code, adopted, reason, operation_id, pid, started_at, found_at}.
+
+    Adopting needs no act of its own: the ledger outlives the dashboard, so the next tick finds the collector's
+    operation active and launches nothing (evaluate). This only says what that tick will do. code is the one key
+    the Dashboard words its line from:
+      adopted     the worker is verified alive and the tick keeps it
+      will_stop   alive, but it is stopping or the choice asks the tick to stop it (reason: stopping, harvest_off,
+                  harvest_changed or policy_invalid)
+      dead        the ledger records a collector whose worker is proven gone; the tick retires it
+      unverified  its worker cannot be checked (reason worker_unverified) or has not started (starting); it stays
+                  the owner, nothing is launched over it
+      untracked   a collector process the ledger does not know (reason not_tracked); it cannot be adopted
+    Read-only: call it before the first tick, which is what retires a dead record. processes: runner rows."""
+    now = time.time() if now is None else now
+    view, plan = evaluate(root, cfg, processes=processes, resolve_source=resolve_source, alive=alive, now=now)
+    if view['code'] in ('context_unavailable', 'harvest_state_unreadable'):
+        raise ValueError(view['message'])    # nothing was assessed: an unchecked start is not a start with no collector
+    op = plan['op']
+    if op is not None and op['kind'] == 'gems':
+        # One assessment: evaluate read the ledger and asked about the worker once, and every answer below is its.
+        liveness = view['operation']['worker_alive']
+        if op['status'] == 'accepted':
+            return _found('unverified', False, 'starting', op, now=now)
+        if liveness is False:
+            return _found('dead', False, 'worker_not_running', op, now=now)
+        if liveness is not True:
+            return _found('unverified', False, 'worker_unverified', op, now=now)
+        if op['status'] == 'cancelling':
+            return _found('will_stop', False, 'stopping', op, now=now)
+        if any(stopped['id'] == op['id'] for stopped in plan['cancel']):
+            return _found('will_stop', False, view['code'], op, now=now)
+        return _found('adopted', True, 'running', op, now=now)
+    for row in processes:
+        if not row.get('operation_id') and row.get('runner') == COLLECTOR_RUNNER:
+            return _found('untracked', False, 'not_tracked', row=row, now=now)
+    return None
+
 # ------------------------------------------------------------- stopping
 def active_collectors(root, identity):
     """Active collector operations on this emulator, whoever started them, dead workers retired first."""

@@ -2,15 +2,18 @@
 
 `dash.serve` is driven for real against ephemeral loopback ports; the conftest guard still refuses 5037, 8620 and
 8630. The refresher is replaced by a recorder, so nothing reconciles or launches."""
+import json
 import socket
 import threading
 import urllib.error
 import urllib.request
+from types import SimpleNamespace
 
 import pytest
 from werkzeug.serving import make_server
 
 from control.diagnostics import log_root
+from harvest_support import _collector
 from runtime import dashboard_start
 
 
@@ -28,7 +31,7 @@ def recorded(dash, monkeypatch):
 def events(dash):
     folder = log_root(dash.ROOT) / '_dashboard'
     text = ''.join(path.read_text(encoding='utf-8') for path in sorted(folder.glob('events_*.jsonl')))
-    return [line for line in text.splitlines() if 'dashboard_start' in line or 'dashboard_stopped' in line]
+    return [line for line in text.splitlines() if 'dashboard_' in line]
 
 
 def free_port():
@@ -129,5 +132,71 @@ def test_a_free_port_with_no_hold_serves_then_starts_the_refresher_after_the_bin
             slow.close()
     finally:
         servers[0].shutdown()
+        thread.join(10)
+    assert result == [0]
+
+
+def serve_until_started(dash, monkeypatch, recorded):
+    """Run `serve` on a thread until the refresher is started; returns (server, thread, result)."""
+    servers, result = [], []
+    real_bind = dashboard_start.bind
+    monkeypatch.setattr(dashboard_start, 'bind', lambda *a: servers.append(real_bind(*a)) or servers[-1])
+    port = free_port()
+    thread = threading.Thread(target=lambda: result.append(dash.serve(port=port)), name='serve-under-test')
+    thread.start()
+    for _ in range(100):
+        if recorded[0]:
+            break
+        threading.Event().wait(0.05)
+    return servers[0], thread, result
+
+
+def found_events(dash):
+    return [json.loads(line) for line in events(dash) if 'dashboard_collector' in line]
+
+
+def test_a_start_over_a_live_collector_reports_it_once_in_the_log_and_the_harvest_host(dash, recorded, monkeypatch):
+    seen = []
+    op = _collector(SimpleNamespace(root=dash.ROOT, cfg=dash.load_config(), keys=iter(range(1, 100))), harvest_owned=False)
+    monkeypatch.setattr(dash, '_start_procs_refresher', lambda: (recorded[0].append('refresher'), seen.append(dash._harvest_host().get('collector_at_start') and found_events(dash))))
+    server, thread, result = serve_until_started(dash, monkeypatch, recorded)
+    try:
+        assert recorded[0] == ['refresher']
+        assert seen and seen[0], 'the report and its event must exist before the refresher starts'
+        logged = found_events(dash)
+        assert [(e['kind'], e['code'], e['adopted'], e['operation_id'], e['collector_pid']) for e in logged] == [
+            ('dashboard_collector_found', 'adopted', True, op['id'], 1)]
+        assert dash._harvest_host()['collector_at_start'] == dict(
+            {key: logged[0][key] for key in ('code', 'adopted', 'reason', 'operation_id', 'started_at', 'found_at')},
+            pid=logged[0]['collector_pid'])
+    finally:
+        server.shutdown()
+        thread.join(10)
+    assert result == [0]
+
+
+def test_a_start_with_no_earlier_collector_logs_and_exposes_nothing(dash, recorded, monkeypatch):
+    server, thread, result = serve_until_started(dash, monkeypatch, recorded)
+    try:
+        assert recorded[0] == ['refresher']
+        assert found_events(dash) == []
+        assert 'collector_at_start' not in dash._harvest_host()
+    finally:
+        server.shutdown()
+        thread.join(10)
+    assert result == [0]
+
+
+def test_a_check_that_fails_is_logged_and_never_blocks_the_start(dash, recorded, monkeypatch):
+    def broken(*args, **kwargs):
+        raise OSError('ledger locked')
+    monkeypatch.setattr(dash.harvest_api, 'collector_at_start', broken)
+    server, thread, result = serve_until_started(dash, monkeypatch, recorded)
+    try:
+        assert recorded[0] == ['refresher']
+        assert [e['kind'] for e in found_events(dash)] == ['dashboard_collector_unchecked']
+        assert 'collector_at_start' not in dash._harvest_host()
+    finally:
+        server.shutdown()
         thread.join(10)
     assert result == [0]

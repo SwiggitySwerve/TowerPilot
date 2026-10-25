@@ -308,7 +308,7 @@ _TRANSFER_WAIT_SEC = harvest_api.TRANSFER_WAIT_SEC
 _HARVEST_SOURCES = {}
 _HARVEST_SOURCES_LOCK = threading.Lock()
 _HARVEST_SOURCE_TTL = 30.0
-_HARVEST_HOST = {'last_tick_at': None, 'last_error': None}
+_HARVEST_HOST = {'last_tick_at': None, 'last_error': None, 'collector_at_start': None}
 
 
 def _harvest_source(cfg, preset):
@@ -412,8 +412,11 @@ def _harvest_host():
     """This server's own reconciler, not the ledger's: another dashboard has its own."""
     thread, last = _PROCS_THREAD, _HARVEST_HOST['last_tick_at']
     fresh = last is None or time.time() - last <= 30
-    return dict(reconciler='active' if thread is not None and thread.is_alive() and fresh else 'inactive',
+    host = dict(reconciler='active' if thread is not None and thread.is_alive() and fresh else 'inactive',
                 last_tick_at=last, last_error=_HARVEST_HOST['last_error'])
+    if _HARVEST_HOST.get('collector_at_start') is not None:       # present only when this start found one
+        host['collector_at_start'] = _HARVEST_HOST['collector_at_start']
+    return host
 
 
 def _harvest_status(cfg=None, rows=None):
@@ -5495,6 +5498,23 @@ def _start_note(kind, **fields):
         print(f"{kind}: {fields} (event log unavailable: {exc})", file=sys.stderr)
 
 
+def _report_collector_at_start():
+    """Once per start: say whether a collector from before this dashboard is alive and whether this one keeps it
+    (control/harvest.collector_at_start owns the judgement). One dashboard_collector_found event, and the same record in
+    the harvest status host. Nothing found writes nothing; a check that fails is logged and never blocks the start."""
+    try:
+        report = harvest_api.collector_at_start(
+            ROOT, load_config(), processes=operation_api.project_processes(ROOT, _procs(), reconcile=False),
+            resolve_source=_harvest_source)
+    except Exception as exc:    # noqa: BLE001 - the start is not conditional on this report
+        _start_note('dashboard_collector_unchecked', pid=os.getpid(), error=f'{type(exc).__name__}: {exc}')
+        return
+    if report is not None:
+        _HARVEST_HOST['collector_at_start'] = report
+        # the event log stamps its own pid on every line, so the collector's is named apart
+        _start_note('dashboard_collector_found', collector_pid=report['pid'], **{k: v for k, v in report.items() if k != 'pid'})
+
+
 def serve(host=None, port=None) -> int:
     """Run the dashboard until it is stopped; returns the process exit code.
 
@@ -5516,6 +5536,7 @@ def serve(host=None, port=None) -> int:
     # threaded: the MJPEG stream holds a connection open for as long as the
     # tab is; single-threaded Flask would block every other request behind it
     app.debug = False       # what app.run(debug=False) set, whatever FLASK_DEBUG says
+    _report_collector_at_start()    # before the refresher: its first tick retires a dead record this would report
     _start_procs_refresher()
     _start_note('dashboard_started', pid=os.getpid(), port=port)
     try:

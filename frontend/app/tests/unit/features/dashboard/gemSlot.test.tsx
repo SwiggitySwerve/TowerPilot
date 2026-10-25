@@ -531,6 +531,42 @@ describe('Gem harvesting capability rows', () => {
     expect(textOutsideCatalogue(failing.view.container)).toEqual([]);
   });
 
+  it('says what the dashboard found at its start, from the server code alone, and says nothing when it found none', () => {
+    const words: Readonly<Record<string, readonly [string, string]>> = {
+      adopted: [
+        'waiting_for_battle',
+        'The collector that was running when the dashboard started is kept',
+      ],
+      dead: [
+        'worker_not_running',
+        'The collector from before this dashboard start had already stopped',
+      ],
+      untracked: [
+        'reconciler_inactive',
+        'A collector this dashboard did not start is running and was not taken over',
+      ],
+    };
+    for (const [code, [name, line]] of Object.entries(words)) {
+      const found = drawGem(sample(`status.${name}`));
+      const mark = found.view.container.querySelector('[data-collector-at-start]');
+      expect(mark).toHaveAttribute('data-collector-at-start', code);
+      expect(mark).toHaveTextContent(line);
+      expect(textOutsideCatalogue(found.view.container)).toEqual([]);
+      found.view.unmount();
+    }
+    const none = drawGem(sample('status.off'));
+    expect(none.view.container.querySelector('[data-collector-at-start]')).toBeNull();
+    const unknown = structuredClone(sample('status.waiting_for_battle')) as {
+      host: { collector_at_start: { code: string } };
+    };
+    unknown.host.collector_at_start.code = 'something_new';
+    none.view.unmount();
+    const other = drawGem(unknown);
+    expect(other.view.container.querySelector('[data-collector-at-start]')).toHaveTextContent(
+      'A collector from before this dashboard start was found',
+    );
+  });
+
   it('has no axe violations in the off, collecting and blocked states', async () => {
     for (const name of ['off', 'collecting', 'policy_invalid', 'circuit_open']) {
       const { view } = drawGem(sample(`status.${name}`), {

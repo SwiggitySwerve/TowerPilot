@@ -160,6 +160,19 @@ export const control = {
       no_gem_collection: entry('no gem collection running'),
       state_unknown: entry("can't tell what harvesting is doing"),
     },
+    /** The line for the collector this dashboard found running at its start, by the server's code. */
+    collectorAtStart: {
+      adopted: entry('The collector that was running when the dashboard started is kept'),
+      will_stop: entry(
+        'The collector that was running when the dashboard started is being stopped',
+      ),
+      dead: entry('The collector from before this dashboard start had already stopped'),
+      unverified: entry("A collector from before this dashboard start can't be checked"),
+      untracked: entry(
+        'A collector this dashboard did not start is running and was not taken over',
+      ),
+      other: entry('A collector from before this dashboard start was found'),
+    },
     retryingIn: (seconds: number): CopyText => made(`retrying in ${duration(seconds)}`),
     /** G4c: the holder's PID, as the record names it. */
     holderPid: (pid: number): CopyText => made(`PID ${String(pid)}`),

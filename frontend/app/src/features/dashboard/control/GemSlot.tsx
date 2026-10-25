@@ -92,6 +92,19 @@ function OverlayLine({ vm }: { readonly vm: GemSlotVM }) {
   );
 }
 
+/** The dashboard's start found a collector from before it: the server's code, worded here. */
+function CollectorAtStartLine({ vm }: { readonly vm: GemSlotVM }) {
+  const found = vm.collectorAtStart;
+  if (found === null) return null;
+  const words = entryFor(text.collectorAtStart, found.code, text.collectorAtStart.other);
+  return (
+    <p className="tp-seen__extra" data-collector-at-start={found.code}>
+      <span>{words.short}</span>
+      {found.pid === null ? null : <span>{text.holderPid(found.pid)}</span>}
+    </p>
+  );
+}
+
 /** F-025, S-080: "Gem settings from {run}: ..." follows the picker's value at once. */
 function SourceLine({ vm, id }: { readonly vm: GemSlotVM; readonly id: string }) {
   const source = vm.source;
@@ -247,6 +260,7 @@ export function GemSlot() {
       </SlotAction>
       <SlotMeta>
         <SourceLine vm={vm} id={sourceId} />
+        <CollectorAtStartLine vm={vm} />
         {vm.cause?.message === null || vm.cause === null ? null : (
           <details className="tp-copy-line__why">
             <summary>{copy.common.why.short}</summary>

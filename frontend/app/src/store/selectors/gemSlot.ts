@@ -12,7 +12,7 @@ import type { ChoiceView } from '../../core/harvestChoice.ts';
 import { connectionView } from '../../core/connection.ts';
 import { gemSlot, turnOnView, type GemCause, type TurnOnFacts } from '../../core/harvestView.ts';
 import { overlayView, type OverlayRoutine } from '../../core/overlay.ts';
-import { id, own } from '../../core/read.ts';
+import { id, own, pid } from '../../core/read.ts';
 import { harvestView, type ReadableHarvest } from '../../core/readability.ts';
 import { drawnRead } from '../../core/statusContext.ts';
 import { fromServer, type ServerText } from '../../copy/server.ts';
@@ -73,6 +73,12 @@ export interface GemSourceVM {
   readonly isServerSource: boolean;
 }
 
+/** The collector this dashboard found running at its start: the server's code and the collector's PID, as sent. */
+export interface CollectorAtStartVM {
+  readonly code: string;
+  readonly pid: number | null;
+}
+
 export interface GemSlotVM {
   readonly choice: ChoiceView;
   readonly seen: ChipVM;
@@ -83,6 +89,7 @@ export interface GemSlotVM {
   readonly source: GemSourceVM;
   readonly sourceChanged: boolean;
   readonly cause: GemCauseVM | null;
+  readonly collectorAtStart: CollectorAtStartVM | null;
   readonly overlay: OverlayVM | null;
 }
 
@@ -198,6 +205,14 @@ function gemSourceVM(
   };
 }
 
+function collectorAtStartVM(
+  view: ReturnType<typeof harvestView> | null,
+): CollectorAtStartVM | null {
+  const found = own(view?.host, 'collector_at_start');
+  const code = id(own(found, 'code'));
+  return code === undefined ? null : { code, pid: pid(own(found, 'pid')) ?? null };
+}
+
 export function selectGemSlot(state: DashboardState): GemSlotVM {
   const facts = controlFacts(state);
   const slot = gemSlot(facts.status, facts.knownOn, facts.unsettled);
@@ -291,6 +306,7 @@ export function selectGemSlot(state: DashboardState): GemSlotVM {
     source,
     sourceChanged: turnOn.offered && turnOn.sourceChanged,
     cause: causeVM(slot.cause),
+    collectorAtStart: collectorAtStartVM(view),
     overlay:
       overlay === null
         ? null

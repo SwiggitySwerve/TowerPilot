@@ -23,7 +23,7 @@ import * as contract20 from './dashboard_contract_pages_v1_schedule.0709b095.ts'
 import * as contract21 from './dashboard_contract_pages_v1_shopping.84476b5e.ts';
 import * as contract22 from './dashboard_contract_v1.17002fa1.ts';
 import * as contract23 from './equipment_samples_v1.bdd7ca73.ts';
-import * as contract24 from './harvest_status_v1.64817467.ts';
+import * as contract24 from './harvest_status_v1.313af2ab.ts';
 const contracts = {
   b46631ae6f207d5bd18edab010fc6b09fa967ac0ef925ef9f75c5abebf4e7a01: contract0,
   f47a0b036f3206d02e6e0049d0af35f075b3e99786b00495c30bf1e7f43f59df: contract1,
@@ -49,7 +49,7 @@ const contracts = {
   '84476b5eef9ba07ed6cc61d7a45bf81a2406e2c0f01c32b3462eef05d1e1ab18': contract21,
   '17002fa1fdda1a8b32048978dfcc9e6d4cac8f0163ffcc83cf11d2534dde975e': contract22,
   bdd7ca73fc29c1818a201eaa1dcbac863d40172733c1096db7e1ef4a39e2b909: contract23,
-  '64817467df00235e6f57dec8373396187319b9ce978144d8c5412c3b834f365e': contract24,
+  '313af2abe230aa4db84f4d93f97e9f41fe111235e5d051ae1676d851dad11bae': contract24,
 };
 /** Unknown identities fail loudly; no default-identity fallback. */
 export function contractForFixture(identity: { readonly path: string; readonly sha256: string }) {
