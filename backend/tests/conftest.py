@@ -54,6 +54,15 @@ def _settings_singletons_restored():
 
 
 @pytest.fixture(autouse=True)
+def _tap_pacing_starts_idle(monkeypatch):
+    """No test inherits the previous test's last-tap time. Pacing compares it with
+    `time.monotonic()`, which many tests replace with a small fake clock; a real
+    leftover value would make the next paced wait sleep for hours."""
+    from device import act
+    monkeypatch.setattr(act, '_last_tap', 0.0)
+
+
+@pytest.fixture(autouse=True)
 def _operation_ledger_in_tmp_path(tmp_path, monkeypatch):
     """No test opens the machine's real ledger. Every reader and writer,
     including the read-only setup-battle guard, derives the path from

@@ -687,6 +687,10 @@ class GemOrbitTapper:
             # The motion probe's final frame is already fresh. Keep its
             # pixels for the first input decision instead of discarding them
             # and requiring another independent clean observation.
+            if index:
+                # The rate cap paces each tap. Wait it out BEFORE capturing so
+                # the frame that aims this tap is not older than the wait.
+                act.wait_for_tap_slot()
             frame = verified_frame if index == 0 else capture.grab()
             motion_balance = read_gem_balance(frame) if index == 0 else None
             motion_unknown = (
