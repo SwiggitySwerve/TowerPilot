@@ -12,4 +12,4 @@ export {
   actionsBattleDetailAnswerSchema,
   actionsMoreBattleDetailAnswerSchema,
   actionsProjectionReadAnswerSchema,
-} from './generated/dashboard_contract_pages_v1_actions.4e4ce98b.ts';
+} from './generated/dashboard_contract_pages_v1_actions.1866eba5.ts';

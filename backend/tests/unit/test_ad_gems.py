@@ -381,7 +381,8 @@ def test_short_interval_limits_window_and_delayed_offer_cannot_escape(monkeypatc
     now[0] = 110
     collector.poll(None)
     assert collector.window_deadline == 120
-    assert collector.claim_at == 125
+    # the 15 s draw is clamped to leave a poll interval and a recognition budget before the deadline (item 2)
+    assert collector.claim_at == 120-collector.options['poll_sec'][1]-ad_gems.OBSERVATION_TIMEOUT_SEC
 
 
 def test_confirmed_claim_closes_window_and_observes_without_input_until_next_start(monkeypatch):

@@ -5,6 +5,20 @@ harvesting collector claims it there through the same windows, response delay,
 recognition and input guards; only the screen check and the proof differ: Home
 needs the exact Home screen, and only a stable, exact +6 on the Home gem
 counter confirms a Home claim.
+
+Response delay. A visible offer waits a delay drawn from the person's range,
+then is verified on a fresh frame before any input. Two rules keep that wait
+from costing the whole window:
+- The delay is clamped to the time left in the window, including the first
+  draw (_latest_response_due): the due time leaves one poll interval plus one
+  recognition budget before the deadline, so the poll that finds it due can
+  still verify and tap. With less than that left, the offer is attempted at
+  once; the existing deadline guards still refuse a verification that cannot
+  finish in time.
+- An attempt that finds the offer moved sent no input and spent nothing: the
+  chosen due time is kept (_held_response) and applies again at the next
+  visible read, which is also a fresh recognition. Only a sent tap, an absent
+  offer, a changed screen or the window's end ends that schedule.
 """
 import time
 import re
@@ -183,6 +197,7 @@ class AdGemCollector:
         self.rng = rng if rng is not None else random
         self.offer_seen_at = None
         self.claim_at = None
+        self._held_response = None       # (offer_seen_at, claim_at) of an attempt that found the offer moved
         self.window_started_at = None
         self.last_window_started_at = None
         self.manual_requested = False
@@ -348,6 +363,7 @@ class AdGemCollector:
             if self.window_deadline is not None:
                 self.window_deadline = StartToStart.window_end(self.window_started_at, values['window_sec'], self.window_deadline)
                 self.next_at = min(self.next_at, self.window_deadline)
+                self._clamp_pending_response()
         if self.window_deadline is not None and time.monotonic() >= self.window_deadline:
             self._close_window()
 
@@ -399,6 +415,30 @@ class AdGemCollector:
     def _forget_offer(self):
         self.offer_seen_at = None
         self.claim_at = None
+        self._held_response = None
+
+    def _latest_response_due(self):
+        """The latest monotonic due time that still leaves a real chance to attempt before the window deadline.
+
+        The first poll at or after the due time can come one poll interval late (the upper
+        bound of poll_sec), and its fresh recognition may use the whole observation budget;
+        a due time later than that is rejected by the expiry guards after the window is spent.
+        """
+        return self.window_deadline-self.options['poll_sec'][1]-OBSERVATION_TIMEOUT_SEC
+
+    def _draw_response_delay(self, now):
+        """One draw from the person's range, clamped to the window; returns (delay, drawn)."""
+        drawn = self.rng.uniform(*self.delay)
+        return min(drawn, max(0.0, self._latest_response_due()-now)), drawn
+
+    def _clamp_pending_response(self):
+        """A window shortened while a response waits must not leave its due time past the new deadline."""
+        latest = max(time.monotonic(), self._latest_response_due())
+        if self.claim_at is not None:
+            self.claim_at = min(self.claim_at, latest)
+        if self._held_response is not None:
+            seen, due = self._held_response
+            self._held_response = (seen, min(due, latest))
 
     def _close_window(self, reason='timeout'):
         if reason == 'timeout':
@@ -565,15 +605,25 @@ class AdGemCollector:
         now = time.monotonic()
         if not action_due or point is None:
             return frame
-        if self.claim_at is None:
+        if self.claim_at is None and self._held_response is not None:
+            # The offer only moved under an earlier attempt: its chosen due time stands, and this read
+            # is the fresh look at the new position; the attempt below verifies again before any input.
+            self.offer_seen_at, self.claim_at = self._held_response
+            self._held_response = None
+            logger.event('ad_gems_response_kept', claim_rect=point,
+                         response_due_at=self._epoch(self.claim_at),
+                         response_overdue_sec=round(max(0, now-self.claim_at), 3), **self._context())
+        elif self.claim_at is None:
             self.offer_seen_at = now
-            self.claim_at = now + self.rng.uniform(*self.delay)
+            delay, drawn = self._draw_response_delay(now)
+            self.claim_at = now + delay
             self.durations = dict(scheduling_wait_sec=round(max(0, now-self.first_seen_at), 3),
                                   response_delay_sec=round(self.claim_at-now, 3),
                                   verification_sec=None, observed_wait_sec=round(max(0, now-self.first_seen_at), 3))
+            clamped = dict(response_delay_drawn_sec=round(drawn, 3), response_clamped=True) if delay < drawn else {}
             logger.event('ad_gems_response_scheduled', claim_rect=point,
                          response_due_at=self._epoch(self.claim_at),
-                         **self.durations, **self._context())
+                         **self.durations, **clamped, **self._context())
         if now < self.claim_at:
             # Do not block farming while an offer waits. A later poll must
             # observe the offer again, then freshly verify it before input.
@@ -588,20 +638,21 @@ class AdGemCollector:
         self._attempt_timing['response_overdue_sec'] = round(max(0, now-self.claim_at), 3)
         logger.event('ad_gems_attempt', claim_rect=point, **self._attempt_timing,
                      **self._context())
+        response = (self.offer_seen_at, self.claim_at)
         self._forget_offer()
         try:
             with logger.context(**self._context()):
-                return self._claim(frame, point, offer_wait)
+                return self._claim(frame, point, offer_wait, response)
         finally:
             # Current correlation belongs only to this synchronous attempt.
             # Terminal events and historical outcomes already hold its IDs.
             self.claim_attempt_id = None
             self._attempt_started_at = None
 
-    def _claim(self, frame, point, offer_wait):
+    def _claim(self, frame, point, offer_wait, response):
         """Keep all pre-input failures visible, with their complete diagnostics."""
         try:
-            return self._verify_and_claim(frame, point, offer_wait)
+            return self._verify_and_claim(frame, point, offer_wait, response)
         except Abort as exc:
             self.mark_unknown('ownership_lost')
             self._finish_attempt('interrupted', 'ownership_lost', error=str(exc),
@@ -616,7 +667,7 @@ class AdGemCollector:
                                  traceback=traceback.format_exc())
             return self._attempt_latest_frame
 
-    def _verify_and_claim(self, frame, point, offer_wait):
+    def _verify_and_claim(self, frame, point, offer_wait, response):
         self._attempt_latest_frame = frame
         # Recheck before touching a shifting HUD, not a remembered position.
         self._attempt_stage = 'fresh_capture'
@@ -647,6 +698,7 @@ class AdGemCollector:
         # fields counted that harmless shape noise as movement and restarted
         # the entire response delay until the collection window expired.
         if _center_displacement(current, point)>12:
+            self._held_response = response       # no input was sent: the chosen due time stands (see the module docstring)
             self._skip('offer_moved', observed_rect=point, fresh_rect=current,
                        center_displacement_px=_center_displacement(current, point))
             return fresh
