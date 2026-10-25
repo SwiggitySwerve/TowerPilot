@@ -19,7 +19,7 @@ One change at a time, smallest first. Each is committed to
 |---|---|---|---|
 | 1 | Ad gem delay: keep the original delay when an offer moves, and clamp it to the time left in the window (person approved) | 2 of the 3 missed ad windows after r15d | done 5bc75004; live once the collector restarts between battles |
 | 2 | Dashboard supervision: single-instance lock, restart when it dies, no landing kills the collector | 2 h 55 min of lost harvesting on 10-24 | 2a done f92ab0ae (live); 2b done d6da4246 (start report; live at next restart); 2c later: landings stop the collector at a safe point instead of killing it |
-| 3 | Gem outcomes on the Dashboard: confirmations seen, misses, and a cause line, all from the backend | "Collecting gems" today only means a collector is running | |
+| 3 | Gem outcomes on the Dashboard: confirmations seen, misses, and a cause line, all from the backend | "Collecting gems" today only means a collector is running | in progress |
 | 4 | Gem-health signal: warn when frames arrive but the recognizer matches nothing | silent recognizer failures | |
 | 5 | Live preview starts by itself when the emulator is already available, and reattaches when it returns; never starts the emulator | person's decision | |
 | 6 | Gem regression test that needs no screenshots | three broken orbit versions pass every test today | done 2b93e993 |
