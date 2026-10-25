@@ -67,17 +67,19 @@ $user = [Security.Principal.WindowsIdentity]::GetCurrent().Name
 
 $action = New-ScheduledTaskAction -Execute $Execute -Argument $Argument -WorkingDirectory $repo
 
-# A logon trigger carries the repetition: the repetition object of a throw-away "once" trigger, no end date.
+# Two triggers. The logon trigger carries the repetition after each logon; a "once" trigger starting now carries
+# the same repetition from registration on, so the watchdog works before the next logon too. No end date.
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $user
 $repeat = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes $RepeatMinutes)
 $trigger.Repetition = $repeat.Repetition
+$triggers = @($trigger, $repeat)
 
 $settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -ExecutionTimeLimit ([TimeSpan]::Zero) `
     -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
 
-if ($PSCmdlet.ShouldProcess($TaskName, "Register-ScheduledTask: logon + every $RepeatMinutes min, IgnoreNew, runs: $Execute $Argument")) {
-    $null = Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings `
+if ($PSCmdlet.ShouldProcess($TaskName, "Register-ScheduledTask: now and at logon, every $RepeatMinutes min, IgnoreNew, runs: $Execute $Argument")) {
+    $null = Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $triggers -Settings $settings `
         -Principal $principal -Description 'Tower Pilot dashboard: starts at logon and every few minutes; a running instance is left alone.' -Force
     $task = Get-ScheduledTask -TaskName $TaskName
     $rep = $task.Triggers[0].Repetition
