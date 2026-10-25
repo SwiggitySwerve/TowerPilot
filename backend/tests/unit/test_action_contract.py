@@ -190,7 +190,9 @@ def test_field_validation_equals_the_validator_every_control_change_goes_through
 
 def test_the_catalog_describes_the_pilot_and_a_copy_can_be_extended_without_touching_it():
     assert [item.id for item in CATALOG] == ['ad_gems', 'floating_gems', 'shopping', 'harvest_launch', 'daily_missions', 'guild_progress', 'event_missions', 'quest_visit',
-                                             'guild_visit', 'guild_store', 'free_store_gems', 'quest_scan', 'shatter', 'housekeeping']
+                                             'guild_visit', 'guild_store', 'free_store_gems', 'quest_scan', 'shatter', 'housekeeping',
+                                             'tournament_entry', 'tournament_ticket', 'in_run_cards', 'surrender', 'setup_capture', 'max_wave', 'repeat_after_death', 'sm_ride',
+                                             'tournament_day_marker', 'perk_ban_cache']
     assert CATALOG.get('harvest_launch').capabilities.run_now == 'not_supported'
     copy = CATALOG.copy()
     probe = ActionDefinition(id='synthetic_probe', label='Probe', family='gems', hosts=frozenset({'test'}),

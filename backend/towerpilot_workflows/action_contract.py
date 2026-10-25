@@ -518,18 +518,26 @@ class EventOnly:
 class ActionDefinition:
     id: str
     label: str
-    family: str                    # gems | rewards | chores | rules | cycles | dayplan | harvest
+    family: str                    # gems | rewards | chores | rules | cycles | dayplan | harvest | setup
     hosts: frozenset
     schedule: Any
     fields: tuple = ()
     capabilities: Capabilities = Capabilities()
     saved: str | None = None       # name of the SavedAdapter the dashboard registers for it; None = live only
-    restricted: str | None = None  # reason; non-None means never user-triggered
+    restricted: str | None = None  # reason (never empty); non-None means never user-triggered, and the definition can never also offer Run now
     evidence: tuple = ()           # outcome reasons that prove a game effect
     consumes: str | None = None    # 'confirmed' | 'attempted' (calendar families)
     documents: tuple = ()          # whole-object controls the action owns (top-level control keys, replaced wholesale, never merged)
     saved_kinds: frozenset | None = None   # blueprint kinds that carry its saved controls; None = every kind
     scope: str | None = None       # who its persisted daily state belongs to: 'installation' (one file for every emulator), 'account', or None (process state only)
+
+    def __post_init__(self):
+        # A restricted action is one nobody may start by hand (a tournament entry, a ticket, a surrender). The definition can never say otherwise: the
+        # contradiction cannot be built, and `runtime.action_bindings.run_now_tokens` refuses it again at the point where tokens are published.
+        if self.restricted is not None and (not isinstance(self.restricted, str) or not self.restricted.strip()):
+            raise ValueError(f'{self.id}: a restricted action needs a reason')
+        if self.restricted is not None and self.capabilities.run_now is True:
+            raise ValueError(f'{self.id}: a restricted action cannot be offered Run now')
 
     def field(self, path: str) -> Field | None:
         return next((item for item in self.fields if item.path == path), None)
@@ -634,8 +642,39 @@ QUEST_SCAN = _plain('quest_scan', 'Quest scan', 'chores', CHORE_SCHEDULE, consum
 SHATTER = _plain('shatter', 'Shatter', 'chores', CHORE_SCHEDULE, consumes='attempted', scope='installation')
 HOUSEKEEPING = _plain('housekeeping', 'Disk housekeeping', 'chores', CHORE_SCHEDULE, consumes='attempted', scope='installation')
 
+
+# ---- item 7, A3b kind A (r18d): DECLARATIONS ONLY. Nothing below moves a timer, owns a state, publishes a control or a routine, or starts anything: no driver
+# records these yet (`hosts` names who may, when a later package migrates the caller), none has a field or a live control, and none is offered Run now. They exist so
+# that the restricted and retired actions are NAMED where Run now is decided, and so that the event-only boundaries the code already has (the death handler, the wave
+# target) and the two non-calendar daily-state consumers have an entry the later packages extend instead of inventing.
+def _declared(ident, label, family, event, *, hosts=(), restricted=None, scope=None):
+    return ActionDefinition(id=ident, label=label, family=family, hosts=frozenset(hosts), schedule=EventOnly(event), capabilities=Capabilities(),
+                            restricted=restricted, scope=scope)
+
+
+# Row 20, restricted: never user-triggered, whatever a binding says (`run_now_tokens`), and not constructible with Run now (`ActionDefinition.__post_init__`).
+TOURNAMENT_ENTRY = _declared('tournament_entry', 'Tournament entry', 'dayplan', 'tournament_block',
+                             restricted='a ticket purchase starts the run and the gem cost escalates 10, 20, 30: entered only by tourney.setup() in a tournament run, either the day plan tournament block (once a day under the combo day lock) or a person starting a tournament preset (the lock is not checked there); never by Run now')
+TOURNAMENT_TICKET = _declared('tournament_ticket', 'Tournament ticket', 'dayplan', 'ticket_dialog',
+                              restricted='the free ad first, gems only up to an explicit cap: it is part of the entry, never an action of its own')
+IN_RUN_CARDS = _declared('in_run_cards', 'In-run card actions', 'rules', 'wave_rule',
+                         restricted='retired: refused at runtime, there is no verified route from a live battle to the cards screen and back (orchestrator.run_in_run_actions)')
+SURRENDER = _declared('surrender', 'Surrender', 'rules', 'guarded_exit',
+                      restricted='ends a live run: only the guarded flows (shard.abandon_run, the rule surrender) may, one attempt, and never on a tournament run')
+SETUP_CAPTURE = _declared('setup_capture', 'Setup capture run', 'setup', 'setup_scan',
+                          restricted='setup starts its own run to capture the intro-sprint, exit and stats screens and surrenders that same run: human-started, consented, clean Home only')
+MAX_WAVE = _declared('max_wave', 'Max wave', 'cycles', 'wave_target', hosts=('orchestrator',),
+                     restricted='ends the run at the configured wave through the guarded surrender: one attempt per run, never on a tournament run')
+# Rows 16 and 17, event only, no Run now. The `repeat` ROUTINE (its enable flag, a literal gate) is not this entry and stays unprojected until it migrates (ACTIONS.md).
+REPEAT_AFTER_DEATH = _declared('repeat_after_death', 'Repeat after death', 'cycles', 'death_boundary', hosts=('orchestrator',))
+SM_RIDE = _declared('sm_ride', 'Smart Missiles ride', 'cycles', 'wave_target', hosts=('quest_sm',))
+# Rows 21 and 22, NOT timers: consumers of the daily-state file through its serialized public functions (scheduling/daystate.py), never calendar flags of their own.
+TOURNAMENT_DAY_MARKER = _declared('tournament_day_marker', 'Tournament day marker (by hand)', 'dayplan', 'manual_tournament', scope='installation')
+PERK_BAN_CACHE = _declared('perk_ban_cache', 'Perk ban cache', 'setup', 'perk_bans_applied', scope='account')
+
 CATALOG = Catalog((AD_GEMS, FLOATING_GEMS, SHOPPING, HARVEST_LAUNCH, DAILY_MISSIONS, GUILD_PROGRESS, EVENT_MISSIONS, QUEST_VISIT, GUILD_VISIT, GUILD_STORE,
-                   FREE_STORE_GEMS, QUEST_SCAN, SHATTER, HOUSEKEEPING))
+                   FREE_STORE_GEMS, QUEST_SCAN, SHATTER, HOUSEKEEPING,
+                   TOURNAMENT_ENTRY, TOURNAMENT_TICKET, IN_RUN_CARDS, SURRENDER, SETUP_CAPTURE, MAX_WAVE, REPEAT_AFTER_DEATH, SM_RIDE, TOURNAMENT_DAY_MARKER, PERK_BAN_CACHE))
 _ACTIVE: list[Catalog] = []
 
 

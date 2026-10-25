@@ -21,7 +21,7 @@ from flows.shard import GemWatch
 from runtime.action_bindings import BindingBase, host_bindings, run_now_tokens
 from runtime.action_session import ActionSession
 from runtime.battle_session import BattleSession
-from towerpilot_workflows.action_contract import CATALOG, ActionDefinition, BindingResult, Capabilities, Field, StartToStart, use_catalog
+from towerpilot_workflows.action_contract import CATALOG, ActionDefinition, BindingResult, Capabilities, Catalog, Field, StartToStart, use_catalog
 from towerpilot_workflows.actions import Actions
 from towerpilot_workflows.operations import Conflict
 
@@ -229,7 +229,9 @@ class Claims(BindingBase):
 
 
 def restricted_catalog():
-    extended = CATALOG.copy()
+    # item 7, r18d: the real catalog now declares `tournament_entry` and `surrender` (restricted, no fields, no live control). This test registers its own, stronger stand-ins
+    # for the same keys (restricted WITH live controls), so the two real entries are left out of the copy; test_action_restricted_declarations.py covers the real ones.
+    extended = Catalog(item for item in CATALOG if item.id not in ('tournament_entry', 'surrender'))
     extended.register(ActionDefinition(id='view_only', label='View only', family='gems', hosts=frozenset({'test'}), schedule=StartToStart(),
                                        fields=(Field('enabled', 'bool'),), capabilities=Capabilities(live_controls=False, run_now=True)))
     for ident, run_now, restricted in (('tournament_entry', False, 'a tournament run cannot be cancelled once a ticket is bought'),

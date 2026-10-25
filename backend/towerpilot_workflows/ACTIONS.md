@@ -3,7 +3,7 @@
 > **Status:** Active (item 6: the pilot, and the control surface generated from the catalog)
 > **Type:** Rules
 > **Created:** 2026-10-22
-> **Updated:** 2026-10-24 (item 7, A3a; item 6, A2-7: what a page reads)
+> **Updated:** 2026-10-25 (item 7, A3b kind A; item 7, A3a; item 6, A2-7: what a page reads)
 > **Owner:** Backend
 > **Spec:** [roadmap-items-6-7/spec.md](../logs/reviews/roadmap-items-6-7/spec.md)
 > **Tags:** actions, scheduling, history, gems, shopping, harvest
@@ -96,6 +96,30 @@ The side-menu reward upkeep and the between-run chores are migrated to the same 
   file does not make a check or a chore repeat on every pass. A restart forgets it, which is the old crash behaviour.
 - **Unreadable inputs are `blocked`, never zero.** NaN, infinity, a negative or a non-number clock reads as `invalid_state`; a time the calendar cannot express reads the same.
 - **Removed:** `global_rewards.check_due/checked/store_due/store_claimed`, the orchestrator's free-gems cap helpers and the daily-state UTC counters (nothing called them).
+
+## Item 7, A3b kind A (r18d): declarations, no timer moves
+
+Ten catalog entries that only DECLARE. None has a field, a live control, a binding, a host that records it, or a Run now; no driver code, timer, owner or
+collection algorithm changed. `restricted` is the one flag that decides what a person may never start, and `EventOnly` the one policy for an action with no time.
+
+| Entry | Kind | Policy / reason | What it declares |
+|---|---|---|---|
+| `tournament_entry`, `tournament_ticket` | restricted | `EventOnly('tournament_block' / 'ticket_dialog')` | The ticket starts a run that cannot be cancelled and its gem cost escalates. Entry happens only in `tourney.setup()` of a tournament run: from the day plan's tournament block (once a day under the `combo` day lock) or from a person's Start of a tournament preset (`dashboard.py`, `orchestrator.py` and `tourney.py` do not consult the day lock). Never Run now. |
+| `in_run_cards` | restricted, retired | `EventOnly('wave_rule')` | `orchestrator.run_in_run_actions` refuses at runtime; the compiled key stays for later. |
+| `surrender` | restricted | `EventOnly('guarded_exit')` | Only `shard.abandon_run` and the rule surrender end a run, never a tournament. |
+| `setup_capture` | restricted | `EventOnly('setup_scan')` | Setup's own run (human-started, consented, clean Home), surrendered by the same flow. |
+| `max_wave` | restricted | `EventOnly('wave_target')`, host orchestrator | One attempt per run (`rs.max_wave_done`), tournament-locked, runflag fallback. |
+| `repeat_after_death` | event only | `EventOnly('death_boundary')`, host orchestrator | The death handler's restart and the `repeat` gate's boundary. The `repeat` ROUTINE (its enable flag) is not this entry: it stays a literal gate, unprojected, until its migration. |
+| `sm_ride` | event only | `EventOnly('wave_target')`, host quest SM | The ride to the wave target. Its lifecycle, the 15 s scan and the 300 s decision timeout stay with `QuestRun` and are not declared here (r18g). |
+| `tournament_day_marker` | state consumer | `EventOnly('manual_tournament')`, scope installation | `tools/tier_ladder` marks `combo_tournament` through `daystate.mark_today`; the combo day lock reads it. |
+| `perk_ban_cache` | state consumer | `EventOnly('perk_bans_applied')`, scope account | `interactions/perks` keeps the applied ban set under `perk_bans:<account>` (the active instance name when the instance sets no account) through `daystate.get_raw` / `set_raw`. |
+
+- **A restricted definition cannot offer Run now.** `ActionDefinition` refuses `restricted` with `capabilities.run_now is True` (and a restricted flag without a reason); `run_now_tokens`
+  still refuses whatever a binding claims. `test_action_restricted_declarations.py` proves both with a binding that claims it can run.
+- **Substep throttles are classified, not wrapped** (row 15): `test_action_substep_classification.py` names every `now - rs.<x> > N` throttle of the orchestrator as a parent-owned
+  substep (input reaches the screen) or infrastructure (none does), and fails for one it does not know.
+- **Why `repeat_after_death` and not `repeat`:** a catalog entry named like a routine key would be projected into `runtime.actions` (a new row on the Dashboard) and would move the
+  `repeat` gate's controls and the order of the control table. Neither is r18d's to change.
 
 ## Adding an action (what the contract asks, and nothing else)
 
