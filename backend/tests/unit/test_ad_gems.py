@@ -1,5 +1,6 @@
 """Ad Gems must not route to the Store or tap when the HUD shifts."""
 from interactions import ad_gems
+from tap_recorder import tap_recorder
 from types import SimpleNamespace
 import pytest
 
@@ -25,10 +26,22 @@ def test_missing_offer_image_requires_both_claim_and_six(monkeypatch,tmp_path):
     assert ad_gems.find_claim(frame) is not None
 
 def test_disabled_and_nonbattle_never_tap(monkeypatch):
+    # The collector catches every Exception around its tap, so a stub that raises proves nothing:
+    # record the taps, and record whether the offer finder was even consulted.
+    taps=tap_recorder(monkeypatch,ad_gems.act)
+    looks=[]
+    monkeypatch.setattr(ad_gems,'find_claim_rect',lambda f, **kwargs:looks.append(f) or (0,1250,200,100))
+    monkeypatch.setattr(ad_gems.capture,'grab',lambda:object())
+    frame=object()
+    monkeypatch.setattr(ad_gems.wave_reader,'read_wave',lambda f:100)
+    disabled=ad_gems.AdGemCollector(False,delay=(0,0))
+    disabled.poll(frame)
+    assert looks==[] and disabled.visibility=='unknown'   # a disabled collector observes nothing
     monkeypatch.setattr(ad_gems.wave_reader,'read_wave',lambda f:None)
-    monkeypatch.setattr(ad_gems.act,'tap',lambda *a,**k: (_ for _ in ()).throw(AssertionError('tap')))
-    ad_gems.AdGemCollector(False).poll(None)
-    ad_gems.AdGemCollector(True).poll(None)
+    nonbattle=ad_gems.AdGemCollector(True,delay=(0,0))
+    nonbattle.poll(frame)
+    assert looks==[] and nonbattle.visibility=='unknown'  # no wave: not a battle, no search for an offer
+    taps.assert_no_taps('disabled collector or a frame that is not a battle')
 
 def test_claim_rechecks_position_and_confirms_disappearance(monkeypatch):
     events=[];taps=[]
@@ -47,12 +60,18 @@ def test_claim_rechecks_position_and_confirms_disappearance(monkeypatch):
     assert events[-1][1]['reason'] == 'confirmed'
 
 def test_moving_claim_is_not_clicked(monkeypatch):
+    events=[]
+    taps=tap_recorder(monkeypatch,ad_gems.act)
     monkeypatch.setattr(ad_gems.wave_reader,'read_wave',lambda f:100)
     points=iter([(0,1250,200,100),(0,1450,200,100)])
     monkeypatch.setattr(ad_gems,'find_claim_rect',lambda f, **kwargs:next(points))
     monkeypatch.setattr(ad_gems.capture,'grab',lambda:None)
-    monkeypatch.setattr(ad_gems.act,'tap',lambda *a,**k: (_ for _ in ()).throw(AssertionError('tap')))
+    monkeypatch.setattr(ad_gems.logger,'event',lambda name,**k:events.append((name,k)))
     ad_gems.AdGemCollector(delay=(0, 0)).poll(None)
+    taps.assert_no_taps('the offer moved 200 px between the decision frame and the fresh look')
+    # It reached the movement guard (a swallowed error would also leave no tap):
+    assert [k['reason'] for name,k in events if name=='ad_gems_skip']==['offer_moved']
+    assert not [k for name,k in events if name=='ad_gems_attempt_finished' and k.get('reason')=='claim_verification_error']
 
 
 def test_contour_edge_noise_does_not_restart_verified_claim(monkeypatch):
