@@ -5487,8 +5487,46 @@ def api_profile_promote():
     return _persist_promotion(operation, cfg, command, key, dest, header + text, result, promotion)
 
 
-if __name__ == "__main__":
+def _start_note(kind, **fields):
+    """One start/stop line in the dashboard's own event log; a log that cannot be written never blocks the decision."""
+    try:
+        _diagnostic_event(kind, **fields)
+    except Exception as exc:    # noqa: BLE001 - the refusal/exit code below is the decision, the log is the record
+        print(f"{kind}: {fields} (event log unavailable: {exc})", file=sys.stderr)
+
+
+def serve(host=None, port=None) -> int:
+    """Run the dashboard until it is stopped; returns the process exit code.
+
+    Order matters: the landing hold, then the exclusive port, and only THEN the background threads - a dashboard
+    that loses either must not reconcile or relaunch anything before it exits (runtime/dashboard_start.py)."""
+    from control.diagnostics import log_root
+    from runtime import dashboard_start
+    host, port = host or HOST, port or PORT
+    notice = dashboard_start.hold_notice(log_root(ROOT))
+    if notice is not None:
+        _start_note('dashboard_start_refused', reason='landing_hold', pid=os.getpid(), note=notice,
+                    hold=str(dashboard_start.hold_path(log_root(ROOT))))
+        return 3
+    try:
+        server = dashboard_start.bind(host, port, app)
+    except dashboard_start.PortTaken as exc:
+        _start_note('dashboard_start_refused', reason='port_taken', pid=os.getpid(), port=port, error=str(exc))
+        return 1
     # threaded: the MJPEG stream holds a connection open for as long as the
     # tab is; single-threaded Flask would block every other request behind it
+    app.debug = False       # what app.run(debug=False) set, whatever FLASK_DEBUG says
     _start_procs_refresher()
-    app.run(host=HOST, port=PORT, debug=False, threaded=True)
+    _start_note('dashboard_started', pid=os.getpid(), port=port)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+    _start_note('dashboard_stopped', pid=os.getpid(), port=port)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(serve())

@@ -135,6 +135,26 @@ $env:TOWER_PILOT_PORT = "8621"
 
 Open [the dashboard on port 8621](http://127.0.0.1:8621/ui/app/).
 
+### Keeping the dashboard running
+
+The dashboard supervises the gem collector, and nothing else restarts the collector, so a dead dashboard
+means no harvesting. Three parts keep it up:
+
+- **One dashboard per port.** `backend/dashboard.py` binds its port exclusively before it starts any
+  background thread (refresher, harvest tick, reconnect). A second start while another dashboard serves the
+  port logs `dashboard_start_refused` (`reason: port_taken`) to `backend/logs/_dashboard/events_*.jsonl` and
+  exits with code 1. It also refuses a port that an older dashboard bound.
+- **Landing hold.** While the file `backend/logs/_dashboard/HOLD` exists, a dashboard start logs
+  `dashboard_start_refused` (`reason: landing_hold`, plus the file's text) and exits with code 3 without binding the
+  port. Create it before copying runtime files and delete it afterwards so the restart task below cannot start a
+  half-landed tree. The file is git-ignored; a forgotten one keeps every start refused.
+- **Restart task.** `tools/register_dashboard_task.ps1` (re)registers the Scheduled Task "TowerPilot Dashboard":
+  it runs `conhost.exe --headless <repo>\.venv\Scripts\python.exe <repo>\backend\dashboard.py` in the repo folder,
+  starts at logon and repeats every 5 minutes with `MultipleInstances = IgnoreNew`. A running dashboard is left
+  alone, and a dead one comes back within 5 minutes (conhost reports exit code 0 to the Task whatever Python returned, so read refusals in the `_dashboard` event log, not in the Task result). Re-running the script replaces the definition without stopping
+  a running dashboard. Preview with `-WhatIf`; test on a scratch task with
+  `-TaskName "Scratch" -Execute cmd.exe -Argument "/c exit 0"` and delete it with `-TaskName "Scratch" -Remove`.
+
 ## Readiness, stopping and repair
 
 - **Prepare this run** reuses saved discoveries and can capture missing battle
