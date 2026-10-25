@@ -42,7 +42,7 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
-from conftest import seed_root, settings_restored
+from conftest import join_reconnect_threads, seed_root, settings_restored
 from control import battles as battle_api
 from control import harvest, operations
 from control.operations import inspect_worker as real_inspect_worker
@@ -225,6 +225,7 @@ class Generator:
             try:
                 yield world
             finally:
+                join_reconnect_threads()   # still inside this world's patches: _HOST and FakeAdb hold
                 random.setstate(random_state)
 
 

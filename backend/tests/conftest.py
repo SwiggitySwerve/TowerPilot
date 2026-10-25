@@ -231,3 +231,91 @@ def pytest_addoption(parser):
     parser.addoption('--regenerate-harvest-fixture', action='store_true', default=False,
                      help='Rewrite backend/tests/fixtures/harvest_status_v1.json from the current code. '
                           'Normal runs only compare against it.')
+
+# ------------------------------------------------ the live ports no test may touch
+LIVE_PORTS = {5037: 'adb server', 8620: 'live dashboard', 8630: 'live worker'}
+_LIVE_PORT_HITS = []
+
+
+def _live_port_of(address):
+    """The protected port a socket address names, else None (loopback ephemeral ports the fixtures open themselves pass)."""
+    if isinstance(address, tuple) and len(address) >= 2 and isinstance(address[1], int):
+        return address[1] if address[1] in LIVE_PORTS else None
+    return None
+
+
+def pytest_configure(config):
+    """Session-wide: connect()/connect_ex() to 5037, 8620 or 8630 never leaves the process. The attempt is
+    recorded with its thread and stack, and refused with ConnectionRefusedError so nothing live is reached even
+    from a background thread whose error nobody sees; the _no_live_port_connect fixture then fails the test."""
+    import socket
+    import threading
+    import traceback
+    real_connect, real_connect_ex = socket.socket.connect, socket.socket.connect_ex
+
+    def record(address):
+        _LIVE_PORT_HITS.append(f"{address!r} ({LIVE_PORTS[_live_port_of(address)]}) from thread "
+                               f"{threading.current_thread().name!r}\n{''.join(traceback.format_stack(limit=25))}")
+
+    def connect(self, address):
+        if _live_port_of(address) is not None:
+            record(address)
+            raise ConnectionRefusedError(f"test socket guard refused {address!r}")
+        return real_connect(self, address)
+
+    def connect_ex(self, address):
+        if _live_port_of(address) is not None:
+            record(address)
+            return 10061
+        return real_connect_ex(self, address)
+
+    socket.socket.connect, socket.socket.connect_ex = connect, connect_ex
+    config._live_port_originals = (real_connect, real_connect_ex)
+
+
+def pytest_unconfigure(config):
+    import socket
+    originals = getattr(config, '_live_port_originals', None)
+    if originals:
+        socket.socket.connect, socket.socket.connect_ex = originals
+
+
+@pytest.fixture(autouse=True)
+def _no_live_port_connect():
+    """Fails the test during which anything (a background thread included) tried to reach the live adb server,
+    gem collector or dashboard. Hits are never discarded: one from a thread that outlives its test is reported by
+    the next test to end, and by pytest_sessionfinish (which makes the run fail) when no test follows."""
+    yield
+    assert not _LIVE_PORT_HITS, "a test reached a live port:\n" + "\n".join(_drain_live_port_hits())
+
+
+def _drain_live_port_hits():
+    hits = list(_LIVE_PORT_HITS)
+    _LIVE_PORT_HITS.clear()
+    return hits
+
+
+def pytest_sessionfinish(session, exitstatus):
+    hits = _drain_live_port_hits()
+    if hits:
+        print("\nLIVE PORT CONNECT ATTEMPTS AFTER THE LAST TEST:\n" + "\n".join(hits))
+        session.exitstatus = 1
+
+
+@pytest.fixture(autouse=True)
+def _reconnect_threads_end_with_their_test(monkeypatch):
+    """The dashboard starts an 'adb-reconnect' thread from any status poll or harvest tick that sees the device down.
+    It dials adbclient._HOST when it runs, and a test's monkeypatches (the closed local port, FakeAdb) are undone
+    when the test ends: a thread still running then dials the real adb server on 127.0.0.1:5037. This fixture is
+    requested after `monkeypatch`, so it tears down first and the thread ends while the test's patches still hold."""
+    yield
+    join_reconnect_threads()
+
+
+def join_reconnect_threads(timeout=20.0):
+    """Wait for every dashboard 'adb-reconnect' thread (a contract world calls this before its own patches unwind)."""
+    import threading
+    for thread in threading.enumerate():
+        if thread.name == 'adb-reconnect' and thread is not threading.current_thread():
+            thread.join(timeout)
+            assert not thread.is_alive(), 'an adb-reconnect thread outlived its test'
