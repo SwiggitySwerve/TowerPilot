@@ -22,8 +22,8 @@ One change at a time, smallest first. Each is committed to
 | 3 | Gem outcomes on the Dashboard: confirmations seen, misses, and a cause line, all from the backend | "Collecting gems" today only means a collector is running | |
 | 4 | Gem-health signal: warn when frames arrive but the recognizer matches nothing | silent recognizer failures | |
 | 5 | Live preview starts by itself when the emulator is already available, and reattaches when it returns; never starts the emulator | person's decision | |
-| 6 | Gem regression test that needs no screenshots | three broken orbit versions pass every test today | in progress |
-| 6b | Orbit taps 2-3 aim on a fresh frame captured after the tap-rate wait (council #3b) | taps were sent on a frame up to 0.7 s old | in progress |
+| 6 | Gem regression test that needs no screenshots | three broken orbit versions pass every test today | done 2b93e993 |
+| 6b | Orbit taps 2-3 aim on a fresh frame captured after the tap-rate wait (council #3b) | taps were sent on a frame up to 0.7 s old | done (orbit fix commit); live at next collector restart |
 | 7 | Hard rule 4 fix: the day plan must not tap over the person's screen (item 7 #10) | safety gap | |
 
 Source for 2-6: `backend/logs/reviews/quality-council-20261024/synthesis.md`, items 1-6.
