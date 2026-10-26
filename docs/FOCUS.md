@@ -20,8 +20,8 @@ One change at a time, smallest first. Each is committed to
 | 1 | Ad gem delay: keep the original delay when an offer moves, and clamp it to the time left in the window (person approved) | 2 of the 3 missed ad windows after r15d | done 5bc75004; live once the collector restarts between battles |
 | 2 | Dashboard supervision: single-instance lock, restart when it dies, no landing kills the collector | 2 h 55 min of lost harvesting on 10-24 | 2a done f92ab0ae (live); 2b done d6da4246 (start report; live at next restart); 2c later: landings stop the collector at a safe point instead of killing it |
 | 3 | Gem outcomes on the Dashboard: confirmations seen, misses, and a cause line, all from the backend | "Collecting gems" today only means a collector is running | done; live at next restart |
-| 4 | Gem-health signal: warn when frames arrive but the recognizer matches nothing | silent recognizer failures | |
-| 5 | Live preview starts by itself when the emulator is already available, and reattaches when it returns; never starts the emulator | person's decision | |
+| 4 | Gem-health signal: warn when frames arrive but the recognizer matches nothing | silent recognizer failures | in progress |
+| 5 | Live preview starts by itself when the emulator is already available, and reattaches when it returns; never starts the emulator | person's decision | in progress (signal = device online; opening the stream from a running emulator is allowed) |
 | 6 | Gem regression test that needs no screenshots | three broken orbit versions pass every test today | done 2b93e993 |
 | 6b | Orbit taps 2-3 aim on a fresh frame captured after the tap-rate wait (council #3b) | taps were sent on a frame up to 0.7 s old | done (orbit fix commit); live at next collector restart |
 | 7 | Hard rule 4 fix: the day plan must not tap over the person's screen (item 7 #10) | safety gap | |
