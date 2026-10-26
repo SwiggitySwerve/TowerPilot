@@ -74,7 +74,7 @@ def test_ci_runs_on_push_and_pull_request_for_master_and_the_branch_without_a_pa
     workflow = _load('ci.yml')
     triggers = workflow.get(True, workflow.get('on'))   # PyYAML reads the key `on` as True
     for event in ('push', 'pull_request'):
-        assert set(triggers[event]['branches']) == {'master', 'feat/dashboard-polish-20261020'}
+        assert set(triggers[event]['branches']) == {'master'}
         assert 'paths' not in triggers[event] and 'paths-ignore' not in triggers[event]
 
 

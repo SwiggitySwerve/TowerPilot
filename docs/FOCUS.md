@@ -1,6 +1,6 @@
 # Tower Pilot: current focus
 
-Updated 2026-10-25. This file is the single place that says what is being worked
+Updated 2026-10-26. This file is the single place that says what is being worked
 on now, in what order, and what "done" means. Older plans and review evidence live
 under the git-ignored `backend/logs/reviews/`; this file supersedes their ordering.
 
@@ -12,8 +12,20 @@ the emulator is already up, and the dashboard keeps itself running.
 
 ## Order of work
 
-One change at a time, smallest first. Each is committed to
-`feat/dashboard-polish-20261020` as soon as it meets the definition of done below.
+One change at a time, smallest first. Items 1-12 below were committed to
+`feat/dashboard-polish-20261020` and merged into `master` with PR #9 on 2026-10-26.
+
+## How changes land from now on (2026-10-26)
+
+- One feature, one branch off `master`, one pull request. The branch is named for the feature
+  (`feat/...`, `fix/...`, `test/...`, `ci/...`, `docs/...`).
+- A pull request merges as soon as its feature meets the definition of done below and CI is green.
+  Small fixes found during review go into the same pull request; unrelated work gets its own.
+- Size: well under 100,000 changed lines, fixtures included; aim for a few thousand. If a change
+  would regenerate large recorded fixtures, land a fixture split or compaction as its own pull
+  request first, or split the feature.
+- At most two pull requests open at once, and only if they touch different files.
+- Live changes (collector, dashboard) are deployed after merge, then checked with `tools/gem_health.py`.
 
 | # | Change | Why | Status |
 |---|---|---|---|
@@ -40,6 +52,26 @@ All seven items above are done and live. The next items, in order, one or two at
 | 11 | Faster gem loop: the collector's single thread slows to one pass per ~6 s, so ad offer readings go stale (observations_lapsed, also before today's changes) | missed offers (council #5e, GC-07) | done (a8d4fb80, live 10:31): survives ledger locks, per-pass timers (gem_collector_stages), one read per frame, 1 s pace. Open: partial session writes not retried; backwards-wave lock loses previous link |
 | 12 | Resume paused roadmap item 7 (r18e main-loop timers, r18h tests, F-1 latency gate port), then items 3, 9, 10 | roadmap | F-1 done (ce21f709); r18e done (0555570b: rule/demon cooldowns and UW backoff on catalog schedules, one history row per contact); r18h foundation tests next; combo handoff landed as #7 |
 
+## Pull request queue (from 2026-10-26)
+
+Each row is one pull request, in order. Paused state for items 3, 9 and 10 is in
+`backend/logs/reviews/roadmap-item3-build/STATE.md`, `roadmap-item9-*/STATE.md` and `item10-p10*/STATE.md`.
+
+| PR | Feature | Status |
+|---|---|---|
+| ci/pr-workflow | CI on pull requests to master; these rules | open |
+| feat/action-lifecycle-foundation | Item 7 r18h: schedules refuse an unreadable clock; lifecycle tests (clock, restart, concurrency, coalescing, compat, history readback) | in progress |
+| fix/run-now-ack-evidence | #10 follow-up: the Run now acknowledgement stops saying confirmed for a vanished offer | |
+| fix/collector-partial-writes | #11 follow-ups: retry a partly written finish/prepare; keep the previous-record link after a backwards-wave lock | |
+| feat/takeover-t3b | Item 3 T3b (three open Astra findings first) | |
+| feat/takeover-t3c | Item 3 T3c | |
+| feat/takeover-u3 | Item 3 U3 | |
+| feat/item9-p9f, -p9a, -p9b | Item 9 packages, one pull request each (P9-F approved) | |
+| docs/item10-p10e, feat/item10-p10a, -p10d | Item 10 packages, one pull request each | |
+
+Needs the person: item 1 (a fresh live run), items 4 and 5 (visual acceptance), item 6 (a live run with
+shopping on), and the ad gem offer that has not appeared since 08:05 on 10-26.
+
 ## Definition of done for one change
 
 1. The change is small and has one purpose.
@@ -49,7 +81,7 @@ All seven items above are done and live. The next items, in order, one or two at
 4. Recorded fixtures that move are regenerated through their writers, and every moved value is explained.
 5. One independent review of the final diff (Astra). Opus verifies only changes to the live
    collection path or safety rules.
-6. Committed and pushed. The dashboard is restarted between battles when runtime files changed,
+6. Merged through its own pull request with CI green. The dashboard is restarted between battles when runtime files changed,
    and the result is checked on the live Dashboard.
 7. Gem collection is checked after every change that reaches the live collector: run
    `python tools/gem_health.py` once the new collector has run a while and compare it with the previous
