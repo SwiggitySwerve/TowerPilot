@@ -1310,18 +1310,32 @@ def _orphan_battle() -> "int | None":
         return None
 
 
-def _hold_while_unknown() -> None:
-    """Never start a handoff over a screen automation cannot name.
+# The ONLY screens a handoff may start from: Home, the run itself, and the
+# run-end dialogs that tourney.ensure_home banks on its way Home (GAME STATS,
+# the exit-battle and end-round confirmations). Every other screen - a menu a
+# person opened (CARDS, MODULES, GUILD, TOURNAMENT...), any dialog or reward
+# screen, and anything unrecognized - is somebody's, and the handoff waits.
+HANDOFF_SCREENS = frozenset({"home", "battle", "game_stats", "exit_battle",
+                             "end_round"})
 
-    An unknown screen right before a handoff is where a HUMAN is working:
-    2026-08-17 a shard runner aborted ("left the battle screen") because
-    the user opened the module screens, and combo swapped loadouts right
-    through their session. Waits until the game shows battle, home or a
-    known dialog - all screens the handoff owns.
+
+def _hold_while_unknown() -> None:
+    """Never start a handoff over a screen the handoff does not own.
+
+    Any screen outside HANDOFF_SCREENS is where a HUMAN may be working, or a
+    place automation cannot name: 2026-08-17 a shard runner aborted ("left the
+    battle screen") because the user opened the module screens, and combo
+    swapped loadouts right through their session. Naming the screen was not
+    enough - a recognized personal menu (CARDS) used to release the hold and
+    tourney.ensure_home then tapped Home over the person. Waits until the game
+    shows Home, a battle or one of its end dialogs; the hold is announced on
+    EVERY poll with the screen and how long it has lasted, so a stranded menu
+    is visible rather than a silent stall. Each poll takes a fresh screenshot.
+    (The name predates the allowlist; run() and the tests call it by it.)
     """
     from device import capture
     from vision import screen
-    held = False
+    held_at = None
     while True:
         try:
             name = screen.identify(capture.grab()).name
@@ -1329,13 +1343,17 @@ def _hold_while_unknown() -> None:
             logger.event("combo_hold_err", error=str(e)[:120])
             time.sleep(POLL)
             continue
-        if name != "unknown":
-            if held:
-                logger.event("combo_handoff_release", screen=name)
+        if name in HANDOFF_SCREENS:
+            if held_at is not None:
+                logger.event("combo_handoff_release", screen=name,
+                             held_sec=int(time.monotonic() - held_at))
             return
-        if not held:
-            held = True
-            logger.event("combo_handoff_hold")
+        if held_at is None:
+            held_at = time.monotonic()
+        logger.event("combo_handoff_hold", screen=name,
+                     reason=("unrecognized screen" if name == "unknown"
+                             else "screen the handoff does not own"),
+                     held_sec=int(time.monotonic() - held_at))
         time.sleep(POLL)
 
 
