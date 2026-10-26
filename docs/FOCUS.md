@@ -28,6 +28,18 @@ One change at a time, smallest first. Each is committed to
 
 Source for 2-6: `backend/logs/reviews/quality-council-20261024/synthesis.md`, items 1-6.
 
+## Next stretch (started 2026-10-26)
+
+All seven items above are done and live. The next items, in order, one or two at a time:
+
+| # | Change | Why | Status |
+|---|---|---|---|
+| 8 | Tests that defend hard rule 2 (tournament refusals in tourney.end_round, ensure_home, shard.abandon_run) | removing those refusals leaves every test green today (council #9a, BC-02) | in progress |
+| 9 | CI gate on the fork: backend unit, contract drift, frontend typecheck/lint/unit, run first as non-required | the branch has no CI runs at all (council #8) | in progress |
+| 10 | Honest labels: a collector launch is unconfirmed until it reports; battle ad reads "offer gone after tap" | the history claims more than it knows (council #7) | |
+| 11 | Faster gem loop: the collector's single thread slows to one pass per ~6 s, so ad offer readings go stale (observations_lapsed, also before today's changes) | missed offers (council #5e, GC-07) | |
+| 12 | Resume paused roadmap item 7 (r18e main-loop timers, r18h tests, F-1 latency gate port), then items 3, 9, 10 | roadmap | |
+
 ## Definition of done for one change
 
 1. The change is small and has one purpose.
