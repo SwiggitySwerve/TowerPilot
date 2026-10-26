@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPreviewStore } from '../../../src/store/preview.ts';
 import type { PreviewApi } from '../../../src/api/preview.ts';
+import type { PreviewTarget } from '../../../src/store/preview.ts';
 import type { DisplayedPreview } from '../../../src/core/preview.ts';
 import { previewBody } from '../../support/previewFixture.ts';
 import { record } from '../../../scripts/generate-contract.mjs';
 
-function harness() {
+function harness(connected = true) {
   let frame: (value: DisplayedPreview) => void = () => undefined;
   let id = 0;
   const api = {
@@ -37,7 +38,7 @@ function harness() {
     newId: () => `test${++id}`,
   } satisfies PreviewApi;
   const store = createPreviewStore(api);
-  store.setTarget({ epoch: 1, key: 'main/a', instance: 'main', connected: true, hidden: false });
+  store.setTarget({ epoch: 1, key: 'main/a', instance: 'main', connected, hidden: false });
   const emit = () => {
     frame({
       kind: 'frame',
@@ -113,29 +114,26 @@ describe('PV1 PV3 PV4 PV5 PV6 preview session lifecycle', () => {
     expect(api.stream.mock.calls[1]?.[0]).not.toBe(first?.[0]);
     store.stop();
   });
-  it.each(['hidden', 'context', 'collapse', 'offline'])(
-    'closes on %s and never resumes on return',
-    async (event) => {
-      const { store, api, emit } = harness();
-      store.expand(true);
-      await store.start();
-      if (event === 'collapse') store.expand(false);
-      else
-        store.setTarget({
-          epoch: event === 'context' ? 2 : 1,
-          key: event === 'context' ? 'other/a' : 'main/a',
-          instance: 'main',
-          connected: event !== 'offline',
-          hidden: event === 'hidden',
-        });
-      emit();
-      expect(store.getSnapshot().frame).toBeNull();
-      expect(store.getSnapshot().running).toBe(false);
-      expect(api.stream.mock.calls[0]?.[1].aborted).toBe(true);
-      await vi.advanceTimersByTimeAsync(5000);
-      expect(api.stream).toHaveBeenCalledTimes(1);
-    },
-  );
+  it.each(['hidden', 'context', 'collapse', 'offline'])('closes on %s', async (event) => {
+    const { store, api, emit } = harness();
+    store.expand(true);
+    await store.start();
+    if (event === 'collapse') store.expand(false);
+    else
+      store.setTarget({
+        epoch: event === 'context' ? 2 : 1,
+        key: event === 'context' ? 'other/a' : 'main/a',
+        instance: 'main',
+        connected: event !== 'offline',
+        hidden: event === 'hidden',
+      });
+    emit();
+    expect(store.getSnapshot().frame).toBeNull();
+    expect(store.getSnapshot().running).toBe(false);
+    expect(api.stream.mock.calls[0]?.[1].aborted).toBe(true);
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(api.stream).toHaveBeenCalledTimes(1);
+  });
   it('rejects delayed old-context availability and status and unknown transport never captures', async () => {
     const { store, api } = harness();
     let answer: (value: unknown) => void = () => undefined;
@@ -215,5 +213,221 @@ describe('PV1 PV3 PV4 PV5 PV6 preview session lifecycle', () => {
     expect(api.stream.mock.calls[1]?.[1].aborted).toBe(false);
     expect(store.getSnapshot().frame).toEqual(replacement.frame);
     store.stop();
+  });
+});
+
+const target = (over: Partial<PreviewTarget> = {}): PreviewTarget => ({
+  epoch: 1,
+  key: 'main/a',
+  instance: 'main',
+  connected: true,
+  hidden: false,
+  ...over,
+});
+const settle = () => vi.advanceTimersByTimeAsync(0);
+
+describe('L5-06 / FOCUS #5 preview attaches by itself while the emulator is online', () => {
+  it('attaches once the device reports online and not before', async () => {
+    const { store, api } = harness(false);
+    store.present(true);
+    await settle();
+    for (let i = 0; i < 5; i++) {
+      store.setTarget(target({ connected: false }));
+      await vi.advanceTimersByTimeAsync(10000);
+    }
+    expect(api.availability).not.toHaveBeenCalled();
+    expect(api.stream).not.toHaveBeenCalled();
+    expect(store.getSnapshot().running).toBe(false);
+    store.setTarget(target());
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(1);
+    expect(store.getSnapshot().running).toBe(true);
+    store.present(false);
+  });
+  it('attaches when the viewer mounts over an online device, with no press', async () => {
+    const { store, api } = harness();
+    expect(api.stream).not.toHaveBeenCalled();
+    store.present(true);
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(1);
+    store.present(false);
+  });
+  it('detaches when the device goes offline and reattaches with a new stream when it returns', async () => {
+    const { store, api } = harness();
+    store.present(true);
+    await settle();
+    const first = api.stream.mock.calls[0];
+    store.setTarget(target({ connected: false }));
+    expect(first?.[1].aborted).toBe(true);
+    expect(store.getSnapshot().running).toBe(false);
+    expect(store.getSnapshot().frame).toBeNull();
+    await vi.advanceTimersByTimeAsync(30000);
+    expect(api.stream).toHaveBeenCalledTimes(1);
+    store.setTarget(target());
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(2);
+    expect(api.stream.mock.calls[1]?.[0]).not.toBe(first?.[0]);
+    expect(store.getSnapshot().running).toBe(true);
+    store.present(false);
+  });
+  it('keeps one session across repeated reads while online', async () => {
+    const { store, api } = harness();
+    store.present(true);
+    await settle();
+    for (let i = 0; i < 5; i++) {
+      store.setTarget(target());
+      await vi.advanceTimersByTimeAsync(1000);
+    }
+    expect(api.stream).toHaveBeenCalledTimes(1);
+    expect(api.availability).toHaveBeenCalledTimes(1);
+    store.present(false);
+  });
+  it('pauses while the tab is hidden and reattaches on return without a press', async () => {
+    const { store, api } = harness();
+    store.present(true);
+    await settle();
+    store.setTarget(target({ hidden: true }));
+    expect(api.stream.mock.calls[0]?.[1].aborted).toBe(true);
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(api.stream).toHaveBeenCalledTimes(1);
+    store.setTarget(target());
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(2);
+    store.present(false);
+  });
+  it('a viewer that unmounts and returns reattaches; collapse and expand does too', async () => {
+    const { store, api } = harness();
+    store.present(true);
+    await settle();
+    store.present(false);
+    expect(api.stream.mock.calls[0]?.[1].aborted).toBe(true);
+    store.present(true);
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(2);
+    store.expand(false);
+    expect(api.stream.mock.calls[1]?.[1].aborted).toBe(true);
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(api.stream).toHaveBeenCalledTimes(2);
+    store.expand(true);
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(3);
+    store.present(false);
+  });
+  it('does not fight the person: Stop holds across reads, hide, offline and return', async () => {
+    const { store, api } = harness();
+    store.present(true);
+    await settle();
+    expect(store.getSnapshot().stopped).toBe(false);
+    store.stop();
+    expect(store.getSnapshot().stopped).toBe(true); // the offline line must not promise an automatic start
+    expect(api.stream.mock.calls[0]?.[1].aborted).toBe(true);
+    for (const next of [
+      target(),
+      target({ hidden: true }),
+      target(),
+      target({ connected: false }),
+      target(),
+    ]) {
+      store.setTarget(next);
+      await vi.advanceTimersByTimeAsync(5000);
+    }
+    store.present(false);
+    store.present(true);
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(api.stream).toHaveBeenCalledTimes(1);
+    expect(store.getSnapshot().running).toBe(false);
+    await store.start();
+    expect(api.stream).toHaveBeenCalledTimes(2);
+    // After the person starts again, automatic behaviour resumes.
+    store.setTarget(target({ connected: false }));
+    store.setTarget(target());
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(3);
+    store.present(false);
+  });
+  it('backs off after stream errors: one retry per window, doubling, only while online', async () => {
+    const { store, api } = harness();
+    api.stream.mockImplementation(() => Promise.resolve());
+    const read = async (ms: number) => {
+      await vi.advanceTimersByTimeAsync(ms);
+      store.setTarget(target());
+      await settle();
+    };
+    store.present(true);
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(1);
+    expect(store.getSnapshot().failed).toBe(true);
+    // Many reads inside the first 3 s window cause no retry.
+    for (let i = 0; i < 5; i++) await read(500);
+    expect(api.stream).toHaveBeenCalledTimes(1);
+    await read(1000);
+    expect(api.stream).toHaveBeenCalledTimes(2);
+    // Second window is 6 s.
+    for (let i = 0; i < 5; i++) await read(1000);
+    expect(api.stream).toHaveBeenCalledTimes(2);
+    await read(1500);
+    expect(api.stream).toHaveBeenCalledTimes(3);
+    // Offline: no retries at all, however long.
+    store.setTarget(target({ connected: false }));
+    await vi.advanceTimersByTimeAsync(120000);
+    store.setTarget(target({ connected: false }));
+    expect(api.stream).toHaveBeenCalledTimes(3);
+    // Back online resets the backoff: one prompt attempt.
+    store.setTarget(target());
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(4);
+    store.present(false);
+  });
+  it('a received frame clears the backoff', async () => {
+    const { store, api } = harness();
+    // Each session delivers one frame, then ends; without the reset the window would double.
+    api.stream.mockImplementation((_url, _signal, onFrame) => {
+      onFrame({
+        kind: 'frame',
+        sequence: 1,
+        backend: 'mumu',
+        sourceAgeMs: null,
+        receivedAt: Date.now(),
+      });
+      return Promise.resolve();
+    });
+    store.present(true);
+    await settle();
+    for (const expected of [2, 3, 4]) {
+      await vi.advanceTimersByTimeAsync(3100);
+      store.setTarget(target());
+      await settle();
+      expect(api.stream).toHaveBeenCalledTimes(expected);
+    }
+    store.present(false);
+  });
+  it('lifecycle changes during a backoff window do not bypass the deadline', async () => {
+    const { store, api } = harness();
+    api.stream.mockImplementation(() => Promise.resolve());
+    store.present(true);
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(1);
+    // Hide/show, collapse/expand and unmount/remount inside the 3 s window start nothing.
+    store.setTarget(target({ hidden: true }));
+    store.setTarget(target());
+    store.expand(false);
+    store.expand(true);
+    store.present(false);
+    store.present(true);
+    await vi.advanceTimersByTimeAsync(1000);
+    store.setTarget(target());
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(2100);
+    store.setTarget(target());
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(2);
+    // Going offline and back inside the next window resets it: one prompt attempt.
+    store.setTarget(target({ connected: false }));
+    await vi.advanceTimersByTimeAsync(500);
+    store.setTarget(target());
+    await settle();
+    expect(api.stream).toHaveBeenCalledTimes(3);
+    store.present(false);
   });
 });

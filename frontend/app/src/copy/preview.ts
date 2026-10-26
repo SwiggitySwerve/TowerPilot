@@ -14,8 +14,10 @@ export const previewCopy = {
   check: entry('Check availability'),
   checking: entry('Checking availability…'),
   checkBusy: entry('Stop preview before checking availability separately.'),
-  connectionReason: entry(
-    'Confirm the selected emulator connection on Emulators before starting preview.',
+  offlineWaiting: entry('Emulator offline; the preview starts when it is back.'),
+  offlineStopped: entry('Emulator offline. The preview stays stopped until you start it.'),
+  autoStart: entry(
+    'Starts by itself while the emulator is online. Stop preview keeps it off until you start it.',
   ),
   availabilityFailed: entry('Availability could not be confirmed. Check again or open Emulators.'),
   transportFailed: entry('Preview delivery failed. Reconnect preview to try a new session.'),

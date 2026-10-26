@@ -32,6 +32,7 @@ export function selectPreview(s: PreviewState) {
   return {
     ...s,
     verdict: projectPreview({ ...s, connected: s.target.connected }),
+    offline: !s.target.connected,
     canStart: s.target.connected && !s.target.hidden && s.target.instance !== null,
     savedSource: s.availability?.savedSource ?? null,
     savedFps,

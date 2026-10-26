@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useAnnounce } from '../../ui/LiveRegion.tsx';
 import {
   previewCopy as c,
@@ -30,15 +30,21 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
     },
     [store],
   );
+  // The preview now attaches by itself, so its start-up is silent. After the person's first
+  // press or edit on this page, verdict changes are announced for the rest of the visit.
+  const touched = useRef(false);
+  const touch = () => {
+    touched.current = true;
+  };
   useEffect(() => {
-    if (v.expanded) announce(c.verdicts[v.verdict].short);
+    if (v.expanded && touched.current) announce(c.verdicts[v.verdict].short);
   }, [announce, v.expanded, v.verdict]);
-  useEffect(
-    () => () => {
-      store.stop();
-    },
-    [store],
-  );
+  useEffect(() => {
+    store.present(true);
+    return () => {
+      store.present(false);
+    };
+  }, [store]);
   const report = v.report;
   return (
     <aside
@@ -53,6 +59,7 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
         aria-expanded={v.expanded}
         aria-controls="preview-content"
         onClick={() => {
+          touch();
           store.expand(!v.expanded);
         }}
       >
@@ -61,12 +68,14 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
       {v.expanded ? (
         <div id="preview-content" className="tp-preview__content">
           <p>{c.consent.short}</p>
+          <p>{c.autoStart.short}</p>
           <strong data-preview-verdict>{c.verdicts[v.verdict].short}</strong>
           <div className="tp-preview__actions">
             {v.running ? (
               <button
                 type="button"
                 onClick={() => {
+                  touch();
                   store.stop();
                 }}
               >
@@ -76,8 +85,9 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
               <button
                 type="button"
                 disabled={!v.canStart}
-                aria-describedby={!v.canStart ? 'preview-connection' : undefined}
+                aria-describedby={v.offline ? 'preview-connection' : undefined}
                 onClick={() => {
+                  touch();
                   void store.start();
                 }}
               >
@@ -88,13 +98,18 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
               type="button"
               disabled={!v.canStart || v.checking}
               onClick={() => {
+                touch();
                 void store.start();
               }}
             >
               {c.reconnect.short}
             </button>
           </div>
-          {!v.canStart ? <p id="preview-connection">{c.connectionReason.short}</p> : null}
+          {v.offline ? (
+            <p id="preview-connection">
+              {v.stopped ? c.offlineStopped.short : c.offlineWaiting.short}
+            </p>
+          ) : null}
           {v.checking ? <p>{c.checking.short}</p> : null}
           {v.verdict === 'failed' ? <p>{c.transportFailed.short}</p> : null}
           {v.verdict === 'unknown' ? <p>{c.unknownDelivery.short}</p> : null}
@@ -129,6 +144,7 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
                 aria-labelledby="preview-fps-label"
                 value={v.prefs.fps ?? ''}
                 onChange={(event) => {
+                  touch();
                   store.edit({
                     ...v.prefs,
                     fps: previewFps(event.target.value === '' ? null : Number(event.target.value)),
@@ -152,6 +168,7 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
                 value={v.prefs.source}
                 onChange={(event) => {
                   const source = previewSource(event.target.value);
+                  touch();
                   if (source !== null) store.edit({ ...v.prefs, source });
                 }}
               >
@@ -173,6 +190,7 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
                 value={v.prefs.quality}
                 onChange={(event) => {
                   const quality = previewQuality(event.target.value);
+                  touch();
                   if (quality !== null) store.edit({ ...v.prefs, quality });
                 }}
               >

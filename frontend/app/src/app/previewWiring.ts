@@ -20,7 +20,7 @@ export function createPreviewData(dashboard: DashboardStore) {
     stop() {
       unsubscribe?.();
       unsubscribe = null;
-      preview.stop();
+      preview.present(false);
     },
   };
 }

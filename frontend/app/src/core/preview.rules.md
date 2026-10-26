@@ -14,8 +14,14 @@ part identifies its source. Receipt age is measured locally; source age is the
 estimate at server encode, and server report age is separate. Missing values
 remain unknown. Freshness expires after `max(3, 2 / target_fps)` seconds.
 
-The session store owns consent and cancellation. Entry and disclosure do no I/O.
-Stop, collapse, hidden document, route leave, context change and unmount abort
-all work, clear pixels and revoke object URLs. A context epoch and a new stream
-ID reject late answers. Preferences persist in local storage; consent never does.
-There is no automatic repair, still-image fallback or session restart.
+The session store owns the session. It attaches by itself while the viewer is open and the
+status read reports the emulator online (the same connected signal as the header chip); it never
+starts, boots, wakes or reconnects the emulator, MuMu or adb. Collapse, hidden document, offline,
+route leave, context change and unmount abort all work, clear pixels and revoke object URLs, and
+the session reattaches when the condition clears. The person's Stop is the one choice that holds:
+nothing restarts until the person presses Start, for this page session (memory only; a reload
+starts again). A failed session is retried with backoff (3 s, doubling to 60 s, reset by a frame
+or by the device coming back) at most once per backoff window, driven by dashboard reads and
+never by its own timer, and only while the device reads online. A context epoch and a new stream
+ID reject late answers. Preferences persist in local storage; the running state never does.
+There is no still-image fallback.

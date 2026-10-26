@@ -35,6 +35,8 @@ export interface PreviewState {
   readonly reportAt: number | null;
   readonly statusFailed: boolean;
   readonly failed: boolean;
+  /** The person pressed Stop this page session: nothing starts by itself until Start or Reconnect. */
+  readonly stopped: boolean;
   readonly now: number;
 }
 export interface PreviewStore extends Store<PreviewState> {
@@ -42,15 +44,22 @@ export interface PreviewStore extends Store<PreviewState> {
   readonly expand: (value: boolean) => void;
   readonly start: () => Promise<void>;
   readonly check: () => Promise<void>;
+  /** The person's Stop: the session ends and stays off until the person starts it again. */
   readonly stop: () => void;
+  /** Viewer mounted or unmounted. Unmounting ends the session without recording a choice. */
+  readonly present: (value: boolean) => void;
   readonly edit: (value: PreviewPreferences) => void;
   readonly attach: (canvas: HTMLCanvasElement | null) => void;
 }
+/** Wait before reconnecting after a failed session: 3 s, doubling per failure, capped. */
+const RETRY_BASE_MS = 3000;
+const RETRY_MAX_MS = 60000;
+
 export function createPreviewStore(api: PreviewApi): PreviewStore {
   const store = createStore<PreviewState>({
     target: { epoch: 0, key: null, instance: null, connected: false, hidden: true },
     prefs: previewPreferences(api.load()),
-    expanded: false,
+    expanded: true,
     running: false,
     checking: false,
     availability: null,
@@ -63,6 +72,7 @@ export function createPreviewStore(api: PreviewApi): PreviewStore {
     reportAt: null,
     statusFailed: false,
     failed: false,
+    stopped: false,
     now: api.now(),
   });
   let generation = 0;
@@ -70,8 +80,20 @@ export function createPreviewStore(api: PreviewApi): PreviewStore {
   let closed: Promise<void> = Promise.resolve();
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
   let tickTimer: ReturnType<typeof setTimeout> | null = null;
-  const stop = () => {
+  // Auto-attach bookkeeping, in memory only: the person's Stop lasts for this page session.
+  let viewing = false;
+  let personStopped = false;
+  let dead = false;
+  let failures = 0;
+  let retryAt = 0;
+  const noteFailure = () => {
+    failures++;
+    dead = true;
+    retryAt = api.now() + Math.min(RETRY_MAX_MS, RETRY_BASE_MS * 2 ** (failures - 1));
+  };
+  const halt = () => {
     generation++;
+    dead = false;
     controller?.abort();
     controller = null;
     if (pollTimer !== null) clearTimeout(pollTimer);
@@ -122,8 +144,8 @@ export function createPreviewStore(api: PreviewApi): PreviewStore {
       signal.removeEventListener('abort', cancelTimeout);
     }
   };
-  const start = async () => {
-    stop();
+  const run = async () => {
+    halt();
     const initial = store.getSnapshot();
     if (
       !initial.expanded ||
@@ -141,10 +163,14 @@ export function createPreviewStore(api: PreviewApi): PreviewStore {
     if (!active(token) || cancelled()) return;
     const available = await availability(token, abort);
     if (!active(token) || cancelled()) {
-      if (generation === token) store.update((s) => ({ ...s, checking: false, failed: true }));
+      if (generation === token) {
+        noteFailure();
+        store.update((s) => ({ ...s, checking: false, failed: true }));
+      }
       return;
     }
     if (available === null || !store.getSnapshot().target.connected) {
+      noteFailure();
       store.update((s) => ({ ...s, checking: false, failed: true }));
       return;
     }
@@ -156,6 +182,7 @@ export function createPreviewStore(api: PreviewApi): PreviewStore {
     let sequence = 0;
     const fail = (reason?: 'unknown') => {
       if (!active(token, id)) return;
+      noteFailure();
       abort.abort();
       api.clear();
       if (pollTimer !== null) clearTimeout(pollTimer);
@@ -174,7 +201,11 @@ export function createPreviewStore(api: PreviewApi): PreviewStore {
         (frame) => {
           if (!active(token, id) || cancelled()) return;
           if (frame.kind === 'frame' && frame.sequence <= sequence) return;
-          if (frame.kind === 'frame') sequence = frame.sequence;
+          if (frame.kind === 'frame') {
+            sequence = frame.sequence;
+            failures = 0;
+            retryAt = 0;
+          }
           store.update((s) => ({ ...s, frame, now: api.now() }));
         },
         fail,
@@ -230,10 +261,49 @@ export function createPreviewStore(api: PreviewApi): PreviewStore {
     }, 2000);
     tick();
   };
+  const wanted = () => {
+    const s = store.getSnapshot();
+    return (
+      viewing &&
+      s.expanded &&
+      !personStopped &&
+      s.target.connected &&
+      !s.target.hidden &&
+      s.target.instance !== null
+    );
+  };
+  /**
+   * Attach when the emulator is already online and nothing the person chose says otherwise.
+   * Runs on dashboard reads (the existing poll cadence), never on its own timer: a failed
+   * session is retried at most once per backoff window, and only while the device reads online.
+   */
+  const reconcile = () => {
+    if (!wanted()) return;
+    const s = store.getSnapshot();
+    if (s.checking && !s.running) return;
+    // The backoff deadline holds across hide/show, unmount/remount and collapse/expand too.
+    if (api.now() < retryAt) return;
+    if (!s.running || dead) void run();
+  };
   return {
     ...store,
-    stop,
-    start,
+    start() {
+      personStopped = false;
+      store.update((s) => ({ ...s, stopped: false }));
+      failures = 0;
+      retryAt = 0;
+      return run();
+    },
+    stop() {
+      personStopped = true;
+      halt();
+      store.update((s) => ({ ...s, stopped: true }));
+    },
+    present(value) {
+      viewing = value;
+      if (value) reconcile();
+      else halt();
+    },
     attach: api.attach,
     setTarget(target) {
       const previous = store.getSnapshot().target;
@@ -243,7 +313,11 @@ export function createPreviewStore(api: PreviewApi): PreviewStore {
         (target.hidden && !previous.hidden) ||
         (!target.connected && previous.connected)
       )
-        stop();
+        halt();
+      if (target.connected && !previous.connected) {
+        failures = 0;
+        retryAt = 0;
+      }
       store.update((s) => ({
         ...s,
         target,
@@ -251,16 +325,18 @@ export function createPreviewStore(api: PreviewApi): PreviewStore {
           ? { availability: null, availabilityFailed: false }
           : {}),
       }));
+      reconcile();
     },
     expand(expanded) {
-      if (!expanded) stop();
+      if (!expanded) halt();
       store.update((s) => ({ ...s, expanded }));
+      reconcile();
     },
     async check() {
       if (store.getSnapshot().checking) return;
       // Checking prerequisites while stopped never opens a capture session.
       if (store.getSnapshot().running) return;
-      stop();
+      halt();
       const token = generation;
       const request = new AbortController();
       controller = request;
@@ -272,7 +348,7 @@ export function createPreviewStore(api: PreviewApi): PreviewStore {
       const running = store.getSnapshot().running;
       const preferenceFailed = !api.save(prefs);
       store.update((s) => ({ ...s, prefs, preferenceFailed }));
-      if (running) void start();
+      if (running) void run();
     },
   };
 }

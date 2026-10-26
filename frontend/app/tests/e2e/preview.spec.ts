@@ -18,7 +18,13 @@ const SCREENS = path.resolve(
 mkdirSync(SCREENS, { recursive: true });
 const region = (page: Page) => page.locator('.tp-preview');
 const verdict = (page: Page) => region(page).locator('[data-preview-verdict]');
-async function open(page: Page, scenario = 'preview', width = 1360) {
+const STREAM = '/api/stream.mjpg';
+/**
+ * Opens the Dashboard. The preview now attaches by itself, so by default this waits for that
+ * session to be requested (or to fail), presses Stop and clears the request log. The tests below
+ * then drive sessions by hand as before. `auto: true` leaves the automatic session running.
+ */
+async function open(page: Page, scenario = 'preview', width = 1360, auto = false) {
   const requests: string[] = [];
   const closed: string[] = [];
   page.on('request', (request) => {
@@ -30,7 +36,30 @@ async function open(page: Page, scenario = 'preview', width = 1360) {
     if (request.url().includes('/api/stream.mjpg')) closed.push(request.url());
   });
   const errors = await openScenario(page, scenario, { width });
-  await region(page).getByRole('button', { name: 'Show screen', exact: true }).click();
+  if (!auto) {
+    // The preview attaches only once the status read says the emulator is connected.
+    await expect(page.getByText('Connected', { exact: true }).first()).toBeVisible();
+    await expect
+      .poll(
+        async () =>
+          requests.some((p) => p.startsWith(STREAM)) ||
+          (await verdict(page).innerText()) === 'Preview failed',
+      )
+      .toBe(true);
+    const streamed = requests.some((p) => p.startsWith(STREAM));
+    await region(page).getByRole('button', { name: 'Stop preview', exact: true }).click();
+    await expect(
+      region(page).getByRole('button', { name: 'Start preview', exact: true }),
+    ).toBeVisible();
+    // A stream that already ended by itself (truncated, closed) has nothing left to abort.
+    if (streamed)
+      await expect
+        .poll(() => closed.length, { timeout: 1500 })
+        .toBe(1)
+        .catch(() => undefined);
+    requests.length = 0;
+    closed.length = 0;
+  }
   return { requests, closed, errors };
 }
 async function start(page: Page) {
@@ -134,12 +163,17 @@ for (const width of [1360, 1054, 390]) {
   }
 }
 
-test('PV1 Stop, collapse, route leave, hidden document and reload abort and clear pixels; re-entry stays off', async ({
+test('FOCUS #5 the preview starts by itself, Stop is respected, hide and route leave reattach, reload starts again', async ({
   page,
 }) => {
-  const capture = await open(page);
-  await start(page);
-  await expect(region(page).locator('canvas')).toBeVisible();
+  const capture = await open(page, 'preview', 1360, true);
+  const streams = () => capture.requests.filter((p) => p.startsWith(STREAM)).length;
+  const reattached = async (count: number) => {
+    await expect(verdict(page)).toHaveText('Receiving frames');
+    await expect(region(page).locator('canvas')).toBeVisible();
+    await expect.poll(streams).toBe(count);
+  };
+  await reattached(1);
   await region(page).getByRole('button', { name: 'Stop preview', exact: true }).click();
   await expect(verdict(page)).toHaveText('Preview off');
   expect(
@@ -148,14 +182,24 @@ test('PV1 Stop, collapse, route leave, hidden document and reload abort and clea
       .evaluate((c) => (c instanceof HTMLCanvasElement ? c.width : -1)),
   ).toBe(0);
   await expect.poll(() => capture.closed.length).toBe(1);
+  // The person's Stop holds across dashboard reads, a route leave and a return.
+  await page.waitForTimeout(3000);
+  expect(streams()).toBe(1);
+  await region(page).getByRole('link', { name: 'Preview delivery settings on Emulators' }).click();
+  await expect(region(page)).toHaveCount(0);
+  await page.evaluate(() => {
+    location.hash = 'dashboard';
+  });
+  await expect(verdict(page)).toHaveText('Preview off');
+  expect(streams()).toBe(1);
   await start(page);
-  await expect(region(page).locator('canvas')).toBeVisible();
+  await reattached(2);
+  // Collapse closes the stream; showing the screen again reattaches without a press.
   await region(page).getByRole('button', { name: 'Hide screen', exact: true }).click();
   await expect.poll(() => capture.closed.length).toBe(2);
   await region(page).getByRole('button', { name: 'Show screen', exact: true }).click();
-  await start(page);
-  await expect(region(page).locator('canvas')).toBeVisible();
-  // Synthetic document lifecycle event: the page is still driven by Chromium, with no device action.
+  await reattached(3);
+  // Synthetic document lifecycle events: Chromium still drives the page; no device action.
   await page.evaluate(() => {
     Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
     document.dispatchEvent(new Event('visibilitychange'));
@@ -172,24 +216,19 @@ test('PV1 Stop, collapse, route leave, hidden document and reload abort and clea
     Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
     document.dispatchEvent(new Event('visibilitychange'));
   });
-  await expect(
-    region(page).getByRole('button', { name: 'Start preview', exact: true }),
-  ).toBeEnabled();
-  const before = capture.requests.filter((p) => p.startsWith('/api/stream.mjpg')).length;
-  await start(page);
-  await expect(region(page).locator('canvas')).toBeVisible();
+  await reattached(4);
+  // Leaving the Dashboard and coming back reattaches by itself.
   await region(page).getByRole('link', { name: 'Preview delivery settings on Emulators' }).click();
   await expect(region(page)).toHaveCount(0);
   await page.evaluate(() => {
     location.hash = 'dashboard';
   });
-  await expect(
-    region(page).getByRole('button', { name: 'Start preview', exact: true }),
-  ).toBeVisible();
-  expect(capture.requests.filter((p) => p.startsWith('/api/stream.mjpg'))).toHaveLength(before + 1);
+  await reattached(5);
+  // A reload is a new page session: the choice to stop does not persist, the preview starts again.
   await page.reload();
-  await region(page).getByRole('button', { name: 'Show screen', exact: true }).click();
-  await expect(verdict(page)).toHaveText('Preview off');
+  await expect(verdict(page)).toHaveText('Receiving frames');
+  await expect(region(page).locator('canvas')).toBeVisible();
+  expect(streams()).toBeGreaterThanOrEqual(5);
 });
 
 for (const device of ['offline', 'unknown']) {
@@ -202,10 +241,15 @@ for (const device of ['offline', 'unknown']) {
     const cases = record(record(loadJsonWithIdentity(DASHBOARD_FIXTURE_PATH).fixture)['cases']);
     const body = record(record(cases['status'])[`device_state_${device}`])['body'];
     await page.route('**/api/status', (route) => route.fulfill({ json: body }));
-    const capture = await open(page);
+    const capture = await open(page, 'preview', 1360, true);
     await expect(
       region(page).getByRole('button', { name: 'Start preview', exact: true }),
     ).toBeDisabled();
+    await expect(
+      region(page).getByText('Emulator offline; the preview starts when it is back.'),
+    ).toBeVisible();
+    // Several dashboard polls pass with the device offline and no stream is ever requested.
+    await page.waitForTimeout(3000);
     await region(page).getByRole('button', { name: 'Check availability', exact: true }).click();
     await expect(
       region(page).getByText('Prerequisites available', { exact: true }).first(),
@@ -272,10 +316,10 @@ test('PV3 PV4 PV5 PV6 saved fractional FPS and unsupported-combination request p
     .not.toBe(old);
   await region(page).getByRole('button', { name: 'Stop preview', exact: true }).click();
   await page.reload();
-  await region(page).getByRole('button', { name: 'Show screen', exact: true }).click();
   await expect(fps).toHaveValue('12.5');
   await expect(source).toHaveValue('auto');
   await expect(quality).toHaveValue('low');
+  await region(page).getByRole('button', { name: 'Stop preview', exact: true }).click();
   await expect(verdict(page)).toHaveText('Preview off');
   const stored = await page.evaluate(
     () => JSON.parse(localStorage.getItem('tp.preview.preferences.v1') ?? '{}') as unknown,
@@ -423,9 +467,7 @@ for (const scenario of [
   'preview_cleanup',
   'preview_marker',
 ]) {
-  test(`PV2 PV7 multipart and status state ${scenario} has an honest verdict and no automatic restart`, async ({
-    page,
-  }) => {
+  test(`PV2 PV7 multipart and status state ${scenario} has an honest verdict`, async ({ page }) => {
     const capture = await open(page, scenario);
     const missing =
       scenario === 'preview_404'
@@ -529,9 +571,13 @@ async function switchPreviewAccount(page: Page) {
       page.evaluate(() => JSON.parse(sessionStorage.getItem('tp.context.v1') ?? '{}') as unknown),
     )
     .toMatchObject({ account: 'beta', profile: 'theirs' });
-  await expect(
-    region(page).getByRole('button', { name: 'Start preview', exact: true }),
-  ).toBeEnabled();
+}
+
+/** Viewer preferences are read once at load; set them before the page starts. */
+async function preferences(page: Page, value: { source: string; quality: string }) {
+  await page.addInitScript((value) => {
+    localStorage.setItem('tp.preview.preferences.v1', JSON.stringify({ fps: null, ...value }));
+  }, value);
 }
 
 async function previewPixels(page: Page) {
@@ -554,10 +600,9 @@ test('PV1 PV4 PV7 C-01 obsolete status and native decode cannot repaint a replac
   page,
 }) => {
   await installPreviewRace(page, 'status-decode');
-  const capture = await open(page);
-  await region(page).getByLabel('Requested source', { exact: true }).selectOption('scrcpy');
-  await region(page).getByLabel('Picture quality', { exact: true }).selectOption('native');
-  await start(page);
+  await preferences(page, { source: 'scrcpy', quality: 'native' });
+  // The first session attaches by itself; the account switch attaches the replacement by itself.
+  const capture = await open(page, 'preview', 1360, true);
   await expect.poll(async () => (await previewPixels(page)).width).toBe(12);
   await expect.poll(async () => (await raceProbe(page)).decodeHeld).toBe(true);
   await expect.poll(async () => (await raceProbe(page)).held).toBe(true);
@@ -568,16 +613,12 @@ test('PV1 PV4 PV7 C-01 obsolete status and native decode cannot repaint a replac
     region(page).getByText('Source age estimate at server encode: 50 ms', { exact: true }),
   ).toBeVisible();
   await switchPreviewAccount(page);
-  await expect.poll(async () => (await previewPixels(page)).width).toBe(0);
-  await region(page).getByLabel('Requested source', { exact: true }).selectOption('auto');
-  await region(page).getByLabel('Picture quality', { exact: true }).selectOption('low');
-  await start(page);
   await expect(verdict(page)).toHaveText('Receiving frames');
   const replacementUrl = capture.requests.filter((p) => p.startsWith('/api/stream.mjpg'))[1] ?? '';
   const replacementId = new URL(replacementUrl, 'http://fixture').searchParams.get('stream_id');
   expect(replacementId).not.toBe(oldId);
   const pixels = await previewPixels(page);
-  expect(pixels).toMatchObject({ width: 432, height: 1024 });
+  expect(pixels).toMatchObject({ width: 12, height: 24 });
   const before = await raceProbe(page);
   // Each exact recording has two ordered parts, sequences 1/2. Image 2 is the
   // held old sequence 2; images 3/4 are the replacement's sequences 1/2.
@@ -594,11 +635,11 @@ test('PV1 PV4 PV7 C-01 obsolete status and native decode cannot repaint a replac
   expect((await raceProbe(page)).draws).toEqual(before.draws);
   expect(await previewPixels(page)).toEqual(pixels);
   await expect(verdict(page)).toHaveText('Receiving frames');
+  await expect(region(page).getByText('Displayed source: scrcpy', { exact: true })).toBeVisible();
   await expect(
-    region(page).getByText('Displayed source: MuMu native', { exact: true }),
+    region(page).getByText('Source age estimate at server encode: 50 ms', { exact: true }),
   ).toBeVisible();
-  await expect(region(page).getByText('Source age unknown', { exact: true })).toBeVisible();
-  await expect(diagnostic(page, 'Server dimensions')).toHaveText('432 × 1024');
+  await expect(diagnostic(page, 'Server dimensions')).toHaveText('12 × 24');
   const receiptAfter = await region(page)
     .getByText(/^Frame received /)
     .innerText();
@@ -630,11 +671,11 @@ test('PV1 PV4 PV7 C-01 obsolete status and native decode cannot repaint a replac
   await expect(verdict(page)).toHaveText('Frame stale');
   expect(await previewPixels(page)).toEqual(pixels);
   expect((await raceProbe(page)).draws).toEqual(before.draws);
+  await expect(region(page).getByText('Displayed source: scrcpy', { exact: true })).toBeVisible();
   await expect(
-    region(page).getByText('Displayed source: MuMu native', { exact: true }),
+    region(page).getByText('Source age estimate at server encode: 50 ms', { exact: true }),
   ).toBeVisible();
-  await expect(region(page).getByText('Source age unknown', { exact: true })).toBeVisible();
-  await expect(diagnostic(page, 'Server dimensions')).toHaveText('432 × 1024');
+  await expect(diagnostic(page, 'Server dimensions')).toHaveText('12 × 24');
   expect(capture.requests.filter((p) => p.startsWith('/api/stream/status'))).toEqual([
     `/api/stream/status?stream_id=${oldId}`,
     ...capture.requests.filter((p) => p === `/api/stream/status?stream_id=${replacementId}`),
@@ -661,17 +702,17 @@ test('PV1 PV4 C-01 delayed old-instance availability cannot open a stream after 
     (route) => route.fulfill({ json: previewBody('preview_backends', 'other_instance') }),
     { times: 1 },
   );
-  const capture = await open(page);
+  await preferences(page, { source: 'auto', quality: 'low' });
+  // The first session attaches by itself and its availability answer is held; the account
+  // switch attaches the replacement by itself.
+  const capture = await open(page, 'preview', 1360, true);
   await expect
     .poll(() =>
       page.evaluate(() => JSON.parse(sessionStorage.getItem('tp.context.v1') ?? '{}') as unknown),
     )
     .toMatchObject({ instance: 'other' });
-  await start(page);
   await expect.poll(async () => (await raceProbe(page)).held).toBe(true);
   await switchPreviewAccount(page);
-  await region(page).getByLabel('Picture quality', { exact: true }).selectOption('low');
-  await start(page);
   await expect(verdict(page)).toHaveText('Receiving frames');
   const pixels = await previewPixels(page);
   expect(pixels).toMatchObject({ width: 432, height: 1024 });
@@ -757,13 +798,20 @@ test('PV8 keyboard controls, visible focus and verdict-only polite announcements
   await openScenario(page, 'preview', { width: 390 });
   const show = region(page).locator('button[aria-expanded]');
   await show.focus();
+  // The screen is open by default: Enter hides it, Enter again shows it and it reattaches.
+  await page.keyboard.press('Enter');
+  await expect(show).toHaveAttribute('aria-expanded', 'false');
   await page.keyboard.press('Enter');
   await expect(show).toBeFocused();
   expect(await show.evaluate((node) => getComputedStyle(node).outlineStyle)).not.toBe('none');
+  await expect(verdict(page)).toHaveText('Receiving frames');
   await page.keyboard.press('Tab');
   await expect(
-    region(page).getByRole('button', { name: 'Start preview', exact: true }),
+    region(page).getByRole('button', { name: 'Stop preview', exact: true }),
   ).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(verdict(page)).toHaveText('Preview off');
+  await region(page).getByRole('button', { name: 'Start preview', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(verdict(page)).toHaveText('Receiving frames');
   await expect(page.locator('[aria-live="polite"]')).toHaveCount(1);
