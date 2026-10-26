@@ -452,7 +452,8 @@ def test_the_fast_wall_watch_follows_the_waves_it_confirms_for_a_takeover_only(w
         assert rs.wave_hwm == (900 if attach else 500), kind
 
 
-def test_a_pending_boundary_in_the_fast_watch_discards_the_frame_before_the_gem_poll(world, monkeypatch, tmp_path):
+@pytest.mark.parametrize("outcome", ["boundary_pending", "off", "fired", "immune", "timeout"])
+def test_a_takeover_discards_the_frame_a_fast_watch_outlived_before_any_other_input(world, monkeypatch, tmp_path, outcome):
     import orchestrator
     real_watch_frame = orchestrator.watch_frame                                         # `drive` replaces it with the scripted monitor
     run = drive(world, monkeypatch, tmp_path, [frame(), frame()])
@@ -467,12 +468,42 @@ def test_a_pending_boundary_in_the_fast_watch_discards_the_frame_before_the_gem_
     monkeypatch.setattr(orch, "marks", lambda: [])
     monkeypatch.setattr(orch, "automation_enabled", lambda key: True)
     monkeypatch.setitem(orch.CONFIG, "rois", {"wall_bar": None})
-    monkeypatch.setattr(orch, "_fast_wall_watch", lambda rs, ab: "boundary_pending")
+    monkeypatch.setattr(orch, "_fast_wall_watch", lambda rs, ab: outcome)
     assert orch.watch_frame(rs, frame(wave=500), observation={"raw_wave": 500}) == "refresh"
     polled = []
     rs.gems.poll = lambda f, reads=None: polled.append(f) or f
     monkeypatch.setattr(orch, "_attach", None)                                          # an ordinary run keeps today's order: the result is ignored
     assert orch.watch_frame(rs, frame(wave=500), observation={"raw_wave": 500}) is False and polled
+
+
+def test_a_lower_wave_read_by_the_fast_watch_never_lowers_the_boundary_baseline(world, monkeypatch, tmp_path):
+    from device import capture
+    run = drive(world, monkeypatch, tmp_path, [frame(), frame()])
+    orch = run.orch
+    rs = orch.RunState()
+    rs.wave_hwm = 500
+    rs.tracker.last = 500
+    rs.tracker.confirm = 1                                                              # the tracker accepts the drop at once; the baseline must still stay
+    watch_setup(monkeypatch, orch, rs, [(1.0, "normal"), (1.0, "normal")])
+    script = iter([{**frame(wave=500), "wall": (1.0, "normal")}] * 7 + [{**frame(wave=10), "wall": (1.0, "normal")}])
+    monkeypatch.setattr(capture, "grab", lambda: next(script))
+    assert orch._fast_wall_watch(rs, {"dm_below": 0.2}) == "boundary_pending"
+    assert rs.wave_hwm == 500 and run.taps == []
+
+
+def test_the_ad_gem_collector_verification_capture_is_judged_by_the_guard_and_sends_no_tap(world, monkeypatch, tmp_path):
+    import time
+    from device import capture
+    run = drive(world, monkeypatch, tmp_path, [frame(), frame()])
+    orch = run.orch
+    rs = orch.RunState()
+    rs.wave_hwm = 500
+    ad = rs.gems.ad_gems
+    ad._attempt_started_at, ad._attempt_timing = time.monotonic(), {}
+    monkeypatch.setattr(capture, "grab", lambda: frame(wave=10))                         # the battle was replaced after the main loop's frame (wave 500)
+    with pytest.raises(orch.AttachReplaced):
+        ad._claim(frame(wave=500), (100, 100), 0.0, None)                                # an Abort for the collector: ownership lost, re-raised to the main loop
+    assert run.taps == [] and ad.last_outcome["reason"] == "ownership_lost"
 
 
 def test_input_held_by_the_guard_is_logged_and_the_next_frame_is_judged_not_a_crash(world, monkeypatch, tmp_path):

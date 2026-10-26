@@ -39,6 +39,8 @@ from towerpilot_workflows import action_contract
 from towerpilot_workflows.action_contract import shopping_interval
 from scheduling import runflag
 from runtime import runlog
+from runtime import attach_worker
+from interactions.tourney import Abort
 
 _battle_session = None
 _action_session = None      # the ActionSession of the tracked battle driver; None outside a ledger operation
@@ -172,7 +174,7 @@ def fleet_fire_skipped(rs, frame, mark: int, wave: int, why: str) -> None:
 SW_CLOSE_FRAMES = 3
 
 
-class AttachReplaced(Exception):
+class AttachReplaced(Abort):
     """A frame a helper captured for itself shows a wave far below the battle the person confirmed: nothing may be sent until the main loop has judged it."""
 
 
@@ -181,7 +183,6 @@ def _attach_replaced(rs, wave) -> bool:
     False for an ordinary run, which owns every battle it meets."""
     if _attach is None or wave is None or rs.wave_hwm is None:
         return False
-    from runtime import attach_worker
     return wave < rs.wave_hwm - attach_worker.WAVE_MARGIN
 
 
@@ -1709,7 +1710,7 @@ def _fast_wall_watch(rs: "RunState", ab: dict) -> str:
                 if _attach is not None and confirmed is not None:
                     rs.wave_hwm = confirmed if rs.wave_hwm is None else max(confirmed, rs.wave_hwm)    # the boundary baseline follows what this loop saw
                 if _battle_session is not None:
-                    if rs.wave_hwm is not None and w < rs.wave_hwm-100:
+                    if rs.wave_hwm is not None and w < rs.wave_hwm - attach_worker.WAVE_MARGIN:
                         return 'boundary_pending'
                     _battle_session.checkpoint(rs, battle_visible=screen.identify(frame).name == 'battle')
                     if not automation_enabled('rescue'):
@@ -2262,8 +2263,9 @@ def watch_frame(rs: "RunState", frame, observation=None) -> str | None:
             # While the watch is open the orchestrator drops everything else and
             # samples ONLY the wall, ~3x per second, firing the combo inline.
             if can_fire("demon_mode", rs.dm_fired):
-                if _fast_wall_watch(rs, ab) == "boundary_pending" and _attach is not None:
-                    return "refresh"        # the frame in hand is older than the one that failed the identity test
+                _fast_wall_watch(rs, ab)
+                if _attach is not None:
+                    return "refresh"        # the watch held this pass for seconds or minutes (a death dialog, a replaced battle, a new proc): the frame in hand is history
         else:
             fill = detect.hp_fill(frame)
             nuke_below = ab.get("nuke_below")
@@ -2603,7 +2605,6 @@ def step_reward_mission(rs, frame) -> bool:
 def _attach_from_environment(readiness):
     """The takeover this worker was launched for, or None. Refuses (AttachRefused) before any capture when the accepted operation cannot be trusted."""
     import os
-    from runtime import attach_worker
     from runtime.operations import environment_operation
     operations, operation_id = environment_operation()
     if operations is None:
@@ -2625,7 +2626,6 @@ def _input_revoked() -> bool:
 
 def _attach_entry(attach, frame):
     """The entry gate: one frame proves the battle is on screen and is no tournament, before the first input and before any ledger record."""
-    from runtime import attach_worker
     wave = attach_worker.entry_gate(attach, frame, identify=lambda f: screen.identify(f).name, read_wave=wave_reader.read_wave,
                                     tournament_state=screen.tournament_state, input_revoked=_input_revoked)
     logger.event('attach_entry', wave=wave, tier=attach.tier, tier_provenance=attach.block['tier']['provenance'],
@@ -2636,7 +2636,6 @@ def _attach_entry(attach, frame):
 
 def _refuse_attach(exc):
     """Record a coded refusal on the operation. Nothing was sent to the game and no battle record was written."""
-    from runtime import attach_worker
     from runtime.operations import environment_operation
     logger.event('attach_refused', code=exc.code, detail=exc.detail)
     operations, operation_id = environment_operation()
@@ -2659,7 +2658,6 @@ def main():
     require_runner_entry(settings.ROOT, CONFIG, event=logger.event)
     from player import readiness
     from runtime.battle_session import BattleSession
-    from runtime import attach_worker
     try:
         _attach = _attach_from_environment(readiness)
         initial = capture.grab()
@@ -2768,8 +2766,8 @@ def main():
             # Probationary backwards reads hold input until tracker confirmation.
             raw_wave = wave_reader.read_wave(frame)
             wave = rs.tracker.update(raw_wave)
-            if raw_wave is not None and rs.wave_hwm is not None and raw_wave < rs.wave_hwm - 100:
-                if wave is None or wave >= rs.wave_hwm - 100:
+            if raw_wave is not None and rs.wave_hwm is not None and raw_wave < rs.wave_hwm - attach_worker.WAVE_MARGIN:
+                if wave is None or wave >= rs.wave_hwm - attach_worker.WAVE_MARGIN:
                     continue
                 logger.event('run_boundary', reason='wave_went_backwards', prev=rs.wave_hwm, wave=wave)
                 if _battle_session is not None:
