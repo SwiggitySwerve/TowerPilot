@@ -49,6 +49,7 @@ def test_main_logs_the_class_after_binding_the_instance_and_a_failure_never_stop
 def test_textocr_warm_reader_uses_the_same_class():
     from vision import textocr
     assert textocr.URGENT_PRIORITY == priority.ABOVE_NORMAL
+    assert 'ABOVE_NORMAL_PRIORITY_CLASS' not in open(textocr.__file__, encoding='utf-8').read()   # no second copy of the class
 
 
 def test_restart_task_is_registered_at_normal_priority():
