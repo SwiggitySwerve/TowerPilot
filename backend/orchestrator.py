@@ -43,6 +43,7 @@ from runtime import runlog
 _battle_session = None
 _action_session = None      # the ActionSession of the tracked battle driver; None outside a ledger operation
 _rewards_history = None     # the FlowHistory of its reward flows (runtime/flow_history.py); None records nothing
+_attach = None             # runtime.attach_worker.Attach of an explicit takeover of the battle on screen; None for every ordinary run
 _chore_session = False      # the operation-scoped ActionSession the between-run chores record into: False = not looked for yet, None = no ledger operation
 
 
@@ -78,7 +79,10 @@ def store_gems_mark_claimed(rs=None):
 def run_tier() -> int | None:
     """The tier this run is on, from the compiled preset (the blueprint's
     `tier`, the one shard.set_tier dialled in before BATTLE). None for a
-    legacy preset that names no tier."""
+    legacy preset that names no tier. An attached battle's tier is the one the
+    person declared (None = unknown), never the preset's."""
+    if _attach is not None:
+        return _attach.tier
     try:
         t = preset().get("tier")
     except Exception:                       # noqa: BLE001 - no preset bound
@@ -93,6 +97,8 @@ def marks():
     proactive Nuke in both loops, the Chain Lightning choreography and the
     danger-window shots - reads this one list."""
     from scheduling import fleets
+    if _attach is not None and _attach.tier is None:
+        return []        # an unknown tier has no timetable: nothing may fire on a fleet wave
     cfg = _battle_session.config if _battle_session is not None else CONFIG
     return fleets.marks(run_tier(), cfg)
 
@@ -271,6 +277,10 @@ class RunState:
         self.shopping_enabled = live['shopping']['enabled']
         self.rewards_enabled = live['rewards']['enabled']
         self.repeat_enabled = live['repeat']['enabled']
+        if _attach is not None:
+            # A takeover never repeats into another battle, and its reward flows follow the control the envelope froze (off unless a person turned them on).
+            self.repeat_enabled = False
+            self.rewards_enabled = bool(_battle_session is not None and _battle_session.gates.get('rewards', False))
 
 
 FORCE_PRESENT = 0.85    # template score required to tap without a ready check
@@ -1132,6 +1142,8 @@ def _tournament_locked(frame) -> str | None:
         return "legacy tournament preset"
     if screen.in_tournament(frame):
         return "trophy badge on screen"
+    if _attach is not None:
+        return "battle not started by this run"      # a takeover continues a battle; it never ends one
     return None
 
 
@@ -2341,7 +2353,7 @@ def _prepare_coin_start():
     as a scheduled handoff. A battle already on screen is adopted untouched.
     """
     body = preset()
-    if body.get("kind") != "coin":
+    if body.get("kind") != "coin" or _attach is not None:
         return
     from vision import screen
     if screen.identify(capture.grab()).name != "home":
@@ -2558,8 +2570,53 @@ def step_reward_mission(rs, frame) -> bool:
     return False
 
 
+def _attach_from_environment(readiness):
+    """The takeover this worker was launched for, or None. Refuses (AttachRefused) before any capture when the accepted operation cannot be trusted."""
+    import os
+    from runtime import attach_worker
+    from runtime.operations import environment_operation
+    operations, operation_id = environment_operation()
+    if operations is None:
+        return None
+    attach = attach_worker.from_operation(operations.get(operation_id), preset(), CONFIG,
+                                          delegated=bool(os.environ.get('TOWER_BATTLE_ID')))
+    if attach is not None:
+        try:
+            readiness.require(settings.ROOT, CONFIG, preset(), attached=True)
+        except RuntimeError as exc:
+            raise attach_worker.AttachRefused('attach_not_ready', str(exc)) from None
+    return attach
+
+
+def _input_revoked() -> bool:
+    from runtime import device_lease
+    return device_lease.revocation(device_lease.ensure_current().key) is not None
+
+
+def _attach_entry(attach, frame):
+    """The entry gate: one frame proves the battle is on screen and is no tournament, before the first input and before any ledger record."""
+    from runtime import attach_worker
+    wave = attach_worker.entry_gate(attach, frame, identify=lambda f: screen.identify(f).name, read_wave=wave_reader.read_wave,
+                                    tournament_state=screen.tournament_state, input_revoked=_input_revoked)
+    logger.event('attach_entry', wave=wave, tier=attach.tier, tier_provenance=attach.block['tier']['provenance'],
+                 stripped=attach.block['stripped'], policy_revision=attach.block['policy_revision'],
+                 predecessor=attach.predecessor)
+    return wave
+
+
+def _refuse_attach(exc):
+    """Record a coded refusal on the operation. Nothing was sent to the game and no battle record was written."""
+    from runtime import attach_worker
+    from runtime.operations import environment_operation
+    logger.event('attach_refused', code=exc.code, detail=exc.detail)
+    operations, operation_id = environment_operation()
+    if operations is not None:
+        attach_worker.refuse(operations, operation_id, exc)
+
+
 def main():
-    global _battle_session, _action_session, _rewards_history, _chore_session
+    global _battle_session, _action_session, _rewards_history, _chore_session, _attach
+    _attach = None
     _battle_session = None
     _action_session = None
     _rewards_history = None
@@ -2572,23 +2629,39 @@ def main():
     require_runner_entry(settings.ROOT, CONFIG, event=logger.event)
     from player import readiness
     from runtime.battle_session import BattleSession
-    initial = capture.grab()
-    _battle_session = BattleSession.from_environment(preset(), CONFIG,
-        origin='adopted' if wave_reader.read_wave(initial) is not None else 'started')
+    from runtime import attach_worker
+    try:
+        _attach = _attach_from_environment(readiness)
+        initial = capture.grab()
+        entry_wave = _attach_entry(_attach, initial) if _attach is not None else None
+        _battle_session = BattleSession.from_environment(preset(), CONFIG,
+            origin='adopted' if wave_reader.read_wave(initial) is not None else 'started', **({} if _attach is None else {'attach': _attach}))
+        if _attach is not None:
+            # The wave only the entry gate observed, kept with the record so the dashboard never has to infer it.
+            _battle_session.store.update_status(_battle_session.battle['id'], _battle_session.generation,
+                                                {'attach_entry': attach_worker.entry_record(entry_wave)})
+    except attach_worker.AttachRefused as exc:
+        _refuse_attach(exc)
+        return
     if _battle_session is not None:
         from runtime.action_session import ActionSession
         from runtime.flow_history import FlowHistory
         _action_session = ActionSession.for_battle(_battle_session, 'orchestrator')
         _rewards_history = FlowHistory(_action_session)
-    readiness.require(settings.ROOT, CONFIG, preset())
+    if _attach is None:
+        readiness.require(settings.ROOT, CONFIG, preset())
     rs = RunState()
+    if _attach is not None and entry_wave is not None:
+        # The wave the entry gate itself read is the battle the person confirmed: the first loop frame is judged against it, so a different
+        # battle that replaced it between the gate and that frame is a boundary, not a fresh start. An unreadable gate wave cannot get here.
+        rs.tracker.last = rs.wave_hwm = entry_wave
     period = 1.0 / CONFIG["loop"]["fps"]
     logger.event("start", instance=CONFIG["active_instance"],
                  preset=CONFIG["preset"], dry_run=CONFIG["loop"]["dry_run"])
     # Which fleet timetable this run keys off - per tier, so a reader can
     # tell a T14 (2495 + 1000k) run from a T18 (95 + 100k) one in the log.
     from scheduling import fleets
-    _sched = fleets.schedule(run_tier(), CONFIG)
+    _sched = None if (_attach is not None and run_tier() is None) else fleets.schedule(run_tier(), CONFIG)
     logger.event("fleet_schedule", tier=run_tier(),
                  **({k: _sched[k] for k in ("first_wave", "interval", "fleets_per_spawn",
                                             "bonus_first_wave", "bonus_interval", "source")}
@@ -2672,6 +2745,10 @@ def main():
                 if _battle_session is not None:
                     old_id = _battle_session.battle['id']
                     _battle_session.finish('wave_went_backwards', evidence={'previous_wave': rs.wave_hwm, 'observed_wave': wave})
+                    if _attach is not None:
+                        # A different battle is on screen: it was not confirmed, so nothing acts on it. A later takeover is a new explicit request.
+                        logger.event('attach_boundary', reason='wave_went_backwards', previous_wave=rs.wave_hwm, wave=wave)
+                        return
                     _battle_session.prepare_next(origin='partial_adoption', previous_battle_id=old_id)
                 rs = RunState()
                 continue
@@ -2697,6 +2774,11 @@ def main():
                         'outcome_certainty': 'results_dialog_does_not_distinguish_death_from_manual_surrender'})
                 logger.event("death", wave=rs.tracker.last,
                              shot=logger.shot(frame, f"death_w{rs.tracker.last}"))
+                if _attach is not None:
+                    # The battle this takeover continued is over. Stats collection, death rules, the run flag and the restart all send input to a
+                    # screen nobody asked this run to operate; the stop_after_run flag stays for the scheduler.
+                    logger.event('attach_boundary', reason='observed_results', wave=rs.tracker.last)
+                    return
                 # ---- per-run stats+perks log (blocking is fine: tower dead)
                 if detect._match(frame, "icons/game_stats.png", 0.75)[0]:
                     artifact = (runlog.collect(CONFIG['active_instance'], battle=_battle_session.battle)
@@ -2803,6 +2885,10 @@ def main():
                 if sc.name == "tournament_stats":
                     if _battle_session is not None:
                         _battle_session.finish('observed_tournament_results', evidence={'last_observed_wave': rs.tracker.last})
+                    if _attach is not None:
+                        # A takeover never presses OK on a results dialog it did not open: the record is finished and the operation ends with no input.
+                        logger.event('attach_boundary', reason='observed_tournament_results', wave=rs.tracker.last)
+                        return
                     # THE TOURNAMENT'S DEATH SCREEN. A tournament run does not
                     # end on GAME STATS/RETRY - it ends on this dialog, which
                     # the death detector does not know, so the first handled

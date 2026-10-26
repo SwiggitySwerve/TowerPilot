@@ -18,6 +18,7 @@ class BattleSession:
         self.actions = None            # the host's ActionSession, attached by ActionSession.for_battle
         self.generation = str(uuid.uuid4())
         self.battle = None
+        self.attach = None             # the envelope's `attach` block of an explicit takeover
         self.base_preset = copy.deepcopy(preset)
         self.config = copy.deepcopy(config)
         self.effective = copy.deepcopy(preset)
@@ -39,9 +40,12 @@ class BattleSession:
             self.config = copy.deepcopy(prepared['envelope']['config'])
             self.gates = {key: value['enabled'] for key, value in prepared['envelope']['controls']['routines'].items()}
             self._tag()
+        self.attach = copy.deepcopy((self.battle['envelope'] or {}).get('attach'))
 
     @classmethod
-    def from_environment(cls, preset, config, *, origin='started'):
+    def from_environment(cls, preset, config, *, origin='started', attach=None):
+        """attach: the worker's `attach_worker.Attach` of an explicit takeover. Its named collector record is validated and closed here instead of being
+        rediscovered, and only that record is ever linked as the predecessor."""
         from runtime.operations import environment_operation, validate_worker_context
         operations, operation_id = environment_operation()
         if operations is None:
@@ -59,11 +63,16 @@ class BattleSession:
                 raise ValueError('Delegated child selected a different frozen preset')
             return cls(store, operation_id, envelope['preset'], envelope['config'], prepared=prepared)
         previous = None
+        if attach is not None:
+            from runtime import attach_worker
+            linked = attach_worker.settle_predecessor(store, Operations(path), attach.predecessor, operation['context'])
         for old in store.active(operation['context']['device_key']):
             owner = Operations(path).get(old['operation_id'])
             if owner['status'] not in ('accepted', 'running'):
                 store.finish(old['id'], old['generation'], reason='driver_operation_ended', status='interrupted')
                 previous = old['id']
+        if attach is not None:
+            previous = linked              # never a record this process found by itself
         envelope = operation['request'].get('battle_envelope')
         if envelope and envelope.get('preset_key', config.get('preset')) != config.get('preset'):
             envelope = None
@@ -134,7 +143,12 @@ class BattleSession:
 
     def bindings(self, rs):
         """The routine key -> binding of this host: what the generic control, Run now and status seams ask instead of naming an action."""
-        return action_bindings.host_bindings(rs, self)
+        bindings = action_bindings.host_bindings(rs, self)
+        if self.attach is not None:
+            from runtime import attach_worker
+            for key in attach_worker.NOT_OFFERED:      # an attached battle never repeats into another one: not offered, so a patch for it is refused
+                bindings.pop(key, None)
+        return bindings
 
     def _control_paths(self, key):
         """The live controls a bound routine publishes: the live fields of its catalog entry, or the gate's own `enabled`."""

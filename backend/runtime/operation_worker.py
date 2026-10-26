@@ -56,10 +56,11 @@ def _main():
         args = sys.argv[1:]
         if not args:
             raise ValueError('Worker target is required')
-        if ledger and op['kind'] == 'run':
+        if ledger and op['kind'] == 'run' and 'attach' not in op['request']:
             # Explicit Start owns this device only after lease acquisition and
             # the running transition. Retried/rejected launches and scheduler
             # handoffs must never cancel another driver's boundary request.
+            # A takeover keeps the flag: it attaches to a battle it did not start, and the scheduler's request survives.
             flag = Path(ledger.path).parent / op['context']['instance'] / 'stop_after_run'
             flag.unlink(missing_ok=True)
         if args[0] == '-m':
