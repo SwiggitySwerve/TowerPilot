@@ -39,6 +39,10 @@ Source for 2-6: `backend/logs/reviews/quality-council-20261024/synthesis.md`, it
    collection path or safety rules.
 6. Committed and pushed. The dashboard is restarted between battles when runtime files changed,
    and the result is checked on the live Dashboard.
+7. Gem collection is checked after every change that reaches the live collector: run
+   `python tools/gem_health.py` once the new collector has run a while and compare it with the previous
+   run (saved under `backend/logs/reviews/gem-health/`). Ad and orbit successes must keep coming at their
+   usual rate; a drop stops new work until it is explained or fixed.
 
 No packages, zip files or landing scripts for ordinary changes.
 
@@ -68,5 +72,5 @@ From the council synthesis, section 5: whether golden test fixtures are exempt f
 whether to keep the strict schema layer (31% of the shipped JavaScript), whether recognition may use
 native preview frames, how a leftover person's run differs from a scheduler handoff for surrender
 rules, whether a learner may cut the ad claim template, and whether APK art may be a live matcher.
-Decided: tap cap 5/s, ad delay clamp yes, preview auto-start only when the emulator is up, MuMu
+Decided: ad gem interval 10-11 min (600-660 s, farm run), tap cap 5/s, ad delay clamp yes, preview auto-start only when the emulator is up, MuMu
 started by the person.
