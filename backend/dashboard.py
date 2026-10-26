@@ -201,7 +201,7 @@ def takeover_invalid(error):
 
 @app.errorhandler(takeover_api.TakeoverRefused)
 def takeover_refused(error):
-    """A takeover refused before the collector's input stopped: nothing was recorded and nothing was sent to the game."""
+    """A takeover refused before the collector's input stopped: no operation or battle was recorded and nothing was sent to the game."""
     return jsonify(ok=False, code=error.code, error=str(error), **error.extra), 409
 
 
@@ -639,7 +639,9 @@ def _takeover_action(body, cfg, inst):
     """POST /api/control action=takeover: attach a run's restricted policy to the battle on screen. Admission is takeover.admit (every check before the collector's
     input stops); the transfer and the launch are the ones `start` uses, with the restricted envelope. An identical retry replays the first receipt."""
     request_ = takeover_api.parse(body)
-    retry = operation_api.retry(ROOT, cfg, 'run', body, _profile_path(cfg.get('active_profile')))
+    # no ledger file means no earlier receipt: looking would create it, and a refusal records nothing
+    retry = (operation_api.retry(ROOT, cfg, 'run', body, _profile_path(cfg.get('active_profile')))
+             if operation_api.ledger_path(ROOT).is_file() else None)
     if retry:
         return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
     admitted = takeover_api.admit(_takeover_ports(), cfg, request_)
@@ -647,8 +649,9 @@ def _takeover_action(body, cfg, inst):
         cmd = _run_command(cfg, inst, admitted.preset)
     except _FlowRegistryUnreadable as e:
         return jsonify({"ok": False, "error": f"flow registry unreadable: {e}"}), 500
-    transfer = _transfer_from_collector(cfg, body, admitted.owners) if admitted.owners else None
+    transfer = None
     try:
+        transfer = _transfer_from_collector(cfg, body, admitted.owners) if admitted.owners else None
         operation = _launch_operation(cfg, 'run', body, cmd, restrict=admitted.restrict)
     finally:
         if admitted.owners:

@@ -10,6 +10,7 @@ from control import operations
 from harvest_http import _battle_for, collector_row, enable, ops, running_collector
 from harvest_support import NOW
 from player import attach_policy, readiness
+from runtime.attach_worker import WAVE_MARGIN
 from takeover_http import ATTESTATION, URL, body, install_readiness, make_app, missing_row, post, preview
 
 
@@ -299,11 +300,23 @@ def test_expected_battle_fence_runs_before_the_collector_stops(app):
     assert app.psutil.terminated == [] and ops(app)[0]['id'] == collector['id'] and ops(app)[0]['status'] == 'running'
 
 
-def test_a_battle_that_moved_forward_is_still_the_same_battle(app):
+def test_a_battle_that_moved_forward_a_little_is_still_the_same_battle(app):
     collector, store, battle = with_collector(app, wave=4200)
     shown = preview(app)
-    store.update_status(battle['id'], 'g1', {'observed_wave': 4390})
+    store.update_status(battle['id'], 'g1', {'observed_wave': 4200 + WAVE_MARGIN})
     assert post(app, shown=shown).status_code == 200
+
+
+def test_a_page_too_old_to_vouch_for_the_battle_is_refused_before_the_collector_stops(app):
+    """The worker's entry gate measures against the confirmed wave only: a record far ahead of it would leave a window for a replacement battle."""
+    collector, store, battle = with_collector(app, wave=120)
+    shown = preview(app)
+    store.update_status(battle['id'], 'g1', {'observed_wave': 4200})
+    refused = post(app, shown=shown)
+    assert refused.status_code == 409 and refused.get_json()['code'] == 'attach_battle_changed'
+    assert refused.get_json()['current_battle']['observed_wave'] == 4200 and app.psutil.terminated == []
+    store.update_status(battle['id'], 'g1', {'observed_wave': 120 + WAVE_MARGIN + 1})
+    assert post(app, shown=shown).status_code == 409
 
 
 def test_a_collector_battle_that_appeared_after_the_preview_changes_the_answer(app):
@@ -436,3 +449,59 @@ def test_a_takeover_key_cannot_be_replayed_as_a_plain_start(app):
     assert app.client.post('/api/control', json=request).status_code == 200
     plain = dict(action='start', preset='bp_farm', idempotency_key=request['idempotency_key'])
     assert app.client.post('/api/control', json=plain).status_code == 409 and len(app.spawned) == 1
+
+
+# ---------------------------------------------------------------- review findings: the runner, reads that write nothing, cleanup
+def test_a_run_whose_command_would_start_another_script_is_not_takeable(app, monkeypatch):
+    """A coin run with a script of its own would be launched without the worker's entry gate and its restricted controls."""
+    real = app.dash._compiled_runs
+    monkeypatch.setattr(app.dash, '_compiled_runs', lambda cfg: {**real(cfg), 'bp_farm': dict(real(cfg)['bp_farm'], runner='interactions/shatter.py')})
+    shown = preview(app)
+    assert shown['run']['verdict'] == 'incompatible' and [(r['code'], r['field']) for r in shown['run']['reasons']] == [('unsupported_kind', 'runner')]
+    refused = post(app, shown=shown)
+    assert refused.status_code == 409 and refused.get_json()['code'] == 'takeover_not_compatible' and ops(app) == []
+
+
+def test_a_refused_takeover_creates_no_ledger(app, tmp_path):
+    from control import operations as ledgers
+    shown = preview(app)
+    path = ledgers.ledger_path(app.dash.ROOT)
+    if path.exists():
+        path.unlink()
+    refused = post(app, shown=shown, attach_changes=dict(policy_revision='0' * 64))
+    assert refused.status_code == 409 and refused.get_json()['code'] == 'policy_changed' and not path.exists()
+
+
+def test_the_preview_creates_no_battle_tables(app):
+    import sqlite3
+    from control import operations as ledgers
+    enable(app)
+    running_collector(app)                       # a ledger with an operation but no battle schema yet
+    path = ledgers.ledger_path(app.dash.ROOT)
+
+    def tables():
+        db = sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)
+        try:
+            return sorted(row[0] for row in db.execute("SELECT name FROM sqlite_master"))
+        finally:
+            db.close()
+    db = sqlite3.connect(path)                   # a ledger written before battles existed
+    for table in ('battle_commands', 'battle_events', 'battles'):
+        db.execute(f'DROP TABLE IF EXISTS {table}')
+    db.commit()
+    db.close()
+    before = tables()
+    assert 'battles' not in before
+    shown = preview(app)
+    assert shown['current_battle']['source'] == 'none' and tables() == before
+
+
+def test_a_failure_while_the_collector_is_stopped_ends_the_transfer(app, monkeypatch):
+    from control import harvest as harvest_api
+    collector, store, battle = with_collector(app)
+    request = body(app, shown=preview(app))
+    monkeypatch.setattr(app.dash, '_transfer_from_collector', lambda cfg, body_, owners: (_ for _ in ()).throw(OSError('stop failed')))
+    ended = []
+    monkeypatch.setattr(harvest_api, 'end_transfer', lambda root, identity: ended.append(identity))
+    assert app.client.post('/api/control', json=request).status_code == 500
+    assert len(ended) == 1

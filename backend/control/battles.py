@@ -37,6 +37,11 @@ def ledger(root):
     return Battles(operations.ledger(root).path)
 
 
+def active_read_only(root, device):
+    """The live records of a device, read without creating the ledger or its tables (a GET, the takeover preview)."""
+    return Battles.active_read_only(operations.ledger_path(root), device)
+
+
 def reconcile(root, store, device=None):
     """Finish the battles whose driver operation ended. Only the process
     refresher calls this (via reconcile_existing); a GET never changes a battle.

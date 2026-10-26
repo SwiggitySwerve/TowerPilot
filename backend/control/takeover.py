@@ -136,10 +136,10 @@ def restricted_preset(key, preset):
 def collector_record(root, cfg, owners):
     """The active ledger record of the standalone collector that holds the emulator, or None (no collector, no ledger, or a collector not in a battle yet).
     Read from the ledger the collector writes; the server reads no screen, so this is the only source of a wave before the worker's own entry gate."""
-    if not owners or not operations.ledger_path(root).is_file():
+    if not owners:
         return None
     held = {owner['operation_id'] for owner in owners if owner.get('operation_id')}
-    for battle in battle_api.ledger(root).active(operations.device_identity(cfg)['device_key']):
+    for battle in battle_api.active_read_only(root, operations.device_identity(cfg)['device_key']):
         if battle['operation_id'] in held:
             return battle
     return None
@@ -162,14 +162,15 @@ def predecessor_of(record):
 
 def fenced(record, expected):
     """True when the battle the person confirmed is still the one the server names (spec 3.3 step 8). The ids must match exactly; with no collector record all
-    three are null. The wave may only have moved forward: the record reading more than WAVE_MARGIN below the confirmed wave is another battle."""
+    three are null. The record's wave must stay within WAVE_MARGIN of the confirmed one: more below is another battle, and more above is a page too old to
+    vouch for the battle (the worker's entry gate measures against the confirmed wave only, so a wider drift would leave it a window for a replacement)."""
     shown = current_battle(record)
     if (expected['battle_id'], expected['generation']) != (shown['battle_id'], shown['generation']):
         return False
     seen, now = expected['observed_wave'], shown['observed_wave']
     if seen is None or now is None:
         return seen is None and now is None
-    return now >= seen - WAVE_MARGIN
+    return abs(now - seen) <= WAVE_MARGIN
 
 
 # ------------------------------------------------------------------ admission (spec 3.3, steps 1-8; the launch is steps 9-10)

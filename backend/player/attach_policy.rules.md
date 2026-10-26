@@ -54,7 +54,7 @@ A preset that cannot be honored without ending or paying for a battle is refused
 | `ends_battle` | `max_wave` | `max_wave` is not null (a cap of 0 counts) | `max_wave_reached` surrenders through `shard.abandon_run` |
 | `ends_battle` | `rules[i].do` | A compiled rule whose action kind is `surrender_retry`, or (fail closed) the older spellings `{"action": "surrender_retry"}` and `{"surrender_retry": true}` that `_rule_do` also reads | `_rule_surrender` surrenders through `shard.abandon_run` |
 | `ends_battle` | `kind` | The kind is `shard`, `cycle_quest` or `uw_grant_quest` | Their runner scripts end the battle they start (`battle_end.SURRENDER_KINDS`) |
-| `unsupported_kind` | `kind` or `runner` | Any other kind, or no kind and a runner script | Only the orchestrator's own loop is continued |
+| `unsupported_kind` | `kind` or `runner` | Any other kind, or no kind and a runner script, or a coin run whose runner is not `orchestrator.py` (the run command would start that script, which has no attach gate) | Only the orchestrator's own loop is continued |
 
 The fourth tournament lock, the trophy badge on screen, is the worker's: it needs a capture. Its evidence is tri-state (see below).
 
