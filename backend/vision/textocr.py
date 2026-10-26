@@ -26,12 +26,13 @@ from pathlib import Path
 import cv2
 
 import settings
+from runtime import priority
 from runtime.stage_clock import clock
 
 WINOCR = settings.ROOT / "tools" / "winocr.ps1"
 # One class above normal for the warm reader: CPU-bound work at normal
 # priority (builds, test suites) otherwise starves a short-deadline read.
-URGENT_PRIORITY = getattr(subprocess, "ABOVE_NORMAL_PRIORITY_CLASS", 0)
+URGENT_PRIORITY = priority.ABOVE_NORMAL
 # An abandoned warm reader gets this long to exit on its stdin EOF. One still
 # running after it (a WinRT call that never returns) is terminated, the bound
 # subprocess.run gives a cold read. No new warm reader starts while an
