@@ -103,7 +103,9 @@ def test_a_verified_home_offer_gets_one_tap_inside_it_and_a_stable_plus_six_conf
     assert named(world, 'ad_gems_window_ended')[-1]['reason'] == 'confirmed'
     closed = [fields for kind, fields in recorder.calls if kind == 'closed']
     assert closed == [dict(result='succeeded', reason='balance_increased', effect='confirmed', attempts=1, confirmed=1,
-                           evidence=['balance_increased'], refs=dict(window_id=c.window_id, surface='home'))]
+                           evidence=['balance_increased'],
+                           # the offer was read twice, both times visible: the decision frame, then the fresh one before the tap
+                           refs=dict(window_id=c.window_id, surface='home', observation=dict(reads=2, incomplete=0, absent=0)))]
 
 
 def test_after_a_confirmed_home_claim_the_next_offer_waits_for_the_next_window(world):

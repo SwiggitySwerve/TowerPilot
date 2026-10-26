@@ -15,8 +15,12 @@ def test_idle_unknown_reuses_supplied_frames_without_capture_or_attempt(cycle, m
     monkeypatch.setattr(shard.screen, 'identify', lambda _: pytest.fail('unknown presence needs no classification'))
     for state.now in [100, 159, 300, 1060, 2000]:
         assert tapper.poll(200) == 200
-    assert state.events == [] and state.taps == []
+    # The rule is unchanged: no capture, no wave read, no classification and no tap (above). What changed (FOCUS #4,
+    # GC-01): this path used to leave no trace at all, so a finder that stopped matching was invisible. It now counts
+    # the frames it was handed, and logs that count once a battle minute, with no new read.
+    assert [kind for kind, _ in state.events] == ['gem_orbit_sensing'] * 3 and state.taps == []
     assert tapper.attempt_started is None
+    assert (tapper.sensing()['frames'], tapper.sensing()['recognized']) == (5, 0)
 
 
 def test_visible_gem_opens_attempt_between_old_scheduled_windows(cycle, monkeypatch):

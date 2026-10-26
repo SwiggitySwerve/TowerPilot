@@ -29,7 +29,7 @@ import uuid
 import subprocess
 import cv2
 from device import act, capture, overlays
-from vision import wave_reader, screen, ocr
+from vision import wave_reader, screen, ocr, textocr
 from runtime import logger
 from interactions.tourney import Abort
 from player.gather_settings import AD_GEM_FIELDS, resolve_ad_gem_options
@@ -184,6 +184,7 @@ class AdGemCollector:
         self.recorder = recorder
         self.manual_command_id = None
         self._window_marks = None
+        self._window_observation = None   # reads taken while the current window is open (see _count_read)
         self._schedule = StartToStart()
         self.enabled=enabled
         self.next_at=0.0
@@ -264,6 +265,7 @@ class AdGemCollector:
         now = time.monotonic()
         deadline = min(now+OBSERVATION_TIMEOUT_SEC, deadline) if deadline is not None else now+OBSERVATION_TIMEOUT_SEC
         self.counters['checks'] += 1
+        textocr.take_timing()          # a failure below owns only the OCR time of THIS read
         try:
             _remaining(deadline)
             wave = wave_reader.read_wave(frame)
@@ -287,9 +289,11 @@ class AdGemCollector:
             # nothing about the screen, like a lapse: keep a visible offer's
             # response schedule. Only an absent read or a changed screen resets it.
             self.mark_unknown(str(exc), keep_response=True)
+            self._count_read('incomplete')
             logger.event('ad_gems_recognition_incomplete', reason=str(exc),
-                         duration_sec=round(time.monotonic()-now, 3), **self._context())
+                         duration_sec=round(time.monotonic()-now, 3), stages=textocr.take_timing(), **self._context())
             return None
+        self._count_read('absent' if point is None else 'visible')
         previous = self.visibility
         self.last_observed_at = now
         self.visibility_reason = 'home_frame' if self.surface == 'home' else 'battle_frame'
@@ -320,6 +324,18 @@ class AdGemCollector:
                          collection_active=self.window_deadline is not None,
                          next_window_at=self._epoch(self.next_window_at), **self._context())
         return point
+
+    def _count_read(self, outcome):
+        """Count one offer read taken while a window is open: `reads` are the searches tried, `incomplete` those that
+        could not establish presence or absence, `absent` those that completed and found no offer (the rest saw it).
+        A window with few completed reads says nothing about the offer; a recognizer that broke looks like many
+        completed, all-absent reads, which is why the counts are recorded and the reason is not renamed."""
+        observation = self._window_observation
+        if observation is None:
+            return
+        observation['reads'] += 1
+        if outcome in ('incomplete', 'absent'):
+            observation[outcome] += 1
 
     def _finish_attempt(self, outcome, reason, **fields):
         now = time.monotonic()
@@ -447,6 +463,7 @@ class AdGemCollector:
                      pause_sec=round(max(0, self.next_window_at-time.monotonic()), 3),
                      duration_sec=round(time.monotonic()-self.window_started_at, 3),
                      counters=dict(self.counters), last_failed_attempt=self.last_failed_attempt,
+                     observation=None if self._window_observation is None else dict(self._window_observation),
                      response_due_at=self._epoch(self.claim_at), **self._context())
         self.window_deadline = None
         self.window_started_at = None
@@ -456,6 +473,7 @@ class AdGemCollector:
         self._forget_offer()
         self.next_at = self.next_window_at
         self._record_close(reason)
+        self._window_observation = None
 
     def _record_open(self, manual, scheduled_for):
         """Open this window's execution. Recording never changes what the collector does."""
@@ -478,6 +496,8 @@ class AdGemCollector:
         refs = dict(window_id=self.window_id)
         if self._window_home:
             refs['surface'] = 'home'
+        if self._window_observation is not None:
+            refs['observation'] = dict(self._window_observation)
         if confirmed or reason == 'confirmed':
             proof = (self.last_outcome or {}).get('reason') or 'confirmed'
             self.recorder.closed(result='succeeded', reason=proof,
@@ -491,6 +511,16 @@ class AdGemCollector:
         else:
             self.recorder.closed(result='no_op', reason='no_offer_seen' if self.counters['seen'] == marks['seen'] else 'offer_not_claimed',
                                  effect='none', refs=refs)
+
+    def _record_missed(self, count, scheduled_for):
+        """Windows the loop never opened (it was busy, or away) leave one row, so the ledger can tell them from a window
+        that opened and found no offer. Recording never changes what the collector does."""
+        if self.recorder is None:
+            return
+        refs = dict(missed=count)
+        if self.surface == 'home':
+            refs['surface'] = 'home'
+        self.recorder.record(result='no_op', reason='window_missed', effect='none', scheduled_for=scheduled_for, refs=refs)
 
     def _window_expired(self):
         if time.monotonic() >= self.window_deadline:
@@ -559,6 +589,7 @@ class AdGemCollector:
                 now, dict(next_window_at=self.next_window_at, window_open=False),
                 dict(manual=manual, interval=lower, skip_duration=min(self.options['attempt_timeout_sec'], lower)))
             if decision.kind == 'skip_missed':
+                self._record_missed(decision.missed, self._epoch(self.next_window_at) if self.next_window_at else None)
                 self.next_window_at = schedule['next_window_at']
                 self.next_at = self.next_window_at
                 self.counters['windows_missed'] += decision.missed
@@ -580,6 +611,7 @@ class AdGemCollector:
                 self.claim_attempt_id = None
                 self.blocker = None
                 self._window_home = False
+                self._window_observation = dict(reads=0, incomplete=0, absent=0)
                 self._home_diagnostic_written = False
                 logger.event('ad_gems_window', duration_sec=duration, interval_sec=interval,
                              window_deadline=self._epoch(self.window_deadline),

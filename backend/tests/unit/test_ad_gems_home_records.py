@@ -44,7 +44,8 @@ def test_a_home_claim_is_one_succeeded_execution_and_counts_in_the_prepared_batt
     assert (row['action'], row['state'], row['host']['driver']) == ('ad_gems', 'succeeded', 'collector')
     assert row['outcome']['reason'] == 'balance_increased' and row['outcome']['evidence'] == ['balance_increased']
     assert (row['outcome']['effect'], row['outcome']['attempts'], row['outcome']['confirmed']) == ('confirmed', 1, 1)
-    assert row['refs'] == dict(window_id=rs.gems.ad_gems.window_id, surface='home')
+    assert row['refs'] == dict(window_id=rs.gems.ad_gems.window_id, surface='home',
+                               observation=dict(reads=2, incomplete=0, absent=0))     # decision frame and fresh frame, both visible
     assert row['host']['battle_id'] == session.battle['id']
     session.checkpoint(rs, battle_visible=False, observed=('ad_gems',))
     evidence = Battles(path).get(session.battle['id'])['runtime']['collection_evidence']

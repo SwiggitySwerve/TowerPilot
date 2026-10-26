@@ -139,9 +139,38 @@ def test_unreadable_windows_claim_neither_a_streak_nor_a_cause(h, monkeypatch):
     monkeypatch.setattr(harvest.action_history, 'for_battle', unreadable)
     shown = h.status()
     assert (shown['code'], shown['operation']['claims']) == ('collecting', dict(
-        windows_missed=2, failure_streak=None, failing=False, cause=None))
+        windows_missed=2, failure_streak=None, failing=False, cause=None, finder_suspected=None))
 
 
 def test_a_missing_counter_is_not_a_zero(h):
     _, battle = collecting(h, routines={'ad_gems': routine(True), 'floating_gems': routine(True)})
     assert h.status()['operation']['claims']['windows_missed'] is None
+
+
+def sensing(near_miss_frames, recognized=0):
+    return dict(floating_gems=dict(frames=40, recognized=recognized, near_miss_frames=near_miss_frames,
+                                   recent=dict(window=120, frames=40, recognized=recognized, near_miss_frames=near_miss_frames)))
+
+
+@pytest.mark.parametrize('evidence,orbit_on,expected', [
+    (dict(EVIDENCE, sensing=sensing(harvest.FINDER_NEAR_MISS_FRAMES)), True, True),
+    (dict(EVIDENCE, sensing=sensing(harvest.FINDER_NEAR_MISS_FRAMES - 1)), True, False),
+    (dict(EVIDENCE, sensing=sensing(harvest.FINDER_NEAR_MISS_FRAMES, recognized=1)), True, False),
+    (dict(EVIDENCE, sensing=sensing(harvest.FINDER_NEAR_MISS_FRAMES)), False, False),
+    (EVIDENCE, True, None)])
+def test_a_suspected_finder_reaches_the_status_beside_the_evidence_it_comes_from(h, evidence, orbit_on, expected):
+    choose(h)
+    op = _collector(h)
+    _battle(h, op, routines={'ad_gems': routine(True), 'floating_gems': routine(orbit_on)}, evidence=evidence)
+    shown = h.status()['operation']
+    assert shown['claims']['finder_suspected'] is expected
+    assert shown['evidence'].get('sensing') == evidence.get('sensing')
+    assert h.status()['code'] == 'collecting' or not orbit_on             # the health line is untouched: only the field is new
+
+
+def test_a_window_the_loop_never_opened_is_the_latest_cause_but_not_a_failed_claim(h):
+    _, battle = collecting(h)
+    fail(h, battle, 2, first=NOW - 900)
+    ad_window(h, battle, 'no_op', 'window_missed', at=NOW - 100, attempts=0)
+    claims = h.status()['operation']['claims']
+    assert (claims['failure_streak'], claims['cause']) == (2, dict(code='window_ran_out', at=NOW - 100))

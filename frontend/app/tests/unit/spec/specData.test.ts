@@ -18,9 +18,9 @@ import { MATRIX, SAFETY_LEDGER, W_ROWS, X_ROWS } from './specData.ts';
 const HAVE_SPEC = existsSync(SPEC_PATH);
 
 describe('the spec data the R6 tests run on', () => {
-  it('holds the 75 safety rules, 39 matrix rows, 12 scenario rows and 13 warm rows', () => {
+  it('holds the 75 safety rules, 40 matrix rows, 12 scenario rows and 13 warm rows', () => {
     expect([SAFETY_LEDGER.length, MATRIX.length, X_ROWS.length, W_ROWS.length]).toEqual([
-      75, 39, 12, 13,
+      75, 40, 12, 13,
     ]);
   });
 

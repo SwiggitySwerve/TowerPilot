@@ -51,6 +51,10 @@ class BindingBase:
     def status(self):
         return {}
 
+    def sensing(self):
+        """What the routine's recognizer has seen so far (a published snapshot), None when it keeps no such tally."""
+        return None
+
     def routine(self, *, battle_visible, now, epoch):
         raise NotImplementedError
 
@@ -102,6 +106,10 @@ class CollectorBinding(BindingBase):
 
     def status(self):
         return self.collector.status()
+
+    def sensing(self):
+        sensing = getattr(self.collector, 'sensing', None)
+        return None if sensing is None else sensing()
 
     def routine(self, *, battle_visible, now, epoch):
         return self.collector.status()
@@ -309,6 +317,12 @@ def host_bindings(rs, session) -> dict:
         if routine_key_valid(key) and catalog.find(split_key(key)[0]) is not None:
             bindings[key] = binding
     return bindings
+
+
+def sensing_of(bindings) -> dict:
+    """What each routine's recognizer has seen so far ({routine key: snapshot}); a routine with no tally is left out."""
+    seen = {key: getattr(binding, 'sensing', lambda: None)() for key, binding in bindings.items()}
+    return {key: snapshot for key, snapshot in seen.items() if snapshot is not None}
 
 
 def reports_progress(binding) -> bool:

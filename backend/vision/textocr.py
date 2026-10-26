@@ -37,6 +37,24 @@ URGENT_PRIORITY = getattr(subprocess, "ABOVE_NORMAL_PRIORITY_CLASS", 0)
 # abandoned one is alive: that read takes the cold path instead.
 ABANDON_GRACE_SEC = 1.0
 
+# Where the time of the latest read_texts call went, for a caller that has to say why a read ran long:
+# path ('warm', or 'cold_after_warm_unavailable' / 'cold'), warm_sec (everything the warm reader took, its lock and
+# any restart included), reclaim_sec (terminating an abandoned reader, inside warm_sec) and cold_sec (the
+# PowerShell run). Recorded only; nothing here changes how a read is done. The collector reads on one thread, so
+# one dict is enough: read_texts clears it, take_timing() hands it over once.
+_TIMING = {}
+
+
+def _stage(name, started):
+    _TIMING[name] = round(_TIMING.get(name, 0.0) + time.monotonic() - started, 3)
+
+
+def take_timing():
+    """The stage timers of the latest read_texts call, once ({} when none was recorded since the last take)."""
+    taken = dict(_TIMING)
+    _TIMING.clear()
+    return taken
+
 
 class _WarmUnavailable(Exception):
     """No warm reader may start now; the caller reads cold."""
@@ -193,7 +211,10 @@ class _WarmReader:
             try:
                 if self._proc is None or self._proc.poll() is not None:
                     self.abandon()
-                    if not self._reclaim():
+                    reclaim_started = time.monotonic()
+                    reclaimed = self._reclaim()
+                    _stage('reclaim_sec', reclaim_started)
+                    if not reclaimed:
                         raise _WarmUnavailable()
                     self._start()
                 self._next_id += 1
@@ -270,6 +291,7 @@ def read_texts(crops, scales=(2.0, 3.0, 4.0), *, timeout=120,
     if any(crop is None or not crop.size for crop in crops):
         raise ValueError('Cannot batch an empty OCR crop')
     deadline = time.monotonic() + timeout if raise_on_error else None
+    _TIMING.clear()
     try:
         # An abandoned warm reader may still hold its current image for a moment;
         # its leftover crop must not turn a timeout into a different failure.
@@ -287,11 +309,17 @@ def read_texts(crops, scales=(2.0, 3.0, 4.0), *, timeout=120,
                 remaining = timeout if deadline is None else deadline - time.monotonic()
                 if remaining <= 0:
                     raise subprocess.TimeoutExpired('Windows OCR preparation', 0)
+                _TIMING['path'] = 'warm'
+                warm_started = time.monotonic()
                 try:
-                    rows = _batch_rows(_WARM.recognize(entries, time.monotonic() + remaining), len(entries))
+                    try:
+                        lines = _WARM.recognize(entries, time.monotonic() + remaining)
+                    finally:
+                        _stage('warm_sec', warm_started)
+                    rows = _batch_rows(lines, len(entries))
                     return _vote(rows, len(crops), scales)
                 except _WarmUnavailable:
-                    pass                     # an abandoned reader is still alive: read cold, as before r15d
+                    _TIMING['path'] = 'cold_after_warm_unavailable'    # an abandoned reader is still alive: read cold, as before r15d
             manifest = Path(directory) / 'images.json'
             manifest.write_text(json.dumps(entries), encoding='utf-8')
             # EncodedCommand keeps native paths out of shell interpolation.
@@ -309,9 +337,14 @@ def read_texts(crops, scales=(2.0, 3.0, 4.0), *, timeout=120,
             remaining = timeout if deadline is None else deadline - time.monotonic()
             if remaining <= 0:
                 raise subprocess.TimeoutExpired('Windows OCR preparation', 0)
-            p = settings.run_hidden(
-                ['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
-                 '-EncodedCommand', encoded], capture_output=True, timeout=remaining)
+            _TIMING.setdefault('path', 'cold')
+            cold_started = time.monotonic()
+            try:
+                p = settings.run_hidden(
+                    ['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
+                     '-EncodedCommand', encoded], capture_output=True, timeout=remaining)
+            finally:
+                _stage('cold_sec', cold_started)
             if p.returncode != 0 or p.stderr.strip():
                 raise subprocess.CalledProcessError(p.returncode, p.args,
                                                     output=p.stdout, stderr=p.stderr)

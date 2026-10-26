@@ -61,7 +61,7 @@ from scheduling import runflag
 from vision import screen
 from vision import wave_reader
 from vision.ocr import gem_balance_crop, read_gem_balance
-from vision.orbit_gems import OrbitGem, field_region, find_orbit_gem, reference_geometry
+from vision.orbit_gems import Glance, OrbitGem, OrbitSensing, field_region, find_orbit_gem, reference_geometry
 from player.gather_settings import ORBIT_TIMING_FIELDS, validate_orbit_timing
 from towerpilot_workflows.action_contract import AppearanceDriven
 import settings
@@ -313,11 +313,22 @@ def battlefield_observation(points: list[tuple[int, int]], frame: np.ndarray | N
         return False, f"static:{motion:.1f}", None
     return True, "live", after
 
+ORBIT_SENSING_BEAT_SEC = 60     # idle sensing is logged this often (battle time), only while it senses
+
+
 class GemOrbitTapper:
     """Recognized appearances open bounded attempts; stable +2 confirms a claim.
 
     Gem recognition never proves a reward. Each set retains the battlefield, window,
     motion, layout and ability-row guards. The observe loop runs between sets.
+
+    Idle sensing is counted (`sensing()`): every frame its host hands over while the tapper is enabled, idle and
+    free to look is tallied with what the recognizer made of it. The tally reads nothing: the frame is the one
+    the host already judged part of a battle (the collector hands over only frames its own `live` check passed),
+    and the tally is of the search that already runs. A finder that starts rejecting gems at the glyph check shows
+    there as frames and near misses rising with nothing recognized (control/harvest.py decides what that means).
+    Known blind spot: a gem rejected earlier (size, shape or pink border, or an unreadable HUD diamond) leaves
+    only quiet frames, the same as an empty battle; only the frame counts and `reasons` show it.
     """
 
     def __init__(self, enabled=False, center=None,
@@ -361,6 +372,9 @@ class GemOrbitTapper:
         self.last_outcome = None
         self.window_id = None
         self.attempt_id = None
+        self._sensing = OrbitSensing()
+        self._beat_started_at = None
+        self._beat_due = False
         self._reset_attempt()
 
     def configure(self, values):
@@ -401,6 +415,22 @@ class GemOrbitTapper:
                     window_id=self.window_id, attempt_id=self.attempt_id,
                     last_outcome=self.last_outcome, last_refusal=self.last_refusal,
                     server_time=epoch)
+
+    def sensing(self):
+        """What idle sensing has seen so far (OrbitSensing.snapshot), None before its first frame."""
+        return self._sensing.snapshot()
+
+    def _sense(self, frame):
+        """One idle search for an appearance, counted. Returns the gem or None, exactly as find_orbit_gem would."""
+        glance = Glance()
+        gem = find_orbit_gem(frame, layout_offset=capture.layout_offset, glance=glance)
+        self._sensing.record(glance, gem is not None)
+        now = time.monotonic()
+        if self._beat_started_at is None:
+            self._beat_started_at = now
+        elif now - self._beat_started_at >= ORBIT_SENSING_BEAT_SEC:
+            self._beat_started_at, self._beat_due = now, True
+        return gem
 
     def _epoch(self, value):
         return None if value is None else time.time() + value - time.monotonic()
@@ -561,7 +591,11 @@ class GemOrbitTapper:
         candidate = self.window_id if self.attempt_started is not None else uuid.uuid4().hex
         attempt_id = uuid.uuid4().hex
         with logger.context(window_id=candidate, attempt_id=attempt_id):
-            return self._poll(frame)
+            result = self._poll(frame)
+        if self._beat_due:                  # outside the window context: the beat belongs to no window
+            self._beat_due = False
+            logger.event('gem_orbit_sensing', **self._sensing.snapshot())
+        return result
 
     def _poll(self, frame):
         if self.guard is not None:
@@ -580,7 +614,7 @@ class GemOrbitTapper:
             # more captures: inspect only the loop's already supplied pixels.
             # An explicit manual request retains its bounded seeking attempt.
             appearance = manual or (
-                find_orbit_gem(frame, layout_offset=capture.layout_offset) is not None
+                self._sense(frame) is not None
                 and wave_reader.read_wave(frame) is not None
                 and screen.identify(frame).name == 'battle')
             decision, _ = self._schedule.evaluate(

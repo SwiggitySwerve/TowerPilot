@@ -296,7 +296,7 @@ class BattleSession:
                     routines[key] = binding.routine(battle_visible=battle_visible, now=now, epoch=epoch)
         for state in routines.values():
             state.update(blocker=state.get('blocker') if battle_visible else 'waiting_for_game_state', server_time=epoch)
-        collection = self._collection_evidence(routines, epoch)
+        collection = self._collection_evidence(routines, epoch, sensing=action_bindings.sensing_of(bindings))
         status = dict(routines=routines, server_time=epoch,
             collection_evidence=collection,
             observed_wave=rs.tracker.last, last_wave_provenance='observed',
@@ -314,12 +314,15 @@ class BattleSession:
                 logger.event('action_projection_failed', error=str(exc), error_type=type(exc).__name__)
         self.store.update_status(self.battle['id'], self.generation, status)
 
-    def _collection_evidence(self, routines, epoch):
+    def _collection_evidence(self, routines, epoch, sensing=None):
         """Count sampled, distinct confirmations inside this battle/segment.
 
         Collector counters may span battles. Neither command completion nor
         offer disappearance proves a gem balance total. These are durable lower
         bounds on observed confirmations, not reconstructed historical totals.
+
+        sensing: what each routine's recognizer has seen so far this battle ({routine key: snapshot}); carried
+        as evidence only. Whether it means a broken recognizer is decided in control/harvest.py.
         """
         segment_start = self.battle['segments'][-1]['started_at']
         start = max(self.battle['created_at'], segment_start)
@@ -349,6 +352,10 @@ class BattleSession:
             summary[counter] += 1
             summary['latest_confirmations'][name] = dict(id=identity, observed_at=observed)
         summary['orbit_recorded_increase'] = 2*summary['orbit_balance_confirmations']
+        if sensing:
+            summary['sensing'] = copy.deepcopy(sensing)
+        else:
+            summary.pop('sensing', None)
         summary['observed_through_at'] = epoch
         return summary
 

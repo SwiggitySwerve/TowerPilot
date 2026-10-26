@@ -57,11 +57,19 @@ CONTROL_PATHS = {name: f'routines.{name}.enabled' for name in ROUTINES}
 LIVE = ('prepared', 'active')
 CLAIM_FAILURES_WARN = 3  # consecutive ad windows that sent a tap and proved nothing before the Dashboard is told to warn
 CLAIM_WINDOWS_READ = 60  # newest ad windows read for the streak and the latest miss
+# Near-miss frames, among the orbit finder's recent frames with nothing recognized, before the finder is suspected. The
+# collector searches about once a second, and the council measured a working finder recognizing a visible gem in about
+# 60% of its frames (gem-collection GC-01), so five near misses with no recognition among the recent frames is rare for a
+# working finder and certain for one that rejects gems at the glyph check. Blind spot: gems rejected by an earlier
+# check (size, shape, pink border, HUD diamond) are not near misses, so they are NOT detected. The number is a judgment, not a measurement: tune it from
+# live heartbeats (gem_orbit_sensing). The window is vision.orbit_gems.RECENT_FRAMES.
+FINDER_NEAR_MISS_FRAMES = 5
 # A closed ad window's recorded reason -> the code the Dashboard words. Anything else reads 'not_confirmed'.
 MISS_CODES = {'no_offer_seen': 'no_offer_seen', 'offer_not_claimed': 'offer_not_claimed', 'offer_moved': 'offer_moved',
               'fresh_offer_missing': 'offer_gone', 'tap_refused': 'tap_refused', 'timeout': 'window_ran_out',
               'window_expired_during_verification': 'window_ran_out', 'balance_unreadable': 'balance_unread',
-              'balance_unstable': 'balance_unread', 'ownership_lost': 'collector_stopped'}
+              'balance_unstable': 'balance_unread', 'ownership_lost': 'collector_stopped',
+              'window_missed': 'window_ran_out'}      # a window the loop never opened ran out as well
 CAUSE_CODES = tuple(sorted({*MISS_CODES.values(), 'not_confirmed', 'collector_stopped', 'collector_restarted'}))
 
 
@@ -208,6 +216,24 @@ def _runtime_dict(battle, key):
     return value if isinstance(value, dict) else None
 
 
+def finder_suspected(battle):
+    """Is the orbit finder suspected of having stopped matching: frames were searched, nothing was recognized among the
+    recent ones, and squares that look like gems kept failing the glyph check (near misses)?
+
+    None when the collector reported no sensing (unknown, never a clean bill). False when the orbit routine is not
+    known to be on: its tally is then history, not a live reading. The evidence is carried by runtime/battle_session.py
+    (collection_evidence.sensing); this is the one place that says what it means."""
+    sensing = (_runtime_dict(battle, 'collection_evidence') or {}).get('sensing')
+    orbit = sensing.get('floating_gems') if isinstance(sensing, dict) else None
+    recent = orbit.get('recent') if isinstance(orbit, dict) else None
+    counts = [recent.get(name) for name in ('frames', 'recognized', 'near_miss_frames')] if isinstance(recent, dict) else None
+    if counts is None or not all(type(count) is int and count >= 0 for count in counts):
+        return None
+    if gem_gates(_runtime_dict(battle, 'routines'))['floating_gems'] is not True:
+        return False
+    return recent['recognized'] == 0 and recent['near_miss_frames'] >= FINDER_NEAR_MISS_FRAMES
+
+
 def miss_cause(row):
     """The cause of one closed ad window that did not succeed: the code the Dashboard words, and when."""
     code = ('collector_stopped' if row.get('state') == 'interrupted'
@@ -223,7 +249,8 @@ def claim_summary(windows, autos, battle):
     failure_streak counts the newest windows in a row that sent a tap and confirmed nothing; a window with no
     offer to claim neither adds nor ends it, a confirmed claim ends it. failing is the one decision the
     Dashboard warns on. cause is the later of the latest window that did not succeed and the exit of an earlier
-    collector during this battle. windows_missed is the collector's own counter of windows that ran out."""
+    collector during this battle. windows_missed is the collector's own counter of windows that ran out.
+    finder_suspected: see finder_suspected(); the orbit side of "gems are not being collected" that no window shows."""
     counters = ((_runtime_dict(battle, 'routines') or {}).get('ad_gems') or {}).get('counters')
     missed = counters.get('windows_missed') if isinstance(counters, dict) else None
     streak, cause = None, None
@@ -241,7 +268,8 @@ def claim_summary(windows, autos, battle):
     if exits and (cause is None or cause['at'] is None or max(exits) > cause['at']):
         cause = dict(code='collector_restarted', at=max(exits))
     return dict(windows_missed=missed if type(missed) is int and missed >= 0 else None, failure_streak=streak,
-                failing=streak is not None and streak >= CLAIM_FAILURES_WARN, cause=cause)
+                failing=streak is not None and streak >= CLAIM_FAILURES_WARN, cause=cause,
+                finder_suspected=finder_suspected(battle))
 
 
 def battle_claims(facts, op):

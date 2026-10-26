@@ -103,6 +103,17 @@ def sample_working_collector_claims_failing(h):
     return h.status(host=HOST)
 
 
+def sample_working_collector_finder_suspected(h):
+    """The orbit finder searched frames, recognized none of the recent ones and kept seeing gem-shaped near misses: the status
+    says so beside the evidence it comes from; the state is still plain collecting (the Dashboard line is a later step)."""
+    choose(h)
+    routines = dict(counted_routines(0), floating_gems=routine(True))
+    sensing = dict(floating_gems=dict(frames=240, recognized=0, near_miss_frames=9, reasons=dict(glyph_rejected=9, no_candidate=231),
+                                      best_near_miss=0.71, recent=dict(window=120, frames=120, recognized=0, near_miss_frames=9)))
+    _battle(h, _collector(h), routines=routines, evidence=dict(EVIDENCE, sensing=sensing))
+    return h.status(host=HOST)
+
+
 def sample_waiting_for_battle(h):
     choose(h)
     _collector(h)

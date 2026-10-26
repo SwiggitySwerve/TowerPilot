@@ -27,11 +27,11 @@ describe('AC6 landed r17b checkout provenance', () => {
     [DASHBOARD_FIXTURE_PATH, 'a1adee857b2810076eb125970c5dd7f0e0d5439cb16e3e3560ef8c46e593c66c'],
     [
       DASHBOARD_PAGES_FIXTURE_PATH,
-      '1f4c0d94ed98792c9ba519c716a7f552a61176c5eee9ea78e853430f2a3d23b2',
+      'eb67ea28dcc2a75b6c531d21b00de52076c0d6a98501f47009963b38156a8ac2',
     ],
     [
       SYNTHETIC_ACTION_FIXTURE_PATH,
-      'e0807408802b6d810dd19e64a00cb29e25e4aa808537dd0a5dd15b9a6ff65d8e',
+      'dcbc547a5f8fec8f69a277f92a3543cdbe3efea4ca35b2aa4f4b52d94603ceb1',
     ],
   ])('pins the approved checkout bytes at %s', (file, sha256) => {
     expect(loadJsonWithIdentity(file).identity.sha256).toBe(sha256);
@@ -42,10 +42,10 @@ describe('AC6 landed r17b checkout provenance', () => {
     expect(input?.file).toBe(DASHBOARD_PAGES_FIXTURE_PATH);
     expect(familyIdentity(DASHBOARD_PAGES_FIXTURE_PATH, PAGES_ACTIONS_DESCRIPTOR)).toEqual({
       path: DASHBOARD_PAGES_FIXTURE_PATH,
-      sha256: '1866eba5399a9ae9d054e5bef6cf55444d06b74d726faf8ae4d7d67a723354e4',
+      sha256: 'e32ed53f2680144134cf0489e951b358344a7b25506924a71e34be526f857e9e',
       families: {
         action_executions: '79FCD89F7BF6333FE08CAD8136A22188D5D57D49E2C3F47D9DDEBCE8EB51F3EA',
-        action_executions_more: '182029CE0D48BF812E4D3453DBE7F877C9F8D663D94EA836DDDBA9BAEE066819',
+        action_executions_more: 'DB0B96EE7D7E729E5180A5740C15692586C4657CC5C9851785199FFBE522BBC0',
         battle_actions_projection:
           'DBFFF0B104E47292484A7F1B03F8DFC0371077DA1EA1B64BD9C8DED561706A13',
       },
@@ -58,7 +58,7 @@ describe('AC6 landed r17b checkout provenance', () => {
     expect(fixture['generated_by']).toBe('backend/tests/test_synthetic_action_contract.py');
     expect(CONTRACT_INPUTS.some(({ file }) => file === SYNTHETIC_ACTION_FIXTURE_PATH)).toBe(false);
     expect(familyHashes(SYNTHETIC_ACTION_FIXTURE_PATH)).toEqual({
-      synthetic_action: 'FB39AE0FCD59737303B5DA02FE8D562CB9A497CA9AA8F372B9A4C1C0CCDB7DC2',
+      synthetic_action: '703CDEB851C53385E10D89EDAE6997231EBBF3A41D479CA9AB890BCA740BCD06',
     });
     const cases = record(fixture['cases']);
     expect(Object.keys(cases)).toEqual(['synthetic_action']);

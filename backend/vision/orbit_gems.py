@@ -3,6 +3,7 @@
 No stored artwork, template writes, device I/O or absent/reward inference.
 The caller establishes battle ownership and decides whether input is permitted.
 """
+from collections import deque
 from dataclasses import dataclass
 
 import cv2
@@ -16,6 +17,59 @@ class OrbitGem:
     center: tuple[float, float]
     rect: tuple[int, int, int, int]
     score: float
+
+
+# Frames the sensing tally remembers one by one. Old frames fall out, so one recognition ends a suspicion
+# and a quiet stretch does not keep an old one alive for ever.
+RECENT_FRAMES = 120
+
+
+@dataclass
+class Glance:
+    """What one search saw, for a caller that counts searches. find_orbit_gem fills it; its answer is unchanged.
+
+    reason: found, ambiguous (two or more squares passed), glyph_rejected (a square with the gem's pink border
+    passed every shape check but not the glyph check), no_candidate, hud_glyph (the HUD diamond could not be
+    read, so no square was judged) or frame_shape (not the layout's size). near_misses counts the squares that
+    reached the glyph check and failed it; best_near_miss is the best glyph score among them (None when none
+    could be scored)."""
+    reason: str = 'not_searched'
+    near_misses: int = 0
+    best_near_miss: float | None = None
+
+
+class OrbitSensing:
+    """The tally of the idle searches one tapper ran: how many frames, how many recognized, how many were near misses.
+
+    A frame is a near miss when nothing was recognized but a square got as far as the glyph check. A recognizer
+    that stopped matching shows as frames and near misses that rise while recognized stays 0; a clean empty
+    battle shows frames only. `recent` is the same count over the last RECENT_FRAMES frames."""
+
+    def __init__(self, recent=RECENT_FRAMES):
+        self.frames = self.recognized = self.near_miss_frames = 0
+        self.reasons: dict[str, int] = {}
+        self.best_near_miss: float | None = None
+        self._recent = deque(maxlen=recent)
+
+    def record(self, glance: Glance, recognized: bool) -> None:
+        reason = 'found' if recognized else glance.reason
+        near_miss = not recognized and glance.near_misses > 0
+        self.frames += 1
+        self.recognized += recognized
+        self.near_miss_frames += near_miss
+        self.reasons[reason] = self.reasons.get(reason, 0) + 1
+        if near_miss and glance.best_near_miss is not None:
+            self.best_near_miss = glance.best_near_miss if self.best_near_miss is None else max(self.best_near_miss, glance.best_near_miss)
+        self._recent.append('recognized' if recognized else 'near_miss' if near_miss else 'quiet')
+
+    def snapshot(self) -> dict | None:
+        """The counts as published, or None before any frame (nothing sensed is unknown, never zero)."""
+        if not self.frames:
+            return None
+        return dict(frames=self.frames, recognized=self.recognized, near_miss_frames=self.near_miss_frames,
+                    reasons=dict(sorted(self.reasons.items())), best_near_miss=self.best_near_miss,
+                    recent=dict(window=self._recent.maxlen, frames=len(self._recent),
+                                recognized=self._recent.count('recognized'), near_miss_frames=self._recent.count('near_miss')))
 
 
 def reference_geometry() -> tuple[tuple[float, float], float]:
@@ -80,27 +134,34 @@ def _glyph_scores(inner: np.ndarray, glyph: np.ndarray) -> list[float] | None:
     return sorted(scores, reverse=True)
 
 
-def find_orbit_gem(frame: np.ndarray, *, layout_offset: int = 0) -> OrbitGem | None:
+def find_orbit_gem(frame: np.ndarray, *, layout_offset: int = 0, glance: Glance | None = None) -> OrbitGem | None:
     """Return one verified visible gem; None means not established, not absent.
 
     Require a square white border with pink pixels and a faceted inner glyph
     matching the independently validated HUD diamond. Rectification handles
     rotation; duplicate inner/outer border contours count as one object.
+    `glance`, when given, is filled with why the answer is what it is (see Glance); it never changes the answer.
     """
+    seen = glance if glance is not None else Glance()
+    seen.reason, seen.near_misses, seen.best_near_miss = 'not_searched', 0, None
     geometry = manifest()
     layout = geometry['layout']
     if getattr(frame, 'shape', None) != (layout['height'], layout['width'], 3):
+        seen.reason = 'frame_shape'
         return None
     region = geometry['interface']['screens']['battle']['orbiting_gem']
     glyph = _hud_glyph(frame, region['hud_icon_rect'])
     if glyph is None:
+        seen.reason = 'hud_glyph'
         return None
     fx, fy, fw, fh = field_region(layout_offset)
     field = frame[fy:fy+fh, fx:fx+fw]
     white = cv2.inRange(field, (180, 180, 180), (255, 255, 255))
     contours, _ = cv2.findContours(white, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     glyph_width = glyph.shape[1]
+    same_square = .3*glyph_width        # centres closer than this are the inner and outer border of one square
     found: list[OrbitGem] = []
+    missed: list[np.ndarray] = []
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
         if not (1.1*glyph_width <= w <= 3.3*glyph_width
@@ -133,13 +194,22 @@ def find_orbit_gem(frame: np.ndarray, *, layout_offset: int = 0) -> OrbitGem | N
         if np.count_nonzero(pink & border) < 40:
             continue
         scores = _glyph_scores(warped[interior, interior], glyph)
-        if scores is None or scores[0] < .8 or scores[0]-scores[1] < .1:
-            continue
         center = points.mean(axis=0)+np.array([fx, fy])
+        if scores is None or scores[0] < .8 or scores[0]-scores[1] < .1:
+            # Shaped and bordered like a gem; only the glyph said no. The inner and outer border contours of one
+            # square count once, as they do for a gem that is found.
+            if all(np.linalg.norm(center-old) >= same_square for old in missed):
+                missed.append(center)
+                seen.near_misses += 1
+            if scores is not None:
+                seen.best_near_miss = round(scores[0], 3) if seen.best_near_miss is None else max(seen.best_near_miss, round(scores[0], 3))
+            continue
         gem = OrbitGem((float(center[0]), float(center[1])), (x+fx, y+fy, w, h), scores[0])
-        duplicate = next((old for old in found if np.linalg.norm(center-np.array(old.center)) < .3*glyph_width), None)
+        duplicate = next((old for old in found if np.linalg.norm(center-np.array(old.center)) < same_square), None)
         if duplicate is None:
             found.append(gem)
         elif gem.score > duplicate.score:
             found[found.index(duplicate)] = gem
+    seen.reason = ('found' if len(found) == 1 else 'ambiguous' if found
+                   else 'glyph_rejected' if seen.near_misses else 'no_candidate')
     return found[0] if len(found) == 1 else None

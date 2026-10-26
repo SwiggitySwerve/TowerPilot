@@ -1088,6 +1088,15 @@ export const MATRIX: readonly MatrixRow[] = [
     input: 'Unknown',
     automation: 'Running',
   },
+  {
+    sample: 'working_collector_finder_suspected',
+    pause: 'shown',
+    turnInputOff: 'shown',
+    stopTargets: '00000029@2',
+    gem: 'Running',
+    input: 'Unknown',
+    automation: 'Running',
+  },
 ];
 
 /** Section 9.1: the scenarios beyond the samples. */
