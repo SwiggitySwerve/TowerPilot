@@ -141,4 +141,5 @@ def test_the_projection_reads_what_the_worker_writes_as_the_entry_record():
 
 
 def test_admission_and_the_workers_entry_gate_share_one_wave_margin():
-    assert takeover.WAVE_MARGIN is attach_worker.WAVE_MARGIN
+    import inspect
+    assert takeover.WAVE_MARGIN == attach_worker.WAVE_MARGIN and 'WAVE_MARGIN =' not in inspect.getsource(takeover)     # imported, never redefined
