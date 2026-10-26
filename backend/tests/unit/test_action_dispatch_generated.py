@@ -383,7 +383,7 @@ def test_a_run_now_acknowledgement_does_not_claim_a_confirmed_effect_the_contrac
     rs = SimpleNamespace(gems=SimpleNamespace(ad_gems=SimpleNamespace(status=lambda: dict(manual_active=False, manual_pending=False, last_outcome=record))))
     gone = action_bindings.CollectorBinding(rs, 'gems.ad_gems', 'ad_gems').progress()
     ack = gone.acknowledgement()
-    assert (ack['confirmed'], ack['effect'], ack['outcome'], ack['reason']) == (False, 'unconfirmed', 'unconfirmed', 'offer_disappeared')
+    assert (ack['confirmed'], ack['outcome'], ack['reason']) == (False, 'unconfirmed', 'offer_disappeared')
     assert record == {'outcome': 'confirmed', 'confirmed': True, 'reason': 'offer_disappeared', 'attempts': 1}      # the collector's own record is untouched
     paid = dict(record, reason='balance_increased')
     rs.gems.ad_gems = SimpleNamespace(status=lambda: dict(manual_active=False, manual_pending=False, last_outcome=paid))

@@ -78,10 +78,10 @@ def outcome_of(record, action=None):
 def _acknowledged(record, effect):
     """The collector's own outcome record as the command acknowledgement carries it. The record stays the collector's (its
     counters and published last_outcome count a vanished offer as confirmed); the acknowledgement must not claim a game effect
-    that effect_of ruled unconfirmed, so it is a copy that says unconfirmed and no longer reports confirmed."""
+    that effect_of ruled unconfirmed, so it is a copy that no longer reports confirmed (its outcome says unconfirmed)."""
     if not isinstance(record, dict) or effect != 'unconfirmed' or record.get('confirmed') is not True:
         return record
-    claimed = dict(record, confirmed=False, effect=effect)
+    claimed = dict(record, confirmed=False)
     if claimed.get('outcome') == 'confirmed':
         claimed['outcome'] = 'unconfirmed'
     return claimed
