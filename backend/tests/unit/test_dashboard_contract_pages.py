@@ -35,6 +35,7 @@ from pathlib import Path
 import pytest
 
 import test_dashboard_contract as dashboard
+from runtime import build_info
 from dashboard_contract_cases_accounts import run_accounts_cases, run_profile_files_cases
 from dashboard_contract_cases_editors import run_abilities_cases, run_collection_cases, run_equipment_cases
 from dashboard_contract_cases_emulators import run_emulator_cases
@@ -51,7 +52,7 @@ from dashboard_contract_cases_first_policy import collection_first_policy_cases
 from dashboard_contract_cases_history import run_history_cases
 from dashboard_contract_cases_recognition import run_recognition_cases
 from dashboard_contract_cases_screens import run_later_cases, run_screens_cases
-from dashboard_contract_cases_runtime import WRITER_PID, run_runtime_cases
+from dashboard_contract_cases_runtime import REL, WRITER_PID, run_runtime_cases, runtime_release_cases
 from dashboard_contract_cases_environment import RE as ENV, runtime_environment_cases
 from dashboard_contract_cases_preview import PB as PRB, PF as PRP, PM as PRM, PS as PRS, run_preview_cases
 from dashboard_contract_cases_settings_modules import LE, LR, SM, SR, loadout_restore_eligibility_cases, settings_modules_cases, settings_switch_records_cases
@@ -91,7 +92,8 @@ FAMILIES = [run_controls_save_cases, run_controls_live_cases, run_history_cases,
             run_templates_add_coded_cases, run_controls_live_reset_all_mixed_cases, run_entry_patch_parity_cases, shopping_queue_bounds_cases,
             run_kind_guard_cases, profile_patch_fenced_cases, ad_gems_failed_attempt_poll_cases, plan_removal_effects_cases, profile_target_more_cases,
             settings_modules_more_cases, settings_modules_more_2_cases, profile_target_more_2_cases, action_executions_cases, battle_actions_projection_cases,
-            action_executions_more_cases]
+            action_executions_more_cases,
+            runtime_release_cases]
 UNNAMED_ALLOWED = 49      # cases no row names (the settling reads of one scenario); report.json lists them
 
 NOTES = dict(
@@ -308,6 +310,13 @@ NOTES.update(
                          '<root>/install, so the family is the same on every machine: the operating system, Python, adb (platform-tools) and scrcpy versions in it are the pins of the code or the values the '
                          'world was given, never read from the machine that generated it. `available` is a local prerequisite, not a working emulator connection or capture; a locator that finds nothing is `unknown`; '
                          'an OCR script is present without OCR being known to work until the probe says so. The family runtime_state records the same field (over an empty root) and keeps its place.'),
+    runtime_release=('Item 10 p10a. GET /api/runtime carries `release` beside `server` (`server` is this process against the source on disk now). `release` (runtime/build_info.release_identity) is what the tree the server runs from says it is: '
+                   'kind `checkout` (no release_identity.json; every other field null) or the `source` / `portable-windows-x64` identity its build wrote (version, source fingerprint, app-build and lock hashes, '
+                   'python for the portable build, build time, git revision, working-tree state), always with the same keys, plus `matches_source` (the recorded fingerprint against the source on disk now) and '
+                   '`matches_app_build` (every file under frontend/webui/app against BUILD_INVENTORY.txt, and that inventory against the recorded hash), each true, false (edited, added or missing) or null '
+                   '(not applicable, or the files cannot be read), and `error` (why the kind is `unknown`). `environment.release` stays the kind alone. The families runtime_state and runtime_environment record the same field over trees '
+                   'that recorded nothing (every field null) or whose record says nothing but a kind; this family is the installs, each a small synthetic tree of the world (a source file, a built app with its BUILD_INVENTORY.txt and the '
+                   'identity naming both), edited, extended or damaged state by state. It is a new family, appended last, because the hashes an install carries are aliased in order of appearance and would renumber every family after them.'),
 )
 COVERAGE = {
     'RUN-05 saved save: success (switches, numbers, null reset, several paths, run as preset id, shared policy, shopping plan, run with fewer controls)': (
@@ -654,6 +663,11 @@ COVERAGE.update({
         RS, 'worker_alive_and_verified', 'worker_recorded_but_proven_gone_until_the_refresher_retires_it',
         'worker_that_cannot_be_verified_is_unknown_not_dead', 'operation_accepted_but_no_worker_spawned_yet',
         'a_profile_write_is_listed_as_a_persistence_operation_not_a_worker', 'process_discovery_stale', 'process_discovery_unreadable'),
+    'P10A /api/runtime release: an intact install, source or app edited or added after the install, the app inventory missing, unreadable source, an identity that cannot be parsed': keys(
+        REL, 'install_whose_files_are_the_ones_the_build_recorded', 'source_edited_after_the_install_matches_source_false',
+        'source_file_added_after_the_install_matches_source_false', 'app_file_edited_after_the_install_matches_app_build_false',
+        'app_file_added_after_the_install_matches_app_build_false', 'app_inventory_missing_matches_app_build_false',
+        'install_source_cannot_be_read_so_matches_source_is_unknown', 'identity_that_cannot_be_parsed_is_unknown_with_the_reason'),
     'T-02 diagnostics events: exact id/kind/instance/time/failure filters, limit, empty': keys(
         RD, 'no_log_folder_yet_nothing_scanned', 'every_event_oldest_first_with_log_coordinates', 'filter_by_kind', 'filter_by_operation',
         'filter_by_battle', 'filter_by_command', 'filter_by_request_and_trace', 'filter_by_attempt_matches_a_claim_attempt_too',
@@ -1427,7 +1441,7 @@ NOTES.update(action_executions=AX_NOTE.strip(), battle_actions_projection=AP_NOT
 COVERAGE.update({row: keys(AX, *cases) for row, cases in AX_ROWS.items()})
 COVERAGE.update({row: keys(AP_FAMILY, *cases) for row, cases in AP_ROWS.items()})
 COVERAGE.update({row: keys(AXM, *cases) for row, cases in AXM_ROWS.items()})
-FAMILY_ROWS = {AXM: AXM_ROW, AP_FAMILY: AP_ROW, AX: AX_ROW, PM2: 'F6-14 follow-up recordings (r12f: seven more run-entry edits of an inactive profile)', SM2: 'F6-15 follow-up recordings (r12f: a modules restore alone, a profile with no blueprints, a malformed tournament list)', SMM: 'F6-15 open recordings (r12e: more of the settings modules)', PTM: 'F6-14 open recordings (r12e: more of an inactive profile)', AP: 'F6-11 6.4 (r12d: the failed Ad gems attempt through the collector own poll)', PRE: 'F6-11 6.5 (r12d: what removing the plan changes)', KG: 'F6-11 RL12 (r12d: a run kind is fixed)', PFD: 'F6-14b (brief section 7: fenced writes to the active profile)', TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
+FAMILY_ROWS = {AXM: AXM_ROW, AP_FAMILY: AP_ROW, AX: AX_ROW, PM2: 'F6-14 follow-up recordings (r12f: seven more run-entry edits of an inactive profile)', SM2: 'F6-15 follow-up recordings (r12f: a modules restore alone, a profile with no blueprints, a malformed tournament list)', SMM: 'F6-15 open recordings (r12e: more of the settings modules)', PTM: 'F6-14 open recordings (r12e: more of an inactive profile)', AP: 'F6-11 6.4 (r12d: the failed Ad gems attempt through the collector own poll)', PRE: 'F6-11 6.5 (r12d: what removing the plan changes)', KG: 'F6-11 RL12 (r12d: a run kind is fixed)', PFD: 'F6-14b (brief section 7: fenced writes to the active profile)', TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', REL: 'P10A (item 10 p10a: /api/runtime.release, the identity of the tree the server runs from; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
                RESET: 'F6-11 RL2 (6.1)', TF: 'F6-11 RL4 guarded (root decision: run-templates/add gains expected_revision and expected_context)', SQ: 'F6-12 (brief section 8)', PTG: 'F6-14 (brief section 6)', ENTRY: 'F6-11 RL3 (6.2)', TEMPLATES: 'F6-11 RL4 (6.3)', DETAILS: 'F6-11 RL7 (6.4)', PLAN_DELETE: 'F6-11 RL8 (6.5)', SAVE: 'RUN-04..07', LIVE: 'RUN-08..11', HL: 'H-01', HD: 'H-01, H-02', CFG: 'G-01', PR: 'G-02', PP: 'G-03', SP: 'S-01', ST: 'G-04', LO: 'E-01', CO: 'C-01', AB: 'A-01', AC: 'P-01', PF: 'P-02', EI: 'M-01', EA: 'M-02', ET: 'M-03', RS: 'T-01', RD: 'T-02', RR: 'R-01, R-02, R-06', CW: 'R-02', RI: 'R-03', SA: 'R-04', RL: 'R-05'}
 
 
@@ -1472,7 +1486,8 @@ PUBLISHED_ORDER = ['run_controls_save_cases', 'run_controls_live_cases', 'run_hi
                    'run_templates_add_coded_cases', 'run_controls_live_reset_all_mixed_cases', 'run_entry_patch_parity_cases', 'shopping_queue_bounds_cases',
                    'run_kind_guard_cases', 'profile_patch_fenced_cases', 'ad_gems_failed_attempt_poll_cases', 'plan_removal_effects_cases', 'profile_target_more_cases',
                    'settings_modules_more_cases', 'settings_modules_more_2_cases', 'profile_target_more_2_cases', 'action_executions_cases', 'battle_actions_projection_cases',
-                   'action_executions_more_cases']
+                   'action_executions_more_cases',
+                   'runtime_release_cases']
 
 
 CODED_PATHS = frozenset({'/api/calibrate/start', '/api/calibrate/observe', '/api/calibrate/apply', '/api/calibrate/stop', '/api/calibrate/status',
@@ -1509,7 +1524,7 @@ def test_the_environment_the_samples_report_does_not_depend_on_the_machine(dash,
     import importlib.util
     import platform
     import sys
-    chosen = [run_runtime_cases, runtime_environment_cases]
+    chosen = [run_runtime_cases, runtime_environment_cases, runtime_release_cases]
     here = render(build(dash, tmp_path / 'here', monkeypatch, chosen))
     programs = tmp_path / 'Program Files'
     for leaf in ('Netease/MuMuPlayer/nx_main/MuMuManager.exe', 'BlueStacks_nxt/HD-Player.exe'):
@@ -1660,3 +1675,14 @@ def test_the_r17b_executions_family_is_made_by_the_real_routes_and_is_the_same_t
     assert render(build(dash, tmp_path / 'two', monkeypatch, [action_executions_more_cases])) == first
     families = json.loads(first)['cases']
     assert {name: len(cases) for name, cases in families.items()} == {AXM: 9}
+
+
+def test_the_p10a_family_is_made_by_the_real_routes_and_is_the_same_twice(dash, tmp_path, monkeypatch):
+    """The family p10a added (/api/runtime.release over synthetic installs: intact, source or app edited, added or missing, unreadable, an identity that cannot be parsed) on its own: every assertion of
+    its generator runs, and two runs are byte-identical (a hash, a path or a time of the machine would differ). The full contract above also compares it with the committed fixture."""
+    first = render(build(dash, tmp_path / 'one', monkeypatch, [runtime_release_cases]))
+    assert render(build(dash, tmp_path / 'two', monkeypatch, [runtime_release_cases])) == first
+    families = json.loads(first)['cases']
+    assert {name: len(cases) for name, cases in families.items()} == {REL: 8}
+    for case in families[REL].values():
+        assert case['status'] == 200 and set(case['body']['release']) == {*build_info.IDENTITY_FIELDS, 'matches_source', 'matches_app_build', 'error'}

@@ -47,8 +47,8 @@ def _inventory_problems(entries: Mapping[str, bytes]) -> list[str]:
 
 def _check_archive(path: Path, prefix: str, disk_build: Mapping[str, bytes] | None = None,
                    app_sources: set[str] | None = None, *, portable: bool = False,
-                   images: Mapping[str, str] | None = None, forbidden: tuple[str, ...] = (),
-                   require_identity: bool = False) -> tuple[list[str], int]:
+                   images: Mapping[str, str] | None = None,
+                   forbidden: tuple[str, ...] = ()) -> tuple[list[str], int]:
     problems = []
     sidecar = path.with_suffix('.zip.sha256')
     if not sidecar.is_file():
@@ -106,8 +106,7 @@ def _check_archive(path: Path, prefix: str, disk_build: Mapping[str, bytes] | No
         return problems + [f'cannot read archive: {error}'], count
     problems.extend(_inventory_problems(entries))
     problems.extend(content_problems(entries, forbidden))
-    problems.extend(metadata_problems(entries, prefix, portable=portable,
-                                      require_identity=require_identity))
+    problems.extend(metadata_problems(entries, prefix, portable=portable))
     app_prefix = APP_BUILD + '/'
     app = {name[len(app_prefix):]: data for name, data in entries.items()
            if name.startswith(app_prefix)}
@@ -131,8 +130,6 @@ def main(argv: list[str]) -> int:
     parser.add_argument('--archive', type=Path, help='validate one ZIP without a checkout or build')
     parser.add_argument('--kind', choices=('portable', 'source'))
     parser.add_argument('--forbid-file', type=Path, help='local UTF-8 list; never ship this file')
-    parser.add_argument('--require-identity', action='store_true',
-                        help='require p10a identity (off until p10a lands)')
     args = parser.parse_args(argv)
     if bool(args.archive) != bool(args.kind):
         parser.error('--archive and --kind must be used together')
@@ -151,8 +148,7 @@ def main(argv: list[str]) -> int:
             return 1
         prefix = args.archive.name[:-4] if args.kind == 'portable' else args.archive.name[:-len('-source.zip')]
         problems, count = _check_archive(args.archive, prefix, portable=args.kind == 'portable',
-                                         images=images, forbidden=forbidden,
-                                         require_identity=args.require_identity)
+                                         images=images, forbidden=forbidden)
         for problem in problems:
             print(f'{args.archive.name}: {problem}')
         if problems:
@@ -185,8 +181,7 @@ def main(argv: list[str]) -> int:
             (f'TowerPilot-{version}-source.zip', f'TowerPilot-{version}', False),
             (f'TowerPilot-{version}-windows-x64.zip', f'TowerPilot-{version}-windows-x64', True)):
         archive_problems, count = _check_archive(dist / filename, prefix, disk_build, app_sources,
-                                                 portable=portable, images=images, forbidden=forbidden,
-                                                 require_identity=args.require_identity)
+                                                 portable=portable, images=images, forbidden=forbidden)
         problems.extend(f'{filename}: {problem}' for problem in archive_problems)
         summaries.append(f'{filename}: {count} entries')
     if problems:

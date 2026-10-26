@@ -1,9 +1,16 @@
 """Build a source beta from reviewed source paths, never the workspace wholesale."""
+import argparse
 import hashlib
+import importlib
+import json
 import re
+import shutil
 import subprocess
+import sys
+import tempfile
+import time
 import zipfile
-from collections.abc import Mapping
+from collections.abc import Collection, Iterable, Mapping
 from html.parser import HTMLParser
 from pathlib import Path, PurePosixPath
 from urllib.parse import unquote
@@ -15,7 +22,7 @@ TOP = {'VERSION', 'LICENSE', 'README.md', 'requirements.txt', 'requirements-dev.
        # the rule book, AGENTS.md points Codex and others at it
        'CLAUDE.md', 'AGENTS.md', 'DESIGN.md'}
 DOCS = {'README.md', 'ACCOUNT_SETUP.md', 'BEHAVIORS.md', 'BLUESTACKS.md', 'GLOBAL_REWARDS.md',
-        'RUN_TEMPLATES.md', 'RELEASE_0.1_BETA.md', 'RELEASE_0.2_BETA.md', 'RELEASE_0.3_BETA.md', 'RELEASE_0.4_BETA.md', 'RELEASE_0.5_BETA.md', 'RUNTIME_GEOMETRY.md',
+        'RUN_TEMPLATES.md', 'RELEASE_0.1_BETA.md', 'RELEASE_0.2_BETA.md', 'RELEASE_0.3_BETA.md', 'RELEASE_0.4_BETA.md', 'RELEASE_0.5_BETA.md', 'RELEASE_0.6_BETA.md', 'RUNTIME_GEOMETRY.md',
         'PORTABLE_BUILD.md', 'SETTINGS.md', 'LEARNING_FLOWS.md', 'OBSERVABILITY.md',
         'WORKFLOW_ARCHITECTURE_PROPOSAL.md', 'RUN_LIFECYCLE_PLAN.md',
         'RUN_WORKSPACE_REVIEW.md', 'VIDEO_PREVIEW.md'}
@@ -40,6 +47,11 @@ APP_NOTICES = 'THIRD_PARTY_NOTICES.txt'
 APP_INVENTORY = 'BUILD_INVENTORY.txt'
 APP_BUILD_SUFFIXES = {'.html', '.js', '.css'}
 APP_BUILD_HINT = 'cd frontend/app; npm ci; npm run build'
+# Written at the archive root by both builders (release_identity below); the reader
+# and the field list are backend/runtime/build_info.py, which the server runs.
+IDENTITY = 'release_identity.json'
+IDENTITY_SCHEMA = 1
+LOCK = 'requirements-portable.lock'
 # Outside the app, the frontend is the static page that redirects old
 # /ui/index.html bookmarks onto the app (plan R17, option A); the Flask server
 # that serves it is backend/dashboard.py, shipped by the backend rule. The
@@ -185,34 +197,133 @@ def app_build_files(root: Path = ROOT, *, build_dir: Path | None = None) -> list
     return [f'{APP_BUILD}/{name}' for name in files]
 
 
+def git_listing(root: Path) -> list[str]:
+    """Git boundary of release_files: every path git knows under `root`, tracked or untracked and not ignored."""
+    return subprocess.check_output(
+        ['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard'], cwd=root).decode().split('\0')
+
+
+def git_status(root: Path) -> bytes:
+    """Git boundary of working_tree: `git status` in porcelain form, empty when nothing differs from the commit.
+
+    Untracked files git does not ignore are listed: release_files() would ship them.
+    """
+    return subprocess.run(['git', '--no-optional-locks', 'status', '--porcelain', '--untracked-files=all'],
+                          cwd=root, capture_output=True, check=True, timeout=120).stdout
+
+
 def release_files(root: Path = ROOT, *, build_dir: Path | None = None) -> list[str]:
     """Every file a release ships: the reviewed source paths git knows about,
     plus the dashboard app build."""
-    names = subprocess.check_output(
-        ['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard'],
-        cwd=root).decode().split('\0')
+    names = git_listing(root)
     sources = {n for n in names if n and allowed(n) and (root / n).is_file()}
     return sorted(sources | set(app_build_files(root, build_dir=build_dir)))
 
 
-def build(root: Path = ROOT, dist: Path | None = None) -> Path:
+def stage_files(stage: Path, root: Path, files: Iterable[str], skip: Collection[str] = ()) -> None:
+    """Copy release files into `stage` under their relative paths; the staged tree is what ships."""
+    for name in files:
+        if name in skip:
+            continue
+        dest = stage / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(root / name, dest)
+
+
+def working_tree(root: Path) -> str:
+    """`clean`, `dirty` or `unknown` (not a git checkout, or git cannot say) from `git status` now.
+
+    Untracked files git does not ignore make the tree dirty: release_files() ships them.
+    """
+    if not (root / '.git').exists():
+        return 'unknown'
+    try:
+        status = git_status(root)
+    except (OSError, subprocess.SubprocessError):
+        return 'unknown'
+    return 'dirty' if status.strip() else 'clean'
+
+
+def require_clean_tree(root: Path, allow_dirty: bool = False) -> str:
+    """The working-tree state to record; refuses anything but `clean` unless this is a rehearsal."""
+    state = working_tree(root)
+    if state != 'clean' and not allow_dirty:
+        raise RuntimeError(f'the working tree is {state}: build a release from a clean, committed tree '
+                           f'(--allow-dirty is for rehearsals; it records {state} in {IDENTITY})')
+    return state
+
+
+def _build_info():
+    """backend/runtime/build_info.py, the module the server fingerprints itself with.
+
+    Loaded by name when an identity is written, not imported at load: the archive checker and the
+    installed-ZIP qualifier import this module and must stay free of application code.
+    """
+    backend = str(ROOT / 'backend')
+    if backend not in sys.path:
+        sys.path.insert(0, backend)
+    return importlib.import_module('runtime.build_info')
+
+
+def write_identity(stage: Path, root: Path, kind: str, tree: str, *, python: Mapping[str, str] | None = None) -> dict:
+    """Write release_identity.json at the root of `stage`, the tree about to be zipped.
+
+    The fingerprint, the app inventory hash and the lock hash are taken from the staged files, so the
+    running install can compare itself with them. Nothing here names a path, a user or a machine.
+    """
+    info = _build_info()
+    identity = dict(
+        schema_version=IDENTITY_SCHEMA, version=(stage / 'VERSION').read_text().strip(), kind=kind,
+        source_fingerprint=info.source_fingerprint(stage),
+        app_build_sha256=hashlib.sha256((stage / APP_BUILD / APP_INVENTORY).read_bytes()).hexdigest(),
+        lock_sha256=hashlib.sha256((stage / LOCK).read_bytes()).hexdigest(),
+        built_at=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        source_revision=info.revision(root), working_tree=tree)
+    if python is not None:
+        identity['python'] = dict(python)
+    unknown = identity.keys() - set(info.IDENTITY_FIELDS)
+    if unknown:
+        raise RuntimeError(f'{IDENTITY} fields the server does not read: {sorted(unknown)}')
+    if kind not in info.RELEASE_KINDS:
+        raise RuntimeError(f'{IDENTITY} kind the server does not read: {kind}')
+    (stage / IDENTITY).write_bytes((json.dumps(identity, indent=2, sort_keys=True) + '\n').encode('utf-8'))
+    return identity
+
+
+def command_line(description: str | None, argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('--allow-dirty', action='store_true',
+                        help=f'rehearsal only: build from a dirty or unknown working tree; {IDENTITY} records it')
+    return parser.parse_args(argv)
+
+
+def build(root: Path = ROOT, dist: Path | None = None, *, allow_dirty: bool = False) -> Path:
+    tree = require_clean_tree(root, allow_dirty)    # first: nothing is read, copied or zipped from a tree that may change
+    files = release_files(root)          # refuses early when the dashboard app is not built
     version = (root / 'VERSION').read_text().strip()
-    files = release_files(root)
     prefix = f'TowerPilot-{version}'
     output = (root / 'dist' if dist is None else dist) / f'{prefix}-source.zip'
-    output.parent.mkdir(exist_ok=True)
-    inventory = []
-    with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
-        for name in files:
-            content = (root / name).read_bytes()
-            archive.writestr(prefix + '/' + name, content)
-            inventory.append(hashlib.sha256(content).hexdigest() + '  ' + name)
-        archive.writestr(prefix + '/SHA256SUMS.txt', '\n'.join(inventory) + '\n')
+    with tempfile.TemporaryDirectory(prefix='source-build-') as work:
+        stage = Path(work) / prefix
+        stage_files(stage, root, files)
+        write_identity(stage, root, 'source', tree)
+        output.parent.mkdir(exist_ok=True)
+        inventory = []
+        with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
+            for name in sorted([*files, IDENTITY]):
+                content = (stage / name).read_bytes()
+                archive.writestr(prefix + '/' + name, content)
+                inventory.append(hashlib.sha256(content).hexdigest() + '  ' + name)
+            archive.writestr(prefix + '/SHA256SUMS.txt', '\n'.join(inventory) + '\n')
     output.with_suffix('.zip.sha256').write_text(
         hashlib.sha256(output.read_bytes()).hexdigest() + '  ' + output.name + '\n')
-    print(f'{output} ({len(files)} files)')
+    print(f'{output} ({len(files) + 1} files)')
     return output
 
 
+def main(argv: list[str] | None = None) -> None:
+    build(allow_dirty=command_line(__doc__, argv).allow_dirty)
+
+
 if __name__ == '__main__':
-    build()
+    main()

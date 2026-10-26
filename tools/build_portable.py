@@ -10,7 +10,9 @@ import zipfile
 from collections.abc import Iterable
 from pathlib import Path
 
-from build_release import APP_BUILD, APP_NOTICES, ROOT, release_files
+from build_release import (APP_BUILD, APP_NOTICES, ROOT, command_line, release_files, require_clean_tree,
+                           stage_files, write_identity)
+from release_archive_policy import release_notes_path
 
 PYTHON = '3.12.10'
 URL = f'https://www.python.org/ftp/python/{PYTHON}/python-{PYTHON}-embed-amd64.zip'
@@ -34,12 +36,7 @@ def stage_tree(stage: Path, root: Path = ROOT, files: Iterable[str] | None = Non
     dashboard app build - into the portable tree, so the extracted folder is
     also a working checkout. Only the source launchers are left out; build()
     writes the portable ones."""
-    for name in release_files(root) if files is None else files:
-        if name in SOURCE_LAUNCHERS:
-            continue
-        dest = stage / name
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(root / name, dest)
+    stage_files(stage, root, release_files(root) if files is None else files, SOURCE_LAUNCHERS)
 
 
 def write_zip(stage: Path, output: Path, prefix: str) -> Path:
@@ -57,9 +54,10 @@ def write_zip(stage: Path, output: Path, prefix: str) -> Path:
     return output
 
 
-def build():
+def build(*, allow_dirty: bool = False):
     if sys.platform != 'win32' or sys.version_info[:2] != (3, 12) or platform.architecture()[0] != '64bit':
         raise RuntimeError('Build with 64-bit Python 3.12 on Windows')
+    tree = require_clean_tree(ROOT, allow_dirty)    # before the app check and any download
     files = release_files(ROOT)          # refuses early when the dashboard app is not built
     version = (ROOT / 'VERSION').read_text().strip()
     dist = ROOT / 'dist'
@@ -92,16 +90,16 @@ def build():
             '@echo off\ncd /d "%~dp0"\n'
             'start "" "%~dp0runtime\\pythonw.exe" "%~dp0tools\\portable_launcher.py"\n')
         (stage / 'START HERE.txt').write_text(
-            'Tower Pilot '+version+' - Windows 10/11 x64\n\n'
+            'Tower Pilot '+version+' - Windows 11 x64 (Windows 10 is untested)\n\n'
             'Extract the entire ZIP into a writable folder, then double-click Start Tower Pilot.cmd.\n'
             'Python and dependencies are included. No Python, pip or admin install is needed.\n'
             'No console window opens: Tower Pilot sits in the notification area '
             '(near the clock). Click that icon to open the dashboard, right-click it to quit.\n'
-            'Your browser opens Setup automatically on the first start.\n'
-            'Install an emulator and The Tower, then use Setup to install connection tools (internet required).\n'
+            'Your default browser opens the dashboard automatically. Use current Chrome or Edge.\n'
+            'Install MuMu Player or BlueStacks and The Tower, then use Setup to install connection tools (internet required).\n'
             'Recommended: 1080x2560 portrait, 360 DPI. Initial scan takes approximately 20-30 minutes.\n'
             'Account data is stored beside the app. Preserve the folder when upgrading.\n'
-            'See docs/RELEASE_0.5_BETA.md for what changed and the beta limitations.\n')
+            'See '+release_notes_path(version)+' for what changed and the environment limits.\n')
         subprocess.run([str(runtime / 'python.exe'), '-c',
             'import cv2,numpy,yaml,psutil,flask,pystray,PIL,UnityPy; print("Bundled imports OK")'],
             cwd=stage, check=True)
@@ -114,11 +112,16 @@ def build():
             + SOURCE_BUILD_NOTICE +
             'Dependency licenses/notices: runtime/Lib/site-packages/*.dist-info/\n'
             'Dashboard app npm packages and their licenses: '+APP_BUILD+'/'+APP_NOTICES+'\n')
+        write_identity(stage, ROOT, 'portable-windows-x64', tree, python=dict(version=PYTHON, sha256=SHA256))
         output = write_zip(stage, dist / (prefix + '.zip'), prefix)
         output.with_suffix('.zip.sha256').write_text(hashlib.sha256(output.read_bytes()).hexdigest()+'  '+output.name+'\n')
         print(output)
         return output
 
 
+def main(argv: list[str] | None = None) -> None:
+    build(allow_dirty=command_line(__doc__, argv).allow_dirty)
+
+
 if __name__ == '__main__':
-    build()
+    main()

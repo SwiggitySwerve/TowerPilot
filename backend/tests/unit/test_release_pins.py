@@ -175,10 +175,16 @@ def test_build_uses_hash_mode_and_records_source_exception(
     monkeypatch.setattr(portable.sys, 'platform', 'win32')
     monkeypatch.setattr(portable.sys, 'version_info', (3, 12))
     monkeypatch.setattr(portable.platform, 'architecture', lambda: ('64bit', ''))
-    monkeypatch.setattr(portable, 'release_files', lambda root: ['tools/portable_pins.json'])
+    staged = ['VERSION', 'requirements-portable.lock', 'tools/portable_pins.json', 'frontend/dashboard.py', 'frontend/webui/app/BUILD_INVENTORY.txt']
+    monkeypatch.setattr(portable, 'release_files', lambda root: staged)
+    # The git boundary: this folder is not a repository (the clean-tree rule has its own tests, test_release_identity.py).
+    monkeypatch.setattr(portable, 'require_clean_tree', lambda root, allow_dirty=False: 'clean')
     (tmp_path / 'VERSION').write_text('9.9.9\n')
     (tmp_path / 'requirements-portable.lock').write_text('# fixture\n')
-    (tmp_path / 'tools').mkdir()
+    for name in staged[3:]:
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / name).write_text('# fixture\n')
+    (tmp_path / 'tools').mkdir(exist_ok=True)
     for name in ('portable_pins.json', 'portable_launcher.py'):
         (tmp_path / 'tools' / name).write_text('{}')
     cache = tmp_path / 'dist/downloads'
@@ -202,4 +208,8 @@ def test_build_uses_hash_mode_and_records_source_exception(
         assert 'tpk_ar==0.2.4 has no wheel on PyPI' in notices
         assert 'compiler may be needed' in notices
         assert archive.read(prefix + 'tools/portable_pins.json') == b'{}'
+        identity = json.loads(archive.read(prefix + 'release_identity.json'))
+        assert (identity['kind'], identity['working_tree'], identity['python']) == (
+            'portable-windows-x64', 'clean', dict(version=portable.PYTHON, sha256=portable.SHA256))
+        assert prefix + 'release_identity.json' in archive.namelist()
     assert importlib.import_module('build_release').allowed('tools/portable_pins.json')

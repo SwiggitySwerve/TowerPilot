@@ -15,7 +15,9 @@ Each capability has `state` (`available`, `missing`, or `unknown`) and `basis`.
 Availability describes the stated local prerequisites; it does not prove an
 emulator connection or a successful capture. Emulator locator misses and
 unprobed VM mappings remain unknown. Scrcpy server and decoder are separate.
-The app build check establishes presence, not integrity.
+The app build check establishes presence, not integrity; integrity and the release kind belong to
+[build_info.py](build_info.py) (`release_identity`, see [build_info.rules.md](build_info.rules.md)). The report asks it
+for the kind only and reads no identity file itself.
 
 Platform-tools presence comes from `tool_install.installed`. Its reported
 version comes only from a local installer receipt matching the pin's version,

@@ -126,8 +126,7 @@ def content_problems(entries: Mapping[str, bytes], forbidden: Sequence[str],
     return problems
 
 
-def metadata_problems(entries: Mapping[str, bytes], prefix: str, *, portable: bool,
-                      require_identity: bool) -> list[str]:
+def metadata_problems(entries: Mapping[str, bytes], prefix: str, *, portable: bool) -> list[str]:
     problems = []
     try:
         version = entries['VERSION'].decode('utf-8').strip()
@@ -143,9 +142,6 @@ def metadata_problems(entries: Mapping[str, bytes], prefix: str, *, portable: bo
         problems.append(f'missing environment limits document: {limits}')
     elif not re.search(rb'^#{1,6}[ \t]+Environment limits[ \t]*\r?$', entries[limits], re.M | re.I):
         problems.append(f'missing Environment limits heading: {limits}')
-    # p10a activates this flag at the caller. Until then identity is optional.
-    if not require_identity:
-        return problems
     try:
         identity = json.loads(entries['release_identity.json'])
         if not isinstance(identity, dict):

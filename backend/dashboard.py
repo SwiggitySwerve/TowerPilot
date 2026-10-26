@@ -76,7 +76,7 @@ app = Flask(__name__, static_folder=WEBUI, static_url_path="/ui")
 from control import operations as operation_api
 from control import battles as battle_api
 from control import harvest as harvest_api
-from runtime import build_info, environment
+from runtime import build_info, config_seed, environment
 from towerpilot_workflows.harvest import gem_policy_revision
 
 _BUILD = build_info.snapshot(Path(ROOT).parent, 'dashboard')
@@ -94,6 +94,7 @@ def api_runtime():
                for op in active if not operation_api.synchronous_persistence(op)]
     persistence = [operation_api.public(op) for op in active if operation_api.synchronous_persistence(op)]
     return jsonify(server=build_info.compare(Path(ROOT).parent, _BUILD),
+                   release=build_info.release_identity(Path(ROOT).parent),
                    environment=environment.report(Path(ROOT).parent, emulators={
                        'mumu': _mumu_manager(), 'bluestacks': _bluestacks_player()}),
                    capabilities=_CAPABILITIES, api_contract=1, port=PORT,
@@ -1399,17 +1400,11 @@ CONFIG_EXAMPLE = os.path.join(ROOT, "config.example.yaml")
 
 def seed_config() -> bool:
     """Create config.yaml from config.example.yaml when it is missing - the
-    same rule as settings.seed_config (this module never imports settings).
-    Without it a fresh install 500s on /api/status and on the wizard's own
-    scan endpoint, so the wizard that writes the file cannot run."""
-    if os.path.exists(CONFIG_PATH):
-        return False
-    if not os.path.exists(CONFIG_EXAMPLE):
-        raise FileNotFoundError(f"{CONFIG_PATH} is missing and so is "
-                                f"{CONFIG_EXAMPLE}")
-    with open(CONFIG_EXAMPLE, encoding="utf-8") as src,             open(CONFIG_PATH, "w", encoding="utf-8") as dst:
-        dst.write(src.read())
-    return True
+    same rule as settings.seed_config (runtime/config_seed.py; this module
+    never imports settings). Without it a fresh install 500s on /api/status
+    and on the wizard's own scan endpoint, so the wizard that writes the file
+    cannot run."""
+    return config_seed.seed(CONFIG_PATH, CONFIG_EXAMPLE)
 
 
 def _read_saved_config() -> dict:

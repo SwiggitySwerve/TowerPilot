@@ -31,6 +31,12 @@ def inventory(entries: Mapping[str, bytes]) -> bytes:
                    for name, data in sorted(entries.items())).encode()
 
 
+def identity_for(kind: str, entries: Mapping[str, bytes]) -> dict[str, str]:
+    """The fields the gate compares; the archive's own app inventory is what the identity must name."""
+    return {'version': '9.9.9', 'kind': kind, 'working_tree': 'clean',
+            'app_build_sha256': hashlib.sha256(entries[APP + 'BUILD_INVENTORY.txt']).hexdigest()}
+
+
 @pytest.fixture()
 def checker(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
     monkeypatch.syspath_prepend(str(REPO / 'tools'))
@@ -56,7 +62,15 @@ def artifact(tmp_path: Path, request: pytest.FixtureRequest) -> Artifact:
                     'backend/config.example.yaml': b'instances: {main: {serial: "", allow_taps: false, autostart: false}}\n'
                                                    b'active_instance: main\nactive_profile: default\n',
                     'backend/profiles/default.yaml': b'player: {}\n'})
-    return tmp_path / filename, prefix, kind, entries
+    artifact = (tmp_path / filename, prefix, kind, entries)
+    refresh_identity(artifact)
+    return artifact
+
+
+def refresh_identity(artifact: Artifact) -> None:
+    """Name the archive's current app inventory in its identity, after a test changed the inventory."""
+    kind = 'portable-windows-x64' if artifact[2] == 'portable' else 'source'
+    artifact[3]['release_identity.json'] = json.dumps(identity_for(kind, artifact[3])).encode()
 
 
 def write_artifact(artifact: Artifact) -> Path:
@@ -74,7 +88,7 @@ def check(checker: ModuleType, artifact: Artifact, *options: str) -> int:
     return checker.main(['--archive', str(path), '--kind', artifact[2], *options])
 
 
-def test_clean_artifact_passes_with_identity_off(checker: ModuleType, artifact: Artifact) -> None:
+def test_clean_artifact_passes(checker: ModuleType, artifact: Artifact) -> None:
     assert check(checker, artifact) == 0
 
 
@@ -238,9 +252,7 @@ def test_recorded_image_provenance_matches_every_pin(checker: ModuleType) -> Non
 
 
 def identity(artifact: Artifact) -> dict[str, str]:
-    return {'version': '9.9.9', 'kind': 'portable-windows-x64' if artifact[2] == 'portable' else 'source',
-            'working_tree': 'clean',
-            'app_build_sha256': hashlib.sha256(artifact[3][APP + 'BUILD_INVENTORY.txt']).hexdigest()}
+    return json.loads(artifact[3]['release_identity.json'])
 
 
 @pytest.mark.parametrize('field', ['version', 'kind', 'app_build_sha256', 'working_tree'])
@@ -249,29 +261,40 @@ def test_identity_must_match_archive(checker: ModuleType, artifact: Artifact, fi
     data = identity(artifact)
     data[field] = 'wrong'
     artifact[3]['release_identity.json'] = json.dumps(data).encode()
-    assert check(checker, artifact, '--require-identity') == 1
+    assert check(checker, artifact) == 1
     assert 'release identity mismatch: ' + field in capsys.readouterr().out
 
 
-def test_dirty_identity_is_refused(checker: ModuleType, artifact: Artifact) -> None:
+def test_dirty_identity_is_refused(checker: ModuleType, artifact: Artifact,
+                                  capsys: pytest.CaptureFixture[str]) -> None:
     data = identity(artifact)
     data['working_tree'] = 'dirty'
     artifact[3]['release_identity.json'] = json.dumps(data).encode()
-    assert check(checker, artifact) == 0  # activation belongs to p10a
-    assert check(checker, artifact, '--require-identity') == 1
+    assert check(checker, artifact) == 1
+    assert 'release identity mismatch: working_tree' in capsys.readouterr().out
 
 
 @pytest.mark.parametrize('data', [None, b'{invalid', b'[]'])
-def test_required_identity_missing_or_malformed_fails(
-        checker: ModuleType, artifact: Artifact, data: bytes | None) -> None:
-    if data is not None:
+def test_identity_is_required_by_default_missing_or_malformed_fails(
+        checker: ModuleType, artifact: Artifact, data: bytes | None,
+        capsys: pytest.CaptureFixture[str]) -> None:
+    if data is None:
+        del artifact[3]['release_identity.json']
+    else:
         artifact[3]['release_identity.json'] = data
-    assert check(checker, artifact, '--require-identity') == 1
+    assert check(checker, artifact) == 1
+    assert 'missing or invalid release_identity.json' in capsys.readouterr().out
 
 
 def test_matching_identity_passes(checker: ModuleType, artifact: Artifact) -> None:
-    artifact[3]['release_identity.json'] = json.dumps(identity(artifact)).encode()
-    assert check(checker, artifact, '--require-identity') == 0
+    assert check(checker, artifact) == 0
+
+
+def test_there_is_no_flag_to_switch_the_identity_check_off(checker: ModuleType, artifact: Artifact) -> None:
+    path = write_artifact(artifact)
+    with pytest.raises(SystemExit) as refused:
+        checker.main(['--archive', str(path), '--kind', artifact[2], '--require-identity'])
+    assert refused.value.code == 2
 
 
 @pytest.mark.parametrize('data', [None, b'# Release without limits\n'])
@@ -390,8 +413,10 @@ def test_generated_app_notices_waive_only_the_email_marker(checker: ModuleType, 
     artifact[3][APP + 'THIRD_PARTY_NOTICES.txt'] = ('Copyright ' + email + '\n').encode()
     app = {name[len(APP):]: data for name, data in artifact[3].items() if name.startswith(APP) and not name.endswith('BUILD_INVENTORY.txt')}
     artifact[3][APP + 'BUILD_INVENTORY.txt'] = inventory(app)
+    refresh_identity(artifact)
     assert check(checker, artifact) == 0
     artifact[3][APP + 'THIRD_PARTY_NOTICES.txt'] = ('Copyright ' + email + '\n' + personal_markers()[0][1] + '\n').encode()
     app = {name[len(APP):]: data for name, data in artifact[3].items() if name.startswith(APP) and not name.endswith('BUILD_INVENTORY.txt')}
     artifact[3][APP + 'BUILD_INVENTORY.txt'] = inventory(app)
+    refresh_identity(artifact)
     assert check(checker, artifact) == 1
