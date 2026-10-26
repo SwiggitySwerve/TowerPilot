@@ -649,12 +649,15 @@ def _takeover_action(body, cfg, inst):
         cmd = _run_command(cfg, inst, admitted.preset)
     except _FlowRegistryUnreadable as e:
         return jsonify({"ok": False, "error": f"flow registry unreadable: {e}"}), 500
-    transfer = None
+    transfer, keep_hold = None, False
     try:
         transfer = _transfer_from_collector(cfg, body, admitted.owners) if admitted.owners else None
         operation = _launch_operation(cfg, 'run', body, cmd, restrict=admitted.restrict)
+    except DeviceOwned as refused:
+        keep_hold = refused.body.get('code') == 'collector_stopping'      # as `start`: the hold expires on its own, so a lagging collector is not relaunched
+        raise
     finally:
-        if admitted.owners:
+        if admitted.owners and not keep_hold:
             harvest_api.end_transfer(ROOT, harvest_api.identity_for(cfg))
     _procs_refresh()
     return jsonify(ok=True, operation_id=operation['id'], operation=operation_api.public(operation),

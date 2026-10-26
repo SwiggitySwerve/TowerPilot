@@ -35,7 +35,7 @@ envelope shapes) belongs to `player/attach_policy.py` ([rules](../player/attach_
    (policy revision, tier as declared, stripped keys, the collector's `{battle_id, generation, operation_id}` or null). Server-derived facts live only in the envelope,
    which the receipt comparison ignores, so an honest retry still matches.
 10. `_transfer_from_collector` and `_launch_operation(..., restrict=...)` inside one `try`, `end_transfer` in its `finally`, so a failure while the collector is stopped
-    clears the hold too.
+    clears the hold too. The one exception is `collector_stopping`, which keeps the hold (it expires on its own) exactly as `start` does.
 
 ## The observed wave
 

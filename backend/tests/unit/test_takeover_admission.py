@@ -423,6 +423,7 @@ def test_a_collector_that_is_still_stopping_is_refused_with_the_shared_body(app)
     got = reply.get_json()
     assert reply.status_code == 409 and got['code'] == 'collector_stopping' and got['owner']['operation_id'] == collector['id']
     assert all(op['kind'] == 'gems' for op in ops(app))
+    assert app.dash._harvest_status()['transfer']['reason'] == 'run_start'          # kept, as `start` keeps it: a lagging collector is not relaunched under the run
 
 
 def test_action_lock(app):
