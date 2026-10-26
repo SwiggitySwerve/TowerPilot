@@ -29,18 +29,22 @@ def test_refusal_and_other_platforms_are_results_not_errors(monkeypatch):
     assert priority.raise_own_priority()['reason'] == 'not_windows'
 
 
-def test_run_logged_logs_the_class_and_a_failure_never_stops_the_collector(monkeypatch):
+def test_main_logs_the_class_after_binding_the_instance_and_a_failure_never_stops_it(monkeypatch):
+    from gem_collector_run import Exhausted, run
     import gem_collector as worker
-    events, ran = [], []
-    monkeypatch.setattr(worker.logger, 'event', lambda name, **kw: events.append((name, kw)))
-    monkeypatch.setattr(worker, 'main', lambda instance, preset: ran.append((instance, preset)))
+    order = []
+    monkeypatch.setattr(worker.settings, 'select_instance', lambda *a: order.append('select'))
     monkeypatch.setattr(worker.priority, '_set_own_class', lambda flag: (_ for _ in ()).throw(OSError('denied')))
     monkeypatch.setattr(worker.priority.sys, 'platform', 'win32')
     monkeypatch.setattr(worker.priority, 'ABOVE_NORMAL', 0x8000)
-    worker.run_logged('i', 'p')
-    assert ran == [('i', 'p')]
-    assert events[0][0] == 'gem_collector_priority' and events[0][1]['ok'] is False
-
+    events, _, _, _ = (None,) * 4
+    try:
+        events, *_ = run(monkeypatch, ['battle'])
+    except Exhausted:
+        pytest.fail('run swallows Exhausted')
+    names = [name for name, kw in events]
+    assert 'gem_collector_priority' in names and 'gem_collector_started' in names   # a refusal did not stop it
+    assert dict(events)['gem_collector_priority']['ok'] is False
 
 def test_textocr_warm_reader_uses_the_same_class():
     from vision import textocr

@@ -124,6 +124,8 @@ def main(instance, preset):
     from runtime.device_lease import prepare_instance
     prepare_instance(instance)
     settings.select_instance(instance,preset)
+    # One class above normal so other projects' CPU load does not stretch the 1 s pass to minutes. Logged after the instance is bound (the log file is chosen on first use); a refusal is logged only.
+    logger.event('gem_collector_priority', **priority.raise_own_priority())
     # The collector always adopts the battle on screen. Before any runner
     # check, session or frame: the collection-scope setup guard for the bound
     # (accepted workers: restored) device and account, logged under this
@@ -298,8 +300,6 @@ def main(instance, preset):
 
 
 def run_logged(instance, preset):
-    # One class above normal so other projects' CPU load does not stretch the 1 s pass to minutes. A refusal is logged only.
-    logger.event('gem_collector_priority', **priority.raise_own_priority())
     try:main(instance, preset)
     except Exception as exc:
         logger.event('gem_collector_failed', error=str(exc), error_type=type(exc).__name__, trace=traceback.format_exc(limit=12))
