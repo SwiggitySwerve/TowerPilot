@@ -44,6 +44,10 @@ class LedgerGuard:
         text = str(exc).lower()
         return isinstance(exc, sqlite3.OperationalError) and ('locked' in text or 'busy' in text)
 
+    def retrying(self, stage):
+        """A failed attempt of this stage may have written part of its work; the next call finishes it."""
+        return stage in self.stages
+
     def run(self, stage, call, *args, **kwargs):
         """(True, result) when the call ran; (False, None) when the ledger was locked and the call did not happen."""
         try:
@@ -143,7 +147,7 @@ def main(instance, preset):
     logger.event('gem_collector_started',preset=preset,ad_gems=gems.ad_gems.enabled,orbit=gems.orbit.enabled)
     last_status=None
     saw_battle=False
-    exit_request = deferred = owed = None
+    exit_request = deferred = owed = prepare_owed = None     # prepare_owed: arguments of a prepare that was locked out
     while True:
         pass_started = time.monotonic()
         beat = clock.next_pass()
@@ -156,7 +160,7 @@ def main(instance, preset):
             if not closed:
                 pace(pass_started)
                 continue
-            owed = None
+            owed = prepare_owed = None
             reason = runflag.requested()
             if reason is not None:
                 logger.event('gem_collector_stopped', reason=reason)
@@ -208,8 +212,10 @@ def main(instance, preset):
                 if not closed:
                     pace(pass_started)   # the old record is still open: the next backwards frame closes it
                     continue
-                ledger.run('prepare_after_backwards', session.prepare_next, origin='partial_adoption',
-                           previous_battle_id=previous)     # the live branch prepares it if this is locked
+                prepared, _ = ledger.run('prepare', session.prepare_next, origin='partial_adoption',
+                                         previous_battle_id=previous)
+                if not prepared:    # the live branch finishes it, still linked to the record this one continues
+                    prepare_owed = dict(origin='partial_adoption', previous_battle_id=previous)
             gems = GemWatch(body.get('gather', {}), session=actions)
             state.gems = gems
             state.tracker = wave_reader.WaveTracker()
@@ -226,6 +232,7 @@ def main(instance, preset):
                     owed = dict(reason=why, evidence=proof)
                     pace(pass_started)
                     continue
+                prepare_owed = None     # the record that was waiting for its setup report is closed
             reason=runflag.requested()
             if reason is not None:
                 logger.event('gem_collector_stopped',reason=reason)
@@ -257,11 +264,13 @@ def main(instance, preset):
             gems.ad_gems.leave_home()
         if live:
             if session is not None:
-                if session.battle['status'] not in ('prepared', 'active'):
-                    prepared, _ = ledger.run('prepare_adopted', session.prepare_next, origin='adopted')
+                if (session.battle['status'] not in ('prepared', 'active') or prepare_owed is not None
+                        or ledger.retrying('prepare')):
+                    prepared, _ = ledger.run('prepare', session.prepare_next, **(prepare_owed or dict(origin='adopted')))
                     if not prepared:
                         pace(pass_started)
                         continue
+                    prepare_owed = None
                     gems = GemWatch(body.get('gather', {}), session=actions)
                     state.gems = gems
                     state.tracker = wave_reader.WaveTracker()

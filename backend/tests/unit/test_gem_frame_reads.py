@@ -7,6 +7,7 @@ import types
 from flows import shard
 from gem_collector_run import run
 from interactions.ad_gems import AdGemCollector
+from test_gem_orbit_cycle import cycle    # noqa: F401  (the tapper fixture of that file)
 from vision.frame_reads import FrameReads
 
 
@@ -60,3 +61,19 @@ def test_an_owner_handed_another_frame_reads_it_itself(monkeypatch):
     collector = AdGemCollector()
     collector._observe(fresh, reads=FrameReads(loop_frame))
     assert seen == [('wave', fresh), ('screen', fresh)]
+
+def test_the_orbit_tapper_reuses_the_loops_readings_for_that_frame_and_reads_any_other_frame_itself(cycle, monkeypatch):
+    state, tapper = cycle
+    mine, other = Frame(), Frame()
+    waves, screens = [], []
+    monkeypatch.setattr(shard.wave_reader, 'read_wave', lambda f: waves.append(f) or 123)
+    monkeypatch.setattr(shard.screen, 'identify', lambda f: screens.append(f) or types.SimpleNamespace(name='battle'))
+    monkeypatch.setattr(shard, 'read_gem_balance', lambda f: 200)
+    monkeypatch.setattr(shard.capture, 'grab', Frame)           # every later capture is a new frame
+    tapper.poll(mine, reads=FrameReads(mine))
+    assert waves.count(mine) == 1 and screens.count(mine) == 1  # the appearance check and the attempt shared one reading
+    assert len(waves) > 1                                       # the fresh captures were read directly
+    waves.clear(), screens.clear()
+    shard.GemOrbitTapper(enabled=True, jitter=0).poll(other, reads=FrameReads(mine))                  # the loop's reads belong to another frame
+    assert mine not in waves and mine not in screens
+    assert waves.count(other) >= 2 and screens.count(other) >= 1

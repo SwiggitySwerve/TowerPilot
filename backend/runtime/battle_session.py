@@ -28,6 +28,7 @@ class BattleSession:
         self._observed_duration = 0.0
         self._gap_started_at = None
         self._observation_gaps = []
+        self._setup_owed = None         # the setup report of a battle created but not yet written
         if prepared is None:
             self.prepare_next(preset, config, envelope=envelope, origin=origin, previous_battle_id=previous_battle_id)
         else:
@@ -75,7 +76,10 @@ class BattleSession:
 
     def prepare_next(self, preset=None, config=None, *, envelope=None, origin='started', previous_battle_id=None):
         if self.battle and self.battle['status'] in ('prepared', 'active'):
-            raise ValueError('Cannot replace a live battle envelope')
+            if self._setup_owed is None:
+                raise ValueError('Cannot replace a live battle envelope')
+            self.set_setup(self._setup_owed)     # a retry of a prepare whose setup write was locked out: continue it
+            return self.battle
         if preset is not None:
             self.base_preset = copy.deepcopy(preset)
         if config is not None:
@@ -104,10 +108,11 @@ class BattleSession:
         self._observation_gaps = []
         self._tag()
         from interactions.loadout import unknown_setup
-        self.set_setup(unknown_setup(
+        self._setup_owed = unknown_setup(
             self.base_preset.get('loadout'),
             detail='adopted' if origin in ('adopted', 'partial_adoption') else 'as_is',
-            reason='Setup has not been verified for this battle'))
+            reason='Setup has not been verified for this battle')
+        self.set_setup(self._setup_owed)
         return self.battle
 
     def set_setup(self, report):
@@ -115,6 +120,7 @@ class BattleSession:
         self.store.validate_driver(self.battle['id'], self.generation, self.operation_id)
         self.battle = self.store.update_status(self.battle['id'], self.generation,
                                                {'setup': copy.deepcopy(report)})
+        self._setup_owed = None
         return copy.deepcopy(self.battle['runtime']['setup'])
 
     def _tag(self):
@@ -156,6 +162,8 @@ class BattleSession:
         return self.battle['status'] == 'active'
 
     def finish(self, reason, outcome='unknown', evidence=None, status='ended'):
+        """One ledger write that can raise: the battle record. Settling the actions after it is contained
+        (ActionSession.settle never raises; a lock there leaves them to the refresher), so a retried finish is a repeat."""
         self.battle = self.store.finish(self.battle['id'], self.generation, reason=reason,
                                         outcome=outcome, evidence=evidence, status=status)
         if self.actions is not None:
