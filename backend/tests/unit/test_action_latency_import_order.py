@@ -22,6 +22,7 @@ from pathlib import Path
 import pytest
 
 import latency_gate as gate
+import paths as test_paths
 
 HISTORIES = ('alone', 'real_first', 'p4_first')
 # variant name: (statement inserted before the fire tap of the pinned snapshot, file_open and lock_acquire it must add before the first tap, optional line added at MODULE level of the snapshot)
@@ -160,8 +161,7 @@ print(json.dumps(dict(socket_guard_active=guard_active, socket_hits=refused, lef
 
 
 def run_child(code, *args):
-    here = Path(__file__).resolve().parent
-    paths = [str(gate.BACKEND), str(gate.BACKEND / 'tests'), str(gate.BACKEND / 'tests' / 'support'), str(here)]
+    paths = [str(test_paths.BACKEND), str(test_paths.TESTS), str(test_paths.TESTS / 'support'), str(test_paths.TESTS / 'unit')]
     env = dict(os.environ, PYTHONPATH=os.pathsep.join(paths + ([os.environ['PYTHONPATH']] if os.environ.get('PYTHONPATH') else [])), PYTHONDONTWRITEBYTECODE='1')
     run = subprocess.run([sys.executable, '-c', SOCKET_GUARD + code, *args], cwd=str(gate.BACKEND), env=env, capture_output=True, text=True, timeout=300)
     assert run.returncode == 0, run.stderr[-3000:]

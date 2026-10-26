@@ -2623,7 +2623,6 @@ def api_stream():
         # wearing three faces. Short capture timeout, and after a failure
         # back off to one probe every 3 s so an offline device costs one
         # thread a trivial amount of time.
-        import socket
 
         def multipart(jpg, kind, sequence, backend_name, source_age_ms):
             """One part with the provenance of ITS OWN pixels: whether it is a frame or the error marker, how many successful frames the
@@ -2638,17 +2637,11 @@ def api_stream():
                     jpg.tobytes() + b"\r\n")
 
         def _port_up() -> bool:
-            # a ~1 ms TCP probe of the emulator's adb port; when the VM is
+            # a ~1 ms TCP probe of the emulator's adb port (_port_open); when the VM is
             # down this is instant, so the stream never even ASKS adb and
-            # never holds a thread for a capture that cannot succeed
-            if ":" not in serial:
-                return True
-            host, _, port = serial.rpartition(":")
-            try:
-                with socket.create_connection((host, int(port)), timeout=0.3):
-                    return True
-            except OSError:
-                return False
+            # never holds a thread for a capture that cannot succeed. A serial
+            # without a port (emulator-5554) has nothing to probe: ask adb.
+            return ":" not in serial or _port_open(serial)
 
         with _STREAM_LOCK:
             stats["_started"] = True

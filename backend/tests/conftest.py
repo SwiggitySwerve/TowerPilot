@@ -242,7 +242,8 @@ def pytest_addoption(parser):
                           'Normal runs only compare against it.')
 
 # ------------------------------------------------ the live ports no test may touch
-LIVE_PORTS = {5037: 'adb server', 8620: 'live dashboard', 8630: 'live worker'}
+# 16384 is the MuMu emulator's adb port: a test that dials it passes only on a machine where the emulator runs.
+LIVE_PORTS = {5037: 'adb server', 8620: 'live dashboard', 8630: 'live worker', 16384: 'MuMu emulator adb port'}
 _LIVE_PORT_HITS = []
 
 
@@ -254,7 +255,7 @@ def _live_port_of(address):
 
 
 def pytest_configure(config):
-    """Session-wide: connect()/connect_ex() to 5037, 8620 or 8630 never leaves the process. The attempt is
+    """Session-wide: connect()/connect_ex() to 5037, 8620, 8630 or 16384 never leaves the process. The attempt is
     recorded with its thread and stack, and refused with ConnectionRefusedError so nothing live is reached even
     from a background thread whose error nobody sees; the _no_live_port_connect fixture then fails the test."""
     import socket

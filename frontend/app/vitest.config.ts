@@ -1,6 +1,10 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
+// Dates render in the local zone; the reviewed output dumps were recorded in this one. Pin it so a runner in
+// another zone (CI runs in UTC) renders the same text.
+process.env['TZ'] = 'America/Denver';
+
 export default defineConfig({
   plugins: [react()],
   test: {
