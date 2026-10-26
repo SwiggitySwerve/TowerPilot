@@ -9,6 +9,9 @@ TWO GATES.
   Structural (hard). One pass of each path, with `sqlite3.connect`, file opens, lock acquisitions, image writes, log events and shots counted, may do no more of any of them than the
   unmigrated code did (the counts are recorded in fixtures/latency_gate/baseline_structural_v1.json), counted both up to the first tap and in total. A policy check is a comparison on host
   state; an execution record is written after the fire returns, never before the tap.
+  The daily state is counted by CHARGE, not by measurement: its fake (`_fakes.py`) opens nothing, so every call to it is charged what the real `scheduling/daystate.py` registers
+  (DAYSTATE_COST, pinned against the real module by the tests), however the orchestrator reached it (its own import, `scheduling.global_rewards`, a late import). Everything else in the
+  structural counts is measured (the real `sqlite3.connect`, `open`, file lock, `cv2.imwrite` and logger, and a REAL daily state when a late import reaches one).
   Timing (measured, with provisional targets). A seeded workload of 10,000 iterations over eleven paths is replayed through the unmigrated code (the pinned snapshot
   fixtures/latency_gate/orchestrator_unmigrated.py.txt) and through the live orchestrator, back to back, in alternating order, on identical scripted worlds. Two numbers per iteration:
     added_pass_us   the whole call, candidate minus baseline. This is the added policy cost: policy, bookkeeping and any recording are all inside the call, so it can only over-state it.
@@ -20,6 +23,8 @@ garbage collector is off during a replay, `time.sleep` is a no-op, and the first
 
 WHAT IT DOES NOT MEASURE. Detection, capture and the real adb round trip are fakes: absolute latency of a real rescue is dominated by them and is not claimed here, only what a migration adds.
 The timing replay stubs `BattleSession.checkpoint` (its body is in the baseline and identical on both sides); the structural gate runs the REAL checkpoint over a temporary ledger.
+The timing replay also runs the fake daily state and is not metered: what a state read or write would cost in production is refused by the structural charge, it is NOT in the
+microseconds. A charge is a counting rule, not a timing proof.
 """
 
 import paths as test_paths
@@ -59,6 +64,13 @@ WARMUP = 500
 REPEATS = 3
 SEED = 20261023
 COUNTERS = ('sqlite_connect', 'file_open', 'lock_acquire', 'image_write', 'event', 'shot')
+# The daily state (scheduling/daystate.py) is a fake under _fakes.py and opens nothing, so the structural meter charges every call to it what the real module registers under the same meter
+# (pinned by test_a_fake_daily_state_is_charged_what_the_real_one_registers): a read loads the state file; any other function is one locked load-and-save step (`update`).
+DAYSTATE_READS = ('get_raw', 'get_today', 'flag_today')
+DAYSTATE_COST = dict(read=dict(file_open=1), write=dict(file_open=3, lock_acquire=3))
+# The modules the orchestrator imports that bind the daily state. Every load executes them afresh while the fakes are installed, so each binds THIS load's fake whatever an earlier test left
+# in sys.modules (nothing, the real module, or one bound to another suite's fake), and afterwards they are put back exactly as they were.
+FRESH_PER_LOAD = ('scheduling.global_rewards',)
 FAST_FUNCTIONS = ('_fast_wall_watch', 'fire_button', 'fleet_gate', 'fleet_fire_skipped', 'watch_frame', 'demon_mode_always', 'end_intro_sprint', 'marks', '_run_rules', '_rule_act', 'eval_rules')
 
 
@@ -77,12 +89,109 @@ def function_hashes(source, names=FAST_FUNCTIONS):
 
 
 # ------------------------------------------------------------------------------------ loading
+_ABSENT = object()
+_ACTIVE_CHARGES = []          # (thread id, counts) of each structural pass running now; the charge wrappers below bill the innermost one
+
+
+def charge_daystate_fake(fake):
+    """Make every public function of a fake daily state bill DAYSTATE_COST to the structural pass running on the calling thread (to nothing when no pass runs). Called BEFORE a consumer
+    can import the fake, so rom scheduling.daystate import get_raw binds the metered function, not an unmetered original. Idempotent."""
+    def billed(cost, function):
+        def wrapper(*args, **kwargs):
+            if _ACTIVE_CHARGES and _ACTIVE_CHARGES[-1][0] == threading.get_ident():
+                counts = _ACTIVE_CHARGES[-1][1]
+                for name, amount in cost.items():
+                    counts[name] += amount
+            return function(*args, **kwargs)
+        wrapper.charged_by_latency_gate = True
+        return wrapper
+    for name, function in list(vars(fake).items()):
+        if callable(function) and not name.startswith('_') and not getattr(function, 'charged_by_latency_gate', False):
+            setattr(fake, name, billed(DAYSTATE_COST['read' if name in DAYSTATE_READS else 'write'], function))
+
+
+def modules_bound_to(fakes, names=None):
+    """{name: module} of the loaded modules among `names` (default: all of them) that hold one of `fakes` or a function one exports, or hold a module (or a function of a module) that does: what an import made while the fakes are installed leaves behind."""
+    tainted = {id(fake) for fake in fakes} | {id(value) for fake in fakes for value in list(vars(fake).values()) if isinstance(value, (types.FunctionType, types.MethodType))}          # a fake and every function or bound method it exports
+    tainted_globals, bound = set(), {}
+    loaded = {name: sys.modules[name] for name in (list(sys.modules) if names is None else names) if sys.modules.get(name) is not None}
+
+    def holds(value):
+        if isinstance(value, types.MethodType):          # `from runtime.logger import event`: a method of the fake logger, a new bound object on every attribute read
+            return id(value.__self__) in tainted
+        return id(value) in tainted or (isinstance(value, types.FunctionType) and id(value.__globals__) in tainted_globals)          # `from <fake> import f` and `from <bound module> import f`
+    grew = True
+    while grew:
+        grew = False
+        for name, module in loaded.items():
+            if name not in bound and any(holds(value) for value in list(getattr(module, '__dict__', {}).values())):
+                bound[name], grew = module, True
+                tainted.add(id(module))
+                tainted_globals.add(id(module.__dict__))
+    return bound
+
+
+def _hide(names):
+    """Take the modules `names` out of the way of the next import; the function returned puts every one back as it was (its sys.modules entry and its attribute on the package, present or absent)."""
+    held = []
+    for dotted in names:
+        parent, _, leaf = dotted.rpartition('.')
+        package = importlib.import_module(parent)
+        held.append((dotted, package, leaf, sys.modules.pop(dotted, None), vars(package).pop(leaf, _ABSENT)))
+
+    def restore():
+        for dotted, package, leaf, module, attribute in held:
+            if module is None:
+                sys.modules.pop(dotted, None)
+            else:
+                sys.modules[dotted] = module
+            if attribute is _ABSENT:
+                vars(package).pop(leaf, None)
+            else:
+                setattr(package, leaf, attribute)
+    return restore
+
+
+def _evict(leaked):
+    """Drop modules from sys.modules and from their package: the next importer gets the real ones."""
+    for name, module in leaked.items():
+        sys.modules.pop(name, None)
+        parent, _, leaf = name.rpartition('.')
+        if parent in sys.modules and vars(sys.modules[parent]).get(leaf) is module:
+            del vars(sys.modules[parent])[leaf]
+
+
+@contextlib.contextmanager
+def scratch_daystate():
+    """A late import can reach the REAL daily state: for the duration its STATE is a scratch file, never the machine's own."""
+    with tempfile.TemporaryDirectory(prefix='latency-gate-state-', ignore_cleanup_errors=True) as scratch:
+        try:
+            daystate = importlib.import_module('scheduling.daystate')
+        except ImportError:
+            yield None
+            return
+        saved, daystate.STATE = daystate.STATE, os.path.join(scratch, 'daily_state.json')
+        try:
+            yield daystate
+        finally:
+            daystate.STATE = saved
+
+
 def load_orchestrator(source, key):
     """An orchestrator module compiled from `source` under the shared fakes (every screen-touching module is a fake the module keeps a reference to), like the suite's `_import_live`
-    but from any path: the live file, or the pinned snapshot. The source is compiled here, not imported, so no bytecode cache is written next to it."""
+    but from any path: the live file, or the pinned snapshot. The source is compiled here, not imported, so no bytecode cache is written next to it.
+
+    The window leaves nothing bound to a fake. The modules that bind the daily state (FRESH_PER_LOAD) are executed afresh for this load, so the module always reaches ITS fake through them
+    (an earlier importer's real module, or another suite's leftover, cannot be what it gets), and are put back as they were; any other module first imported inside the window that ended up
+    holding a fake is dropped, so the next importer imports it for real. The module keeps its own copies (`module.global_rewards.daystate is module._fakes['daystate']`). A module an earlier
+    test left bound to ITS fakes is left as found: that leak is not this harness's."""
     rec_taps = []
     mods, log, _loadout = _install_fakes(rec_taps)
+    charge_daystate_fake(mods['daystate'])          # before the fakes are installed: every alias a consumer takes of them is already metered
+    fakes = [fake for fake in mods.values() if getattr(fake, '__spec__', None) is None]          # `settings` is the real module
     saved = install_modules(mods)
+    restore_fresh = _hide(FRESH_PER_LOAD)
+    known = set(sys.modules)
     previous = sys.modules.get(key)
     try:
         module = types.ModuleType(key)
@@ -91,6 +200,8 @@ def load_orchestrator(source, key):
         exec(compile(Path(source).read_text(encoding='utf-8'), str(source), 'exec'), module.__dict__)
     finally:
         restore_modules(saved)
+        _evict(modules_bound_to(fakes, [name for name in sys.modules if name not in known and name != key]))
+        restore_fresh()
         if previous is None:
             sys.modules.pop(key, None)
         else:
@@ -398,7 +509,7 @@ def paired_replay(baseline_source, candidate_source, *, iterations=ITERATIONS, w
     pass_us = {name: [] for name in PATHS}
     tap_us = {name: [] for name in PATHS}
     mismatches = []
-    with quiet_replay():
+    with quiet_replay(), scratch_daystate():          # the replay is not metered, but a late import must not reach the machine's daily state either
         for index, (name, variation) in enumerate(workload):
             path, best = PATHS[name], {}
             for repeat in range(repeats):
@@ -461,12 +572,22 @@ class Meter:
 
     @contextlib.contextmanager
     def instrument(self):
+        if _ACTIVE_CHARGES:
+            raise RuntimeError('Meter.instrument does not nest: the daily-state charge goes to one pass only')
         thread, counts = self.thread, self.counts
 
         def counted(name, function):
             def wrapper(*args, **kwargs):
                 if threading.get_ident() == thread:
                     counts[name] += 1
+                return function(*args, **kwargs)
+            return wrapper
+
+        def charged(cost, function):
+            def wrapper(*args, **kwargs):
+                if threading.get_ident() == thread:
+                    for name, amount in cost.items():
+                        counts[name] += amount
                 return function(*args, **kwargs)
             return wrapper
 
@@ -490,22 +611,27 @@ class Meter:
             patched += [(file_lock, 'try_lock', counted('lock_acquire', file_lock.try_lock)), (file_lock, 'lock', counted('lock_acquire', file_lock.lock))]
         except ImportError:
             pass                                    # before the daily-state lock landed there is no file lock to count
-        try:
-            from scheduling import daystate
-            if hasattr(daystate, '_locked'):
-                patched.append((daystate, '_locked', counted('lock_acquire', daystate._locked)))
-        except ImportError:
-            pass
+        fake = getattr(getattr(self.world, 'm', None), '_fakes', {}).get('daystate')          # the daily state of the orchestrator under test: a fake that opens nothing
+        if fake is not None:
+            charge_daystate_fake(fake)          # a no-op for a loaded orchestrator's fake (wrapped at load); wraps a fake built by hand
+        ambient = sys.modules.get('scheduling.global_rewards')          # what a LATE import of global_rewards finds is whatever an earlier test left here: during the pass it reaches this fake too
+        if fake is not None and getattr(ambient, 'daystate', None) is not None:
+            patched.append((ambient, 'daystate', fake))
         from runtime import logger as real_logger
         patched += [(real_logger, 'event', real_event), (real_logger, 'shot', real_shot)]
-        originals = [(target, name, getattr(target, name)) for target, name, _ in patched]
-        for target, name, replacement in patched:
-            setattr(target, name, replacement)
-        try:
-            yield self
-        finally:
-            for target, name, original in originals:
-                setattr(target, name, original)
+        with scratch_daystate() as daystate:
+            if daystate is not None and hasattr(daystate, '_locked'):
+                patched.append((daystate, '_locked', counted('lock_acquire', daystate._locked)))
+            originals = [(target, name, getattr(target, name)) for target, name, _ in patched]
+            for target, name, replacement in patched:
+                setattr(target, name, replacement)
+            _ACTIVE_CHARGES.append((thread, counts))
+            try:
+                yield self
+            finally:
+                _ACTIVE_CHARGES.pop()
+                for target, name, original in originals:
+                    setattr(target, name, original)
 
 
 class RealSessions:
@@ -628,6 +754,10 @@ def artifact(gate, structural, baseline, candidate=CANDIDATE_PATH, snapshot=SNAP
         migrated_fast_functions=sorted(name for name, digest in candidate_functions.items() if digest != baseline['captured_on']['functions'].get(name)),
         method=dict(iterations=replay['iterations'], warmup_dropped=replay['warmup'], repeats_min_of=replay['repeats'], seed=replay['seed'], gc='disabled during the replay', sleep='no-op',
                     order='baseline and candidate alternate which goes first by iteration and repeat',
+                    structural_accounting=dict(measured='sqlite3.connect, builtins.open and io.open, runtime.file_lock, cv2.imwrite, runtime.logger and the real daily state when a late import reaches one',
+                                               charged_by_rule=dict(subject='the fake daily state of _fakes.py (opens nothing)', cost=DAYSTATE_COST, reads=list(DAYSTATE_READS),
+                                                                    pinned_against='scheduling/daystate.py by test_a_fake_daily_state_is_charged_what_the_real_one_registers'),
+                                               timing_replay='runs the fake daily state unmetered: a charge is a counting rule, not a timing proof'),
                     paths={name: dict(weight=PATHS[name].weight, taps=PATHS[name].has_tap, real_checkpoint_in_structural_pass=PATHS[name].session) for name in PATHS}),
         timing=dict(passed=gate['passed'], repeated_on_another_seed=gate['repeated'], attempts=[dict(seed=a['seed'], passed=a['verdict']['passed'], failures=a['verdict']['failures']) for a in gate['attempts']],
                     overall=verdict['overall'], per_path=verdict['per_path'], behavior_mismatches=len(replay['behavior_mismatches'])),

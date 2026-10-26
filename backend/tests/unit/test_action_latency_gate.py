@@ -5,6 +5,10 @@ moves onto the schedule policies.
 What a migration must not do, and how this file holds it to that:
   * add I/O before the first tap or anywhere on the path (a sqlite connection, a file open, a lock, an image, a log event): `test_the_live_orchestrator_does_no_more_io_...` against counts
     recorded on the unmigrated code, and one negative control per counter showing the gate sees it;
+  * read or write the daily state, which the fakes of `_fakes.py` would otherwise hide (a fake that opens nothing): the meter CHARGES each call what the real module registers, whichever way
+    the orchestrator reached it, and the `daystate_*` / `global_rewards_*` controls and the `earlier_global_rewards` tests hold whatever an earlier test imported (the orchestrator is
+    loaded with its own `global_rewards`, and nothing is left bound to a fake afterwards: `latency_gate.load_orchestrator`); the three whole-process import histories are
+    `test_action_latency_import_order.py`;
   * add time: p99 of the added whole-call cost <= 100 us and of the added deciding-frame-to-first-tap <= 1 ms, over a seeded 10,000-iteration workload replayed through the unmigrated snapshot and
     the live orchestrator back to back: `test_the_added_cost_...`; negative controls inject 250 us and 2 ms and must fail, and a 60 us injection must be MEASURED as about 60 us;
   * hide a regression behind a vacuous replay: every path is checked to tap (or not) as its name says, the two sides must do identical things on every iteration, and the harness reports ~0
@@ -16,6 +20,9 @@ Keep the artifact of a run: TP_LATENCY_GATE_ARTIFACT=<path> (the test writes one
 """
 import builtins
 import gc
+import importlib
+import importlib.util
+import inspect
 import io
 import json
 import math
@@ -24,6 +31,7 @@ import sqlite3
 import sys
 import threading
 import time
+import types
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -219,11 +227,42 @@ STRUCTURAL_VARIANTS = [   # (name, old, new, counter, scope that must show it)
     ('shot_in_the_sample_body', SAMPLE_TOP, SAMPLE_TOP + '        logger.shot(frame, "gate_probe")\n', 'shot', 'before_first_tap'),
     ('image_written_after_the_tap', FIRE_SETTLE, '    __import__("cv2").imwrite(__import__("os").environ["TP_GATE_PATH"] + ".png", __import__("numpy").zeros((2, 2, 3), "uint8"))\n' + FIRE_SETTLE, 'image_write', 'total'),
     ('record_written_after_the_tap', FIRE_SETTLE, '    __import__("sqlite3").connect(":memory:").close()\n' + FIRE_SETTLE, 'sqlite_connect', 'total'),
+    ('daystate_read_before_the_tap', FIRE_TAP, '        global_rewards.daystate.get_raw("gate_probe")\n' + FIRE_TAP, 'file_open', 'before_first_tap'),
+    ('daystate_write_before_the_tap', FIRE_TAP, '        global_rewards.daystate.set_raw("gate_probe", 1)\n' + FIRE_TAP, 'lock_acquire', 'before_first_tap'),
+    ('global_rewards_decide_before_the_tap', FIRE_TAP, '        global_rewards.decide("free_store_gems")\n' + FIRE_TAP, 'file_open', 'before_first_tap'),
+    ('global_rewards_settle_before_the_tap', FIRE_TAP, '        global_rewards.settle("free_store_gems")\n' + FIRE_TAP, 'lock_acquire', 'before_first_tap'),
+    ('daystate_written_after_the_tap', FIRE_SETTLE, '    global_rewards.daystate.set_raw("gate_probe", 1)\n' + FIRE_SETTLE, 'lock_acquire', 'total'),
+    ('daystate_read_through_a_late_import', FIRE_TAP, '        from scheduling import daystate as _ds\n        _ds.get_raw("gate_probe")\n' + FIRE_TAP, 'file_open', 'before_first_tap'),
+    ('daystate_write_through_a_late_import', FIRE_TAP, '        from scheduling import daystate as _ds\n        _ds.set_raw("gate_probe", 1)\n' + FIRE_TAP, 'lock_acquire', 'before_first_tap'),
+    ('daystate_read_through_a_late_import_of_global_rewards', FIRE_TAP, '        from scheduling import global_rewards as _gr\n        _gr.daystate.get_raw("gate_probe")\n' + FIRE_TAP, 'file_open', 'before_first_tap'),
 ]
 
 
+def _hold_global_rewards():
+    """What `scheduling.global_rewards` is right now (the sys.modules entry and the package attribute, present or absent), and the function that puts exactly that back: a variant that
+    imports it late must not leave a module bound where the next test looks for one."""
+    import scheduling
+    absent = object()
+    held = sys.modules.get('scheduling.global_rewards', absent), vars(scheduling).get('global_rewards', absent)
+
+    def restore():
+        for registry, key, value in ((sys.modules, 'scheduling.global_rewards', held[0]), (vars(scheduling), 'global_rewards', held[1])):
+            if value is absent:
+                registry.pop(key, None)
+            else:
+                registry[key] = value
+    return restore
+
+
+@pytest.fixture
+def global_rewards_put_back():
+    restore = _hold_global_rewards()
+    yield
+    restore()
+
+
 @pytest.mark.parametrize('name,old,new,counter,scope', STRUCTURAL_VARIANTS, ids=[v[0] for v in STRUCTURAL_VARIANTS])
-def test_the_structural_gate_sees_each_kind_of_added_io(make_variant, lock_file, name, old, new, counter, scope):
+def test_the_structural_gate_sees_each_kind_of_added_io(make_variant, lock_file, global_rewards_put_back, name, old, new, counter, scope):
     if counter == 'lock_acquire':
         pytest.importorskip('runtime.file_lock', reason='the file lock is introduced by r18a')
     variant = make_variant(old, new, name)
@@ -249,16 +288,226 @@ def test_the_structural_pass_counts_only_the_calling_thread():
 
 def test_the_instruments_are_removed_afterwards():
     originals = (builtins.open, io.open, sqlite3.connect, time.sleep, gc.isenabled())
+    machine_state, rewards = importlib.import_module('scheduling.daystate').STATE, sys.modules.get('scheduling.global_rewards')
     gate.structural_counts()
     gate.paired_replay(gate.SNAPSHOT_PATH, gate.SNAPSHOT_PATH, iterations=30, warmup=5)
     assert (builtins.open, io.open, sqlite3.connect, time.sleep, gc.isenabled()) == originals
+    assert importlib.import_module('scheduling.daystate').STATE == machine_state and sys.modules.get('scheduling.global_rewards') is rewards
     from runtime import logger
     assert logger.event.__module__ == 'runtime.logger' and logger.shot.__module__ == 'runtime.logger'
     assert not [key for key in sys.modules if key.startswith('_latency_gate')]
-    import importlib
     assert not hasattr(sys.modules['runtime.logger'], 'events'), 'the fake logger was left installed'
     for package, name in (('device', 'act'), ('device', 'capture'), ('vision', 'detect'), ('vision', 'screen')):
         assert hasattr(getattr(importlib.import_module(package), name), '__file__'), f'{package}.{name} is still a fake'
+
+
+# ----------------------------------------------------------------------------------------- the daily state
+DAYSTATE_CALLS = {'get_raw': ('key',), 'get_today': ('key',), 'flag_today': ('key',), 'set_raw': ('key', 1), 'set_today': ('key', 1), 'increment_today': ('key',), 'mark_today': ('key',)}
+
+
+def counted_calls(world, call):
+    meter = gate.Meter(world)
+    with meter.instrument():
+        call()
+    return {counter: amount for counter, amount in meter.counts.items() if amount}
+
+
+def bare_world(**extra):
+    return SimpleNamespace(log=SimpleNamespace(events=[], shots=[]), **extra)
+
+
+def test_the_fake_daily_state_has_exactly_the_functions_the_charges_were_checked_against():
+    """A function added to the fake needs a charge class decided and a pin against the real module; the real module's `update` and `clear` are NOT faked (a call raises, it is never free)."""
+    from _fakes import _install_fakes
+    from scheduling import daystate as real
+    fake = _install_fakes([])[0]['daystate']
+    faked = {name for name, function in vars(fake).items() if callable(function) and not name.startswith('_')}
+    assert faked == set(DAYSTATE_CALLS) and set(gate.DAYSTATE_READS) <= faked
+    real_public = {name for name, function in vars(real).items() if inspect.isfunction(function) and not name.startswith('_') and function.__module__ == real.__name__}
+    assert faked <= real_public and real_public - faked == {'update', 'clear'}, 'the real daily state grew a function the fake and its charge do not know'
+    with pytest.raises(AttributeError):
+        fake.update('key', lambda current: 1)
+
+
+@pytest.mark.parametrize('name', sorted(DAYSTATE_CALLS))
+def test_a_fake_daily_state_is_charged_what_the_real_one_registers(name):
+    """The fake opens nothing, so the meter charges it. The same call on the real module (whose state file the pass points at a scratch folder) registers the same counts: the charge is
+    a fixed model of the real module, pinned here, not a measurement of the code under test."""
+    from _fakes import _install_fakes
+    from scheduling import daystate as real
+    mods = _install_fakes([])[0]
+    on_fake = counted_calls(bare_world(m=SimpleNamespace(_fakes=mods)), lambda: getattr(mods['daystate'], name)(*DAYSTATE_CALLS[name]))
+    on_real = counted_calls(bare_world(), lambda: getattr(real, name)(*DAYSTATE_CALLS[name]))
+    assert on_fake == on_real != {}
+    assert on_fake == (gate.DAYSTATE_COST['read'] if name in gate.DAYSTATE_READS else gate.DAYSTATE_COST['write'])
+
+
+def test_the_fake_daily_state_still_behaves_like_a_fake_while_it_is_counted():
+    from _fakes import _install_fakes
+    mods = _install_fakes([])[0]
+    fake = mods['daystate']
+    meter = gate.Meter(bare_world(m=SimpleNamespace(_fakes=mods)))
+    with meter.instrument():
+        fake.set_raw('key', 7)
+        assert fake.get_raw('key') == 7 and fake.get_raw('other', 'default') == 'default'
+    assert fake._d == {'key': 7} and meter.counts['file_open'] == 3 + 1 + 1 and meter.counts['lock_acquire'] == 3
+
+
+def test_only_the_calling_thread_is_charged_for_the_fake_daily_state():
+    from _fakes import _install_fakes
+    mods = _install_fakes([])[0]
+    meter = gate.Meter(bare_world(m=SimpleNamespace(_fakes=mods)))
+    other = threading.Thread(target=lambda: mods['daystate'].set_raw('key', 1))
+    with meter.instrument():
+        other.start()
+        other.join()
+        mods['daystate'].get_raw('key')
+    assert meter.counts['file_open'] == 1 and meter.counts['lock_acquire'] == 0
+
+
+def test_the_pass_points_a_real_daily_state_at_a_scratch_file_and_puts_the_path_back():
+    from scheduling import daystate
+    machine = daystate.STATE
+    meter = gate.Meter(bare_world())
+    with meter.instrument():
+        during = daystate.STATE
+        assert during != machine and Path(during).parent != Path(machine).parent
+        daystate.set_raw('probe', 1)                                      # what a late import would do: it writes HERE, never to the machine's own file
+        assert json.loads(Path(during).read_text(encoding='utf-8')) == {'probe': 1}
+    assert daystate.STATE == machine and not Path(during).exists()
+
+
+def test_modules_bound_to_follows_a_fake_through_the_modules_that_import_it(monkeypatch):
+    fake = types.ModuleType('latency_gate_fake_state')
+    holds_the_fake, holds_that_module, unrelated = (types.ModuleType(name) for name in ('t_holds', 't_holder', 't_unrelated'))
+    holds_the_fake.state, holds_that_module.inner, unrelated.other = fake, holds_the_fake, types.ModuleType('t_other')
+    for module in (holds_the_fake, holds_that_module, unrelated):
+        monkeypatch.setitem(sys.modules, module.__name__, module)
+    assert set(gate.modules_bound_to([fake], ['t_holder', 't_holds', 't_unrelated'])) == {'t_holds', 't_holder'}, 'a module holding a module that holds a fake is bound as well'
+    everything = gate.modules_bound_to([fake])
+    assert {'t_holds', 't_holder'} <= set(everything) and 't_unrelated' not in everything
+
+
+def _execute_global_rewards():
+    """A fresh execution of the real source of scheduling/global_rewards.py with whatever modules are installed right now, NOT entered in sys.modules."""
+    import scheduling
+    spec = importlib.util.spec_from_file_location('scheduling.global_rewards', Path(scheduling.__file__).parent / 'global_rewards.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.fixture(params=['nothing', 'the_real_module', 'bound_to_another_suites_fake'])
+def earlier_global_rewards(request):
+    """What an earlier test may have left as `scheduling.global_rewards`: nothing; the module bound to the real daily state (test_action_parity_rewards.py imports it that way); or one bound to
+    a fake that is not this gate's (what `_import_live` of test_p4_interpreter.py leaves behind). The whole-process versions of these histories: test_action_latency_import_order.py."""
+    import scheduling
+    from _fakes import _install_fakes, install_modules, restore_modules
+    module = None
+    if request.param == 'the_real_module':
+        module = _execute_global_rewards()
+        assert module.daystate is importlib.import_module('scheduling.daystate') and module.daystate.__spec__ is not None
+    elif request.param == 'bound_to_another_suites_fake':
+        mods = _install_fakes([])[0]
+        saved = install_modules(mods)
+        try:
+            module = _execute_global_rewards()
+        finally:
+            restore_modules(saved)
+        assert module.daystate is mods['daystate'] and module.daystate.__spec__ is None
+    restore = _hold_global_rewards()
+    try:
+        if module is None:
+            sys.modules.pop('scheduling.global_rewards', None)
+            vars(scheduling).pop('global_rewards', None)
+        else:
+            sys.modules['scheduling.global_rewards'] = module
+            scheduling.global_rewards = module
+        yield module
+    finally:                                                    # also undoes an import the test itself made
+        restore()
+
+
+def test_the_orchestrator_reaches_its_own_daily_state_and_the_modules_it_found_are_put_back(earlier_global_rewards):
+    import scheduling
+    in_place = (sys.modules.get('scheduling.global_rewards'), vars(scheduling).get('global_rewards'))
+    loaded = gate.load_orchestrator(gate.SNAPSHOT_PATH, '_latency_gate_test_earlier')
+    assert loaded.global_rewards is not earlier_global_rewards and loaded.global_rewards.daystate is loaded._fakes['daystate']
+    assert (sys.modules.get('scheduling.global_rewards'), vars(scheduling).get('global_rewards')) == in_place, 'what was found in place must be put back exactly'
+    fakes = [fake for fake in loaded._fakes.values() if getattr(fake, '__spec__', None) is None]
+    assert gate.modules_bound_to(fakes) == {}, 'a module is still holding a fake of this load'
+
+
+def test_a_daily_state_read_write_decide_and_settle_before_the_tap_are_seen_whatever_was_imported_earlier(make_variant, earlier_global_rewards):
+    """The review's mutant: with the gate file run alone, `global_rewards` reached a fake `daystate` that opens nothing, so a read before the fire tap passed both gates. Exact counts: a read
+    (1 open), a write (3 opens, 3 lock acquisitions), a decide (a read: 1 open) and a settle (a write) through the module's own import, then a read through a late import of global_rewards (1 open)."""
+    variant = make_variant(FIRE_TAP, '        global_rewards.daystate.get_raw("gate_probe")\n        global_rewards.daystate.set_raw("gate_probe", 1)\n'
+                           '        global_rewards.decide("free_store_gems")\n        global_rewards.settle("free_store_gems")\n'
+                           '        from scheduling import global_rewards as _late\n        _late.daystate.get_raw("gate_probe")\n' + FIRE_TAP, 'earlier')
+    before_tap = gate.structural_counts(variant)['fire_button_with_confirmation']['before_first_tap']
+    assert (before_tap['file_open'], before_tap['lock_acquire']) == (1 + 3 + 1 + 3 + 1, 3 + 3), before_tap
+
+
+def test_the_unmutated_orchestrator_adds_no_daily_state_io_whatever_was_imported_earlier(earlier_global_rewards):
+    """The control: with nothing inserted, every path of the live code and of the pinned snapshot counts exactly as recorded, in every import history."""
+    for source in (gate.SNAPSHOT_PATH, gate.CANDIDATE_PATH):
+        counts = gate.structural_counts(source)
+        assert gate.structural_failures(counts, baseline()) == []
+        assert not any(cell['file_open'] or cell['lock_acquire'] for cell in (c['total'] for c in counts.values())), 'no recorded path does daily-state I/O today'
+        if source == gate.SNAPSHOT_PATH:
+            assert counts == baseline()['paths']
+
+
+def test_the_timing_replay_never_reaches_a_real_daily_state_whatever_was_imported_earlier(make_variant, earlier_global_rewards, tmp_path, monkeypatch):
+    """The replay is not metered, so nothing redirects a real daily state there: the candidate must reach its own fake, never the module an earlier test imported (here, the machine's file is a probe)."""
+    from scheduling import daystate
+    probe = tmp_path / 'machine_daily_state.json'
+    monkeypatch.setattr(daystate, 'STATE', str(probe))
+    variant = make_variant(FIRE_TAP, '        global_rewards.daystate.set_raw("gate_probe", 1)\n' + FIRE_TAP, 'writes')
+    replay = gate.paired_replay(gate.SNAPSHOT_PATH, variant, iterations=20, warmup=2, only={'fire_button_with_confirmation'})
+    assert replay['behavior_mismatches'] == [] and len(replay['pass_us']['fire_button_with_confirmation']) == 20
+    assert not probe.exists() and not Path(str(probe) + '.lock').exists(), 'the replay wrote the daily state of the machine'
+
+
+def test_the_timing_replay_never_reaches_a_real_daily_state_through_a_late_import(make_variant, tmp_path, monkeypatch):
+    """A late `from scheduling import global_rewards` finds the REAL module: the unmetered timing replay must still point its state at a scratch file."""
+    from scheduling import daystate
+    probe = tmp_path / 'machine_daily_state.json'
+    monkeypatch.setattr(daystate, 'STATE', str(probe))
+    variant = make_variant(FIRE_TAP, '        from scheduling import global_rewards as _late; _late.settle("free_store_gems")\n' + FIRE_TAP, 'late')
+    gate.paired_replay(gate.SNAPSHOT_PATH, variant, iterations=10, warmup=2, only={'fire_button_with_confirmation'})
+    assert not probe.exists() and not Path(str(probe) + '.lock').exists(), 'the replay wrote the daily state of the machine'
+    assert daystate.STATE == str(probe)
+
+
+def test_a_module_that_took_fake_functions_by_name_is_dropped_after_the_load(make_variant, tmp_path, monkeypatch):
+    """`from scheduling.daystate import get_raw` in a helper first imported inside the load window leaves that helper holding fake functions: it must not stay in sys.modules."""
+    (tmp_path / 'latency_alias_helper.py').write_text('from scheduling.daystate import get_raw, set_raw\nfrom scheduling.global_rewards import decide\n', encoding='utf-8')
+    monkeypatch.syspath_prepend(str(tmp_path))
+    sys.modules.pop('latency_alias_helper', None)
+    variant = make_variant('import json\n', 'import json\nimport latency_alias_helper\n', 'helper')
+    loaded = gate.load_orchestrator(variant, '_alias_probe')
+    assert loaded.latency_alias_helper.get_raw is not None and 'latency_alias_helper' not in sys.modules, 'a helper holding fake daily-state functions was left in sys.modules'
+
+
+def test_a_module_that_took_a_bound_method_of_a_fake_by_name_is_dropped_after_the_load(make_variant, tmp_path, monkeypatch):
+    """The fake logger's `event` is a bound method of the fake: `from runtime.logger import event` in a helper first imported inside the window must not outlive the load either."""
+    (tmp_path / 'latency_method_helper.py').write_text('from runtime.logger import event, shot\n', encoding='utf-8')
+    monkeypatch.syspath_prepend(str(tmp_path))
+    sys.modules.pop('latency_method_helper', None)
+    variant = make_variant('import json\n', 'import json\nimport latency_method_helper\n', 'method_helper')
+    loaded = gate.load_orchestrator(variant, '_method_probe')
+    assert loaded.latency_method_helper.event is not None and 'latency_method_helper' not in sys.modules, 'a helper holding a bound method of the fake logger was left in sys.modules'
+
+
+def test_the_meter_does_not_nest():
+    outer, inner = gate.Meter(bare_world()), gate.Meter(bare_world())
+    with outer.instrument():
+        with pytest.raises(RuntimeError):
+            with inner.instrument():
+                pass
+    with inner.instrument():          # and the refusal left nothing behind
+        pass
 
 
 # ----------------------------------------------------------------------------------------- the timing gate
@@ -285,6 +534,8 @@ def test_the_artifact_records_source_build_hardware_warmup_and_the_distributions
     result = gate.run_gate(iterations=200)
     record = gate.artifact(result, gate.structural_counts(), baseline())
     assert set(record) == {'version', 'targets', 'environment', 'sources', 'migrated_fast_functions', 'method', 'timing', 'structural'}
+    accounting = record['method']['structural_accounting']
+    assert accounting['charged_by_rule']['cost'] == gate.DAYSTATE_COST and 'not a timing proof' in accounting['timing_replay'] and 'late import' in accounting['measured']
     assert record['targets'] == dict(policy_us=100.0, first_tap_us=1000.0)
     assert record['environment']['python'] and record['environment']['processor'] and record['environment']['cpu_count'] and record['environment']['clock_resolution_ns'] >= 0
     assert {'candidate', 'unmigrated_snapshot', 'harness', 'fakes'} == set(record['sources']) and record['sources']['unmigrated_snapshot']['sha256'] == baseline()['captured_on']['snapshot_sha256']
