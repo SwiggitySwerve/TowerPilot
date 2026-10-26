@@ -2,20 +2,22 @@
 > **Status:** Active
 > **Type:** Project guide
 > **Created:** 2026-08-24
-> **Updated:** 2026-10-24
+> **Updated:** 2026-10-25
 > **Tags:** autopilot, the-tower, distribution
 
 **0.5-beta — Windows x64 portable release.** Download the `windows-x64` ZIP,
 extract the whole folder, and double-click **Start Tower Pilot.cmd**. Python and
-dependencies are bundled; no separate Python installation is needed. The browser
-opens Setup automatically. The server runs in the background: Tower Pilot sits in
-the notification area near the clock (click to open the dashboard, right-click
-to quit). The separate `source` ZIP requires Python 3.12.
+dependencies are bundled; no separate Python installation is needed. The default
+browser opens Setup automatically; use current Chrome or Edge. The server runs in
+the background: Tower Pilot sits in the notification area near the clock (click
+to open the dashboard, right-click to quit). The separate `source` ZIP requires
+Python 3.12.
 See [what changed and the beta limits](docs/RELEASE_0.5_BETA.md).
 
 The development preview prefers native MuMu capture, with an optional scrcpy
 package and socket screenshots as fallbacks. See [video preview setup and
-configuration](docs/VIDEO_PREVIEW.md).
+configuration](docs/VIDEO_PREVIEW.md). The portable ZIP does not bundle the
+scrcpy decoder, so the scrcpy preview is unavailable there.
 
 [Download 0.5-beta](https://github.com/TaBuPeH/TowerPilot/releases/tag/v0.5-beta)
 — choose **windows-x64.zip** for the app with Python included, or **source.zip**
@@ -27,7 +29,7 @@ share your improvements. Third-party libraries retain their own licenses.
 The license does not grant rights to The Tower's artwork or other game assets.
 
 Vision-driven autopilot for **The Tower** running in an Android emulator
-(MuMu Player, BlueStacks, LDPlayer): screenshots in over adb, human-like
+(MuMu Player or BlueStacks): screenshots in over adb, human-like
 taps out. No memory reading, no modded APK, everything stays on your
 machine.
 
@@ -69,9 +71,12 @@ The browser window size does not determine the captured game resolution.
 
 ## Quick start
 
-Use Windows 10/11 x64. Setup uses Windows text recognition. Install an
-emulator and The Tower yourself, and sign into your game account first. MuMu and
-BlueStacks have been tested. You do not need a separate ADB installation.
+Use Windows 11 x64 (Windows 10 is untested) and a current Chrome or Edge
+browser. Setup uses Windows text recognition. Install an emulator and The Tower
+yourself, and sign into your game account first. MuMu is the reference emulator;
+BlueStacks is tested and has needed retries; no other emulator is claimed. You do
+not need a separate ADB installation. Every limit of the 0.6-beta draft is listed
+under [Environment limits](docs/RELEASE_0.6_BETA.md#environment-limits).
 
 For the portable ZIP, launch **Start Tower Pilot.cmd** and continue at step 4.
 Steps 1–3 below apply only to the source distribution.
