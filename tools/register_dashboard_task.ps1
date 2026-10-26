@@ -75,7 +75,7 @@ $trigger.Repetition = $repeat.Repetition
 $triggers = @($trigger, $repeat)
 
 $settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -ExecutionTimeLimit ([TimeSpan]::Zero) `
-    -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+    -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -Priority 4
 $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
 
 if ($PSCmdlet.ShouldProcess($TaskName, "Register-ScheduledTask: now and at logon, every $RepeatMinutes min, IgnoreNew, runs: $Execute $Argument")) {

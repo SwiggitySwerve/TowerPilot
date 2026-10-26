@@ -1,0 +1,54 @@
+"""The gem collector raises its own priority class (one owner: runtime.priority); the restart task is not BelowNormal."""
+import re
+
+import pytest
+
+from runtime import priority
+
+
+def test_raise_asks_for_above_normal_only(monkeypatch):
+    calls = []
+    monkeypatch.setattr(priority.sys, 'platform', 'win32')
+    monkeypatch.setattr(priority, 'ABOVE_NORMAL', 0x8000)
+    monkeypatch.setattr(priority, '_set_own_class', calls.append)
+    assert priority.raise_own_priority() == {'ok': True, 'priority': 'above_normal', 'reason': ''}
+    assert calls == [0x8000]                      # never HIGH (0x80) or REALTIME (0x100)
+
+
+def test_refusal_and_other_platforms_are_results_not_errors(monkeypatch):
+    monkeypatch.setattr(priority.sys, 'platform', 'win32')
+    monkeypatch.setattr(priority, 'ABOVE_NORMAL', 0x8000)
+
+    def refuse(flag):
+        raise OSError('access denied')
+    monkeypatch.setattr(priority, '_set_own_class', refuse)
+    result = priority.raise_own_priority()
+    assert result['ok'] is False and 'access denied' in result['reason']
+    monkeypatch.setattr(priority.sys, 'platform', 'linux')
+    monkeypatch.setattr(priority, '_set_own_class', lambda flag: pytest.fail('no OS call off Windows'))
+    assert priority.raise_own_priority()['reason'] == 'not_windows'
+
+
+def test_run_logged_logs_the_class_and_a_failure_never_stops_the_collector(monkeypatch):
+    import gem_collector as worker
+    events, ran = [], []
+    monkeypatch.setattr(worker.logger, 'event', lambda name, **kw: events.append((name, kw)))
+    monkeypatch.setattr(worker, 'main', lambda instance, preset: ran.append((instance, preset)))
+    monkeypatch.setattr(worker.priority, '_set_own_class', lambda flag: (_ for _ in ()).throw(OSError('denied')))
+    monkeypatch.setattr(worker.priority.sys, 'platform', 'win32')
+    monkeypatch.setattr(worker.priority, 'ABOVE_NORMAL', 0x8000)
+    worker.run_logged('i', 'p')
+    assert ran == [('i', 'p')]
+    assert events[0][0] == 'gem_collector_priority' and events[0][1]['ok'] is False
+
+
+def test_textocr_warm_reader_uses_the_same_class():
+    from vision import textocr
+    assert textocr.URGENT_PRIORITY == priority.ABOVE_NORMAL
+
+
+def test_restart_task_is_registered_at_normal_priority():
+    from paths import RELEASE_TOOLS
+    script = (RELEASE_TOOLS / 'register_dashboard_task.ps1').read_text(encoding='utf-8')
+    settings = re.search(r'New-ScheduledTaskSettingsSet(?:[^\n]*`\n)*[^\n]*', script).group(0)
+    assert re.search(r'-Priority\s+4\b', settings)   # the default 7 is BelowNormal, inherited by every child

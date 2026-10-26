@@ -11,7 +11,7 @@ import traceback
 from types import SimpleNamespace
 import settings
 from device import capture
-from runtime import logger
+from runtime import logger, priority
 from runtime.stage_clock import clock
 from vision import wave_reader, screen
 from vision.frame_reads import FrameReads
@@ -298,6 +298,8 @@ def main(instance, preset):
 
 
 def run_logged(instance, preset):
+    # One class above normal so other projects' CPU load does not stretch the 1 s pass to minutes. A refusal is logged only.
+    logger.event('gem_collector_priority', **priority.raise_own_priority())
     try:main(instance, preset)
     except Exception as exc:
         logger.event('gem_collector_failed', error=str(exc), error_type=type(exc).__name__, trace=traceback.format_exc(limit=12))
