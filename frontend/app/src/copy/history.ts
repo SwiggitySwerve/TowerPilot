@@ -101,7 +101,7 @@ export const history = {
   sampled: entry(
     'These are sampled observations, not the battle’s total gems. An ad claim confirmation does not establish a balance increase.',
   ),
-  claims: entry('Recorded ad claim confirmations'),
+  claims: entry('Recorded ad claims seen'),
   balances: entry('Recorded orbit balance confirmations'),
   increase: entry('Recorded orbit balance increase in this sample'),
   from: entry('Sample began'),

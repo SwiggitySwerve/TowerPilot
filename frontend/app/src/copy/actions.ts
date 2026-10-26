@@ -49,6 +49,8 @@ export const actions = {
   effects: {
     confirmed: entry('Effect confirmed'),
     unconfirmed: entry('Finished, effect not confirmed'),
+    /** A battle ad whose only proof is that the offer was gone after the tap; no balance was read. */
+    offer_gone: entry('Offer gone after tap'),
     unknown: entry('Effect unknown'),
     none: entry('No game effect'),
   },

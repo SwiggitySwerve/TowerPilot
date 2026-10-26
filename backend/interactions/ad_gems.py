@@ -33,7 +33,7 @@ from vision import wave_reader, screen, ocr, textocr
 from runtime import logger
 from interactions.tourney import Abort
 from player.gather_settings import AD_GEM_FIELDS, resolve_ad_gem_options
-from towerpilot_workflows.action_contract import StartToStart
+from towerpilot_workflows.action_contract import StartToStart, effect_of
 import settings
 
 TEMPLATE = 'buttons/ad_gems_claim.png'
@@ -514,7 +514,7 @@ class AdGemCollector:
         if confirmed or reason == 'confirmed':
             proof = (self.last_outcome or {}).get('reason') or 'confirmed'
             self.recorder.closed(result='succeeded', reason=proof,
-                                 effect='confirmed', attempts=attempts, confirmed=max(confirmed, 1),
+                                 effect=effect_of('ad_gems', proof), attempts=attempts, confirmed=max(confirmed, 1),
                                  evidence=['balance_increased' if proof == 'balance_increased' else 'offer_disappeared'],
                                  refs=refs)
         elif attempts:

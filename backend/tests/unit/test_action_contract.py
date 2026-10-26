@@ -6,7 +6,7 @@ import pytest
 from towerpilot_workflows import control_settings
 from towerpilot_workflows.action_contract import (
     CATALOG, DEFAULT_SHOPPING_INTERVAL_SEC, AfterCompletion, ActionDefinition, Backoff, Capabilities, Catalog, Decision, Field,
-    AppearanceDriven, StartToStart, shopping_interval)
+    AppearanceDriven, StartToStart, effect_of, shopping_interval)
 
 
 # ------------------------------------------------------------ StartToStart
@@ -225,3 +225,13 @@ def test_the_one_shopping_interval_equals_the_four_expressions_it_replaced(prese
 
 def test_the_default_interval_is_defined_once_by_the_shopping_field_and_run_workspace_uses_it():
     assert DEFAULT_SHOPPING_INTERVAL_SEC == 90 == CATALOG.get('shopping').field('interval_sec').default
+
+def test_only_a_balance_rise_confirms_a_gem_claim_and_a_vanished_battle_offer_does_not():
+    assert effect_of('ad_gems', 'balance_increased') == effect_of('floating_gems', 'balance_increased') == 'confirmed'
+    assert effect_of('ad_gems', 'offer_disappeared') == 'unconfirmed'           # the offer was gone from one look after the tap; no balance was read
+    assert effect_of('ad_gems', None) == 'unconfirmed'
+
+
+def test_a_collector_launch_claims_no_evidence_because_starting_a_process_proves_nothing_ran():
+    assert CATALOG.get('harvest_launch').evidence == ()
+    assert 'offer_disappeared' not in CATALOG.get('ad_gems').evidence

@@ -108,7 +108,7 @@ it.each(Object.entries(fixtureRoutineGates))(
         ownPath(battle, 'runtime', 'routines', 'ad_gems', 'window_ends_at'),
       );
       expect(routineResult(own(battle, 'runtime'), 'ad_gems').decision.line).toBe(
-        'claim_confirmed',
+        'claim_offer_gone',
       );
       expect(routineResult(own(battle, 'runtime'), 'floating_gems').decision.word).toBe('unknown');
       expect(shoppingView(body).warnings).toEqual([]);

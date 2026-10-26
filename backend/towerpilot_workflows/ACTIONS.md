@@ -36,7 +36,10 @@ second input owner: the device lease and the operations ledger stay the only own
    settlement are the only writers of `action_executions`.
 4. **Recording never changes behaviour.** A failure to record is counted (`ActionSession.unrecorded`) and logged, never raised.
 5. **An execution is only as proven as its evidence.** A window or sweep that sent input and proved nothing is
-   `failed` with effect `unconfirmed`; `succeeded` is `confirmed` evidence only. Unknown is `null`, never zero.
+   `failed` with effect `unconfirmed`; effect `confirmed` needs a reason the definition lists as evidence (`effect_of`). A battle ad
+   whose offer vanished after the tap is `succeeded` with effect `unconfirmed` (no balance was read); only a Home balance rise
+   (`balance_increased`) confirms it. A collector launch is `succeeded/launched` with effect `unconfirmed`: starting a process
+   does not show the collector ran. Unknown is `null`, never zero.
 6. **Settlement needs an exact fence.** An open row is closed `interrupted` only when its operation is terminal, its battle ended,
    or its battle moved to another generation. It keeps `finished_at` and `duration_ms` null. Settlement runs from the existing
    refresher, from a driver's own finalization, and as a courtesy in `begin` for the same instance. A GET never settles.

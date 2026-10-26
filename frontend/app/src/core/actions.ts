@@ -31,8 +31,10 @@ export const COMPAT_FIELDS: readonly string[] = [
 /** S5: the result line of a compatibility gem routine whose last outcome is confirmed. */
 export function compatClaimLine(
   routine: ActionKey,
-): 'claim_confirmed' | 'floating_claim_confirmed' {
-  return routine === 'ad_gems' ? 'claim_confirmed' : 'floating_claim_confirmed';
+  reason: unknown,
+): 'claim_confirmed' | 'claim_offer_gone' | 'floating_claim_confirmed' {
+  if (routine !== 'ad_gems') return 'floating_claim_confirmed';
+  return reason === OFFER_DISAPPEARED ? 'claim_offer_gone' : 'claim_confirmed';
 }
 
 /** S2: a shopping variant token (`shopping:<section>[:<upgrade>]`, F6-12 Try once). */
@@ -382,6 +384,23 @@ export const ACTION_RESULTS = [
 /** AC1 (rule 2): the effects of a finished execution; only `confirmed` reads as confirmed. */
 export const ACTION_EFFECTS = ['confirmed', 'unconfirmed', 'unknown', 'none'] as const;
 
+/** The reason the collector records when an ad offer was gone from the look taken after the tap. */
+export const OFFER_DISAPPEARED = 'offer_disappeared';
+
+/** The effect word of a battle ad whose only proof is that the offer was gone after the tap (no balance read). */
+export const OFFER_GONE = 'offer_gone';
+
+/** An effect code of the server, or the one word this build adds for OFFER_GONE. */
+export type ActionEffectWord = (typeof ACTION_EFFECTS)[number] | typeof OFFER_GONE;
+
+/**
+ * Words only, no new decision: the server records that execution as `unconfirmed` and names the reason;
+ * it reads as "offer gone after tap", never as a confirmed effect.
+ */
+export function effectWord<E extends string>(effect: E, reason: unknown): E | typeof OFFER_GONE {
+  return effect === 'unconfirmed' && reason === OFFER_DISAPPEARED ? OFFER_GONE : effect;
+}
+
 /** AC1: the descriptor field types this build can show and edit. */
 export const ACTION_FIELD_TYPES = ['bool', 'number'] as const;
 
@@ -448,13 +467,17 @@ export function actionNext(item: ActionItemView, now: number): ActionNext {
 /** AC1 (rule 2): the last result of an item: its result and effect codes, read as sent. */
 export interface ActionOutcome {
   readonly result: ActionCode<(typeof ACTION_RESULTS)[number]>;
-  readonly effect: ActionCode<(typeof ACTION_EFFECTS)[number]>;
+  readonly effect: ActionCode<ActionEffectWord>;
 }
 
 export function actionOutcome(last: ActionLastView): ActionOutcome {
+  const effect = actionCode(last.effect, ACTION_EFFECTS);
   return {
     result: actionCode(last.result, ACTION_RESULTS),
-    effect: actionCode(last.effect, ACTION_EFFECTS),
+    effect:
+      effect.kind === 'known'
+        ? { kind: 'known', code: effectWord(effect.code, last.reason) }
+        : effect,
   };
 }
 

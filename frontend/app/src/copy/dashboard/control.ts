@@ -205,8 +205,8 @@ export const control = {
     claimsFailing: (streak: number): CopyText =>
       made(`Ad gem claims failing: ${String(streak)} in a row`),
     /**
-     * What this battle's gem collection did. The counts are confirmations the
-     * driver saw (lower bounds, never totals), so the words say "at least";
+     * What this battle's gem collection did. The counts are ad claims (the offer was gone after
+     * the tap) and orbit pickups (a balance rise) the driver saw, lower bounds and never totals, so the words say "at least";
      * null when nothing is published to say.
      */
     outcomes: {
@@ -219,8 +219,8 @@ export const control = {
           seen.length === 0
             ? null
             : (ad ?? 0) + (orbit ?? 0) === 0
-              ? 'No confirmations seen yet this battle'
-              : `Confirmations seen this battle (at least): ${seen.join(', ')}`;
+              ? 'No claims or pickups seen yet this battle'
+              : `Seen this battle (at least): ${seen.join(', ')}`;
         const lost = missed === null ? null : `${plural(missed, 'ad window', 'ad windows')} missed`;
         const parts = [confirmed, lost].filter((part): part is string => part !== null);
         return parts.length === 0 ? null : made(parts.join('; '));

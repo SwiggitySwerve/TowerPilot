@@ -66,7 +66,9 @@ module names a routine in a list, a field order or a name lookup.
     reading shows this cell; `old` shows last known with its age, any other reading not current.
   - `actionOutcome(last)` reads `last.result` and `last.effect` against `ACTION_RESULTS` and
     `ACTION_EFFECTS`. Only the effect `confirmed` reads as confirmed (rule 2); no count is read
-    from an action row.
+    from an action row. An `unconfirmed` effect with the reason `offer_disappeared` (a battle ad whose
+    offer was gone after the tap, no balance read) reads `Offer gone after tap` (`effectWord`), and so does
+    the compatibility line of the same claim (`compatClaimLine`). The server decides the effect; these only word it.
   - Codes (`ActionCode`): `known`, `unreported` (absent or null: nothing was sent) or
     `unrecognised` (the value as sent). Each cell shows its own unrecognised code under Why: the
     state in Next, a field type in its Settings line (`fieldType`), the result and effect in

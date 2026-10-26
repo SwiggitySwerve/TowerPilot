@@ -56,7 +56,8 @@ it('AC1 a finished execution shows its result, its effect, its age and its reaso
   const h = render('a_finished_execution_is_the_last_of_its_instance');
   const ad = row(h, 'Ad gems');
   expect(ad.getByText('Succeeded')).toBeInTheDocument();
-  expect(ad.getByText('Effect confirmed')).toBeInTheDocument();
+  expect(ad.getByText('Offer gone after tap')).toBeInTheDocument();
+  expect(ad.queryByText('Effect confirmed')).toBeNull();
   expect(ad.getByText('2 s ago')).toBeInTheDocument();
   expect(ad.getByText('offer_disappeared')).toBeInTheDocument();
   expect(ad.queryByText('Claimed')).toBeNull();
@@ -120,7 +121,8 @@ it('AC3 a completed Run now shows the outcome of the execution it started', asyn
   const command = h.view.container.querySelector('.tp-battle__command');
   expect(command).toHaveTextContent('Done');
   expect(command).toHaveTextContent('Outcome');
-  expect(command).toHaveTextContent('Effect confirmed');
+  expect(command).toHaveTextContent('Offer gone after tap');
+  expect(command).not.toHaveTextContent('Effect confirmed');
   expect(command).not.toHaveTextContent('Claimed');
   expect(row(h, 'Ad gems').getByText('from Run now')).toBeInTheDocument();
   await check(h);

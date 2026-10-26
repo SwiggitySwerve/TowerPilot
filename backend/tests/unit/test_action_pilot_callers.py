@@ -73,7 +73,7 @@ def test_each_gem_host_leaves_a_persisted_window_for_both_collectors(tmp_path, d
     assert all(row['host']['driver'] == driver and row['context']['account'] == 'account' for row in stored)
     assert all(row['state'] != 'running' for row in stored if row['finished_at'] is not None)
     ad = sorted(by_action['ad_gems'], key=lambda row: row['started_at'])[0]
-    assert ad['state'] == 'succeeded' and ad['outcome']['effect'] == 'confirmed' and ad['outcome']['evidence'] == ['offer_disappeared']
+    assert ad['state'] == 'succeeded' and ad['outcome']['effect'] == 'unconfirmed' and ad['outcome']['evidence'] == ['offer_disappeared']      # the offer vanished after the tap; no balance proves a gem
     assert ad['duration_ms'] is not None and ad['duration_ms'] > 0 and ad['refs']['window_id']
     assert all(row['occurrence_key'].startswith('window:') for row in stored)
 
@@ -343,7 +343,8 @@ def test_an_accepted_launch_is_one_row_keyed_by_its_durable_launch_key_and_linke
     assert h.tick(NOW, actions=session)['action'] == 'launched'
     (row,) = attempts(h)
     operation = harvest.operations.ledger(h.root).active(harvest.identity_for(h.cfg)['device_key'])[0]
-    assert row['action'] == 'harvest_launch' and row['state'] == 'succeeded' and row['outcome']['evidence'] == ['launched']
+    assert row['action'] == 'harvest_launch' and row['state'] == 'succeeded' and row['outcome']['reason'] == 'launched'
+    assert row['outcome']['effect'] == 'unconfirmed' and row['outcome']['evidence'] == []      # a launch starts a process; it does not show the collector ran
     assert row['request_key'] == operation['idempotency_key'] and row['refs']['operation_id'] == operation['id']
     assert row['host'] == dict(driver='dashboard', operation_id=None, battle_id=None, generation=None, parent_execution=None)
     again = harvest.action_session(h.root, h.cfg).record('harvest_launch', result='succeeded', request_key=row['request_key'])

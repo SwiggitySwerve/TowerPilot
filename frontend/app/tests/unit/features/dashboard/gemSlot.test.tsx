@@ -591,7 +591,7 @@ describe('what was claimed and missed this battle, and why', () => {
     ).toBeInTheDocument();
     expect(within(view.container).queryByText('collecting gems')).toBeNull();
     expect(counts(view.container)).toHaveTextContent(
-      'Confirmations seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups; 4 ad windows missed',
+      'Seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups; 4 ad windows missed',
     );
     expect(cause(view.container)).toHaveTextContent('Last missed ad window: offer moved, 2 m ago');
     expect(pause()).not.toBeNull();
@@ -603,7 +603,7 @@ describe('what was claimed and missed this battle, and why', () => {
     expect(chip(view.container)).toHaveAttribute('data-state', 'running');
     expect(within(view.container).getByText('collecting gems')).toBeInTheDocument();
     expect(counts(view.container)).toHaveTextContent(
-      'Confirmations seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups; 1 ad window missed',
+      'Seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups; 1 ad window missed',
     );
     expect(cause(view.container)).toHaveTextContent(
       'Last missed ad window: no offer seen, 1 m ago',
@@ -623,7 +623,7 @@ describe('what was claimed and missed this battle, and why', () => {
     const { view } = drawGem(sample('status.manual_collector'));
     expect(cause(view.container)).toBeNull();
     expect(counts(view.container)).toHaveTextContent(
-      'Confirmations seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups',
+      'Seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups',
     );
     expect(counts(view.container)).not.toHaveTextContent('missed');
   });

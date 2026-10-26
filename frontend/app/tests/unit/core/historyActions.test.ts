@@ -85,7 +85,7 @@ describe('AC4 the executions block of a battle detail', () => {
       view.rows.map((row) => [row.action, row.label, row.state.kind, row.effect?.kind]),
     ).toEqual([
       ['floating_gems', 'Floating gems', 'no_op', 'none'],
-      ['ad_gems', 'Ad gems', 'succeeded', 'confirmed'],
+      ['ad_gems', 'Ad gems', 'succeeded', 'offer_gone'],
     ]);
     expect(view.rows.map((row) => row.durationMs)).toEqual([null, 4000]);
     expect(view.rows[0]?.aggregate).toEqual({ count: 1, firstAt: 1800000520, lastAt: 1800000520 });

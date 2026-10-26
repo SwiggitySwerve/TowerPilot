@@ -128,7 +128,7 @@ export function routineResult(runtime: unknown, routine: ActionKey): RoutineResu
   return {
     ...fields,
     decision: confirmed
-      ? recordDecision('F-057', compatClaimLine(routine), outcome)
+      ? recordDecision('F-057', compatClaimLine(routine, fields.reason), outcome)
       : decide('F-057', 'unknown', 'result_unconfirmed', null),
   };
 }

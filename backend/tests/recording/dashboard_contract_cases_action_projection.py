@@ -97,11 +97,11 @@ def battle_actions_projection_cases(gen):
         ad.window_started_at = ad.window_deadline = None
         window = session.begin('ad_gems', occurrence_key='window:projected')
         w.advance(4)
-        session.finish(window, result='succeeded', reason='offer_disappeared', effect='confirmed', attempts=1, confirmed=1, evidence=['offer_disappeared'])
+        session.finish(window, result='succeeded', reason='offer_disappeared', effect='unconfirmed', attempts=1, confirmed=1, evidence=['offer_disappeared'])
         d.publish()
         finished = read(w, 'a_finished_execution_is_the_last_of_its_instance')
         last = items(finished)['ad_gems']['last']
-        assert (last['result'], last['reason'], last['effect'], last['trigger']) == ('succeeded', 'offer_disappeared', 'confirmed', 'automatic') and last['duration_ms'] == 4000.0
+        assert (last['result'], last['reason'], last['effect'], last['trigger']) == ('succeeded', 'offer_disappeared', 'unconfirmed', 'automatic') and last['duration_ms'] == 4000.0
         assert items(finished)['floating_gems']['last'] is None
         d.controls({'routines': {'ad_gems': {'enabled': False}}}, 'pause-ad-gems')
         d.checkpoint()
@@ -149,7 +149,7 @@ def battle_actions_projection_cases(gen):
         last = items(runtime)['ad_gems']['last']
         row = next(entry for entry in d.store.commands(d.battle['id']) if entry['id'] == command['id'])
         assert row['state'] == 'completed' and row['kind'] == 'action' and row['payload'] == dict(action='ad_gems'), row
-        assert last['command_id'] == command['id'] and last['trigger'] == 'manual' and (last['result'], last['effect']) == ('succeeded', 'confirmed'), last
+        assert last['command_id'] == command['id'] and last['trigger'] == 'manual' and (last['result'], last['effect']) == ('succeeded', 'unconfirmed') and last['reason'] == 'offer_disappeared', last
         assert last['execution_id'] == session.last['ad_gems']['execution_id'] and len(scene.taps) == 1
     with gen.world('actions_failed_unconfirmed') as w:
         d = Driver(w, 'failed', origin='started')

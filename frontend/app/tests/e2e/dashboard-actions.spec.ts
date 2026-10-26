@@ -85,7 +85,8 @@ test('AC3 a completed Run now shows the outcome of the execution it started', as
   await openState(page, 'run_now', 1360);
   const command = region(page).locator('.tp-battle__command').first();
   await expect(command).toContainText('Done');
-  await expect(command).toContainText('Effect confirmed');
+  await expect(command).toContainText('Offer gone after tap');
+  await expect(command).not.toContainText('Effect confirmed');
   await expect(command).not.toContainText('Claimed');
 });
 

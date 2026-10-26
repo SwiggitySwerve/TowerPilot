@@ -77,11 +77,11 @@ describe('AC1 This battle rows from runtime.actions', () => {
     expect(off[2]?.enabled).toBe(false);
   });
 
-  it('AC1 a finished execution: Succeeded, effect confirmed, its age and its reason', () => {
+  it('AC1 a finished execution: Succeeded, offer gone after the tap, its age and its reason', () => {
     const ad = rows(vmOf('a_finished_execution_is_the_last_of_its_instance'))[0];
     expect(ad?.last).toMatchObject({
       result: { kind: 'known', code: 'succeeded' },
-      effect: { kind: 'known', code: 'confirmed' },
+      effect: { kind: 'known', code: 'offer_gone' },
       ageSec: 2,
     });
     expect(text(ad?.last?.reason)).toBe('offer_disappeared');
@@ -165,7 +165,7 @@ describe('AC3 Run now for any item', () => {
     expect(command).toMatchObject({ row: 'K4', resultChip: null });
     expect(command?.outcome).toMatchObject({
       result: { kind: 'known', code: 'succeeded' },
-      effect: { kind: 'known', code: 'confirmed' },
+      effect: { kind: 'known', code: 'offer_gone' },
       ageSec: 2,
     });
     expect(rows(vm)[0]?.last).toMatchObject({ manual: true });

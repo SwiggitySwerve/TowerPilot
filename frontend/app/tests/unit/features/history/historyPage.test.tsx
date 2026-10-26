@@ -134,7 +134,7 @@ it.each([
     const { store } = await harness(name);
     const section = within(screen.getByRole('region', { name: 'Sampled collection evidence' }));
     for (const [index, label] of [
-      'Recorded ad claim confirmations',
+      'Recorded ad claims seen',
       'Recorded orbit balance confirmations',
       'Recorded orbit balance increase in this sample',
     ].entries()) {

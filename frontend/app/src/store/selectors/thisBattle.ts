@@ -1,5 +1,4 @@
 import {
-  ACTION_EFFECTS,
   ACTION_RESULTS,
   actionNext,
   actionOutcome,
@@ -13,6 +12,7 @@ import {
   runNowReason,
   settingFields,
   type ActionCode,
+  type ActionEffectWord,
   type ActionItemView,
   type ActionKey,
   type ActionLastView,
@@ -69,7 +69,7 @@ export type ActionCodeVM<K extends string> =
 /** AC1 (rule 2): an item's last execution: the result and effect this build reads, its age and reason. */
 export interface ActionLastVM {
   readonly result: ActionCodeVM<(typeof ACTION_RESULTS)[number]>;
-  readonly effect: ActionCodeVM<(typeof ACTION_EFFECTS)[number]>;
+  readonly effect: ActionCodeVM<ActionEffectWord>;
   readonly ageSec: number | null;
   readonly reason: ServerText<'message'> | null;
   /** Started by a Run now command. */

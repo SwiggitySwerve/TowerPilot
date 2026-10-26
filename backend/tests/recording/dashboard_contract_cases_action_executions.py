@@ -81,7 +81,7 @@ def seed(w):
     own, other = writer(w, clock), writer(w, clock, account='another-account')
     elsewhere, shopper = writer(w, clock, device=OTHER_DEVICE), writer(w, clock, driver='orchestrator')
     rows = {}
-    rows['ad_confirmed'] = run(own, clock, 0, 'ad_gems', result='succeeded', reason='offer_disappeared', effect='confirmed', attempts=1, confirmed=1, evidence=['offer_disappeared'])
+    rows['ad_confirmed'] = run(own, clock, 0, 'ad_gems', result='succeeded', reason='offer_disappeared', effect='unconfirmed', attempts=1, confirmed=1, evidence=['offer_disappeared'])
     rows['ad_unconfirmed'] = run(own, clock, 60, 'ad_gems', result='failed', reason='offer_still_visible', effect='unconfirmed', attempts=1)
     clock.set(60)
     rows['orbit_confirmed'] = own.begin('floating_gems', trigger='automatic', occurrence_key='window:orbit-1')
@@ -91,8 +91,8 @@ def seed(w):
     rows['orbit_unconfirmed'] = own.begin('floating_gems', trigger='automatic', occurrence_key='window:orbit-2')
     clock.set(75)
     own.finish(rows['orbit_unconfirmed'], result='failed', reason='attempt_timeout', effect='unconfirmed', attempts=4)
-    rows['other_account'] = run(other, clock, 70, 'ad_gems', result='succeeded', reason='offer_disappeared', effect='confirmed', attempts=1, confirmed=1)
-    rows['other_device'] = run(elsewhere, clock, 80, 'ad_gems', result='succeeded', reason='offer_disappeared', effect='confirmed', attempts=1, confirmed=1)
+    rows['other_account'] = run(other, clock, 70, 'ad_gems', result='succeeded', reason='offer_disappeared', effect='unconfirmed', attempts=1, confirmed=1)
+    rows['other_device'] = run(elsewhere, clock, 80, 'ad_gems', result='succeeded', reason='offer_disappeared', effect='unconfirmed', attempts=1, confirmed=1)
     rows['sweep'] = run(shopper, clock, 90, 'shopping', length=12.0, result='succeeded', reason='sweep_complete', effect='confirmed', attempts=3, confirmed=2, evidence=['confirmed_purchase'])
     clock.set(120)
     rows['manual_refused'] = own.record('ad_gems', result='refused', reason='battle_not_visible', trigger='manual', command_id='command-1', occurrence_key='request:command-1').get('id')
@@ -208,7 +208,7 @@ def action_executions_cases(gen):
             session.clock = clock
             window = session.begin('ad_gems', occurrence_key=f'window:{label}')
             clock.set(504)
-            session.finish(window, result='succeeded', reason='offer_disappeared', effect='confirmed', attempts=1, confirmed=1, evidence=['offer_disappeared'])
+            session.finish(window, result='succeeded', reason='offer_disappeared', effect='unconfirmed', attempts=1, confirmed=1, evidence=['offer_disappeared'])
             clock.set(520)
             session.check('floating_gems', result='no_op', reason='gem_not_detected')
             detail = w.get(AX, f'battle_detail_of_{name}', f"/api/battles/{driver.battle['id']}").get_json()

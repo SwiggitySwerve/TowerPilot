@@ -83,7 +83,7 @@ for (const width of WIDTHS) {
     await expect(items.nth(0)).toContainText('No game effect');
     await expect(items.nth(1)).toContainText('Ad gems');
     await expect(items.nth(1)).toContainText('Succeeded');
-    await expect(items.nth(1)).toContainText('Effect confirmed');
+    await expect(items.nth(1)).toContainText('Offer gone after tap');
     await expect(items.nth(1)).toContainText('4 s');
     await accessible(page, width);
     remember(await screenshot(page, section, 'started', width));
@@ -150,7 +150,8 @@ for (const width of WIDTHS) {
   }) => {
     const section = await open(page, width, 'mixed');
     await expect(section.getByText('Open when read')).toBeVisible();
-    await expect(section.getByText('Finished, effect not confirmed')).toBeVisible();
+    // The unconfirmed claim and the harvest launch (a launch starts a process; nothing proves the collector ran).
+    await expect(section.getByText('Finished, effect not confirmed')).toHaveCount(2);
     await expect(section.getByText('Manual (Run now)')).toBeVisible();
     const runNow = section.getByRole('listitem').filter({ hasText: 'Manual (Run now)' });
     // Pin the current whole-second copy: a stale pre-fix bundle rendered "23.3 s" here.

@@ -597,7 +597,7 @@ AD_GEMS = ActionDefinition(
     id='ad_gems', label='Ad gems', family='gems', hosts=_GEM_HOSTS, schedule=StartToStart(),
     fields=(_ENABLED, _INTERVAL, _WINDOW),
     capabilities=Capabilities(live_controls=True, pause=True, run_now=True), saved='gather_policy',
-    evidence=('offer_disappeared', 'balance_increased'))     # battle: the offer vanished; Home: stable exact +6
+    evidence=('balance_increased',))     # Home: stable exact +6. A battle offer that vanished after the tap is a sighting, not proof of a gem (see effect_of)
 FLOATING_GEMS = ActionDefinition(
     id='floating_gems', label='Floating gems', family='gems', hosts=_GEM_HOSTS, schedule=AppearanceDriven(),
     fields=(_ENABLED,
@@ -613,7 +613,7 @@ SHOPPING = ActionDefinition(
     evidence=('confirmed_purchase',), documents=('shopping_plan',), saved_kinds=frozenset({'coin', 'tournament'}))
 HARVEST_LAUNCH = ActionDefinition(
     id='harvest_launch', label='Harvest collector launch', family='harvest', hosts=frozenset({'dashboard'}),
-    schedule=Backoff(), capabilities=Capabilities(run_now='not_supported'), evidence=('launched',))
+    schedule=Backoff(), capabilities=Capabilities(run_now='not_supported'))     # no evidence: a launch starts a process; only the collector's own reports show it ran
 
 
 
@@ -676,6 +676,13 @@ CATALOG = Catalog((AD_GEMS, FLOATING_GEMS, SHOPPING, HARVEST_LAUNCH, DAILY_MISSI
                    FREE_STORE_GEMS, QUEST_SCAN, SHATTER, HOUSEKEEPING,
                    TOURNAMENT_ENTRY, TOURNAMENT_TICKET, IN_RUN_CARDS, SURRENDER, SETUP_CAPTURE, MAX_WAVE, REPEAT_AFTER_DEATH, SM_RIDE, TOURNAMENT_DAY_MARKER, PERK_BAN_CACHE))
 _ACTIVE: list[Catalog] = []
+
+
+def effect_of(action_id: str, reason: str | None) -> str:
+    """The recorded effect of a window or command that reported a confirmed outcome for `reason`: 'confirmed' only when the
+    definition lists that reason as evidence of a game effect, else 'unconfirmed' (the claim went out and something was seen, but
+    nothing proves a gem arrived). The one place that decides it; every writer of such a row asks here."""
+    return 'confirmed' if reason in catalog().get(action_id).evidence else 'unconfirmed'
 
 
 def catalog() -> Catalog:

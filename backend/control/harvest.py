@@ -979,7 +979,7 @@ def tick(root, cfg, *, processes, resolve_source, prepare, launch, device_state,
     event('harvest_collector_launched', operation_id=op['id'], preset=choice['preset'],
           desire_revision=revision, attempt=attempt)
     if actions is not None:      # one row per durable launch key, whichever dashboard host made the attempt
-        actions.record('harvest_launch', result='succeeded', reason='launched', effect='confirmed', evidence=['launched'],
+        actions.record('harvest_launch', result='succeeded', reason='launched', effect='unconfirmed',
                        occurrence_key=f'launch:{revision}:{attempt}', request_key=body['idempotency_key'], attempts=1,
                        refs=dict(operation_id=op['id'], preset=choice['preset']), config_revision=revision,
                        policy_revision=prepared.policy_revision)

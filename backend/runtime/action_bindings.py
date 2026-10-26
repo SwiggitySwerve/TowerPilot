@@ -62,14 +62,14 @@ class BindingBase:
         return False
 
 
-def outcome_of(record):
+def outcome_of(record, action=None):
     """The generic reading of a handler's own outcome record, for a result no one has to interpret: a confirmed effect succeeded,
     taps nobody could confirm failed unconfirmed, a skipped attempt did nothing. Anything else is unknown, never confirmed."""
     if not isinstance(record, dict):
         return None, 'unknown', None
     reason = record.get('reason')
     if record.get('confirmed') is True:
-        return 'succeeded', 'confirmed', reason
+        return 'succeeded', 'confirmed' if action is None else action_contract.effect_of(action, reason), reason
     if record.get('confirmed') is False:
         return ('no_op', 'none', reason) if record.get('outcome') == 'skipped' else ('failed', 'unconfirmed', reason)
     return None, 'unknown', reason
@@ -81,8 +81,8 @@ class CollectorBinding(BindingBase):
     The collector is looked up on the host when it is used, not when the binding is made: a host that starts a new battle
     replaces its collectors, and a host that has not attached them yet still publishes what it will run."""
 
-    def __init__(self, rs, path):
-        self.rs, self.path = rs, path
+    def __init__(self, rs, path, action=None):
+        self.rs, self.path, self.action = rs, path, action
 
     @property
     def collector(self):
@@ -128,7 +128,7 @@ class CollectorBinding(BindingBase):
         if state['manual_pending']:
             return BindingResult('pending', diagnostic=state)
         last = state['last_outcome']
-        outcome, effect, reason = outcome_of(last)
+        outcome, effect, reason = outcome_of(last, self.action)
         return BindingResult('terminal', outcome=outcome, effect=effect, reason=reason, ack=last, diagnostic=state)
 
 
@@ -294,8 +294,8 @@ def _attribute(root, path):
 
 # routine key, where the host keeps its handler, the binding in front of it, and whether the host binds it only when it holds one
 # (a collector host publishes its gem controls whether or not its collectors are attached yet; only a host with a shopper shops)
-PILOT_HANDLERS = (('ad_gems', 'gems.ad_gems', lambda rs, session, path: CollectorBinding(rs, path), False),
-                  ('floating_gems', 'gems.orbit', lambda rs, session, path: CollectorBinding(rs, path), False),
+PILOT_HANDLERS = (('ad_gems', 'gems.ad_gems', lambda rs, session, path: CollectorBinding(rs, path, 'ad_gems'), False),
+                  ('floating_gems', 'gems.orbit', lambda rs, session, path: CollectorBinding(rs, path, 'floating_gems'), False),
                   ('shopping', 'shop', lambda rs, session, path: ShoppingBinding(rs, session), True))
 
 

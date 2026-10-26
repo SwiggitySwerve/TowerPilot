@@ -72,6 +72,8 @@ export const thisBattle = {
     routine_result_unreadable: entry('Result not reported'),
     no_result_yet: entry('No result yet'),
     claim_confirmed: entry('Claimed'),
+    /** The ad offer was gone from the look after the tap; no balance was read. */
+    claim_offer_gone: entry('Offer gone after tap'),
     floating_claim_confirmed: entry('+2 confirmed'),
     result_unconfirmed: entry('Result unconfirmed'),
     shopping_result_reported: entry('Shopping result reported'),

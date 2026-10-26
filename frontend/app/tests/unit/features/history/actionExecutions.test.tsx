@@ -70,7 +70,7 @@ it('AC4 a started battle lists its executions newest first with trigger, state, 
   const ad = named(section, 'Ad gems');
   expect(fact(ad, 'Trigger')).toHaveTextContent('Automatic');
   expect(fact(ad, 'State')).toHaveTextContent('Succeeded');
-  expect(fact(ad, 'Effect')).toHaveTextContent('Effect confirmed');
+  expect(fact(ad, 'Effect')).toHaveTextContent('Offer gone after tap');
   expect(fact(ad, 'Duration')).toHaveTextContent('4 s');
   expect(fact(ad, 'Coverage')).toHaveTextContent('Full record');
   expect(fact(ad, 'Action code')).toHaveTextContent('ad_gems');

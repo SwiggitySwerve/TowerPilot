@@ -258,7 +258,7 @@ it('F-056: unsupported Shopping is named and disabled', async () => {
 
 it('F-057: confirmed claims, unconfirmed reason and missing results never invent a balance', async () => {
   const h = renderRegion(state(), <ThisBattle />);
-  expect(row(h, 'Ad gems').getByText('Claimed')).toBeVisible();
+  expect(row(h, 'Ad gems').getByText('Offer gone after tap')).toBeVisible();
   expect(row(h, 'Ad gems').getByText(/2 s ago/)).toBeVisible();
   expect(row(h, 'Floating gems').getByText('Unknown')).toBeVisible();
   fireEvent.click(row(h, 'Floating gems').getByText('Why'));
@@ -328,7 +328,7 @@ it('F-058: unknown command labels remain Unknown and completed actions show evid
     'Unknown',
   );
   const completed = h.view.getByText('Done').closest('li');
-  expect(completed).toHaveTextContent('Claimed');
+  expect(completed).toHaveTextContent('Offer gone after tap');
   if (completed === null) throw new Error('Missing completed action');
   fireEvent.click(within(completed).getByText('Why'));
   expect(within(completed).getByText('offer_disappeared')).toBeVisible();
@@ -441,7 +441,7 @@ it('F-059: only a later command with the exact retained key settles the action',
   expect(row(h, 'Ad gems').getByRole('button', { name: /^Run now .+/ })).not.toHaveAttribute(
     'aria-disabled',
   );
-  expect(h.view.getByText('Done').closest('li')).toHaveTextContent('Claimed');
+  expect(h.view.getByText('Done').closest('li')).toHaveTextContent('Offer gone after tap');
   noCalls(h);
   await check(h);
 });

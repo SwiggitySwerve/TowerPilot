@@ -1,4 +1,4 @@
-import { ACTION_EFFECTS, ACTION_RESULTS } from './actions.ts';
+import { ACTION_EFFECTS, ACTION_RESULTS, effectWord, type ActionEffectWord } from './actions.ts';
 import { finite, id, list, own, ownPath, text } from './read.ts';
 
 /**
@@ -9,7 +9,7 @@ import { finite, id, list, own, ownPath, text } from './read.ts';
  */
 const STATES = ['running', ...ACTION_RESULTS] as const;
 export type ExecutionState = (typeof STATES)[number];
-export type ExecutionEffect = (typeof ACTION_EFFECTS)[number];
+export type ExecutionEffect = ActionEffectWord;
 export type ExecutionTrigger = 'automatic' | 'manual';
 export type ExecutionCoverage = 'full' | 'since_adoption' | 'unknown';
 
@@ -110,6 +110,8 @@ export function executionRow(raw: unknown, index: number): ExecutionRow {
   // Preserve History's accepted result words, including running on an unusual recorded row.
   const result = coded(ownPath(raw, 'outcome', 'result'), STATES);
   const open = state.kind === 'running';
+  const effect = open ? null : coded(ownPath(raw, 'outcome', 'effect'), ACTION_EFFECTS);
+  const reason = id(ownPath(raw, 'outcome', 'reason')) ?? id(own(raw, 'settled_reason')) ?? null;
   const merged = aggregate(own(raw, 'aggregate'));
   const duration = finite(own(raw, 'duration_ms'));
   const showsDuration = !open && merged === null;
@@ -122,8 +124,8 @@ export function executionRow(raw: unknown, index: number): ExecutionRow {
     state,
     result: result.kind === 'unreported' || result.code === state.code ? null : result,
     open,
-    effect: open ? null : coded(ownPath(raw, 'outcome', 'effect'), ACTION_EFFECTS),
-    reason: id(ownPath(raw, 'outcome', 'reason')) ?? id(own(raw, 'settled_reason')) ?? null,
+    effect: effect === null ? null : { kind: effectWord(effect.kind, reason), code: effect.code },
+    reason,
     startedAt: finite(own(raw, 'started_at')) ?? null,
     finishedAt: finite(own(raw, 'finished_at')) ?? null,
     durationMs:

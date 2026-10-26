@@ -61,7 +61,7 @@ def action_executions_more_cases(gen):
         session.clock = clock
         for number in range(PAGE + 1):
             clock.set(100 + 10 * number)
-            session.record('ad_gems', result='succeeded', reason='offer_disappeared', effect='confirmed', attempts=1, confirmed=1, evidence=['offer_disappeared'],
+            session.record('ad_gems', result='succeeded', reason='offer_disappeared', effect='unconfirmed', attempts=1, confirmed=1, evidence=['offer_disappeared'],
                            occurrence_key=f'window:many:{number}')
         reply = w.get(AXM, 'battle_detail_truncated_at_fifty', f"/api/battles/{d.battle['id']}")
         block = reply.get_json()['executions']
@@ -111,7 +111,7 @@ def action_executions_more_cases(gen):
         launched = generic_read(w, 'read_harvest_launch_accepted', '?action=harvest_launch').get_json()['executions']
         assert [entry['state'] for entry in launched] == ['succeeded', 'refused'], launched
         newest = launched[0]
-        assert newest['outcome']['reason'] == 'launched' and newest['outcome']['effect'] == 'confirmed' and newest['refs']['operation_id'] and newest['host']['driver'] == 'dashboard', newest
+        assert newest['outcome']['reason'] == 'launched' and newest['outcome']['effect'] == 'unconfirmed' and newest['refs']['operation_id'] and newest['host']['driver'] == 'dashboard', newest
 
 
 NOTE = (__doc__ or '').split('"""')[0].strip()

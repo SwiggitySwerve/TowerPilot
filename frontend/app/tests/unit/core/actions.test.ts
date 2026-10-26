@@ -7,8 +7,10 @@ import {
 import {
   actionName,
   actionsView,
+  compatClaimLine,
   COMPAT_FIELDS,
   COMPAT_ROUTINES,
+  effectWord,
   fieldLabel,
   hasLiveBounds,
   isShoppingAction,
@@ -176,5 +178,21 @@ describe('A2-7 R2 live bounds source', () => {
     expect(hasLiveBounds(null)).toBe(false);
     expect(liveConstraints(null, saved)).toBe(saved);
     expect(liveConstraints(null, undefined)).toBeUndefined();
+  });
+});
+
+describe('the words of an ad claim whose only proof is that the offer was gone after the tap', () => {
+  it('reads an unconfirmed effect with that reason as offer gone, and nothing else', () => {
+    expect(effectWord('unconfirmed', 'offer_disappeared')).toBe('offer_gone');
+    expect(effectWord('confirmed', 'offer_disappeared')).toBe('confirmed');
+    expect(effectWord('confirmed', 'balance_increased')).toBe('confirmed');
+    expect(effectWord('unconfirmed', 'offer_still_visible')).toBe('unconfirmed');
+    expect(effectWord('unconfirmed', null)).toBe('unconfirmed');
+  });
+
+  it('words a compatibility ad claim by its reason; an orbit pickup is a balance rise', () => {
+    expect(compatClaimLine('ad_gems', 'offer_disappeared')).toBe('claim_offer_gone');
+    expect(compatClaimLine('ad_gems', 'balance_increased')).toBe('claim_confirmed');
+    expect(compatClaimLine('floating_gems', 'balance_increased')).toBe('floating_claim_confirmed');
   });
 });

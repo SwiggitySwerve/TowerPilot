@@ -371,7 +371,12 @@ def test_a_collector_whose_request_is_pending_and_whose_window_is_running_is_rep
     rs.gems.ad_gems = done
     result = action_bindings.CollectorBinding(rs, 'gems.ad_gems').progress()
     assert (result.state, result.outcome, result.effect, result.ack) == ('terminal', 'succeeded', 'confirmed', {'confirmed': True, 'reason': 'x'})
-
+    # bound to its action, a confirmed outcome is worded by that action's evidence: a vanished battle offer is not a confirmed effect
+    rs.gems.ad_gems = SimpleNamespace(status=lambda: dict(manual_active=False, manual_pending=False, last_outcome={'confirmed': True, 'reason': 'offer_disappeared'}))
+    gone = action_bindings.CollectorBinding(rs, 'gems.ad_gems', 'ad_gems').progress()
+    assert (gone.outcome, gone.effect, gone.reason) == ('succeeded', 'unconfirmed', 'offer_disappeared')
+    rs.gems.ad_gems = SimpleNamespace(status=lambda: dict(manual_active=False, manual_pending=False, last_outcome={'confirmed': True, 'reason': 'balance_increased'}))
+    assert action_bindings.CollectorBinding(rs, 'gems.ad_gems', 'ad_gems').progress().effect == 'confirmed'
 
 # ---------------------------------------------------------------------------- the saved adapters
 def test_every_definition_that_names_a_saved_adapter_has_one_registered_and_a_definition_that_names_none_has_none():
