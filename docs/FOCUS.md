@@ -24,7 +24,7 @@ One change at a time, smallest first. Each is committed to
 | 5 | Live preview starts by itself when the emulator is already available, and reattaches when it returns; never starts the emulator | person's decision | done (signal = device online; live after the next UI rebuild) |
 | 6 | Gem regression test that needs no screenshots | three broken orbit versions pass every test today | done 2b93e993 |
 | 6b | Orbit taps 2-3 aim on a fresh frame captured after the tap-rate wait (council #3b) | taps were sent on a frame up to 0.7 s old | done (orbit fix commit); live at next collector restart |
-| 7 | Hard rule 4 fix: the day plan must not tap over the person's screen (item 7 #10) | safety gap | |
+| 7 | Hard rule 4 fix: the day plan must not tap over the person's screen (item 7 #10) | safety gap | in progress |
 
 Source for 2-6: `backend/logs/reviews/quality-council-20261024/synthesis.md`, items 1-6.
 
