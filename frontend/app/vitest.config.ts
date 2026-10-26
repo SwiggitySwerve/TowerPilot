@@ -10,6 +10,9 @@ export default defineConfig({
     setupFiles: ['./tests/unit/setup.ts'],
     // The safety ledger is judged from this run's own results (tests/unit/spec/ledgerReporter.ts).
     reporters: ['default', './tests/unit/spec/ledgerReporter.ts'],
+    // Whole-app page tests take about 1 s alone and several times that on a loaded runner; the 5 s default timed out (RUN-10).
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
     restoreMocks: true,
     unstubGlobals: true,
     typecheck: {

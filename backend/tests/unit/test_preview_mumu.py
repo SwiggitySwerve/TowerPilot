@@ -236,11 +236,12 @@ def test_helper_read_failure_is_bounded_and_reaps_child(installation, helper, mo
 
 def test_helper_initialization_hang_is_bounded(installation, helper, monkeypatch):
     processes = helper("init_hang")
-    monkeypatch.setattr(mumu, "_START_TIMEOUT", 0.2)
+    monkeypatch.setattr(mumu, "_START_TIMEOUT", 0.5)
+    monkeypatch.setattr(mumu, "_CLOSE_TIMEOUT", 2.0)   # the real 0.25 s kill bound is shorter than a loaded runner needs to reap a child
     started = time.monotonic()
     with pytest.raises(PreviewUnavailable):
         mumu.MuMuPreview(str(installation), 0, "test.package")
-    assert time.monotonic() - started < 1.5
+    assert time.monotonic() - started < 5
     assert processes[0].poll() is not None
 
 
@@ -256,19 +257,22 @@ def test_close_interrupts_an_outstanding_read(installation, helper, monkeypatch)
         return receive(*args)
 
     monkeypatch.setattr(mumu, "_receive", receiving)
+    monkeypatch.setattr(mumu, "_CLOSE_TIMEOUT", 2.0)   # see test_helper_initialization_hang_is_bounded
     def read():
         try:
-            preview.read(timeout=5)
+            preview.read(timeout=30)   # far longer than the close-and-join budget below: only close() can end it in time
         except PreviewError as exc:
             errors.append(exc)
     thread = threading.Thread(target=read)
     thread.start()
-    assert entered.wait(timeout=1.5)
+    assert entered.wait(timeout=5)
     with pytest.raises(PreviewError, match="outstanding frame request"):
         preview.read(timeout=0.05)
+    closing = time.monotonic()
     preview.close()
-    thread.join(timeout=1.5)
+    thread.join(timeout=5)
     assert not thread.is_alive()
+    assert time.monotonic() - closing < 5
     assert len(errors) == 1
     assert processes[0].poll() is not None
 

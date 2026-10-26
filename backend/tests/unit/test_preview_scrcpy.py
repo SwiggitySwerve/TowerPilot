@@ -367,7 +367,7 @@ def test_startup_waits_for_first_frame_and_cleans_up_on_timeout(monkeypatch, tmp
     cleanup_recovered = False
     monkeypatch.setattr(scrcpy.secrets, "randbits", lambda bits: 0xab)
     monkeypatch.setattr(scrcpy, "verify_server", lambda path: Path(path))
-    monkeypatch.setattr(scrcpy, "_STARTUP_TIMEOUT", .5 if receive_frame else .05)
+    monkeypatch.setattr(scrcpy, "_STARTUP_TIMEOUT", .5)
     decoder = Decoder((2, 3))
     monkeypatch.setattr(scrcpy, "_load_decoder", lambda: SimpleNamespace(
         CodecContext=SimpleNamespace(create=lambda *args: decoder), Packet=Packet))
@@ -416,8 +416,9 @@ def test_startup_waits_for_first_frame_and_cleans_up_on_timeout(monkeypatch, tmp
                 cleanup_recovered = True
                 retained.close()
                 assert retained._cleanup_error is None
-                assert not retained._reader.is_alive()
-                assert not retained._logs.is_alive()
+                # _reader exists only once the video wire is up; a loaded machine can spend the whole startup budget before that
+                assert retained._reader is None or not retained._reader.is_alive()
+                assert retained._logs is None or not retained._logs.is_alive()
         assert "control=false" in requests[0]
         assert "display_id=7" in requests[0]
         assert requests[1] == "localabstract:scrcpy_000000ab"

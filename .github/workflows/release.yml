@@ -31,8 +31,11 @@ jobs:
           git checkout --detach $tag
           if ($LASTEXITCODE -ne 0) { throw 'Cannot check out release tag' }
           "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append
-      - name: Install build and test dependencies
-        run: python -m pip install -r requirements-portable.lock pytest
+      # Two steps: pip refuses a bare requirement beside the hash-locked file.
+      - name: Install build dependencies
+        run: python -m pip install -r requirements-portable.lock
+      - name: Install test dependencies
+        run: python -m pip install pytest==9.1.1
       - name: Select backend release tests by layout
         shell: pwsh
         run: |
