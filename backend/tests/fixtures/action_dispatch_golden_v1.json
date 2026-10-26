@@ -4455,207 +4455,207 @@
    ],
    [
     "tick-9",
-    {"battle": {"commands": [{"applied_paths": ["routines.ad_gems.enabled"], "evidence": null, "kind": "controls", "payload": {"routines": {"ad_gems": {"enabled": false}}}, "reason": null, "request_keys": ["off"], "revision": 1, "state": "applied"}, {"applied_paths": [], "evidence": {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "observed_at": 1700000115.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "confirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}, "kind": "action", "payload": {"action": "ad_gems"}, "reason": null, "request_keys": ["once-1"], "revision": 1, "state": "completed"}]}, "events": [["ad_gems_attempt", {"claim_attempt_id": "000000000000:attempt:1", "claim_rect": [0, 1250, 200, 100], "observed_wait_sec": 0, "offer_id": "000000000000:offer:1", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_sec": null, "window_id": "000000000000:window:1"}], ["ad_gems_tap", {"claim_attempt_id": "000000000000:attempt:1", "claim_rect": [0, 1250, 200, 100], "edge_inset_px": 5, "offer_id": "000000000000:offer:1", "offer_wait_sec": 9.0, "verification_before_tap_sec": 0.0, "window_id": "000000000000:window:1"}], ["ad_gems_offer_lost", {"claim_attempt_id": "000000000000:attempt:1", "first_seen_at": 1700000106.0, "last_seen_at": 1700000115.0, "offer_id": "000000000000:offer:1", "waited_sec": 9.0, "window_id": "000000000000:window:1"}], ["ad_gems_claim", {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "offer_id": "000000000000:offer:1", "reason": "offer_disappeared", "window_id": "000000000000:window:1"}], ["ad_gems_attempt_finished", {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "observed_at": 1700000115.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "confirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}], ["ad_gems_window_ended", {"claim_attempt_id": "000000000000:attempt:1", "counters": {"attempts": 1, "checks": 6, "confirmed": 1, "seen": 1, "skips": 0, "windows_missed": 0}, "duration_sec": 9.0, "last_failed_attempt": null, "observation": {"absent": 1, "incomplete": 0, "reads": 6}, "offer_id": "000000000000:offer:1", "pause_sec": 711.0, "reason": "confirmed", "response_due_at": null, "window_id": "000000000000:window:1"}], ["ad_gems_offer_unknown", {"claim_attempt_id": null, "last_observed_at": 1700000115.0, "last_seen_at": 1700000115.0, "offer_id": "000000000000:offer:1", "reason": "disabled", "window_id": "000000000000:window:1"}], ["battle_command_acknowledged", {"action": "ad_gems", "applied_paths": [], "battle_id": "00000000-0000-0000-0000-000000000005", "claim_attempt_id": "000000000000:attempt:1", "command_id": "00000000-0000-0000-0000-000000000008", "command_kind": "action", "driver_segment": "00000000-0000-0000-0000-000000000003", "evidence": {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "observed_at": 1700000115.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "confirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}, "offer_id": "000000000000:offer:1", "operation_id": "00000000-0000-0000-0000-000000000002", "outcome": "confirmed", "reason": "offer_disappeared", "revision": 1, "state": "completed", "window_id": "000000000000:window:1"}]], "host": {"ad": {"blocker": null, "claim_at": null, "claim_attempt_id": null, "counters": {"attempts": 1, "checks": 6, "confirmed": 1, "seen": 1, "skips": 0, "windows_missed": 0}, "enabled": false, "last_outcome": {"confirmed": true, "outcome": "confirmed", "reason": "offer_disappeared"}, "last_window_started_at": 106.0, "manual_active": false, "manual_requested": false, "next_at": 826.0, "next_observation_at": 118.84465, "next_window_at": 826.0, "offer_id": "000000000000:offer:1", "options": {"cooldown": [720, 720], "poll": [2, 4], "retry": [4, 7], "window": 60}, "visibility": "unknown", "visibility_reason": "disabled", "window_deadline": null, "window_id": "000000000000:window:1", "window_started_at": null}, "effective": {"gather": {"ad_gems": true, "gem_orbit": {"enabled": true}}, "shop_interval_sec": 90, "shopping_plan": {"enabled": true, "interval_sec": 90, "queue_digest": "8A942EE9086A7FB3"}}, "flags": {"cl_normalized": true, "repeat_enabled": true, "rewards_enabled": true, "shopping_enabled": true, "uw_normalized": true}, "gates": {"abilities": true, "ad_gems": true, "floating_gems": true, "repeat": true, "rescue": true, "rewards": true, "shopping": true}, "orbit": {"_attempt_had_input": true, "_failed_retry_anchor": null, "_input_ready_at": 116.0, "_timeout_ready_at": 0.0, "attempt_id": "00000000000000000000000000000013", "attempt_started": 106.0, "attempt_timeout": 60.0, "balance_before": 200, "enabled": true, "interval": 960.0, "last_outcome": null, "last_refusal": null, "manual_active": false, "manual_requested": false, "next_at": 116.0, "next_window_at": 1066.0, "retry_backoff": 15.0, "retry_interval": 5.0, "sent_tap": true, "window_ends_at": 166.0, "window_id": "00000000000000000000000000000009"}, "shop": {"active": false, "command": null, "manual": null, "manual_outcome": null, "plan": {"enabled": true, "interval": 90, "queue": [{"enabled": true, "from_wave": 1, "id": "health", "tap_limit": null, "until_wave": null, "weight": 1}, {"enabled": true, "from_wave": 1, "id": "damage", "tap_limit": null, "until_wave": null, "weight": 1}]}}, "uw_done": ["x"]}}
+    {"battle": {"commands": [{"applied_paths": ["routines.ad_gems.enabled"], "evidence": null, "kind": "controls", "payload": {"routines": {"ad_gems": {"enabled": false}}}, "reason": null, "request_keys": ["off"], "revision": 1, "state": "applied"}, {"applied_paths": [], "evidence": {"claim_attempt_id": "000000000000:attempt:1", "confirmed": false, "observed_at": 1700000115.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "unconfirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}, "kind": "action", "payload": {"action": "ad_gems"}, "reason": null, "request_keys": ["once-1"], "revision": 1, "state": "completed"}]}, "events": [["ad_gems_attempt", {"claim_attempt_id": "000000000000:attempt:1", "claim_rect": [0, 1250, 200, 100], "observed_wait_sec": 0, "offer_id": "000000000000:offer:1", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_sec": null, "window_id": "000000000000:window:1"}], ["ad_gems_tap", {"claim_attempt_id": "000000000000:attempt:1", "claim_rect": [0, 1250, 200, 100], "edge_inset_px": 5, "offer_id": "000000000000:offer:1", "offer_wait_sec": 9.0, "verification_before_tap_sec": 0.0, "window_id": "000000000000:window:1"}], ["ad_gems_offer_lost", {"claim_attempt_id": "000000000000:attempt:1", "first_seen_at": 1700000106.0, "last_seen_at": 1700000115.0, "offer_id": "000000000000:offer:1", "waited_sec": 9.0, "window_id": "000000000000:window:1"}], ["ad_gems_claim", {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "offer_id": "000000000000:offer:1", "reason": "offer_disappeared", "window_id": "000000000000:window:1"}], ["ad_gems_attempt_finished", {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "observed_at": 1700000115.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "confirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}], ["ad_gems_window_ended", {"claim_attempt_id": "000000000000:attempt:1", "counters": {"attempts": 1, "checks": 6, "confirmed": 1, "seen": 1, "skips": 0, "windows_missed": 0}, "duration_sec": 9.0, "last_failed_attempt": null, "observation": {"absent": 1, "incomplete": 0, "reads": 6}, "offer_id": "000000000000:offer:1", "pause_sec": 711.0, "reason": "confirmed", "response_due_at": null, "window_id": "000000000000:window:1"}], ["ad_gems_offer_unknown", {"claim_attempt_id": null, "last_observed_at": 1700000115.0, "last_seen_at": 1700000115.0, "offer_id": "000000000000:offer:1", "reason": "disabled", "window_id": "000000000000:window:1"}], ["battle_command_acknowledged", {"action": "ad_gems", "applied_paths": [], "battle_id": "00000000-0000-0000-0000-000000000005", "claim_attempt_id": "000000000000:attempt:1", "command_id": "00000000-0000-0000-0000-000000000008", "command_kind": "action", "driver_segment": "00000000-0000-0000-0000-000000000003", "evidence": {"claim_attempt_id": "000000000000:attempt:1", "confirmed": false, "observed_at": 1700000115.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "unconfirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}, "offer_id": "000000000000:offer:1", "operation_id": "00000000-0000-0000-0000-000000000002", "outcome": "unconfirmed", "reason": "offer_disappeared", "revision": 1, "state": "completed", "window_id": "000000000000:window:1"}]], "host": {"ad": {"blocker": null, "claim_at": null, "claim_attempt_id": null, "counters": {"attempts": 1, "checks": 6, "confirmed": 1, "seen": 1, "skips": 0, "windows_missed": 0}, "enabled": false, "last_outcome": {"confirmed": true, "outcome": "confirmed", "reason": "offer_disappeared"}, "last_window_started_at": 106.0, "manual_active": false, "manual_requested": false, "next_at": 826.0, "next_observation_at": 118.84465, "next_window_at": 826.0, "offer_id": "000000000000:offer:1", "options": {"cooldown": [720, 720], "poll": [2, 4], "retry": [4, 7], "window": 60}, "visibility": "unknown", "visibility_reason": "disabled", "window_deadline": null, "window_id": "000000000000:window:1", "window_started_at": null}, "effective": {"gather": {"ad_gems": true, "gem_orbit": {"enabled": true}}, "shop_interval_sec": 90, "shopping_plan": {"enabled": true, "interval_sec": 90, "queue_digest": "8A942EE9086A7FB3"}}, "flags": {"cl_normalized": true, "repeat_enabled": true, "rewards_enabled": true, "shopping_enabled": true, "uw_normalized": true}, "gates": {"abilities": true, "ad_gems": true, "floating_gems": true, "repeat": true, "rescue": true, "rewards": true, "shopping": true}, "orbit": {"_attempt_had_input": true, "_failed_retry_anchor": null, "_input_ready_at": 116.0, "_timeout_ready_at": 0.0, "attempt_id": "00000000000000000000000000000013", "attempt_started": 106.0, "attempt_timeout": 60.0, "balance_before": 200, "enabled": true, "interval": 960.0, "last_outcome": null, "last_refusal": null, "manual_active": false, "manual_requested": false, "next_at": 116.0, "next_window_at": 1066.0, "retry_backoff": 15.0, "retry_interval": 5.0, "sent_tap": true, "window_ends_at": 166.0, "window_id": "00000000000000000000000000000009"}, "shop": {"active": false, "command": null, "manual": null, "manual_outcome": null, "plan": {"enabled": true, "interval": 90, "queue": [{"enabled": true, "from_wave": 1, "id": "health", "tap_limit": null, "until_wave": null, "weight": 1}, {"enabled": true, "from_wave": 1, "id": "damage", "tap_limit": null, "until_wave": null, "weight": 1}]}}, "uw_done": ["x"]}}
    ],
    [
     "tick-10",
-    "CDF94BD1997CCDAB"
+    "5867E2FCBDB040ED"
    ],
    [
     "tick-11",
-    "DD9E3AAB8C048259"
+    "461E785EB84550A1"
    ],
    [
     "tick-12",
-    "32DF0CAB8A9EAD6D"
+    "0F34A818CD95FDB5"
    ],
    [
     "tick-13",
-    "CF117A985DD354E7"
+    "6881F26AA18B69C0"
    ],
    [
     "tick-14",
-    "AF98F1ECDFFCB204"
+    "62711AF7EB841702"
    ],
    [
     "tick-15",
-    "90119DD6AB96732F"
+    "4B2934B203E7E988"
    ],
    [
     "tick-16",
-    "AD19BEB013463746"
+    "CA1AE58BE29EB377"
    ],
    [
     "tick-17",
-    "E6BF447212794130"
+    "F001A345E313436C"
    ],
    [
     "tick-18",
-    "18B39C0995C76D64"
+    "ACAB9763234E2CE5"
    ],
    [
     "tick-19",
-    "886A55D4A550CAF9"
+    "F642EB40C7A10955"
    ],
    [
     "tick-20",
-    "8A326C000E772E44"
+    "1F18C25F84144E00"
    ],
    [
     "tick-21",
-    "3A274B3BBC516CC6"
+    "FA6AFBE57FD91798"
    ],
    [
     "tick-22",
-    "F6418D36DB9280C4"
+    "F809DDF6204F5879"
    ],
    [
     "tick-23",
-    "52E072FDA204A254"
+    "A5CD0EB715EDBA2E"
    ],
    [
     "tick-24",
-    "A76263031013CB1D"
+    "5C8124C5959BE32B"
    ],
    [
     "tick-25",
-    "8F62D08DC4CB11C3"
+    "63F56DCB3A9FB4F4"
    ],
    [
     "tick-26",
-    "B6DEDCEA31BF07E8"
+    "010550BC4CED6287"
    ],
    [
     "tick-27",
-    "821CAC8A2EFB3AD9"
+    "4FD39AC90ED23F22"
    ],
    [
     "tick-28",
-    "F6735C7464454851"
+    "03037B7D1605508C"
    ],
    [
     "tick-29",
-    "6EE1F7EE6F85CED4"
+    "B822F4E775FF64D8"
    ],
    [
     "tick-30",
-    "3D9F7FD39AB22DA4"
+    "B11CD869C9D0FD7D"
    ],
    [
     "tick-31",
-    "A5345E8E79CB86CF"
+    "26DAC9E2DF9CFFCE"
    ],
    [
     "tick-32",
-    "E109BF81E61594FE"
+    "69F7202238A0EDBA"
    ],
    [
     "tick-33",
-    "C48D02EBD901D756"
+    "BEB1F91379BB9FBF"
    ],
    [
     "tick-34",
-    "B1D1760A391EEFD8"
+    "879899E3DF7590EF"
    ],
    [
     "tick-35",
-    "678B8E7634F65827"
+    "E783D6932344714B"
    ],
    [
     "tick-36",
-    "F2393D25B481BC4C"
+    "623E83F7C47E1342"
    ],
    [
     "tick-37",
-    "6F8FA75041D55820"
+    "6BC680E5034CCF2F"
    ],
    [
     "tick-38",
-    "7F58DAE15BF31249"
+    "8E2A51507EA7A4D1"
    ],
    [
     "tick-39",
-    "DC6D95522C37180C"
+    "37EE8DB85EC99C06"
    ],
    [
     "tick-40",
-    "8BE683C08746A651"
+    "2D0222D039B9F275"
    ],
    [
     "tick-41",
-    "68266F8815BC2F05"
+    "34BB387F291328ED"
    ],
    [
     "tick-42",
-    "E98558CADDBC189F"
+    "298222FB2896B9F2"
    ],
    [
     "tick-43",
-    "A5A5E5CA658AEC36"
+    "95735F713EB6FBBF"
    ],
    [
     "tick-44",
-    "B421E72AB9AEDF9F"
+    "6632D4E91C05E69A"
    ],
    [
     "tick-45",
-    "13C2CEE445DDD764"
+    "249FAE6715D126C3"
    ],
    [
     "tick-46",
-    "7471719D1DE1D195"
+    "AB26335FEFA1B4F5"
    ],
    [
     "tick-47",
-    "B7842B31CA77EEF5"
+    "03B00A090CF44DEE"
    ],
    [
     "tick-48",
-    "2E8D53EF3EDF575D"
+    "9D4F38294F036056"
    ],
    [
     "tick-49",
-    "F521400D904F498D"
+    "88C52349A5A03B7B"
    ],
    [
     "tick-50",
-    "088ACAB4C8C2EDD2"
+    "625601A87A4C6C76"
    ],
    [
     "tick-51",
-    "C65746696E480E62"
+    "42849B419095E717"
    ],
    [
     "tick-52",
-    "B25CD753CDEEBF15"
+    "D97ABCBE0A242656"
    ],
    [
     "tick-53",
-    "92CC47B11589CF43"
+    "6FF3C632D5B89576"
    ],
    [
     "tick-54",
-    "219FF14A224D1225"
+    "4C540AB87D380D2B"
    ],
    [
     "tick-55",
-    "0B8BC7EA67990C04"
+    "9A0DE39B69A5C83C"
    ],
    [
     "tick-56",
-    "45AB0006DC6BFA1B"
+    "865DDE06398BA37A"
    ],
    [
     "tick-57",
-    "43FBD36EFE2B8134"
+    "3A1A2C0924C2162E"
    ],
    [
     "tick-58",
-    "85594C73DD08DA4C"
+    "AD42247FC67F3F17"
    ],
    [
     "tick-59",
-    "FE3F22F6EC10EF75"
+    "D4B9BC1D4A0E2A2C"
    ],
    [
     "second_request",
@@ -4663,7 +4663,7 @@
    ],
    [
     "second_action",
-    {"battle": {"commands": [{"applied_paths": ["routines.ad_gems.enabled"], "evidence": null, "kind": "controls", "payload": {"routines": {"ad_gems": {"enabled": false}}}, "reason": null, "request_keys": ["off"], "revision": 1, "state": "applied"}, {"applied_paths": [], "evidence": {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "observed_at": 1700000115.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "confirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}, "kind": "action", "payload": {"action": "ad_gems"}, "reason": null, "request_keys": ["once-1"], "revision": 1, "state": "completed"}, {"applied_paths": [], "evidence": null, "kind": "action", "payload": {"action": "floating_gems"}, "reason": null, "request_keys": ["second-1"], "revision": 1, "state": "requested"}]}, "events": [], "host": {"ad": {"blocker": null, "claim_at": null, "claim_attempt_id": null, "counters": {"attempts": 1, "checks": 6, "confirmed": 1, "seen": 1, "skips": 0, "windows_missed": 0}, "enabled": false, "last_outcome": {"confirmed": true, "outcome": "confirmed", "reason": "offer_disappeared"}, "last_window_started_at": 106.0, "manual_active": false, "manual_requested": false, "next_at": 826.0, "next_observation_at": 118.84465, "next_window_at": 826.0, "offer_id": "000000000000:offer:1", "options": {"cooldown": [720, 720], "poll": [2, 4], "retry": [4, 7], "window": 60}, "visibility": "unknown", "visibility_reason": "disabled", "window_deadline": null, "window_id": "000000000000:window:1", "window_started_at": null}, "effective": {"gather": {"ad_gems": true, "gem_orbit": {"enabled": true}}, "shop_interval_sec": 90, "shopping_plan": {"enabled": true, "interval_sec": 90, "queue_digest": "8A942EE9086A7FB3"}}, "flags": {"cl_normalized": true, "repeat_enabled": true, "rewards_enabled": true, "shopping_enabled": true, "uw_normalized": true}, "gates": {"abilities": true, "ad_gems": true, "floating_gems": true, "repeat": true, "rescue": true, "rewards": true, "shopping": true}, "orbit": {"_attempt_had_input": true, "_failed_retry_anchor": null, "_input_ready_at": 166.0, "_timeout_ready_at": 0.0, "attempt_id": "00000000000000000000000000000045", "attempt_started": 106.0, "attempt_timeout": 60.0, "balance_before": 200, "enabled": true, "interval": 960.0, "last_outcome": null, "last_refusal": null, "manual_active": false, "manual_requested": false, "next_at": 166.0, "next_window_at": 1066.0, "retry_backoff": 15.0, "retry_interval": 5.0, "sent_tap": true, "window_ends_at": 166.0, "window_id": "00000000000000000000000000000009"}, "shop": {"active": false, "command": null, "manual": null, "manual_outcome": null, "plan": {"enabled": true, "interval": 90, "queue": [{"enabled": true, "from_wave": 1, "id": "health", "tap_limit": null, "until_wave": null, "weight": 1}, {"enabled": true, "from_wave": 1, "id": "damage", "tap_limit": null, "until_wave": null, "weight": 1}]}}, "uw_done": ["x"]}}
+    {"battle": {"commands": [{"applied_paths": ["routines.ad_gems.enabled"], "evidence": null, "kind": "controls", "payload": {"routines": {"ad_gems": {"enabled": false}}}, "reason": null, "request_keys": ["off"], "revision": 1, "state": "applied"}, {"applied_paths": [], "evidence": {"claim_attempt_id": "000000000000:attempt:1", "confirmed": false, "observed_at": 1700000115.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "unconfirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}, "kind": "action", "payload": {"action": "ad_gems"}, "reason": null, "request_keys": ["once-1"], "revision": 1, "state": "completed"}, {"applied_paths": [], "evidence": null, "kind": "action", "payload": {"action": "floating_gems"}, "reason": null, "request_keys": ["second-1"], "revision": 1, "state": "requested"}]}, "events": [], "host": {"ad": {"blocker": null, "claim_at": null, "claim_attempt_id": null, "counters": {"attempts": 1, "checks": 6, "confirmed": 1, "seen": 1, "skips": 0, "windows_missed": 0}, "enabled": false, "last_outcome": {"confirmed": true, "outcome": "confirmed", "reason": "offer_disappeared"}, "last_window_started_at": 106.0, "manual_active": false, "manual_requested": false, "next_at": 826.0, "next_observation_at": 118.84465, "next_window_at": 826.0, "offer_id": "000000000000:offer:1", "options": {"cooldown": [720, 720], "poll": [2, 4], "retry": [4, 7], "window": 60}, "visibility": "unknown", "visibility_reason": "disabled", "window_deadline": null, "window_id": "000000000000:window:1", "window_started_at": null}, "effective": {"gather": {"ad_gems": true, "gem_orbit": {"enabled": true}}, "shop_interval_sec": 90, "shopping_plan": {"enabled": true, "interval_sec": 90, "queue_digest": "8A942EE9086A7FB3"}}, "flags": {"cl_normalized": true, "repeat_enabled": true, "rewards_enabled": true, "shopping_enabled": true, "uw_normalized": true}, "gates": {"abilities": true, "ad_gems": true, "floating_gems": true, "repeat": true, "rescue": true, "rewards": true, "shopping": true}, "orbit": {"_attempt_had_input": true, "_failed_retry_anchor": null, "_input_ready_at": 166.0, "_timeout_ready_at": 0.0, "attempt_id": "00000000000000000000000000000045", "attempt_started": 106.0, "attempt_timeout": 60.0, "balance_before": 200, "enabled": true, "interval": 960.0, "last_outcome": null, "last_refusal": null, "manual_active": false, "manual_requested": false, "next_at": 166.0, "next_window_at": 1066.0, "retry_backoff": 15.0, "retry_interval": 5.0, "sent_tap": true, "window_ends_at": 166.0, "window_id": "00000000000000000000000000000009"}, "shop": {"active": false, "command": null, "manual": null, "manual_outcome": null, "plan": {"enabled": true, "interval": 90, "queue": [{"enabled": true, "from_wave": 1, "id": "health", "tap_limit": null, "until_wave": null, "weight": 1}, {"enabled": true, "from_wave": 1, "id": "damage", "tap_limit": null, "until_wave": null, "weight": 1}]}}, "uw_done": ["x"]}}
    ]
   ],
   "ad_no_offer": [
@@ -5253,207 +5253,207 @@
    ],
    [
     "tick-9",
-    {"battle": {"commands": [{"applied_paths": [], "evidence": {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "observed_at": 1700000113.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "confirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}, "kind": "action", "payload": {"action": "ad_gems"}, "reason": null, "request_keys": ["once-1"], "revision": 0, "state": "completed"}]}, "events": [["ad_gems_attempt", {"claim_attempt_id": "000000000000:attempt:1", "claim_rect": [0, 1250, 200, 100], "observed_wait_sec": 0, "offer_id": "000000000000:offer:1", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_sec": null, "window_id": "000000000000:window:1"}], ["ad_gems_tap", {"claim_attempt_id": "000000000000:attempt:1", "claim_rect": [0, 1250, 200, 100], "edge_inset_px": 5, "offer_id": "000000000000:offer:1", "offer_wait_sec": 9.0, "verification_before_tap_sec": 0.0, "window_id": "000000000000:window:1"}], ["ad_gems_offer_lost", {"claim_attempt_id": "000000000000:attempt:1", "first_seen_at": 1700000104.0, "last_seen_at": 1700000113.0, "offer_id": "000000000000:offer:1", "waited_sec": 9.0, "window_id": "000000000000:window:1"}], ["ad_gems_claim", {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "offer_id": "000000000000:offer:1", "reason": "offer_disappeared", "window_id": "000000000000:window:1"}], ["ad_gems_attempt_finished", {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "observed_at": 1700000113.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "confirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}], ["ad_gems_window_ended", {"claim_attempt_id": "000000000000:attempt:1", "counters": {"attempts": 1, "checks": 6, "confirmed": 1, "seen": 1, "skips": 0, "windows_missed": 0}, "duration_sec": 9.0, "last_failed_attempt": null, "observation": {"absent": 1, "incomplete": 0, "reads": 6}, "offer_id": "000000000000:offer:1", "pause_sec": 711.0, "reason": "confirmed", "response_due_at": null, "window_id": "000000000000:window:1"}], ["battle_command_acknowledged", {"action": "ad_gems", "applied_paths": [], "battle_id": "00000000-0000-0000-0000-000000000005", "claim_attempt_id": "000000000000:attempt:1", "command_id": "00000000-0000-0000-0000-000000000007", "command_kind": "action", "driver_segment": "00000000-0000-0000-0000-000000000003", "evidence": {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "observed_at": 1700000113.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "confirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}, "offer_id": "000000000000:offer:1", "operation_id": "00000000-0000-0000-0000-000000000002", "outcome": "confirmed", "reason": "offer_disappeared", "revision": 0, "state": "completed", "window_id": "000000000000:window:1"}]], "host": {"ad": {"blocker": null, "claim_at": null, "claim_attempt_id": null, "counters": {"attempts": 1, "checks": 6, "confirmed": 1, "seen": 1, "skips": 0, "windows_missed": 0}, "enabled": true, "last_outcome": {"confirmed": true, "outcome": "confirmed", "reason": "offer_disappeared"}, "last_window_started_at": 104.0, "manual_active": false, "manual_requested": false, "next_at": 824.0, "next_observation_at": 116.84465, "next_window_at": 824.0, "offer_id": "000000000000:offer:1", "options": {"cooldown": [720, 720], "poll": [2, 4], "retry": [4, 7], "window": 60}, "visibility": "absent", "visibility_reason": "battle_frame", "window_deadline": null, "window_id": "000000000000:window:1", "window_started_at": null}, "effective": {"gather": {"ad_gems": true, "gem_orbit": {"enabled": true}}, "shop_interval_sec": 90, "shopping_plan": {"enabled": true, "interval_sec": 90, "queue_digest": "8A942EE9086A7FB3"}}, "flags": {"cl_normalized": true, "repeat_enabled": true, "rewards_enabled": true, "shopping_enabled": true, "uw_normalized": true}, "gates": {"abilities": true, "ad_gems": true, "floating_gems": true, "repeat": true, "rescue": true, "rewards": true, "shopping": true}, "orbit": {"_attempt_had_input": true, "_failed_retry_anchor": null, "_input_ready_at": 114.0, "_timeout_ready_at": 0.0, "attempt_id": "00000000000000000000000000000012", "attempt_started": 104.0, "attempt_timeout": 60.0, "balance_before": 200, "enabled": true, "interval": 960.0, "last_outcome": null, "last_refusal": null, "manual_active": false, "manual_requested": false, "next_at": 114.0, "next_window_at": 1064.0, "retry_backoff": 15.0, "retry_interval": 5.0, "sent_tap": true, "window_ends_at": 164.0, "window_id": "00000000000000000000000000000008"}, "shop": {"active": false, "command": null, "manual": null, "manual_outcome": null, "plan": {"enabled": true, "interval": 90, "queue": [{"enabled": true, "from_wave": 1, "id": "health", "tap_limit": null, "until_wave": null, "weight": 1}, {"enabled": true, "from_wave": 1, "id": "damage", "tap_limit": null, "until_wave": null, "weight": 1}]}}, "uw_done": ["x"]}}
+    {"battle": {"commands": [{"applied_paths": [], "evidence": {"claim_attempt_id": "000000000000:attempt:1", "confirmed": false, "observed_at": 1700000113.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "unconfirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}, "kind": "action", "payload": {"action": "ad_gems"}, "reason": null, "request_keys": ["once-1"], "revision": 0, "state": "completed"}]}, "events": [["ad_gems_attempt", {"claim_attempt_id": "000000000000:attempt:1", "claim_rect": [0, 1250, 200, 100], "observed_wait_sec": 0, "offer_id": "000000000000:offer:1", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_sec": null, "window_id": "000000000000:window:1"}], ["ad_gems_tap", {"claim_attempt_id": "000000000000:attempt:1", "claim_rect": [0, 1250, 200, 100], "edge_inset_px": 5, "offer_id": "000000000000:offer:1", "offer_wait_sec": 9.0, "verification_before_tap_sec": 0.0, "window_id": "000000000000:window:1"}], ["ad_gems_offer_lost", {"claim_attempt_id": "000000000000:attempt:1", "first_seen_at": 1700000104.0, "last_seen_at": 1700000113.0, "offer_id": "000000000000:offer:1", "waited_sec": 9.0, "window_id": "000000000000:window:1"}], ["ad_gems_claim", {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "offer_id": "000000000000:offer:1", "reason": "offer_disappeared", "window_id": "000000000000:window:1"}], ["ad_gems_attempt_finished", {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "observed_at": 1700000113.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "confirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}], ["ad_gems_window_ended", {"claim_attempt_id": "000000000000:attempt:1", "counters": {"attempts": 1, "checks": 6, "confirmed": 1, "seen": 1, "skips": 0, "windows_missed": 0}, "duration_sec": 9.0, "last_failed_attempt": null, "observation": {"absent": 1, "incomplete": 0, "reads": 6}, "offer_id": "000000000000:offer:1", "pause_sec": 711.0, "reason": "confirmed", "response_due_at": null, "window_id": "000000000000:window:1"}], ["battle_command_acknowledged", {"action": "ad_gems", "applied_paths": [], "battle_id": "00000000-0000-0000-0000-000000000005", "claim_attempt_id": "000000000000:attempt:1", "command_id": "00000000-0000-0000-0000-000000000007", "command_kind": "action", "driver_segment": "00000000-0000-0000-0000-000000000003", "evidence": {"claim_attempt_id": "000000000000:attempt:1", "confirmed": false, "observed_at": 1700000113.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "unconfirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}, "offer_id": "000000000000:offer:1", "operation_id": "00000000-0000-0000-0000-000000000002", "outcome": "unconfirmed", "reason": "offer_disappeared", "revision": 0, "state": "completed", "window_id": "000000000000:window:1"}]], "host": {"ad": {"blocker": null, "claim_at": null, "claim_attempt_id": null, "counters": {"attempts": 1, "checks": 6, "confirmed": 1, "seen": 1, "skips": 0, "windows_missed": 0}, "enabled": true, "last_outcome": {"confirmed": true, "outcome": "confirmed", "reason": "offer_disappeared"}, "last_window_started_at": 104.0, "manual_active": false, "manual_requested": false, "next_at": 824.0, "next_observation_at": 116.84465, "next_window_at": 824.0, "offer_id": "000000000000:offer:1", "options": {"cooldown": [720, 720], "poll": [2, 4], "retry": [4, 7], "window": 60}, "visibility": "absent", "visibility_reason": "battle_frame", "window_deadline": null, "window_id": "000000000000:window:1", "window_started_at": null}, "effective": {"gather": {"ad_gems": true, "gem_orbit": {"enabled": true}}, "shop_interval_sec": 90, "shopping_plan": {"enabled": true, "interval_sec": 90, "queue_digest": "8A942EE9086A7FB3"}}, "flags": {"cl_normalized": true, "repeat_enabled": true, "rewards_enabled": true, "shopping_enabled": true, "uw_normalized": true}, "gates": {"abilities": true, "ad_gems": true, "floating_gems": true, "repeat": true, "rescue": true, "rewards": true, "shopping": true}, "orbit": {"_attempt_had_input": true, "_failed_retry_anchor": null, "_input_ready_at": 114.0, "_timeout_ready_at": 0.0, "attempt_id": "00000000000000000000000000000012", "attempt_started": 104.0, "attempt_timeout": 60.0, "balance_before": 200, "enabled": true, "interval": 960.0, "last_outcome": null, "last_refusal": null, "manual_active": false, "manual_requested": false, "next_at": 114.0, "next_window_at": 1064.0, "retry_backoff": 15.0, "retry_interval": 5.0, "sent_tap": true, "window_ends_at": 164.0, "window_id": "00000000000000000000000000000008"}, "shop": {"active": false, "command": null, "manual": null, "manual_outcome": null, "plan": {"enabled": true, "interval": 90, "queue": [{"enabled": true, "from_wave": 1, "id": "health", "tap_limit": null, "until_wave": null, "weight": 1}, {"enabled": true, "from_wave": 1, "id": "damage", "tap_limit": null, "until_wave": null, "weight": 1}]}}, "uw_done": ["x"]}}
    ],
    [
     "tick-10",
-    "80DD2133FD08824F"
+    "EB50907D9F81539D"
    ],
    [
     "tick-11",
-    "D474BFD841EAADB0"
+    "685C762D2AC44781"
    ],
    [
     "tick-12",
-    "EDD5EF750C52C15F"
+    "7E00BFCBCC4759E6"
    ],
    [
     "tick-13",
-    "DE3E93C0553F5B4C"
+    "E9BDED6EB2AABBFB"
    ],
    [
     "tick-14",
-    "250EBD4C26FC4181"
+    "A81B01CB1F9FCE5A"
    ],
    [
     "tick-15",
-    "2C2A8024515C7E51"
+    "3EF10AB3CF7403E3"
    ],
    [
     "tick-16",
-    "CBD39359A3B94BA7"
+    "1C1CEE1538FB4A17"
    ],
    [
     "tick-17",
-    "4287F57BD7989A44"
+    "C3EBDF3EA1391871"
    ],
    [
     "tick-18",
-    "6811E77E6AFCF44E"
+    "3E8D30765B7B87D8"
    ],
    [
     "tick-19",
-    "4C633E83A25D0489"
+    "8B6CC3D631892FAC"
    ],
    [
     "tick-20",
-    "A5B48F2B012E9F59"
+    "9590058D73C87C8C"
    ],
    [
     "tick-21",
-    "680D289058C8A0EF"
+    "91C135BB03E0DCA0"
    ],
    [
     "tick-22",
-    "2BD7D053A8B43367"
+    "59457C757233486E"
    ],
    [
     "tick-23",
-    "BE8DB9CDC5489B4B"
+    "BC3D0B1BC4162208"
    ],
    [
     "tick-24",
-    "BE8165AE66C55AFA"
+    "69A317EB8BF5CC56"
    ],
    [
     "tick-25",
-    "513FB1B5D4844FA1"
+    "66F934CF851843AB"
    ],
    [
     "tick-26",
-    "F4D44BB88DE852E0"
+    "14946648E6EB65B4"
    ],
    [
     "tick-27",
-    "08777EB3E3A47A5E"
+    "A56EAE577D82E945"
    ],
    [
     "tick-28",
-    "4CD4D288F51DE571"
+    "954F88B76D06F3F6"
    ],
    [
     "tick-29",
-    "4155D210C05CF4EF"
+    "96C4F58F84B15908"
    ],
    [
     "tick-30",
-    "A9532BAE7B44DBD7"
+    "57C184CB793E54BB"
    ],
    [
     "tick-31",
-    "968C5E64A33D159E"
+    "05079D8FB83A0492"
    ],
    [
     "tick-32",
-    "DBEF747F62382B45"
+    "D0C731505C98908A"
    ],
    [
     "tick-33",
-    "4126D5D78EF9DFB1"
+    "2D86E025A224E000"
    ],
    [
     "tick-34",
-    "D5D3D5C984FAADD1"
+    "6E14C30AE6C2AB3F"
    ],
    [
     "tick-35",
-    "680DE32695C0889E"
+    "D7B94944C20D38D1"
    ],
    [
     "tick-36",
-    "72DE2FADA36FD6D0"
+    "FF4ED1D4E809952C"
    ],
    [
     "tick-37",
-    "A6A62E2E14FE6D7A"
+    "1FDD41A3A1CAF20D"
    ],
    [
     "tick-38",
-    "D05D20D0DCB55460"
+    "32C36016727FB1DF"
    ],
    [
     "tick-39",
-    "F5AC1001C72AD4F8"
+    "531AF2688E70F1C6"
    ],
    [
     "tick-40",
-    "AD9A6833EFF651EA"
+    "157338A5EBA2453E"
    ],
    [
     "tick-41",
-    "689F483DEAF8360F"
+    "97AC76D3997F9DA7"
    ],
    [
     "tick-42",
-    "778485B3EDA8C33E"
+    "2CC2AE959229C7C7"
    ],
    [
     "tick-43",
-    "28DECC92298FFB87"
+    "E97B248005937D74"
    ],
    [
     "tick-44",
-    "26F3946F278EE112"
+    "038E08AEFCDE3594"
    ],
    [
     "tick-45",
-    "82FCA7812BD9CE32"
+    "6F0E79E88798FA3F"
    ],
    [
     "tick-46",
-    "C6BEE4F3D8AA7768"
+    "373FBF0CCC9300AF"
    ],
    [
     "tick-47",
-    "1BCE01379FE129AC"
+    "E8FC76F06CADDBD7"
    ],
    [
     "tick-48",
-    "7447D8746CDFDC21"
+    "D6C86E0EDB7F9FBE"
    ],
    [
     "tick-49",
-    "A6B1DF260A22E5A1"
+    "39856FB0DC6E1FBD"
    ],
    [
     "tick-50",
-    "037DDC10DFCDE89B"
+    "766CCF5E34540423"
    ],
    [
     "tick-51",
-    "F7A82FE641D985E8"
+    "34427359FF8F3180"
    ],
    [
     "tick-52",
-    "1D915A6CF6CC1CAD"
+    "18CC1C453122CAAA"
    ],
    [
     "tick-53",
-    "1278E550349957BF"
+    "04940E203FC99753"
    ],
    [
     "tick-54",
-    "F25BD74EF58C65F9"
+    "612CCB9CE7A256C6"
    ],
    [
     "tick-55",
-    "C7B885AF83AE74E0"
+    "8BE4AC7F5CBD1C99"
    ],
    [
     "tick-56",
-    "CEE7060E5DD49AFE"
+    "DA38A48658FDFFF6"
    ],
    [
     "tick-57",
-    "BFA0C40A19AC3FDA"
+    "E88414CAB0F2B16E"
    ],
    [
     "tick-58",
-    "1183F045ECEFAA51"
+    "1B33CF9C488B103F"
    ],
    [
     "tick-59",
-    "7E03F8305ADDACAA"
+    "056BF3BB6ACF69A0"
    ],
    [
     "second_request",
@@ -5461,7 +5461,7 @@
    ],
    [
     "second_action",
-    {"battle": {"commands": [{"applied_paths": [], "evidence": {"claim_attempt_id": "000000000000:attempt:1", "confirmed": true, "observed_at": 1700000113.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "confirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}, "kind": "action", "payload": {"action": "ad_gems"}, "reason": null, "request_keys": ["once-1"], "revision": 0, "state": "completed"}, {"applied_paths": [], "evidence": null, "kind": "action", "payload": {"action": "floating_gems"}, "reason": null, "request_keys": ["second-1"], "revision": 0, "state": "requested"}]}, "events": [], "host": {"ad": {"blocker": null, "claim_at": null, "claim_attempt_id": null, "counters": {"attempts": 1, "checks": 21, "confirmed": 1, "seen": 1, "skips": 0, "windows_missed": 0}, "enabled": true, "last_outcome": {"confirmed": true, "outcome": "confirmed", "reason": "offer_disappeared"}, "last_window_started_at": 104.0, "manual_active": false, "manual_requested": false, "next_at": 824.0, "next_observation_at": 166.523851, "next_window_at": 824.0, "offer_id": "000000000000:offer:1", "options": {"cooldown": [720, 720], "poll": [2, 4], "retry": [4, 7], "window": 60}, "visibility": "absent", "visibility_reason": "battle_frame", "window_deadline": null, "window_id": "000000000000:window:1", "window_started_at": null}, "effective": {"gather": {"ad_gems": true, "gem_orbit": {"enabled": true}}, "shop_interval_sec": 90, "shopping_plan": {"enabled": true, "interval_sec": 90, "queue_digest": "8A942EE9086A7FB3"}}, "flags": {"cl_normalized": true, "repeat_enabled": true, "rewards_enabled": true, "shopping_enabled": true, "uw_normalized": true}, "gates": {"abilities": true, "ad_gems": true, "floating_gems": true, "repeat": true, "rescue": true, "rewards": true, "shopping": true}, "orbit": {"_attempt_had_input": true, "_failed_retry_anchor": null, "_input_ready_at": 164.0, "_timeout_ready_at": 0.0, "attempt_id": "00000000000000000000000000000044", "attempt_started": 104.0, "attempt_timeout": 60.0, "balance_before": 200, "enabled": true, "interval": 960.0, "last_outcome": null, "last_refusal": null, "manual_active": false, "manual_requested": false, "next_at": 164.0, "next_window_at": 1064.0, "retry_backoff": 15.0, "retry_interval": 5.0, "sent_tap": true, "window_ends_at": 164.0, "window_id": "00000000000000000000000000000008"}, "shop": {"active": false, "command": null, "manual": null, "manual_outcome": null, "plan": {"enabled": true, "interval": 90, "queue": [{"enabled": true, "from_wave": 1, "id": "health", "tap_limit": null, "until_wave": null, "weight": 1}, {"enabled": true, "from_wave": 1, "id": "damage", "tap_limit": null, "until_wave": null, "weight": 1}]}}, "uw_done": ["x"]}}
+    {"battle": {"commands": [{"applied_paths": [], "evidence": {"claim_attempt_id": "000000000000:attempt:1", "confirmed": false, "observed_at": 1700000113.0, "observed_wait_sec": 9.0, "offer_id": "000000000000:offer:1", "outcome": "unconfirmed", "reason": "offer_disappeared", "response_delay_sec": 8.566, "response_overdue_sec": 0.434, "response_wait_sec": 9.0, "scheduling_wait_sec": 0, "verification_before_tap_sec": 0.0, "verification_sec": 0.0, "window_id": "000000000000:window:1"}, "kind": "action", "payload": {"action": "ad_gems"}, "reason": null, "request_keys": ["once-1"], "revision": 0, "state": "completed"}, {"applied_paths": [], "evidence": null, "kind": "action", "payload": {"action": "floating_gems"}, "reason": null, "request_keys": ["second-1"], "revision": 0, "state": "requested"}]}, "events": [], "host": {"ad": {"blocker": null, "claim_at": null, "claim_attempt_id": null, "counters": {"attempts": 1, "checks": 21, "confirmed": 1, "seen": 1, "skips": 0, "windows_missed": 0}, "enabled": true, "last_outcome": {"confirmed": true, "outcome": "confirmed", "reason": "offer_disappeared"}, "last_window_started_at": 104.0, "manual_active": false, "manual_requested": false, "next_at": 824.0, "next_observation_at": 166.523851, "next_window_at": 824.0, "offer_id": "000000000000:offer:1", "options": {"cooldown": [720, 720], "poll": [2, 4], "retry": [4, 7], "window": 60}, "visibility": "absent", "visibility_reason": "battle_frame", "window_deadline": null, "window_id": "000000000000:window:1", "window_started_at": null}, "effective": {"gather": {"ad_gems": true, "gem_orbit": {"enabled": true}}, "shop_interval_sec": 90, "shopping_plan": {"enabled": true, "interval_sec": 90, "queue_digest": "8A942EE9086A7FB3"}}, "flags": {"cl_normalized": true, "repeat_enabled": true, "rewards_enabled": true, "shopping_enabled": true, "uw_normalized": true}, "gates": {"abilities": true, "ad_gems": true, "floating_gems": true, "repeat": true, "rescue": true, "rewards": true, "shopping": true}, "orbit": {"_attempt_had_input": true, "_failed_retry_anchor": null, "_input_ready_at": 164.0, "_timeout_ready_at": 0.0, "attempt_id": "00000000000000000000000000000044", "attempt_started": 104.0, "attempt_timeout": 60.0, "balance_before": 200, "enabled": true, "interval": 960.0, "last_outcome": null, "last_refusal": null, "manual_active": false, "manual_requested": false, "next_at": 164.0, "next_window_at": 1064.0, "retry_backoff": 15.0, "retry_interval": 5.0, "sent_tap": true, "window_ends_at": 164.0, "window_id": "00000000000000000000000000000008"}, "shop": {"active": false, "command": null, "manual": null, "manual_outcome": null, "plan": {"enabled": true, "interval": 90, "queue": [{"enabled": true, "from_wave": 1, "id": "health", "tap_limit": null, "until_wave": null, "weight": 1}, {"enabled": true, "from_wave": 1, "id": "damage", "tap_limit": null, "until_wave": null, "weight": 1}]}}, "uw_done": ["x"]}}
    ]
   ],
   "ad_window_already_open": [
