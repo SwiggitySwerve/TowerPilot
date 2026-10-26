@@ -273,15 +273,19 @@ def main(instance, preset):
             if session is not None:
                 if (session.battle['status'] not in ('prepared', 'active') or prepare_owed is not None
                         or ledger.retrying('prepare')):
-                    prepared, _ = ledger.run('prepare', session.prepare_next, **(prepare_owed or dict(origin='adopted')))
-                    if not prepared:
-                        pace(pass_started)
+                    was_live = session.battle['status'] in ('prepared', 'active')
+                    ledger.run('prepare', session.prepare_next, **(prepare_owed or dict(origin='adopted')))
+                    if session.battle['status'] not in ('prepared', 'active'):
+                        pace(pass_started)      # no record yet: nothing to collect under; the next pass asks again
                         continue
+                    # The record exists, linked as asked. A setup report still owed (its write met the lock) is finished
+                    # by a later pass (ledger.retrying); collecting goes on meanwhile, under this record.
                     prepare_owed = None
-                    gems = GemWatch(body.get('gather', {}), session=actions)
-                    state.gems = gems
-                    state.tracker = wave_reader.WaveTracker()
-                    wave_hwm = None
+                    if not was_live:            # a new record: a new battle's routines
+                        gems = GemWatch(body.get('gather', {}), session=actions)
+                        state.gems = gems
+                        state.tracker = wave_reader.WaveTracker()
+                        wave_hwm = None
                 with clock.stage('ledger'):
                     ledger.run('observe', lambda: (session.observe(state, raw), session.checkpoint(state, battle_visible=True)))
             if authorized:

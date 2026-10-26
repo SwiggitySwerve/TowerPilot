@@ -119,3 +119,11 @@ def test_a_second_backwards_wave_that_prepares_cleanly_leaves_no_stale_link(monk
     session = Session([True, True])
     world(monkeypatch, session, ['up'] + ['down'] * 4 + ['low'] * 5)        # must not die on 'Cannot replace a live battle'
     assert session.prepares[-1] == dict(origin='partial_adoption', previous_battle_id='new')   # the second wave's own link
+
+
+def test_a_setup_write_that_stays_locked_does_not_stop_collecting(monkeypatch):
+    """The record exists; only its setup report is owed. Gem polls go on under it while the setup write is retried."""
+    session = Session([True] * 5, state='ended')
+    _, polled, _, _ = world(monkeypatch, session, ['up'] * 8)
+    assert polled == ['up'] * 8                                 # no pass skipped while the setup write was locked
+    assert session.prepares == [dict(origin='adopted')] * 6     # retried each pass until it landed, then left alone
