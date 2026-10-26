@@ -35,7 +35,7 @@ All seven items above are done and live. The next items, in order, one or two at
 | # | Change | Why | Status |
 |---|---|---|---|
 | 8 | Tests that defend hard rule 2 (tournament refusals in tourney.end_round, ensure_home, shard.abandon_run) | removing those refusals leaves every test green today (council #9a, BC-02) | done |
-| 9 | CI gate on the fork: backend unit, contract drift, frontend typecheck/lint/unit, run first as non-required | the branch has no CI runs at all (council #8) | in progress |
+| 9 | CI gate on the fork: backend unit, contract drift, frontend typecheck/lint/unit, run first as non-required | the branch has no CI runs at all (council #8) | done; first run on push |
 | 10 | Honest labels: a collector launch is unconfirmed until it reports; battle ad reads "offer gone after tap" | the history claims more than it knows (council #7) | in progress |
 | 11 | Faster gem loop: the collector's single thread slows to one pass per ~6 s, so ad offer readings go stale (observations_lapsed, also before today's changes) | missed offers (council #5e, GC-07) | |
 | 12 | Resume paused roadmap item 7 (r18e main-loop timers, r18h tests, F-1 latency gate port), then items 3, 9, 10 | roadmap | |
