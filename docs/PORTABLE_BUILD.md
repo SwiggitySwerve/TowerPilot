@@ -11,7 +11,7 @@ or administrator access is needed. The emulator and game are installed separatel
 ADB can be downloaded through Setup after accepting Google's terms. The supported
 environment is Windows 11 x64 with current Chrome or Edge; the limits are listed under
 "Environment limits" in the release note for the version, for example
-[RELEASE_0.6_BETA.md](RELEASE_0.6_BETA.md#environment-limits).
+`docs/RELEASE_0.6_BETA.md` in the repository.
 
 The private runtime is the official Python 3.12.10 x64 embeddable distribution,
 checked against a pinned SHA-256. Dependencies are installed at build time from

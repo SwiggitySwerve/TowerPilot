@@ -68,7 +68,7 @@ dependencies retain their own licenses; game artwork is not covered.
   configuration with someone else's settings.
 - Every environment limit (Windows 10, browsers, emulators, the scrcpy preview,
   Windows text recognition, ad overlays) is listed under "Environment limits" in
-  `docs/RELEASE_0.6_BETA.md`.
+  `docs/RELEASE_0.6_BETA.md` in the repository.
 
 Local validation: **1,239 Python tests passed, 3 skipped; 25 frontend tests passed**.
 The release workflow checks package boundaries and the dashboard before building.

@@ -76,7 +76,8 @@ browser. Setup uses Windows text recognition. Install an emulator and The Tower
 yourself, and sign into your game account first. MuMu is the reference emulator;
 BlueStacks is tested and has needed retries; no other emulator is claimed. You do
 not need a separate ADB installation. Every limit of the 0.6-beta draft is listed
-under [Environment limits](docs/RELEASE_0.6_BETA.md#environment-limits).
+under [Environment limits](https://github.com/TaBuPeH/TowerPilot/blob/master/docs/RELEASE_0.6_BETA.md#environment-limits)
+in the repository (the release ZIPs carry the limits of their own version in `docs/RELEASE_<VERSION>.md`).
 
 For the portable ZIP, launch **Start Tower Pilot.cmd** and continue at step 4.
 Steps 1–3 below apply only to the source distribution.

@@ -44,7 +44,7 @@ your own farming tier and equipment after mapping.
   dependency images that are not on the pinned list. It also requires the release note
   of the version being built, with an Environment limits section.
 - **Capability reports say what was checked.** `/api/runtime` carries an
-  `environment` block. Each capability is available, missing or unknown, with the
+  `environment` block. Each capability is available, missing, timeout or unknown, with the
   check it rests on. Windows text recognition stays unknown until the on-demand probe
   has run (see the limits below).
 - **The old Dashboard pages are gone.** The dashboard app at `/ui/app/` is the only
