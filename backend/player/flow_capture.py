@@ -1942,8 +1942,70 @@ def verify_saved_upgrade_labels(flow, wanted=None):
         return known, invalid
 
 
+REPAIRABLE_STATUSES = ('mismatch', 'recognition_unverified')     # a saved image that reads as another stat, or was rejected before: a candidate can be kept for these
+NO_CANDIDATE_PRODUCER = ('stats/max_label.png',)    # the Max plaque is read only while its file is missing (capture_max_plaque) and expects the text 'max', not its own slug: no candidate path exists for it
+
+
+def _repairable(invalid):
+    """The relative paths of `invalid` (verify_saved_upgrade_labels) a repair candidate can be produced for: a saved image that reads as another stat or was rejected before.
+    An unreadable or blank saved image is not one, and neither is a name with no candidate producer (NO_CANDIDATE_PRODUCER): counting those would start a Tier-1 run and walk the
+    whole panel for a candidate that cannot be made."""
+    return sorted(rel for rel, evidence in invalid.items()
+                  if rel not in NO_CANDIDATE_PRODUCER and evidence.get('status') in REPAIRABLE_STATUSES)
+
+
+def _record_repair_candidate(flow, rel, crop, frame, point, texts, first_grab_at, second_grab_at):
+    """Keep a CANDIDATE for a saved stat image that reads as another stat: the crop, the frame it was cut from and what was read, under the calibration's
+    evidence folder. Never a template: nothing here writes, replaces or removes a file under templates/ (CLAUDE.md rule 6); the person approves any replacement
+    and the sanctioned writer performs it. The entry of `rel` stays stale and carries the record, so Apply, readiness and the Recognition page still see the saved
+    image as wrong until it is replaced. `first_grab_at` and `second_grab_at` are the times of the two independent grabs the candidate was confirmed on.
+    Returns the record, or None when there is no evidence folder or the candidate files could not be written and read back (an event says why): no record is kept then."""
+    from pathlib import Path
+    from runtime import logger
+    folder = flow.cal.p.get('evidence')
+    if not folder:
+        return None
+
+    def failed(reason):
+        logger.event('setup_repair_candidate_failed', rel=rel, reason=reason)
+        return None
+
+    ok, encoded = cv2.imencode('.png', crop)
+    if not ok:
+        return failed('the candidate crop did not encode as a PNG')
+    data = encoded.tobytes()
+    digest = hashlib.sha256(data).hexdigest()
+    base = Path(folder) / 'repair_candidates' / Path(rel).parent
+    stem = f'{Path(rel).stem}-{digest[:12]}'
+    crop_path, source_path = base / f'{stem}.png', base / f'{stem}-source.png'
+    try:
+        base.mkdir(parents=True, exist_ok=True)
+        crop_path.write_bytes(data)
+        source_written = cv2.imwrite(str(source_path), frame)        # False, not an exception, when the frame cannot be written
+    except (OSError, cv2.error) as error:
+        return failed(f'the candidate files could not be written: {error!r}')
+    if not source_written or not source_path.is_file() or crop_path.stat().st_size != len(data):
+        return failed('the candidate crop or its source frame is not on disk as written')
+    record = dict(rel=rel, sha256=digest, path=str(crop_path), source_frame=str(source_path), screen='battle',
+                  rect=[int(point[0]), int(point[1]), int(crop.shape[1]), int(crop.shape[0])], semantic_texts=list(texts), grabs=2,
+                  grabbed_at=[first_grab_at, second_grab_at], at=time.time())
+    flow.cal.entries = [dict(entry, repair_candidate=record) if entry.get('rel') == rel else entry for entry in flow.cal.entries]
+    if flow.cal.p.get('report'):
+        flow.cal.save_report()
+    logger.event('setup_repair_candidate', **{key: value for key, value in record.items() if key != 'at'})
+    return record
+
+
 def capture_upgrade_labels(flow):
-    """Read native upgrade rows without purchasing upgrades."""
+    """Read native upgrade rows without purchasing upgrades.
+
+    A saved stat image that reads as ANOTHER stat (a rejected image, `invalid`) is not cut again, but the panel is read for its row: the label is a repair
+    CANDIDATE only when its row is found by OCR and the full label reads as the expected stat (`stat_slug` equal) in the cut, the cut is found again on a second,
+    independent grab, and the cropped label itself reads the same. It is kept as evidence (see _record_repair_candidate), never written as a template.
+    The Max plaque (stats/max_label.png) has no candidate producer (NO_CANDIDATE_PRODUCER): a wrong saved plaque is not repairable here, starts no run and extends no walk.
+
+    The offline saved-label check below (verify_saved_upgrade_labels: saved crops only, one OCR launch, the device is not touched) also runs once in `_hud_digit_pass`'s
+    gate, so a pass that starts the run performs it twice; both runs are read-only on the device."""
     import settings
     from player import battle_capture as bc, accounts
     from interactions import shopper
@@ -1956,11 +2018,13 @@ def capture_upgrade_labels(flow):
         initial_missing = missing()
         known, invalid = verify_saved_upgrade_labels(flow, wanted)
         known.pop('max_label', None)
-        if not initial_missing:
-            attempt.finish('incomplete' if invalid else 'verified_existing',
-                           missing=[], invalid=invalid, written=[])
+        repairable = _repairable(invalid)
+        if not initial_missing and not repairable:
+            attempt.finish('incomplete' if invalid else 'verified_existing', missing=[], invalid=invalid, written=[])
             return
         written = []
+        candidates = {}
+        unresolved = lambda: [rel for rel in repairable if rel[6:-4] not in candidates]      # rejected saved images no candidate was kept for yet
         for tab in ('attack','defense','utility'):
             flow.s.check_stop()
             frame = flow.grab()
@@ -1978,6 +2042,7 @@ def capture_upgrade_labels(flow):
                 flow.progress(f'Reading {tab} upgrades: page {page+1}')
                 with logger.attempt('setup_upgrade_page', tab=tab, page=page+1) as page_attempt:
                     frame = flow.grab()
+                    first_grab_at = time.time()
                     x,y,w,h=settings.CONFIG['rois']['upgrade_panel']
                     panel=frame[y:y+h,x:x+w]
                     def read_many(crops):
@@ -1996,10 +2061,21 @@ def capture_upgrade_labels(flow):
                         if maximum is not None: cuts['max_label']=maximum
                     pending = {name:crop for name,crop in cuts.items()
                                if not settings.template_path(f'stats/{name}.png').exists()}
-                    page_written = []
-                    if pending:
+                    repair = {name:crop for name,crop in cuts.items()
+                              if f'stats/{name}.png' in repairable and name not in candidates}
+                    page_written, page_candidates = [], []
+                    if pending or repair:
                         flow.pause(.3)
                         follow=flow.grab()
+                        second_grab_at = time.time()
+                        for name,crop in repair.items():
+                            _,score,_,point=cv2.minMaxLoc(cv2.matchTemplate(follow,crop,cv2.TM_CCOEFF_NORMED))
+                            if score < .98: continue                  # the second grab does not show the same label
+                            texts=read_many([crop])
+                            if bc.stat_slug(texts[0]) != name: continue   # the cropped label does not read as the expected stat
+                            if _record_repair_candidate(flow,f'stats/{name}.png',crop,frame,point,texts,first_grab_at,second_grab_at) is not None:
+                                candidates[name]=True
+                                page_candidates.append(f'stats/{name}.png')
                         for name,crop in pending.items():
                             rel=f'stats/{name}.png'
                             _,score,_,point=cv2.minMaxLoc(cv2.matchTemplate(follow,crop,cv2.TM_CCOEFF_NORMED))
@@ -2009,10 +2085,10 @@ def capture_upgrade_labels(flow):
                                 page_written.append(rel)
                                 written.append(rel)
                                 if name != 'max_label': known[name] = crop
-                    page_attempt.finish('observed', labels=sorted(cuts), written=page_written)
-                if not missing():
+                    page_attempt.finish('observed', labels=sorted(cuts), written=page_written, candidates=page_candidates)
+                if not missing() and not unresolved():
                     attempt.finish('incomplete' if invalid else 'complete',
-                                   missing=[], invalid=invalid, written=written)
+                                   missing=[], invalid=invalid, written=written, candidates=sorted(f'stats/{n}.png' for n in candidates))
                     return
                 # Overlapping strokes keep wrapped labels from remaining
                 # clipped at successive page boundaries.
@@ -2024,7 +2100,8 @@ def capture_upgrade_labels(flow):
         for rel in remaining:
             flow.skip(rel, 'Upgrade label was not read and independently confirmed on a fresh frame')
         attempt.finish('incomplete' if remaining or invalid else 'complete', missing=remaining,
-                       invalid=invalid, written=written, initial_missing=initial_missing)
+                       invalid=invalid, written=written, initial_missing=initial_missing,
+                       candidates=sorted(f'stats/{n}.png' for n in candidates), unresolved=unresolved())
 
 
 @_setup_lifecycle
@@ -2035,7 +2112,13 @@ def _hud_digit_pass(flow: _Flow) -> None:
 
     A HIGH-tier tower dies at wave ~3 - too few waves to show every glyph - so
     this runs its OWN Tier-1 run where the maxed tower SURVIVES and the counter
-    climbs through all ten. Guarded on a missing font: a no-op once it is known.
+    climbs through all ten. Guarded on a missing font: a no-op once it is known
+    and every saved stat label reads as itself (a saved label that reads as another stat starts the run too, for a repair candidate).
+
+    That gate re-arms on every consented Full setup while a saved label still reads as another stat, also after a repair candidate was recorded: the person approves the
+    candidate (root decision D8), and until a template is replaced the mismatch persists, so the next setup starts the Tier-1 run again (each start is gated by that setup's
+    popup consent and a clean Home, rule 3). A name with no candidate producer (the Max plaque) never re-arms it. The gate's saved-label check is the offline,
+    device-free `verify_saved_upgrade_labels`; capture_upgrade_labels repeats it inside the run, so a run-starting pass performs it twice.
 
     Starts a normal run, captures + ENDS the intro sprint (so the run stays
     surrenderable and the counter keeps climbing at Tier 1), reads the climbing
@@ -2066,8 +2149,9 @@ def _hud_digit_pass(flow: _Flow) -> None:
                       for item in requirements(settings.CONFIG, body)
                       for rel in item['alternatives'] if rel.startswith('stats/')}
     stats_missing = any(not settings.template_path(rel).exists() for rel in required_stats)
-    if digits_ok and not uw_never and not hud_missing and not stats_missing:
-        verify_saved_upgrade_labels(flow)
+    # A saved stat image that reads as another stat needs the in-run panel too (a repair candidate, capture_upgrade_labels); the check reads saved crops only.
+    _, stats_invalid = verify_saved_upgrade_labels(flow)
+    if digits_ok and not uw_never and not hud_missing and not stats_missing and not _repairable(stats_invalid):
         return
     if set_tier(flow, 1) != 1:
         raise RuntimeError('Could not select Tier 1; no setup battle started')
