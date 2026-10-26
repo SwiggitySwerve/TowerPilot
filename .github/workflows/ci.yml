@@ -61,7 +61,8 @@ jobs:
   frontend:
     name: Dashboard app
     runs-on: windows-latest
-    timeout-minutes: 30
+    # The unit suite alone takes about 25 minutes on a hosted runner; 30 cancelled a normal run at 30:05.
+    timeout-minutes: 45
     defaults:
       run:
         working-directory: frontend/app
