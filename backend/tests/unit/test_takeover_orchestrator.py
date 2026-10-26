@@ -61,7 +61,10 @@ def drive(world, monkeypatch, tmp_path, frames, statuses=(), *, ordinary=False, 
         calls.append(("watch", None))
         if not pending:
             raise Stop
-        return pending.pop(0)
+        status = pending.pop(0)
+        if isinstance(status, Exception):
+            raise status                       # what a helper's own guard raises mid-monitor
+        return status
 
     monkeypatch.setattr(orch, "watch_frame", watch)
     monkeypatch.setattr(orch.time, "sleep", lambda seconds: None)
@@ -375,3 +378,105 @@ def test_the_operation_worker_keeps_the_scheduler_stop_flag_for_a_takeover(world
         monkeypatch.setattr(sys, "argv", ["operation_worker", "fake_target.py"])
         operation_worker.main()
         assert flag.exists() is kept
+
+
+# ------------------------------------------------------------------ frames a helper captured for itself
+def test_the_attach_identity_guard_holds_input_below_the_confirmed_battle_only_for_a_takeover(world, monkeypatch, tmp_path):
+    run = drive(world, monkeypatch, tmp_path, [frame(), frame()])
+    orch = run.orch
+    rs = SimpleNamespace(wave_hwm=500)
+    guard = orch._attach_identity_guard(rs)
+    assert guard(frame(wave=400), "battle")["wave"] == 400                              # exactly the margin: still that battle
+    assert guard(frame(wave=None), "battle")["wave"] is None                            # unreadable: the screen checks decide, not this guard
+    assert guard(frame(wave=10), "home")["wave"] == 10                                  # only a battle frame has a wave to compare
+    with pytest.raises(orch.AttachReplaced):
+        guard(frame(wave=399), "battle")
+    rs.wave_hwm = None
+    assert guard(frame(wave=10), "battle")["wave"] == 10                                # no baseline yet: nothing to compare
+    monkeypatch.setattr(orch, "_attach", None)
+    rs.wave_hwm = 500
+    assert guard(frame(wave=10), "battle")["wave"] == 10                                # an ordinary run owns every battle it meets
+
+
+def test_the_gem_collectors_of_a_takeover_carry_the_guard_and_hold_a_replaced_battle(world, monkeypatch, tmp_path):
+    run = drive(world, monkeypatch, tmp_path, [frame(), frame()])
+    rs = run.orch.RunState()
+    rs.wave_hwm = 500
+    assert rs.gems.guard is not None and rs.gems.ad_gems.guard is rs.gems.guard and rs.gems.orbit.guard is rs.gems.guard
+    with pytest.raises(run.orch.AttachReplaced):
+        rs.gems.poll(frame(wave=10))
+    assert run.taps == []
+    plain = drive(World(tmp_path / "ordinary"), monkeypatch, tmp_path / "ordinary", [frame(), frame()], ordinary=True)
+    assert plain.orch.RunState().gems.guard is None
+
+
+def watch_setup(monkeypatch, orch, rs, wall):
+    """The real `_fast_wall_watch` over scripted wall readings: `wall` is the (extent, state) of each frame."""
+    monkeypatch.setattr(orch, "automation_enabled", lambda key: True)
+    monkeypatch.setattr(orch.detect, "wall_overheal", lambda f: f["wall"])
+    monkeypatch.setattr(orch.detect, "find_intro_sprint", lambda f: pytest.fail("the burst started"))
+    monkeypatch.setattr(orch.detect, "button_state", lambda f, name: pytest.fail("the burst started"))
+    monkeypatch.setattr(orch, "marks", lambda: [])
+    rs.post_sw_until = float("inf")
+    return [{**frame(wave=500), "wall": wall[0]}, {**frame(wave=10), "wall": wall[1]}]
+
+
+def test_the_fast_wall_watch_sends_no_burst_into_a_replaced_battle(world, monkeypatch, tmp_path):
+    from device import capture
+    run = drive(world, monkeypatch, tmp_path, [frame(), frame()])
+    orch = run.orch
+    rs = orch.RunState()
+    rs.wave_hwm = 500
+    frames = watch_setup(monkeypatch, orch, rs, [(1.0, "normal"), (0.0, "rebuilding")])    # a full wall, then the broken banner: a collapse the burst answers
+    script = iter(frames)
+    monkeypatch.setattr(capture, "grab", lambda: next(script))
+    assert orch._fast_wall_watch(rs, {"dm_below": 0.2}) == "boundary_pending"
+    assert run.taps == []
+
+
+def test_the_fast_wall_watch_follows_the_waves_it_confirms_for_a_takeover_only(world, monkeypatch, tmp_path):
+    from device import capture
+    run = drive(world, monkeypatch, tmp_path, [frame(), frame()])
+    orch = run.orch
+    rs = orch.RunState()
+    rs.wave_hwm = 500
+    rs.tracker.confirm = 1
+    watch_setup(monkeypatch, orch, rs, [(1.0, "immune"), (1.0, "immune")])
+    monkeypatch.setattr(orch.time, "monotonic", lambda: 0.0)
+    for kind, attach in (("takeover", True), ("ordinary", False)):
+        monkeypatch.setattr(orch, "_attach", SimpleNamespace(tier=None) if attach else None)
+        rs.wave_hwm = 500
+        script = iter([{**frame(wave=900), "wall": (1.0, "normal")}] * 7 + [{**frame(wave=900), "wall": (1.0, "immune")}])
+        monkeypatch.setattr(capture, "grab", lambda: next(script))
+        assert orch._fast_wall_watch(rs, {"dm_below": 0.2}) == "immune"
+        assert rs.wave_hwm == (900 if attach else 500), kind
+
+
+def test_a_pending_boundary_in_the_fast_watch_discards_the_frame_before_the_gem_poll(world, monkeypatch, tmp_path):
+    import orchestrator
+    real_watch_frame = orchestrator.watch_frame                                         # `drive` replaces it with the scripted monitor
+    run = drive(world, monkeypatch, tmp_path, [frame(), frame()])
+    orch = run.orch
+    monkeypatch.setattr(orch, "watch_frame", real_watch_frame)
+    rs = orch.RunState()
+    rs.gems.poll = lambda *a, **k: pytest.fail("a gem poll ran on a frame older than the fast watch's")
+    monkeypatch.setattr(orch.detect, "death_screen", lambda f: (False, None))
+    monkeypatch.setattr(orch.detect, "second_wind_badge", lambda f: (False, 0.0))
+    monkeypatch.setattr(orch, "preset", lambda: {"abilities": {"rescue_bar": "wall", "hold_until_second_wind": False, "dm_below": 0.2}})
+    monkeypatch.setattr(orch, "demon_mode_always", lambda *a: None)
+    monkeypatch.setattr(orch, "marks", lambda: [])
+    monkeypatch.setattr(orch, "automation_enabled", lambda key: True)
+    monkeypatch.setitem(orch.CONFIG, "rois", {"wall_bar": None})
+    monkeypatch.setattr(orch, "_fast_wall_watch", lambda rs, ab: "boundary_pending")
+    assert orch.watch_frame(rs, frame(wave=500), observation={"raw_wave": 500}) == "refresh"
+    polled = []
+    rs.gems.poll = lambda f, reads=None: polled.append(f) or f
+    monkeypatch.setattr(orch, "_attach", None)                                          # an ordinary run keeps today's order: the result is ignored
+    assert orch.watch_frame(rs, frame(wave=500), observation={"raw_wave": 500}) is False and polled
+
+
+def test_input_held_by_the_guard_is_logged_and_the_next_frame_is_judged_not_a_crash(world, monkeypatch, tmp_path):
+    import orchestrator
+    run = drive(world, monkeypatch, tmp_path, [frame(wave=500), frame(wave=500), frame(wave=500)], [orchestrator.AttachReplaced("wave below the confirmed battle"), "refresh"])
+    assert fields(run, "attach_input_held") == [{"reason": "wave below the confirmed battle"}]
+    assert "crash" not in names(run) and run.taps == [] and run.frames_read >= 3

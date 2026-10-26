@@ -172,6 +172,29 @@ def fleet_fire_skipped(rs, frame, mark: int, wave: int, why: str) -> None:
 SW_CLOSE_FRAMES = 3
 
 
+class AttachReplaced(Exception):
+    """A frame a helper captured for itself shows a wave far below the battle the person confirmed: nothing may be sent until the main loop has judged it."""
+
+
+def _attach_replaced(rs, wave) -> bool:
+    """A takeover's one identity test for a fresh battle frame: the readable wave is more than the margin below the highest wave of the confirmed battle.
+    False for an ordinary run, which owns every battle it meets."""
+    if _attach is None or wave is None or rs.wave_hwm is None:
+        return False
+    from runtime import attach_worker
+    return wave < rs.wave_hwm - attach_worker.WAVE_MARGIN
+
+
+def _attach_identity_guard(rs):
+    """The guard seam of the gem collectors (flows/shard.GemWatch): their verification and confirmation captures are not the main loop's frame, so a battle
+    that replaced the confirmed one between the two must hold their input, not just the main loop's."""
+    def guard(frame, surface):
+        if surface == "battle" and _attach_replaced(rs, wave_reader.read_wave(frame)):
+            raise AttachReplaced("wave below the confirmed battle")
+        return frame
+    return guard
+
+
 class RunState:
     def __init__(self):
         self.tracker = wave_reader.WaveTracker()
@@ -211,7 +234,8 @@ class RunState:
         self.cl_always_above: int | None = None   # rolled per run from a range
         self.cl_blocked_logged = False   # edge-log for "toggle wanted but gated"
         from flows import shard
-        self.gems = shard.GemWatch(preset().get("gather", {}), session=_action_session)
+        self.gems = shard.GemWatch(preset().get("gather", {}), session=_action_session,
+                                   guard=None if _attach is None else _attach_identity_guard(self))
         self.last_shop = 0.0
         self.sprint_prev: bool | None = None
         self.no_wave = 0              # consecutive frames without a wave read
@@ -1680,8 +1704,10 @@ def _fast_wall_watch(rs: "RunState", ab: dict) -> str:
                     return "off"
             else:
                 no_wave = 0
-                rs.tracker.update(w)    # a stale tracker here logged a
-                                        # 5495-fleet death as "wave 5420"
+                confirmed = rs.tracker.update(w)    # a stale tracker here logged a
+                                                    # 5495-fleet death as "wave 5420"
+                if _attach is not None and confirmed is not None:
+                    rs.wave_hwm = confirmed if rs.wave_hwm is None else max(confirmed, rs.wave_hwm)    # the boundary baseline follows what this loop saw
                 if _battle_session is not None:
                     if rs.wave_hwm is not None and w < rs.wave_hwm-100:
                         return 'boundary_pending'
@@ -1747,8 +1773,11 @@ def _fast_wall_watch(rs: "RunState", ab: dict) -> str:
             collapsed = prev is not None and prev > collapse_from
             danger = danger or collapsed
         if danger:
-            if wave_reader.read_wave(frame) is None:
+            w_now = wave_reader.read_wave(frame)
+            if w_now is None:
                 return "off"            # death dialog reads dark too: NO taps
+            if _attach_replaced(rs, w_now):
+                return "boundary_pending"       # a battle the person did not confirm: no burst on it
             # THE BURST (user, 2026-08-15 final ruling): "the first click
             # done on the Intro Sprint and cancelling it must immediately
             # after that do the click to do Demon mode - no more checks."
@@ -2233,7 +2262,8 @@ def watch_frame(rs: "RunState", frame, observation=None) -> str | None:
             # While the watch is open the orchestrator drops everything else and
             # samples ONLY the wall, ~3x per second, firing the combo inline.
             if can_fire("demon_mode", rs.dm_fired):
-                _fast_wall_watch(rs, ab)
+                if _fast_wall_watch(rs, ab) == "boundary_pending" and _attach is not None:
+                    return "refresh"        # the frame in hand is older than the one that failed the identity test
         else:
             fill = detect.hp_fill(frame)
             nuke_below = ab.get("nuke_below")
@@ -3147,6 +3177,9 @@ def main():
             if any(m <= wave <= m + f["post_window"] for m in marks()):
                 logger.shot(frame, f"danger_w{wave}")
 
+        except AttachReplaced as e:
+            uw_flush_history(rs)
+            logger.event("attach_input_held", reason=str(e))    # the next frame is judged by the boundary checks above
         except capture.CaptureError as e:
             uw_flush_history(rs)   # a toggle that returned before the failure still happened: write its row, never drop it with the pass
             logger.event("capture_error", error=str(e))
