@@ -39,10 +39,13 @@ from towerpilot_workflows import action_contract
 from towerpilot_workflows.action_contract import shopping_interval
 from scheduling import runflag
 from runtime import runlog
+from runtime import attach_worker
+from interactions.tourney import Abort
 
 _battle_session = None
 _action_session = None      # the ActionSession of the tracked battle driver; None outside a ledger operation
 _rewards_history = None     # the FlowHistory of its reward flows (runtime/flow_history.py); None records nothing
+_attach = None             # runtime.attach_worker.Attach of an explicit takeover of the battle on screen; None for every ordinary run
 _chore_session = False      # the operation-scoped ActionSession the between-run chores record into: False = not looked for yet, None = no ledger operation
 
 
@@ -78,7 +81,10 @@ def store_gems_mark_claimed(rs=None):
 def run_tier() -> int | None:
     """The tier this run is on, from the compiled preset (the blueprint's
     `tier`, the one shard.set_tier dialled in before BATTLE). None for a
-    legacy preset that names no tier."""
+    legacy preset that names no tier. An attached battle's tier is the one the
+    person declared (None = unknown), never the preset's."""
+    if _attach is not None:
+        return _attach.tier
     try:
         t = preset().get("tier")
     except Exception:                       # noqa: BLE001 - no preset bound
@@ -93,6 +99,8 @@ def marks():
     proactive Nuke in both loops, the Chain Lightning choreography and the
     danger-window shots - reads this one list."""
     from scheduling import fleets
+    if _attach is not None and _attach.tier is None:
+        return []        # an unknown tier has no timetable: nothing may fire on a fleet wave
     cfg = _battle_session.config if _battle_session is not None else CONFIG
     return fleets.marks(run_tier(), cfg)
 
@@ -166,6 +174,28 @@ def fleet_fire_skipped(rs, frame, mark: int, wave: int, why: str) -> None:
 SW_CLOSE_FRAMES = 3
 
 
+class AttachReplaced(Abort):
+    """A frame a helper captured for itself shows a wave far below the battle the person confirmed: nothing may be sent until the main loop has judged it."""
+
+
+def _attach_replaced(rs, wave) -> bool:
+    """A takeover's one identity test for a fresh battle frame: the readable wave is more than the margin below the highest wave of the confirmed battle.
+    False for an ordinary run, which owns every battle it meets."""
+    if _attach is None or wave is None or rs.wave_hwm is None:
+        return False
+    return wave < rs.wave_hwm - attach_worker.WAVE_MARGIN
+
+
+def _attach_identity_guard(rs):
+    """The guard seam of the gem collectors (flows/shard.GemWatch): their verification and confirmation captures are not the main loop's frame, so a battle
+    that replaced the confirmed one between the two must hold their input, not just the main loop's."""
+    def guard(frame, surface):
+        if surface == "battle" and _attach_replaced(rs, wave_reader.read_wave(frame)):
+            raise AttachReplaced("wave below the confirmed battle")
+        return frame
+    return guard
+
+
 class RunState:
     def __init__(self):
         self.tracker = wave_reader.WaveTracker()
@@ -205,7 +235,8 @@ class RunState:
         self.cl_always_above: int | None = None   # rolled per run from a range
         self.cl_blocked_logged = False   # edge-log for "toggle wanted but gated"
         from flows import shard
-        self.gems = shard.GemWatch(preset().get("gather", {}), session=_action_session)
+        self.gems = shard.GemWatch(preset().get("gather", {}), session=_action_session,
+                                   guard=None if _attach is None else _attach_identity_guard(self))
         self.last_shop = 0.0
         self.sprint_prev: bool | None = None
         self.no_wave = 0              # consecutive frames without a wave read
@@ -271,6 +302,10 @@ class RunState:
         self.shopping_enabled = live['shopping']['enabled']
         self.rewards_enabled = live['rewards']['enabled']
         self.repeat_enabled = live['repeat']['enabled']
+        if _attach is not None:
+            # A takeover never repeats into another battle, and its reward flows follow the control the envelope froze (off unless a person turned them on).
+            self.repeat_enabled = False
+            self.rewards_enabled = bool(_battle_session is not None and _battle_session.gates.get('rewards', False))
 
 
 FORCE_PRESENT = 0.85    # template score required to tap without a ready check
@@ -1132,6 +1167,8 @@ def _tournament_locked(frame) -> str | None:
         return "legacy tournament preset"
     if screen.in_tournament(frame):
         return "trophy badge on screen"
+    if _attach is not None:
+        return "battle not started by this run"      # a takeover continues a battle; it never ends one
     return None
 
 
@@ -1668,10 +1705,12 @@ def _fast_wall_watch(rs: "RunState", ab: dict) -> str:
                     return "off"
             else:
                 no_wave = 0
-                rs.tracker.update(w)    # a stale tracker here logged a
-                                        # 5495-fleet death as "wave 5420"
+                confirmed = rs.tracker.update(w)    # a stale tracker here logged a
+                                                    # 5495-fleet death as "wave 5420"
+                if _attach is not None and confirmed is not None:
+                    rs.wave_hwm = confirmed if rs.wave_hwm is None else max(confirmed, rs.wave_hwm)    # the boundary baseline follows what this loop saw
                 if _battle_session is not None:
-                    if rs.wave_hwm is not None and w < rs.wave_hwm-100:
+                    if rs.wave_hwm is not None and w < rs.wave_hwm - attach_worker.WAVE_MARGIN:
                         return 'boundary_pending'
                     _battle_session.checkpoint(rs, battle_visible=screen.identify(frame).name == 'battle')
                     if not automation_enabled('rescue'):
@@ -1735,8 +1774,11 @@ def _fast_wall_watch(rs: "RunState", ab: dict) -> str:
             collapsed = prev is not None and prev > collapse_from
             danger = danger or collapsed
         if danger:
-            if wave_reader.read_wave(frame) is None:
+            w_now = wave_reader.read_wave(frame)
+            if w_now is None:
                 return "off"            # death dialog reads dark too: NO taps
+            if _attach_replaced(rs, w_now):
+                return "boundary_pending"       # a battle the person did not confirm: no burst on it
             # THE BURST (user, 2026-08-15 final ruling): "the first click
             # done on the Intro Sprint and cancelling it must immediately
             # after that do the click to do Demon mode - no more checks."
@@ -2222,6 +2264,8 @@ def watch_frame(rs: "RunState", frame, observation=None) -> str | None:
             # samples ONLY the wall, ~3x per second, firing the combo inline.
             if can_fire("demon_mode", rs.dm_fired):
                 _fast_wall_watch(rs, ab)
+                if _attach is not None:
+                    return "refresh"        # the watch held this pass for seconds or minutes (a death dialog, a replaced battle, a new proc): the frame in hand is history
         else:
             fill = detect.hp_fill(frame)
             nuke_below = ab.get("nuke_below")
@@ -2341,7 +2385,7 @@ def _prepare_coin_start():
     as a scheduled handoff. A battle already on screen is adopted untouched.
     """
     body = preset()
-    if body.get("kind") != "coin":
+    if body.get("kind") != "coin" or _attach is not None:
         return
     from vision import screen
     if screen.identify(capture.grab()).name != "home":
@@ -2558,8 +2602,50 @@ def step_reward_mission(rs, frame) -> bool:
     return False
 
 
+def _attach_from_environment(readiness):
+    """The takeover this worker was launched for, or None. Refuses (AttachRefused) before any capture when the accepted operation cannot be trusted."""
+    import os
+    from runtime.operations import environment_operation
+    operations, operation_id = environment_operation()
+    if operations is None:
+        return None
+    attach = attach_worker.from_operation(operations.get(operation_id), preset(), CONFIG,
+                                          delegated=bool(os.environ.get('TOWER_BATTLE_ID')))
+    if attach is not None:
+        try:
+            readiness.require(settings.ROOT, CONFIG, preset(), attached=True)
+        except RuntimeError as exc:
+            raise attach_worker.AttachRefused('attach_not_ready', str(exc)) from None
+    return attach
+
+
+def _input_revoked() -> bool:
+    from runtime import device_lease
+    return device_lease.revocation(device_lease.ensure_current().key) is not None
+
+
+def _attach_entry(attach, frame):
+    """The entry gate: one frame proves the battle is on screen and is no tournament, before the first input and before any ledger record."""
+    wave = attach_worker.entry_gate(attach, frame, identify=lambda f: screen.identify(f).name, read_wave=wave_reader.read_wave,
+                                    tournament_state=screen.tournament_state, input_revoked=_input_revoked)
+    logger.event('attach_entry', wave=wave, tier=attach.tier, tier_provenance=attach.block['tier']['provenance'],
+                 stripped=attach.block['stripped'], policy_revision=attach.block['policy_revision'],
+                 predecessor=attach.predecessor)
+    return wave
+
+
+def _refuse_attach(exc):
+    """Record a coded refusal on the operation. Nothing was sent to the game and no battle record was written."""
+    from runtime.operations import environment_operation
+    logger.event('attach_refused', code=exc.code, detail=exc.detail)
+    operations, operation_id = environment_operation()
+    if operations is not None:
+        attach_worker.refuse(operations, operation_id, exc)
+
+
 def main():
-    global _battle_session, _action_session, _rewards_history, _chore_session
+    global _battle_session, _action_session, _rewards_history, _chore_session, _attach
+    _attach = None
     _battle_session = None
     _action_session = None
     _rewards_history = None
@@ -2572,23 +2658,38 @@ def main():
     require_runner_entry(settings.ROOT, CONFIG, event=logger.event)
     from player import readiness
     from runtime.battle_session import BattleSession
-    initial = capture.grab()
-    _battle_session = BattleSession.from_environment(preset(), CONFIG,
-        origin='adopted' if wave_reader.read_wave(initial) is not None else 'started')
+    try:
+        _attach = _attach_from_environment(readiness)
+        initial = capture.grab()
+        entry_wave = _attach_entry(_attach, initial) if _attach is not None else None
+        _battle_session = BattleSession.from_environment(preset(), CONFIG,
+            origin='adopted' if wave_reader.read_wave(initial) is not None else 'started', **({} if _attach is None else {'attach': _attach}))
+        if _attach is not None:
+            # The wave only the entry gate observed, kept with the record so the dashboard never has to infer it.
+            _battle_session.store.update_status(_battle_session.battle['id'], _battle_session.generation,
+                                                {'attach_entry': attach_worker.entry_record(entry_wave)})
+    except attach_worker.AttachRefused as exc:
+        _refuse_attach(exc)
+        return
     if _battle_session is not None:
         from runtime.action_session import ActionSession
         from runtime.flow_history import FlowHistory
         _action_session = ActionSession.for_battle(_battle_session, 'orchestrator')
         _rewards_history = FlowHistory(_action_session)
-    readiness.require(settings.ROOT, CONFIG, preset())
+    if _attach is None:
+        readiness.require(settings.ROOT, CONFIG, preset())
     rs = RunState()
+    if _attach is not None and entry_wave is not None:
+        # The wave the entry gate itself read is the battle the person confirmed: the first loop frame is judged against it, so a different
+        # battle that replaced it between the gate and that frame is a boundary, not a fresh start. An unreadable gate wave cannot get here.
+        rs.tracker.last = rs.wave_hwm = entry_wave
     period = 1.0 / CONFIG["loop"]["fps"]
     logger.event("start", instance=CONFIG["active_instance"],
                  preset=CONFIG["preset"], dry_run=CONFIG["loop"]["dry_run"])
     # Which fleet timetable this run keys off - per tier, so a reader can
     # tell a T14 (2495 + 1000k) run from a T18 (95 + 100k) one in the log.
     from scheduling import fleets
-    _sched = fleets.schedule(run_tier(), CONFIG)
+    _sched = None if (_attach is not None and run_tier() is None) else fleets.schedule(run_tier(), CONFIG)
     logger.event("fleet_schedule", tier=run_tier(),
                  **({k: _sched[k] for k in ("first_wave", "interval", "fleets_per_spawn",
                                             "bonus_first_wave", "bonus_interval", "source")}
@@ -2665,13 +2766,17 @@ def main():
             # Probationary backwards reads hold input until tracker confirmation.
             raw_wave = wave_reader.read_wave(frame)
             wave = rs.tracker.update(raw_wave)
-            if raw_wave is not None and rs.wave_hwm is not None and raw_wave < rs.wave_hwm - 100:
-                if wave is None or wave >= rs.wave_hwm - 100:
+            if raw_wave is not None and rs.wave_hwm is not None and raw_wave < rs.wave_hwm - attach_worker.WAVE_MARGIN:
+                if wave is None or wave >= rs.wave_hwm - attach_worker.WAVE_MARGIN:
                     continue
                 logger.event('run_boundary', reason='wave_went_backwards', prev=rs.wave_hwm, wave=wave)
                 if _battle_session is not None:
                     old_id = _battle_session.battle['id']
                     _battle_session.finish('wave_went_backwards', evidence={'previous_wave': rs.wave_hwm, 'observed_wave': wave})
+                    if _attach is not None:
+                        # A different battle is on screen: it was not confirmed, so nothing acts on it. A later takeover is a new explicit request.
+                        logger.event('attach_boundary', reason='wave_went_backwards', previous_wave=rs.wave_hwm, wave=wave)
+                        return
                     _battle_session.prepare_next(origin='partial_adoption', previous_battle_id=old_id)
                 rs = RunState()
                 continue
@@ -2697,6 +2802,11 @@ def main():
                         'outcome_certainty': 'results_dialog_does_not_distinguish_death_from_manual_surrender'})
                 logger.event("death", wave=rs.tracker.last,
                              shot=logger.shot(frame, f"death_w{rs.tracker.last}"))
+                if _attach is not None:
+                    # The battle this takeover continued is over. Stats collection, death rules, the run flag and the restart all send input to a
+                    # screen nobody asked this run to operate; the stop_after_run flag stays for the scheduler.
+                    logger.event('attach_boundary', reason='observed_results', wave=rs.tracker.last)
+                    return
                 # ---- per-run stats+perks log (blocking is fine: tower dead)
                 if detect._match(frame, "icons/game_stats.png", 0.75)[0]:
                     artifact = (runlog.collect(CONFIG['active_instance'], battle=_battle_session.battle)
@@ -2803,6 +2913,10 @@ def main():
                 if sc.name == "tournament_stats":
                     if _battle_session is not None:
                         _battle_session.finish('observed_tournament_results', evidence={'last_observed_wave': rs.tracker.last})
+                    if _attach is not None:
+                        # A takeover never presses OK on a results dialog it did not open: the record is finished and the operation ends with no input.
+                        logger.event('attach_boundary', reason='observed_tournament_results', wave=rs.tracker.last)
+                        return
                     # THE TOURNAMENT'S DEATH SCREEN. A tournament run does not
                     # end on GAME STATS/RETRY - it ends on this dialog, which
                     # the death detector does not know, so the first handled
@@ -3061,6 +3175,9 @@ def main():
             if any(m <= wave <= m + f["post_window"] for m in marks()):
                 logger.shot(frame, f"danger_w{wave}")
 
+        except AttachReplaced as e:
+            uw_flush_history(rs)
+            logger.event("attach_input_held", reason=str(e))    # the next frame is judged by the boundary checks above
         except capture.CaptureError as e:
             uw_flush_history(rs)   # a toggle that returned before the failure still happened: write its row, never drop it with the pass
             logger.event("capture_error", error=str(e))

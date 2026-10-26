@@ -38,5 +38,7 @@ def test_the_predecessor_is_linked_only_through_the_active_list():
 
 def test_the_run_flag_is_deleted_for_runs_only():
     cases = golden.recorded(WORKER_DOCUMENT)['worker_run_flag']['cases']
-    assert [(case['kind'], case['flag_after']) for case in cases] == [('run', False)] * 3 + [('gems', True)] * 2
+    # T3b: the one run that keeps the scheduler's flag is a takeover (its request carries `attach`); it attaches to a battle it did not start
+    assert [(case['kind'], case['request_keys'], case['flag_after']) for case in cases] == [
+        ('run', [], False), ('run', ['preset'], False), ('run', ['attach'], True), ('gems', [], True), ('gems', ['harvest'], True)]
     assert all(case['other_instance_flag_after'] for case in cases)
