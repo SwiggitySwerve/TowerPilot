@@ -212,6 +212,10 @@ class GemWatch:
                                       options=gather.get("ad_gem_options"), **opts,
                                       recorder=None if session is None else session.recorder("ad_gems"))
 
+    def busy(self):
+        """What a host that wants to stop must wait out, as reason codes; empty at a safe point."""
+        return [why for why in (self.ad_gems.busy(), self.orbit.busy()) if why]
+
     def poll(self, frame):
         """Return the latest frame; callers must discard an older decision frame."""
         if self.guard is not None:
@@ -405,6 +409,15 @@ class GemOrbitTapper:
             return False
         self.manual_requested = True
         return True
+
+    def busy(self):
+        """Why the host must not stop now, or None at a safe point: a recognized appearance's attempt window is open
+        (taps may have been sent and the +2 not yet confirmed). The tap burst itself runs inside poll(), so it never
+        spans a host's loop iteration. An attempt past its input window is expired here (no input, no capture): off
+        the battle screen nothing else polls the tapper, and an expired attempt must not hold the host forever."""
+        if self.attempt_started is not None:
+            self._expire_attempt(None)
+        return 'orbit_attempt' if self.attempt_started is not None else None
 
     def status(self):
         now, epoch = time.monotonic(), time.time()

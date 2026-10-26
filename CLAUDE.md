@@ -146,8 +146,11 @@ and skills apply.
   crops included; setup and the observe pass cut missing targets from it on
   that screen at the same size (`player/learned.py`, `Scanner.learned_cuts`).
 
-- **Deploy = kill + relaunch.** Runners never see code edits. Every runner
+- **Deploy = relaunch.** Runners never see code edits. Every runner
   adopts in-progress state (live battle -> straight to the observe loop).
+  The gem collector is not killed for a deploy: `python tools/collector_restart.py`
+  asks it to leave at a safe point and the dashboard's harvest tick relaunches it
+  (README, "Putting new code live in the gem collector").
 - Detached spawns on Windows: `Start-Process pythonw -WorkingDirectory
   backend`.
 - Logs: `backend/logs/<instance>/events_*.jsonl`, one file per process

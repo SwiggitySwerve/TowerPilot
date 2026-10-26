@@ -234,6 +234,19 @@ class AdGemCollector:
     def _epoch(self, value):
         return None if value is None else time.time() + value-time.monotonic()
 
+    def busy(self):
+        """Why the host must not stop now, or None at a safe point: a claim attempt is running, or an offer was seen
+        and its claim is scheduled in the open window (leaving would lose that window's gems). An open window with no
+        offer seen is not busy. A window past its deadline is closed here (no input, no capture): off the battle
+        screen nothing else polls this routine, and its pending claim must not hold the host forever."""
+        if self.window_deadline is not None and self.claim_attempt_id is None and time.monotonic() >= self.window_deadline:
+            self._close_window()
+        if self.claim_attempt_id is not None:
+            return 'ad_claim_attempt'
+        if self.claim_at is not None or self._held_response is not None:
+            return 'ad_claim_pending'
+        return None
+
     def _context(self):
         return dict(window_id=self.window_id, offer_id=self.offer_id,
                     claim_attempt_id=self.claim_attempt_id)

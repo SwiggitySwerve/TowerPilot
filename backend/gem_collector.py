@@ -40,7 +40,20 @@ def automatic_fence():
     return check
 
 
+def leave_for_restart(session, request, last_wave):
+    """The planned exit (runflag.collector_exit_requested): close the battle record this collector owns as
+    interrupted, with the reason, so the successor starts a clean adopted record, then consume the request. The
+    process ends normally, so the ledger records it as succeeded: the harvest supervisor relaunches it without
+    counting a failure (control/harvest.py `_failures` counts only failed or interrupted exits)."""
+    if session is not None and session.battle['status'] in ('prepared', 'active'):
+        session.finish('collector_restart', status='interrupted',
+                       evidence={'reason': request['reason'], 'last_observed_wave': last_wave})
+    runflag.clear_collector_exit()
+    logger.event('gem_collector_stopped', reason=f"restart: {request['reason']}", planned=True)
+
+
 def main(instance, preset):
+    started_at = time.time()
     from runtime.device_lease import prepare_instance
     prepare_instance(instance)
     settings.select_instance(instance,preset)
@@ -70,7 +83,27 @@ def main(instance, preset):
     logger.event('gem_collector_started',preset=preset,ad_gems=gems.ad_gems.enabled,orbit=gems.orbit.enabled)
     last_status=None
     saw_battle=False
+    exit_request = deferred = None
     while True:
+        # A person's request to leave at a safe point (deploy). Between polls, so no claim attempt or orbit
+        # attempt is cut; the battle on screen is never touched.
+        # Read every pass (a request older than this collector's start is not for it), so a --cancel
+        # while the exit is deferred withdraws it.
+        asked = runflag.collector_exit_requested(started_at)
+        if asked is not None and exit_request is None:
+            logger.event('gem_collector_exit_requested', reason=asked['reason'])
+        elif asked is None and exit_request is not None:
+            logger.event('gem_collector_exit_cancelled', reason=exit_request['reason'])
+            deferred = None
+        exit_request = asked
+        if exit_request is not None:
+            busy = gems.busy()
+            if not busy:
+                leave_for_restart(session, exit_request, state.tracker.last)
+                return
+            if busy != deferred:
+                logger.event('gem_collector_exit_deferred', waiting_for=busy)
+                deferred = busy
         if fence is not None and time.monotonic() - fence_checked >= FENCE_RECHECK_SEC:
             fence()
             fence_checked = time.monotonic()

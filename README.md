@@ -155,6 +155,33 @@ means no harvesting. Three parts keep it up:
   a running dashboard. Preview with `-WhatIf`; test on a scratch task with
   `-TaskName "Scratch" -Execute cmd.exe -Argument "/c exit 0"` and delete it with `-TaskName "Scratch" -Remove`.
 
+### Putting new code live in the gem collector
+
+A running collector keeps the code it started with. Do not kill it to deploy: ask it to leave at a safe point.
+
+```
+python tools/collector_restart.py --wait 180 --reason "orbit fix"   # ask, then wait until it has taken the request
+python tools/collector_restart.py --status                          # is a request pending, and how old is it
+python tools/collector_restart.py --cancel                          # withdraw a request nobody took
+```
+
+The command only writes the file `backend/logs/<instance>/collector_exit` (`scheduling/runflag.py` owns it, next to
+the run-boundary flag `stop_after_run`, which it does not touch). No process is killed or signalled, and nothing talks
+to the dashboard, the emulator or adb.
+
+- **Safe point.** The collector checks the file between polls, never inside one. It waits while an ad claim is being
+  attempted or an offer's claim is scheduled, and while a floating-gem attempt window is open, and logs
+  `gem_collector_exit_deferred` with the reasons once per change. It then closes its battle record as `interrupted`
+  (reason `collector_restart`), deletes the file, logs `gem_collector_stopped` (`planned: true`) and exits normally.
+  It never ends the battle on screen. A request written before a collector started is ignored by it.
+- **Relaunch.** The dashboard's harvest tick starts a new collector as it does after any exit (at least
+  `MIN_SPACING_SEC` after the previous launch). The exit is recorded as `succeeded`, so it adds nothing to the failure
+  count, the backoff or the circuit. A collector started by hand is not relaunched. The `--wait` timeout (exit code
+  2) means the request is still pending: the collector is busy, not running, or not harvest-managed.
+- **On the Dashboard.** The collector's battle record is split: the new collector opens a new record, and the cause line
+  ("Collector restarted during this battle") only reads an exit that happened after the record being shown began, so
+  it stays empty for the new record. The old record shows as interrupted.
+
 ## Readiness, stopping and repair
 
 - **Prepare this run** reuses saved discoveries and can capture missing battle
