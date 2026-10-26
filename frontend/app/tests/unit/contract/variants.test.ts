@@ -83,9 +83,10 @@ describe('R7-03 every family keeps the members each recorded envelope always car
   // the same envelope, carries it; removing it from any one of them must fail.
   for (const input of inputs)
     for (const family of input.families) {
-      // A scan plan contains the entire native manifest. Keep every mutation, but give
-      // each recorded plan its own bounded test instead of one 60k-mutation test.
-      const batches = family.key.endsWith('/api/wizard/scan-plan')
+      // A scan plan contains the entire native manifest, and a settings read every module's
+      // fields. Keep every mutation, but give each recorded sample its own bounded test
+      // instead of one test that takes over 30 s on a CI runner.
+      const batches = /(\/api\/wizard\/scan-plan|GET \/api\/settings)$/.test(family.key)
         ? family.samples.map((sample) => ({ suffix: ` ${sample.name}`, samples: [sample] }))
         : [{ suffix: '', samples: family.samples }];
       for (const batch of batches)
