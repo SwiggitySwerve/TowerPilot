@@ -82,27 +82,41 @@ def test_cold_capture_persists_verified_templates_and_repeat_semantically_verifi
 
 def test_saved_wrong_label_stays_stale_until_fresh_visual_verification(tmp_path, monkeypatch):
     flow, panel, grabs, taps, _ = _setup(tmp_path, monkeypatch, labels=('Bounce Shot Range',))
+    reasons, swipes, send_tap = [], [], flow.s.tap
+    flow.s.tap = lambda *args, **kwargs: reasons.append(kwargs['reason']) or send_tap(*args, **kwargs)
+    monkeypatch.setattr(act, 'swipe', lambda *args, **kwargs: swipes.append(kwargs['reason']))
+
+    def tab_opens(*names):
+        """The only taps the page loop makes: the tab openings (the tab already open needs none), with their reasons."""
+        return ([tuple(int(v) for v in settings.CONFIG['tabs'][name]) for name in names], [f'flow: open {name} upgrades for capture' for name in names])
+
     path = settings.template_path('stats/bounce_shot_range.png')
     path.parent.mkdir(parents=True)
     assert cv2.imwrite(str(path), _panel(('Bounce Shot Chance',)))
     before = path.read_bytes()
     monkeypatch.setattr(textocr, 'read_texts', lambda crops, **kwargs: ['Bounce Shot Chance'])
     fc.capture_upgrade_labels(flow)
-    assert not grabs and not taps
+    assert grabs, 'a saved label that reads as another stat has the panel read for a repair candidate (item 9 p9f)'
+    # The attack tab is open already: the reading of the panel sends the defense and utility tab taps and the loop's own scroll swipes, and NOTHING else.
+    assert (taps, reasons) == tab_opens('defense', 'utility')
+    assert swipes and set(swipes) == {'setup overlapping upgrade scroll'}
     assert path.read_bytes() == before
     assert flow.s.skipped[0]['target'] == 'stats/bounce_shot_range.png'
     end = [event for event in _events() if event['kind'] == 'attempt_end'][-1]
     assert end['outcome'] == 'incomplete'
     assert end['invalid']['stats/bounce_shot_range.png']['observed_slug'] == 'bounce_shot_chance'
     monkeypatch.setattr(textocr, 'read_texts', lambda crops, **kwargs: ['Bounce Shot Range'])
+    taps.clear(), reasons.clear(), swipes.clear()
     fc.capture_upgrade_labels(flow)
+    assert (taps, reasons) == tab_opens('attack', 'defense', 'utility')        # the utility tab was left open by the first pass
+    assert swipes and set(swipes) == {'setup overlapping upgrade scroll'}
     # A changed OCR answer alone is no proof that the same rejected pixels
     # now recognize the right control. Keep the rejection until recaptured.
     assert flow.s.skipped[0]['target'] == 'stats/bounce_shot_range.png'
     entry = json.loads(open(flow.cal.p['report'], encoding='utf-8').read())['entries'][0]
     assert entry['status'] == 'stale' and not entry['verified']
     assert entry['semantic_verification']['status'] == 'verified'
-    assert path.read_bytes() == before and not grabs and not taps
+    assert path.read_bytes() == before
 
 
 def test_rejected_saved_label_cannot_bypass_fresh_row_ocr(tmp_path, monkeypatch):
@@ -263,7 +277,15 @@ def test_populated_hud_pass_verifies_saved_labels_before_return_without_device_i
     monkeypatch.setattr(playerprofile, 'load', lambda _: pytest.fail('No configured profile should be read'))
     monkeypatch.setattr(fc, '_uw_remaining', lambda: [])
     monkeypatch.setattr(fc, '_have_templates', lambda rels: set(rels))
-    monkeypatch.setattr(fc, 'set_tier', lambda *args: pytest.fail('Populated setup started a run'))
+    reached = []
+
+    def set_tier(*args):
+        reached.append(args)
+        if outcome == 'verified_existing':
+            pytest.fail('Populated setup started a run')
+        raise RuntimeError('the pass reached its Tier-1 run')       # a saved label that reads as another stat starts the run for a repair candidate (item 9 p9f)
+
+    monkeypatch.setattr(fc, 'set_tier', set_tier)
     calls = []
     def read(crops, **kwargs):
         calls.append((len(crops), kwargs))
@@ -272,7 +294,14 @@ def test_populated_hud_pass_verifies_saved_labels_before_return_without_device_i
     flow.s.skipped.append({'target': 'stats/bounce_shot_range.png', 'reason': 'previous label mismatch'})
     before = path.read_bytes()
 
-    fc._hud_digit_pass(flow)
+    if outcome == 'incomplete':
+        flow.s.state = {'phases': {}}
+        with pytest.raises(RuntimeError, match='reached its Tier-1 run'):
+            fc._hud_digit_pass(flow)
+        assert reached == [(flow, 1)]
+    else:
+        fc._hud_digit_pass(flow)
+        assert not reached
 
     assert not grabs and not taps
     assert path.read_bytes() == before
