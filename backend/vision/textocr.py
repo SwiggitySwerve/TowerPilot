@@ -26,6 +26,7 @@ from pathlib import Path
 import cv2
 
 import settings
+from runtime.stage_clock import clock
 
 WINOCR = settings.ROOT / "tools" / "winocr.ps1"
 # One class above normal for the warm reader: CPU-bound work at normal
@@ -46,7 +47,9 @@ _TIMING = {}
 
 
 def _stage(name, started):
-    _TIMING[name] = round(_TIMING.get(name, 0.0) + time.monotonic() - started, 3)
+    elapsed = time.monotonic() - started
+    _TIMING[name] = round(_TIMING.get(name, 0.0) + elapsed, 3)
+    clock.add('ocr.' + name, elapsed)       # the collector's per-pass timers (runtime/stage_clock.py)
 
 
 def take_timing():

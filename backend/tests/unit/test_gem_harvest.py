@@ -41,8 +41,8 @@ def test_collector_refreshes_frame_after_ad_claim(monkeypatch):
     from interactions import ad_gems
     calls = []
     fresh = object()
-    monkeypatch.setattr(ad_gems, "AdGemCollector", lambda enabled, **kw: SimpleNamespace(poll=lambda f: calls.append("ad") or fresh))
-    monkeypatch.setattr(shard, "GemOrbitTapper", lambda **kw: SimpleNamespace(enabled=True, poll=lambda f: calls.append(f)))
+    monkeypatch.setattr(ad_gems, "AdGemCollector", lambda enabled, **kw: SimpleNamespace(poll=lambda f, reads=None: calls.append("ad") or fresh))
+    monkeypatch.setattr(shard, "GemOrbitTapper", lambda **kw: SimpleNamespace(enabled=True, poll=lambda f, reads=None: calls.append(f)))
     monkeypatch.setattr(shard.capture, "grab", lambda: fresh)
     shard.GemWatch().poll(object())
     assert calls == ["ad", fresh]

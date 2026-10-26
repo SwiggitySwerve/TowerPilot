@@ -31,6 +31,7 @@ import cv2
 from device import act, capture, overlays
 from vision import wave_reader, screen, ocr, textocr
 from runtime import logger
+from runtime.stage_clock import clock
 from interactions.tourney import Abort
 from player.gather_settings import AD_GEM_FIELDS, resolve_ad_gem_options
 from towerpilot_workflows.action_contract import StartToStart, effect_of
@@ -273,29 +274,37 @@ class AdGemCollector:
                 and self.visibility != 'unknown'):
             self.mark_unknown('observations_lapsed', keep_response=True)
 
-    def _observe(self, frame, *, deadline=None):
-        """Recognize only the supplied frame; callers own all capture decisions."""
+    def _observe(self, frame, *, deadline=None, reads=None):
+        """Recognize only the supplied frame; callers own all capture decisions. `reads` (FrameReads) lets the host's
+        wave and screen readings of this very frame stand in for a second read."""
+        read_wave = wave_reader.read_wave if reads is None else reads.wave
+        identify = screen.identify if reads is None else reads.screen
         now = time.monotonic()
         deadline = min(now+OBSERVATION_TIMEOUT_SEC, deadline) if deadline is not None else now+OBSERVATION_TIMEOUT_SEC
         self.counters['checks'] += 1
         textocr.take_timing()          # a failure below owns only the OCR time of THIS read
+        spent = {}                     # seconds of each non-OCR read of THIS observation, for an incomplete one
         try:
             _remaining(deadline)
-            wave = wave_reader.read_wave(frame)
+            with clock.stage('ad.wave', into=spent):
+                wave = read_wave(frame)
             _remaining(deadline)
             if self.surface == 'home':
                 # Exactly Home: no wave, and no menu, dialog, store or overlay.
-                name = screen.identify(frame).name if wave is None else None
+                with clock.stage('ad.screen', into=spent):
+                    name = identify(frame).name if wave is None else None
                 expected, missing = wave is None and name == 'home', 'not_home'
             else:
-                name = None if wave is None else screen.identify(frame).name
+                with clock.stage('ad.screen', into=spent):
+                    name = None if wave is None else identify(frame).name
                 expected, missing = wave is not None and name == 'battle', 'not_battle'
             self._last_frame_evidence = dict(wave=wave, screen=name)
             _remaining(deadline)
             if not expected:
                 self.mark_unknown(missing)
                 return None
-            point = find_claim_rect(frame, deadline=deadline)
+            with clock.stage('ad.claim', into=spent):
+                point = find_claim_rect(frame, deadline=deadline)
             _remaining(deadline)
         except RecognitionIncomplete as exc:
             # An unfinished read (OCR timeout or error, spent budget) says
@@ -304,7 +313,8 @@ class AdGemCollector:
             self.mark_unknown(str(exc), keep_response=True)
             self._count_read('incomplete')
             logger.event('ad_gems_recognition_incomplete', reason=str(exc),
-                         duration_sec=round(time.monotonic()-now, 3), stages=textocr.take_timing(), **self._context())
+                         duration_sec=round(time.monotonic()-now, 3), stages=textocr.take_timing(),
+                         read_stages=spent, **self._context())
             return None
         self._count_read('absent' if point is None else 'visible')
         previous = self.visibility
@@ -541,16 +551,16 @@ class AdGemCollector:
             return True
         return False
 
-    def poll(self, frame):
+    def poll(self, frame, reads=None):
         """Observe carried battle frames even between collection windows.
 
         Passive checks never capture or input. Only the original collection
         window and response deadline authorize fresh verification and a tap.
         """
         self.leave_home()
-        return self._poll(frame)
+        return self._poll(frame, reads)
 
-    def poll_home(self, frame):
+    def poll_home(self, frame, reads=None):
         """Observe and claim the offer on the exact Home screen.
 
         Only the harvesting collector calls this, for a frame it identified as
@@ -567,7 +577,7 @@ class AdGemCollector:
             if self.surface != 'home':
                 self.mark_unknown('surface_changed')     # nothing seen in battle carries over to Home
                 self.surface = 'home'
-            return self._poll(frame)
+            return self._poll(frame, reads)
 
     def leave_home(self, reason='left_home'):
         """The host saw something other than the exact Home screen (a person
@@ -582,7 +592,7 @@ class AdGemCollector:
             if self.window_deadline is not None:
                 self._close_window(reason)
 
-    def _poll(self, frame):
+    def _poll(self, frame, reads=None):
         if self.guard is not None:
             frame = self.guard(frame, self.surface)
         now = time.monotonic()
@@ -638,7 +648,7 @@ class AdGemCollector:
         if action_due:
             self.next_at = min(self.window_deadline, next_check)
         try:
-            point = self._observe(frame, deadline=self.window_deadline)
+            point = self._observe(frame, deadline=self.window_deadline, reads=reads)
         except Exception as exc:
             self.mark_unknown('recognition_error')
             logger.event('ad_gems_observation_error', error=str(exc),

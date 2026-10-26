@@ -57,6 +57,7 @@ from device import capture
 from scheduling import daystate
 from vision import detect
 from runtime import logger
+from runtime.stage_clock import clock
 from scheduling import runflag
 from vision import screen
 from vision import wave_reader
@@ -216,16 +217,17 @@ class GemWatch:
         """What a host that wants to stop must wait out, as reason codes; empty at a safe point."""
         return [why for why in (self.ad_gems.busy(), self.orbit.busy()) if why]
 
-    def poll(self, frame):
-        """Return the latest frame; callers must discard an older decision frame."""
+    def poll(self, frame, reads=None):
+        """Return the latest frame; callers must discard an older decision frame.
+        reads: the host's `FrameReads` of `frame`; each owner reuses it only for that same frame object."""
         if self.guard is not None:
             frame = self.guard(frame, "battle")
-        frame = self.ad_gems.poll(frame)
+        frame = self.ad_gems.poll(frame, reads=reads)
         if self.guard is not None:
             frame = self.guard(frame, "battle")
         # Idle orbit sensing reuses this frame; only a recognized appearance
         # opens the existing guarded capture/claim path.
-        return self.orbit.poll(frame)
+        return self.orbit.poll(frame, reads=reads)
 
 
 def _orbit_points(center, radius, angle, taps, jitter, spread):
@@ -436,7 +438,8 @@ class GemOrbitTapper:
     def _sense(self, frame):
         """One idle search for an appearance, counted. Returns the gem or None, exactly as find_orbit_gem would."""
         glance = Glance()
-        gem = find_orbit_gem(frame, layout_offset=capture.layout_offset, glance=glance)
+        with clock.stage('orbit.search'):
+            gem = find_orbit_gem(frame, layout_offset=capture.layout_offset, glance=glance)
         self._sensing.record(glance, gem is not None)
         now = time.monotonic()
         if self._beat_started_at is None:
@@ -600,17 +603,19 @@ class GemOrbitTapper:
         if self.attempt_started is None:
             self.next_at = self.next_window_at
 
-    def poll(self, frame):
+    def poll(self, frame, reads=None):
         candidate = self.window_id if self.attempt_started is not None else uuid.uuid4().hex
         attempt_id = uuid.uuid4().hex
         with logger.context(window_id=candidate, attempt_id=attempt_id):
-            result = self._poll(frame)
+            result = self._poll(frame, reads)
         if self._beat_due:                  # outside the window context: the beat belongs to no window
             self._beat_due = False
             logger.event('gem_orbit_sensing', **self._sensing.snapshot())
         return result
 
-    def _poll(self, frame):
+    def _poll(self, frame, reads=None):
+        read_wave = wave_reader.read_wave if reads is None else reads.wave
+        identify = screen.identify if reads is None else reads.screen
         if self.guard is not None:
             frame = self.guard(frame, "battle")
         if self._expire_attempt(None):
@@ -626,10 +631,11 @@ class GemOrbitTapper:
             # UNKNOWN is not absence. It authorizes neither an attempt nor
             # more captures: inspect only the loop's already supplied pixels.
             # An explicit manual request retains its bounded seeking attempt.
-            appearance = manual or (
-                self._sense(frame) is not None
-                and wave_reader.read_wave(frame) is not None
-                and screen.identify(frame).name == 'battle')
+            with clock.stage('orbit.appearance'):    # includes orbit.search and the reads a hit triggers
+                appearance = manual or (
+                    self._sense(frame) is not None
+                    and read_wave(frame) is not None
+                    and identify(frame).name == 'battle')
             decision, _ = self._schedule.evaluate(
                 time.monotonic(), dict(next_window_at=self.next_window_at, window_open=False),
                 dict(manual=manual, appearance=appearance))
@@ -650,7 +656,7 @@ class GemOrbitTapper:
                          interval_sec=self.interval)
             self._record_open(manual, scheduled_for)
         self.attempt_id = logger.current_context()['attempt_id']
-        if wave_reader.read_wave(frame) is None:
+        if read_wave(frame) is None:
             self._backoff("no_wave")
             return frame
         prior_frame = frame

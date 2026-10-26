@@ -31,10 +31,10 @@ def run(monkeypatch, frames, *, fence=True, enabled=True, battle=None, refuse_at
             finish=lambda *a, **kw: None, prepare_next=lambda **kw: None)
     monkeypatch.setattr(battle_session.BattleSession, 'from_environment', classmethod(lambda cls, *a, **kw: session))
     monkeypatch.setattr(action_session.ActionSession, 'for_battle', classmethod(lambda cls, *a, **kw: None))
-    ad = types.SimpleNamespace(enabled=enabled, poll_home=lambda f: calls.append(('poll_home', f)),
+    ad = types.SimpleNamespace(enabled=enabled, poll_home=lambda f, reads=None: calls.append(('poll_home', f)),
                                leave_home=lambda: calls.append(('leave_home',)))
     monkeypatch.setattr(worker, 'GemWatch', lambda gather=None, **kw: types.SimpleNamespace(
-        ad_gems=ad, orbit=types.SimpleNamespace(enabled=True), poll=lambda f: calls.append(('poll', f))))
+        ad_gems=ad, orbit=types.SimpleNamespace(enabled=True), poll=lambda f, reads=None: calls.append(('poll', f))))
     remaining = iter(frames)
 
     def grab():

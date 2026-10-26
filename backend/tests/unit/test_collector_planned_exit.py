@@ -53,7 +53,7 @@ def collector(monkeypatch, *, polls=None, grabs=None, busy_for=None, session=Tru
     monkeypatch.setattr(action_session.ActionSession, 'for_battle', classmethod(lambda cls, *a, **kw: None))
     gems = types.SimpleNamespace(ad_gems=AdGemCollector(), orbit=GemOrbitTapper())
     gems.busy = lambda: GemWatch.busy(gems)
-    gems.poll = lambda frame: (polled.append(frame), polls and polls(len(polled), gems))
+    gems.poll = lambda frame, reads=None: (polled.append(frame), polls and polls(len(polled), gems))
     monkeypatch.setattr(worker, 'GemWatch', lambda gather=None, **kw: gems)
 
     def grab():

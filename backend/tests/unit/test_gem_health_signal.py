@@ -249,6 +249,29 @@ def test_stage_timers_of_an_earlier_read_are_not_blamed_on_a_read_that_never_rea
     assert event['stages'] == {}
 
 
+def test_an_incomplete_read_reports_where_its_non_ocr_time_went(world, monkeypatch):
+    spent = {'now': 0.0}
+    from runtime import stage_clock
+
+    def advance(seconds, result):
+        def call(frame, **kwargs):
+            spent['now'] += seconds
+            return result
+        return call
+    monkeypatch.setattr(ad_gems, 'clock', stage_clock.StageClock(now=lambda: spent['now']))
+    monkeypatch.setattr(ad_gems.wave_reader, 'read_wave', advance(1.5, 100))
+    monkeypatch.setattr(ad_gems.screen, 'identify', advance(2.0, SimpleNamespace(name='battle')))
+
+    def find(frame, **kwargs):
+        spent['now'] += 3.25
+        raise ad_gems.RecognitionIncomplete('ocr_timeout')
+    monkeypatch.setattr(ad_gems, 'find_claim_rect', find)
+    collector = ad_collector(world, None)
+    collector.poll(object())
+    [event] = [fields for kind, fields in world.events if kind == 'ad_gems_recognition_incomplete']
+    assert event['read_stages'] == {'ad.wave': 1.5, 'ad.screen': 2.0, 'ad.claim': 3.25}
+
+
 # ------------------------------------------------------------ windows that never open leave a row
 def test_a_window_the_loop_never_opened_leaves_one_ledger_row(world, monkeypatch, session):
     script_reads(monkeypatch)
