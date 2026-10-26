@@ -31,7 +31,7 @@ import sqlite3
 import time
 from collections import namedtuple
 
-from control import battles, operations
+from control import actions as action_history, battles, operations
 from towerpilot_workflows.battles import Battles
 from towerpilot_workflows.control_settings import flatten
 from towerpilot_workflows.harvest import (
@@ -39,7 +39,7 @@ from towerpilot_workflows.harvest import (
     HarvestStale, automatic_operations, context_matches, freeze_key, launch_key, read_choice, read_receipt, read_runtime,
     valid_freeze, verify_overlay,
 )
-from towerpilot_workflows.action_contract import CATALOG
+from towerpilot_workflows.action_contract import CATALOG, OPEN_STATES
 from towerpilot_workflows.operations import ACTIVE, Conflict, digest, has_table, readonly
 
 VERSION = 1
@@ -55,6 +55,14 @@ TERMINAL = ('succeeded', 'failed', 'interrupted', 'cancelled', 'restoration_requ
 ROUTINES = GEM_ROUTINES
 CONTROL_PATHS = {name: f'routines.{name}.enabled' for name in ROUTINES}
 LIVE = ('prepared', 'active')
+CLAIM_FAILURES_WARN = 3  # consecutive ad windows that sent a tap and proved nothing before the Dashboard is told to warn
+CLAIM_WINDOWS_READ = 60  # newest ad windows read for the streak and the latest miss
+# A closed ad window's recorded reason -> the code the Dashboard words. Anything else reads 'not_confirmed'.
+MISS_CODES = {'no_offer_seen': 'no_offer_seen', 'offer_not_claimed': 'offer_not_claimed', 'offer_moved': 'offer_moved',
+              'fresh_offer_missing': 'offer_gone', 'tap_refused': 'tap_refused', 'timeout': 'window_ran_out',
+              'window_expired_during_verification': 'window_ran_out', 'balance_unreadable': 'balance_unread',
+              'balance_unstable': 'balance_unread', 'ownership_lost': 'collector_stopped'}
+CAUSE_CODES = tuple(sorted({*MISS_CODES.values(), 'not_confirmed', 'collector_stopped', 'collector_restarted'}))
 
 
 Prepared = namedtuple('Prepared', 'command policy_revision')
@@ -112,7 +120,7 @@ def read_facts(root, identity):
     missing tables mean nothing was ever chosen. Raises ValueError/sqlite3.Error
     for unreadable rows: unreadable is never read as 'never chosen'."""
     import json
-    facts = dict(choice=None, runtime={}, active=[], automatic=[], battle=None, commands=[])
+    facts = dict(choice=None, runtime={}, active=[], automatic=[], battle=None, commands=[], windows=None)
     with readonly(operations.ledger_path(root)) as db:
         if db is None:
             return facts
@@ -134,7 +142,20 @@ def read_facts(root, identity):
                 facts['commands'] = [(row[0], json.loads(row[1])) for row in db.execute(
                     'SELECT request_key,body FROM battle_commands WHERE battle_id=? ORDER BY rowid',
                     (facts['battle']['id'],))]
+    if facts['battle']:
+        facts['windows'] = ad_windows(root, facts['battle'])
     return facts
+
+
+def ad_windows(root, battle):
+    """The battle's recorded ad windows, newest first; None when they cannot be read (then no streak or cause is claimed).
+    Missing history is an empty list; an unreadable ledger or a newer schema is never read as 'no misses'."""
+    try:
+        found = action_history.for_battle(root, battle, limit=CLAIM_WINDOWS_READ, action='ad_gems')
+    except (ValueError, sqlite3.Error, OSError):
+        return None
+    return found['items'] if found['items'] is not None and found['reason'] is None else (
+        [] if found['reason'] == 'recorded_before_action_history' else None)
 
 
 def desired_view(choice):
@@ -182,18 +203,67 @@ def battle_view(battle, now):
                 fresh=bool(valid and age <= FRESH_SEC), publication_valid=valid)
 
 
+def _runtime_dict(battle, key):
+    value = ((battle or {}).get('runtime') or {}).get(key)
+    return value if isinstance(value, dict) else None
+
+
+def miss_cause(row):
+    """The cause of one closed ad window that did not succeed: the code the Dashboard words, and when."""
+    code = ('collector_stopped' if row.get('state') == 'interrupted'
+            else MISS_CODES.get((row.get('outcome') or {}).get('reason'), 'not_confirmed'))
+    at = row.get('finished_at') if finite(row.get('finished_at')) else row.get('started_at')
+    return dict(code=code, at=at if finite(at) else None)
+
+
+def claim_summary(windows, autos, battle):
+    """What went wrong with this battle's ad claims, from the recorded ad windows and the collector's exits.
+
+    windows: the battle's ad executions newest first (None: unreadable, so nothing is claimed either way).
+    failure_streak counts the newest windows in a row that sent a tap and confirmed nothing; a window with no
+    offer to claim neither adds nor ends it, a confirmed claim ends it. failing is the one decision the
+    Dashboard warns on. cause is the later of the latest window that did not succeed and the exit of an earlier
+    collector during this battle. windows_missed is the collector's own counter of windows that ran out."""
+    counters = ((_runtime_dict(battle, 'routines') or {}).get('ad_gems') or {}).get('counters')
+    missed = counters.get('windows_missed') if isinstance(counters, dict) else None
+    streak, cause = None, None
+    if windows is not None:
+        closed = [row for row in windows if row.get('state') not in OPEN_STATES]
+        streak = 0
+        for row in closed:
+            if row['state'] == 'succeeded':
+                break
+            streak += row['state'] in ('failed', 'refused')
+        missed_row = next((row for row in closed if row['state'] != 'succeeded'), None)
+        cause = None if missed_row is None else miss_cause(missed_row)
+    exits = [op['updated_at'] for op in autos if op['status'] in TERMINAL and finite(op.get('updated_at'))
+             and op['updated_at'] >= battle['created_at']]
+    if exits and (cause is None or cause['at'] is None or max(exits) > cause['at']):
+        cause = dict(code='collector_restarted', at=max(exits))
+    return dict(windows_missed=missed if type(missed) is int and missed >= 0 else None, failure_streak=streak,
+                failing=streak is not None and streak >= CLAIM_FAILURES_WARN, cause=cause)
+
+
+def battle_claims(facts, op):
+    """claim_summary for the battle this operation owns, else None."""
+    battle = facts['battle']
+    if op is None or battle is None or battle.get('operation_id') != op['id']:
+        return None
+    return claim_summary(facts['windows'], facts['automatic'], battle)
+
+
 def _alive(alive):
     return operations.worker_alive if alive is None else alive
 
 
-def collector_state(op, battle, alive, now):
-    """What the standalone collector observes, from its own battle evidence only."""
+def collector_state(op, battle, alive, now, claims=None):
+    """What the standalone collector observes, from its own battle evidence only (and, for the claim outcome, its recorded ad windows)."""
     runtime = (battle or {}).get('runtime') or {}
     view = dict(id=op['id'], kind=op['kind'], status=op['status'], revision=op['revision'],
                 harvest_managed=bool(op['request'].get('harvest')),
                 desire_revision=op['request'].get('desire_revision'),
                 worker_alive=alive(op.get('worker')) if op['status'] != 'accepted' else None,
-                battle=None, routines=None, evidence=None)
+                battle=None, routines=None, evidence=None, claims=None)
     if op['status'] == 'accepted':
         return 'starting', 'collector_starting', 'The collector was accepted and is starting.', view
     if op['status'] == 'cancelling':
@@ -210,7 +280,8 @@ def collector_state(op, battle, alive, now):
                 'The collector is running and waits for the next battle.', view)
     view['battle'] = shown = battle_view(battle, now)
     view['routines'] = runtime.get('routines') if isinstance(runtime.get('routines'), dict) else None
-    view['evidence'] = runtime.get('collection_evidence') if isinstance(runtime.get('collection_evidence'), dict) else None
+    view['evidence'] = _runtime_dict(battle, 'collection_evidence')
+    view['claims'] = claims
     if not shown['publication_valid']:
         return ('unavailable', 'observation_invalid',
                 'The collector reported no usable observation time; its state is unknown.', view)
@@ -221,6 +292,9 @@ def collector_state(op, battle, alive, now):
         return 'waiting_for_battle', 'waiting_for_battle', 'The collector waits for a battle on screen.', view
     gates = gem_gates(view['routines'])
     if any(gates[name] is True for name in ROUTINES):
+        if claims and claims['failing']:
+            return ('collecting', 'claims_failing',
+                    f"Ad gem claims failing: {claims['failure_streak']} in a row.", view)
         return 'collecting', 'collecting', 'Collecting gems in the battle on screen.', view
     if all(gates[name] is False for name in ROUTINES):
         return ('live_paused', 'gem_routines_paused',
@@ -229,13 +303,13 @@ def collector_state(op, battle, alive, now):
             'The collector did not report its gem routines, so collecting cannot be confirmed.', view)
 
 
-def owner_view(op, battle, row, now, harvest_revision):
+def owner_view(op, battle, row, now, harvest_revision, claims=None):
     """Another driver (an operation or an unknown process) that holds the emulator."""
     if op is None:
         return dict(kind='process', operation_id=None, operation_kind=None, status=None, pid=row.get('pid'),
                     script=row.get('runner'), foreign=True, harvest_managed=False,
                     gems=dict(ad_gems=None, floating_gems=None, basis='not_reported'), gathers=None, routines=None,
-                    recovery=None)
+                    evidence=None, claims=None, recovery=None)
     owned = battle if battle is not None and battle.get('operation_id') == op['id'] else None
     runtime = (owned or {}).get('runtime') or {}
     routines = runtime.get('routines') if isinstance(runtime.get('routines'), dict) else None
@@ -254,6 +328,7 @@ def owner_view(op, battle, row, now, harvest_revision):
     return dict(kind='operation', operation_id=op['id'], operation_kind=op['kind'], status=op['status'],
                 pid=worker.get('pid'), script=None, foreign=False, harvest_managed=False,
                 gems=dict(gates, basis=basis), gathers=gathers, routines=routines, battle=shown,
+                evidence=_runtime_dict(owned, 'collection_evidence'), claims=claims,
                 recovery=(dict(action='stop_operation', operation_id=op['id'], expected_revision=op['revision'])
                           if stoppable else None))
 
@@ -450,7 +525,7 @@ def evaluate(root, cfg, *, processes, resolve_source, alive=None, now=None, host
     battle = facts['battle']
     if collectors:
         op = plan['op'] = collectors[0]
-        state, code, message, shown = collector_state(op, battle, alive, now)
+        state, code, message, shown = collector_state(op, battle, alive, now, battle_claims(facts, op))
         view['operation'] = shown
         managed = shown['harvest_managed']
         if managed:
@@ -469,7 +544,7 @@ def evaluate(root, cfg, *, processes, resolve_source, alive=None, now=None, host
     if drivers or foreign:
         op = plan['op'] = drivers[0] if drivers else None
         owner = view['owner'] = owner_view(op, battle, foreign[0] if foreign else {}, now,
-                                           choice['revision'] if choice else 0)
+                                           choice['revision'] if choice else 0, battle_claims(facts, op))
         # The choice acts on a driver only inside the context it was made for: the
         # dashboard's own account/profile/emulator AND the driver's accepted one.
         in_context = (choice is not None and op is not None and context_matches(choice.get('bound'), identity)
@@ -909,11 +984,11 @@ def owners(root, cfg, rows, *, now=None):
     try:
         facts = read_facts(root, identity)
     except (ValueError, sqlite3.Error, OSError):   # an unreadable choice must not hide who owns the emulator
-        facts = dict(choice=None, battle=None)
+        facts = dict(choice=None, battle=None, windows=None, automatic=[])
     found = []
     revision = facts['choice']['revision'] if facts['choice'] else 0
     for op in ops:
-        owner = owner_view(op, facts['battle'], {}, now, revision)
+        owner = owner_view(op, facts['battle'], {}, now, revision, battle_claims(facts, op))
         if op['kind'] == 'gems' and op['request'].get('harvest'):
             owner.update(harvest_managed=True,
                          recovery=dict(action='pause_harvesting', operation_id=op['id'], expected_revision=revision))

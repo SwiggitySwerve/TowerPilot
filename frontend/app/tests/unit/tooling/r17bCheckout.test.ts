@@ -24,14 +24,14 @@ import { REPO } from '../../support/paths.ts';
  */
 describe('AC6 landed r17b checkout provenance', () => {
   it.each([
-    [DASHBOARD_FIXTURE_PATH, '17002fa1fdda1a8b32048978dfcc9e6d4cac8f0163ffcc83cf11d2534dde975e'],
+    [DASHBOARD_FIXTURE_PATH, 'a1adee857b2810076eb125970c5dd7f0e0d5439cb16e3e3560ef8c46e593c66c'],
     [
       DASHBOARD_PAGES_FIXTURE_PATH,
-      '0b6385d18c94c4b5226a6dd9f7473c40617e0eb0c207c5e657af6d553e272d1a',
+      '1f4c0d94ed98792c9ba519c716a7f552a61176c5eee9ea78e853430f2a3d23b2',
     ],
     [
       SYNTHETIC_ACTION_FIXTURE_PATH,
-      'f6ef2c6360f6b053302c8c3b5abae588c666d2e326a535c1a2a7c19d5a2b838b',
+      'e0807408802b6d810dd19e64a00cb29e25e4aa808537dd0a5dd15b9a6ff65d8e',
     ],
   ])('pins the approved checkout bytes at %s', (file, sha256) => {
     expect(loadJsonWithIdentity(file).identity.sha256).toBe(sha256);
@@ -58,7 +58,7 @@ describe('AC6 landed r17b checkout provenance', () => {
     expect(fixture['generated_by']).toBe('backend/tests/test_synthetic_action_contract.py');
     expect(CONTRACT_INPUTS.some(({ file }) => file === SYNTHETIC_ACTION_FIXTURE_PATH)).toBe(false);
     expect(familyHashes(SYNTHETIC_ACTION_FIXTURE_PATH)).toEqual({
-      synthetic_action: 'F661EE52D80D60FDAD302A34795E22A0D812A7C9EE1274A7C134584A54D6E1BD',
+      synthetic_action: 'FB39AE0FCD59737303B5DA02FE8D562CB9A497CA9AA8F372B9A4C1C0CCDB7DC2',
     });
     const cases = record(fixture['cases']);
     expect(Object.keys(cases)).toEqual(['synthetic_action']);

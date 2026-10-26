@@ -1,3 +1,4 @@
+import type { GemOutcomes } from '../../core/collection.ts';
 import {
   gemPolicy,
   gemSourceChoices,
@@ -89,6 +90,8 @@ export interface GemSlotVM {
   readonly source: GemSourceVM;
   readonly sourceChanged: boolean;
   readonly cause: GemCauseVM | null;
+  /** This battle's confirmations seen, missed windows and the latest miss (lower bounds, from the backend). */
+  readonly outcomes: GemOutcomes | null;
   readonly collectorAtStart: CollectorAtStartVM | null;
   readonly overlay: OverlayVM | null;
 }
@@ -306,6 +309,7 @@ export function selectGemSlot(state: DashboardState): GemSlotVM {
     source,
     sourceChanged: turnOn.offered && turnOn.sourceChanged,
     cause: causeVM(slot.cause),
+    outcomes: slot.outcomes,
     collectorAtStart: collectorAtStartVM(view),
     overlay:
       overlay === null

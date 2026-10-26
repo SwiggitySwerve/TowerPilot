@@ -60,8 +60,8 @@ def _labelled(rows):
     return [dict(row, label=getattr(catalog.find(row.get('action')), 'label', None)) for row in rows]
 
 
-def for_battle(root, battle, *, limit=DEFAULT_LIMIT):
-    """The executions that ran under one battle, newest first.
+def for_battle(root, battle, *, limit=DEFAULT_LIMIT, action=None):
+    """The executions that ran under one battle, newest first (only those of `action` when one is named).
 
     The rows decide. A battle that has executions was recorded, whenever it was created: the first battle a driver
     tracks is created a moment BEFORE its action store, and must not hide what it recorded. Only a battle with no
@@ -74,7 +74,7 @@ def for_battle(root, battle, *, limit=DEFAULT_LIMIT):
         return dict(items=None, reason='newer_schema', truncated=False)
     rows, truncated, cursor = [], False, None
     if meta is not None:
-        rows, truncated, _, cursor = Actions.read_page(path, device=battle['context']['device_key'], battle_id=battle['id'], limit=limit)
+        rows, truncated, _, cursor = Actions.read_page(path, device=battle['context']['device_key'], battle_id=battle['id'], action=action, limit=limit)
     if rows:
         block = dict(items=_labelled(rows), reason=None, truncated=truncated)
         if truncated:        # the rest is one generic read away: GET /api/actions/executions?battle_id=<id>&before=<next_before>

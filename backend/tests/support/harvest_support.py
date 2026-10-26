@@ -16,6 +16,7 @@ from player.run_controls import resolve
 from towerpilot_workflows import battles as ledger_battles
 from towerpilot_workflows import harvest as ledger_h
 from towerpilot_workflows import operations as ledger_ops
+from towerpilot_workflows.actions import Actions, new_record
 from towerpilot_workflows.battles import Battles
 
 NOW = 1_800_000_000.0
@@ -524,6 +525,19 @@ def _battle(h, op, *, status='active', observing=True, published=NOW - 1, genera
         observation_status='observing' if observing else 'waiting_for_game_state', routines=routines,
         **published_at, **extra))
     return store, store.get(battle['id'])
+
+
+def ad_window(h, battle, result, reason=None, *, at, attempts=1):
+    """One closed ad-gem window recorded under this battle, as the collector's recorder leaves it
+    (a confirmed claim, an attempt nobody could confirm, or a window with no offer)."""
+    effect = 'confirmed' if result == 'succeeded' else 'unconfirmed' if attempts else 'none'
+    host = dict(driver='collector', operation_id=battle['operation_id'], battle_id=battle['id'], generation=battle['generation'])
+    body = new_record(device=battle['context']['device_key'], action='ad_gems', instance='ad_gems', trigger='automatic',
+                      occurrence_key=f'window:{at}', host=host,
+                      context=dict(device_key=battle['context']['device_key'], account=battle['context'].get('account')),
+                      started_at=at - 20)
+    return Actions(operations.ledger_path(h.root)).record_terminal(
+        body, result=result, reason=reason, effect=effect, attempts=attempts, finished_at=at)
 
 
 def _run(h):

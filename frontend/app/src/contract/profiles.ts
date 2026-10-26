@@ -6,7 +6,7 @@ import {
   profilesCopyPostAnswerSchema as copyPost,
   profilesPromotePostAnswerSchema as promotePost,
   profilesTierPostAnswerSchema as tierPost,
-} from './generated/dashboard_contract_pages_v1_profiles.ca56f910.ts';
+} from './generated/dashboard_contract_pages_v1_profiles.a26ad877.ts';
 
 /**
  * The Profiles page's contract (profiles brief P1 to P5): strict schemas
@@ -24,7 +24,7 @@ export {
   profilesSourceAfterPromoteAnswerSchema,
   profilesSourceAfterTierAnswerSchema,
   profilesSourceReadAnswerSchema,
-} from './generated/dashboard_contract_pages_v1_profiles.ca56f910.ts';
+} from './generated/dashboard_contract_pages_v1_profiles.a26ad877.ts';
 
 export const profilesAccountsPostAnswerSchema = z.union([accountsPost, contextFenceAnswerSchema]);
 export const profilesActivatePostAnswerSchema = z.union([activatePost, contextFenceAnswerSchema]);

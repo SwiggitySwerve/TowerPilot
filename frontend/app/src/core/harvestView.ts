@@ -3,10 +3,11 @@ import type { ConnectionLine } from './connection.ts';
 import { collectionGuard, type CollectionGuardPermit, type GuardRefusal } from './guards.ts';
 import {
   collectionEvidence,
-  gemFlags,
+  gemOutcomes,
   operationPublication,
   ownerPublication,
   runGemReport,
+  type GemOutcomes,
 } from './collection.ts';
 import { confirmCollecting, confirmIdle } from './evidence.ts';
 import { gateOf } from './gate.ts';
@@ -38,6 +39,7 @@ export type GemRow =
   | 'G3d'
   | 'G3e'
   | 'G3f'
+  | 'G3g'
   | 'G4a'
   | 'G4b'
   | 'G4c'
@@ -54,6 +56,7 @@ export type GemLine =
   | 'harvest_unreadable'
   | 'last_read'
   | 'collecting_gems'
+  | 'claims_failing'
   | 'gem_routines_off'
   | 'stop_not_confirmed'
   | 'starting'
@@ -92,35 +95,41 @@ export function gemSeen(context: StatusContext): GemDecision {
   const view = harvestView(harvest);
   const operation = view.operation;
   if (record(operation) !== undefined) {
-    const collecting = collectionEvidence(harvest);
-    const claim = confirmCollecting(harvest);
-    if (collecting.kind === 'known' && claim.kind === 'known') {
-      return observed('G3a', 'running', 'collecting_gems', claim.value, {
-        collectOnly: collecting.value.startedByCollectOnly,
-      });
+    // The collector's state is the backend's published `code`; it is read, not recomputed (invariant 11).
+    // A collecting code still needs the fresh publication D-6 proves before it is shown (S-028).
+    const code = view.code;
+    if (code === 'collecting' || code === 'claims_failing') {
+      const collecting = collectionEvidence(harvest);
+      const claim = confirmCollecting(harvest);
+      if (collecting.kind === 'known' && claim.kind === 'known') {
+        return code === 'claims_failing'
+          ? decide('G3g', 'failed', 'claims_failing', 'EV-2', {
+              streak: gemOutcomes(harvest, 'operation')?.failureStreak ?? null,
+            })
+          : observed('G3a', 'running', 'collecting_gems', claim.value, {
+              collectOnly: collecting.value.startedByCollectOnly,
+            });
+      }
     }
-    const flags = gemFlags(own(operation, 'routines'));
     if (
+      code === 'gem_routines_paused' &&
       operationPublication(harvest) !== null &&
-      view.inputRevoked === false &&
-      flags !== null &&
-      flags.adGems === false &&
-      flags.floatingGems === false
+      view.inputRevoked === false
     ) {
       return decide('G3b', 'paused', 'gem_routines_off', 'EV-2');
     }
-    const status = own(operation, 'status');
-    if (status === 'cancelling') {
+    if (
+      code === 'collector_stopping' ||
+      code === 'harvest_off' ||
+      code === 'harvest_changed' ||
+      code === 'policy_invalid'
+    ) {
       return decide('G3c', 'stopping', 'stop_not_confirmed', null);
     }
-    if (status === 'accepted') {
+    if (code === 'collector_starting') {
       return decide('G3d', 'waiting', 'starting', null);
     }
-    if (
-      view.state === 'waiting_for_battle' &&
-      status === 'running' &&
-      own(operation, 'worker_alive') === true
-    ) {
+    if (code === 'between_battles' || code === 'waiting_for_battle') {
       return decide('G3e', 'waiting', 'waiting_to_track_battle', null);
     }
     return decide('G3f', 'unknown', 'collector_state_unknown', null);
@@ -356,12 +365,30 @@ export function turnOnView(
   };
 }
 
+/** The outcomes line is for the rows that say gems are being handled: the collector's (G3a, G3g) or a run's own (G4a). */
+function outcomesOf(read: ReturnType<typeof drawnRead>, seen: GemDecision): GemOutcomes | null {
+  if (read === null || read.harvest.kind === 'unknown') {
+    return null;
+  }
+  switch (seen.row) {
+    case 'G3a':
+    case 'G3g':
+      return gemOutcomes(read.harvest.value, 'operation');
+    case 'G4a':
+      return gemOutcomes(read.harvest.value, 'owner');
+    default:
+      return null;
+  }
+}
+
 /** The Gem harvesting slot's view: Your choice and Seen now as separate facts (S-034). */
 export interface GemSlotView {
   readonly choice: ChoiceView;
   readonly seen: GemDecision;
   readonly pause: boolean;
   readonly cause: GemCause | null;
+  /** This battle's confirmations, missed windows and latest miss, when the row shows a collector's or run's gems. */
+  readonly outcomes: GemOutcomes | null;
 }
 
 /**
@@ -385,5 +412,6 @@ export function gemSlot(
     seen,
     pause: pauseOffered(harvest, known, unsettled),
     cause: gemCause(context, seen),
+    outcomes: outcomesOf(read, seen),
   };
 }

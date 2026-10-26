@@ -27,8 +27,8 @@ from control import harvest, operations
 from harvest_http import body, collector_row, enable, make_app, running_collector, stub_status
 from control.operations import inspect_worker as real_inspect_worker
 from harvest_support import (
-    FULL, NOW, OFF_ROUTINES, _battle, _collector, _run, choose, fake_inspect, fake_platform, finish_last, identity,
-    make_env, routine, sealed_unresolved,
+    FULL, NOW, OFF_ROUTINES, _battle, _collector, _run, ad_window, choose, fake_inspect, fake_platform, finish_last,
+    identity, make_env, routine, sealed_unresolved,
 )
 
 FIXTURE = test_paths.FIXTURES / 'harvest_status_v1.json'
@@ -80,9 +80,26 @@ def sample_starting_collector(h):
     return h.status(host=HOST)
 
 
+def counted_routines(missed):
+    return {'ad_gems': routine(True, counters=dict(checks=9, seen=7, skips=0, attempts=8, confirmed=2, windows_missed=missed)),
+            'floating_gems': routine(False)}
+
+
 def sample_collecting(h):
+    """Counts and the cause of the latest miss; one missed window is not a warning."""
     choose(h)
-    _battle(h, _collector(h), routines=ON_ROUTINES, evidence=EVIDENCE)
+    _, battle = _battle(h, _collector(h), routines=counted_routines(1), evidence=EVIDENCE)
+    ad_window(h, battle, 'succeeded', 'offer_disappeared', at=NOW - 200)
+    ad_window(h, battle, 'no_op', 'no_offer_seen', at=NOW - 100, attempts=0)
+    return h.status(host=HOST)
+
+
+def sample_working_collector_claims_failing(h):
+    """Four ad windows in a row sent a tap and confirmed nothing: collecting is a stated warning, not 'Collecting gems'."""
+    choose(h)
+    _, battle = _battle(h, _collector(h), routines=counted_routines(4), evidence=EVIDENCE)
+    for index in range(4):
+        ad_window(h, battle, 'failed', 'offer_moved', at=NOW - 400 + 90 * index)
     return h.status(host=HOST)
 
 
@@ -131,8 +148,10 @@ def sample_manual_collector(h):
 
 
 def sample_owned_by_run_gathers(h):
+    """A full driver owns the emulator: its confirmations and its latest miss are published too."""
     choose(h)
-    _battle(h, _run(h), controls=FULL, routines=ON_ROUTINES, gather={'ad_gems': True})
+    _, battle = _battle(h, _run(h), controls=FULL, routines=counted_routines(2), gather={'ad_gems': True}, evidence=EVIDENCE)
+    ad_window(h, battle, 'failed', 'timeout', at=NOW - 60)
     return h.status(host=HOST)
 
 

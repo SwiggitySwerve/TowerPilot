@@ -578,3 +578,62 @@ describe('Gem harvesting capability rows', () => {
     }
   });
 });
+
+describe('what was claimed and missed this battle, and why', () => {
+  const counts = (container: HTMLElement) => container.querySelector('[data-gem-counts]');
+  const cause = (container: HTMLElement) => container.querySelector('[data-gem-cause]');
+
+  it('failing ad claims read as a stated warning, with the counts and the cause, never as "collecting gems"', () => {
+    const { view } = drawGem(sample('status.working_collector_claims_failing'));
+    expect(chip(view.container)).toHaveAttribute('data-state', 'failed');
+    expect(
+      within(view.container).getByText('Ad gem claims failing: 4 in a row'),
+    ).toBeInTheDocument();
+    expect(within(view.container).queryByText('collecting gems')).toBeNull();
+    expect(counts(view.container)).toHaveTextContent(
+      'Confirmations seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups; 4 ad windows missed',
+    );
+    expect(cause(view.container)).toHaveTextContent('Last missed ad window: offer moved, 2 m ago');
+    expect(pause()).not.toBeNull();
+    expect(textOutsideCatalogue(view.container)).toEqual([]);
+  });
+
+  it('a collector that is claiming reads "collecting gems" with the confirmations seen and the latest miss', () => {
+    const { view } = drawGem(sample('status.collecting'));
+    expect(chip(view.container)).toHaveAttribute('data-state', 'running');
+    expect(within(view.container).getByText('collecting gems')).toBeInTheDocument();
+    expect(counts(view.container)).toHaveTextContent(
+      'Confirmations seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups; 1 ad window missed',
+    );
+    expect(cause(view.container)).toHaveTextContent(
+      'Last missed ad window: no offer seen, 1 m ago',
+    );
+    expect(view.container.querySelectorAll('[data-gem-counts], [data-gem-cause]')).toHaveLength(2);
+    expect(textOutsideCatalogue(view.container)).toEqual([]);
+  });
+
+  it('a full run that owns the emulator shows the counts its own driver published', () => {
+    const { view } = drawGem(sample('status.owned_by_run_gathers'));
+    expect(within(view.container).getByText('the run collects gems itself')).toBeInTheDocument();
+    expect(counts(view.container)).toHaveTextContent('2 ad windows missed');
+    expect(cause(view.container)).toHaveTextContent('Last missed ad window: window ran out');
+  });
+
+  it('with nothing missed and no counters published there is no cause line and no invented count', () => {
+    const { view } = drawGem(sample('status.manual_collector'));
+    expect(cause(view.container)).toBeNull();
+    expect(counts(view.container)).toHaveTextContent(
+      'Confirmations seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups',
+    );
+    expect(counts(view.container)).not.toHaveTextContent('missed');
+  });
+
+  it.each(['stale_collector', 'live_paused', 'waiting_for_battle', 'off'])(
+    'a row that does not say gems are being handled (%s) shows neither line',
+    (name) => {
+      const { view } = drawGem(sample(`status.${name}`));
+      expect(counts(view.container)).toBeNull();
+      expect(cause(view.container)).toBeNull();
+    },
+  );
+});

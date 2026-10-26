@@ -1079,6 +1079,15 @@ export const MATRIX: readonly MatrixRow[] = [
     input: 'Unknown',
     automation: 'Unknown',
   },
+  {
+    sample: 'working_collector_claims_failing',
+    pause: 'shown',
+    turnInputOff: 'shown',
+    stopTargets: '00000027@2',
+    gem: 'Failed',
+    input: 'Unknown',
+    automation: 'Running',
+  },
 ];
 
 /** Section 9.1: the scenarios beyond the samples. */

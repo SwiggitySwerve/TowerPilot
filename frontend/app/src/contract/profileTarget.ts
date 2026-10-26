@@ -5,7 +5,7 @@ export {
   profileTargetSourceAnswerSchema,
   profileTargetPatchAnswerSchema,
   profileTargetActivateAnswerSchema,
-} from './generated/dashboard_contract_pages_v1_profile_target.ed69748c.ts';
+} from './generated/dashboard_contract_pages_v1_profile_target.2206231e.ts';
 /** r12e (c945da8): profile_target_more, the inactive-target paths. */
 export {
   profileTargetMoreFilesAnswerSchema,

@@ -1,5 +1,6 @@
 import { entry, made } from '../entry.ts';
 import type { CopyText } from '../text.ts';
+import { ageAgo } from './shell.ts';
 
 /** "12 m", "30 s", "2 h": a whole interval, for saved routine settings. */
 function interval(seconds: number): string {
@@ -17,6 +18,28 @@ function duration(seconds: number): string {
   const minutes = Math.floor((whole % 3600) / 60);
   return hours > 0 ? `${String(hours)} h ${String(minutes)} m` : `${String(minutes)} m`;
 }
+
+function plural(count: number, one: string, many: string): string {
+  return `${String(count)} ${count === 1 ? one : many}`;
+}
+
+/** The ad window causes the backend names (`CAUSE_CODES` in control/harvest.py), as the end of "Last missed ad window: ...". */
+const MISSED_WINDOW: Readonly<Record<string, string>> = {
+  no_offer_seen: 'no offer seen',
+  offer_not_claimed: 'offer seen but not claimed',
+  offer_moved: 'offer moved',
+  offer_gone: 'offer gone before the tap',
+  window_ran_out: 'window ran out',
+  tap_refused: 'tap refused',
+  balance_unread: 'gem balance not readable',
+  not_confirmed: 'claim not confirmed',
+};
+
+/** The downtime causes: the collector itself, not one ad window. */
+const COLLECTOR_DOWNTIME: Readonly<Record<string, string>> = {
+  collector_restarted: 'Collector restarted during this battle',
+  collector_stopped: 'Collector stopped during an ad window',
+};
 
 /** One gem routine of a saved run, as the source line says it. */
 export interface RoutineWords {
@@ -133,6 +156,10 @@ export const control = {
         'The status read did not carry a readable harvesting record.',
       ),
       collecting_gems: entry('collecting gems'),
+      claims_failing: entry(
+        'ad gem claims failing',
+        'The collector is running, but its recent ad gem claims were not confirmed.',
+      ),
       started_by_collect_only: entry('started by Collect gems only'),
       gem_routines_off: entry('gem routines off for this battle'),
       stop_not_confirmed: entry('stop not confirmed'),
@@ -174,6 +201,41 @@ export const control = {
       other: entry('A collector from before this dashboard start was found'),
     },
     retryingIn: (seconds: number): CopyText => made(`retrying in ${duration(seconds)}`),
+    /** G3g: the stated warning, with the backend's count of claims in a row that were not confirmed. */
+    claimsFailing: (streak: number): CopyText =>
+      made(`Ad gem claims failing: ${String(streak)} in a row`),
+    /**
+     * What this battle's gem collection did. The counts are confirmations the
+     * driver saw (lower bounds, never totals), so the words say "at least";
+     * null when nothing is published to say.
+     */
+    outcomes: {
+      counts: (ad: number | null, orbit: number | null, missed: number | null): CopyText | null => {
+        const seen = [
+          ad === null ? null : plural(ad, 'ad gem claim', 'ad gem claims'),
+          orbit === null ? null : plural(orbit, 'orbit gem pickup', 'orbit gem pickups'),
+        ].filter((part): part is string => part !== null);
+        const confirmed =
+          seen.length === 0
+            ? null
+            : (ad ?? 0) + (orbit ?? 0) === 0
+              ? 'No confirmations seen yet this battle'
+              : `Confirmations seen this battle (at least): ${seen.join(', ')}`;
+        const lost = missed === null ? null : `${plural(missed, 'ad window', 'ad windows')} missed`;
+        const parts = [confirmed, lost].filter((part): part is string => part !== null);
+        return parts.length === 0 ? null : made(parts.join('; '));
+      },
+      /** The latest miss or downtime period, worded by the backend's cause code; an unknown code reads as an unconfirmed claim. */
+      cause: (code: string, agoSec: number | null): CopyText => {
+        const when = agoSec === null ? '' : `, ${ageAgo(agoSec)}`;
+        const downtime = COLLECTOR_DOWNTIME[code];
+        return made(
+          downtime === undefined
+            ? `Last missed ad window: ${MISSED_WINDOW[code] ?? MISSED_WINDOW['not_confirmed'] ?? ''}${when}`
+            : `${downtime}${when}`,
+        );
+      },
+    },
     /** G4c: the holder's PID, as the record names it. */
     holderPid: (pid: number): CopyText => made(`PID ${String(pid)}`),
     /** G5d: the cause for each blocked `code` (S-037). */

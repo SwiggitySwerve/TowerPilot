@@ -182,10 +182,11 @@ describe('S-030 green Collecting only with D-6 for the current operation', () =>
     expect(pauseOffered(readOf(body).harvest, null, [])).toBe(true);
   });
 
-  it('S-030 both gem routines off on a valid record reads live paused (G3b)', () => {
+  it('S-030 the published code gem_routines_paused on a valid record reads live paused (G3b)', () => {
     const harvest = sampleRecord('status.collecting');
     setPath(harvest, ['operation', 'routines', 'ad_gems', 'enabled'], false);
     setPath(harvest, ['operation', 'routines', 'floating_gems', 'enabled'], false);
+    setPath(harvest, ['code'], 'gem_routines_paused');
     expect(gemSeen(contextOf(statusBody(harvest)))).toMatchObject({
       row: 'G3b',
       word: 'paused',
@@ -194,6 +195,15 @@ describe('S-030 green Collecting only with D-6 for the current operation', () =>
     expect(gemSeen(contextOf(statusBody(sampleRecord('status.live_paused'))))).toMatchObject({
       row: 'G3b',
     });
+  });
+
+  it('S-030 the page reads the published code: routines that read off under a collecting code are not re-classified as paused', () => {
+    const harvest = sampleRecord('status.collecting');
+    setPath(harvest, ['operation', 'routines', 'ad_gems', 'enabled'], false);
+    setPath(harvest, ['operation', 'routines', 'floating_gems', 'enabled'], false);
+    const seen = gemSeen(contextOf(statusBody(harvest)));
+    expect(seen.row).not.toBe('G3b');
+    expect(seen.row).not.toBe('G3a');
   });
 
   it('S-030 the stale collector sample reads collector state unknown', () => {

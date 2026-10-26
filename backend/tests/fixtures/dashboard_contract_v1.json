@@ -521,7 +521,7 @@
     "status": 200
    },
    "refused_while_a_runner_is_listed": {
-    "body": {"code": "device_owned", "error": "runners alive - stop them first", "ok": false, "owner": {"foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4601, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "runners alive - stop them first", "ok": false, "owner": {"claims": null, "evidence": null, "foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4601, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
     "request": {"body": {}, "method": "POST", "path": "/api/wizard/reconnect"},
     "status": 409
    }

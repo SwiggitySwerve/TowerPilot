@@ -424,7 +424,7 @@
     "status": 200
    },
    "refused_while_a_runner_owns_the_device": {
-    "body": {"code": "device_owned", "error": "Stop automation before changing accounts.", "ok": false, "owner": {"foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4601, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "Stop automation before changing accounts.", "ok": false, "owner": {"claims": null, "evidence": null, "foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4601, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
     "request": {"body": {"create": true, "id": "alpha"}, "method": "POST", "path": "/api/accounts"},
     "status": 409
    },
@@ -494,7 +494,7 @@
     "status": 409
    },
    "tier_refused_while_a_runner_owns_the_device": {
-    "body": {"code": "device_owned", "error": "Stop automation before changing account capabilities.", "ok": false, "owner": {"foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4602, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "Stop automation before changing account capabilities.", "ok": false, "owner": {"claims": null, "evidence": null, "foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4602, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
     "request": {"body": {"max_tier": 5}, "method": "POST", "path": "/api/account-tier"},
     "status": 409
    },
@@ -1036,12 +1036,12 @@
     "status": 409
    },
    "apply_while_a_run_owns_the_device_409": {
-    "body": {"code": "device_owned", "error": "Wait for calibration to stop before applying results.", "ok": false, "owner": {"battle": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "000000c8-0000-4000-8000-000000000000", "operation_kind": "run", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000c8-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000c8-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "Wait for calibration to stop before applying results.", "ok": false, "owner": {"battle": null, "claims": null, "evidence": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "000000c8-0000-4000-8000-000000000000", "operation_kind": "run", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000c8-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000c8-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
     "request": {"body": {"expected_revision": 3, "operation_id": "000000c7-0000-4000-8000-000000000000"}, "method": "POST", "path": "/api/calibrate/apply"},
     "status": 409
    },
    "apply_while_the_calibration_runs_409": {
-    "body": {"code": "device_owned", "error": "Wait for calibration to stop before applying results.", "ok": false, "owner": {"battle": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "000000c6-0000-4000-8000-000000000000", "operation_kind": "calibrate", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000c6-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000c6-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "Wait for calibration to stop before applying results.", "ok": false, "owner": {"battle": null, "claims": null, "evidence": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "000000c6-0000-4000-8000-000000000000", "operation_kind": "calibrate", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000c6-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000c6-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
     "request": {"body": {"expected_revision": 2, "operation_id": "000000c6-0000-4000-8000-000000000000"}, "method": "POST", "path": "/api/calibrate/apply"},
     "status": 409
    },
@@ -1191,7 +1191,7 @@
     "status": 409
    },
    "observe_while_a_run_owns_the_device_409": {
-    "body": {"code": "device_owned", "error": "runners alive: orchestrator - stop them first", "ok": false, "owner": {"battle": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "000000b7-0000-4000-8000-000000000000", "operation_kind": "run", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000b7-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000b7-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "runners alive: orchestrator - stop them first", "ok": false, "owner": {"battle": null, "claims": null, "evidence": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "000000b7-0000-4000-8000-000000000000", "operation_kind": "run", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000b7-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000b7-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
     "request": {"body": {"expected_context": {"account": null, "instance": "main", "profile": "mine", "rendering": null, "serial": "fake:1"}, "idempotency_key": "obs-11"}, "method": "POST", "path": "/api/calibrate/observe"},
     "status": 409
    },
@@ -1471,12 +1471,12 @@
     "status": 409
    },
    "start_while_a_run_owns_the_device_409": {
-    "body": {"code": "device_owned", "error": "runners alive: orchestrator - stop them first", "ok": false, "owner": {"battle": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "000000ad-0000-4000-8000-000000000000", "operation_kind": "run", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000ad-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000ad-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "runners alive: orchestrator - stop them first", "ok": false, "owner": {"battle": null, "claims": null, "evidence": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "000000ad-0000-4000-8000-000000000000", "operation_kind": "run", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000ad-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000ad-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
     "request": {"body": {"expected_context": {"account": null, "instance": "main", "profile": "mine", "rendering": null, "serial": "fake:1"}, "idempotency_key": "k-o1", "phases": "c"}, "method": "POST", "path": "/api/calibrate/start"},
     "status": 409
    },
    "start_while_a_scan_owns_the_device_409": {
-    "body": {"code": "device_owned", "error": "runners alive: scan - stop them first", "ok": false, "owner": {"battle": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "000000af-0000-4000-8000-000000000000", "operation_kind": "scan", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000af-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000af-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "runners alive: scan - stop them first", "ok": false, "owner": {"battle": null, "claims": null, "evidence": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "000000af-0000-4000-8000-000000000000", "operation_kind": "scan", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000af-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000af-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
     "request": {"body": {"expected_context": {"account": null, "instance": "main", "profile": "mine", "rendering": null, "serial": "fake:1"}, "idempotency_key": "k-o3", "phases": "c"}, "method": "POST", "path": "/api/calibrate/start"},
     "status": 409
    },
@@ -1486,7 +1486,7 @@
     "status": 409
    },
    "start_while_the_collector_owns_the_device_409": {
-    "body": {"code": "device_owned", "error": "runners alive: gem_collector - stop them first", "ok": false, "owner": {"battle": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "000000ae-0000-4000-8000-000000000000", "operation_kind": "gems", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000ae-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000ae-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "runners alive: gem_collector - stop them first", "ok": false, "owner": {"battle": null, "claims": null, "evidence": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "000000ae-0000-4000-8000-000000000000", "operation_kind": "gems", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000ae-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "000000ae-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
     "request": {"body": {"expected_context": {"account": null, "instance": "main", "profile": "mine", "rendering": null, "serial": "fake:1"}, "idempotency_key": "k-o2", "phases": "c"}, "method": "POST", "path": "/api/calibrate/start"},
     "status": 409
    },
@@ -1969,7 +1969,7 @@
     "status": 200
    },
    "current_tier_while_a_runner_owns_the_device_is_refused_by_the_owner": {
-    "body": {"code": "device_owned", "error": "Stop automation before changing account capabilities.", "ok": false, "owner": {"foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4701, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "Stop automation before changing account capabilities.", "ok": false, "owner": {"claims": null, "evidence": null, "foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4701, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
     "request": {"body": {"expected_context": {"account": "beta", "instance": "main", "profile": "theirs", "serial": "fake:1"}, "max_tier": 7}, "method": "POST", "path": "/api/account-tier"},
     "status": 409
    },
@@ -2236,7 +2236,7 @@
     "status": 400
    },
    "adopt_refused_while_a_runner_owns_the_device": {
-    "body": {"code": "device_owned", "error": "runners alive - stop them first", "ok": false, "owner": {"foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4631, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "runners alive - stop them first", "ok": false, "owner": {"claims": null, "evidence": null, "foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4631, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
     "request": {"body": {"serial": "127.0.0.1:16384"}, "method": "POST", "path": "/api/wizard/adopt"},
     "status": 409
    },
@@ -2326,7 +2326,7 @@
     "status": 200
    },
    "launch_refused_while_a_runner_owns_the_device": {
-    "body": {"code": "device_owned", "error": "runners alive - stop them first", "ok": false, "owner": {"foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4632, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "runners alive - stop them first", "ok": false, "owner": {"claims": null, "evidence": null, "foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4632, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
     "request": {"body": {"emulator": "MuMu", "index": 0}, "method": "POST", "path": "/api/wizard/launch"},
     "status": 409
    },
@@ -2542,7 +2542,7 @@
     "status": 400
    },
    "install_refused_while_a_runner_owns_the_device": {
-    "body": {"code": "device_owned", "error": "Stop automation before preparing connection tools", "ok": false, "owner": {"foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4641, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "Stop automation before preparing connection tools", "ok": false, "owner": {"claims": null, "evidence": null, "foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4641, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
     "request": {"body": {"accept_license": true}, "method": "POST", "path": "/api/wizard/tools/install"},
     "status": 409
    },
@@ -3801,7 +3801,7 @@
     "status": 200
    },
    "activate_refused_while_a_runner_owns_the_device": {
-    "body": {"code": "device_owned", "error": "runners alive - stop them first", "ok": false, "owner": {"foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4611, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "runners alive - stop them first", "ok": false, "owner": {"claims": null, "evidence": null, "foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4611, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
     "request": {"body": {"name": "second"}, "method": "POST", "path": "/api/profile-activate"},
     "status": 409
    },
@@ -4036,7 +4036,7 @@
     "status": 400
    },
    "promotion_refused_while_a_runner_owns_the_device": {
-    "body": {"code": "device_owned", "error": "Wait for scanning to stop before applying results", "ok": false, "owner": {"foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4621, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "Wait for scanning to stop before applying results", "ok": false, "owner": {"claims": null, "evidence": null, "foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4621, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
     "request": {"body": {"base": "default", "draft": "main", "expected_revision": 3, "name": "promoted", "operation_id": "00000087-0000-4000-8000-000000000000"}, "method": "POST", "path": "/api/profile-promote"},
     "status": 409
    },
@@ -4919,7 +4919,7 @@
     "status": 409
    },
    "unbind_refused_while_runner_listed": {
-    "body": {"code": "device_owned", "error": "runners alive - stop them first", "ok": false, "owner": {"foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4701, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "runners alive - stop them first", "ok": false, "owner": {"claims": null, "evidence": null, "foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4701, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
     "request": {"body": {"expected_context": {"account": "alpha", "instance": "main", "profile": "mine", "serial": "fake:1"}, "name": null}, "method": "POST", "path": "/api/profile-activate"},
     "status": 409
    },
@@ -5505,7 +5505,7 @@
     "status": 409
    },
    "current_apply_while_a_runner_owns_the_device_is_refused_by_the_owner": {
-    "body": {"code": "device_owned", "error": "Wait for calibration to stop before applying results.", "ok": false, "owner": {"foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4702, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "Wait for calibration to stop before applying results.", "ok": false, "owner": {"claims": null, "evidence": null, "foreign": true, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "process", "operation_id": null, "operation_kind": null, "pid": 4702, "recovery": null, "routines": null, "script": "orchestrator", "status": null}, "recovery": null, "retry": "after_confirmed_stop"},
     "request": {"body": {"expected_context": {"account": "beta", "instance": "main", "profile": "theirs", "serial": "fake:1"}, "saved_observations": true}, "method": "POST", "path": "/api/calibrate/apply"},
     "status": 409
    },
@@ -6074,7 +6074,7 @@
     "status": 400
    },
    "step_while_a_run_owns_the_device_409": {
-    "body": {"code": "device_owned", "error": "Stop automation or calibration before using the clicker", "ok": false, "owner": {"battle": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "0000010f-0000-4000-8000-000000000000", "operation_kind": "run", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "0000010f-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "0000010f-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
+    "body": {"code": "device_owned", "error": "Stop automation or calibration before using the clicker", "ok": false, "owner": {"battle": null, "claims": null, "evidence": null, "foreign": false, "gathers": null, "gems": {"ad_gems": null, "basis": "not_reported", "floating_gems": null}, "harvest_managed": false, "kind": "operation", "operation_id": "0000010f-0000-4000-8000-000000000000", "operation_kind": "run", "pid": 4400, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "0000010f-0000-4000-8000-000000000000"}, "routines": null, "script": null, "status": "running"}, "recovery": {"action": "stop_operation", "expected_revision": 2, "operation_id": "0000010f-0000-4000-8000-000000000000"}, "retry": "after_confirmed_stop"},
     "request": {"body": {"account": null, "action": "guild", "instance": "main"}, "method": "POST", "path": "/api/clicker/step"},
     "status": 409
    },

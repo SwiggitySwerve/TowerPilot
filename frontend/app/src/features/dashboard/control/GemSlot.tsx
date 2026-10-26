@@ -34,6 +34,14 @@ function seenLine(vm: GemSlotVM): {
         extra: null,
         why: undefined,
       };
+    case 'claims_failing': {
+      const streak = numberParam(chip, 'streak');
+      return {
+        line: streak === null ? text.lines.claims_failing.short : text.claimsFailing(streak),
+        extra: null,
+        why: text.lines.claims_failing.why,
+      };
+    }
     case 'collecting_gems':
       return {
         line: text.lines.collecting_gems.short,
@@ -70,6 +78,35 @@ function seenLine(vm: GemSlotVM): {
       return { line: found.short, extra: null, why: found.why };
     }
   }
+}
+
+/** This battle's confirmations seen and the cause of the latest miss: the backend's values, worded in the catalogue. */
+function OutcomesLines({ vm }: { readonly vm: GemSlotVM }) {
+  const outcomes = vm.outcomes;
+  if (outcomes === null) return null;
+  const counts = text.outcomes.counts(
+    outcomes.adConfirmations,
+    outcomes.orbitConfirmations,
+    outcomes.windowsMissed,
+  );
+  const cause =
+    outcomes.cause === null
+      ? null
+      : text.outcomes.cause(outcomes.cause.code, outcomes.cause.agoSec);
+  return (
+    <>
+      {counts === null ? null : (
+        <p className="tp-seen__extra" data-gem-counts="">
+          {counts}
+        </p>
+      )}
+      {cause === null ? null : (
+        <p className="tp-seen__extra" data-gem-cause={outcomes.cause?.code}>
+          {cause}
+        </p>
+      )}
+    </>
+  );
 }
 
 /** F-030: this battle's gem toggles, restated as reported (S-036); never a token value. */
@@ -159,6 +196,7 @@ export function GemSlot() {
       <SlotFacts>
         <Pill prefix={shell.pills.yourChoice.short} value={choice.short} />
         <SeenLine chip={vm.seen} line={seen.line} extra={seen.extra} />
+        <OutcomesLines vm={vm} />
         <OverlayLine vm={vm} />
       </SlotFacts>
       <SlotAction>

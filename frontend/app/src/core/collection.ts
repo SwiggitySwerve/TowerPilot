@@ -1,5 +1,5 @@
 import { knownFact, unknownFact, type Fact } from './facts.ts';
-import { entries, finite, hasOwn, id, own, record, text } from './read.ts';
+import { entries, finite, hasOwn, id, own, record, revision, text } from './read.ts';
 import { harvestView, type ReadableHarvest } from './readability.ts';
 
 /**
@@ -232,4 +232,67 @@ export function runGemReport(harvest: ReadableHarvest): Fact<RunGemReport> {
     return unknownFact('no_gem_flag');
   }
   return knownFact(Object.freeze({ operationId, battle, adGems, floatingGems }), view.serverTime);
+}
+
+/** The latest ad window that did not succeed, or the collector restart, as the backend classified it. */
+export interface GemMissCause {
+  /** The backend's cause code (`backend/control/harvest.py` CAUSE_CODES); the copy words each one. */
+  readonly code: string;
+  /** Seconds before `harvest.server_time`, or null when the record gives no usable time. */
+  readonly agoSec: number | null;
+}
+
+/**
+ * What this battle's gem collection did, as the backend published it: the
+ * confirmation counters of `evidence` (durable lower bounds, never totals),
+ * the ad windows that ran out, the consecutive failed claims and the cause of
+ * the latest miss. Every field is null when the record does not give a valid
+ * value; absence is never a zero.
+ */
+export interface GemOutcomes {
+  readonly adConfirmations: number | null;
+  readonly orbitConfirmations: number | null;
+  readonly windowsMissed: number | null;
+  readonly failureStreak: number | null;
+  readonly cause: GemMissCause | null;
+}
+
+/**
+ * `operation` (the standalone collector) or `owner` (a full driver) outcomes,
+ * read only from a fresh publication of its battle (EV-2): an older one
+ * describes something that may have changed. Counters from another battle
+ * generation than the publication's are not this battle's. Null when nothing
+ * usable is published.
+ */
+export function gemOutcomes(
+  harvest: ReadableHarvest,
+  holder: 'operation' | 'owner',
+): GemOutcomes | null {
+  const view = harvestView(harvest);
+  const battle = holder === 'operation' ? operationPublication(harvest) : ownerPublication(harvest);
+  if (battle === null) {
+    return null;
+  }
+  const source = holder === 'operation' ? view.operation : view.owner;
+  const evidence = own(source, 'evidence');
+  const claims = own(source, 'claims');
+  const counted =
+    record(evidence) !== undefined &&
+    own(evidence, 'generation') === battle.generation &&
+    evidenceTimesValid(evidence, view.serverTime);
+  const causeCode = id(own(own(claims, 'cause'), 'code'));
+  const at = finite(own(own(claims, 'cause'), 'at'));
+  const outcomes: GemOutcomes = {
+    adConfirmations: counted ? (revision(own(evidence, 'ad_claim_confirmations')) ?? null) : null,
+    orbitConfirmations: counted
+      ? (revision(own(evidence, 'orbit_balance_confirmations')) ?? null)
+      : null,
+    windowsMissed: revision(own(claims, 'windows_missed')) ?? null,
+    failureStreak: revision(own(claims, 'failure_streak')) ?? null,
+    cause:
+      causeCode === undefined
+        ? null
+        : { code: causeCode, agoSec: at === undefined ? null : Math.max(0, view.serverTime - at) },
+  };
+  return Object.values(outcomes).every((value) => value === null) ? null : outcomes;
 }
