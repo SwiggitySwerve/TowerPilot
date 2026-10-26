@@ -4,8 +4,8 @@ fixtures/action_golden_v1.json (`baseline`). Replaying them after the migration 
 deliberate difference is the route list, which may differ from the baseline only by ADDED_ROUTES."""
 import action_golden as golden
 
-# The routes item 6 adds on purpose: the one generic read route (a new action adds none).
-ADDED_ROUTES = ['/api/actions/executions']
+# The routes added on purpose: item 6's one generic read route (a new action adds none) and item 3's read-only takeover preview (T3c).
+ADDED_ROUTES = ['/api/actions/executions', '/api/takeover/preview']
 
 
 def test_capabilities_and_runtime_routines_equal_the_captured_snapshots(tmp_path, dash):

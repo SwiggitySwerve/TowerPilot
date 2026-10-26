@@ -223,7 +223,7 @@ def compatibility(preset, preset_key=None) -> list[dict]:
 
     `tournament`: the kind, `tournament_setup`, or a legacy run literally keyed `tournament` (the three configuration locks of
     `orchestrator._tournament_locked`; the fourth, the trophy badge, is the worker's). `ends_battle`: `max_wave`, a `surrender_retry` rule, or a kind whose runner
-    surrenders. `unsupported_kind`: a kind (or, with no kind, a runner script) the battle loop does not drive."""
+    surrenders. `unsupported_kind`: a kind (or, with no kind, a runner script; with kind coin, any runner other than the orchestrator) the battle loop does not drive."""
     preset = _mapping(preset)
     kind = preset.get("kind")
     reasons = []
@@ -237,7 +237,7 @@ def compatibility(preset, preset_key=None) -> list[dict]:
         reasons.append(_reason("ends_battle", "kind", f"a {kind} run ends the battle it started"))
     elif kind not in (None, "coin", "tournament"):
         reasons.append(_reason("unsupported_kind", "kind", f"the {kind} runner is not the battle loop a takeover continues"))
-    elif kind is None and preset.get("runner"):
+    elif preset.get("runner") and (kind is None or (kind == "coin" and preset["runner"] != "orchestrator.py")):
         reasons.append(_reason("unsupported_kind", "runner", f"a preset driven by the {preset['runner']} script is not the battle loop a takeover continues"))
     if preset.get("max_wave") is not None:
         reasons.append(_reason("ends_battle", "max_wave", f"the run ends at wave {preset['max_wave']}"))

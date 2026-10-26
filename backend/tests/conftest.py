@@ -291,6 +291,15 @@ def pytest_unconfigure(config):
 
 
 @pytest.fixture(autouse=True)
+def _own_priority_unchanged(monkeypatch):
+    """No test changes the test process's real Windows priority class: the gem collector raises its own class at startup
+    (runtime.priority), and every test that runs gem_collector.main would otherwise raise pytest's. Tests of that call fake
+    _set_own_class themselves, which overrides this."""
+    from runtime import priority
+    monkeypatch.setattr(priority, '_set_own_class', lambda flag: None)
+
+
+@pytest.fixture(autouse=True)
 def _no_live_port_connect():
     """Fails the test during which anything (a background thread included) tried to reach the live adb server,
     gem collector or dashboard. Hits are never discarded: one from a thread that outlives its test is reported by

@@ -9,10 +9,19 @@ import time
 import uuid
 
 from towerpilot_workflows.control_settings import documents, flatten, merge_patch, validate_patch
-from towerpilot_workflows.operations import Conflict, Operations, digest
+from towerpilot_workflows.operations import Conflict, Operations, digest, has_table, readonly
 
 LIVE = ('prepared', 'active')
 TERMINAL_COMMANDS = ('applied', 'completed', 'failed', 'rejected', 'expired')
+
+
+def _live_rows(db, device):
+    query = "SELECT body FROM battles WHERE status IN ('prepared','active')"
+    params = ()
+    if device is not None:
+        query += ' AND device=?'
+        params = (device,)
+    return [json.loads(row[0]) for row in db.execute(query, params).fetchall()]
 
 
 class Battles(Operations):
@@ -146,12 +155,13 @@ class Battles(Operations):
 
     def active(self, device=None):
         with self._db() as db:
-            query = "SELECT body FROM battles WHERE status IN ('prepared','active')"
-            params = ()
-            if device is not None:
-                query += ' AND device=?'
-                params = (device,)
-            return [json.loads(row[0]) for row in db.execute(query, params).fetchall()]
+            return _live_rows(db, device)
+
+    @staticmethod
+    def active_read_only(path, device=None):
+        """`active` for a GET: reads the ledger file as it is. No file, or no battles table yet, is no live battle; nothing is created."""
+        with readonly(path) as db:
+            return [] if db is None or not has_table(db, 'battles') else _live_rows(db, device)
 
     def list(self, limit=50, offset=0, device=None, status=None, context=None):
         if type(limit) is not int or not 1 <= limit <= 200 or type(offset) is not int or offset < 0:
