@@ -1,7 +1,7 @@
 # Profile schema (v1) - the contract for P2 builders
 > **Status:** Active
 > **Type:** Knowledge
-> **Updated:** 2026-10-20
+> **Updated:** 2026-10-24
 > **Tags:** profiles, schema, validator, presets
 
 One YAML file per player: `profiles/<name>.yaml`. Four top-level sections.
@@ -294,6 +294,21 @@ not at all. The refusal names the plan block rather than merely saying no.
 
 A tournament blueprint is one entry, and a tournament BLOCK is one per day
 for the same reason (the ticket auto-starts the run; 10 -> 20 -> 30 gems).
+
+### A run's `kind` is fixed once the run is added
+`kind` picks the runner and decides which fields the run may carry; the plan (a block
+must match its run's kind) and the readiness checks key on it too. The editor route
+(`POST /api/profile-patch`) therefore refuses a patch that changes the `kind` of a run
+that exists both before and after it - by the `kind` field, by replacing the whole run,
+or by replacing the whole `blueprints` mapping - with
+`400 {ok: false, code: "kind_change_refused", error, changes: [{blueprint, from_kind,
+to_kind}]}` and writes nothing. It is judged after the revision and context checks and
+after the validator: a change the validator already refuses (an unknown or deleted
+kind, a field the new kind may not carry, `loadout: as_is` on a non-coin run) keeps the
+validator's own message. Adding a run, removing one, and writing the kind a run already
+has are not changes. To change a run's type, remove the run and add a new one (a plan
+block that names the run blocks the removal until the block is changed). A dissonance
+run is not another kind: it is a coin run with `dissonant_tab`.
 
 ## policies
 ```yaml
@@ -843,7 +858,7 @@ name backed by the wrong preset - and takes `--minutes` for a full
 1440x7 walk (the 15-minute default grid cannot see a 07:59 drift) and
 `--fill block=HH:MM` to put the counter switchover on the clock as well. An
 empty diff on `profiles/default.yaml` is P5's core verification, and
-`tests/golden_default_plan.json` freezes that plan.
+`tests/fixtures/golden_default_plan.json` freezes that plan.
 
 ## Compilation contract (profile.py)
 `compile_preset(profile, blueprint_name) -> dict` produces a FLAT preset
@@ -952,7 +967,7 @@ starter's 1 is not knowledge, and the tier arrows stop at the real ceiling. `in_
 is written as a LIST of its shape, which its doc says); `policies` nests
 `uw`/`rescue`/`gather`.
 
-`tests/test_playerprofile.py` cross-checks this section against a
+`tests/unit/test_playerprofile.py` cross-checks this section against a
 validation probe per kind: every listed field is fed a legal value and the
 profile must validate clean, and every field the kind does NOT list is fed
 one and the profile must be refused by name.

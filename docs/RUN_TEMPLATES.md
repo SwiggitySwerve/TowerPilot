@@ -1,11 +1,28 @@
 # Shipped run templates
 > **Status:** Active
 > **Type:** User guide
-> **Updated:** 2026-10-19
+> **Updated:** 2026-10-22
 
 Farm, Tournament, Shard farming and Dissonance are available above the run list in Control. Choose a template, name it, choose your tier and equipment, then add it. Advanced settings are expanded. Adding a run does not start it or schedule it.
 
 The text-only library is `backend/player/run_templates.json`. `run_templates.py` copies a recipe into the existing profile blueprint schema, with independent policy names for each run. Existing runs, schedules, equipment and account observations are preserved. The starter remains read-only; create a personal profile through Setup first.
+
+## Why a run could not be added
+
+A page that adds a run sends the profile revision it read (`expected_revision`) and the emulator, account and profile it was composed for (`expected_context`). An add that carries either guard gets a stable `code` with every refusal that is known to have happened before anything was written, so the page can tell "refused, nothing changed" from "unknown, read the profile":
+
+| `code` | Status | Meaning |
+| --- | --- | --- |
+| `revision_conflict` | 409 | The profile changed since the page read it. The answer carries the current `revision`. |
+| `context_changed` | 409 | Another emulator, account or profile is in force. The answer carries `current_context`. |
+| `invalid_request` | 400 | The guard itself is malformed. |
+| `profile_unavailable` | 400 or 409 | No such profile, an unreadable or non-mapping file, a name that is not a profile name (400); the starter and a scan draft (409). |
+| `id_taken` | 400 | The run identifier, or a policy that identifier would create, exists already. |
+| `recipe_refused` | 400 | Not an identifier, an unknown template, or an unsupported or malformed choice. |
+| `validation_failed` | 400 | The profile validator refused the result; `problems` lists why. |
+| `write_failed_nothing_saved` | 400 | The write failed and the profile file is byte-identical to what it was before. |
+
+A failure after which the profile differs, or cannot be read back, carries no code: the add may have happened, and a read of the profile settles it. A request without a guard is answered as it always was, with no code.
 
 ## Legacy behaviour retained
 

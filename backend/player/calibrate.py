@@ -183,14 +183,16 @@ def write_template(rel: str, crop, overwrite: bool = False, *, bootstrap: bool =
     return "written"
 
 
-def record_manual_cut(p: dict, rel: str, crop, frame, rect, *, source="dashboard_cropper", screen=None) -> dict:
+def record_manual_cut(p: dict, rel: str, crop, frame, rect, *, source="dashboard_cropper", screen=None, template=None) -> dict:
     """The dashboard cropper's provenance: WHERE a hand-cut template came
     from (native rect, frame size, self/next-best scores) as a report entry
     and a `calibrate_cut` event, like every cut setup makes - so a later
     look can tell what was cropped and from which screen (the person's own
     four crops of 2026-09-08 left no trace anywhere). Verification uses the
     same bar as setup; the file was already written by the cropper, this
-    never writes or removes an image."""
+    never writes or removes an image. `template` is the file the caller wrote:
+    a long-running dashboard must not look it up through the settings singleton,
+    which still names the account it was imported under."""
     import hashlib
     from runtime import logger
     st = _state_load(p)
@@ -210,7 +212,7 @@ def record_manual_cut(p: dict, rel: str, crop, frame, rect, *, source="dashboard
         from player import learned
         learned.record(p, rel, rect, screen, source, frame_size=(int(frame.shape[1]), int(frame.shape[0])))
     try:
-        entry["image_sha256"] = hashlib.sha256(template_path(rel).read_bytes()).hexdigest()
+        entry["image_sha256"] = hashlib.sha256((_Path(template) if template else template_path(rel)).read_bytes()).hexdigest()
     except OSError:
         pass
     st["entries"] = entries + [entry]

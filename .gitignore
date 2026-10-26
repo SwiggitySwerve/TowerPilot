@@ -41,6 +41,17 @@ build/
 *.egg-info/
 venv/
 
+# --- dashboard app (frontend/app, ADR-001) ------------------------------
+# The build is produced by CI, the release scripts and `npm run build`; npm
+# and Playwright state never ship.
+frontend/webui/app/
+frontend/app/node_modules/
+frontend/app/test-results/
+frontend/app/playwright-report/
+frontend/app/coverage/
+# TypeScript incremental-build cache: machine state, never source
+frontend/app/*.tsbuildinfo
+
 # --- editors / os ------------------------------------------------------
 .vscode/
 .idea/
@@ -55,3 +66,11 @@ Thumbs.db
 *.assets
 *.resource
 *.resS
+
+# Further image and recording types (common image types are listed near the top).
+# Captures, screenshots and evidence are machine or account state (CLAUDE.md rule 8);
+# a shipped file would need an explicit "!path" exception.
+*.tif
+*.tiff
+*.webm
+*.mp4

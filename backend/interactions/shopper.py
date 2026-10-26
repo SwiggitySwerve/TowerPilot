@@ -23,6 +23,7 @@ from vision import wave_reader
 from device import act
 from runtime import logger
 from vision import ocr
+from towerpilot_workflows.action_contract import AfterCompletion
 
 _SCROLL_STEPS = 4          # max downward scroll steps while hunting (big strides)
 
@@ -287,6 +288,10 @@ class Shopper:
 
     def __init__(self, preset: dict):
         from player.shopping_plan import normalize_plan
+        self.recorder = None              # the host's execution recorder; None records nothing
+        self.manual_command_id = None
+        self._schedule = AfterCompletion()
+        self._sweep_open = False
         self.directives = preset.get("shopping", [])
         self.plan = normalize_plan(preset["shopping_plan"]) if preset.get("shopping_plan") else None
         self.attempts: dict[str, int] = {}
@@ -368,8 +373,50 @@ class Shopper:
                     self._end_sweep('error', exc)
                     raise
 
+    def _record_open(self):
+        """The sweep's execution begins with its first purchase tap: until then a sweep sent no input and is only a check."""
+        manual = self._sweep_manual is not None
+        command_id, self.manual_command_id = (self.manual_command_id if manual else None), None
+        self._sweep_open = True
+        self.recorder.opened(trigger='manual' if manual else 'automatic', occurrence_key=f'sweep:{self._sweep_id}',
+                             command_id=command_id, refs=dict(sweep_id=self._sweep_id))
+
+    def _record_end(self, outcome, fields):
+        """Close the sweep's execution. A sweep that sent input is its own row, with the purchases the HUD confirmed; one that
+        sent none is a no-input check (shared by identical automatic ones), or a one-shot row when it failed."""
+        if self.recorder is None:
+            return
+        dispatched, reason, refs = self._sweep_counts.get('dispatched', 0), fields['reason'], dict(sweep_id=self._sweep_id)
+        if self._sweep_open:
+            self._sweep_open = False
+            if outcome == 'confirmed':
+                self.recorder.closed(result='succeeded', reason=reason, effect='confirmed', attempts=dispatched,
+                                     confirmed=self._confirmed_in_sweep, evidence=['confirmed_purchase'], refs=refs)
+            elif outcome == 'aborted':
+                self.recorder.closed(result='cancelled', reason=reason, effect='confirmed' if self._confirmed_in_sweep else 'unconfirmed',
+                                     attempts=dispatched, confirmed=self._confirmed_in_sweep, refs=refs)
+            elif outcome in ('failed', 'error'):
+                self.recorder.closed(result='failed', reason=reason, effect='unknown', attempts=dispatched,
+                                     confirmed=self._confirmed_in_sweep, refs=refs)
+            else:
+                self.recorder.closed(result='failed', reason=reason, effect='unconfirmed', attempts=dispatched,
+                                     confirmed=self._confirmed_in_sweep, refs=refs)
+            return
+        manual = self._sweep_manual is not None
+        command_id, self.manual_command_id = (self.manual_command_id if manual else None), None
+        if outcome in ('failed', 'error'):
+            self.recorder.record(result='failed', reason=reason, trigger='manual' if manual else 'automatic',
+                                 occurrence_key=f'sweep:{self._sweep_id}', command_id=command_id, refs=refs)
+        elif manual:
+            self.recorder.record(result='refused' if outcome == 'refused' else 'no_op', reason=reason, trigger='manual',
+                                 occurrence_key=f'sweep:{self._sweep_id}', command_id=command_id, refs=refs)
+        else:
+            self.recorder.check(result='refused' if outcome == 'refused' else 'no_op', reason=reason)
+
     def _record_attempt(self, outcome, *, error=None):
         self._sweep_counts[outcome] = self._sweep_counts.get(outcome, 0) + 1
+        if outcome == 'dispatched' and self.recorder is not None and not self._sweep_open:
+            self._record_open()
         if error is not None:
             self._sweep_error = error
             self._last_decision = {'action': 'wait',
@@ -406,6 +453,7 @@ class Shopper:
                           traceback=''.join(traceback.format_exception(type(error), error, error.__traceback__)))
         self._last_sweep = {'sweep_id': self._sweep_id, **fields}
         logger.event('shop_sweep_end', **fields)
+        self._record_end(outcome, fields)
 
     def step(self, frame, *, wave=None, after_intro_sprint: bool = False):
         """Advance the sweep one action. No-op when inactive."""
@@ -494,7 +542,9 @@ class Shopper:
 
     def due(self, now: float, last_shop: float, interval: float) -> bool:
         """Only confirmed progress can bypass the configured idle backoff."""
-        return self._continuation_ready or now - last_shop > interval
+        decision, _ = self._schedule.evaluate(now, dict(last_completed_at=last_shop),
+                                              dict(interval=interval, continuation_ready=self._continuation_ready))
+        return decision.kind == 'due'
 
     def _queue_sweep_gen(self):
         """Bound sustained buying; every attempt and confirmation yields frames."""

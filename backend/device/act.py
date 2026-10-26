@@ -17,6 +17,24 @@ _last_tap = 0.0
 TAP_DRIFT_PX = 2
 
 
+def pacing_remaining() -> float:
+    """Seconds until the tap-rate cap allows the next tap (0 when it already does)."""
+    min_interval = 1.0 / CONFIG["tap"]["max_rate_per_sec"]
+    return max(0.0, min_interval - (time.monotonic() - _last_tap))
+
+
+def wait_for_tap_slot() -> float:
+    """Sleep out the rate cap and return the seconds waited.
+
+    The cap paces rather than refuses. A caller that aims from a frame calls
+    this BEFORE capturing, so the frame it aims with is not older than the wait.
+    """
+    wait = pacing_remaining()
+    if wait > 0:
+        time.sleep(wait)
+    return wait
+
+
 def _input(*parts, deadline: float | None = None) -> None:
     """Send an `input` command straight to the adb server socket.
 
@@ -28,14 +46,20 @@ def _input(*parts, deadline: float | None = None) -> None:
     from device import adbclient
     from settings import instance
     inst = instance()
-    from runtime.device_lease import input_scope
+    from runtime.device_lease import InputRevoked, input_scope
     disp = inst.get("input_display")
     cmd = "input" + (f" -d {disp}" if disp is not None else "")
     cmd += " " + " ".join(str(p) for p in parts)
-    with input_scope():
-        if deadline is not None and time.monotonic() >= deadline:
-            raise TapRefused("input deadline expired before socket dispatch")
-        adbclient.shell(inst["serial"], cmd, timeout=8)
+    try:
+        # The one input boundary every accepted worker and delegated child
+        # shares: a person's revocation is read here, immediately before the
+        # socket write, whatever permission this process was started with.
+        with input_scope():
+            if deadline is not None and time.monotonic() >= deadline:
+                raise TapRefused("input deadline expired before socket dispatch")
+            adbclient.shell(inst["serial"], cmd, timeout=8)
+    except InputRevoked as exc:
+        raise TapRefused(str(exc)) from None
 
 
 def tap(x: int, y: int, reason: str = "", instant: bool = False,
@@ -78,10 +102,7 @@ def _tap(x: int, y: int, reason: str = "", instant: bool = False,
     if not inst.get("allow_taps"):
         raise TapRefused(f"taps not allowed on instance {CONFIG['active_instance']}")
     # rate cap PACES rather than refuses: an early tap waits out the interval
-    min_interval = 1.0 / CONFIG["tap"]["max_rate_per_sec"]
-    wait = min_interval - (time.monotonic() - _last_tap)
-    if wait > 0:
-        time.sleep(wait)
+    wait_for_tap_slot()
 
     delay_ms = random.uniform(*cfg_tap["jitter_ms"])
     time.sleep(delay_ms / 1000.0)

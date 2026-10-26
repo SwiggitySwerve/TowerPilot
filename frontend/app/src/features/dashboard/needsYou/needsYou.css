@@ -1,0 +1,55 @@
+.tp-needs {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--tp-space-2);
+}
+
+.tp-needs[hidden] {
+  display: none;
+}
+
+.tp-need__count {
+  display: inline-flex;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+}
+
+/* F4-02: an issue and its actions share one line when they fit (spec 2.2 sketch); they wrap when not. */
+.tp-need {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-1) var(--tp-space-4);
+  min-width: 0;
+}
+
+.tp-need__line,
+.tp-need__impact,
+.tp-need__actions {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--tp-space-2);
+}
+
+.tp-need__actions {
+  align-items: center;
+}
+
+.tp-need__actions > a {
+  display: inline-flex;
+  margin-block: 0;
+  align-items: center;
+  min-height: var(--tp-control-height-small);
+}
+
+.tp-need__actions > .tp-disclosure[open] {
+  flex-basis: 100%;
+}
+
+.tp-need__empty {
+  margin: 0;
+  color: var(--tp-color-text-muted);
+}

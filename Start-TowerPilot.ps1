@@ -19,7 +19,7 @@ $port = if ($env:TOWER_PILOT_PORT) { $env:TOWER_PILOT_PORT } else { '8620' }
 # Create no console at all. WindowStyle Hidden can still register a visible
 # Windows Terminal tab, and a venv's pythonw redirector may run python.exe.
 $launcher = Join-Path $PSScriptRoot 'tools\portable_launcher.py'
-Write-Host "Starting Tower Pilot. Its icon appears in the notification area; the dashboard is http://127.0.0.1:$port/ui/index.html#setup."
+Write-Host "Starting Tower Pilot. Its icon appears in the notification area; the dashboard is http://127.0.0.1:$port/ui/app/#emulators."
 $start = New-Object System.Diagnostics.ProcessStartInfo
 $start.FileName = $python
 $start.Arguments = '-u "' + $launcher + '"'

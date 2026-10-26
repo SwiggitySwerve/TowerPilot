@@ -281,8 +281,12 @@ class _Adopted:
     """
 
     def __init__(self, proc):
+        # proc is the psutil.Process the process walk matched by command line. A bare pid
+        # reopened afterwards could be a different process by then, and terminate()/kill()
+        # below would stop THAT; the walked object re-checks pid and creation time itself.
         self._p = proc
         self.pid = proc.pid
+        self._created = proc.create_time()   # cached when the walk built the object: the process the walk matched
         self.returncode = None
 
     def poll(self):
@@ -293,10 +297,15 @@ class _Adopted:
         return self.returncode
 
     def terminate(self):
-        self._p.terminate()
+        """Stop the adopted runner through a kernel handle verified against the creation time the walk saw
+        (runtime.process_handle), never by a bare pid. Only this process, as before; refuses when it
+        cannot be shown to be the one adopted."""
+        from runtime import process_handle
+        stop = process_handle.terminate_tree(self.pid, self._created, descendants=False)
+        if stop.state == 'unverified':
+            raise PermissionError(f"pid {self.pid} could not be verified as the adopted runner: {stop.errors}")
 
-    def kill(self):
-        self._p.kill()
+    kill = terminate   # TerminateProcess is already forceful; there is no gentler signal to escalate from
 
     def wait(self, timeout=None):
         import psutil
@@ -331,7 +340,7 @@ def _find_running(phase: str, instance: str):
         # orchestrator.py - and under a profile they are bp_ names instead.
         if not _matches_phase(cl, phase):
             continue
-        return _Adopted(psutil.Process(p.info["pid"]))
+        return _Adopted(p)   # the object process_iter matched by command line, never psutil.Process(pid) reopened after it
     return None
 
 
@@ -707,8 +716,7 @@ def _close_block(b, base: int) -> None:
         return
     # Every other kind counts ONE unit per runner exit, which is exactly what
     # the constant era did for the tournament (`mark_done` on exit, count 1).
-    done = _block_progress(b) + 1
-    daystate.set_today(_progress_key(b), done)
+    done = daystate.increment_today(_progress_key(b))       # one locked step (a get followed by a set would lose a unit another process counted)
     if done >= count:
         _mark_block_done(b)
     else:
@@ -1012,7 +1020,7 @@ def _find_running_block(b, instance: str, others: list | None = None):
             continue
         if not _block_matches(cl, b, others):
             continue
-        return _Adopted(psutil.Process(p.info["pid"]))
+        return _Adopted(p)   # the object process_iter matched by command line, never psutil.Process(pid) reopened after it
     return None
 
 
@@ -1302,18 +1310,32 @@ def _orphan_battle() -> "int | None":
         return None
 
 
-def _hold_while_unknown() -> None:
-    """Never start a handoff over a screen automation cannot name.
+# The ONLY screens a handoff may start from: Home, the run itself, and the
+# run-end dialogs that tourney.ensure_home banks on its way Home (GAME STATS,
+# the exit-battle and end-round confirmations). Every other screen - a menu a
+# person opened (CARDS, MODULES, GUILD, TOURNAMENT...), any dialog or reward
+# screen, and anything unrecognized - is somebody's, and the handoff waits.
+HANDOFF_SCREENS = frozenset({"home", "battle", "game_stats", "exit_battle",
+                             "end_round"})
 
-    An unknown screen right before a handoff is where a HUMAN is working:
-    2026-08-17 a shard runner aborted ("left the battle screen") because
-    the user opened the module screens, and combo swapped loadouts right
-    through their session. Waits until the game shows battle, home or a
-    known dialog - all screens the handoff owns.
+
+def _hold_while_unknown() -> None:
+    """Never start a handoff over a screen the handoff does not own.
+
+    Any screen outside HANDOFF_SCREENS is where a HUMAN may be working, or a
+    place automation cannot name: 2026-08-17 a shard runner aborted ("left the
+    battle screen") because the user opened the module screens, and combo
+    swapped loadouts right through their session. Naming the screen was not
+    enough - a recognized personal menu (CARDS) used to release the hold and
+    tourney.ensure_home then tapped Home over the person. Waits until the game
+    shows Home, a battle or one of its end dialogs; the hold is announced on
+    EVERY poll with the screen and how long it has lasted, so a stranded menu
+    is visible rather than a silent stall. Each poll takes a fresh screenshot.
+    (The name predates the allowlist; run() and the tests call it by it.)
     """
     from device import capture
     from vision import screen
-    held = False
+    held_at = None
     while True:
         try:
             name = screen.identify(capture.grab()).name
@@ -1321,13 +1343,17 @@ def _hold_while_unknown() -> None:
             logger.event("combo_hold_err", error=str(e)[:120])
             time.sleep(POLL)
             continue
-        if name != "unknown":
-            if held:
-                logger.event("combo_handoff_release", screen=name)
+        if name in HANDOFF_SCREENS:
+            if held_at is not None:
+                logger.event("combo_handoff_release", screen=name,
+                             held_sec=int(time.monotonic() - held_at))
             return
-        if not held:
-            held = True
-            logger.event("combo_handoff_hold")
+        if held_at is None:
+            held_at = time.monotonic()
+        logger.event("combo_handoff_hold", screen=name,
+                     reason=("unrecognized screen" if name == "unknown"
+                             else "screen the handoff does not own"),
+                     held_sec=int(time.monotonic() - held_at))
         time.sleep(POLL)
 
 
@@ -1341,6 +1367,10 @@ def run(instance: str = "main") -> None:
     about the loop moved - the runflag contract, the observable boundary hold, the
     unknown-screen hold and the adopt-before-handoff order are all as they were.
     """
+    # Before adopting a runner, a handoff or any child: refuse while recorded
+    # setup evidence leaves a setup battle unresolved on this emulator.
+    from control.battles import require_runner_entry
+    require_runner_entry(settings.ROOT, CONFIG, instance, event=logger.event)
     cur: dict | None = None                 # the block we are running
     proc: subprocess.Popen | None = None
     base = 0                                # progress at (re)spawn time

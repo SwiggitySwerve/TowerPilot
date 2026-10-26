@@ -148,20 +148,19 @@ class Instance:
         return out
 
     def kill_orphans(self) -> int:
+        """Stop every orchestrator found for this instance that this tray does not own. Each is stopped
+        through a kernel handle verified against the creation time the scan saw (runtime.process_handle),
+        so a pid that passed to another process since the scan is never signalled."""
+        from runtime import process_handle
         found = self.orphans()
         for p in found:
             try:
-                for kid in p.children(recursive=True):
-                    kid.terminate()
-                p.terminate()
-                p.wait(timeout=5)
-            except psutil.TimeoutExpired:
-                try:
-                    p.kill()
-                except psutil.Error:
-                    pass
+                created = p.create_time()
             except psutil.Error:
-                pass
+                continue   # gone since the scan
+            stop = process_handle.terminate_tree(p.pid, created, timeout=5.0)
+            if not stop.confirmed:
+                log(f"orphan {p.pid} of {self.key} not stopped ({stop.state}): {stop.errors}")
         return len(found)
 
     def start(self, preset: str):
@@ -195,21 +194,13 @@ class Instance:
                 time.sleep(1.0)
                 if not self._collecting_runlog() or not self.running:
                     break
-        try:
-            parent = psutil.Process(self.proc.pid)
-            kids = parent.children(recursive=True)
-            for p in kids:
-                try:
-                    p.terminate()
-                except psutil.Error:
-                    pass
-            parent.terminate()
-            try:
-                parent.wait(timeout=5)
-            except psutil.TimeoutExpired:
-                parent.kill()
-        except psutil.Error:
-            pass
+        from runtime import process_handle
+        # self.proc is the Popen this tray spawned and still holds, so its pid cannot be reissued while it
+        # is open: the process that has it is the orchestrator. It and its children go through kernel
+        # handles (runtime.process_handle); nothing is signalled by a bare pid.
+        stop = process_handle.terminate_owned(self.proc.pid, timeout=5.0)
+        if not stop.confirmed:
+            log(f"stop {self.key}: orchestrator {self.proc.pid} not confirmed stopped ({stop.state}): {stop.errors}")
         log(f"stop {self.key} (was preset={self.preset})")
         self.proc, self.preset = None, None
 

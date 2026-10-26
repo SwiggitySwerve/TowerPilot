@@ -1,7 +1,7 @@
 # Reliable local workflows
 > **Status:** Implemented; offline and farming verification recorded below
 > **Type:** Architecture decision and delivery record
-> **Updated:** 2026-10-19
+> **Updated:** 2026-10-24
 > **Scope:** One local Windows application managing the user's emulator(s)
 
 ## Decision
@@ -19,7 +19,7 @@ documented in [Learning and preparation flows](LEARNING_FLOWS.md).
 
 | Current source | Finding | Consequence for the proposal |
 |---|---|---|
-| [Calibration start/status/apply](../frontend/dashboard.py) | Start returns phases without an operation ID; status combines current-context files, process discovery and recent events; apply reads the active profile. | Make acceptance, progress and application refer to one immutable operation target. |
+| [Calibration start/status/apply](../backend/dashboard.py) | Start returns phases without an operation ID; status combines current-context files, process discovery and recent events; apply reads the active profile. | Make acceptance, progress and application refer to one immutable operation target. |
 | [Learning controller](../frontend/webui/learning-controller.js) | Browser generations/context guards protect awaits, but worker matching uses timestamps. | Retain the controller, replace timestamp correlation with server-issued identity and revision. |
 | [Overview controls](../frontend/webui/index.html) | Run eligibility uses `!r || r.ready`, allowing an absent readiness entry. | Unknown readiness must remain unknown and block Start; stopping the driver must remain available. |
 | [Runner discovery](../backend/runtime/runners.py) | Ownership checks enumerate processes. | Process discovery remains useful diagnostics but does not provide atomic device reservation. |

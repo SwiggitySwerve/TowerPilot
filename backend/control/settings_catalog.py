@@ -4,12 +4,29 @@ import math
 from device.preview.common import DEFAULTS as PREVIEW_DEFAULTS
 from player.gather_settings import AD_GEM_FIELDS, ORBIT_TIMING_FIELDS
 
+TWEAK_LIMIT = 50      # names in one standing tournament deck-change list
 
-def field(key, label, kind, default, low=None, high=None, unit='', description='', whole_numbers=False, options=None):
-    return dict(key=key, path=key, label=label, type=kind, default=default,
+
+def field(key, label, kind, default, low=None, high=None, unit='', description='', whole_numbers=False, options=None, max_items=None):
+    spec = dict(key=key, path=key, label=label, type=kind, default=default,
                 min=low, max=high, step=1 if kind == 'integer' or whole_numbers else 'any',
                 wholeNumbers=whole_numbers,
                 unit=unit, description=description, options=options)
+    if kind == 'string-list':
+        spec['maxItems'] = max_items      # only a list has a length limit; no other field kind carries the key
+    return spec
+
+
+def runnable_presets(cfg):
+    """Presets a runner can start: every preset except an explicit placeholder (`defined: false`). Derived from the
+    configuration, never from an allowlist that drifts when a preset is added."""
+    return [name for name, body in (cfg.get('presets') or {}).items() if isinstance(body, dict) and body.get('defined', True)]
+
+
+def preset_choices(cfg):
+    """The runnable presets as {value, label} options; the label is the one the tray menu shows (settings.preset_menu)."""
+    presets = cfg.get('presets') or {}
+    return [{'value': name, 'label': presets[name].get('label') or name.replace('_', ' ').title()} for name in runnable_presets(cfg)]
 
 
 def read(data, key, default):
@@ -32,8 +49,28 @@ def write(data, key, value):
     data[parts[-1]] = copy.deepcopy(value)
 
 
+def validate_string_list(spec, value):
+    """An ordered list of non-blank strings, optionally at most `maxItems` long and drawn from `options`. Nothing is coerced:
+    a number, a nested list, a blank string or a name outside the options is refused, and so is a value that is not a list."""
+    label = spec['label']
+    if not isinstance(value, list):
+        raise ValueError(f"{label}: expected string-list")
+    limit = spec.get('maxItems')
+    if limit is not None and len(value) > limit:
+        raise ValueError(f"{label}: at most {limit} entries")
+    allowed = [option['value'] for option in spec['options']] if spec.get('options') else None
+    for number, item in enumerate(value, 1):
+        if not isinstance(item, str) or not item.strip():
+            raise ValueError(f"{label}: entry {number} must be a non-blank string")
+        if allowed is not None and item not in allowed:
+            raise ValueError(f"{label}: entry {number} is not one of the allowed values")
+
+
 def validate(spec, value):
     kind = spec['type']
+    if kind == 'string-list':
+        validate_string_list(spec, value)
+        return
     if kind == 'boolean':
         valid = isinstance(value, bool)
     elif kind in ('string', 'enum'):
@@ -94,14 +131,46 @@ def catalog(cfg, profile, editable):
             field('scrcpy.bitrate', 'scrcpy bitrate', 'integer', PREVIEW_DEFAULTS['scrcpy']['bitrate'], 1000000, 40000000, 'bits/sec')],
         'Auto prefers MuMu native, then scrcpy, then ADB screenshots. ADB preview is capped at 4 FPS. Farming capture is independent.',
         apply_notice='Saved changes apply on the next preview connection. No automation restart is needed.')
-    for ident, title, specs in [
+    overridable = [
         ('loop', 'Observation loop', [field('fps', 'Frames per second', 'number', 2, .1, 30, 'fps'), field('dry_run', 'Log taps without sending them', 'boolean', False)]),
         ('missions', 'Mission visits', [field('visit_delay_sec', 'Delay between mission visits', 'range', [60, 600], 0, 86400, 'sec')]),
-        ('fleet', 'Fleet windows', [field('hold_window', 'Hold window before fleet', 'integer', 100, 0, 100000, 'waves'), field('post_window', 'Window after fleet', 'integer', 150, 0, 100000, 'waves')])]:
+        ('fleet', 'Fleet windows', [field('hold_window', 'Hold window before fleet', 'integer', 100, 0, 100000, 'waves'), field('post_window', 'Window after fleet', 'integer', 150, 0, 100000, 'waves')])]
+    for ident, title, specs in overridable:
         data = dict(cfg.get(ident) or {})
         data.update(instance.get(ident) or {})
         add(ident, title, 'Emulator', 'instance', ['instances', inst, ident], data, specs,
             'Applies to the selected emulator when its runner next starts.')
+    # The same fields, but the machine's OWN values: the fallback every emulator uses unless it carries an override. They are not merged
+    # with the selected emulator's override (the form above shows that), so saving one never creates or replaces an override.
+    for ident, title, specs in overridable:
+        add(ident + '-defaults', title + ' defaults', 'Machine', 'machine', [ident], dict(cfg.get(ident) or {}), specs,
+            'Fallback for every emulator on this machine. An emulator that carries its own override keeps it.',
+            apply_notice='Applies when a runner next starts; an emulator with its own override is unchanged.')
+    choices = preset_choices(cfg)
+    add('instance-defaults', 'Emulator defaults', 'Emulator', 'instance', ['instances', inst], instance, [
+        field('label', 'Label', 'string', ''),
+        field('preset', 'Default preset', 'enum', '', options=[{'value': '', 'label': 'Use machine fallback'}, *choices],
+              description='Used when a runner starts without naming a preset. Empty uses the machine fallback.'),
+        field('autostart', 'Start at the next tray start', 'boolean', False,
+              description='Takes effect when the tray next starts; saving starts nothing now.')],
+        'Saved defaults of the selected emulator. Saving changes the file only and starts or stops nothing.')
+    add('active-instance', 'Selected emulator', 'Emulator', 'machine', [], cfg, [
+        field('active_instance', 'Selected emulator', 'enum', 'main',
+              options=[{'value': key, 'label': (body.get('label') if isinstance(body, dict) else None) or key}
+                       for key, body in (cfg.get('instances') or {}).items()],
+              description='The emulator every page shows, with its account and profile.')],
+        'Choosing another emulator changes what every page shows. It starts and stops nothing and keeps every account as saved.')
+    add('run-defaults', 'Run defaults', 'Runs', 'machine', [], cfg, [
+        field('preset', 'Fallback preset', 'enum', 'normal_run', options=choices,
+              description='Used when neither the runner nor the emulator names a preset.')],
+        'Machine fallback for starting a run; an emulator\'s own default preset comes first. Saving starts nothing.')
+    add('tournament-cards', 'Standing tournament deck changes', 'Equipment', 'machine', ['tourney_card_tweaks'],
+        cfg.get('tourney_card_tweaks') or {}, [
+            field('drop', 'Cards to drop', 'string-list', [], max_items=TWEAK_LIMIT,
+                  description='Card template names taken out of the loaded preset, in this order.'),
+            field('add', 'Cards to add', 'string-list', [], max_items=TWEAK_LIMIT,
+                  description='Card template names put into the deck after the drops, in this order.')],
+        'Applied on top of the loaded preset when a tournament is entered, by card template name (templates/cards/<name>.png). Empty means no changes. Ignored under a global preset.')
     add('logging', 'Logging', 'Machine', 'machine', ['logging'], cfg.get('logging', {}), [
         field('screenshot_on_trigger', 'Save screenshots on triggers', 'boolean', True),
         field('bench_interval_sec', 'Performance log interval', 'number', 30, 1, 86400, 'sec')], 'Shared diagnostic settings.')

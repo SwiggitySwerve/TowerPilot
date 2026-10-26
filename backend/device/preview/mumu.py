@@ -23,9 +23,9 @@ import xml.etree.ElementTree as ET
 
 import numpy as np
 import numpy.typing as npt
-import psutil
 
 from device.preview.common import PreviewCleanupError, PreviewError, PreviewUnavailable
+from runtime import process_handle
 
 
 _LOG = logging.getLogger(__name__)
@@ -265,25 +265,18 @@ class MuMuPreview:
         process, self._process = self._process, None
         if process is not None:
             try:
-                # Windows virtualenv executables may be redirectors. Snapshot
-                # descendants before terminating their parent so the native
-                # interpreter cannot become an unowned, hung orphan.
-                parent = psutil.Process(process.pid)
-                family = parent.children(recursive=True) + [parent]
-                _, alive = psutil.wait_procs(family, timeout=_CLOSE_TIMEOUT)
-                for action in ("terminate", "kill"):
-                    for member in alive:
-                        try:
-                            getattr(member, action)()
-                        except psutil.NoSuchProcess:
-                            continue
-                    _, alive = psutil.wait_procs(alive, timeout=_CLOSE_TIMEOUT)
-                if alive:
-                    failures.append(f"helper processes did not exit after kill: {[p.pid for p in alive]}")
-            except psutil.NoSuchProcess:
-                # The child can exit between socket shutdown and inspection.
-                pass
-            except (OSError, psutil.Error) as exc:
+                # Windows virtualenv executables may be redirectors. The family (the launcher and the
+                # native interpreter it starts) is stopped through kernel handles opened while this
+                # object's own handle still pins the launcher's pid (runtime.process_handle), so the
+                # native interpreter cannot become an unowned, hung orphan and no reissued pid is
+                # ever signalled. The helpers get _CLOSE_TIMEOUT to exit on their own first.
+                stop = process_handle.terminate_owned(process.pid, grace=_CLOSE_TIMEOUT, timeout=_CLOSE_TIMEOUT)
+                if stop.state == "unverified":
+                    raise OSError(f"cannot verify the helper family of pid {process.pid}: {stop.errors}")
+                if not stop.confirmed:
+                    survivors = sorted({error["pid"] for error in stop.errors if error.get("pid")})
+                    failures.append(f"helper processes did not exit after kill: {survivors}")
+            except OSError as exc:
                 _LOG.exception("Failed to reap MuMu preview helper (pid %s)", process.pid)
                 failures.append(f"cannot verify helper process cleanup: {exc}")
                 try:

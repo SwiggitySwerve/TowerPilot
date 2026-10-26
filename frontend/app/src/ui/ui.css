@@ -1,0 +1,371 @@
+/*
+ * The design system's building blocks (spec 3.1 to 3.5). Components use these
+ * classes; features add layout only.
+ */
+
+/* Chip (3.1): word, shape and colour; Unknown is violet and dashed, never Off-grey. */
+.tp-chip {
+  --tp-chip-tone: var(--tp-color-quiet);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.05rem 0.5rem;
+  border: 1px solid var(--tp-chip-tone);
+  border-radius: var(--tp-radius-pill);
+  background: var(--tp-color-surface-inner);
+  color: var(--tp-chip-tone);
+  font-size: var(--tp-font-size-12);
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+.tp-chip__shape {
+  width: 0.7rem;
+  height: 0.7rem;
+  flex: none;
+}
+.tp-chip__age {
+  color: var(--tp-color-text-muted);
+  font-weight: 400;
+}
+.tp-chip[data-state='running'] {
+  --tp-chip-tone: var(--tp-color-ok);
+}
+.tp-chip[data-state='waiting'],
+.tp-chip[data-state='stopping'] {
+  --tp-chip-tone: var(--tp-color-warn);
+}
+.tp-chip[data-state='paused'],
+.tp-chip[data-state='idle'] {
+  --tp-chip-tone: var(--tp-color-text-nav);
+}
+.tp-chip[data-state='unknown'] {
+  --tp-chip-tone: var(--tp-color-unknown);
+  border-style: dashed;
+}
+.tp-chip[data-state='blocked'] {
+  --tp-chip-tone: var(--tp-color-blocked);
+}
+.tp-chip[data-state='failed'] {
+  --tp-chip-tone: var(--tp-color-bad);
+}
+
+/* Pill (3.2): square, neutral, no dot. Desired never looks like observed. */
+.tp-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding: 0.05rem 0.45rem;
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: 3px;
+  background: var(--tp-color-surface-strong);
+  font-size: var(--tp-font-size-12);
+  white-space: nowrap;
+}
+.tp-pill__prefix,
+.tp-pill__age {
+  color: var(--tp-color-text-muted);
+}
+.tp-pill__value {
+  color: var(--tp-color-text-strong);
+  font-weight: 600;
+}
+
+/* Buttons: primary (Start playing only), secondary, halt (every revocation), quiet. */
+.tp-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: var(--tp-control-height);
+  padding: 0.2rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: var(--tp-radius-control);
+  font: inherit;
+  font-size: var(--tp-font-size-13);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tp-button[aria-busy='true'] {
+  cursor: progress;
+}
+.tp-button[data-tier='primary'] {
+  background: var(--tp-color-primary);
+  color: var(--tp-color-on-action);
+}
+.tp-button[data-tier='secondary'] {
+  background: var(--tp-color-surface-strong);
+  border-color: var(--tp-color-border);
+  color: var(--tp-color-text);
+}
+.tp-button[data-tier='halt'] {
+  background: var(--tp-color-halt-fill);
+  border-color: var(--tp-color-halt-border);
+  color: var(--tp-color-halt-text);
+}
+.tp-button[data-tier='quiet'] {
+  min-height: var(--tp-control-height-small);
+  background: transparent;
+  border-color: var(--tp-color-border);
+  color: var(--tp-color-text-nav);
+  font-weight: 500;
+}
+.tp-button__glyph {
+  width: 0.6rem;
+  height: 0.6rem;
+  flex: none;
+}
+
+/* A disabled control's visible reason (3.3, 8.6). */
+.tp-reason {
+  display: block;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+}
+.tp-reason p {
+  margin: 0;
+}
+
+/* CopyLine and Why: the short line, with the "why" behind a native disclosure (C-7). */
+.tp-copy-line p {
+  margin: 0;
+}
+.tp-copy-line__why {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+}
+.tp-copy-line__why > summary {
+  cursor: pointer;
+  width: max-content;
+}
+.tp-copy-line__why > p {
+  margin: var(--tp-space-1) 0 0;
+  max-width: 60ch;
+}
+
+/* Disclosure (3.5): Details, Show all, queues. */
+.tp-disclosure > summary {
+  cursor: pointer;
+  color: var(--tp-color-text-nav);
+  font-size: var(--tp-font-size-13);
+}
+.tp-disclosure__count {
+  margin-inline-start: 0.35rem;
+  color: var(--tp-color-text-muted);
+}
+.tp-disclosure__preview {
+  margin-inline-start: 0.5rem;
+  color: var(--tp-color-text-muted);
+}
+.tp-disclosure__body {
+  margin-top: var(--tp-space-1);
+  font-size: var(--tp-font-size-13);
+}
+
+/* Region (3.5): a card with its h2; count and header end on the title's line. */
+.tp-region {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-2) var(--tp-space-3);
+  padding: var(--tp-space-3) var(--tp-space-4);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-surface);
+  min-width: 0;
+}
+.tp-region__title {
+  margin: 0;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.tp-region__title:focus {
+  outline: none;
+}
+.tp-region__title:focus-visible {
+  outline: 2px solid var(--tp-color-focus);
+}
+.tp-region__count {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+  font-weight: 700;
+}
+.tp-region__end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-2);
+  margin-inline-start: auto;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+.tp-region__body {
+  flex-basis: 100%;
+  min-width: 0;
+}
+.tp-region__inline {
+  display: flex;
+  flex: 1 1 18rem;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-1) var(--tp-space-3);
+  min-width: 0;
+}
+.tp-region__inline > details[open] {
+  flex-basis: 100%;
+}
+/* Slot (2.2): label, facts, action, meta on rows shared by the three slots. */
+.tp-slot {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 4;
+  row-gap: 0.375rem;
+  min-width: 0;
+  padding: var(--tp-space-2) var(--tp-space-3);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface-inner);
+}
+.tp-slot > * {
+  min-width: 0;
+}
+.tp-slot__label {
+  margin: 0;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.tp-slot__facts,
+.tp-slot__action,
+.tp-slot__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--tp-space-2);
+  min-width: 0;
+}
+.tp-slot__facts {
+  flex-direction: column;
+}
+.tp-slot__action {
+  align-items: center;
+}
+
+/* Notice and outcome line (3.3, 3.4): chip, line, Why, actions. */
+.tp-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tp-space-2) var(--tp-space-3);
+  min-width: 0;
+}
+.tp-notice__text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.tp-notice__lead {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.tp-notice__server {
+  flex-basis: 100%;
+}
+.tp-notice__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-2);
+}
+
+/* Dialog (3.5, 8.7). */
+.tp-dialog {
+  max-width: min(32rem, calc(100vw - 2rem));
+  padding: var(--tp-space-4);
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-surface-raised);
+  color: var(--tp-color-text);
+}
+.tp-dialog::backdrop {
+  background: rgb(0 0 0 / 55%);
+}
+.tp-dialog__title {
+  margin: 0 0 var(--tp-space-2);
+  font-size: var(--tp-font-size-15);
+}
+.tp-dialog__body p {
+  margin: 0 0 var(--tp-space-2);
+}
+.tp-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-2);
+  margin-top: var(--tp-space-3);
+}
+
+/* A Stop with its target and, when disabled, its reason. */
+.tp-stop {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.tp-stop__target {
+  display: inline-flex;
+  gap: 0.3em;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+}
+
+/* A part that failed to draw, with its revocations (S-091). */
+.tp-fallback {
+  min-width: 0;
+}
+
+/* Spec 2.3, 8.4: halt and primary targets are at least 44 by 44 px at narrow widths. */
+@media (max-width: 600px), (pointer: coarse) {
+  .tp-button[data-tier='halt'],
+  .tp-button[data-tier='primary'] {
+    min-width: var(--tp-control-height-touch);
+    min-height: var(--tp-control-height-touch);
+  }
+}
+.tp-dialog__name {
+  margin-inline-start: 0.3em;
+}
+
+/* Spec 8.4: every disclosure summary is a target of at least 24 px. */
+.tp-copy-line__why > summary,
+.tp-disclosure > summary {
+  min-height: 24px;
+  min-width: 24px;
+  line-height: 24px;
+}
+
+/*
+ * A disabled button never keeps its tier's fill (a blocked Start must not look
+ * like the page's main action): neutral surface, dashed border, muted text.
+ * Placed last so it wins over every tier rule; its reason is a visible line.
+ */
+.tp-button[aria-disabled='true'] {
+  border-color: var(--tp-color-border);
+  border-style: dashed;
+  background: var(--tp-color-surface-inner);
+  color: var(--tp-color-text-muted);
+  cursor: not-allowed;
+}
