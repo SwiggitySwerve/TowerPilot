@@ -67,6 +67,8 @@ def test_strip_and_refuse_matrix():
         ({"kind": "weird_extension"}, None, [("unsupported_kind", "kind")]),
         ({"runner": "flows/shard.py"}, None, [("unsupported_kind", "runner")]),        # no kind, but a script drives it (readiness reads such a body as a shard run)
         ({"kind": "coin", "runner": None}, None, []),
+        ({"kind": "coin", "runner": "orchestrator.py"}, None, []),
+        ({"kind": "coin", "runner": "interactions/shatter.py"}, None, [("unsupported_kind", "runner")]),   # the run command would start that script: no entry gate, no restricted controls
         ({}, None, []),                                                                 # a legacy preset without a kind is a coin run
         ({"rules": [{"do": {"kind": "fire"}}, {"when": {}, "do": {"kind": "surrender_retry"}}]}, None, [("ends_battle", "rules[1].do")]),
         # the older spellings the orchestrator also executes (`_rule_do`): a takeover fails closed on them, readiness never listed images for them
