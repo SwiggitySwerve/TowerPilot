@@ -62,6 +62,7 @@ describe('confirmations seen, missed windows and the cause of the latest miss', 
       windowsMissed: 1,
       failureStreak: 0,
       cause: { code: 'no_offer_seen', agoSec: 100 },
+      finderSuspected: null,
     });
   });
 
@@ -103,6 +104,28 @@ describe('confirmations seen, missed windows and the cause of the latest miss', 
       orbitConfirmations: 0,
       windowsMissed: null,
     });
+  });
+
+  it.each([
+    [true, true],
+    [false, false],
+    [null, null],
+    ['yes', null],
+    [undefined, null],
+  ])('claims.finder_suspected %s is read as %s, never computed', (published, read) => {
+    const harvest = sampleRecord('status.collecting');
+    setPath(harvest, ['operation', 'claims', 'finder_suspected'], published);
+    const fact = readHarvest(harvest);
+    expect(fact.kind === 'known' && gemOutcomes(fact.value, 'operation')?.finderSuspected).toBe(
+      read,
+    );
+  });
+
+  it('a full run reads finder_suspected from its owner claims', () => {
+    const harvest = sampleRecord('status.owned_by_run_gathers');
+    setPath(harvest, ['owner', 'claims', 'finder_suspected'], true);
+    const fact = readHarvest(harvest);
+    expect(fact.kind === 'known' && gemOutcomes(fact.value, 'owner')?.finderSuspected).toBe(true);
   });
 
   it('a stale publication shows no outcomes', () => {

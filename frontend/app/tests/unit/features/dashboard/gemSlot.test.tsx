@@ -6,7 +6,7 @@ import { pauseOffered } from '../../../../src/core/harvestChoice.ts';
 import { GemSlot } from '../../../../src/features/dashboard/control/GemSlot.tsx';
 import { selectGemSlot } from '../../../../src/store/selectors/gemSlot.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
-import { readOf } from '../../../support/core.ts';
+import { readOf, setPath } from '../../../support/core.ts';
 import { e0Config, postBodies } from '../../../support/dataLayer.ts';
 import { dashboardBody } from '../../../support/dashboardFixture.ts';
 import { sample, sampleNames, sampleRecord, statusBody } from '../../../support/fixture.ts';
@@ -626,6 +626,34 @@ describe('what was claimed and missed this battle, and why', () => {
       'Confirmations seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups',
     );
     expect(counts(view.container)).not.toHaveTextContent('missed');
+  });
+
+  it('the published finder_suspected adds one warning line and keeps the row and its other lines', () => {
+    const { view } = drawGem(sample('status.working_collector_finder_suspected'));
+    expect(chip(view.container)).toHaveAttribute('data-state', 'running');
+    expect(within(view.container).getByText('collecting gems')).toBeInTheDocument();
+    const lines = view.container.querySelectorAll('[data-gem-finder-suspected]');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toHaveTextContent(
+      'Orbit gems: frames are being seen but none is recognized; the recognizer may need attention.',
+    );
+    expect(counts(view.container)).not.toBeNull();
+    expect(textOutsideCatalogue(view.container)).toEqual([]);
+  });
+
+  it.each(['collecting', 'manual_collector', 'working_collector_claims_failing'])(
+    'no warning line when finder_suspected is null or false (%s)',
+    (name) => {
+      const { view } = drawGem(sample(`status.${name}`));
+      expect(view.container.querySelector('[data-gem-finder-suspected]')).toBeNull();
+    },
+  );
+
+  it('finder_suspected false shows nothing', () => {
+    const harvest = sampleRecord('status.working_collector_finder_suspected');
+    setPath(harvest, ['operation', 'claims', 'finder_suspected'], false);
+    const { view } = drawGem(harvest);
+    expect(view.container.querySelector('[data-gem-finder-suspected]')).toBeNull();
   });
 
   it.each(['stale_collector', 'live_paused', 'waiting_for_battle', 'off'])(

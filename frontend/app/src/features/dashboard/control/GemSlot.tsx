@@ -105,6 +105,11 @@ function OutcomesLines({ vm }: { readonly vm: GemSlotVM }) {
           {cause}
         </p>
       )}
+      {outcomes.finderSuspected === true ? (
+        <p className="tp-seen__extra" data-gem-finder-suspected="">
+          {text.finderSuspected.short}
+        </p>
+      ) : null}
     </>
   );
 }

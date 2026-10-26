@@ -255,6 +255,12 @@ export interface GemOutcomes {
   readonly windowsMissed: number | null;
   readonly failureStreak: number | null;
   readonly cause: GemMissCause | null;
+  /**
+   * The backend's claims.finder_suspected, read as published: true when
+   * frames are seen but the recognizer matches nothing. Never computed here;
+   * anything but a boolean reads null.
+   */
+  readonly finderSuspected: boolean | null;
 }
 
 /**
@@ -282,6 +288,7 @@ export function gemOutcomes(
     evidenceTimesValid(evidence, view.serverTime);
   const causeCode = id(own(own(claims, 'cause'), 'code'));
   const at = finite(own(own(claims, 'cause'), 'at'));
+  const finder = own(claims, 'finder_suspected');
   const outcomes: GemOutcomes = {
     adConfirmations: counted ? (revision(own(evidence, 'ad_claim_confirmations')) ?? null) : null,
     orbitConfirmations: counted
@@ -293,6 +300,7 @@ export function gemOutcomes(
       causeCode === undefined
         ? null
         : { code: causeCode, agoSec: at === undefined ? null : Math.max(0, view.serverTime - at) },
+    finderSuspected: typeof finder === 'boolean' ? finder : null,
   };
   return Object.values(outcomes).every((value) => value === null) ? null : outcomes;
 }

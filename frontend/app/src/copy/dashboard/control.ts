@@ -236,6 +236,10 @@ export const control = {
         );
       },
     },
+    /** The backend's finder_suspected warning: frames arrive but nothing is recognized. */
+    finderSuspected: entry(
+      'Orbit gems: frames are being seen but none is recognized; the recognizer may need attention.',
+    ),
     /** G4c: the holder's PID, as the record names it. */
     holderPid: (pid: number): CopyText => made(`PID ${String(pid)}`),
     /** G5d: the cause for each blocked `code` (S-037). */
