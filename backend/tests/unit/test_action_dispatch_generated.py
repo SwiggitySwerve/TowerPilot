@@ -378,6 +378,16 @@ def test_a_collector_whose_request_is_pending_and_whose_window_is_running_is_rep
     rs.gems.ad_gems = SimpleNamespace(status=lambda: dict(manual_active=False, manual_pending=False, last_outcome={'confirmed': True, 'reason': 'balance_increased'}))
     assert action_bindings.CollectorBinding(rs, 'gems.ad_gems', 'ad_gems').progress().effect == 'confirmed'
 
+def test_a_run_now_acknowledgement_does_not_claim_a_confirmed_effect_the_contract_calls_unconfirmed():
+    record = {'outcome': 'confirmed', 'confirmed': True, 'reason': 'offer_disappeared', 'attempts': 1}
+    rs = SimpleNamespace(gems=SimpleNamespace(ad_gems=SimpleNamespace(status=lambda: dict(manual_active=False, manual_pending=False, last_outcome=record))))
+    gone = action_bindings.CollectorBinding(rs, 'gems.ad_gems', 'ad_gems').progress()
+    ack = gone.acknowledgement()
+    assert (ack['confirmed'], ack['effect'], ack['outcome'], ack['reason']) == (False, 'unconfirmed', 'unconfirmed', 'offer_disappeared')
+    assert record == {'outcome': 'confirmed', 'confirmed': True, 'reason': 'offer_disappeared', 'attempts': 1}      # the collector's own record is untouched
+    paid = dict(record, reason='balance_increased')
+    rs.gems.ad_gems = SimpleNamespace(status=lambda: dict(manual_active=False, manual_pending=False, last_outcome=paid))
+    assert action_bindings.CollectorBinding(rs, 'gems.ad_gems', 'ad_gems').progress().acknowledgement() == paid
 # ---------------------------------------------------------------------------- the saved adapters
 def test_every_definition_that_names_a_saved_adapter_has_one_registered_and_a_definition_that_names_none_has_none():
     for definition in CATALOG:

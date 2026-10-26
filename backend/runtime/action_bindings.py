@@ -75,6 +75,17 @@ def outcome_of(record, action=None):
     return None, 'unknown', reason
 
 
+def _acknowledged(record, effect):
+    """The collector's own outcome record as the command acknowledgement carries it. The record stays the collector's (its
+    counters and published last_outcome count a vanished offer as confirmed); the acknowledgement must not claim a game effect
+    that effect_of ruled unconfirmed, so it is a copy that says unconfirmed and no longer reports confirmed."""
+    if not isinstance(record, dict) or effect != 'unconfirmed' or record.get('confirmed') is not True:
+        return record
+    claimed = dict(record, confirmed=False, effect=effect)
+    if claimed.get('outcome') == 'confirmed':
+        claimed['outcome'] = 'unconfirmed'
+    return claimed
+
 class CollectorBinding(BindingBase):
     """A gem collector: the ad-gem collector or the floating-gem tapper. Their own `status()` is the routine status.
 
@@ -129,7 +140,7 @@ class CollectorBinding(BindingBase):
             return BindingResult('pending', diagnostic=state)
         last = state['last_outcome']
         outcome, effect, reason = outcome_of(last, self.action)
-        return BindingResult('terminal', outcome=outcome, effect=effect, reason=reason, ack=last, diagnostic=state)
+        return BindingResult('terminal', outcome=outcome, effect=effect, reason=reason, ack=_acknowledged(last, effect), diagnostic=state)
 
 
 class ShoppingBinding(BindingBase):
