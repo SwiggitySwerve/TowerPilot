@@ -206,6 +206,8 @@ class StartToStart:
     basis = 'start_to_start'
 
     def evaluate(self, now: float, state: Mapping, conditions: Mapping) -> tuple[Decision, dict]:
+        if not _clock_time(now):
+            return Decision('blocked', reason='invalid_state', basis=self.basis), dict(state)
         new = dict(state)
         nwa, manual = state['next_window_at'], bool(conditions.get('manual'))
         if state.get('window_open'):
@@ -257,6 +259,8 @@ class AppearanceDriven:
     basis = 'appearance_driven'
 
     def evaluate(self, now: float, state: Mapping, conditions: Mapping) -> tuple[Decision, dict]:
+        if not _clock_time(now):
+            return Decision('blocked', reason='invalid_state', basis=self.basis), dict(state)
         new = dict(state)
         nwa = state['next_window_at']
         if state.get('window_open'):
@@ -310,6 +314,8 @@ class AfterCompletion:
     basis = 'after_completion'
 
     def evaluate(self, now: float, state: Mapping, conditions: Mapping) -> tuple[Decision, dict]:
+        if not _clock_time(now):
+            return Decision('blocked', reason='invalid_state', basis=self.basis), dict(state)
         last, interval = state['last_completed_at'], conditions['interval']
         if conditions.get('continuation_ready'):
             return Decision('due', eligible_at=now, next_due_at=now, reason='continuation', basis=self.basis), dict(state)
@@ -354,6 +360,8 @@ class Backoff:
         return status in ('failed', 'interrupted') and ran_sec < self.window and not refused
 
     def evaluate(self, now: float, state: Mapping, conditions: Mapping | None = None) -> tuple[Decision, dict]:
+        if not _clock_time(now):
+            return Decision('blocked', reason='invalid_state', basis=self.basis), dict(state)
         failures = state.get('failures', 0)
         spacing = None
         if state.get('newest_updated_at') is not None:

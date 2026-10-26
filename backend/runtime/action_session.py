@@ -14,14 +14,14 @@ let a summary field nobody validated escape into collection; this one cannot, wh
 public methods and fails for one that is not contained or not named as contained elsewhere (`project`, by its caller).
 """
 import functools
+import math
 import time
 
 from runtime import logger
-from towerpilot_workflows import action_contract
+from towerpilot_workflows import action_contract, action_history
 from towerpilot_workflows.action_contract import SCHEMA_VERSION, SystemClock
 from towerpilot_workflows.actions import ActiveExecution, Actions, new_record
 
-ADOPTED = ('adopted', 'partial_adoption')       # battle origins whose history starts at the adoption, not at the battle's start
 
 
 def contained(reason, default=None):
@@ -61,6 +61,20 @@ class ActionSession:
         """The catalog this session records and projects against: the one it was given, else the active one."""
         return self._catalog if self._catalog is not None else action_contract.catalog()
 
+    def _coverage_in_force(self):
+        """What a row recorded now covers: the host's own callback (`since_adoption` for a battle it joined), else `full`. The one expression both the rows
+        (`_body`) and the projection (`project`) read, so what is published about an action is what is stored for it."""
+        return self._coverage() if self._coverage else 'full'
+
+    def _projected_coverage(self):
+        """`_coverage_in_force` for the projection, which must never raise into a driver: a callback that fails or answers outside the contract is `unknown`."""
+        try:
+            value = self._coverage_in_force()
+        except Exception as exc:                 # noqa: BLE001 - see the module docstring
+            self._failed('coverage', exc)
+            return 'unknown'
+        return value if value in action_contract.COVERAGES else 'unknown'
+
     # --------------------------------------------------------- factories
     @classmethod
     def for_battle(cls, battle_session, driver='orchestrator', *, tracked_only=False):
@@ -77,8 +91,7 @@ class ActionSession:
 
         session = cls(battle_session.store.path, context=context, driver=driver, operation_id=battle_session.operation_id,
                       identity=lambda: (battle_session.battle['id'], battle_session.generation) if tracked() else (None, None),
-                      coverage=lambda: ('since_adoption' if tracked() and battle_session.battle.get('origin') in ADOPTED
-                                        else 'full'))
+                      coverage=lambda: action_history.battle_coverage(battle_session.battle) if tracked() else 'full')
         battle_session.actions = session
         return session
 
@@ -126,7 +139,7 @@ class ActionSession:
                           command_id=command_id, config_revision=self.config_revision if config_revision is None else config_revision,
                           policy_revision=self.policy_revision if policy_revision is None else policy_revision,
                           scheduled_for=scheduled_for, started_at=self.clock.wall(), refs=refs,
-                          coverage=coverage or (self._coverage() if self._coverage else 'full'))
+                          coverage=coverage or self._coverage_in_force())
 
     @contained('begin')
     def begin(self, action, instance=None, *, trigger='automatic', occurrence_key=None, scheduled_for=None,
@@ -145,12 +158,18 @@ class ActionSession:
             self._open[row['id']] = self.clock.mono()
         return row['id']
 
+    def _elapsed_ms(self, started):
+        """Monotonic milliseconds since `started`. Unknown (None) when the clock cannot give one - a non-finite reading, or one earlier than the start - never a zero
+        made up from it: a duration the row stores as measured must have been measured."""
+        elapsed = (self.clock.mono() - started) * 1000
+        return elapsed if math.isfinite(elapsed) and elapsed >= 0 else None
+
     @contained('finish')
     def finish(self, execution_id, *, result, reason=None, effect='none', attempts=0, confirmed=0, evidence=(), refs=None):
         if execution_id is None:
             return None
         started = self._open.pop(execution_id, None)
-        duration = None if started is None else max(0.0, (self.clock.mono() - started) * 1000)
+        duration = None if started is None else self._elapsed_ms(started)
         row = self._actions().finish(execution_id, result=result, reason=reason, effect=effect, attempts=attempts,
                                      confirmed=confirmed, evidence=evidence, finished_at=self.clock.wall(),
                                      duration_ms=duration, refs=refs)
@@ -209,6 +228,7 @@ class ActionSession:
         None where nothing says (a field the controls do not hold is unknown, not zero)."""
         now = self.clock.wall()
         items = []
+        coverage = self._projected_coverage()
         known = {definition.id: definition for definition in self._catalog_in_force()}
         for key in sorted(routines, key=lambda name: (list(known).index(name.partition('@')[0]) if name.partition('@')[0] in known else 10**6, name)):
             action_id, _, instance = key.partition('@')       # 'ad_gems' or '<action>@<instance>': one item per configured instance
@@ -240,7 +260,7 @@ class ActionSession:
                                 variants=[dict(token=token, label=token, refusal=None)
                                           for token in (variants or {}).get(instance, (variants or {}).get(definition.id, []))]),
                 values=values, counters=dict(status.get('counters') or {}),
-                coverage='full'))
+                coverage=coverage))
         meta = dict(self.context)
         return dict(schema_version=SCHEMA_VERSION, published_at=now, observed_at=observed_at or now,
                     ledger_id=self._ledger_id(), control_revision=control_revision,
