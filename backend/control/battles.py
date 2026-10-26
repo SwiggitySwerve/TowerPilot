@@ -7,7 +7,7 @@ import sqlite3
 import time
 from pathlib import Path
 
-from control import operations
+from control import battle_lineage, operations
 from towerpilot_workflows.battles import LIVE, Battles
 from towerpilot_workflows.operations import STATUSES
 
@@ -80,6 +80,13 @@ def public(store, battle):
                   result=result.get('outcome'), end_reason=result.get('reason'),
                   effective=copy.deepcopy(result['applied_controls']))
     result['commands'] = store.commands(battle['id'])
+    # Takeover facts are additive and absent for every other battle, adopted ones included (the recorded contract fixtures do not change).
+    attach = battle_lineage.attach_view(battle)
+    if attach is not None:
+        result['attach'] = attach
+    lineage = battle_lineage.lineage(store, battle) if attach is not None else None      # a battle adopted outside a takeover reads exactly as before
+    if lineage is not None:
+        result['lineage'] = lineage
     return result
 
 

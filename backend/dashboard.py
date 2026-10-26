@@ -76,6 +76,7 @@ app = Flask(__name__, static_folder=WEBUI, static_url_path="/ui")
 from control import operations as operation_api
 from control import battles as battle_api
 from control import harvest as harvest_api
+from control import takeover as takeover_api
 from runtime import build_info, environment
 from towerpilot_workflows.harvest import gem_policy_revision
 
@@ -191,6 +192,17 @@ def _collection_guard(cfg):
     """The same rule for the gem collector's admission and entry (read-only):
     additionally honours a recorded collection-only handoff."""
     return battle_api.guard_for(ROOT, cfg, scope='collection')
+
+
+@app.errorhandler(takeover_api.InvalidTakeover)
+def takeover_invalid(error):
+    return jsonify(ok=False, code=error.code, reason=error.reason, field=error.field, error=str(error)), 400
+
+
+@app.errorhandler(takeover_api.TakeoverRefused)
+def takeover_refused(error):
+    """A takeover refused before the collector's input stopped: nothing was recorded and nothing was sent to the game."""
+    return jsonify(ok=False, code=error.code, error=str(error), **error.extra), 409
 
 
 @app.errorhandler(battle_api.HandoffRefused)
@@ -528,7 +540,11 @@ def _transfer_from_collector(cfg, body, owners):
     return dict(stopped=stop['stopped'], stopping=stop['stopping'], waited_sec=waited)
 
 
-def _launch_operation(cfg, kind, body, cmd, **kwargs):
+def _launch_operation(cfg, kind, body, cmd, *, restrict=None, **kwargs):
+    """Accept an operation and start its worker. `restrict` (a takeover.Restriction, runs only) makes the envelope the restricted one of a takeover: not
+    forwarded in kwargs, which go to Popen."""
+    if restrict is not None and kind != 'run':
+        raise ValueError('Only a run can be launched as a takeover')
     if kind in ('run', 'gems'):
         import copy
         from player.run_controls import effective_preset, resolve
@@ -542,15 +558,104 @@ def _launch_operation(cfg, kind, body, cmd, **kwargs):
         frozen['preset'] = selected
         profile = frozen.pop('_profile_snapshot', None)
         revision = frozen.pop('_profile_revision', None)
+        controls = resolve(preset, frozen)
+        attach = None
+        if restrict is not None:
+            preset, controls, frozen, attach = takeover_api.restrict_parts(preset, controls, frozen, selected, restrict)
         body['battle_envelope'] = dict(preset_key=selected, preset=copy.deepcopy(preset),
                                       config=frozen, profile=profile,
-                                      controls=resolve(preset, frozen),
+                                      controls=controls,
                                       source=copy.deepcopy(preset.get('_source')),
                                       source_revision=revision)
+        if attach is not None:
+            body['battle_envelope']['attach'] = attach
     return operation_api.launch(ROOT, cfg, kind, body, cmd, subprocess.Popen,
                                 profile_path=_profile_path(cfg.get('active_profile')),
                                 cwd=ROOT, creationflags=getattr(subprocess, 'DETACHED_PROCESS', 0) | NO_WINDOW,
                                 **kwargs)
+
+
+class _FlowRegistryUnreadable(Exception):
+    """The flow registry could not be read while building a run's command; the message is the registry's own."""
+
+
+def _run_command(cfg, inst, preset):
+    """The worker command line of a run: the compiled preset's runner and arguments. `cfg['presets']` holds the compiled runs."""
+    runner = cfg["presets"].get(preset, {}).get("runner") or "orchestrator.py"
+    args = cfg["presets"].get(preset, {}).get("runner_args") or []
+    pyw = sys.executable.replace("python.exe", "pythonw.exe")
+    # combo.py schedules everything itself and takes no --preset. Flow
+    # scripts take `--preset bp_<name>` (compiled blueprints) ONLY -
+    # started under their own legacy config preset they bind it
+    # themselves (FLOW["legacy_preset"]), and the quest runners refuse
+    # the legacy name at argparse, which read as "runner failed" in the
+    # UI (user, 2026-08-27).
+    preset_argv = ["--preset", preset]
+    if os.path.basename(runner) == "combo.py":
+        preset_argv = []
+    elif runner.replace("\\", "/").startswith("flows/"):
+        try:
+            import flows
+            if any(spec.get("runner") == runner
+                   and spec.get("legacy_preset") == preset
+                   for spec in flows.flows().values()):
+                preset_argv = []
+        except Exception as e:          # noqa: BLE001 - shown verbatim
+            raise _FlowRegistryUnreadable(str(e)) from e
+    return ([pyw, os.path.join(ROOT, runner), "--instance", inst]
+            + preset_argv + [str(a) for a in args])
+
+
+# ------------------------------------------------------------------ takeover
+def _takeover_owners_view(cfg):
+    """Everything that holds the emulator, read-only (a GET retires no operation): ledger owners and untracked runners, then the device lease."""
+    rows = operation_api.project_processes(ROOT, _procs_cached(), reconcile=False)
+    found = harvest_api.owners(ROOT, cfg, rows)
+    if not rows and not found:
+        holder = harvest_api.lease_owner(cfg)
+        found = [holder] if holder is not None else []
+    return found
+
+
+def _attached_readiness(cfg, preset):
+    from player import readiness
+    return readiness.check(ROOT, cfg, preset, attached=True)
+
+
+def _takeover_ports():
+    return takeover_api.Ports(
+        root=ROOT, compiled_runs=_compiled_runs, runnable=runnable_presets, setup_guard=_setup_battle_guard, readiness=_attached_readiness,
+        owners=lambda cfg: _collector_takeover("Automation is already running. Finish or stop it before taking over the battle.", cfg),
+        owners_view=_takeover_owners_view)
+
+
+@app.get('/api/takeover/preview')
+def api_takeover_preview():
+    """The one read of the takeover dialog: verdicts, plan, policy revision, readiness, owners and the collector's battle. Never polled; a GET changes nothing."""
+    return jsonify(takeover_api.preview(_takeover_ports(), load_config(), request.args.get('preset') or None))
+
+
+def _takeover_action(body, cfg, inst):
+    """POST /api/control action=takeover: attach a run's restricted policy to the battle on screen. Admission is takeover.admit (every check before the collector's
+    input stops); the transfer and the launch are the ones `start` uses, with the restricted envelope. An identical retry replays the first receipt."""
+    request_ = takeover_api.parse(body)
+    retry = operation_api.retry(ROOT, cfg, 'run', body, _profile_path(cfg.get('active_profile')))
+    if retry:
+        return jsonify(ok=True, operation_id=retry['id'], operation=operation_api.public(retry))
+    admitted = takeover_api.admit(_takeover_ports(), cfg, request_)
+    try:
+        cmd = _run_command(cfg, inst, admitted.preset)
+    except _FlowRegistryUnreadable as e:
+        return jsonify({"ok": False, "error": f"flow registry unreadable: {e}"}), 500
+    transfer = _transfer_from_collector(cfg, body, admitted.owners) if admitted.owners else None
+    try:
+        operation = _launch_operation(cfg, 'run', body, cmd, restrict=admitted.restrict)
+    finally:
+        if admitted.owners:
+            harvest_api.end_transfer(ROOT, harvest_api.identity_for(cfg))
+    _procs_refresh()
+    return jsonify(ok=True, operation_id=operation['id'], operation=operation_api.public(operation),
+                   **({'transfer': transfer} if transfer else {}))
 
 
 @app.get('/api/operations/<operation_id>')
@@ -2744,6 +2849,8 @@ def api_control():
     action = body.get("action")
     cfg = load_config()
     inst = cfg.get("active_instance", "main")
+    if action == takeover_api.ACTION:
+        return _takeover_action(body, cfg, inst)
     if action in ('start', 'start_gems'):
         if 'harvest' in body or 'desire_revision' in body:
             return jsonify(ok=False, code='invalid_request',
@@ -2794,30 +2901,10 @@ def api_control():
             return jsonify({"ok": False, "error": str(e)}), 400
         if preset not in runnable_presets(cfg):
             return jsonify({"ok": False, "error": "unknown preset"}), 400
-        runner = cfg["presets"].get(preset, {}).get("runner") or "orchestrator.py"
-        args = cfg["presets"].get(preset, {}).get("runner_args") or []
-        pyw = sys.executable.replace("python.exe", "pythonw.exe")
-        # combo.py schedules everything itself and takes no --preset. Flow
-        # scripts take `--preset bp_<name>` (compiled blueprints) ONLY -
-        # started under their own legacy config preset they bind it
-        # themselves (FLOW["legacy_preset"]), and the quest runners refuse
-        # the legacy name at argparse, which read as "runner failed" in the
-        # UI (user, 2026-08-27).
-        preset_argv = ["--preset", preset]
-        if os.path.basename(runner) == "combo.py":
-            preset_argv = []
-        elif runner.replace("\\", "/").startswith("flows/"):
-            try:
-                import flows
-                if any(spec.get("runner") == runner
-                       and spec.get("legacy_preset") == preset
-                       for spec in flows.flows().values()):
-                    preset_argv = []
-            except Exception as e:          # noqa: BLE001 - shown verbatim
-                return jsonify({"ok": False,
-                                "error": f"flow registry unreadable: {e}"}), 500
-        cmd = ([pyw, os.path.join(ROOT, runner), "--instance", inst]
-               + preset_argv + [str(a) for a in args])
+        try:
+            cmd = _run_command(cfg, inst, preset)
+        except _FlowRegistryUnreadable as e:
+            return jsonify({"ok": False, "error": f"flow registry unreadable: {e}"}), 500
         transfer = _transfer_from_collector(cfg, body, takeover) if takeover else None
         try:
             operation = _launch_operation(cfg, "run", body, cmd)
