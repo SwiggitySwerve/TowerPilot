@@ -24,7 +24,8 @@ import math
 import time
 import uuid
 
-from towerpilot_workflows.action_contract import COVERAGES, EFFECTS, OPEN_STATES, RESULTS, SCHEMA_VERSION, STATES, TRIGGERS
+from towerpilot_workflows.action_contract import COVERAGES, EFFECTS, OPEN_STATES, RESULTS, SCHEMA_VERSION, TRIGGERS
+from towerpilot_workflows.action_history import OUTCOME_KEYS, RECORD_KEYS, duration_or_none, finite_or_none, is_whole
 from towerpilot_workflows.operations import ACTIVE, Conflict, Operations, digest, has_table, readonly
 
 _ANY = object()                  # "no account filter" (None is a real account: the rows with none)
@@ -50,74 +51,6 @@ class UnusableRow(Conflict):
 
 def _strict(value):
     return json.dumps(value, sort_keys=True, allow_nan=False, separators=(',', ':'))
-
-
-def finite_or_none(value):
-    """Unknown is None, never zero; a non-finite or non-numeric time is unknown."""
-    return float(value) if isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value) else None
-
-
-# every field new_record makes, in the order it makes them. A stored body must carry all of them: a consumer indexes them with [], so a
-# missing one is a KeyError waiting in a driver. A test binds this list to new_record (a field added there but not here fails it).
-RECORD_KEYS = ('schema_version', 'id', 'ledger_id', 'device', 'action', 'instance', 'trigger', 'occurrence_key', 'host', 'context',
-               'config_revision', 'policy_revision', 'request_key', 'command_id', 'state', 'scheduled_for', 'accepted_at', 'started_at',
-               'finished_at', 'duration_ms', 'duration_basis', 'outcome', 'aggregate', 'coverage', 'refs')
-OUTCOME_KEYS = ('result', 'reason', 'effect', 'attempts', 'confirmed', 'evidence')
-
-
-def _whole(value):
-    return isinstance(value, int) and not isinstance(value, bool)
-
-
-def _text_or_none(value):
-    return value is None or isinstance(value, str)
-
-
-def _number_or_none(value):
-    return value is None or finite_or_none(value) is not None
-
-
-def _shape_is_whole(body):
-    """Is every field of this body one a writer of this build makes? The whole schema is checked, so a consumer (the session's
-    summary, a page, a settlement) never meets a field it did not expect: a new field a writer starts to make is added HERE."""
-    if not isinstance(body, dict) or not all(key in body for key in RECORD_KEYS):
-        return False
-    if not _whole(body.get('schema_version')) or finite_or_none(body.get('started_at')) is None:
-        return False
-    for key in ('id', 'device', 'action', 'instance'):
-        if not isinstance(body.get(key), str) or not body[key]:
-            return False
-    if body.get('trigger') not in TRIGGERS or body.get('state') not in STATES or body.get('coverage') not in COVERAGES:
-        return False
-    if body.get('duration_basis') not in ('none', 'monotonic'):
-        return False
-    if not all(_number_or_none(body.get(key)) for key in ('scheduled_for', 'accepted_at', 'finished_at', 'duration_ms', 'settled_at')):
-        return False
-    if not all(_text_or_none(body.get(key)) for key in ('ledger_id', 'occurrence_key', 'request_key', 'command_id', 'settled_reason')):
-        return False
-    if not all(value is None or isinstance(value, str) or _whole(value) for value in (body.get('config_revision'), body.get('policy_revision'))):
-        return False
-    host, context, outcome = body.get('host'), body.get('context'), body.get('outcome')
-    if not all(isinstance(part, dict) for part in (host, context, outcome, body.get('refs'))) or not all(key in outcome for key in OUTCOME_KEYS):
-        return False
-    if not all(_text_or_none(host.get(key)) for key in ('driver', 'operation_id', 'battle_id', 'generation', 'parent_execution')):
-        return False
-    if not _text_or_none(context.get('account')):
-        return False
-    if outcome.get('result') is not None and outcome.get('result') not in (*RESULTS, 'interrupted'):
-        return False
-    if outcome.get('effect') not in EFFECTS or not _text_or_none(outcome.get('reason')):
-        return False
-    if not all(_whole(outcome.get(key)) and outcome[key] >= 0 for key in ('attempts', 'confirmed')):
-        return False
-    if not isinstance(outcome.get('evidence'), list) or not all(isinstance(item, str) for item in outcome['evidence']):
-        return False
-    aggregate = body.get('aggregate')
-    if aggregate is not None and not (isinstance(aggregate, dict) and isinstance(aggregate.get('scope'), str) and _whole(aggregate.get('count'))
-                                      and aggregate['count'] >= 1 and finite_or_none(aggregate.get('first_at')) is not None
-                                      and finite_or_none(aggregate.get('last_at')) is not None):
-        return False
-    return True
 
 
 INDEX = ('id', 'device', 'action', 'instance', 'account', 'operation_id', 'battle_id', 'generation', 'request_key', 'started_at', 'terminal')
@@ -148,7 +81,7 @@ def usable(raw, index=None):
         body = json.loads(raw)
     except (TypeError, ValueError):
         return None
-    if not _shape_is_whole(body):
+    if not is_whole(body):
         return None
     if index is not None and indexed(body) != index:
         return None
@@ -304,7 +237,7 @@ class Actions(Operations):
         """Compare-and-set on the open state: a repeat or a stale writer changes nothing. Returns the row."""
         if result not in RESULTS or effect not in EFFECTS:
             raise ValueError(f'Unknown result or effect: {result}/{effect}')
-        duration = finite_or_none(duration_ms)
+        duration = duration_or_none(duration_ms)
         with self._db() as db:
             self._writable(self._meta(db))
             row = db.execute(f'SELECT {INDEX_SQL}, body FROM action_executions WHERE id=?', (execution_id,)).fetchone()
@@ -363,7 +296,7 @@ class Actions(Operations):
         A repeated durable request key returns the row it already made."""
         if result not in RESULTS or effect not in EFFECTS:
             raise ValueError(f'Unknown result or effect: {result}/{effect}')
-        duration = finite_or_none(duration_ms)
+        duration = duration_or_none(duration_ms)
         with self._db() as db:
             meta = self._meta(db)
             self._writable(meta)
@@ -403,6 +336,14 @@ class Actions(Operations):
                     settled.append(self._settle(db, body, reason, now)['id'])
         return settled
 
+    @staticmethod
+    def _still_counting(raw, cutoff):
+        """Is this old row an aggregate whose LAST check is newer than the retention cutoff? Its index keeps the FIRST check's start time, so the
+        index alone would drop a count that is still growing. A body `usable` cannot read is not counting."""
+        body = usable(raw)
+        last = body['aggregate'].get('last_at') if body is not None and body['aggregate'] else None
+        return finite_or_none(last) is not None and last >= cutoff
+
     def prune(self, now=None, *, retain_sec=RETAIN_SEC, batch=PRUNE_BATCH):
         """Delete terminal rows older than `retain_sec`, at most `batch` per call. Open rows and every row a durable
         command receipt names (`battle_commands.request_key`) are kept. Not called by any production path until root
@@ -412,9 +353,16 @@ class Actions(Operations):
             self._writable(self._meta(db))
             has_commands = has_table(db, 'battle_commands')
             keep = ' AND (request_key IS NULL OR request_key NOT IN (SELECT request_key FROM battle_commands))' if has_commands else ''
-            ids = [row[0] for row in db.execute(
-                f'SELECT id FROM action_executions WHERE terminal=1 AND started_at < ?{keep} ORDER BY started_at LIMIT ?',
-                (cutoff, int(batch))).fetchall()]
+            ids, limit = [], int(batch)
+            candidates = db.execute(f'SELECT id, body FROM action_executions WHERE terminal=1 AND started_at < ?{keep} ORDER BY started_at', (cutoff,))
+            for execution_id, raw in candidates:
+                if limit == 0:                       # a batch of none deletes none
+                    break
+                if not self._still_counting(raw, cutoff):
+                    ids.append(execution_id)
+                    if 0 < limit <= len(ids):         # a negative batch is "no limit", as SQLite's LIMIT was
+                        break
+            candidates.close()
             db.executemany('DELETE FROM action_executions WHERE id=?', [(item,) for item in ids])
         return len(ids)
 

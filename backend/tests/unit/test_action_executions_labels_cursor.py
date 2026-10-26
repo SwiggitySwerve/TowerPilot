@@ -33,7 +33,9 @@ def seed(root, count, *, action='ad_gems', battle='battle-1', start=1000.0):
 
 
 def battle(created_at=0.0, name='battle-1'):
-    return dict(id=name, created_at=created_at, context=dict(device_key=DEVICE))
+    # a battle record as the ledger stores one: its status, origin and the attachment (generation) the seeded rows ran under; the read validates rows against them
+    return dict(id=name, created_at=created_at, context=dict(device_key=DEVICE), status='active', origin='started',
+                segments=[dict(generation='g1', operation_id=None, started_at=0.0, ended_at=None)])
 
 
 # ------------------------------------------------------------------------------------------------ B9 label

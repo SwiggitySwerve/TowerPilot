@@ -31,7 +31,7 @@ describe('AC6 landed r17b checkout provenance', () => {
     ],
     [
       SYNTHETIC_ACTION_FIXTURE_PATH,
-      'dcbc547a5f8fec8f69a277f92a3543cdbe3efea4ca35b2aa4f4b52d94603ceb1',
+      '46a200bb4d40204f7c7107ce394ab3ac34fcc2bd9b8944b371961439955da6d8',
     ],
   ])('pins the approved checkout bytes at %s', (file, sha256) => {
     expect(loadJsonWithIdentity(file).identity.sha256).toBe(sha256);
@@ -58,7 +58,7 @@ describe('AC6 landed r17b checkout provenance', () => {
     expect(fixture['generated_by']).toBe('backend/tests/test_synthetic_action_contract.py');
     expect(CONTRACT_INPUTS.some(({ file }) => file === SYNTHETIC_ACTION_FIXTURE_PATH)).toBe(false);
     expect(familyHashes(SYNTHETIC_ACTION_FIXTURE_PATH)).toEqual({
-      synthetic_action: '703CDEB851C53385E10D89EDAE6997231EBBF3A41D479CA9AB890BCA740BCD06',
+      synthetic_action: '4FCD49C736E877EB86C4F97F9E6822D93CAE9E15FF0503B4DCD68912802E29F6',
     });
     const cases = record(fixture['cases']);
     expect(Object.keys(cases)).toEqual(['synthetic_action']);

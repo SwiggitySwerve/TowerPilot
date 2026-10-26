@@ -4,11 +4,12 @@ Plain values in and out; nothing here builds an HTTP response. The query reads t
 GET on a checkout with no ledger (or none of this schema) answers an empty history and creates nothing.
 """
 from control import operations
-from towerpilot_workflows import action_contract
+from towerpilot_workflows import action_contract, action_history
 from towerpilot_workflows.action_contract import SCHEMA_VERSION
 from towerpilot_workflows.actions import Actions, SchemaTooNew
 
 DEFAULT_LIMIT, MAX_LIMIT = 50, 500
+MAX_REFUSED_PAGES = 10          # pages `for_battle` reads past ones the validator refused whole, so older history behind them is not hidden
 
 
 def settle(root, event=None):
@@ -67,21 +68,34 @@ def for_battle(root, battle, *, limit=DEFAULT_LIMIT, action=None):
     tracks is created a moment BEFORE its action store, and must not hide what it recorded. Only a battle with no
     execution that was created before the store existed, or on a ledger that never had one, is `items` None with
     its reason: it has no history to show, which is not a battle where nothing ran. A ledger a newer build wrote is
-    not interpreted. (Rows of an adopted battle carry their own `coverage`, `since_adoption`.)"""
+    not interpreted. (Rows of an adopted battle carry their own `coverage`, `since_adoption`.)
+
+    Rows are validated before they are shown (`action_history.validate_history`): a row that cannot belong to this battle (another account, battle or generation, a newer schema, an
+    impossible duration) and a damaged body are left out, as the generic read leaves out a damaged one. The wire shape is unchanged: no key is added for them."""
     path = operations.ledger_path(root)
     meta = Actions.read_meta(path)
     if _newer(meta):
         return dict(items=None, reason='newer_schema', truncated=False)
-    rows, truncated, cursor = [], False, None
+    items, truncated, cursor, seen = [], False, None, False
     if meta is not None:
-        rows, truncated, _, cursor = Actions.read_page(path, device=battle['context']['device_key'], battle_id=battle['id'], action=action, limit=limit)
-    if rows:
-        block = dict(items=_labelled(rows), reason=None, truncated=truncated)
+        before = None
+        for _ in range(MAX_REFUSED_PAGES):
+            rows, truncated, damaged, cursor = Actions.read_page(path, device=battle['context']['device_key'], battle_id=battle['id'], action=action, before=before, limit=limit)
+            # A damaged row is still a row this battle recorded: the battle has history (items may be empty), it was
+            # not recorded before the store existed.
+            seen = seen or bool(rows or damaged)
+            items = action_history.validate_history(battle, rows, ledger=meta)['items'] if rows else []
+            if items or not truncated:
+                break
+            before = cursor          # this page held nothing the battle can show (foreign or damaged rows): the page behind it may
+    if seen:
+        block = dict(items=_labelled(items), reason=None, truncated=truncated)
         if truncated:        # the rest is one generic read away: GET /api/actions/executions?battle_id=<id>&before=<next_before>
             block['next_before'] = cursor
         return block
-    if meta is None or (meta.get('created_at') is not None and battle['created_at'] < meta['created_at']):
-        return dict(items=None, reason='recorded_before_action_history', truncated=False)
+    reason = action_history.unrecorded_reason(battle, meta)
+    if reason:
+        return dict(items=None, reason=reason, truncated=False)
     return dict(items=[], reason=None, truncated=False)
 
 
