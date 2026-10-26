@@ -5,9 +5,9 @@ name: CI
 # Nothing here is a required check; branch protection is not touched.
 on:
   push:
-    branches: [master, feat/dashboard-polish-20261020]
+    branches: [master]
   pull_request:
-    branches: [master, feat/dashboard-polish-20261020]
+    branches: [master]
 permissions:
   contents: read
 concurrency:
