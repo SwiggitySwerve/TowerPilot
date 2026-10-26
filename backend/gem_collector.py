@@ -48,6 +48,10 @@ class LedgerGuard:
         """A failed attempt of this stage may have written part of its work; the next call finishes it."""
         return stage in self.stages
 
+    def forget(self, stage):
+        """The pending work of this stage is gone (its record closed): its failures are no longer counted."""
+        self.stages.pop(stage, None)
+
     def run(self, stage, call, *args, **kwargs):
         """(True, result) when the call ran; (False, None) when the ledger was locked and the call did not happen."""
         try:
@@ -160,7 +164,9 @@ def main(instance, preset):
             if not closed:
                 pace(pass_started)
                 continue
-            owed = prepare_owed = None
+            owed = None
+            prepare_owed = None
+            ledger.forget('prepare')
             reason = runflag.requested()
             if reason is not None:
                 logger.event('gem_collector_stopped', reason=reason)
@@ -214,8 +220,8 @@ def main(instance, preset):
                     continue
                 prepared, _ = ledger.run('prepare', session.prepare_next, origin='partial_adoption',
                                          previous_battle_id=previous)
-                if not prepared:    # the live branch finishes it, still linked to the record this one continues
-                    prepare_owed = dict(origin='partial_adoption', previous_battle_id=previous)
+                prepare_owed = None if prepared else dict(origin='partial_adoption', previous_battle_id=previous)
+                # when locked out, the live branch finishes it, still linked to the record this one continues
             gems = GemWatch(body.get('gather', {}), session=actions)
             state.gems = gems
             state.tracker = wave_reader.WaveTracker()
@@ -232,7 +238,8 @@ def main(instance, preset):
                     owed = dict(reason=why, evidence=proof)
                     pace(pass_started)
                     continue
-                prepare_owed = None     # the record that was waiting for its setup report is closed
+            prepare_owed = None         # no battle is waiting for its record any more
+            ledger.forget('prepare')
             reason=runflag.requested()
             if reason is not None:
                 logger.event('gem_collector_stopped',reason=reason)
