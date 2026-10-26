@@ -192,7 +192,7 @@ def test_the_catalog_describes_the_pilot_and_a_copy_can_be_extended_without_touc
     assert [item.id for item in CATALOG] == ['ad_gems', 'floating_gems', 'shopping', 'harvest_launch', 'daily_missions', 'guild_progress', 'event_missions', 'quest_visit',
                                              'guild_visit', 'guild_store', 'free_store_gems', 'quest_scan', 'shatter', 'housekeeping',
                                              'tournament_entry', 'tournament_ticket', 'in_run_cards', 'surrender', 'setup_capture', 'max_wave', 'repeat_after_death', 'sm_ride',
-                                             'tournament_day_marker', 'perk_ban_cache']
+                                             'tournament_day_marker', 'perk_ban_cache', 'compiled_rule', 'demon_mode_always', 'uw_toggle']
     assert CATALOG.get('harvest_launch').capabilities.run_now == 'not_supported'
     copy = CATALOG.copy()
     probe = ActionDefinition(id='synthetic_probe', label='Probe', family='gems', hosts=frozenset({'test'}),
@@ -235,3 +235,24 @@ def test_only_a_balance_rise_confirms_a_gem_claim_and_a_vanished_battle_offer_do
 def test_a_collector_launch_claims_no_evidence_because_starting_a_process_proves_nothing_ran():
     assert CATALOG.get('harvest_launch').evidence == ()
     assert 'offer_disappeared' not in CATALOG.get('ad_gems').evidence
+
+
+# ------------------------------------------------------------- item 7, A3b kind B (r18e): main-loop upkeep
+def test_the_upkeep_definitions_are_plain_orchestrator_actions_with_the_schedules_of_the_code_they_replace():
+    from towerpilot_workflows.action_contract import Cooldown, upkeep_outcome
+    rows = {'compiled_rule': (Cooldown(), ('rule_confirmed',)), 'demon_mode_always': (Cooldown(15.0), ('fire_confirmed',)), 'uw_toggle': (Backoff(10, 2, 120), ('toggle_verified',))}
+    for ident, (schedule, evidence) in rows.items():
+        definition = CATALOG.get(ident)
+        assert (definition.schedule, definition.evidence, definition.family, definition.hosts) == (schedule, evidence, 'rules', frozenset({'orchestrator'}))
+        assert (definition.fields, definition.capabilities, definition.restricted, definition.saved, definition.documents, definition.scope, definition.consumes) == \
+               ((), Capabilities(), None, None, (), None, None)
+    assert upkeep_outcome('demon_mode_always', True) == dict(result='succeeded', reason='fire_confirmed', effect='confirmed', attempts=1, confirmed=1, evidence=('fire_confirmed',))
+    assert upkeep_outcome('uw_toggle', False) == dict(result='failed', reason='not_confirmed', effect='unknown', attempts=1, confirmed=0, evidence=())
+
+
+def test_a_held_deadline_is_due_exactly_at_it_and_a_held_ladder_never_opens_a_circuit():
+    ladder = Backoff(10, 2, 120)
+    assert [ladder.retry_at(100.0, n) for n in range(1, 8)] == [110.0, 120.0, 140.0, 180.0, 220.0, 220.0, 220.0]
+    for failures_held in (0, 1):
+        decide = lambda now, deadline: ladder.evaluate(now, {'failures': 0, 'refusal_at': deadline})[0].kind
+        assert (decide(99.9, 100.0), decide(100.0, 100.0), decide(5.0, 0.0)) == ('wait', 'due', 'due')

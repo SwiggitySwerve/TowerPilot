@@ -262,6 +262,8 @@ class RunState:
         if _action_session is not None:
             self.shop.recorder = _action_session.recorder('shopping')
         self.rewards_history = _rewards_history
+        self.uw_attempts = []   # UW toggles of the current pass awaiting their history row (`uw_toggle` buffers, `uw_flush_history` writes)
+        self.action_session = _action_session   # the history of the main-loop upkeep (compiled rules, global Demon Mode, UW retry); None records nothing
         if _rewards_history is not None:
             self.mission.on_end = lambda how: reward_flow_ended(self, how)
         from player.run_controls import resolve
@@ -1019,6 +1021,19 @@ def _rule_cooldown(rule: dict, a_p: dict) -> float:
     return RULE_REFIRE_SEC
 
 
+def record_upkeep(rs, action: str, instance: str, ok: bool, **refs) -> None:
+    """The history row of one CONTACT of a main-loop upkeep action (compiled rule, global Demon Mode, UW toggle), written by the caller AFTER the input returned and after
+    its own state was updated - never before a tap. A host with no ledger operation (`rs.action_session` None, or a stand-in without it) records nothing; the session
+    contains its own failures. What counts as contact, and what `ok` means, is each caller's own rule (`upkeep_outcome` names the row)."""
+    session = getattr(rs, "action_session", None)
+    if session is None:
+        return
+    try:
+        session.record(action, instance, refs=refs or None, **action_contract.upkeep_outcome(action, ok))
+    except Exception as e:   # the history is never worth the live loop: the row is lost and the loss is logged
+        logger.event("upkeep_history_failed", action=action, error=repr(e), level="debug")
+
+
 def _rule_suppressed(rs: "RunState", i: int, rid: str, why: str, now: float,
                      **extra) -> None:
     """A fire that did NOT happen, at debug level and RATE LIMITED.
@@ -1456,6 +1471,7 @@ def _run_rules(rs: "RunState", frame, wave: int | None, phase: str) -> bool:
     if not rules:
         return False
     now = time.monotonic()
+    schedule = action_contract.catalog().get("compiled_rule").schedule   # the per-rule refire floor (Cooldown); the floor itself is the rule's own
     cache: dict = {}            # one bar read per pass, shared by every rule
     touched = False             # the one-CONTACT-per-tick budget
     for i, rule in enumerate(rules):
@@ -1494,7 +1510,7 @@ def _run_rules(rs: "RunState", frame, wave: int | None, phase: str) -> bool:
             logger.event("rule_unsupported", index=i, id=rid, when=when,
                          do=do, phase=phase, why=why)
             continue
-        if now < rs.rule_next.get(k, 0.0):
+        if schedule.evaluate(now, {"next_at": rs.rule_next.get(k, 0.0)})[0].kind != "due":
             _rule_suppressed(rs, k, rid, "cooldown", now,
                              wait=round(rs.rule_next[k] - now, 1))
             continue                    # per-rule refire guard
@@ -1512,7 +1528,7 @@ def _run_rules(rs: "RunState", frame, wave: int | None, phase: str) -> bool:
                              trigger=snap)
             continue
         contact, ok = _rule_act(rs, frame, k, rid, a_name, a_p)
-        rs.rule_next[k] = now + _rule_cooldown(rule, a_p)
+        rs.rule_next[k] = schedule.after(now, _rule_cooldown(rule, a_p))
         if ok and t_name == "fleet_mark" and "mark" in snap:
             _rule_mem(rs, "rule_marks").setdefault(k, set()).add(snap["mark"])
             if a_name in ("fire", "burst") and _rule_button(a_p) == "nuke":
@@ -1526,6 +1542,7 @@ def _run_rules(rs: "RunState", frame, wave: int | None, phase: str) -> bool:
             rs.rules_fired.add(k)
         if contact:
             touched = True              # the budget is spent on CONTACT
+            record_upkeep(rs, "compiled_rule", f"compiled_rule@{rid}", ok, rule_id=rid)
     return touched
 
 
@@ -1882,7 +1899,7 @@ def _fast_wall_watch(rs: "RunState", ab: dict) -> str:
     return "timeout"
 
 
-DM_ALWAYS_RETRY_SEC = 15.0      # between attempts: a confirmed fire costs ~1s
+DM_ALWAYS_RETRY_SEC = action_contract.DEMON_MODE_ALWAYS.schedule.floor_sec   # the catalog's Cooldown; between attempts: a confirmed fire costs ~1s
                                 # and Demon Mode cools down for minutes, so a
                                 # 15 s grain loses nothing and never lets a
                                 # bright-field false "ready" stall the loop
@@ -1901,21 +1918,61 @@ def demon_mode_always(rs: "RunState", frame, wave_now, now) -> bool:
     the sprint indicator is up; fire_button confirms the cooldown dim and
     require_ready stays on, so a cooling button is never tapped blind.
     Returns True on a confirmed fire."""
-    if not wave_now or now < rs.dm_always_try_at:
+    schedule = action_contract.catalog().get("demon_mode_always").schedule
+    if not wave_now or schedule.evaluate(now, {"next_at": rs.dm_always_try_at})[0].kind != "due":
         return False
     try:
         if not global_rewards.enabled(preset(), "demon_mode_always"):
             return False
     except Exception:                       # noqa: BLE001 - no preset bound
         return False
-    rs.dm_always_try_at = now + DM_ALWAYS_RETRY_SEC
+    rs.dm_always_try_at = schedule.after(now)
     if not rs.sprint_ended and detect.intro_sprint_active(frame):
         return False
     if not fire_button(frame, "demon_mode", "demon_mode_always", require_ready=True):
         return False
     rs.dm_always_count += 1
     logger.event("demon_mode_always", wave=wave_now, count=rs.dm_always_count)
+    record_upkeep(rs, "demon_mode_always", "demon_mode_always", True)   # a CONFIRMED fire only: fire_button does not say whether an unconfirmed attempt tapped
     return True
+
+
+def uw_retry_schedule():
+    """The one retry ladder of every Ultimate Weapon toggle (Backoff 10, 2, 120 s): the catalog's, shared by the three call sites of main()."""
+    return action_contract.catalog().get("uw_toggle").schedule
+
+
+def uw_retry_due(rs: "RunState", now: float) -> bool:
+    """May the UW tab be visited now? The host holds ONE deadline (`rs.uw_next_try`); a success resets `rs.uw_fails` and leaves it."""
+    return uw_retry_schedule().evaluate(now, {"failures": 0, "refusal_at": rs.uw_next_try})[0].kind == "due"
+
+
+def uw_backoff(rs: "RunState", success: bool) -> None:
+    """The result of a UW toggle: a success clears the failure count; a failure counts and moves the shared deadline (10, 20, 40, 80, 120, 120 ... s)."""
+    if success:
+        rs.uw_fails = 0
+        return
+    rs.uw_fails += 1
+    rs.uw_next_try = uw_retry_schedule().retry_at(time.monotonic(), rs.uw_fails)
+
+
+def uw_toggle(rs: "RunState", weapon: str, want_on, site: str) -> bool:
+    """`shopper.uw_toggle` for one of the three call sites ('cl_normalize', 'uw_wanted', 'cl_toggle'). The history row is BUFFERED here and written once at the end
+    of the pass (`uw_flush_history`), after every decision and deadline of the pass: the cadence never waits for the ledger. Nothing is buffered without a session."""
+    ok = shopper.uw_toggle(weapon, want_on)
+    if getattr(rs, "action_session", None) is not None:
+        pending = getattr(rs, "uw_attempts", None)
+        if pending is None:
+            pending = rs.uw_attempts = []
+        pending.append((weapon, site, bool(ok)))
+    return ok
+
+
+def uw_flush_history(rs: "RunState") -> None:
+    """Write the buffered UW toggle rows (one per toggle, one shared instance)."""
+    pending, rs.uw_attempts = getattr(rs, "uw_attempts", None), []
+    for weapon, site, ok in pending or ():
+        record_upkeep(rs, "uw_toggle", "uw_toggle", ok, weapon=weapon, site=site)
 
 
 def watch_frame(rs: "RunState", frame, observation=None) -> str | None:
@@ -2901,14 +2958,7 @@ def main():
             # (deferred while a sweep is mid-pass - both drive the tab strip)
             cl_cfg = preset()["chain_lightning"]
             cl_base = bool(cl_cfg.get("always_on"))
-            uw_ok = time.monotonic() >= rs.uw_next_try and automation_enabled('abilities')
-
-            def _uw_backoff(success: bool):
-                if success:
-                    rs.uw_fails = 0
-                    return
-                rs.uw_fails += 1
-                rs.uw_next_try = time.monotonic() + min(120, 10 * 2 ** (rs.uw_fails - 1))
+            uw_ok = uw_retry_due(rs, time.monotonic()) and automation_enabled('abilities')
 
             # Normalize to the state we actually WANT right now, not the
             # preset baseline: restarting above the latch wave used to force
@@ -2927,11 +2977,11 @@ def main():
                     rs.cl_on = want_cl
                     logger.event("cl_disabled", wave=wave)
             elif not rs.cl_normalized and not rs.shop.active and uw_ok:
-                if shopper.uw_toggle("chain_lightning", want_cl):
+                if uw_toggle(rs, "chain_lightning", want_cl, "cl_normalize"):
                     rs.cl_normalized = True
                     rs.cl_on = want_cl
                     logger.event("cl_normalized", wave=wave, state=want_cl)
-                    _uw_backoff(True)
+                    uw_backoff(rs, True)
                 elif rs.uw_fails >= 3:
                     # verification keeps failing - accept the tapped state and
                     # move on rather than dragging the UW panel all run
@@ -2942,7 +2992,7 @@ def main():
                 else:
                     logger.event("cl_normalize_fail", wave=wave,
                                  want=want_cl, fails=rs.uw_fails + 1)
-                    _uw_backoff(False)
+                    uw_backoff(rs, False)
 
             # ---- preset uw_wanted: enforce the full toggle set once per run,
             # after CL settles. Quest presets (ILM/SM) flip toggles and the
@@ -2954,18 +3004,18 @@ def main():
                 for w, want in wanted.items():
                     if w in rs.uw_done:
                         continue
-                    if shopper.uw_toggle(w, bool(want)):
+                    if uw_toggle(rs, w, bool(want), "uw_wanted"):
                         rs.uw_done.add(w)
-                        _uw_backoff(True)
+                        uw_backoff(rs, True)
                     elif rs.uw_fails >= 3:
                         rs.uw_done.add(w)   # same give-up rule as CL: never
                         logger.event("uw_normalize_giveup", weapon=w,
                                      assumed=bool(want))   # drag the panel all run
-                        _uw_backoff(True)
+                        uw_backoff(rs, True)
                     else:
                         logger.event("uw_normalize_fail", weapon=w, wave=wave,
                                      fails=rs.uw_fails + 1)
-                        _uw_backoff(False)
+                        uw_backoff(rs, False)
                         break               # retry after the backoff window
                 if all(w in rs.uw_done for w in wanted):
                     rs.uw_normalized = True
@@ -2980,17 +3030,18 @@ def main():
                         rs.cl_blocked_logged = True
                         logger.event("cl_deferred", wave=wave, want=want_cl,
                                      shopping=rs.shop.active, uw_ok=uw_ok)
-                elif shopper.uw_toggle("chain_lightning", want_cl):
+                elif uw_toggle(rs, "chain_lightning", want_cl, "cl_toggle"):
                     rs.cl_on = want_cl
                     rs.cl_blocked_logged = False
                     logger.event("cl", on=want_cl, wave=wave)
-                    _uw_backoff(True)
+                    uw_backoff(rs, True)
                 else:
                     logger.event("cl_toggle_fail", wave=wave, want=want_cl,
                                  fails=rs.uw_fails + 1)
-                    _uw_backoff(False)   # retried after the backoff window
+                    uw_backoff(rs, False)   # retried after the backoff window
             elif want_cl == rs.cl_on:
                 rs.cl_blocked_logged = False
+            uw_flush_history(rs)
 
             # ---- shopping: sprint LOCKS abilities, not the panel. The sprint
             # spans ~1800 waves - shop aggressively while it's active (waves
@@ -3011,9 +3062,11 @@ def main():
                 logger.shot(frame, f"danger_w{wave}")
 
         except capture.CaptureError as e:
+            uw_flush_history(rs)   # a toggle that returned before the failure still happened: write its row, never drop it with the pass
             logger.event("capture_error", error=str(e))
             time.sleep(2)
         except Exception:
+            uw_flush_history(rs)
             logger.event("crash", trace=traceback.format_exc())
             time.sleep(5)
 

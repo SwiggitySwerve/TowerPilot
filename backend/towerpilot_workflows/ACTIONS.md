@@ -3,7 +3,7 @@
 > **Status:** Active (item 6: the pilot, and the control surface generated from the catalog)
 > **Type:** Rules
 > **Created:** 2026-10-22
-> **Updated:** 2026-10-25 (item 7, A3b kind A; item 7, A3a; item 6, A2-7: what a page reads)
+> **Updated:** 2026-10-27 (item 7, A3b kind B r18e; item 7, A3b kind A; item 7, A3a; item 6, A2-7: what a page reads)
 > **Owner:** Backend
 > **Spec:** [roadmap-items-6-7/spec.md](../logs/reviews/roadmap-items-6-7/spec.md)
 > **Tags:** actions, scheduling, history, gems, shopping, harvest
@@ -124,6 +124,27 @@ collection algorithm changed. `restricted` is the one flag that decides what a p
 - **Why `repeat_after_death` and not `repeat`:** a catalog entry named like a routine key would be projected into `runtime.actions` (a new row on the Dashboard) and would move the
   `repeat` gate's controls and the order of the control table. Neither is r18d's to change.
 
+## Item 7, A3b kind B (r18e): main-loop upkeep with a floor or a ladder
+
+Three catalog entries (family `rules`, host orchestrator; no field, control, binding or Run now) now carry the schedule of three main-loop callers. Each caller keeps the state it
+already held and asks the definition; the cadence, guards and logs are the old ones (golden traces captured on the unmigrated orchestrator, replayed by the pinned snapshot and the live code).
+
+| Entry | Policy | Held state | Rule |
+|---|---|---|---|
+| `compiled_rule` | `Cooldown()`, the floor is the rule's own (`refire_sec` ... `_rule_cooldown`) | `rs.rule_next[rule key]`, `rs.rules_fired` | Due when `now >= rule_next` (the old `<` comparison inverted). Once per run unless `repeat`; RETIRED beats `repeat`; the stamp follows every CONTACT, success or not; an action that made no contact stamps too (old behaviour); ONE contact per tick: a rule deferred by it is neither stamped nor marked fired, so the next pass judges it again. |
+| `demon_mode_always` | `Cooldown(15)` (`DM_ALWAYS_RETRY_SEC` is its floor) | `rs.dm_always_try_at`, `rs.dm_always_count` | Stamped before the sprint check and before the tap, as before, so an unconfirmed attempt and a sprint-blocked pass both wait the full 15 s; a no-wave or disabled pass stamps nothing. |
+| `uw_toggle` | `Backoff(10, 2, 120)` | ONE `rs.uw_next_try` and `rs.uw_fails` for the three call sites of `main()` | 10, 20, 40, 80, 120, 120 s after the 1st..nth consecutive failure; a success resets the count and leaves the deadline; `uw_ok` is read once per pass, so a second toggle of the same pass still runs after a failure. The host passes its held deadline as `refusal_at` with `failures` 0 (no circuit); `Backoff.retry_at` is the one place the ladder is computed. |
+
+History: one terminal row per CONTACT, written by the host AFTER the input returned and after its own state was updated (`orchestrator.record_upkeep`, outcome `upkeep_outcome`): confirmed is
+`succeeded` with the definition's evidence, anything else `failed` with the effect unknown. A suppression (cooldown, one contact per tick), a retired or rejected rule, a pass without contact,
+a disabled or no-wave Demon Mode pass and an unconfirmed Demon Mode attempt (it does not say whether it tapped) record nothing. UW toggle rows are buffered during the pass and written once at the
+end of it, so no deadline or decision waits on the ledger. Nothing is written before a tap. A host with no ledger operation records nothing; a failing ledger is counted in the session and never raised.
+What a row does and does not say: it is written by `ActionSession.record` after the fact, so `started_at` and `finished_at` are the time of the WRITE (for a UW toggle, the end of the pass) and
+`duration_ms` is null with `duration_basis` `none`; no execution of these actions is claimed as measured, and a test pins that. The Demon Mode history lists CONFIRMED fires only: `fire_button` returns False
+both for a refused tap and for a tap it could not confirm, so an unconfirmed attempt that did tap is absent, and this history is not an attempt log. Recording a start, a duration or that attempt needs
+a session interface (r18h) and a three-way `fire_button` result (r18f); neither is changed here.
+Nothing here moves a fast-loop timer (`rs.last_fire`, `rs.fleet_try_at`, the Second Wind deadlines stay: r18f) or the death cycle (r18g).
+
 ## Adding an action (what the contract asks, and nothing else)
 
 1. **A definition** in the catalog (`action_contract.py`): id, label, family, the driver kinds that may run it, a schedule policy, its
@@ -146,6 +167,8 @@ collection algorithm changed. `restricted` is the one flag that decides what a p
 drives it through the real routes.
 
 ## Tests
+
+r18e: `test_action_parity_rules.py`, `test_action_parity_demon_mode.py` and `test_action_parity_uw_retry.py` replay `backend/tests/fixtures/action_r18e/*_golden_v1.json` (captured on the pinned unmigrated orchestrator; `TP_REGENERATE_ACTION_R18E_GOLDEN=1`, unmigrated code only).
 
 Golden traces captured before any edit pin the cadence of every pilot caller (`backend/tests/fixtures/action_golden_v1.json`,
 explicit regeneration only: `TP_REGENERATE_ACTION_GOLDEN=1 python -m pytest backend/tests/unit/test_action_golden_capture.py`).

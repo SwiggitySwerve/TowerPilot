@@ -344,6 +344,12 @@ class Backoff:
     def delay(self, failures: int) -> int:
         return 0 if failures <= 0 else min(self.cap, self.base * self.factor ** (failures - 1))
 
+    def retry_at(self, now: float, failures: int) -> float:
+        """The earliest next attempt after the `failures`-th consecutive failure at `now`: for a host that holds ONE deadline of its own (item 7, A3b: the Ultimate Weapon
+        retry keeps `rs.uw_next_try` and `rs.uw_fails`, and a success resets the count but leaves the deadline), not the ledger facts `evaluate` reads. Such a host passes
+        the held deadline to `evaluate` as `refusal_at` with `failures` 0, so no circuit can open."""
+        return now + self.delay(failures)
+
     def fast_failure(self, status: str, ran_sec: float, refused: bool) -> bool:
         return status in ('failed', 'interrupted') and ran_sec < self.window and not refused
 
@@ -672,9 +678,27 @@ SM_RIDE = _declared('sm_ride', 'Smart Missiles ride', 'cycles', 'wave_target', h
 TOURNAMENT_DAY_MARKER = _declared('tournament_day_marker', 'Tournament day marker (by hand)', 'dayplan', 'manual_tournament', scope='installation')
 PERK_BAN_CACHE = _declared('perk_ban_cache', 'Perk ban cache', 'setup', 'perk_bans_applied', scope='account')
 
+# ---- item 7, A3b kind B (r18e): main-loop upkeep with a refire floor or a retry ladder. Each migrated caller keeps the state it already held (`rs.rule_next`,
+# `rs.dm_always_try_at`, `rs.uw_next_try`/`rs.uw_fails`) and asks this definition whether it is due and when it may try again. History: one terminal row per CONTACT
+# (`upkeep_outcome`), written by the host after the input returned and after its own state was updated; a suppression, a retired rule or a pass without contact records none.
+COMPILED_RULE = _plain('compiled_rule', 'Compiled rule', 'rules', Cooldown(), evidence=('rule_confirmed',))       # the floor is the rule's own (`refire_sec` ...); instance = compiled_rule@<rule id>
+DEMON_MODE_ALWAYS = _plain('demon_mode_always', 'Demon Mode on cooldown', 'rules', Cooldown(15.0), evidence=('fire_confirmed',))
+UW_TOGGLE = _plain('uw_toggle', 'Ultimate Weapon toggle', 'rules', Backoff(10, 2, 120), evidence=('toggle_verified',))   # ONE state for the three call sites of main()
+
+
+def upkeep_outcome(action_id: str, ok: bool) -> dict:
+    """The terminal row of one contact of an upkeep action (`ActionSession.record` fields). Confirmed is `succeeded` with the definition's evidence; anything else is
+    `failed` with the effect UNKNOWN (the input may have reached the game), never `none`."""
+    if ok:
+        evidence = catalog().get(action_id).evidence[:1]
+        return dict(result='succeeded', reason=evidence[0], effect='confirmed', attempts=1, confirmed=1, evidence=evidence)
+    return dict(result='failed', reason='not_confirmed', effect='unknown', attempts=1, confirmed=0, evidence=())
+
+
 CATALOG = Catalog((AD_GEMS, FLOATING_GEMS, SHOPPING, HARVEST_LAUNCH, DAILY_MISSIONS, GUILD_PROGRESS, EVENT_MISSIONS, QUEST_VISIT, GUILD_VISIT, GUILD_STORE,
                    FREE_STORE_GEMS, QUEST_SCAN, SHATTER, HOUSEKEEPING,
-                   TOURNAMENT_ENTRY, TOURNAMENT_TICKET, IN_RUN_CARDS, SURRENDER, SETUP_CAPTURE, MAX_WAVE, REPEAT_AFTER_DEATH, SM_RIDE, TOURNAMENT_DAY_MARKER, PERK_BAN_CACHE))
+                   TOURNAMENT_ENTRY, TOURNAMENT_TICKET, IN_RUN_CARDS, SURRENDER, SETUP_CAPTURE, MAX_WAVE, REPEAT_AFTER_DEATH, SM_RIDE, TOURNAMENT_DAY_MARKER, PERK_BAN_CACHE,
+                   COMPILED_RULE, DEMON_MODE_ALWAYS, UW_TOGGLE))
 _ACTIVE: list[Catalog] = []
 
 
