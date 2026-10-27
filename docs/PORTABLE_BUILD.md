@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** Build and release guide
 > **Created:** 2026-09-11
-> **Updated:** 2026-10-25
+> **Updated:** 2026-10-27
 > **Tags:** release, portable, environment limits
 
 Users download the `windows-x64.zip`, extract it into a writable folder, and
@@ -33,6 +33,23 @@ Output is under `dist/`, with a ZIP SHA-256 sidecar and per-file checksums insid
 Builds use a fresh staging directory and the source allowlist; runtime captures,
 personal profiles, account state, ADB and game assets are not collected.
 
+### Clean tree and release identity
+
+A release is the tagged merge, built by the CI run of the tag; the assets that run
+publishes are the accepted artifacts. A local build is for rehearsal only.
+
+Both builders refuse to run when the working tree has uncommitted changes, including
+untracked files that git does not ignore, and when git cannot say (no `.git` of its own).
+`--allow-dirty` skips that refusal for a rehearsal build. Such a build records `dirty` or
+`unknown` in its identity, and the archive checker rejects it.
+
+Each ZIP carries `release_identity.json` at its root: the version, the kind
+(`source` or `portable-windows-x64`), the source fingerprint, the app build hash, the
+lock hash, the Python version and hash (portable only), the build time, the git revision and
+the working-tree state. It holds no path, user name or machine name. The dashboard reports it
+read-only in `/api/runtime` under `release`, with `matches_source` and `matches_app_build`
+(whether the files on disk are still the ones the build recorded). A copy without the file
+reports kind `checkout`; one with an unreadable file reports `unknown`.
 ## Environments and limits
 
 | ID | Environment | What it shows |

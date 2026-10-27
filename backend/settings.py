@@ -5,6 +5,8 @@ import subprocess
 from pathlib import Path
 import yaml
 
+from runtime import config_seed
+
 # A process launched from pythonw.exe has NO console, so every console child
 # (adb.exe, powershell.exe) would pop its own window - roughly one flashing
 # window per second under the tray supervisor. CREATE_NO_WINDOW suppresses it.
@@ -36,15 +38,11 @@ def seed_config(path: Path = CONFIG_PATH, example: Path = CONFIG_EXAMPLE) -> boo
     git-ignored). Before this every `import settings` died with
     FileNotFoundError at import - the dashboard's own scan endpoint included,
     so a new install could not even run the wizard that would have written
-    the file. Returns True when the file was created. The dashboard has a
-    copy of this rule (it deliberately never imports settings).
+    the file. Returns True when the file was created. The rule itself (a
+    byte copy) is runtime/config_seed.py, which the dashboard shares - it
+    deliberately never imports settings.
     """
-    if path.exists():
-        return False
-    if not example.exists():
-        raise FileNotFoundError(f"{path} is missing and so is {example}")
-    path.write_text(example.read_text(encoding="utf-8"), encoding="utf-8")
-    return True
+    return config_seed.seed(path, example)
 
 
 seed_config()

@@ -2,6 +2,12 @@
 
 Families: runtime_state (GET /api/runtime) and runtime_diagnostics (GET /api/diagnostics/events).
 
+/api/runtime reports, as `release`, what the tree it runs from says it is (item 10 p10a, runtime/build_info.release_identity): a checkout
+(every sample over a world's own folder is one, with nothing recorded), or an install with the identity its build wrote and the two
+comparisons with the files now on disk. The install is a small synthetic tree of the world, never this machine's. The samples of this file
+only see the nothing-recorded answer (every field null, no hash); the installs are the family runtime_release (runtime_release_cases), a
+new family appended last because the hashes an install carries are aliased in order of appearance and would renumber every family after them.
+
 /api/runtime reports the build of the SERVER process against the source on disk, the capabilities, the live workers and the
 operations that persist a file. The server's own build snapshot (`_BUILD`) is replaced by one taken over a small synthetic
 source tree (so no machine identity is read), then the real `build_info.compare` runs over that tree: unchanged, changed on
@@ -17,6 +23,7 @@ writer (runtime.diagnostics.write_event) with its clock, ids, process and file n
 applies (files, bytes per file) are lowered for the truncation cases, and the writer's health counters are set for the failure
 case. Malformed lines, a half-written last line and an unreadable file are put on disk as such.
 """
+import contextlib
 import json
 import os
 import time
@@ -28,6 +35,7 @@ from control import diagnostics as query_module
 from dashboard_contract_pages_world import pin_mtimes
 from device.preview import scrcpy_package
 from runtime import build_info, diagnostics, environment
+from test_build_info import install as release_install
 from test_dashboard_contract import raising
 
 RT, DG = 'runtime_state', 'runtime_diagnostics'
@@ -85,6 +93,7 @@ def runtime_state_cases(gen):
         pin_build(w, source_tree(w))
         got = w.get(RT, 'idle_server_build_matches_the_source_on_disk', '/api/runtime').get_json()
         assert got['server']['source_changed'] is False and got['workers'] == [] and got['persistence_operations'] == []
+        assert got['release']['kind'] == 'checkout' and got['release']['matches_source'] is None and got['release']['version'] is None
         assert 'runtime_identity' in got['capabilities'] and got['api_contract'] == 1
     with gen.world('rt_changed') as w:
         root = source_tree(w)
@@ -154,6 +163,61 @@ def runtime_state_cases(gen):
         w.mp.setattr(w.dash, '_PROCS_THREAD', SimpleNamespace(is_alive=lambda: True))
         got = w.get(RT, 'process_discovery_unreadable', '/api/runtime').get_json()
         assert got['process_refresh']['error']
+
+
+REL = 'runtime_release'
+
+
+@contextlib.contextmanager
+def release_world(gen, name, **record):
+    """A world that runs from an install of its own: <root>/install holds a source file, a built app with its inventory and the
+    identity naming both (test_build_info.install), and the dashboard's repository root is that folder."""
+    with gen.world(name) as w:
+        install = w.root / 'install'
+        release_install(install, record=record)
+        w.mp.setattr(w.dash, 'ROOT', str(install / 'backend'))
+        pin_build(w, install)
+        yield w, install
+
+
+def runtime_release_cases(gen):
+    """Family runtime_release: `release` for an install - what the build recorded, and whether the files on disk still are those."""
+    app = Path(*build_info.APP_BUILD)
+    with release_world(gen, 'rt_release_intact', kind='portable-windows-x64', python=dict(version='3.12.10', sha256='f' * 64)) as (w, install):
+        got = w.get(REL, 'install_whose_files_are_the_ones_the_build_recorded', '/api/runtime').get_json()
+        release = got['release']
+        assert (release['kind'], release['matches_source'], release['matches_app_build'], release['error']) == ('portable-windows-x64', True, True, None)
+        assert release['source_fingerprint'] == got['server']['source_fingerprint'] and release['python']['version'] == '3.12.10'
+        assert got['environment']['release'] == dict(kind='portable-windows-x64')
+    with release_world(gen, 'rt_release_source_edited') as (w, install):
+        (install / 'backend' / 'example.py').write_text('x = 2', encoding='utf-8')
+        release = w.get(REL, 'source_edited_after_the_install_matches_source_false', '/api/runtime').get_json()['release']
+        assert (release['matches_source'], release['matches_app_build']) == (False, True)
+        (install / 'backend' / 'example.py').write_text('x = 1', encoding='utf-8')
+        (install / 'backend' / 'added.py').write_text('y = 1', encoding='utf-8')
+        release = w.get(REL, 'source_file_added_after_the_install_matches_source_false', '/api/runtime').get_json()['release']
+        assert (release['matches_source'], release['matches_app_build']) == (False, True)
+    with release_world(gen, 'rt_release_app_edited') as (w, install):
+        (install / app / 'assets' / 'main.js').write_bytes(b'console.log(2)')
+        release = w.get(REL, 'app_file_edited_after_the_install_matches_app_build_false', '/api/runtime').get_json()['release']
+        assert (release['matches_source'], release['matches_app_build']) == (True, False)
+        (install / app / 'assets' / 'main.js').write_bytes(b'console.log(1)')
+        (install / app / 'assets' / 'extra.js').write_bytes(b'extra')
+        release = w.get(REL, 'app_file_added_after_the_install_matches_app_build_false', '/api/runtime').get_json()['release']
+        assert (release['matches_source'], release['matches_app_build']) == (True, False)
+        (install / app / 'assets' / 'extra.js').unlink()
+        (install / app / build_info.APP_INVENTORY).unlink()
+        release = w.get(REL, 'app_inventory_missing_matches_app_build_false', '/api/runtime').get_json()['release']
+        assert (release['matches_source'], release['matches_app_build']) == (True, False)
+    with release_world(gen, 'rt_release_unreadable') as (w, install):
+        real = build_info.source_fingerprint
+        w.mp.setattr(build_info, 'source_fingerprint', raising(PermissionError('backend/example.py is locked')))
+        release = w.get(REL, 'install_source_cannot_be_read_so_matches_source_is_unknown', '/api/runtime').get_json()['release']
+        assert (release['kind'], release['matches_source'], release['matches_app_build']) == ('source', None, True)
+        w.mp.setattr(build_info, 'source_fingerprint', real)
+        (install / build_info.RELEASE_IDENTITY).write_text('{broken', encoding='utf-8')
+        release = w.get(REL, 'identity_that_cannot_be_parsed_is_unknown_with_the_reason', '/api/runtime').get_json()['release']
+        assert (release['kind'], release['error'], release['matches_source'], release['version']) == ('unknown', 'not valid JSON', None, None)
 
 
 # ----------------------------------------------------------------- diagnostics (T-02)

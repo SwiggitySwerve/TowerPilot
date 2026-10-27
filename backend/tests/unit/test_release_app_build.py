@@ -2,13 +2,19 @@
 release ZIPs, added from the filesystem, and a release is refused without it.
 The app's sources ship too (ADR-001 decision 2); npm and test state never do.
 
-Each test builds the real ZIP writers' output from a small temporary git
-checkout. The portable test runs the same staging and ZIP code build() uses;
-the embedded Python download and pip install are not exercised here."""
+Each test builds the real ZIP writers' output from a small temporary folder.
+The two git calls of the release tools (the file listing and the working-tree
+state, build_release.git_listing and working_tree) are replaced by
+support/fake_git_tree.py, which runs no git, and the tree reads clean
+(release_identity.json records that, and the archive gate requires it). The
+portable test runs the same staging, identity and ZIP code build() uses; the
+embedded Python download and pip install are not exercised here
+(test_release_identity.py runs build() with those two steps stubbed)."""
 
 import paths as test_paths
 import hashlib
 import importlib
+import json
 import shutil
 import subprocess
 import sys
@@ -18,6 +24,8 @@ from pathlib import Path
 from types import ModuleType
 
 import pytest
+
+import fake_git_tree
 
 REPO = test_paths.REPO
 BUILD = {
@@ -43,8 +51,12 @@ BUILD["frontend/webui/app/BUILD_INVENTORY.txt"] = _inventory(
 SOURCES = {
     "VERSION": b"9.9.9\n",
     "README.md": b"# test\n",
+    "requirements-portable.lock": b"flask==0.0.0\n",
     "docs/RELEASE_9.9.9.md": b"# Release\n\n## Environment limits\nSynthetic test only.\n",
     "backend/dashboard.py": b"# dashboard\n",
+    # a source file the release allowlist drops (allowed() excludes backend/tools) but the server fingerprint counts:
+    # the identity must be taken over the staged tree, not over this checkout (test_release_identity.py)
+    "backend/tools/helper.py": b"# a developer helper that is not shipped\n",
     "frontend/webui/index.html": (b"<script>window.location.replace('/ui/app/')</script>"
                                   b'<a href="/ui/app/">open the dashboard</a>'),
     "frontend/app/package.json": b"{}\n",
@@ -92,19 +104,17 @@ def tools(monkeypatch: pytest.MonkeyPatch) -> tuple[ModuleType, ModuleType]:
         monkeypatch.delitem(sys.modules, name, raising=False)
     release = importlib.import_module("build_release")
     release.DOCS.add('RELEASE_9.9.9.md')
+    fake_git_tree.install(monkeypatch, release)
     return release, importlib.import_module("build_portable")
 
 
 @pytest.fixture()
 def checkout(tmp_path: Path) -> Path:
-    """A git checkout with the real .gitignore, app sources, npm/test state and a build."""
-    if shutil.which("git") is None:
-        pytest.skip("git is not installed")
+    """A checkout-shaped folder with the real .gitignore, app sources, npm/test state and a build. No git."""
     root = tmp_path / "checkout"
     root.mkdir()
     shutil.copyfile(REPO / ".gitignore", root / ".gitignore")
     _write(root, {**SOURCES, **NEVER, **BUILD})
-    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
     return root
 
 
@@ -194,8 +204,8 @@ def test_this_checkout_ships_the_redirect_and_no_retired_dashboard(tools: tuple[
     seeds that replaced the legacy page's ui-seeds block, and nothing else of
     the previous dashboard."""
     build_release, _ = tools
-    if shutil.which("git") is None:
-        pytest.skip("git is not installed")
+    if shutil.which("git") is None or not (REPO / ".git").exists():
+        pytest.skip("needs git and a git checkout (a source archive or scratch copy has neither)")
     listed = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard"],
                             cwd=REPO, capture_output=True, text=True, check=True).stdout.splitlines()
     names = {name for name in listed if build_release.allowed(name) and (REPO / name).is_file()}
@@ -209,8 +219,8 @@ def test_this_checkout_ships_the_redirect_and_no_retired_dashboard(tools: tuple[
 def test_every_app_source_in_this_checkout_ships(tools: tuple[ModuleType, ModuleType]) -> None:
     """A new kind of source file under frontend/app/ must not be dropped from releases silently."""
     build_release, _ = tools
-    if shutil.which("git") is None:
-        pytest.skip("git is not installed")
+    if shutil.which("git") is None or not (REPO / ".git").exists():
+        pytest.skip("needs git and a git checkout (a source archive or scratch copy has neither)")
     names = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard", "frontend/app"],
                            cwd=REPO, capture_output=True, text=True, check=True).stdout.splitlines()
     assert "frontend/app/package.json" in names
@@ -310,6 +320,8 @@ def release_pair(tools: tuple[ModuleType, ModuleType], checkout: Path,
     source = build_release.build(checkout, dist)
     stage = tmp_path / 'stage'
     build_portable.stage_tree(stage, checkout)
+    build_release.write_identity(stage, checkout, 'portable-windows-x64', build_release.working_tree(checkout),
+                                 python=dict(version=build_portable.PYTHON, sha256=build_portable.SHA256))
     prefix = 'TowerPilot-9.9.9-windows-x64'
     portable = build_portable.write_zip(stage, dist / (prefix + '.zip'), prefix)
     _sidecar(portable)
@@ -353,6 +365,12 @@ def _rewrite_zip(path: Path, mutation: str) -> None:
             hashlib.sha256(entries[prefix + 'README.md']).hexdigest() + '  README.md\n').encode()
     elif mutation == 'missing-inventory':
         del entries[prefix + 'SHA256SUMS.txt']
+    elif mutation == 'missing-identity':
+        del entries[prefix + 'release_identity.json']
+    elif mutation in {'dirty-identity', 'foreign-app-build'}:
+        identity = json.loads(entries[prefix + 'release_identity.json'])
+        identity.update(dict(working_tree='dirty') if mutation == 'dirty-identity' else dict(app_build_sha256='0' * 64))
+        entries[prefix + 'release_identity.json'] = json.dumps(identity).encode()
     if mutation not in {'tamper', 'duplicate-inventory', 'missing-inventory'}:
         entries[prefix + 'SHA256SUMS.txt'] = ''.join(
             hashlib.sha256(data).hexdigest() + '  ' + name.removeprefix(prefix) + '\n'
@@ -380,6 +398,9 @@ def _rewrite_zip(path: Path, mutation: str) -> None:
     ('map', 'forbidden file suffix:'),
     ('duplicate-inventory', 'SHA256SUMS.txt must list README.md exactly once (found 2)'),
     ('missing-inventory', 'missing SHA256SUMS.txt'),
+    ('missing-identity', 'missing or invalid release_identity.json'),
+    ('dirty-identity', 'release identity mismatch: working_tree'),
+    ('foreign-app-build', 'release identity mismatch: app_build_sha256'),
 ])
 def test_check_release_zips_rejects_mutated_archives(
         release_checker: ModuleType, release_pair: tuple[Path, Path, Path],

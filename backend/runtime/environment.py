@@ -20,6 +20,7 @@ from device import tool_install
 from device.preview import scrcpy_package
 from device.preview.common import PreviewUnavailable, options as preview_options
 from device.preview.mumu import discover_target
+from runtime import build_info
 
 
 OCR_TIMEOUT = 10
@@ -93,14 +94,8 @@ def stream_backends(root: Path, cfg: dict) -> dict:
 
 
 def _release_kind(root: Path) -> str:
-    try:
-        identity = json.loads((root / 'release_identity.json').read_text(encoding='utf-8'))
-    except FileNotFoundError:
-        return 'checkout'
-    except (OSError, ValueError):
-        return 'unknown'
-    kind = identity.get('kind') if isinstance(identity, dict) else None
-    return kind if kind in ('source', 'portable-windows-x64') else 'unknown'
+    """The kind the build recorded, read by build_info (the one reader); the hash checks are /api/runtime.release."""
+    return build_info.release_identity(root, verify=False)['kind']
 
 
 def report(root: Path, *, emulators: Mapping[str, str | None] | None = None) -> dict:

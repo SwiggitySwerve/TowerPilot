@@ -18,7 +18,7 @@ import * as contract15 from './dashboard_contract_pages_v1_r12.37b00ea0.ts';
 import * as contract16 from './dashboard_contract_pages_v1_recognition_advanced.39d80e69.ts';
 import * as contract17 from './dashboard_contract_pages_v1_recognition.29aa411f.ts';
 import * as contract18 from './dashboard_contract_pages_v1_runs.ff4f699f.ts';
-import * as contract19 from './dashboard_contract_pages_v1_runtime.61bf648f.ts';
+import * as contract19 from './dashboard_contract_pages_v1_runtime.477f4cbd.ts';
 import * as contract20 from './dashboard_contract_pages_v1_schedule.0709b095.ts';
 import * as contract21 from './dashboard_contract_pages_v1_shopping.84476b5e.ts';
 import * as contract22 from './dashboard_contract_v1.a1adee85.ts';
@@ -44,7 +44,7 @@ const contracts = {
   '39d80e69a206031909d083a8fd115011fdca21a19854408a232c83f7e5e06623': contract16,
   '29aa411f14e2d1aefe33574307f66e9e9af0f2282ef00a9b195218ab4e8c14ee': contract17,
   ff4f699fa4c34a5ec9d5c2734cca24f400204aa76bbde70701d02464b04060be: contract18,
-  '61bf648fb333df0126876b3160c5d18dc6b4d5aac7e8983ce01cc552ec32de5c': contract19,
+  '477f4cbd9c25a87e494d9ef7913cb1ead6cba86a8b5adc62a8b9414c84c5554a': contract19,
   '0709b095431a852946a2fc668035a174751cd40fc9e7c9e8aa9563526dec61b2': contract20,
   '84476b5eef9ba07ed6cc61d7a45bf81a2406e2c0f01c32b3462eef05d1e1ab18': contract21,
   a1adee857b2810076eb125970c5dd7f0e0d5439cb16e3e3560ef8c46e593c66c: contract22,
