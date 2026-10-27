@@ -156,7 +156,7 @@ function SourceLine({ vm, id }: { readonly vm: GemSlotVM; readonly id: string })
     <p className="tp-source" id={id}>
       <span>{text.sourcePicker.short}</span>
       {source.label === null ? null : <ServerValue kind="name" value={source.label} />}
-      <span>
+      <span className="tp-source__routines">
         {invalid
           ? text.sourceInvalid.short
           : source.policy !== null

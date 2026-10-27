@@ -38,6 +38,17 @@
   align-items: center;
 }
 
+/* What the issue means for Start and collection: detail, after the headline. */
+.tp-need__impact {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+/* A thin rule between the two impacts; a line, not a drawn character. */
+.tp-need__impact > span + span {
+  padding-inline-start: var(--tp-space-2);
+  border-inline-start: 1px solid var(--tp-color-border-active);
+}
+
 .tp-need__actions > a {
   display: inline-flex;
   margin-block: 0;

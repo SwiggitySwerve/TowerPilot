@@ -56,6 +56,8 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
       <h2 id="preview-title">{c.title.short}</h2>
       <button
         type="button"
+        className="tp-button"
+        data-tier="quiet"
         aria-expanded={v.expanded}
         aria-controls="preview-content"
         onClick={() => {
@@ -67,13 +69,13 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
       </button>
       {v.expanded ? (
         <div id="preview-content" className="tp-preview__content">
-          <p>{c.consent.short}</p>
-          <p>{c.autoStart.short}</p>
           <strong data-preview-verdict>{c.verdicts[v.verdict].short}</strong>
           <div className="tp-preview__actions">
             {v.running ? (
               <button
                 type="button"
+                className="tp-button"
+                data-tier="secondary"
                 onClick={() => {
                   touch();
                   store.stop();
@@ -84,6 +86,8 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
             ) : (
               <button
                 type="button"
+                className="tp-button"
+                data-tier="secondary"
                 disabled={!v.canStart}
                 aria-describedby={v.offline ? 'preview-connection' : undefined}
                 onClick={() => {
@@ -96,6 +100,8 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
             )}
             <button
               type="button"
+              className="tp-button"
+              data-tier="secondary"
               disabled={!v.canStart || v.checking}
               onClick={() => {
                 touch();
@@ -112,7 +118,9 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
           ) : null}
           {v.checking ? <p>{c.checking.short}</p> : null}
           {v.verdict === 'failed' ? <p>{c.transportFailed.short}</p> : null}
-          {v.verdict === 'unknown' ? <p>{c.unknownDelivery.short}</p> : null}
+          {v.verdict === 'unknown' ? (
+            <p className="tp-preview__note">{c.unknownDelivery.short}</p>
+          ) : null}
           {v.verdict === 'stale' ? <p>{c.stale.short}</p> : null}
           {v.lastError !== null ? <ServerValue kind="message" value={v.lastError} /> : null}
           {v.failures.map((reason, index) => (
@@ -120,12 +128,6 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
               <ServerValue kind="message" value={reason} />
             </div>
           ))}
-          <p>
-            {c.labels.actual.short}
-            {c.sources[v.actualSource].short}
-          </p>
-          <p>{previewReceiptAge(v.receiptAge)}</p>
-          <p>{previewSourceAge(v.sourceAge)}</p>
           <div
             className="tp-preview__picture"
             role={v.frame?.kind === 'frame' ? 'img' : undefined}
@@ -134,9 +136,21 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
             <canvas ref={attach} aria-hidden="true" hidden={v.frame?.kind !== 'frame'} />
             {v.frame?.kind !== 'frame' ? <p>{c.empty.short}</p> : null}
           </div>
-          <p>{c.viewOnly.short}</p>
-          <details open className="tp-preview__settings">
+          <div className="tp-preview__facts">
+            <p>
+              {c.labels.actual.short}
+              {c.sources[v.actualSource].short}
+            </p>
+            <p>{previewReceiptAge(v.receiptAge)}</p>
+            <p>{previewSourceAge(v.sourceAge)}</p>
+          </div>
+          <p className="tp-preview__note">{c.viewOnly.short}</p>
+          <details className="tp-preview__settings">
             <summary>{c.settings.short}</summary>
+            <div className="tp-preview__note">
+              <p>{c.consent.short}</p>
+              <p>{c.autoStart.short}</p>
+            </div>
             <label htmlFor="preview-fps">
               <span id="preview-fps-label">{c.fps.short}</span>
               <select
@@ -201,6 +215,8 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
             </label>
             <button
               type="button"
+              className="tp-button"
+              data-tier="secondary"
               disabled={v.checking || v.running}
               aria-describedby={v.running ? 'preview-check-reason' : undefined}
               onClick={() => {

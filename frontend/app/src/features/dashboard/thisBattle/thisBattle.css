@@ -51,6 +51,10 @@
   grid-column: 5;
   grid-row: 1;
 }
+/* "Run" and "now" are two spans (label in name); one word space between them. */
+.tp-battle__action .tp-button {
+  column-gap: 0.3em;
+}
 .tp-battle__column-label {
   display: block;
   color: var(--tp-color-text-muted);
@@ -82,6 +86,11 @@
 }
 .tp-battle__result > details[open] {
   flex-basis: 100%;
+}
+/* The result word leads; its effect, age and source read as detail. */
+.tp-battle__last .tp-battle__result > span:not(:first-child) {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
 }
 .tp-battle__reason {
   grid-column: 2 / -1;

@@ -23,39 +23,48 @@
 @container (min-width: 840px) {
   .tp-control__slots {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(4, auto);
   }
 }
-/* Narrow: each slot's label and revocation share its first line (spec 2.2, 390 px). */
-@container (max-width: 839.98px) {
-  .tp-control__slots .tp-slot {
-    grid-template-rows: none;
-    grid-row: auto;
-    /* The label keeps its longest word (at most 40% wide); the action wraps beside it, never over it. */
-    grid-template-columns: fit-content(40%) minmax(0, 1fr);
-    grid-template-areas:
-      'label action'
-      'facts facts'
-      'meta meta';
-  }
-  .tp-control__slots .tp-slot__label {
-    grid-area: label;
-    align-self: center;
-  }
-  .tp-control__slots .tp-slot__action {
-    grid-area: action;
-    justify-content: flex-end;
-  }
-  .tp-control__slots .tp-slot__facts {
-    grid-area: facts;
-  }
-  .tp-control__slots .tp-slot__meta {
-    grid-area: meta;
-  }
-  /* A slot that failed to draw: its fallback takes a full row under the label (F4-01 at 390). */
-  .tp-control__slots .tp-slot > .tp-fallback {
-    grid-column: 1 / -1;
-  }
+/* Every width: each slot's label and revocation share its first line (spec 2.2), facts below. */
+.tp-control__slots .tp-slot {
+  grid-template-rows: none;
+  grid-row: auto;
+  align-content: start;
+  /* The label keeps its longest word (at most 40% wide); the action wraps beside it, never over it. */
+  grid-template-columns: fit-content(40%) minmax(0, 1fr);
+  grid-template-areas:
+    'label action'
+    'facts facts'
+    'meta meta';
+}
+/* Labels sit on the buttons' centre line, so all three slot headers align. */
+.tp-control__slots .tp-slot__label {
+  grid-area: label;
+  align-self: start;
+  display: flex;
+  align-items: center;
+  min-height: var(--tp-control-height);
+}
+.tp-control__slots .tp-slot__action {
+  grid-area: action;
+  justify-content: flex-end;
+}
+/* A Stop and its "ends automation" note end on the card's right edge. */
+.tp-control__slots .tp-slot__action .tp-automation-list > li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: end;
+}
+.tp-control__slots .tp-slot__facts {
+  grid-area: facts;
+}
+.tp-control__slots .tp-slot__meta {
+  grid-area: meta;
+}
+/* A slot that failed to draw: its fallback takes a full row under the label (F4-01 at 390). */
+.tp-control__slots .tp-slot > .tp-fallback {
+  grid-column: 1 / -1;
 }
 
 /* A list of rows inside a region or slot (routines, outcome lines, needs). */
@@ -131,6 +140,10 @@ p.tp-seen__extra {
   font-variant-numeric: tabular-nums;
 }
 .tp-source {
+  flex-basis: 100%;
+}
+/* The run, then its routines, then whether it changed: one fact per line at every width. */
+.tp-source__routines {
   flex-basis: 100%;
 }
 

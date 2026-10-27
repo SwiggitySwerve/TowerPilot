@@ -53,11 +53,19 @@
   gap: var(--tp-space-1);
 }
 
+/* A reason and its Why share one line; an open Why takes the full width. */
 .tp-start-next__reason,
 .tp-start-next__readiness {
-  display: grid;
-  gap: var(--tp-space-1);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-1) var(--tp-space-2);
   color: var(--tp-color-text-muted);
+}
+
+.tp-start-next__reason > details[open],
+.tp-start-next__readiness > details[open] {
+  flex-basis: 100%;
 }
 
 .tp-start-next a {

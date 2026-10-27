@@ -365,7 +365,7 @@
 .tp-button[aria-disabled='true'] {
   border-color: var(--tp-color-border);
   border-style: dashed;
-  background: var(--tp-color-surface-inner);
+  background: transparent;
   color: var(--tp-color-text-muted);
   cursor: not-allowed;
 }

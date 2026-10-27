@@ -7,14 +7,44 @@
 .tp-preview {
   min-width: 0;
   max-width: 100%;
-  padding: var(--tp-space-3);
-  border: 1px solid var(--tp-color-border-active);
-  border-radius: var(--tp-radius-control);
-  background: var(--tp-color-surface-raised);
+  padding: var(--tp-space-3) var(--tp-space-4);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-surface);
   overflow-wrap: anywhere;
 }
 .tp-preview h2 {
-  margin-top: 0;
+  margin: 0 0 var(--tp-space-2);
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.tp-preview [data-preview-verdict] {
+  display: block;
+  font-size: var(--tp-font-size-15);
+  color: var(--tp-color-text-strong);
+}
+.tp-preview[data-verdict='failed'] [data-preview-verdict],
+.tp-preview[data-verdict='stale'] [data-preview-verdict] {
+  color: var(--tp-color-warn);
+}
+.tp-preview__facts {
+  display: grid;
+  gap: 0;
+  margin-block: var(--tp-space-2);
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+  font-variant-numeric: tabular-nums;
+}
+.tp-preview .tp-preview__facts p {
+  margin: 0;
+}
+.tp-preview__note,
+.tp-preview__note p {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
 }
 .tp-preview p {
   margin: var(--tp-space-2) 0;
@@ -30,7 +60,6 @@
   min-height: 32px;
   min-width: 24px;
 }
-.tp-preview button,
 .tp-preview select {
   padding: 0.4rem 0.6rem;
   border: 1px solid var(--tp-color-border-active);
@@ -39,6 +68,28 @@
   color: var(--tp-color-text);
   font: inherit;
   max-width: 100%;
+}
+/* A disabled preview control looks like every other disabled button. */
+.tp-preview .tp-button:disabled {
+  border-color: var(--tp-color-border);
+  border-style: dashed;
+  background: transparent;
+}
+/* Title and Hide screen share the card's first line, like every region header. */
+.tp-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--tp-space-3);
+}
+.tp-preview > h2 {
+  margin: 0;
+}
+.tp-preview > .tp-button {
+  justify-self: end;
+}
+.tp-preview__content {
+  grid-column: 1 / -1;
 }
 .tp-preview button:disabled {
   color: var(--tp-color-text-muted);
@@ -59,6 +110,7 @@
   gap: var(--tp-space-1);
   margin-block: var(--tp-space-2);
 }
+/* The frame is drawn at the game's own shape: no letterbox bars around it. */
 .tp-preview__picture {
   display: grid;
   justify-items: center;
@@ -66,10 +118,12 @@
 .tp-preview canvas {
   display: block;
   width: auto;
-  height: 55svh;
+  height: 62svh;
   max-width: 100%;
-  max-height: 55svh;
+  max-height: 62svh;
   object-fit: contain;
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
 }
 .tp-preview__settings > div > span + span {
   margin-inline-start: 0.35rem;
@@ -77,10 +131,14 @@
 .tp-preview canvas[hidden] {
   display: none;
 }
+.tp-preview dt {
+  color: var(--tp-color-text-muted);
+}
 .tp-preview dl {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--tp-space-1);
+  font-size: var(--tp-font-size-13);
   font-variant-numeric: tabular-nums;
 }
 .tp-preview dd {
@@ -90,13 +148,47 @@
   display: inline-flex;
   align-items: center;
 }
+/* Below 1200 px the screen sits right after Control, ahead of the lists. */
+@media (max-width: 1199.98px) {
+  .tp-dashboard-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--tp-space-2);
+  }
+  .tp-dashboard-layout > .tp-dashboard {
+    display: contents;
+  }
+  /* Control, Needs you, then the screen, then the rest. */
+  .tp-dashboard > :not([data-region='control'], [data-region='needsYou']) {
+    order: 2;
+  }
+  .tp-preview {
+    order: 1;
+    width: 100%;
+  }
+  .tp-preview canvas {
+    height: 60svh;
+    max-height: 60svh;
+  }
+}
 @media (min-width: 1200px) {
   .tp-dashboard-layout {
-    grid-template-columns: minmax(0, 1100px) 300px;
+    grid-template-columns: minmax(0, 1fr) clamp(340px, 26vw, 440px);
+  }
+  .tp-dashboard-layout > .tp-dashboard {
+    max-width: none;
+  }
+  /* The screen stays in view while the controls scroll. */
+  .tp-preview {
+    position: sticky;
+    top: var(--tp-space-3);
+    max-height: calc(100svh - 2 * var(--tp-space-3));
+    overflow-y: auto;
   }
 }
 @media (max-width: 480px) {
-  .tp-preview button {
+  .tp-preview .tp-button {
     min-height: 44px;
     width: 100%;
   }
