@@ -39,6 +39,8 @@ type SetupOutcomeCode = keyof typeof setupLines;
 
 /** Needs-you wording and presentation formats (spec 6.4 and 7.3). */
 export const needsYou = {
+  /** Between an issue's two impacts (Start, collection). */
+  separator: entry(' · '),
   title: entry('Needs you'),
   countOpen: entry('('),
   countClose: entry(')'),

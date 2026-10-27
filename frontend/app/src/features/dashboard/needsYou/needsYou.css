@@ -36,17 +36,15 @@
 
 .tp-need__actions {
   align-items: center;
+  flex-basis: 100%;
 }
 
 /* What the issue means for Start and collection: detail, after the headline. */
 .tp-need__impact {
+  column-gap: 0;
+  white-space: pre-wrap;
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);
-}
-/* A thin rule between the two impacts; a line, not a drawn character. */
-.tp-need__impact > span + span {
-  padding-inline-start: var(--tp-space-2);
-  border-inline-start: 1px solid var(--tp-color-border-active);
 }
 
 .tp-need__actions > a {

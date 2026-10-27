@@ -19,7 +19,7 @@
 .tp-battle__columns {
   display: grid;
   grid-template-columns:
-    minmax(7rem, 0.8fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr)
+    minmax(7rem, 0.8fr) minmax(0, 0.6fr) minmax(0, 1fr) minmax(0, 1.6fr)
     minmax(5.5rem, auto);
   gap: var(--tp-space-2);
   align-items: baseline;
@@ -60,7 +60,7 @@
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-small);
 }
-@container (min-width: 600.02px) {
+@container (min-width: 900.02px) {
   /* Wide: the header row names the columns; each cell's own label stays for screen readers. */
   .tp-battle__routine .tp-battle__column-label {
     position: absolute;
@@ -137,14 +137,22 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
-@container (max-width: 600px) {
+/* Up to 900 px of region width: one card per routine, name and Run now on its first line. */
+@container (max-width: 900px) {
   .tp-battle__columns {
     display: none;
+  }
+  .tp-rows.tp-battle__routines {
+    gap: var(--tp-space-2);
   }
   .tp-battle__routine {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: start;
-    padding-block: var(--tp-space-2);
+    row-gap: var(--tp-space-2);
+    padding: var(--tp-space-2) var(--tp-space-3);
+    border: 1px solid var(--tp-color-border);
+    border-radius: var(--tp-radius-control);
+    background: var(--tp-color-surface-inner);
   }
   .tp-battle__name {
     grid-column: 1 / 3;
@@ -174,7 +182,7 @@
 }
 
 /* Words of one cell or of the header never run together ("On every 12 m", "up to date reported 2 s ago"). */
-.tp-battle__setting > span:not(.tp-battle__column-label),
+.tp-battle__setting > span:not(.tp-battle__column-label) + span,
 .tp-battle__header > span > span {
   margin-inline-start: 0.3em;
 }

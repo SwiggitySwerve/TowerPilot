@@ -769,9 +769,9 @@ function BattleContent() {
             ) : (
               <ServerValue value={vm.label} kind="name" />
             )}
-            {words.separator.short}
+            {words.listSeparator.short}
             {vm.wave === null ? words.waveUnknown.short : words.wave(vm.wave)}
-            {words.separator.short}
+            {words.listSeparator.short}
             {words.scope.short}
           </span>
           <span>

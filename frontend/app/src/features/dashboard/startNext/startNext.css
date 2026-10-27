@@ -9,6 +9,12 @@
   margin: 0;
 }
 
+/* What Start does first: a note, styled like the region's other reasons. */
+.tp-start-next > p {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+
 .tp-start-next__controls {
   display: flex;
   flex-wrap: wrap;

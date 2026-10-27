@@ -19,7 +19,7 @@ export const recent = {
   scheduleLink: entry('Schedule'),
   lastBattle: entry('Last battle:'),
   historyLink: entry('Run history'),
-  separator: entry(' - '),
+  separator: entry(' · '),
   lastKnown: entry('Last known:'),
   lastSeen: entry('last seen:'),
   winnerUnknown: entry('Block name not recorded'),

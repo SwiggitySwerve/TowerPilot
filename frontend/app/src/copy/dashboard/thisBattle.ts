@@ -9,6 +9,8 @@ export const thisBattle = {
   title: entry('This battle'),
   scope: entry('this battle only'),
   separator: entry(' - '),
+  /** Between the facts of one line (run, wave, scope); sentences keep `separator`. */
+  listSeparator: entry(' · '),
   runUnknown: entry('Run not reported'),
   waveUnknown: entry('wave not reported'),
   columns: {

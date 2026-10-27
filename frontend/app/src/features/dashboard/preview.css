@@ -90,6 +90,23 @@
 }
 .tp-preview__content {
   grid-column: 1 / -1;
+  display: grid;
+  gap: var(--tp-space-2);
+  margin-top: var(--tp-space-2);
+}
+.tp-preview__side {
+  min-width: 0;
+}
+.tp-preview__side > :first-child {
+  margin-top: 0;
+}
+/* Between 700 and 1200 px the frame stands left of its status and controls. */
+@media (min-width: 700px) and (max-width: 1199.98px) {
+  .tp-preview__content {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--tp-space-4);
+    align-items: start;
+  }
 }
 .tp-preview button:disabled {
   color: var(--tp-color-text-muted);

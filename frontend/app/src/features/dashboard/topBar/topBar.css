@@ -93,6 +93,12 @@
   margin: var(--tp-space-1) 0;
 }
 
+@media (max-width: 1199.98px) {
+  .tp-topbar-identity {
+    justify-content: flex-start;
+  }
+}
+
 @media (max-width: 600px) {
   .tp-topbar__row.tp-topbar-content {
     grid-template-columns: auto minmax(0, 1fr);
