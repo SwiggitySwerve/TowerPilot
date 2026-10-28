@@ -142,10 +142,10 @@ describe('Automation decisions', () => {
   });
 
   it.each([
-    ['collecting', 9396, 0, 'wave 9,396'],
-    ['worker_unverified', 9396, 0, 'last reported wave 9,396, 0 s ago'],
+    ['collecting', 9396, 0, 'Wave 9,396'],
+    ['worker_unverified', 9396, 0, 'Last reported wave 9,396, 0 s ago'],
     ['collecting', null, 0, 'Wave not reported yet'],
-    ['collecting', 9396, 30, 'last reported wave 9,396, 30 s ago'],
+    ['collecting', 9396, 30, 'Last reported wave 9,396, 30 s ago'],
   ])('F-009: %s wave %s age %s reads %s', (name, wave, age, line) => {
     const harvest = sampleRecord(`status.${name}`);
     const body = object(dashboardBody('battles_active.runtime_ad_orbit_shopping'));
@@ -206,8 +206,8 @@ describe('Automation decisions', () => {
   it('F-010: duplicate purposes keep distinct start times, PIDs, server command lines and Details open for five polls', () => {
     const state = status(sample('status.off'), processes('processes_two_rows_same_runner'));
     const h = draw(state);
-    expect(h.view.getByText(/started .*, PID 4511/)).toBeVisible();
-    expect(h.view.getByText(/started .*, PID 4512/)).toBeVisible();
+    expect(h.view.getByText(/Started .*, PID 4511/)).toBeVisible();
+    expect(h.view.getByText(/Started .*, PID 4512/)).toBeVisible();
     const details = h.view.getAllByText('Details')[0]?.closest('details');
     expect(details).not.toBeNull();
     if (details === null || details === undefined) throw new Error('Missing Details');
@@ -231,8 +231,8 @@ describe('Automation decisions', () => {
     );
     expect(h.view.getAllByRole('button', { name: /Stop process/ })).toHaveLength(2);
     const stops = h.view.getAllByRole('button', { name: /Stop process/ });
-    expect(stops[0]).toHaveAccessibleName(/^Stop process Run started .*, PID 4511$/);
-    expect(stops[1]).toHaveAccessibleName(/^Stop process Run started .*, PID 4512$/);
+    expect(stops[0]).toHaveAccessibleName(/^Stop process Run Started .*, PID 4511$/);
+    expect(stops[1]).toHaveAccessibleName(/^Stop process Run Started .*, PID 4512$/);
   });
 
   it('F-010: missing start time is explicit and malformed cmdline leaves Stop usable', () => {
@@ -247,7 +247,7 @@ describe('Automation decisions', () => {
       },
     ];
     const h = draw(status(sample('status.off'), rows));
-    expect(h.view.getByText('start time not recorded, PID 42')).toBeVisible();
+    expect(h.view.getByText('Start time not recorded, PID 42')).toBeVisible();
     fireEvent.click(h.view.getByText('Details'));
     expect(h.view.getByText('Details unavailable')).toBeVisible();
     fireEvent.click(h.view.getByRole('button', { name: /^Stop Gem collector/ }));

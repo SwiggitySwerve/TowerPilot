@@ -765,7 +765,7 @@ test('PV3 PV4 PV5 PV7 PV8 C-02 recorded Low receives a portrait picture with rea
     region(page).getByText('Displayed source: MuMu native', { exact: true }),
   ).toBeVisible();
   await expect(region(page).getByText('Source age unknown', { exact: true })).toBeVisible();
-  await expect(region(page).getByText(/^Frame received \d+\.\d s ago$/)).toBeVisible();
+  await expect(region(page).getByText(/^Frame received \d+ s ago$/)).toBeVisible();
   const bounds = await region(page).locator('canvas').boundingBox();
   expect(bounds).not.toBeNull();
   if (bounds !== null) {

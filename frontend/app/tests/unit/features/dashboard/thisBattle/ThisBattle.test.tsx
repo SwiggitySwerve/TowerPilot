@@ -54,7 +54,7 @@ function withIntent(s: DashboardState, patch: Parameters<typeof intent>[1] = {})
 }
 
 it.each([
-  [runtime, 'Running', 'up to date'],
+  [runtime, 'Running', 'Up to date'],
   ['prepared', 'Waiting', 'prepared; waiting to observe the battle'],
   ['stale_report', 'Unknown', 'old report, 3 m ago'],
   [
@@ -163,7 +163,7 @@ it('F-055: a paused window names its time and the blocker reads as its word othe
   );
   expect(row(h, 'Ad gems').getByText(/^Paused until /)).toBeVisible();
   h.setState(state('waiting_for_game_state_blocker'));
-  expect(h.view.getAllByText('waiting for the game screen').length).toBeGreaterThan(0);
+  expect(h.view.getAllByText('Waiting for the game screen').length).toBeGreaterThan(0);
   expect(h.view.queryByText('waiting_for_game_state')).toBeNull();
   await check(h);
 });
