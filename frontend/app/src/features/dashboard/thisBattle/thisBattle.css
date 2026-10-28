@@ -112,6 +112,30 @@
   flex-wrap: wrap;
   gap: var(--tp-space-2);
 }
+/* Try once: its caution as a caption, then one equal tile per target. */
+.tp-shopping-try {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--tp-space-2);
+  margin-block: var(--tp-space-2) 0;
+}
+.tp-shopping-try > p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+.tp-shopping-try > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tp-space-2);
+  padding: var(--tp-space-1) var(--tp-space-1) var(--tp-space-1) var(--tp-space-3);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface-inner);
+}
 .tp-battle__queue-entry,
 .tp-shopping-try__action {
   display: flex;
@@ -183,7 +207,7 @@
   .tp-battle__reason {
     grid-column: 1 / -1;
   }
-  .tp-battle__last .tp-battle__result > span:first-child {
+  .tp-battle__last .tp-battle__result > span:first-child:not(.tp-chip) {
     flex-basis: 100%;
   }
 }
@@ -199,9 +223,14 @@
 }
 
 /* Words of one cell or of the header never run together ("On every 12 m", "up to date reported 2 s ago"). */
-.tp-battle__setting > span:not(.tp-battle__column-label) + span,
+.tp-battle__setting > span:not(.tp-battle__column-label),
 .tp-battle__header > span > span {
   margin-inline-start: 0.3em;
+}
+
+/* A value right after its (screen-reader) column label starts flush with the label. */
+.tp-battle__column-label + span {
+  margin-inline-start: 0;
 }
 
 /* A2-7 AC1: an action's Settings, one "label value unit" line each; long labels wrap. */

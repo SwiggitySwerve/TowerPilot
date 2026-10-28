@@ -140,7 +140,7 @@ it('AC3 separates the shared sentence from an unrecorded descriptor Run now reas
   expect(
     floating.getByRole('button', { name: 'Run now Floating gems' }),
   ).toHaveAccessibleDescription(
-    /^Run now is not offered for this action - needs a calibrated offer button/u,
+    /^Run now is not offered for this action — needs a calibrated offer button/u,
   );
   expect(floating.getByText('needs a calibrated offer button')).toBeVisible();
   await check(h);

@@ -14,11 +14,13 @@ import './startNext.css';
 
 const words = copy.dashboard.startNext;
 
+type Reason = StartNextVM['reasons'][number];
+
 function readinessText(line: StartNextVM['readiness']['line'], count: number): CopyText {
   return line === 'images_missing' ? words.imagesMissing(count) : words.readiness[line].short;
 }
 
-function reasonText(reason: StartNextVM['reasons'][number]): CopyText {
+function reasonText(reason: Reason): CopyText {
   if (
     (reason.code === 'guard_blocks' || reason.code === 'guard_unconfirmed') &&
     reason.guardCode === 'setup_battle_unresolved'
@@ -42,6 +44,39 @@ function reasonText(reason: StartNextVM['reasons'][number]): CopyText {
   }
 }
 
+/** Both actions blocked with the same words and details: that reason, said once, not twice. */
+function sharedReason(reasons: StartNextVM['reasons']): Reason | null {
+  const [first, second] = reasons;
+  return reasons.length === 2 &&
+    first !== undefined &&
+    second !== undefined &&
+    reasonText(first) === reasonText(second) &&
+    first.guardCode === second.guardCode &&
+    first.message === second.message
+    ? first
+    : null;
+}
+
+/** One reason line that describes both buttons. */
+function BothReason({ reason, id }: { readonly reason: Reason; readonly id: string }) {
+  return (
+    <div className="tp-start-next__reason">
+      <p id={id} data-guard-code={reason.guardCode ?? reason.code}>
+        <span className="tp-start-next__label">{words.bothReason.short}</span>
+        {words.space}
+        <Chip state="blocked" />
+        {words.space}
+        <span>{reasonText(reason)}</span>
+      </p>
+      {reason.message === null ? null : (
+        <Disclosure label={copy.common.why.short} focusKey="startNext:start:why">
+          <ServerValue value={reason.message} kind="message" />
+        </Disclosure>
+      )}
+    </div>
+  );
+}
+
 function ReadinessDetails({ details }: { readonly details: StartNextVM['readiness']['details'] }) {
   return (
     <ul>
@@ -63,7 +98,8 @@ function StartNextBody() {
   const { commands } = useDashboard();
   const id = useId();
   const startReasonId = `${id}-start-reason`;
-  const collectReasonId = `${id}-collect-reason`;
+  const shared = sharedReason(vm.reasons);
+  const collectReasonId = shared === null ? `${id}-collect-reason` : startReasonId;
   const startPermitted = vm.start.enabled;
   return (
     <RegionBody>
@@ -112,27 +148,34 @@ function StartNextBody() {
             }}
           />
         </div>
-        {vm.reasons.map((reason) => (
-          <div key={reason.action} className="tp-start-next__reason">
-            <p
-              id={reason.action === 'start' ? startReasonId : collectReasonId}
-              data-guard-code={reason.guardCode ?? reason.code}
-            >
-              <span>
-                {reason.action === 'start' ? words.startReason.short : words.collectReason.short}
-              </span>
-              {words.space}
-              <Chip state="blocked" />
-              {words.space}
-              <span>{reasonText(reason)}</span>
-            </p>
-            {reason.message === null ? null : (
-              <Disclosure label={copy.common.why.short} focusKey={`startNext:${reason.action}:why`}>
-                <ServerValue value={reason.message} kind="message" />
-              </Disclosure>
-            )}
-          </div>
-        ))}
+        {shared !== null ? (
+          <BothReason reason={shared} id={startReasonId} />
+        ) : (
+          vm.reasons.map((reason) => (
+            <div key={reason.action} className="tp-start-next__reason">
+              <p
+                id={reason.action === 'start' ? startReasonId : collectReasonId}
+                data-guard-code={reason.guardCode ?? reason.code}
+              >
+                <span className="tp-start-next__label">
+                  {reason.action === 'start' ? words.startReason.short : words.collectReason.short}
+                </span>
+                {words.space}
+                <Chip state="blocked" />
+                {words.space}
+                <span>{reasonText(reason)}</span>
+              </p>
+              {reason.message === null ? null : (
+                <Disclosure
+                  label={copy.common.why.short}
+                  focusKey={`startNext:${reason.action}:why`}
+                >
+                  <ServerValue value={reason.message} kind="message" />
+                </Disclosure>
+              )}
+            </div>
+          ))
+        )}
         <div className="tp-start-next__readiness">
           {/* "Ready" only while Start is permitted: never beside a Blocked line. */}
           {vm.readiness.line === 'ready' && !startPermitted ? null : (
@@ -140,6 +183,9 @@ function StartNextBody() {
               {vm.readiness.line === 'readiness_check_failed' ||
               vm.readiness.line === 'readiness_unknown' ? (
                 <Chip state="unknown" />
+              ) : null}
+              {vm.readiness.line === 'ready' ? (
+                <span className="tp-start-next__label">{words.startReason.short}</span>
               ) : null}
               <span>{readinessText(vm.readiness.line, vm.readiness.imageCount)}</span>
             </p>

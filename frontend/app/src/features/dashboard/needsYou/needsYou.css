@@ -12,8 +12,15 @@
 
 .tp-need__count {
   display: inline-flex;
-  color: var(--tp-color-text-muted);
+  align-items: center;
+  min-width: 1.4rem;
+  justify-content: center;
+  padding: 0 0.4rem;
+  border-radius: var(--tp-radius-pill);
+  background: var(--tp-color-surface-active);
+  color: var(--tp-color-text-strong);
   font-size: var(--tp-font-size-12);
+  font-weight: 700;
 }
 
 /* F4-02: an issue and its actions share one line when they fit (spec 2.2 sketch); they wrap when not. */

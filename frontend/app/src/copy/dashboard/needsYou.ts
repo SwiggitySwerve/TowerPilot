@@ -62,7 +62,7 @@ export const needsYou = {
       'Retry to check live status; review setup result for setup progress.',
     ),
     equipment_not_restored: entry(
-      'Equipment not restored yet - other automation is on hold',
+      'Equipment not restored yet — other automation is on hold',
       'Review setup result before starting other automation.',
     ),
     ...setupLines,
@@ -124,7 +124,7 @@ export const needsYou = {
   images: (count: number) => made(`Other runs need ${String(count)} screen images`),
   dated: (code: SetupOutcomeCode, at: number | null) =>
     made(
-      `${setupLines[code].short} - ${at === null ? 'time not recorded' : new Date(at * 1000).toLocaleString()}`,
+      `${setupLines[code].short} — ${at === null ? 'time not recorded' : new Date(at * 1000).toLocaleString()}`,
     ),
   checked: (source: SourceCode, outcome: ReadOutcomeCode, age: number | null) =>
     made(
@@ -138,6 +138,6 @@ export const needsYou = {
     }[],
   ) =>
     made(
-      `No unresolved issues reported - checked ${reads.map((read) => `${read.ageSec === null ? 'not checked yet' : ageAgo(read.ageSec)} (${sources[read.source].short}: ${readOutcomes[read.outcome].short})`).join('; ')}`,
+      `No unresolved issues reported — checked ${reads.map((read) => `${read.ageSec === null ? 'not checked yet' : ageAgo(read.ageSec)} (${sources[read.source].short}: ${readOutcomes[read.outcome].short})`).join('; ')}`,
     ),
 } as const;

@@ -7,6 +7,8 @@
 .tp-chip {
   --tp-chip-tone: var(--tp-color-quiet);
   display: inline-flex;
+  flex: none;
+  inline-size: fit-content;
   align-items: center;
   gap: 0.3rem;
   padding: 0.05rem 0.5rem;
@@ -58,7 +60,7 @@
   gap: 0.3rem;
   padding: 0.05rem 0.45rem;
   border: 1px solid var(--tp-color-border-active);
-  border-radius: 3px;
+  border-radius: var(--tp-radius-pill);
   background: var(--tp-color-surface-strong);
   font-size: var(--tp-font-size-12);
   white-space: nowrap;
@@ -367,10 +369,9 @@
  * its reason is a visible line.
  */
 .tp-button[aria-disabled='true'] {
-  border-color: var(--tp-color-border);
+  border-color: transparent;
   border-style: solid;
-  background: transparent;
+  background: var(--tp-color-surface-inner);
   color: var(--tp-color-text-muted);
-  opacity: 0.7;
   cursor: not-allowed;
 }

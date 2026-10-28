@@ -58,7 +58,7 @@ for (const width of [1360, 1054]) {
     await openScenario(page, 'collecting', { width });
     const battle = page.locator('[data-region="thisBattle"]');
     const empty = battle.getByText(
-      'No tracked battle - Run now needs automation watching a battle',
+      'No tracked battle — Run now needs automation watching a battle',
     );
     await expect(empty).toBeVisible();
     const region = await battle.boundingBox();

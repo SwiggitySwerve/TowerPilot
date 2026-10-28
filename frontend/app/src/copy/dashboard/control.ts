@@ -124,7 +124,7 @@ export const control = {
       ),
     /** IN-02 to IN-09: why Turn input off is offered (S-006, INV-2). */
     offReasons: {
-      taps_allowed: entry('Automation may tap this emulator.'),
+      taps_allowed: entry('Automation may tap this emulator'),
       setting_unknown: entry("The input setting can't be read, so taps may be allowed."),
       enable_unresolved: entry('An earlier turn-on has no answer.'),
       harvest_not_reported: entry("This server doesn't report whether automation input is revoked"),

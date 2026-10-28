@@ -24,14 +24,14 @@
 
   /* Status tones (dashboard.css) */
   --tp-color-ok: #3ccf6a;
-  --tp-color-warn: #f3cf5c;
-  --tp-color-bad: #ff8f86;
+  --tp-color-warn: #e6e36b;
+  --tp-color-bad: #ff7f9e;
   --tp-color-busy: #7cbaff;
   --tp-color-quiet: #a0a5af;
 
   /* Spec 3.1: Unknown (violet, dashed) and Blocked (orange) */
-  --tp-color-unknown: #c9b3ff;
-  --tp-color-blocked: #ffb067;
+  --tp-color-unknown: #a385ff;
+  --tp-color-blocked: #ff9248;
 
   /* Actions */
   --tp-color-primary: #2969b5;

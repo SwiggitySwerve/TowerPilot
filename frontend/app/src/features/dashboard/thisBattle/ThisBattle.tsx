@@ -486,6 +486,7 @@ function ShoppingTryOnceAction({
       <button
         type="button"
         className="tp-button"
+        data-tier="secondary"
         aria-labelledby={`${id}-label ${id}-target`}
         aria-disabled={item.button.enabled ? undefined : true}
         aria-describedby={describedBy(item.button.enabled, sharedReason, `${id}-reason`)}

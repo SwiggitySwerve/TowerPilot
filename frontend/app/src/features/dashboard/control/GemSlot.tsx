@@ -152,10 +152,15 @@ function SourceLine({ vm, id }: { readonly vm: GemSlotVM; readonly id: string })
   const source = vm.source;
   if (source.value === null) return null;
   const invalid = vm.cause?.kind === 'source_invalid' && source.isServerSource;
+  // Beside the picker the run is already on screen: the line keeps it for the
+  // controls it describes but does not draw it twice.
+  const pickerShown = source.pickerShown && source.choices.length > 0;
   return (
     <p className="tp-source" id={id}>
-      <span>{text.sourcePicker.short}</span>
-      {source.label === null ? null : <ServerValue kind="name" value={source.label} />}
+      <span className={pickerShown ? 'tp-visually-hidden' : 'tp-source__run'}>
+        <span>{text.sourcePicker.short}</span>
+        {source.label === null ? null : <ServerValue kind="name" value={source.label} />}
+      </span>
       <span className="tp-source__routines">
         {invalid
           ? text.sourceInvalid.short

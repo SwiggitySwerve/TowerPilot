@@ -71,9 +71,8 @@
 }
 /* A disabled preview control looks like every other disabled button. */
 .tp-preview .tp-button:disabled {
-  border-color: var(--tp-color-border);
-  background: transparent;
-  opacity: 0.7;
+  border-color: transparent;
+  background: var(--tp-color-surface-inner);
 }
 /* Title and Hide screen share the card's first line, like every region header. */
 /* Title, verdict and its Why on one wrapping line, Hide screen at its end, like a region header. */
@@ -132,7 +131,6 @@
 .tp-preview__meta > :first-child {
   margin-top: 0;
 }
-/* Between 700 and 1200 px the frame stands left of its controls and facts. */
 .tp-preview button:disabled {
   color: var(--tp-color-text-muted);
   cursor: not-allowed;
@@ -197,7 +195,6 @@
   display: inline-flex;
   align-items: center;
 }
-/* Below 1200 px the screen sits right after Control, ahead of the lists. */
 .tp-dashboard-side {
   display: flex;
   flex-direction: column;
@@ -205,23 +202,20 @@
   min-width: 0;
 }
 /*
- * Below 1200 px the two columns dissolve into one grid (see the two blocks below).
- * The screen is drawn after Needs you while the DOM keeps it after Start next; it
- * holds view-only controls, so tab order stays Control, the lists, then the screen.
+ * Below 1200 px the two columns dissolve into one column. The screen is drawn
+ * after Needs you while the DOM keeps it last; it holds view-only controls, so
+ * tab order stays Control, the lists, then the screen.
  */
 @media (max-width: 1199.98px) {
-  .tp-dashboard-layout > .tp-dashboard,
-  .tp-dashboard-layout > .tp-dashboard-side {
-    display: contents;
-  }
-}
-/* Below 700 px: Control, Needs you, the screen, then the rest, in one column. */
-@media (max-width: 699.98px) {
   .tp-dashboard-layout {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: var(--tp-space-2);
+  }
+  .tp-dashboard-layout > .tp-dashboard,
+  .tp-dashboard-layout > .tp-dashboard-side {
+    display: contents;
   }
   .tp-dashboard > :not([data-region='control'], [data-region='needsYou']) {
     order: 2;
@@ -230,65 +224,48 @@
     order: 1;
     width: 100%;
   }
-  .tp-dashboard-side > [data-region='recent'] {
-    order: 3;
-  }
+}
+/* Below 700 px the frame stands above its controls. */
+@media (max-width: 699.98px) {
   .tp-preview canvas {
     height: 60svh;
     max-height: 60svh;
   }
 }
-/* 700 to 1200 px: Control and the screen side by side at the top; the lists span below. */
+/* 700 to 1200 px: the frame on the left, its status, facts and settings beside it. */
 @media (min-width: 700px) and (max-width: 1199.98px) {
-  .tp-dashboard-layout {
-    grid-template-columns: minmax(0, 1fr) 18rem;
-    gap: var(--tp-space-2);
-  }
-  /* Control and Needs you on the left, the screen beside both; the second row absorbs any difference. */
-  .tp-dashboard-layout {
-    grid-template-rows: auto 1fr;
-  }
-  .tp-dashboard > [data-region='control'] {
-    grid-column: 1;
-    grid-row: 1;
-  }
-  .tp-dashboard > [data-region='needsYou'] {
-    grid-column: 1;
-    grid-row: 2;
-    align-self: start;
-  }
-  .tp-preview {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    align-self: start;
-  }
-  /* The narrow screen column: title and Hide screen first, the verdict under them. */
-  .tp-preview > .tp-button {
-    margin-inline-start: auto;
-  }
-  .tp-preview__verdict {
-    order: 1;
-    flex-basis: 100%;
-    margin-inline-start: 0;
-  }
   .tp-preview__content {
-    order: 2;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'picture status'
+      'picture meta';
+    column-gap: var(--tp-space-4);
+    align-items: start;
   }
-  .tp-dashboard > :not([data-region='control'], [data-region='needsYou']),
-  .tp-dashboard-side > [data-region='recent'] {
-    grid-column: 1 / -1;
+  .tp-preview__picture {
+    justify-items: start;
   }
   .tp-preview canvas {
-    height: 50svh;
-    max-height: 50svh;
+    height: 45svh;
+    max-height: 45svh;
   }
 }
+/* From 1200 px the screen holds its own column and stays in view while the lists scroll. */
 @media (min-width: 1200px) {
   .tp-dashboard-layout {
     grid-template-columns: minmax(0, 1fr) clamp(340px, 26vw, 440px);
   }
   .tp-dashboard-layout > .tp-dashboard {
     max-width: none;
+  }
+  .tp-dashboard-side {
+    position: sticky;
+    top: var(--tp-space-3);
+  }
+  .tp-preview canvas {
+    height: min(70svh, calc(100svh - 14rem));
+    max-height: min(70svh, calc(100svh - 14rem));
   }
 }
 @media (max-width: 480px) {

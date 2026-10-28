@@ -177,6 +177,10 @@ p.tp-seen__extra {
 .tp-source {
   flex-basis: 100%;
 }
+/* Beside no picker, the run's words take the line's own spacing. */
+.tp-source__run {
+  display: contents;
+}
 /* The run, then its routines, then whether it changed: one fact per line at every width. */
 .tp-source__routines {
   flex-basis: 100%;
