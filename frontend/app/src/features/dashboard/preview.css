@@ -71,7 +71,7 @@
 }
 /* A disabled preview control looks like every other disabled button. */
 .tp-preview .tp-button:disabled {
-  border-color: transparent;
+  border-color: var(--tp-color-border);
   background: var(--tp-color-surface-inner);
 }
 /* Title and Hide screen share the card's first line, like every region header. */
@@ -202,9 +202,9 @@
   min-width: 0;
 }
 /*
- * Below 1200 px the two columns dissolve into one column. The screen is drawn
- * after Needs you while the DOM keeps it last; it holds view-only controls, so
- * tab order stays Control, the lists, then the screen.
+ * Below 1200 px the two columns dissolve into one column: Control, Needs you,
+ * This battle, then the screen, then the rest. The DOM keeps the screen last; it
+ * holds view-only controls, so tab order stays Control, the lists, then the screen.
  */
 @media (max-width: 1199.98px) {
   .tp-dashboard-layout {
@@ -217,11 +217,15 @@
   .tp-dashboard-layout > .tp-dashboard-side {
     display: contents;
   }
-  .tp-dashboard > :not([data-region='control'], [data-region='needsYou']) {
-    order: 2;
+  .tp-dashboard > [data-region='thisBattle'] {
+    order: 1;
+  }
+  .tp-dashboard
+    > :not([data-region='control'], [data-region='needsYou'], [data-region='thisBattle']) {
+    order: 3;
   }
   .tp-preview {
-    order: 1;
+    order: 2;
     width: 100%;
   }
 }
@@ -247,8 +251,8 @@
     justify-items: start;
   }
   .tp-preview canvas {
-    height: 45svh;
-    max-height: 45svh;
+    height: clamp(260px, 34svh, 360px);
+    max-height: clamp(260px, 34svh, 360px);
   }
 }
 /* From 1200 px the screen holds its own column and stays in view while the lists scroll. */

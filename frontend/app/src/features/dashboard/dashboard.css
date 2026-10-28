@@ -31,6 +31,10 @@
   .tp-control__slots .tp-slot[data-slot='gem'] {
     grid-column: 2;
     grid-row: 1 / span 2;
+    grid-template-rows: auto auto 1fr;
+  }
+  .tp-control__slots .tp-slot[data-slot='gem'] .tp-slot__meta {
+    align-self: end;
   }
 }
 /* Every width: each slot's label and revocation share its first line (spec 2.2), facts below. */
@@ -61,6 +65,11 @@
 .tp-control__slots .tp-slot__action {
   grid-area: action;
   justify-content: flex-end;
+}
+/* A disabled action's reason takes its own line under the controls, at the card's right edge. */
+.tp-control__slots .tp-slot__action > .tp-reason {
+  flex-basis: 100%;
+  text-align: end;
 }
 /* Stop ends the automation: the page's one solid red action; the other revocations stay outlined. */
 .tp-control__slots

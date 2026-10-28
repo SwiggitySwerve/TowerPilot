@@ -327,9 +327,9 @@ function NeedsYouContent() {
   return (
     <>
       <span className="tp-need__count">
-        <span>{words.countOpen.short}</span>
+        <span className="tp-visually-hidden">{words.countOpen.short}</span>
         <RegionCount value={vm.count} />
-        <span>{words.countClose.short}</span>
+        <span className="tp-visually-hidden">{words.countClose.short}</span>
       </span>
       <RegionEnd>
         <a href="#runtime">{words.runtime.short}</a>

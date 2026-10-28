@@ -125,7 +125,7 @@
 .tp-reason {
   display: block;
   color: var(--tp-color-text-muted);
-  font-size: var(--tp-font-size-12);
+  font-size: var(--tp-font-size-13);
 }
 .tp-reason p {
   margin: 0;
@@ -369,7 +369,7 @@
  * its reason is a visible line.
  */
 .tp-button[aria-disabled='true'] {
-  border-color: transparent;
+  border-color: var(--tp-color-border);
   border-style: solid;
   background: var(--tp-color-surface-inner);
   color: var(--tp-color-text-muted);

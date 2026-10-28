@@ -126,6 +126,7 @@ function OverlayLine({ vm }: { readonly vm: GemSlotVM }) {
     <p className="tp-seen__extra" data-overlay={overlay.applied ? 'applied' : 'pending'}>
       <span>{text.overlay.lead.short}</span>
       <span>{text.overlay.routine(target('ad_gems'), target('floating_gems'))}</span>
+      <span aria-hidden="true">{text.overlay.separator}</span>
       <span>{(overlay.applied ? text.overlay.applied : text.overlay.pending).short}</span>
       {liveChoice ? <span>{text.overlay.liveChoice.short}</span> : null}
       {unsupported ? <span>{text.overlay.unsupported.short}</span> : null}

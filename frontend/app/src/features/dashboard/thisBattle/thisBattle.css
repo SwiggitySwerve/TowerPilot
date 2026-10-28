@@ -116,7 +116,7 @@
 .tp-shopping-try {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
   gap: var(--tp-space-2);
   margin-block: var(--tp-space-2) 0;
 }
@@ -132,9 +132,19 @@
   justify-content: space-between;
   gap: var(--tp-space-2);
   padding: var(--tp-space-1) var(--tp-space-1) var(--tp-space-1) var(--tp-space-3);
-  border: 1px solid var(--tp-color-border);
   border-radius: var(--tp-radius-control);
-  background: var(--tp-color-surface-inner);
+  background: var(--tp-color-surface-strong);
+}
+/* Below a four-across region the targets pair up, never leaving one alone on a row. */
+@container (max-width: 820px) {
+  .tp-shopping-try {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container (max-width: 380px) {
+  .tp-shopping-try {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .tp-battle__queue-entry,
 .tp-shopping-try__action {

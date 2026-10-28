@@ -113,7 +113,7 @@ function Result({ row, queue }: { readonly row: RoutineRowVM; readonly queue: Qu
       <Decision value={row.result.chip} />
       {row.resultAgeSec === null ? null : (
         <span>
-          {words.separator.short}
+          {words.listSeparator.short}
           {ageAgo(row.resultAgeSec)}
         </span>
       )}

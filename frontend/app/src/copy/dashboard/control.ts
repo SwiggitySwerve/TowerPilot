@@ -300,6 +300,8 @@ export const control = {
     /** GM-24, GM-25, F-030: this battle's gem toggles (overlay facts, restated as reported). */
     overlay: {
       lead: entry('This battle:'),
+      /** Between the routine targets and whether they are applied yet. */
+      separator: made('·'),
       applied: entry('applied'),
       pending: entry('pending'),
       liveChoice: entry('your choice for this battle wins'),
