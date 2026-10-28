@@ -73,36 +73,36 @@ export const control = {
     /** Spec 3.6.3: the Seen now lines, by core's line code. */
     lines: {
       cant_read_input_setting: entry(
-        "can't read the input setting",
+        "Can't read the input setting",
         'The last config read failed or did not report whether automation may tap this emulator.',
       ),
       earlier_turn_on_no_answer: entry(
-        'an earlier turn-on has no answer; taps may be allowed',
+        'An earlier turn-on has no answer; taps may be allowed',
         'A request to allow game input was sent and its answer never arrived, so taps may be allowed now.',
       ),
-      turn_off_not_confirmed: entry('turn-off not confirmed'),
+      turn_off_not_confirmed: entry('Turn-off not confirmed'),
       automation_input_stopped: entry(
-        'automation input stopped',
+        'Automation input stopped',
         'Your turn-off answer said input stopped, and a later fresh read confirmed it.',
       ),
       turned_off_not_yet_confirmed: entry(
-        'turned off; not yet confirmed by a fresh read',
+        'Turned off; not yet confirmed by a fresh read',
         'The turn-off answer says input stopped. A status read that started after it has not confirmed it yet.',
       ),
       no_automation_using_input: entry(
-        'no automation is using game input',
+        'No automation is using game input',
         'A fresh, complete read lists no automation and no holder of the emulator.',
       ),
       cant_tell_whats_running: entry(
-        "can't tell what's running",
+        "Can't tell what's running",
         'The status read failed, is stale or did not report its ownership completely.',
       ),
       taps_may_be_allowed: entry(
-        'taps may still be allowed',
+        'Taps may still be allowed',
         'No backend field reports input actually being delivered, so this never says Running.',
       ),
       input_revocation_not_confirmed: entry(
-        'input revocation not confirmed',
+        'Input revocation not confirmed',
         'The Setting reads Off, but no read confirms that automation input is revoked.',
       ),
     },
@@ -152,40 +152,40 @@ export const control = {
     /** Spec 3.6.2: the Seen now lines, by core's line code. */
     lines: {
       harvest_unreadable: entry(
-        "harvesting state can't be read",
+        "Harvesting state can't be read",
         'The status read did not carry a readable harvesting record.',
       ),
-      collecting_gems: entry('collecting gems'),
+      collecting_gems: entry('Collecting gems'),
       claims_failing: entry(
-        'ad gem claims failing',
+        'Ad gem claims failing',
         'The collector is running, but its recent ad gem claims were not confirmed.',
       ),
-      started_by_collect_only: entry('started by Collect gems only'),
-      gem_routines_off: entry('gem routines off for this battle'),
-      stop_not_confirmed: entry('stop not confirmed'),
-      starting: entry('starting'),
+      started_by_collect_only: entry('Started by Collect gems only'),
+      gem_routines_off: entry('Gem routines off for this battle'),
+      stop_not_confirmed: entry('Stop not confirmed'),
+      starting: entry('Starting'),
       waiting_to_track_battle: entry(
-        'waiting to track a battle',
+        'Waiting to track a battle',
         'The collector has no battle it observes; the game may still be in one.',
       ),
       collector_state_unknown: entry(
-        'collector state unknown',
+        'Collector state unknown',
         'The collector is recorded, but its report is stale, invalid or its worker is not confirmed alive.',
       ),
-      run_collects_gems: entry('the run collects gems itself'),
+      run_collects_gems: entry('The run collects gems itself'),
       run_not_collecting: entry(
-        "harvesting waits while the run uses the emulator; the run isn't collecting gems",
+        "Harvesting waits while the run uses the emulator; the run isn't collecting gems",
       ),
-      another_process_holds: entry('harvesting waits: another process holds the emulator'),
-      another_install_holds: entry('harvesting waits: another install holds the emulator'),
-      run_gems_unknown: entry("can't tell whether the run collects gems"),
-      handing_over: entry('handing over to your run'),
-      collector_start_due: entry('collector start is due'),
+      another_process_holds: entry('Harvesting waits: another process holds the emulator'),
+      another_install_holds: entry('Harvesting waits: another install holds the emulator'),
+      run_gems_unknown: entry("Can't tell whether the run collects gems"),
+      handing_over: entry('Handing over to your run'),
+      collector_start_due: entry('Collector start is due'),
       nothing_starts_collector: entry('Nothing here will start the collector'),
-      harvest_scheduler_failing: entry('the harvest scheduler is failing'),
-      retry_time_not_reported: entry('retry time not reported'),
-      no_gem_collection: entry('no gem collection running'),
-      state_unknown: entry("can't tell what harvesting is doing"),
+      harvest_scheduler_failing: entry('The harvest scheduler is failing'),
+      retry_time_not_reported: entry('Retry time not reported'),
+      no_gem_collection: entry('No gem collection running'),
+      state_unknown: entry("Can't tell what harvesting is doing"),
     },
     /** The line for the collector this dashboard found running at its start, by the server's code. */
     collectorAtStart: {
@@ -262,10 +262,10 @@ export const control = {
     sourcePicker: entry('Gem settings from'),
     unnamedRun: entry('Run without a name'),
     sourceRoutines: (adGems: RoutineWords | null, floatingGems: RoutineWords | null): CopyText =>
-      made(`${routinePhrase('ad gems', adGems)}, ${routinePhrase('floating gems', floatingGems)}`),
-    sourceNotRead: entry('saved settings not read yet'),
-    sourceUnreadable: entry("saved settings can't be read"),
-    sourceChanged: entry('changed since you turned it on'),
+      made(`${routinePhrase('Ad gems', adGems)}, ${routinePhrase('floating gems', floatingGems)}`),
+    sourceNotRead: entry('Saved settings not read yet'),
+    sourceUnreadable: entry("Saved settings can't be read"),
+    sourceChanged: entry('Changed since you turned it on'),
     savedSettings: entry('Saved settings in Runs'),
     sourceInvalid: entry("This run's gem settings can't be used"),
     /** GM-20, GM-31: the actions. */

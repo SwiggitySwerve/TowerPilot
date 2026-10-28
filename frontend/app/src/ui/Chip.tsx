@@ -11,6 +11,8 @@ export interface ChipProps {
   readonly age?: CopyText;
   /** For aria-labelledby or aria-describedby from a control. */
   readonly id?: string;
+  /** A catalogue word that names this state more exactly ("Connected", "Delivery unknown"). */
+  readonly label?: CopyText;
 }
 
 /** Each word's shape (spec 3.1), drawn in code and hidden from assistive technology. */
@@ -87,11 +89,11 @@ function Shape({ state }: { readonly state: ChipState }) {
  * A status chip (spec 3.1): one of the eight words as text, its shape and its
  * colour. Colour is never the only signal, and Unknown never looks like Off.
  */
-export function Chip({ state, age, id }: ChipProps) {
+export function Chip({ state, age, id, label }: ChipProps) {
   return (
     <span className="tp-chip" data-state={state} id={id}>
       <Shape state={state} />
-      <span className="tp-chip__word">{copy.states[state].short}</span>
+      <span className="tp-chip__word">{label ?? copy.states[state].short}</span>
       {age === undefined ? null : <span className="tp-chip__age">{age}</span>}
     </span>
   );

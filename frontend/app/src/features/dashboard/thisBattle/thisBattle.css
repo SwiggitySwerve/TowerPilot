@@ -50,6 +50,10 @@
 .tp-battle__action {
   grid-column: 5;
   grid-row: 1;
+  justify-self: end;
+}
+.tp-battle__columns > :last-child {
+  text-align: end;
 }
 /* "Run" and "now" are two spans (label in name); one word space between them. */
 .tp-battle__action .tp-button {
@@ -169,15 +173,28 @@
     grid-row: 2;
   }
   .tp-battle__next {
-    grid-column: 2;
+    grid-column: 2 / -1;
     grid-row: 2;
+  }
+  .tp-battle__last {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+  .tp-battle__reason {
+    grid-column: 1 / -1;
+  }
+  .tp-battle__last .tp-battle__result > span:first-child {
+    flex-basis: 100%;
+  }
+}
+/* Cards 640 to 900 px wide: Setting, Next and Last result side by side under the name. */
+@container (min-width: 640px) and (max-width: 900px) {
+  .tp-battle__next {
+    grid-column: 2;
   }
   .tp-battle__last {
     grid-column: 3;
     grid-row: 2;
-  }
-  .tp-battle__reason {
-    grid-column: 1 / -1;
   }
 }
 

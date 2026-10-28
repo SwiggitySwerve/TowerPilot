@@ -98,8 +98,8 @@
 }
 .tp-button[data-tier='secondary'] {
   background: var(--tp-color-surface-strong);
-  border-color: var(--tp-color-border);
-  color: var(--tp-color-text);
+  border-color: var(--tp-color-border-active);
+  color: var(--tp-color-text-strong);
 }
 .tp-button[data-tier='halt'] {
   background: var(--tp-color-halt-fill);
@@ -135,7 +135,11 @@
 }
 .tp-copy-line__why {
   color: var(--tp-color-text-muted);
-  font-size: var(--tp-font-size-12);
+  font-size: var(--tp-font-size-13);
+}
+.tp-copy-line__why > summary {
+  color: var(--tp-color-text-nav);
+  font-weight: 400;
 }
 .tp-copy-line__why > summary {
   cursor: pointer;
@@ -151,6 +155,7 @@
   cursor: pointer;
   color: var(--tp-color-text-nav);
   font-size: var(--tp-font-size-13);
+  font-weight: 400;
 }
 .tp-disclosure__count {
   margin-inline-start: 0.35rem;
@@ -329,7 +334,7 @@
   display: inline-flex;
   gap: 0.3em;
   color: var(--tp-color-text-muted);
-  font-size: var(--tp-font-size-12);
+  font-size: var(--tp-font-size-13);
 }
 
 /* A part that failed to draw, with its revocations (S-091). */
@@ -359,13 +364,15 @@
 
 /*
  * A disabled button never keeps its tier's fill (a blocked Start must not look
- * like the page's main action): neutral surface, dashed border, muted text.
- * Placed last so it wins over every tier rule; its reason is a visible line.
+ * like the page's main action): no fill, a dim solid edge, muted text. Dashed
+ * edges belong to Unknown alone. Placed last so it wins over every tier rule;
+ * its reason is a visible line.
  */
 .tp-button[aria-disabled='true'] {
   border-color: var(--tp-color-border);
-  border-style: dashed;
+  border-style: solid;
   background: transparent;
   color: var(--tp-color-text-muted);
+  opacity: 0.7;
   cursor: not-allowed;
 }

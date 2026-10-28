@@ -24,7 +24,7 @@ export function AutomationFacts({ row }: { readonly row: OperationRowVM }) {
         <AutomationLine seen={row.seen} />
       </div>
       {battle.line === 'wave' && battle.wave !== null ? (
-        <p>{text.wave(battle.wave)}</p>
+        <p>{text.waveLine(battle.wave)}</p>
       ) : battle.line === 'last_wave' && battle.wave !== null ? (
         <p>{text.lastWave(battle.wave, battle.ageSec)}</p>
       ) : battle.line === 'wave' || battle.line === 'last_wave' ? null : (

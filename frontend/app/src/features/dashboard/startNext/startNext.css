@@ -1,3 +1,13 @@
+.tp-region[data-region='startNext'] {
+  container-type: inline-size;
+}
+
+@container (max-width: 560px) {
+  .tp-start-next__picker {
+    flex-basis: 100%;
+  }
+}
+
 .tp-start-next {
   display: grid;
   gap: var(--tp-space-2);
@@ -75,6 +85,7 @@
 }
 
 .tp-start-next a {
+  font-size: var(--tp-font-size-13);
   display: inline-flex;
   margin-block: 0;
   align-items: center;

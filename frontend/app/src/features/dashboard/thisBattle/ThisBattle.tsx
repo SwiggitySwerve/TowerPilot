@@ -783,7 +783,10 @@ function BattleContent() {
               <span>{lastRead(vm.readAgeSec)}</span>
             ) : null}
             {(vm.header.row === 'B5' || vm.header.row === 'B6') && vm.reportAgeSec !== null ? (
-              <span>{words.reported(vm.reportAgeSec)}</span>
+              <span>
+                {words.listSeparator.short}
+                {words.reported(vm.reportAgeSec)}
+              </span>
             ) : null}
           </span>
         </div>

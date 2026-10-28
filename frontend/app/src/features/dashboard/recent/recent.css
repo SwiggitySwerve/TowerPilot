@@ -33,17 +33,26 @@
   margin: 0;
 }
 
-@media (max-width: 600px) {
+/* In a narrow region (the side column, a phone): label and link on one line, the facts under them. */
+.tp-region[data-region='recent'] {
+  container-type: inline-size;
+}
+
+@container (max-width: 560px) {
   .tp-recent-row {
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .tp-recent-label {
+    grid-column: 1;
+    grid-row: 1;
   }
   .tp-recent-facts {
     grid-column: 1 / -1;
     grid-row: 2;
   }
   .tp-recent-row > a {
-    grid-column: 1 / -1;
-    grid-row: 3;
-    justify-self: start;
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
   }
 }

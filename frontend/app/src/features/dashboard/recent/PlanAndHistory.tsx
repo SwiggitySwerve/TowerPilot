@@ -118,6 +118,7 @@ function RecentContent() {
                   )}
                   {words.separator.short}
                   <span>{words.ends[battle.line].short}</span>
+                  {words.separator.short}
                   <span>
                     {last.endedAgeSec === null ? words.noAge.short : ageAgo(last.endedAgeSec)}
                   </span>

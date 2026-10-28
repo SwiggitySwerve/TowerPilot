@@ -13,8 +13,9 @@ import { Preview } from './Preview.tsx';
 import './dashboard.css';
 
 /**
- * The Dashboard (spec 2.1): the top bar, then the five regions in one fixed
- * order at every width, in a content column capped at 1100 px. Every part has
+ * The Dashboard (spec 2.1): the top bar, then the regions. At wide widths the
+ * controls and lists fill the main column and the screen with Plan and history
+ * the side column; narrower layouts are in preview.css. Every part has
  * its own boundary whose fallback keeps Pause harvesting and Turn input off
  * (S-090, S-091).
  */
@@ -39,9 +40,11 @@ export function DashboardPage() {
             <NeedsYou />
             <ThisBattle />
             <StartNext />
+          </div>
+          <div className="tp-dashboard-side">
+            <Preview />
             <PlanAndHistory />
           </div>
-          <Preview />
         </div>
         <RegionBoundary fallback={null} onError={usePartError('toasts')}>
           <Toasts />

@@ -73,9 +73,16 @@
 /* A Stop and its "ends automation" note end on the card's right edge. */
 .tp-control__slots .tp-slot__action .tp-automation-list > li {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row-reverse;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-1) var(--tp-space-3);
   text-align: end;
+}
+.tp-control__slots .tp-automation-note {
+  margin: 0;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
 }
 .tp-control__slots .tp-slot__facts {
   grid-area: facts;
@@ -123,6 +130,11 @@
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);
 }
+p.tp-seen__extra[data-gem-finder-suspected] {
+  padding-inline-start: var(--tp-space-2);
+  border-inline-start: 3px solid var(--tp-color-warn);
+  color: var(--tp-color-text);
+}
 p.tp-seen__extra {
   display: flex;
   flex-wrap: wrap;
@@ -135,7 +147,7 @@ p.tp-seen__extra {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.25rem 0.4rem;
+  gap: 0.25rem 0.3em;
   margin: 0;
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);

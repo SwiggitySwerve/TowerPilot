@@ -16,10 +16,24 @@ import { previewSource, previewQuality, previewFps } from '../../core/preview.ts
 import { selectPreview } from '../../store/selectors/preview.ts';
 import type { PreviewStore } from '../../store/preview.ts';
 import { useStoreSelector, viewEqual } from '../../store/store.ts';
+import { Chip, type ChipState } from '../../ui/Chip.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
+import { Why } from '../../ui/Why.tsx';
 import { RegionBoundary } from '../../ui/RegionBoundary.tsx';
 import { useDashboard, useEpochKey } from './context.ts';
 import './preview.css';
+
+/** Each delivery verdict's status tone: the chip shape and colour that go with its words. */
+const VERDICT_TONES: Readonly<Record<string, ChipState>> = {
+  off: 'idle',
+  connection: 'unknown',
+  connecting: 'waiting',
+  receiving: 'running',
+  fallback: 'running',
+  stale: 'waiting',
+  failed: 'failed',
+  unknown: 'unknown',
+};
 
 function PreviewViewer({ store }: { readonly store: PreviewStore }) {
   const v = useStoreSelector(store, selectPreview, viewEqual);
@@ -54,6 +68,16 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
       data-verdict={v.verdict}
     >
       <h2 id="preview-title">{c.title.short}</h2>
+      {v.expanded ? (
+        <span className="tp-preview__verdict">
+          <span data-preview-verdict>
+            <Chip
+              state={VERDICT_TONES[v.verdict] ?? 'unknown'}
+              label={c.verdicts[v.verdict].short}
+            />
+          </span>
+        </span>
+      ) : null}
       <button
         type="button"
         className="tp-button"
@@ -69,16 +93,7 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
       </button>
       {v.expanded ? (
         <div id="preview-content" className="tp-preview__content">
-          <div
-            className="tp-preview__picture"
-            role={v.frame?.kind === 'frame' ? 'img' : undefined}
-            aria-label={v.frame?.kind === 'frame' ? c.canvas.short : undefined}
-          >
-            <canvas ref={attach} aria-hidden="true" hidden={v.frame?.kind !== 'frame'} />
-            {v.frame?.kind !== 'frame' ? <p>{c.empty.short}</p> : null}
-          </div>
-          <div className="tp-preview__side">
-            <strong data-preview-verdict>{c.verdicts[v.verdict].short}</strong>
+          <div className="tp-preview__status">
             <div className="tp-preview__actions">
               {v.running ? (
                 <button
@@ -119,6 +134,7 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
               >
                 {c.reconnect.short}
               </button>
+              {v.verdict === 'unknown' ? <Why why={c.unknownDelivery.short} /> : null}
             </div>
             {v.offline ? (
               <p id="preview-connection">
@@ -127,9 +143,6 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
             ) : null}
             {v.checking ? <p>{c.checking.short}</p> : null}
             {v.verdict === 'failed' ? <p>{c.transportFailed.short}</p> : null}
-            {v.verdict === 'unknown' ? (
-              <p className="tp-preview__note">{c.unknownDelivery.short}</p>
-            ) : null}
             {v.verdict === 'stale' ? <p>{c.stale.short}</p> : null}
             {v.lastError !== null ? <ServerValue kind="message" value={v.lastError} /> : null}
             {v.failures.map((reason, index) => (
@@ -137,6 +150,16 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
                 <ServerValue kind="message" value={reason} />
               </div>
             ))}
+          </div>
+          <div
+            className="tp-preview__picture"
+            role={v.frame?.kind === 'frame' ? 'img' : undefined}
+            aria-label={v.frame?.kind === 'frame' ? c.canvas.short : undefined}
+          >
+            <canvas ref={attach} aria-hidden="true" hidden={v.frame?.kind !== 'frame'} />
+            {v.frame?.kind !== 'frame' ? <p>{c.empty.short}</p> : null}
+          </div>
+          <div className="tp-preview__meta">
             <div className="tp-preview__facts">
               <p>
                 {c.labels.actual.short}

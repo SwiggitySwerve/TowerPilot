@@ -3,7 +3,7 @@
   padding: 0;
   margin: 0;
   display: grid;
-  gap: var(--tp-space-2);
+  gap: var(--tp-space-3);
 }
 
 .tp-needs[hidden] {
@@ -21,7 +21,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--tp-space-1) var(--tp-space-4);
+  gap: 0.125rem var(--tp-space-4);
   min-width: 0;
 }
 
@@ -41,6 +41,7 @@
 
 /* What the issue means for Start and collection: detail, after the headline. */
 .tp-need__impact {
+  flex-basis: 100%;
   column-gap: 0;
   white-space: pre-wrap;
   color: var(--tp-color-text-muted);
@@ -48,6 +49,7 @@
 }
 
 .tp-need__actions > a {
+  font-size: var(--tp-font-size-13);
   display: inline-flex;
   margin-block: 0;
   align-items: center;
