@@ -303,7 +303,7 @@ export const control = {
       /** Between the routine targets and whether they are applied yet. */
       separator: made('·'),
       applied: entry('applied'),
-      pending: entry('pending'),
+      pending: entry('waiting to apply'),
       liveChoice: entry('your choice for this battle wins'),
       unsupported: entry("the run can't take this setting"),
       ownTiming: entry('the battle keeps its own timing'),

@@ -71,8 +71,9 @@
 }
 /* A disabled preview control looks like every other disabled button. */
 .tp-preview .tp-button:disabled {
-  border-color: var(--tp-color-border);
-  background: var(--tp-color-surface-inner);
+  border-color: color-mix(in srgb, var(--tp-color-border-active) 55%, transparent);
+  background: transparent;
+  color: color-mix(in srgb, var(--tp-color-text-muted) 80%, var(--tp-color-surface));
 }
 /* Title and Hide screen share the card's first line, like every region header. */
 /* Title, verdict and its Why on one wrapping line, Hide screen at its end, like a region header. */
@@ -132,7 +133,6 @@
   margin-top: 0;
 }
 .tp-preview button:disabled {
-  color: var(--tp-color-text-muted);
   cursor: not-allowed;
 }
 .tp-preview :focus-visible {

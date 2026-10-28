@@ -31,7 +31,7 @@ export const startNext = {
     connection_blocked: entry('The emulator is not connected'),
     guard_blocks: entry('The launch guard blocks this action'),
     setup_battle_unresolved: entry(
-      "Setup's test battle wasn't confirmed back on Home — see Needs you",
+      "Setup's test battle wasn't confirmed back on Home; review it in Needs you",
     ),
     pick_single_run: entry('Pick a single run'),
     preview_unavailable: entry("Can't read this run's gem settings"),

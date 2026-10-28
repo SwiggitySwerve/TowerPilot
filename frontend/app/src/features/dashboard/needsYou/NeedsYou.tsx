@@ -244,13 +244,23 @@ function NeedItem({ item }: { readonly item: NeedItemVM }) {
           />
         ) : null}
         {step === null ? null : (
-          <a href={setupLinks[step]} data-focus-key={`needsYou-${item.code}-setup`}>
+          <a
+            className="tp-need__fix"
+            href={setupLinks[step]}
+            data-focus-key={`needsYou-${item.code}-setup`}
+          >
             {words.finishActions[step].short}
           </a>
         )}
-        {item.code === 'other_runs_images' ? <a href="#recognition">{words.learn.short}</a> : null}
+        {item.code === 'other_runs_images' ? (
+          <a className="tp-need__fix" href="#recognition">
+            {words.learn.short}
+          </a>
+        ) : null}
         {item.code === 'launch_guard' || item.code === 'setup_outcome' ? (
-          <a href="#recognition">{words.review.short}</a>
+          <a className="tp-need__fix" href="#recognition">
+            {words.review.short}
+          </a>
         ) : null}
         {item.handoffCommand !== null ? null : <OperationEvents operationId={item.operationId} />}
         <ItemWhy item={item} line={line} />

@@ -81,7 +81,7 @@ it.each([
 ])('F-049: %s says only that no battle is tracked', async (name) => {
   const h = renderRegion(state(name), <ThisBattle />);
   expect(
-    h.view.getByText('No tracked battle — Run now needs automation watching a battle'),
+    h.view.getByText('No tracked battle. Routines and Run now appear once automation watches one'),
   ).toBeVisible();
   fireEvent.click(h.view.getByText('Why'));
   expect(

@@ -157,9 +157,19 @@
   font-size: var(--tp-font-size-13);
   font-weight: 400;
 }
+/* A disclosure's count: the same small badge as a region's count. */
 .tp-disclosure__count {
-  margin-inline-start: 0.35rem;
-  color: var(--tp-color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  margin-inline-start: 0.4rem;
+  padding: 0 0.4rem;
+  border-radius: var(--tp-radius-pill);
+  background: var(--tp-color-surface-active);
+  color: var(--tp-color-text-strong);
+  font-size: var(--tp-font-size-12);
+  font-weight: 700;
 }
 .tp-disclosure__preview {
   margin-inline-start: 0.5rem;
@@ -364,14 +374,14 @@
 
 /*
  * A disabled button never keeps its tier's fill (a blocked Start must not look
- * like the page's main action): no fill, a dim solid edge, muted text. Dashed
+ * like the page's main action): no fill, a faint solid edge, dimmed text. Dashed
  * edges belong to Unknown alone. Placed last so it wins over every tier rule;
  * its reason is a visible line.
  */
 .tp-button[aria-disabled='true'] {
-  border-color: var(--tp-color-border);
+  border-color: color-mix(in srgb, var(--tp-color-border-active) 55%, transparent);
   border-style: solid;
-  background: var(--tp-color-surface-inner);
-  color: var(--tp-color-text-muted);
+  background: transparent;
+  color: color-mix(in srgb, var(--tp-color-text-muted) 80%, var(--tp-color-surface));
   cursor: not-allowed;
 }

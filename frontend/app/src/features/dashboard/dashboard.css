@@ -31,10 +31,6 @@
   .tp-control__slots .tp-slot[data-slot='gem'] {
     grid-column: 2;
     grid-row: 1 / span 2;
-    grid-template-rows: auto auto 1fr;
-  }
-  .tp-control__slots .tp-slot[data-slot='gem'] .tp-slot__meta {
-    align-self: end;
   }
 }
 /* Every width: each slot's label and revocation share its first line (spec 2.2), facts below. */
@@ -78,6 +74,20 @@
   background: var(--tp-color-danger);
   border-color: var(--tp-color-halt-border);
   color: var(--tp-color-on-action);
+}
+/* Turn input off and Pause harvesting can be undone: neutral buttons whose red mark keeps them revocations. */
+.tp-control__slots
+  .tp-slot:not([data-slot='automation'])
+  .tp-button[data-tier='halt']:not([aria-disabled='true']) {
+  background: var(--tp-color-surface-strong);
+  border-color: var(--tp-color-border-active);
+  color: var(--tp-color-text-strong);
+}
+.tp-control__slots
+  .tp-slot:not([data-slot='automation'])
+  .tp-button[data-tier='halt']
+  .tp-button__glyph {
+  color: var(--tp-color-halt-border);
 }
 /* A Stop and its "ends automation" note end on the card's right edge. */
 .tp-control__slots .tp-slot__action .tp-automation-list > li {

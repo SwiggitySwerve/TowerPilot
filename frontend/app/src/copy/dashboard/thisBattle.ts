@@ -49,7 +49,7 @@ export const thisBattle = {
   dismissed: entry('Dismissed'),
   changed: entry('Changed for this battle'),
   noTracked: entry(
-    'No tracked battle — Run now needs automation watching a battle',
+    'No tracked battle. Routines and Run now appear once automation watches one',
     'The game may still be in a battle; nothing is tracking it',
   ),
   on: entry('On'),
