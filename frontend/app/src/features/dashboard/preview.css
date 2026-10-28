@@ -170,7 +170,8 @@
   max-width: 100%;
   max-height: 70svh;
   object-fit: contain;
-  border: 1px solid var(--tp-color-border);
+  /* An outline, not a border: the frame keeps the picture's exact aspect ratio. */
+  outline: 1px solid var(--tp-color-border);
   border-radius: var(--tp-radius-control);
 }
 .tp-preview__settings > div > span + span {
@@ -203,7 +204,11 @@
   gap: var(--tp-space-2);
   min-width: 0;
 }
-/* Below 1200 px the two columns dissolve into one grid (see the two blocks below). */
+/*
+ * Below 1200 px the two columns dissolve into one grid (see the two blocks below).
+ * The screen is drawn after Needs you while the DOM keeps it after Start next; it
+ * holds view-only controls, so tab order stays Control, the lists, then the screen.
+ */
 @media (max-width: 1199.98px) {
   .tp-dashboard-layout > .tp-dashboard,
   .tp-dashboard-layout > .tp-dashboard-side {

@@ -73,13 +73,15 @@
 /* A Stop and its "ends automation" note end on the card's right edge. */
 .tp-control__slots .tp-slot__action .tp-automation-list > li {
   display: flex;
-  flex-direction: row-reverse;
   flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: var(--tp-space-1) var(--tp-space-3);
   text-align: end;
 }
+/* The note reads before its Stop; it is not focusable, so tab order is unchanged. */
 .tp-control__slots .tp-automation-note {
+  order: -1;
   margin: 0;
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);

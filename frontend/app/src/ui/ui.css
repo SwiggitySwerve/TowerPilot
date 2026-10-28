@@ -138,12 +138,10 @@
   font-size: var(--tp-font-size-13);
 }
 .tp-copy-line__why > summary {
-  color: var(--tp-color-text-nav);
-  font-weight: 400;
-}
-.tp-copy-line__why > summary {
   cursor: pointer;
   width: max-content;
+  color: var(--tp-color-text-nav);
+  font-weight: 400;
 }
 .tp-copy-line__why > p {
   margin: var(--tp-space-1) 0 0;

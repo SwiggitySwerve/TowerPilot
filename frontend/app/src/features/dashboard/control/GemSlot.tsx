@@ -142,6 +142,7 @@ function CollectorAtStartLine({ vm }: { readonly vm: GemSlotVM }) {
   return (
     <p className="tp-seen__extra" data-collector-at-start={found.code}>
       <span>{words.short}</span>
+      {found.pid === null ? null : <span>{text.holderPid(found.pid)}</span>}
     </p>
   );
 }

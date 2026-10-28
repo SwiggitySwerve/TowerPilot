@@ -86,8 +86,8 @@ function Shape({ state }: { readonly state: ChipState }) {
 }
 
 /**
- * A status chip (spec 3.1): one of the eight words as text, its shape and its
- * colour. Colour is never the only signal, and Unknown never looks like Off.
+ * A status chip (spec 3.1): one of the eight states as its shape and colour, named
+ * by its word or by a more exact catalogue label ("Connected", "Delivery unknown"). Colour is never the only signal, and Unknown never looks like Off.
  */
 export function Chip({ state, age, id, label }: ChipProps) {
   return (

@@ -12,7 +12,12 @@ import {
   previewMillis,
   previewSeconds,
 } from '../../copy/preview.ts';
-import { previewSource, previewQuality, previewFps } from '../../core/preview.ts';
+import {
+  previewSource,
+  previewQuality,
+  previewFps,
+  type PreviewVerdict,
+} from '../../core/preview.ts';
 import { selectPreview } from '../../store/selectors/preview.ts';
 import type { PreviewStore } from '../../store/preview.ts';
 import { useStoreSelector, viewEqual } from '../../store/store.ts';
@@ -24,7 +29,7 @@ import { useDashboard, useEpochKey } from './context.ts';
 import './preview.css';
 
 /** Each delivery verdict's status tone: the chip shape and colour that go with its words. */
-const VERDICT_TONES: Readonly<Record<string, ChipState>> = {
+const VERDICT_TONES: Readonly<Record<PreviewVerdict, ChipState>> = {
   off: 'idle',
   connection: 'unknown',
   connecting: 'waiting',
@@ -71,10 +76,7 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
       {v.expanded ? (
         <span className="tp-preview__verdict">
           <span data-preview-verdict>
-            <Chip
-              state={VERDICT_TONES[v.verdict] ?? 'unknown'}
-              label={c.verdicts[v.verdict].short}
-            />
+            <Chip state={VERDICT_TONES[v.verdict]} label={c.verdicts[v.verdict].short} />
           </span>
         </span>
       ) : null}
@@ -168,13 +170,13 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
               <p>{previewReceiptAge(v.receiptAge)}</p>
               <p>{previewSourceAge(v.sourceAge)}</p>
             </div>
-            <p className="tp-preview__note">{c.viewOnly.short}</p>
+            <div className="tp-preview__note">
+              <p>{c.viewOnly.short}</p>
+              <p>{c.consent.short}</p>
+              <p>{c.autoStart.short}</p>
+            </div>
             <details className="tp-preview__settings">
               <summary>{c.settings.short}</summary>
-              <div className="tp-preview__note">
-                <p>{c.consent.short}</p>
-                <p>{c.autoStart.short}</p>
-              </div>
               <label htmlFor="preview-fps">
                 <span id="preview-fps-label">{c.fps.short}</span>
                 <select
