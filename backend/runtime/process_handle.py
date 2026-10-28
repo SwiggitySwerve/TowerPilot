@@ -29,7 +29,7 @@ kill.
     good for: read-only questions (is it alive, what is its command line).
 
 Why handles and not a Job Object. A Job Object assigned at spawn would cover exactly the
-family atomically, but the workers are launched DETACHED so that they outlive the
+family atomically, but the workers are launched in their own console so that they outlive the
 dashboard: a job the dashboard owns would have to be named and re-opened by whichever
 dashboard stops the worker (two hosts share one ledger), its name would have to be recorded
 in the operation (a ledger change), workers started before this code and adopted runners

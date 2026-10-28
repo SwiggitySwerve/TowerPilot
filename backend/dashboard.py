@@ -570,9 +570,15 @@ def _launch_operation(cfg, kind, body, cmd, *, restrict=None, **kwargs):
                                       source_revision=revision)
         if attach is not None:
             body['battle_envelope']['attach'] = attach
+    # NO_WINDOW alone, never DETACHED_PROCESS: a uv venv's pythonw.exe is the same
+    # console trampoline as its python.exe and starts the base python.exe. Detached,
+    # the trampoline has no console to hand down, so that python.exe opened a new,
+    # visible one (a Windows Terminal titled pythonw.exe on every collector start,
+    # 2026-10-28). NO_WINDOW gives the worker its own windowless console, which the
+    # interpreter inherits; it is not the dashboard's, so the worker still outlives it.
     return operation_api.launch(ROOT, cfg, kind, body, cmd, subprocess.Popen,
                                 profile_path=_profile_path(cfg.get('active_profile')),
-                                cwd=ROOT, creationflags=getattr(subprocess, 'DETACHED_PROCESS', 0) | NO_WINDOW,
+                                cwd=ROOT, creationflags=NO_WINDOW,
                                 **kwargs)
 
 
