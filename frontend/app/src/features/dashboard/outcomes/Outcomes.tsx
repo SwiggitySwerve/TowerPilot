@@ -1,16 +1,12 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { copy } from '../../../copy/catalogue.ts';
-import { ageAgo } from '../../../copy/dashboard/shell.ts';
 import { selectOutcomes, type OutcomeLineVM } from '../../../store/selectors/outcomes.ts';
 import { Button } from '../../../ui/Button.tsx';
 import { ConfirmDialog } from '../../../ui/ConfirmDialog.tsx';
 import { Disclosure } from '../../../ui/Disclosure.tsx';
-import { useAnnounce } from '../../../ui/LiveRegion.tsx';
-import { Notice } from '../../../ui/Notice.tsx';
 import { RegionBoundary } from '../../../ui/RegionBoundary.tsx';
-import { ServerValue } from '../../../ui/ServerValue.tsx';
 import { useDashboard, useEpochKey, usePartError, useView } from '../context.ts';
-import { OutcomeDetail } from './OutcomeDetail.tsx';
+import { OutcomeReceipt } from './OutcomeReceipt.tsx';
 import { OwnerNotice, OwnerNoticeFallback } from './OwnerNotice.tsx';
 import { outcomeEntry } from './presentation.ts';
 import { Dismiss } from './Dismiss.tsx';
@@ -29,53 +25,11 @@ function OutcomeLine({
   const [asking, setAsking] = useState(false);
   const [stopping, setStopping] = useState(false);
   const targetId = useId();
-  const announce = useAnnounce();
-  const announced = useRef(new Set<string>());
   const entry = outcomeEntry(line);
-  const arrival = `${line.phase}:${line.outcome}:${line.settledByRead ?? ''}`;
-  useEffect(() => {
-    if (line.phase === 'sending' || announced.current.has(arrival)) return;
-    announced.current.add(arrival);
-    announce(entry.short);
-  }, [announce, arrival, entry.short, line.phase]);
-  const age = line.answeredAgeSec === null ? null : ageAgo(line.answeredAgeSec);
-  const datedInput =
-    line.detail.kind === 'input' && line.detail.class === 'input_stopped' && age !== null;
-  const operation = line.detail.kind === 'stop' ? line.detail.operation : null;
   return (
-    <Notice
-      state={line.word}
-      lead={
-        <>
-          <span>{t.leadPrefix(t.slots[line.slot].short, t.actions[line.kind].short)}</span>
-          {line.detail.kind === 'stop' ? (
-            operation?.purpose === 'gems' ? (
-              <span>{t.owner.collector.short}</span>
-            ) : operation?.label == null ? (
-              <span>{t.automationTarget.short}</span>
-            ) : (
-              <ServerValue kind="name" value={operation.label} />
-            )
-          ) : null}
-          <span>{t.leadEnd(age)}</span>
-        </>
-      }
-      line={datedInput ? t.stoppedAt(age) : entry.short}
-      server={
-        <>
-          {line.target === null ? null : (
-            <ServerValue id={targetId} kind="id" value={line.target} />
-          )}
-          {line.error === null ? null : <ServerValue kind="message" value={line.error} />}
-          {line.operationError == null ? null : (
-            <ServerValue kind="message" value={line.operationError} />
-          )}
-          {line.earlierEnableUnresolved ? <span>{t.earlierEnable.short}</span> : null}
-          <OutcomeDetail line={line} />
-          {line.current ? null : <span>{t.history.short}</span>}
-          {line.bound ? null : <span>{t.unbound.short}</span>}
-        </>
-      }
+    <OutcomeReceipt
+      line={line}
+      targetId={targetId}
       actions={
         <>
           <Disclosure label={copy.common.why.short}>

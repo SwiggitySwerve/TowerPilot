@@ -137,7 +137,7 @@ export function SchedulePage({ schedule }: { readonly schedule: ScheduleStore })
   return (
     <>
       <header className="tp-topbar">
-        <TopBar title={t.pageName.short} readOnly />
+        <TopBar pageId="schedule" title={t.pageName.short} readOnly />
       </header>
       <main
         id="main"

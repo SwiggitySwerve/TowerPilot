@@ -23,7 +23,7 @@ const CURSOR = '1800000110.0:00000000000000000000000000000065';
 async function open(page: Page, width: number, name: string) {
   await openScenario(page, 'idle', { width });
   await page.request.get(`/__fake/history?case=${encodeURIComponent(`actions:${name}`)}`);
-  await page.getByRole('link', { name: 'Run history', exact: true }).click();
+  await page.getByRole('main').getByRole('link', { name: 'Run history', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Run history', exact: true })).toBeVisible();
   const row = page.locator('.tp-history__record');
   await expect(row).toHaveCount(1);

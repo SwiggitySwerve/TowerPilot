@@ -13,9 +13,8 @@ import { Preview } from './Preview.tsx';
 import './dashboard.css';
 
 /**
- * The Dashboard (spec 2.1): the top bar, then the regions. At wide widths the
- * controls and lists fill the main column and the screen stays in view in the
- * side column; narrower layouts are in preview.css. Every part has
+ * Daily operations in reading and keyboard order, with the view-only preview
+ * last. On wide workspaces the preview has its own column. Every part has
  * its own boundary whose fallback keeps Pause harvesting and Turn input off
  * (S-090, S-091).
  */
@@ -29,7 +28,7 @@ export function DashboardPage() {
           onError={usePartError('topBar')}
         >
           <FaultPoint part="topBar" />
-          <TopBar title={copy.dashboard.shell.pageName.short} />
+          <TopBar pageId="dashboard" title={copy.dashboard.shell.pageName.short} />
         </RegionBoundary>
       </header>
       <main id="main" className="tp-main" tabIndex={-1}>

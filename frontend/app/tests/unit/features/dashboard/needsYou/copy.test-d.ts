@@ -21,11 +21,3 @@ it('F-084: checked-read formatting accepts only source and outcome codes', () =>
   expectTypeOf<'status'>().toExtend<Source>();
   expectTypeOf<'failed'>().toExtend<Outcome>();
 });
-
-it('F-084: empty-state formatting rejects arbitrary text as checked sources and outcomes', () => {
-  type Read = Parameters<Words['empty']>[0][number];
-  expectTypeOf<string>().not.toExtend<Read['source']>();
-  expectTypeOf<ServerText>().not.toExtend<Read['source']>();
-  expectTypeOf<string>().not.toExtend<Read['outcome']>();
-  expectTypeOf<ServerText>().not.toExtend<Read['outcome']>();
-});

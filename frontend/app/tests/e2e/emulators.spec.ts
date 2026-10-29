@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { axeCounts, bodiesTo, openScenario, posts } from './helpers/helpers.ts';
+import { axeCounts, bodiesTo, navigateApp, openScenario, posts } from './helpers/helpers.ts';
 
 /**
  * The Emulators page in a real browser on the fake backend (brief
@@ -46,7 +46,7 @@ const tools = (page: Page) => page.locator('[data-region="emulatorsTools"]');
 const preview = (page: Page) => page.locator('[data-region="emulatorsPreview"]');
 const row = (page: Page, key: string) => page.locator(`[data-row="${key}"]`);
 
-test('M1 M2 SR-1 SR-6 the Pages menu opens Emulators with no request; Use this one asks first by keyboard, Cancel sends nothing, Use it sends one adopt that reads back saved and connected', async ({
+test('M1 M2 SR-1 SR-6 app navigation opens Emulators with no request; Use this one asks first by keyboard, Cancel sends nothing, Use it sends one adopt that reads back saved and connected', async ({
   page,
 }) => {
   const problems = await openScenario(page, 'emulators');
@@ -54,11 +54,7 @@ test('M1 M2 SR-1 SR-6 the Pages menu opens Emulators with no request; Use this o
   page.on('request', (request) => {
     if (request.method() === 'GET') reads.push(new URL(request.url()).pathname);
   });
-  await page.getByText('Pages', { exact: true }).click();
-  await page
-    .getByRole('navigation', { name: 'Pages' })
-    .getByRole('link', { name: 'Emulators', exact: true })
-    .click();
+  await navigateApp(page, 'Emulators');
   await expect(page).toHaveURL(/#emulators$/u);
   await expect(detected(page).locator('[data-suggestion]')).toBeVisible();
   await page.waitForTimeout(2_000);

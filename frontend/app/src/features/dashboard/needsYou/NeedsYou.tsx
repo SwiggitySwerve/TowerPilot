@@ -345,7 +345,27 @@ function NeedsYouContent() {
         <a href="#runtime">{words.runtime.short}</a>
       </RegionEnd>
       <RegionBody>
-        {vm.count === 0 ? <p className="tp-need__empty">{words.empty(vm.checked)}</p> : null}
+        {vm.count === 0 ? (
+          <div className="tp-need__empty">
+            <p>{words.empty.short}</p>
+            <Disclosure label={words.checkDetails.short} focusKey="needsYou-checked">
+              <ul>
+                {vm.checked
+                  .filter((read) => read.outcome === 'answered')
+                  .map((read) => (
+                    <CheckedRead key={read.source} read={read} />
+                  ))}
+              </ul>
+            </Disclosure>
+            <ul className="tp-need__unavailable">
+              {vm.checked
+                .filter((read) => read.outcome !== 'answered')
+                .map((read) => (
+                  <CheckedRead key={read.source} read={read} />
+                ))}
+            </ul>
+          </div>
+        ) : null}
         <NeedList visible={visible}>
           {visible.map((item) => (
             <NeedItem key={item.code} item={item} />

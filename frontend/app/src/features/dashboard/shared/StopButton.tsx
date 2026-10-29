@@ -40,7 +40,7 @@ export function StopButton({ stop, targetId, name }: StopButtonProps) {
       {targetId === undefined ? (
         <span id={nameId} className="tp-stop__target">
           {stop.operation !== null ? (
-            <ServerValue kind="id" value={stop.operation} />
+            <ServerValue kind="id" value={stop.operation} label={text.targetOperation.short} />
           ) : stop.pid === null ? null : (
             <>
               <span>{text.targetPid.short}</span>

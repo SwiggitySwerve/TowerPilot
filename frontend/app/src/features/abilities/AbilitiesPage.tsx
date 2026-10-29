@@ -112,7 +112,7 @@ export function AbilitiesPage({
   return (
     <>
       <header className="tp-topbar">
-        <TopBar title={t.pageName.short} readOnly />
+        <TopBar pageId="abilities" title={t.pageName.short} readOnly />
       </header>
       <main id="main" tabIndex={-1} className="tp-main tp-abilities">
         <p>{t.intro.short}</p>

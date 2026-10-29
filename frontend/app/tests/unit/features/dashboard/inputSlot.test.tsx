@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 describe('Game input capability rows', () => {
-  it('F-017: the Setting pill reads Allowed, Off or Unknown from the config read', () => {
+  it('F-017: the Permission pill reads Allowed, Off or Unknown from the config read', () => {
     for (const [allowTaps, word] of [
       [true, 'Allowed'],
       [false, 'Off'],
@@ -46,7 +46,7 @@ describe('Game input capability rows', () => {
       const h = storeHarness({ config: e0Config(allowTaps) });
       h.read('status', statusBody(sample('status.off')));
       const { view } = renderRegion(h.state(), <InputSlot />);
-      expect(view.container.querySelector('.tp-pill')).toHaveTextContent(`Setting:${word}`);
+      expect(view.container.querySelector('.tp-pill')).toHaveTextContent(`Permission:${word}`);
       expect(textOutsideCatalogue(view.container)).toEqual([]);
       view.unmount();
     }
@@ -149,7 +149,8 @@ describe('Game input capability rows', () => {
     h.read('config', e0Config(true));
     region.setState(h.state());
     expect(screen.queryByText('Automation input stopped')).toBeNull();
-    expect(region.view.container.querySelector('.tp-pill')).toHaveTextContent('Setting:Allowed');
+    expect(region.view.container.querySelector('.tp-pill')).toHaveTextContent('Permission:Allowed');
+    expect(region.view.getByText('Observed:')).toBeVisible();
     expect(turnOff()).not.toBeNull();
   });
 

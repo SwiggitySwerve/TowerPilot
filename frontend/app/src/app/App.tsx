@@ -11,6 +11,8 @@ import { PAGES } from './routes.ts';
 import { SkipLink } from './SkipLink.tsx';
 import type { FaultSet } from '../features/dashboard/context.ts';
 import { createDashboardData, type DashboardData } from './wiring.ts';
+import { AppNavigation } from './AppNavigation.tsx';
+import './appShell.css';
 
 /** Sets the tab title and announces a page change (not the first page) in the live region. */
 function PageChange({ title }: { readonly title: CopyEntry }) {
@@ -30,9 +32,6 @@ function RouteView({ route }: { readonly route: RouteMatch }) {
   if (route.kind === 'not_found') {
     return (
       <>
-        <header className="tp-topbar">
-          <span className="tp-brand">{copy.app.name.short}</span>
-        </header>
         <main id="main" className="tp-main" tabIndex={-1}>
           <NotFoundPage />
         </main>
@@ -62,25 +61,30 @@ export function App({ data: given, faults: givenFaults }: AppProps = {}) {
       <PageChange title={title} />
       <DashboardProvider data={data} faults={faults}>
         <SkipLink />
-        <RegionBoundary
-          resetKey={resetKey}
-          fallback={
-            <PageFailed
-              onRetry={() => {
-                setAttempt((value) => value + 1);
+        <div className="tp-app-shell">
+          <AppNavigation currentPage={route.kind === 'page' ? route.id : null} />
+          <div className="tp-workspace">
+            <RegionBoundary
+              resetKey={resetKey}
+              fallback={
+                <PageFailed
+                  onRetry={() => {
+                    setAttempt((value) => value + 1);
+                  }}
+                />
+              }
+              onError={(error) => {
+                data.diagnostics.report(`render:page:${String(error)}`, {
+                  kind: 'javascript_error',
+                  page: 'dashboard',
+                  message: `page: ${String(error)}`,
+                });
               }}
-            />
-          }
-          onError={(error) => {
-            data.diagnostics.report(`render:page:${String(error)}`, {
-              kind: 'javascript_error',
-              page: 'dashboard',
-              message: `page: ${String(error)}`,
-            });
-          }}
-        >
-          <RouteView route={route} />
-        </RegionBoundary>
+            >
+              <RouteView route={route} />
+            </RegionBoundary>
+          </div>
+        </div>
       </DashboardProvider>
     </LiveRegionProvider>
   );

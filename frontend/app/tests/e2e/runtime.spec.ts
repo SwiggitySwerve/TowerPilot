@@ -4,6 +4,7 @@ import { expect, test, type Page } from '@playwright/test';
 import {
   axeViolations,
   expectAppStyles,
+  navigateApp,
   openScenario,
   posts,
   WCAG_AA_TAGS,
@@ -23,8 +24,7 @@ const diagnosticCase = (name: string) => record(record(CASES['runtime_diagnostic
 const settingsCase = (name: string) => record(record(CASES['settings'])[name]);
 async function open(page: Page, width: number, scenario = 'runtime') {
   const problems = await openScenario(page, scenario, { width });
-  await page.getByText('Pages', { exact: true }).click();
-  await page.getByRole('link', { name: 'Runtime', exact: true }).click();
+  await navigateApp(page, 'Runtime');
   await expect(page.getByRole('heading', { name: 'Runtime', exact: true })).toBeVisible();
   await expect(page.locator('[data-runtime-module="loop"] input').first()).toBeVisible();
   await expect(page.locator('[data-source-state]')).toBeVisible();

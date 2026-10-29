@@ -5,7 +5,7 @@ import {
   DASHBOARD_PAGES_FIXTURE_PATH,
   loadJsonWithIdentity,
 } from '../../scripts/contract-fixture.mjs';
-import { axeCounts, bodiesTo, openScenario, posts } from './helpers/helpers.ts';
+import { axeCounts, bodiesTo, navigateApp, openScenario, posts } from './helpers/helpers.ts';
 
 /**
  * The Runs page in a real browser on the fake backend (brief
@@ -33,15 +33,11 @@ async function openRuns(page: Page, scenario: string, hash: string, width = 1360
   return problems;
 }
 
-test('RUN-12 the Pages menu opens the new Runs page, and the Dashboard links open its exact targets', async ({
+test('RUN-12 app navigation opens the new Runs page, and the Dashboard links open its exact targets', async ({
   page,
 }) => {
   await openScenario(page, 'active_battle_routines');
-  await page.getByText('Pages', { exact: true }).click();
-  await page
-    .getByRole('navigation', { name: 'Pages' })
-    .getByRole('link', { name: 'Runs', exact: true })
-    .click();
+  await navigateApp(page, 'Runs');
   await expect(page).toHaveURL(/#runs$/u);
   await expect(page.getByRole('heading', { level: 1, name: 'Runs' })).toBeVisible();
   // A battle with overrides names "Changed for this battle" with its scoped links.

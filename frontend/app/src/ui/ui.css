@@ -333,6 +333,12 @@
   margin-top: var(--tp-space-3);
 }
 
+.tp-seen__state {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3em;
+}
+
 /* A Stop with its target and, when disabled, its reason. */
 .tp-stop {
   display: inline-flex;
@@ -351,13 +357,42 @@
 .tp-fallback {
   min-width: 0;
 }
+.tp-fallback__automation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-2);
+  flex-basis: 100%;
+  padding-block: var(--tp-space-2);
+  border-block: 1px solid var(--tp-color-border);
+}
+.tp-fallback__automation p {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--tp-color-text-muted);
+}
+.tp-fallback__automation .tp-stop {
+  justify-content: space-between;
+  width: 100%;
+}
+.tp-fallback__automation .tp-stop__target {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 
 /* Spec 2.3, 8.4: halt and primary targets are at least 44 by 44 px at narrow widths. */
 @media (max-width: 600px), (pointer: coarse) {
   .tp-button[data-tier='halt'],
-  .tp-button[data-tier='primary'] {
+  .tp-button[data-tier='primary'],
+  .tp-fallback .tp-button,
+  .tp-fallback .tp-disclosure > summary,
+  .tp-fallback .tp-copy-line__why > summary,
+  .tp-fallback + .tp-button {
     min-width: var(--tp-control-height-touch);
     min-height: var(--tp-control-height-touch);
+  }
+  .tp-fallback summary {
+    line-height: var(--tp-control-height-touch);
   }
 }
 .tp-dialog__name {
@@ -382,6 +417,6 @@
   border-color: color-mix(in srgb, var(--tp-color-border-active) 55%, transparent);
   border-style: solid;
   background: transparent;
-  color: color-mix(in srgb, var(--tp-color-text-muted) 80%, var(--tp-color-surface));
+  color: var(--tp-color-text-muted);
   cursor: not-allowed;
 }

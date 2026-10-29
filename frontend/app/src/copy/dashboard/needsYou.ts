@@ -130,14 +130,6 @@ export const needsYou = {
     made(
       `${sources[source].short}: ${readOutcomes[outcome].short}${age === null ? '' : ` - checked ${ageAgo(age)}`}`,
     ),
-  empty: (
-    reads: readonly {
-      readonly source: SourceCode;
-      readonly outcome: ReadOutcomeCode;
-      readonly ageSec: number | null;
-    }[],
-  ) =>
-    made(
-      `No unresolved issues reported — checked ${reads.map((read) => `${read.ageSec === null ? 'not checked yet' : ageAgo(read.ageSec)} (${sources[read.source].short}: ${readOutcomes[read.outcome].short})`).join('; ')}`,
-    ),
+  empty: entry('No unresolved issues reported'),
+  checkDetails: entry('Checks and freshness'),
 } as const;

@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -32,11 +32,10 @@ async function check(container: HTMLElement) {
   expect(await axe(container)).toHaveNoViolations();
 }
 
-it('F-001: renders the product and exactly one h1 with the supplied page title', async () => {
+it('F-001: renders exactly one h1 with the supplied page title', async () => {
   const page = top();
   expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
   expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Dashboard');
-  expect(screen.getByText('Tower Pilot')).toBeInTheDocument();
   await check(page.view.container);
 });
 
@@ -58,7 +57,7 @@ it('F-002: renders the matching account through ServerValue and links Account de
 });
 
 it.each(['missing', null])(
-  'F-002: no matching account (%s) says No profile yet',
+  'F-002: no matching account (%s) says No active account',
   async (active) => {
     const page = top(
       addBody(regionState(), 'accounts', {
@@ -66,7 +65,7 @@ it.each(['missing', null])(
         accounts: [{ id: 'a', label: 'My Tower' }],
       }),
     );
-    expect(screen.getByText('No profile yet')).toBeInTheDocument();
+    expect(screen.getByText('No active account')).toBeInTheDocument();
     await check(page.view.container);
   },
 );
@@ -257,8 +256,8 @@ it.each(['enabled', 'process', 'unread'])(
       await user.keyboard(' ');
       expect(page.commands.reconnect).not.toHaveBeenCalled();
     }
-    await user.tab();
-    expect(screen.getByText('Pages')).toHaveFocus();
+    await user.tab({ shift: availability !== 'unread' });
+    expect(screen.getByText(availability === 'unread' ? 'Why' : 'Details')).toHaveFocus();
   },
 );
 
@@ -273,6 +272,8 @@ it('F-004: a focused Reconnect transfers focus back to the Choose emulator ancho
   const user = userEvent.setup();
   await user.tab();
   await user.tab();
+  expect(screen.getByText('Details')).toHaveFocus();
+  await user.tab();
   expect(screen.getByRole('button', { name: 'Reconnect' })).toHaveFocus();
   page.setState(regionState());
   const choose = screen.getByRole('link', { name: 'Choose emulator' });
@@ -280,7 +281,7 @@ it('F-004: a focused Reconnect transfers focus back to the Choose emulator ancho
   expect(choose).toHaveFocus();
   expect(page.commands.reconnect).not.toHaveBeenCalled();
   await user.tab();
-  expect(screen.getByText('Pages')).toHaveFocus();
+  expect(screen.getByText('Why')).toHaveFocus();
 });
 
 it('F-004: replacing the slot in either direction preserves focus outside it', async () => {
@@ -323,6 +324,24 @@ it('F-004: read-only top bars omit both slot controls across config changes', as
   expect(screen.queryByRole('button', { name: 'Reconnect' })).not.toBeInTheDocument();
   expect(screen.queryByRole('link', { name: 'Choose emulator' })).not.toBeInTheDocument();
   expect(page.commands.reconnect).not.toHaveBeenCalled();
+});
+
+it('keeps input revocation on other pages even when connection controls are read-only', async () => {
+  const state = addCase(regionState(), 'config', 'config.taps_true');
+  const page = renderRegion(
+    state,
+    <TopBar title={copy.dashboard.shell.pageName.short} pageId="history" readOnly />,
+  );
+  await userEvent.click(screen.getByRole('button', { name: 'Turn input off' }));
+  expect(page.commands.turnInputOff).toHaveBeenCalledExactlyOnceWith();
+  expect(screen.queryByRole('button', { name: 'Reconnect' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Choose emulator' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Allow input' })).not.toBeInTheDocument();
+});
+
+it('leaves Dashboard input revocation with the Control region', () => {
+  top(addCase(regionState(), 'config', 'config.taps_true'));
+  expect(screen.queryByRole('button', { name: 'Turn input off' })).not.toBeInTheDocument();
 });
 
 it('F-004 F6M-C-02: a runner listed while the click-time config read is in flight stops the Reconnect send', async () => {
@@ -381,78 +400,3 @@ it('F-004: a real click sends exactly one POST /api/wizard/reconnect and cannot 
   if (header === null) throw new Error('Missing top bar');
   await check(header);
 });
-
-it.each([1360, 1054, 390])(
-  'F-005: RUN-12 H1 at %i px Pages is within three Tab stops and lists Dashboard, Runs and Run history, and all app pages',
-  async (width) => {
-    vi.stubGlobal('innerWidth', width);
-    const page = renderRegion(
-      regionState(),
-      <>
-        <a href="#main">{copy.dashboard.shell.skipToContent.short}</a>
-        <TopBar title={copy.dashboard.shell.pageName.short} />
-      </>,
-    );
-    const user = userEvent.setup();
-    await user.tab();
-    expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveFocus();
-    await user.tab();
-    expect(screen.getByRole('link', { name: 'Account details' })).toHaveFocus();
-    await user.tab();
-    expect(screen.getByRole('link', { name: 'Choose emulator' })).toHaveFocus();
-    await user.tab();
-    const summary = screen.getByText('Pages');
-    expect(summary).toHaveFocus();
-    await user.click(summary);
-    const nav = screen.getByRole('navigation', { name: 'Pages' });
-    // The new app's pages first (RUN-12), on this app's own routes.
-    expect(within(nav).getByRole('link', { name: 'Dashboard' })).toHaveAttribute(
-      'href',
-      '#dashboard',
-    );
-    expect(within(nav).getByRole('link', { name: 'Runs' })).toHaveAttribute('href', '#runs');
-    expect(within(nav).getByRole('link', { name: 'Run history' })).toHaveAttribute(
-      'href',
-      '#history',
-    );
-    expect(within(nav).getByRole('link', { name: 'Schedule' })).toHaveAttribute(
-      'href',
-      '#schedule',
-    );
-    // F6-4: Profiles is a page of the new app; its previous page is no longer listed.
-    expect(within(nav).getByRole('link', { name: 'Profiles' })).toHaveAttribute(
-      'href',
-      '#profiles',
-    );
-    // F6-8: Emulators is a page of the new app; its previous page is no longer listed.
-    expect(within(nav).getByRole('link', { name: 'Emulators' })).toHaveAttribute(
-      'href',
-      '#emulators',
-    );
-    // F6-6: Collection is a page of the new app; its previous page is no longer listed.
-    expect(within(nav).getByRole('link', { name: 'Collection' })).toHaveAttribute(
-      'href',
-      '#collection',
-    );
-    const appPages = copy.dashboard.topBar.appPages.length;
-    expect(within(nav).getByRole('link', { name: 'Runtime' })).toHaveAttribute('href', '#runtime');
-    // F6-10: Recognition is a page of the new app; its previous page is no longer listed.
-    expect(within(nav).getByRole('link', { name: 'Recognition' })).toHaveAttribute(
-      'href',
-      '#recognition',
-    );
-    expect(within(nav).getAllByRole('link')).toHaveLength(appPages);
-    expect(within(nav).queryByRole('link', { name: 'Previous Dashboard' })).toBeNull();
-    expect(within(nav).queryByRole('link', { name: 'Previous Runs page' })).toBeNull();
-    page.setState(tick(regionState(), 1));
-    expect(summary.closest('details')).toHaveAttribute('open');
-    const link = within(nav).getByRole('link', { name: 'Runs' });
-    link.addEventListener('click', (event) => {
-      event.preventDefault();
-    });
-    await user.click(link);
-    expect(summary.closest('details')).not.toHaveAttribute('open');
-    await check(page.view.container);
-    vi.unstubAllGlobals();
-  },
-);

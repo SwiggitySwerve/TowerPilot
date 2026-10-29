@@ -11,7 +11,7 @@ export function TopBarAccount({ vm }: { readonly vm: TopBarVM }) {
     return (
       <span>
         {vm.account.reason === 'no_active_account'
-          ? copy.dashboard.topbar.noProfile.short
+          ? copy.dashboard.topbar.noAccount.short
           : copy.dashboard.topbar.accountUnknown.short}
       </span>
     );

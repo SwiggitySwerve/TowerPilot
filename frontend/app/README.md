@@ -2,7 +2,7 @@
 > **Status:** Active (Phase 0 scaffold)
 > **Type:** Knowledge
 > **Created:** 2026-10-21
-> **Updated:** 2026-10-24
+> **Updated:** 2026-10-29
 > **Decision record:** ADR-001, frontend stack and structure (2026-10-21)
 
 ## Purpose
@@ -64,6 +64,31 @@ one probe per rule.
 
 The ADR-001 decision record is kept with the project's review logs, which are not
 part of the repository, so it is named here rather than linked.
+
+### Application shell and dashboard modules
+
+`app/AppNavigation.tsx` owns the persistent desktop sidebar and the bounded inline
+navigation panel on narrow screens. It uses one destination inventory from the
+copy catalogue and the existing `ui/routes.ts` hash contract. Navigation sits
+outside the routed-page error boundary; each page still owns its header and main
+landmark. `app/appShell.css` exposes the remaining `workspace` width as a CSS
+container, so feature layouts account for the sidebar.
+
+Dashboard modules keep one reading and keyboard order: Control, Needs you, This
+battle, Start next, Plan and history, then Screen preview. Wide workspaces may
+place the view-only preview beside the operations column. Controls, blockers and
+unresolved outcomes remain visible; disclosure is reserved for secondary detail.
+When Needs you has no issues, successful source checks and their individual ages
+live under Checks and freshness; failed or unread checks stay visible beside the
+summary. The summary reports the issue list, not overall system health.
+
+The shared TopBar owns page identity, account/emulator context and connection
+recovery. Dashboard's InputSlot owns its ordinary input-off action. Other pages
+reuse `shared/InputControl.tsx` through `topBar/HeaderInputControl.tsx`, including
+input request feedback through `outcomes/OutcomeReceipt.tsx`. Selectors and
+commands continue to own eligibility, evidence and mutations. Header `readOnly`
+suppresses connection actions; it does not suppress safe input revocation.
+
 ---
 
 ## Test layout

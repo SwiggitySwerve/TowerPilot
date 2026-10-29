@@ -202,11 +202,11 @@ it.each(['cold', 'warm'])(
     expect(slot(h).getByText("Can't show automation state")).toBeVisible();
     expect(slot(h).getByText('Unknown')).toBeVisible();
     expect(slot(h).getByRole('button', { name: 'Turn input off' })).toBeEnabled();
-    expect(slot(h).getByRole('button', { name: `Stop ${String(id)}` })).toBeEnabled();
+    expect(slot(h).getByRole('button', { name: `Stop Operation:${String(id)}` })).toBeEnabled();
     expect(slot(h).queryByRole('button', { name: /Start/ })).toBeNull();
     await h.advance(5000);
     expect(h.fake.requests.filter((r) => r.path === '/api/diagnostics/client')).toHaveLength(1);
-    await h.user.click(slot(h).getByRole('button', { name: `Stop ${String(id)}` }));
+    await h.user.click(slot(h).getByRole('button', { name: `Stop Operation:${String(id)}` }));
     await h.user.click(within(h.view.getByRole('dialog')).getByRole('button', { name: 'Stop' }));
     expect(
       h.fake.writes().filter((r) => r.path === `/api/operations/${String(id)}/cancel`),

@@ -157,15 +157,14 @@ for (const width of [1360, 1054, 390]) {
         );
       });
       expect(order).toBe(true);
-      // Wide: the side column (26vw, 340 to 440 px). Narrower: the screen sits above Plan and history.
-      if (width === 1360)
-        expect(Math.round((await region(page).boundingBox())?.width ?? 0)).toBe(354);
-      else {
-        const previewBox = await region(page).boundingBox();
-        const recentBox = await page.locator('[data-region="recent"]').boundingBox();
-        if (previewBox !== null && recentBox !== null)
-          expect(previewBox.y + previewBox.height).toBeLessThanOrEqual(recentBox.y);
-      }
+      // At these workspace widths, view-only preview follows every operations module.
+      const previewBox = await region(page).boundingBox();
+      const recentBox = await page.locator('[data-region="recent"]').boundingBox();
+      expect(previewBox).not.toBeNull();
+      expect(recentBox).not.toBeNull();
+      expect(previewBox?.y ?? 0).toBeGreaterThanOrEqual(
+        (recentBox?.y ?? Infinity) + (recentBox?.height ?? 0),
+      );
     });
   }
 }

@@ -148,7 +148,7 @@ export function RuntimePage({ runtime }: { readonly runtime: RuntimeStore }) {
   return (
     <>
       <header className="tp-topbar">
-        <TopBar title={t.pageName.short} readOnly />
+        <TopBar pageId="runtime" title={t.pageName.short} readOnly />
       </header>
       <main id="main" className="tp-main tp-runtime" tabIndex={-1}>
         <p>{t.intro.short}</p>
