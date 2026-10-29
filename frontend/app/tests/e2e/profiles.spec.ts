@@ -5,7 +5,7 @@ import {
   DASHBOARD_PAGES_FIXTURE_PATH,
   loadJsonWithIdentity,
 } from '../../scripts/contract-fixture.mjs';
-import { axeCounts, bodiesTo, openScenario, posts } from './helpers/helpers.ts';
+import { axeCounts, bodiesTo, navigateApp, openScenario, posts } from './helpers/helpers.ts';
 import { profilesContextCase } from '../support/profiles-context.ts';
 
 /**
@@ -270,15 +270,11 @@ test('F6PE-P02 recorded r10 switch after preflight refuses the reviewed context 
   expect(await posts(page)).toEqual([]);
 });
 
-test('P1 the Pages menu opens Profiles; Use this account sends the recorded body once and the page then names Alpha', async ({
+test('P1 app navigation opens Profiles; Use this account sends the recorded body once and the page then names Alpha', async ({
   page,
 }) => {
   const problems = await openScenario(page, 'profiles');
-  await page.getByText('Pages', { exact: true }).click();
-  await page
-    .getByRole('navigation', { name: 'Pages' })
-    .getByRole('link', { name: 'Profiles', exact: true })
-    .click();
+  await navigateApp(page, 'Profiles');
   await expect(page).toHaveURL(/#profiles$/u);
   await expect(page.getByRole('heading', { level: 1, name: 'Profiles' })).toBeVisible();
   const box = account(page);

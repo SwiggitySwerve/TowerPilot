@@ -85,7 +85,7 @@ export const copy = {
     recent,
     topbar: {
       account: entry('Account:'),
-      noProfile: entry('No profile yet'),
+      noAccount: entry('No active account'),
       accountUnknown: entry('Account unknown', 'The account could not be read.'),
     },
     placeholder: entry(

@@ -8,15 +8,25 @@ import { Chip } from '../../../ui/Chip.tsx';
 export function SeenLine({
   chip,
   line,
+  prefix,
   extra,
 }: {
   readonly chip: ChipVM;
   readonly line: CopyText;
+  readonly prefix?: CopyText;
   readonly extra?: CopyText | null;
 }) {
+  const stateChip = chip.word === null ? null : <Chip state={chip.word} />;
   return (
     <p className="tp-seen" data-row={chip.row} data-evidence={chip.evidence ?? undefined}>
-      {chip.word === null ? null : <Chip state={chip.word} />}
+      {prefix === undefined ? (
+        stateChip
+      ) : (
+        <span className="tp-seen__state">
+          <span className="tp-seen__prefix">{prefix}</span>
+          {stateChip}
+        </span>
+      )}
       <span className="tp-seen__line">{line}</span>
       {extra === null || extra === undefined ? null : (
         <span className="tp-seen__extra">{extra}</span>

@@ -855,7 +855,7 @@ export function ProfilesPage() {
           onError={usePartError('topBar')}
         >
           <FaultPoint part="topBar" />
-          <TopBar title={t.pageName.short} />
+          <TopBar pageId="profiles" title={t.pageName.short} />
         </RegionBoundary>
       </header>
       <main id="main" className="tp-main" tabIndex={-1}>

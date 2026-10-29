@@ -334,7 +334,7 @@ export function RunsPage({
           onError={usePartError('topBar')}
         >
           <FaultPoint part="topBar" />
-          <TopBar title={t.pageName.short} />
+          <TopBar pageId="runs" title={t.pageName.short} />
         </RegionBoundary>
       </header>
       <main id="main" className="tp-main" tabIndex={-1}>

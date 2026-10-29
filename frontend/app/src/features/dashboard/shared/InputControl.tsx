@@ -28,8 +28,8 @@ export function InputFacts({ vm }: { readonly vm: InputSlotVM }) {
         : (lines[vm.seen.line] ?? text.lines.cant_tell_whats_running).short;
   return (
     <>
-      <Pill prefix={shell.pills.setting.short} value={settingEntry(vm).short} />
-      <SeenLine chip={vm.seen} line={lineText} />
+      <Pill prefix={text.permission.short} value={settingEntry(vm).short} />
+      <SeenLine prefix={text.observed.short} chip={vm.seen} line={lineText} />
       {steps.slice(1).map((step) => (
         <span key={step} className="tp-seen__extra">
           {text.stepFailed(step)}

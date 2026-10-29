@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { axeCounts, bodiesTo, openScenario, posts } from './helpers/helpers.ts';
+import { axeCounts, bodiesTo, navigateApp, openScenario, posts } from './helpers/helpers.ts';
 import { dashboardPagesCase } from '../support/dashboardFixture.ts';
 import { own, ownPath, entries } from '../../src/core/read.ts';
 
@@ -34,15 +34,11 @@ async function openCollection(page: Page, scenario: string, width = 1360, hash =
 
 const rewards = (page: Page) => page.locator('[data-module="rewards"]');
 
-test('C1 the Pages menu opens Collection; two reward switches save once by keyboard and read back Saved; nothing else is sent', async ({
+test('C1 app navigation opens Collection; two reward switches save once by keyboard and read back Saved; nothing else is sent', async ({
   page,
 }) => {
   const problems = await openScenario(page, 'collection');
-  await page.getByText('Pages', { exact: true }).click();
-  await page
-    .getByRole('navigation', { name: 'Pages' })
-    .getByRole('link', { name: 'Collection', exact: true })
-    .click();
+  await navigateApp(page, 'Collection');
   await expect(page).toHaveURL(/#collection$/u);
   const box = rewards(page);
   await expect(box.getByRole('checkbox', { name: 'Daily missions' })).toBeVisible();

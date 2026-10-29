@@ -71,8 +71,9 @@ for (const width of [1360, 1054]) {
     const line = needs.locator('.tp-need__line');
     const action = needs.locator('.tp-need__actions a[href]').first();
     await expect(action).toBeVisible();
-    // Every issue keeps one shape: its links sit on their own line under the headline.
-    expect(await topOf(action)).toBeGreaterThan((await topOf(line)) + 8);
+    // On a wide operations column, the resolution stays beside the issue.
+    // Its accessible reading order remains headline, impact, then action.
+    expect(Math.abs((await topOf(action)) - (await topOf(line)))).toBeLessThanOrEqual(8);
   });
 }
 

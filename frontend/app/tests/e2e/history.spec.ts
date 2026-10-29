@@ -2,7 +2,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { historyCase, HISTORY_RECORDS } from '../support/history-fixtures.mjs';
-import { axeIds, openScenario, posts, WCAG_AA_TAGS } from './helpers/helpers.ts';
+import { axeIds, navigateApp, openScenario, posts, WCAG_AA_TAGS } from './helpers/helpers.ts';
 import { loadHistoryFixture } from '../../scripts/history-fixture.mjs';
 import { record } from '../../scripts/generate-contract.mjs';
 
@@ -16,7 +16,7 @@ const SCREENS =
 async function openHistory(page: Page, width: number) {
   await openScenario(page, 'idle', { width });
   await page.request.get('/__fake/history');
-  await page.getByRole('link', { name: 'Run history', exact: true }).click();
+  await page.getByRole('main').getByRole('link', { name: 'Run history', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Run history', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Reconnect', exact: true })).toHaveCount(0);
   await expect(page.locator(ROWS)).toHaveCount(20);
@@ -140,7 +140,7 @@ for (const width of WIDTHS) {
     });
     await openScenario(page, 'idle', { width });
     await page.request.get('/__fake/history');
-    await page.getByRole('link', { name: 'Run history', exact: true }).click();
+    await page.getByRole('main').getByRole('link', { name: 'Run history', exact: true }).click();
     for (const value of ['', 'A', 'Recorded battle '.repeat(30), 'x'.repeat(1200)]) {
       label = value;
       await page.getByRole('button', { name: 'Refresh records' }).click();
@@ -309,7 +309,7 @@ test('H1: failed list refresh retains rows, focus and last-loaded time; independ
   expect(await posts(page)).toEqual([]);
 });
 
-test('H2: selecting B while A is delayed never renders A as B; Pages menu opens history', async ({
+test('H2: selecting B while A is delayed never renders A as B; app navigation opens history', async ({
   page,
 }) => {
   await openHistory(page, 390);
@@ -325,15 +325,7 @@ test('H2: selecting B while A is delayed never renders A as B; Pages menu opens 
   await expect(page.getByRole('region', { name: 'Setup evidence' })).toContainText('verified');
   await page.waitForTimeout(600);
   await expect(page.getByRole('region', { name: 'Setup evidence' })).toContainText('verified');
-  await page.getByText('Pages', { exact: true }).click();
-  await page
-    .getByRole('navigation', { name: 'Pages' })
-    .getByRole('link', { name: 'Dashboard', exact: true })
-    .click();
-  await page.getByText('Pages', { exact: true }).click();
-  await page
-    .getByRole('navigation', { name: 'Pages' })
-    .getByRole('link', { name: 'Run history', exact: true })
-    .click();
+  await navigateApp(page, 'Dashboard');
+  await navigateApp(page, 'Run history');
   await expect(page.getByRole('heading', { name: 'Run history', exact: true })).toBeVisible();
 });

@@ -38,6 +38,7 @@ test('axe is clean with a render fault in every Control slot', async ({ page }) 
 /** Region rank of the focused element in the spec 8.3 order. */
 const RANK = [
   'skip',
+  'navigation',
   'header',
   'automation',
   'input',
@@ -64,6 +65,7 @@ async function focusOrder(
       const active = document.activeElement;
       if (active === null || active === document.body) return 'body';
       if (active.classList.contains('tp-skip-link')) return 'skip';
+      if (active.closest('.tp-app-navigation') !== null) return 'navigation';
       if (active.closest('header') !== null) return 'header';
       const slotId = active.closest('[data-slot]')?.getAttribute('data-slot');
       if (slotId !== undefined && slotId !== null) return slotId;
@@ -139,7 +141,9 @@ for (const [scenario, faults] of [
             );
           }
           // The first stop inside main is a Control slot's revocation, never a region link.
-          const firstMain = order.find((where) => where !== 'skip' && where !== 'header');
+          const firstMain = order.find(
+            (where) => where !== 'skip' && where !== 'navigation' && where !== 'header',
+          );
           expect(['automation', 'input', 'gem']).toContain(firstMain);
           if (heldConfig) {
             expect(replacementFocused).toEqual([true]);

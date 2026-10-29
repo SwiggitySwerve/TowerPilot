@@ -1,7 +1,14 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { axeCounts, bodiesTo, expectAppStyles, openScenario, posts } from './helpers/helpers.ts';
+import {
+  axeCounts,
+  bodiesTo,
+  expectAppStyles,
+  navigateApp,
+  openScenario,
+  posts,
+} from './helpers/helpers.ts';
 
 /**
  * The Recognition page in a real browser on the fake backend (brief
@@ -315,13 +322,9 @@ test('R8 restoration required blocks every launch and says the stop did not rest
   await page.screenshot({ path: path.join(OUT, 'recognition-restore-pending-1360.png') });
 });
 
-test('R1 the Pages menu opens Recognition; opening it sends nothing', async ({ page }) => {
+test('R1 app navigation opens Recognition; opening it sends nothing', async ({ page }) => {
   await openScenario(page, 'recognition');
-  await page.getByText('Pages', { exact: true }).click();
-  await page
-    .getByRole('navigation', { name: 'Pages' })
-    .getByRole('link', { name: 'Recognition', exact: true })
-    .click();
+  await navigateApp(page, 'Recognition');
   await expect(page).toHaveURL(/#recognition$/u);
   await expect(page.getByRole('heading', { level: 1, name: 'Recognition' })).toBeVisible();
   await page.waitForTimeout(2_000);

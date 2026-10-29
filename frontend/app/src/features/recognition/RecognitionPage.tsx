@@ -1309,7 +1309,7 @@ export function RecognitionPage({
           onError={usePartError('topBar')}
         >
           <FaultPoint part="topBar" />
-          <TopBar title={t.pageName.short} />
+          <TopBar pageId="recognition" title={t.pageName.short} />
         </RegionBoundary>
       </header>
       <main id="main" className="tp-main" tabIndex={-1}>

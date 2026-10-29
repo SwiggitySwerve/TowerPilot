@@ -6,6 +6,10 @@
   gap: var(--tp-space-3);
 }
 
+.tp-region[data-region='needsYou'] {
+  container-type: inline-size;
+}
+
 .tp-needs[hidden] {
   display: none;
 }
@@ -46,6 +50,13 @@
   flex-basis: 100%;
 }
 
+@container (min-width: 740px) {
+  .tp-need__actions {
+    flex-basis: auto;
+    margin-inline-start: auto;
+  }
+}
+
 /* What the issue means for Start and collection: detail, after the headline. */
 .tp-need__impact {
   flex-basis: 100%;
@@ -81,6 +92,23 @@
 }
 
 .tp-need__empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-1) var(--tp-space-3);
   margin: 0;
   color: var(--tp-color-text-muted);
+}
+.tp-need__empty p {
+  margin: 0;
+}
+.tp-need__empty > details[open],
+.tp-need__unavailable {
+  flex-basis: 100%;
+}
+.tp-need__unavailable {
+  margin: 0;
+}
+.tp-need__unavailable:empty {
+  display: none;
 }

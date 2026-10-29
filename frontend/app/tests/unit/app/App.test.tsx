@@ -1,4 +1,4 @@
-import { act, screen } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderPage } from '../features/dashboard/harness.tsx';
@@ -62,4 +62,25 @@ describe('App shell', () => {
     vi.useRealTimers();
     expect(await axe(page.view.container)).toHaveNoViolations();
   });
+
+  it.each(['page', 'topBar'])(
+    'keeps navigation available when %s rendering fails',
+    async (fault) => {
+      const page = await renderPage({ faults: [fault] });
+      await page.user.click(screen.getByRole('button', { name: 'Navigation' }));
+      const nav = screen.getByRole('navigation', { name: 'Navigation' });
+      expect(within(nav).getByRole('link', { name: 'Runtime' })).toHaveAttribute(
+        'href',
+        '#runtime',
+      );
+      expect(screen.getAllByRole('main')).toHaveLength(1);
+      goTo('#nowhere');
+      await page.advance(0);
+      expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
+      await page.user.click(screen.getByRole('button', { name: 'Navigation' }));
+      expect(screen.getByRole('navigation', { name: 'Navigation' })).toBeVisible();
+      expect(screen.getAllByRole('main')).toHaveLength(1);
+      expect(page.fake.writes()).toEqual([]);
+    },
+  );
 });

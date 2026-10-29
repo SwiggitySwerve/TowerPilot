@@ -1,9 +1,3 @@
-.tp-dashboard-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--tp-space-3);
-  align-items: start;
-}
 .tp-preview {
   min-width: 0;
   max-width: 100%;
@@ -73,7 +67,7 @@
 .tp-preview .tp-button:disabled {
   border-color: color-mix(in srgb, var(--tp-color-border-active) 55%, transparent);
   background: transparent;
-  color: color-mix(in srgb, var(--tp-color-text-muted) 80%, var(--tp-color-surface));
+  color: var(--tp-color-text-muted);
 }
 /* Title and Hide screen share the card's first line, like every region header. */
 /* Title, verdict and its Why on one wrapping line, Hide screen at its end, like a region header. */
@@ -195,40 +189,6 @@
   display: inline-flex;
   align-items: center;
 }
-.tp-dashboard-side {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tp-space-2);
-  min-width: 0;
-}
-/*
- * Below 1200 px the two columns dissolve into one column: Control, Needs you,
- * This battle, then the screen, then the rest. The DOM keeps the screen last; it
- * holds view-only controls, so tab order stays Control, the lists, then the screen.
- */
-@media (max-width: 1199.98px) {
-  .tp-dashboard-layout {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--tp-space-2);
-  }
-  .tp-dashboard-layout > .tp-dashboard,
-  .tp-dashboard-layout > .tp-dashboard-side {
-    display: contents;
-  }
-  .tp-dashboard > [data-region='thisBattle'] {
-    order: 1;
-  }
-  .tp-dashboard
-    > :not([data-region='control'], [data-region='needsYou'], [data-region='thisBattle']) {
-    order: 3;
-  }
-  .tp-preview {
-    order: 2;
-    width: 100%;
-  }
-}
 /* Below 700 px the frame stands above its controls. */
 @media (max-width: 699.98px) {
   .tp-preview canvas {
@@ -236,8 +196,8 @@
     max-height: 60svh;
   }
 }
-/* 700 to 1200 px: the frame on the left, its status, facts and settings beside it. */
-@media (min-width: 700px) and (max-width: 1199.98px) {
+/* Use the workspace left by navigation, not the full browser width. */
+@container workspace (min-width: 700px) and (max-width: 1399.98px) {
   .tp-preview__content {
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: auto 1fr;
@@ -251,22 +211,12 @@
     justify-items: start;
   }
   .tp-preview canvas {
-    height: clamp(260px, 34svh, 360px);
-    max-height: clamp(260px, 34svh, 360px);
+    height: clamp(440px, 65svh, 640px);
+    max-height: clamp(440px, 65svh, 640px);
   }
 }
-/* From 1200 px the screen holds its own column and stays in view while the lists scroll. */
-@media (min-width: 1200px) {
-  .tp-dashboard-layout {
-    grid-template-columns: minmax(0, 1fr) clamp(340px, 26vw, 440px);
-  }
-  .tp-dashboard-layout > .tp-dashboard {
-    max-width: none;
-  }
-  .tp-dashboard-side {
-    position: sticky;
-    top: var(--tp-space-3);
-  }
+/* A separate preview column only when the operations retain useful width. */
+@container workspace (min-width: 1400px) {
   .tp-preview canvas {
     height: min(70svh, calc(100svh - 14rem));
     max-height: min(70svh, calc(100svh - 14rem));

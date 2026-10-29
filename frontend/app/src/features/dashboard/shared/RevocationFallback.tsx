@@ -55,7 +55,14 @@ export function RevocationFallback({ part, withStops = false }: RevocationFallba
                 void commands.turnInputOff();
               }}
             />
-            {withStops ? view.stops.map((stop) => <StopButton key={stop.key} stop={stop} />) : null}
+            {withStops && view.stops.some((stop) => stop.shown) ? (
+              <div className="tp-fallback__automation">
+                <p>{copy.dashboard.automation.endsAutomation.short}</p>
+                {view.stops.map((stop) => (
+                  <StopButton key={stop.key} stop={stop} />
+                ))}
+              </div>
+            ) : null}
           </>
         }
       />

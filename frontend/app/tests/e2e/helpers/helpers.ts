@@ -9,6 +9,26 @@ export interface Posted {
   readonly body: string;
 }
 
+/** Choose an app destination from the persistent sidebar or its narrow disclosure. */
+export async function navigateApp(page: Page, label: string): Promise<void> {
+  const navigation = page.getByRole('navigation', {
+    name: 'Navigation',
+    exact: true,
+    includeHidden: true,
+  });
+  if (!(await navigation.isVisible())) {
+    await page.getByRole('button', { name: 'Navigation', exact: true }).click();
+  }
+  const destination = navigation.getByRole('link', {
+    name: label,
+    exact: true,
+    includeHidden: true,
+  });
+  await destination.click();
+  // The narrow panel closes on selection; wait for the router before another navigation.
+  await expect(destination).toHaveAttribute('aria-current', 'page');
+}
+
 /**
  * Open the Dashboard on a fake-backend scenario at `width`. `faults` names
  * parts made to fail while drawing (the session key app/ reads, X4 to X6).

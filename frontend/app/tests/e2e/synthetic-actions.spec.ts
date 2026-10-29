@@ -71,8 +71,11 @@ async function readState(page: Page, scenario: string, region: Locator) {
   await enter(live(page).getByRole('button', { name: 'Check this battle', exact: true }).first());
   expect((await response).status()).toBe(200);
   if (isDashboard) {
-    await enter(page.locator('.tp-pages > summary'));
-    await enter(page.locator('.tp-pages a[href="#dashboard"]'));
+    const navigation = page.getByRole('navigation', { name: 'Navigation', includeHidden: true });
+    if (!(await navigation.isVisible())) {
+      await enter(page.getByRole('button', { name: 'Navigation', exact: true }));
+    }
+    await enter(navigation.getByRole('link', { name: 'Dashboard', exact: true }));
   }
 }
 

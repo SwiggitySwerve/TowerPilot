@@ -1,15 +1,30 @@
 /* The Dashboard's layout (spec 2.1 to 2.3). Building blocks are styled in src/ui/ui.css. */
 
-/* F6-13: the main column can wrap beside the 300 px preview at desktop widths. */
+.tp-dashboard-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--tp-space-3);
+  align-items: start;
+}
+.tp-dashboard-side {
+  min-width: 0;
+}
+/* Navigation has already taken its share of the viewport. Keep useful action width. */
+@container workspace (min-width: 1400px) {
+  .tp-dashboard-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 24%);
+  }
+}
+
+/* The operations column grows with its workspace; the preview may sit beside it. */
 .tp-dashboard {
   display: flex;
   flex-direction: column;
   gap: var(--tp-space-2);
-  max-width: 1100px;
   min-width: 0;
 }
 
-/* Control: three slots side by side when the card is at least 840 px wide, one column below. */
+/* Keep the two-column control arrangement when its own content width permits. */
 .tp-region[data-region='control'] {
   container-type: inline-size;
   min-width: 0;
@@ -20,7 +35,7 @@
   gap: var(--tp-space-2);
   margin-bottom: var(--tp-space-2);
 }
-@container (min-width: 840px) {
+@container (min-width: 740px) {
   /* Automation and Game input stack in the first column; Gem harvesting spans both rows beside them. */
   .tp-control__slots {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -31,6 +46,21 @@
   .tp-control__slots .tp-slot[data-slot='gem'] {
     grid-column: 2;
     grid-row: 1 / span 2;
+  }
+  .tp-control__slots .tp-slot__facts {
+    gap: var(--tp-space-1);
+    flex-direction: row;
+    align-items: baseline;
+  }
+  .tp-control__slots .tp-slot {
+    row-gap: var(--tp-space-1);
+    padding-block: 0.375rem;
+  }
+}
+
+@container workspace (min-width: 800px) {
+  .tp-dashboard > .tp-region {
+    padding-block: var(--tp-space-2);
   }
 }
 /* Every width: each slot's label and revocation share its first line (spec 2.2), facts below. */
@@ -226,4 +256,21 @@ p.tp-seen__extra {
   border: 1px solid var(--tp-color-border-active);
   border-radius: var(--tp-radius-control);
   background: var(--tp-color-surface-raised);
+}
+
+/* Touch targets keep the same size across primary actions, links and details. */
+@media (max-width: 480px), (pointer: coarse) {
+  .tp-dashboard :is(button, select, summary, a[href]),
+  .tp-preview :is(button, select, summary, a[href]) {
+    min-height: var(--tp-control-height-touch);
+    min-width: var(--tp-control-height-touch);
+  }
+  .tp-dashboard summary,
+  .tp-preview summary {
+    line-height: var(--tp-control-height-touch);
+  }
+  .tp-dashboard a[href] {
+    align-content: center;
+    margin-block: 0;
+  }
 }

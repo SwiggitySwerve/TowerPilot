@@ -441,9 +441,19 @@ it('F-084: three or fewer items have no Show all and detector reports stay under
 it('F-084: the empty state names every checked source and its age without claiming health', async () => {
   const h = renderRegion(tick(readyState(), 9), <NeedsYou />);
   expect(h.view.container.querySelectorAll('[data-need]')).toHaveLength(0);
-  expect(h.view.getByText(/^No unresolved issues reported — checked 9 s ago/)).toHaveTextContent(
-    '9 s ago (Live status: answered); 9 s ago (Setup progress: answered); 9 s ago (Runs and readiness: answered); 9 s ago (Connection tools: answered); 9 s ago (Setup steps: answered); 9 s ago (Configuration: answered); 9 s ago (Profiles: answered)',
-  );
+  expect(h.view.getByText('No unresolved issues reported')).toBeVisible();
+  await userEvent.setup().click(h.view.getByText('Checks and freshness'));
+  for (const source of [
+    'Live status',
+    'Setup progress',
+    'Runs and readiness',
+    'Connection tools',
+    'Setup steps',
+    'Configuration',
+    'Profiles',
+  ]) {
+    expect(h.view.getByText(`${source}: answered - checked 9 s ago`)).toBeVisible();
+  }
   expect(h.view.queryByRole('button', { name: /Show all/ })).toBeNull();
   expect(h.view.getByRole('link', { name: 'All runtime events' })).toHaveAttribute(
     'href',
@@ -455,9 +465,7 @@ it('F-084: the empty state names every checked source and its age without claimi
 it('F-084: an empty issue list preserves a failed runs refresh in the checked sources', async () => {
   const h = renderRegion(addFailure(tick(readyState(), 9), 'runs'), <NeedsYou />);
   expect(h.view.container.querySelectorAll('[data-need]')).toHaveLength(0);
-  expect(h.view.getByText(/^No unresolved issues reported/)).toHaveTextContent(
-    '0 s ago (Runs and readiness: unavailable)',
-  );
+  expect(h.view.getByText('Runs and readiness: unavailable - checked 0 s ago')).toBeVisible();
   await verify(h.view.container);
 });
 

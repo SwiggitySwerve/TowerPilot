@@ -4,6 +4,7 @@ import { expect, test, type Page } from '@playwright/test';
 import {
   axeViolations,
   expectAppStyles,
+  navigateApp,
   openScenario,
   posts,
   WCAG_AA_TAGS,
@@ -49,10 +50,7 @@ async function open(page: Page, width: number, module: Module, mode = 'saved') {
     `config_fields_runtime_${RUNTIME_CONFIG_SAVES[module].suffix}_${mode}`,
     { width },
   );
-  await page.getByText('Pages', { exact: true }).click();
-  await page
-    .getByRole('link', { name: module === 'run-defaults' ? 'Runs' : 'Runtime', exact: true })
-    .click();
+  await navigateApp(page, module === 'run-defaults' ? 'Runs' : 'Runtime');
   if (module === 'run-defaults') {
     const disclosure = page.locator('[data-run-defaults] > summary');
     await disclosure.focus();

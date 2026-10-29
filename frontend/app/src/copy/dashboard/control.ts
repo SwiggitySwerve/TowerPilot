@@ -63,6 +63,8 @@ function routinePhrase(name: string, routine: RoutineWords | null): string {
 export const control = {
   title: entry('Control'),
   input: {
+    permission: entry('Permission:'),
+    observed: entry('Observed:'),
     /** IN-01: the Setting pill's values. */
     setting: {
       allowed: entry('Allowed'),

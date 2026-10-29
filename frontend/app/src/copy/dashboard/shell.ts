@@ -156,6 +156,7 @@ export const shell = {
     process_unidentified: entry("Can't identify the process", 'This row has no valid PID.'),
   },
   targetPid: entry('PID'),
+  targetOperation: entry('Operation:'),
 } as const;
 
 /** "{n} s ago", "{n} m ago", "{n} h ago": an age, from whole seconds. */

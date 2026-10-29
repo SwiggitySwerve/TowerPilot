@@ -172,13 +172,13 @@ describe('the selector to TopBarAccount slice (F-002, R5-06)', () => {
     expect(vm.account.kind === 'known' ? vm.account.observedAt : null).toBe(12);
   });
 
-  it('shows No profile yet when no account matches', () => {
+  it('shows No active account when no account matches', () => {
     const vm = selectTopBar({
       body: { active: 'absent', accounts: [{ id: 'a', label: 'My Tower' }] },
       observedAt: 12,
     });
     const { container } = render(<TopBarAccount vm={vm} />);
-    expect(container.textContent).toBe('No profile yet');
+    expect(container.textContent).toBe('No active account');
     expect(textOutsideCatalogue(container)).toEqual([]);
   });
 

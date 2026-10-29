@@ -34,8 +34,9 @@
 }
 
 .tp-start-next__controls > .tp-button {
-  white-space: nowrap;
-  flex: 0 0 auto;
+  white-space: normal;
+  max-width: 100%;
+  flex: 0 1 auto;
 }
 
 .tp-start-next__picker {
@@ -108,6 +109,10 @@
   .tp-start-next__controls {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .tp-start-next__picker {
+    flex-basis: auto;
   }
 
   .tp-start-next__picker select {

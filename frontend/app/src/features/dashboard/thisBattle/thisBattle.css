@@ -64,7 +64,7 @@
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-small);
 }
-@container (min-width: 820.02px) {
+@container (min-width: 740.02px) {
   /* Wide: the header row names the columns; each cell's own label stays for screen readers. */
   .tp-battle__routine .tp-battle__column-label {
     position: absolute;
@@ -177,8 +177,8 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
-/* Up to 820 px of region width: one card per routine, name and Run now on its first line. */
-@container (max-width: 820px) {
+/* Narrow regions use cards; wide regions retain aligned routine columns. */
+@container (max-width: 740px) {
   .tp-battle__columns {
     display: none;
   }
@@ -223,8 +223,8 @@
     flex-basis: 100%;
   }
 }
-/* Cards 640 to 820 px wide: Setting, Next and Last result side by side under the name. */
-@container (min-width: 640px) and (max-width: 820px) {
+/* Medium cards: Setting, Next and Last result side by side under the name. */
+@container (min-width: 640px) and (max-width: 740px) {
   .tp-battle__next {
     grid-column: 2;
   }
@@ -234,10 +234,48 @@
   }
 }
 
+/* Phone cards keep every field, with its label beside the value. */
+@container (max-width: 639.98px) {
+  .tp-battle__routine {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: var(--tp-space-1);
+  }
+  .tp-battle__name {
+    grid-column: 1;
+  }
+  .tp-battle__action {
+    grid-column: 2;
+  }
+  .tp-battle__setting,
+  .tp-battle__next,
+  .tp-battle__last {
+    grid-column: 1 / -1;
+  }
+  .tp-battle__next {
+    grid-row: 3;
+  }
+  .tp-battle__last {
+    grid-row: 4;
+  }
+  .tp-battle__column-label {
+    display: inline;
+    margin-inline-end: 0.5em;
+  }
+  .tp-battle__result {
+    display: inline-flex;
+  }
+  .tp-battle__last .tp-battle__result > span:first-child:not(.tp-chip) {
+    flex-basis: auto;
+  }
+}
+
 /* Words of one cell or of the header never run together ("On every 12 m", "up to date reported 2 s ago"). */
 .tp-battle__setting > span:not(.tp-battle__column-label),
 .tp-battle__header > span > span {
   margin-inline-start: 0.3em;
+}
+.tp-battle__setting > span:not(.tp-battle__column-label) {
+  display: inline-block;
 }
 
 /* A value right after its (screen-reader) column label starts flush with the label. */

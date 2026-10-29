@@ -79,7 +79,7 @@ export function EquipmentPage({ equipment }: { readonly equipment: EquipmentStor
   return (
     <>
       <header className="tp-topbar">
-        <TopBar title={t.pageName.short} readOnly />
+        <TopBar pageId="equipment" title={t.pageName.short} readOnly />
       </header>
       <main
         id="main"

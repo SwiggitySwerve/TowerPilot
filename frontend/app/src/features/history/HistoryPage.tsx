@@ -129,7 +129,7 @@ export function HistoryPage({ history }: { readonly history: HistoryStore }) {
   return (
     <>
       <header className="tp-topbar">
-        <TopBar title={t.pageName.short} readOnly />
+        <TopBar pageId="history" title={t.pageName.short} readOnly />
       </header>
       <main id="main" className="tp-main tp-history" tabIndex={-1}>
         <p className="tp-history__note">{t.introduction.short}</p>
