@@ -11,7 +11,7 @@ export const topBar = {
   reconnect: entry('Reconnect'),
   chooseEmulator: entry('Choose emulator'),
   reconnectReasons: {
-    process_listed: entry('Reconnect is unavailable while an automation process is listed'),
+    process_listed: entry('Unavailable while automation runs'),
     sending: entry('Reconnect is sending; wait for its reply'),
     process_list_unavailable: entry('Reconnect needs a readable process list'),
   },

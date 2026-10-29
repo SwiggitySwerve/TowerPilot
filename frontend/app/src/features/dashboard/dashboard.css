@@ -21,41 +21,80 @@
   margin-bottom: var(--tp-space-2);
 }
 @container (min-width: 840px) {
+  /* Automation and Game input stack in the first column; Gem harvesting spans both rows beside them. */
   .tp-control__slots {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(4, auto);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: column;
+    grid-template-rows: auto auto;
+    align-items: stretch;
+  }
+  .tp-control__slots .tp-slot[data-slot='gem'] {
+    grid-column: 2;
+    grid-row: 1 / span 2;
   }
 }
-/* Narrow: each slot's label and revocation share its first line (spec 2.2, 390 px). */
-@container (max-width: 839.98px) {
-  .tp-control__slots .tp-slot {
-    grid-template-rows: none;
-    grid-row: auto;
-    /* The label keeps its longest word (at most 40% wide); the action wraps beside it, never over it. */
-    grid-template-columns: fit-content(40%) minmax(0, 1fr);
-    grid-template-areas:
-      'label action'
-      'facts facts'
-      'meta meta';
-  }
-  .tp-control__slots .tp-slot__label {
-    grid-area: label;
-    align-self: center;
-  }
-  .tp-control__slots .tp-slot__action {
-    grid-area: action;
-    justify-content: flex-end;
-  }
-  .tp-control__slots .tp-slot__facts {
-    grid-area: facts;
-  }
-  .tp-control__slots .tp-slot__meta {
-    grid-area: meta;
-  }
-  /* A slot that failed to draw: its fallback takes a full row under the label (F4-01 at 390). */
-  .tp-control__slots .tp-slot > .tp-fallback {
-    grid-column: 1 / -1;
-  }
+/* Every width: each slot's label and revocation share its first line (spec 2.2), facts below. */
+.tp-control__slots .tp-slot {
+  grid-template-rows: none;
+  grid-row: auto;
+  align-content: start;
+  /* The label keeps its longest word (at most 40% wide); the action wraps beside it, never over it. */
+  grid-template-columns: fit-content(40%) minmax(0, 1fr);
+  grid-template-areas:
+    'label action'
+    'facts facts'
+    'meta meta';
+}
+/* Labels sit on the buttons' centre line, so all three slot headers align. */
+.tp-control__slots .tp-slot__label {
+  grid-area: label;
+  color: var(--tp-color-text-strong);
+  font-size: var(--tp-font-size-15);
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
+  align-self: start;
+  display: flex;
+  align-items: center;
+  min-height: var(--tp-control-height);
+}
+.tp-control__slots .tp-slot__action {
+  grid-area: action;
+  justify-content: flex-end;
+}
+/* Stop ends the automation: the page's one solid red action; the other revocations stay outlined. */
+.tp-control__slots
+  .tp-slot[data-slot='automation']
+  .tp-button[data-tier='halt']:not([aria-disabled='true']) {
+  background: var(--tp-color-danger);
+  border-color: var(--tp-color-halt-border);
+  color: var(--tp-color-on-action);
+}
+/* A Stop and its "ends automation" note end on the card's right edge. */
+.tp-control__slots .tp-slot__action .tp-automation-list > li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--tp-space-1) var(--tp-space-3);
+  text-align: end;
+}
+/* The note reads before its Stop; it is not focusable, so tab order is unchanged. */
+.tp-control__slots .tp-automation-note {
+  order: -1;
+  margin: 0;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+.tp-control__slots .tp-slot__facts {
+  grid-area: facts;
+}
+.tp-control__slots .tp-slot__meta {
+  grid-area: meta;
+}
+/* A slot that failed to draw: its fallback takes a full row under the label (F4-01 at 390). */
+.tp-control__slots .tp-slot > .tp-fallback {
+  grid-column: 1 / -1;
 }
 
 /* A list of rows inside a region or slot (routines, outcome lines, needs). */
@@ -93,6 +132,11 @@
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);
 }
+p.tp-seen__extra[data-gem-finder-suspected] {
+  padding-inline-start: var(--tp-space-2);
+  border-inline-start: 3px solid var(--tp-color-warn);
+  color: var(--tp-color-text);
+}
 p.tp-seen__extra {
   display: flex;
   flex-wrap: wrap;
@@ -105,7 +149,7 @@ p.tp-seen__extra {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.25rem 0.4rem;
+  gap: 0.25rem 0.3em;
   margin: 0;
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);
@@ -131,6 +175,10 @@ p.tp-seen__extra {
   font-variant-numeric: tabular-nums;
 }
 .tp-source {
+  flex-basis: 100%;
+}
+/* The run, then its routines, then whether it changed: one fact per line at every width. */
+.tp-source__routines {
   flex-basis: 100%;
 }
 

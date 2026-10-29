@@ -17,6 +17,12 @@ const SCREENS = path.resolve(
 );
 mkdirSync(SCREENS, { recursive: true });
 const region = (page: Page) => page.locator('.tp-preview');
+/** The viewer settings sit behind a disclosure; open it (once) and return the panel. */
+async function settings(page: Page) {
+  const disclosure = region(page).locator('details.tp-preview__settings');
+  if ((await disclosure.getAttribute('open')) === null) await disclosure.locator('summary').click();
+  return region(page);
+}
 const verdict = (page: Page) => region(page).locator('[data-preview-verdict]');
 const STREAM = '/api/stream.mjpg';
 /**
@@ -151,13 +157,14 @@ for (const width of [1360, 1054, 390]) {
         );
       });
       expect(order).toBe(true);
+      // Wide: the side column (26vw, 340 to 440 px). Narrower: the screen sits above Plan and history.
       if (width === 1360)
-        expect(Math.round((await region(page).boundingBox())?.width ?? 0)).toBe(300);
+        expect(Math.round((await region(page).boundingBox())?.width ?? 0)).toBe(354);
       else {
         const previewBox = await region(page).boundingBox();
         const recentBox = await page.locator('[data-region="recent"]').boundingBox();
         if (previewBox !== null && recentBox !== null)
-          expect(previewBox.y).toBeGreaterThanOrEqual(recentBox.y + recentBox.height);
+          expect(previewBox.y + previewBox.height).toBeLessThanOrEqual(recentBox.y);
       }
     });
   }
@@ -185,7 +192,11 @@ test('FOCUS #5 the preview starts by itself, Stop is respected, hide and route l
   // The person's Stop holds across dashboard reads, a route leave and a return.
   await page.waitForTimeout(3000);
   expect(streams()).toBe(1);
-  await region(page).getByRole('link', { name: 'Preview delivery settings on Emulators' }).click();
+  await (
+    await settings(page)
+  )
+    .getByRole('link', { name: 'Preview delivery settings on Emulators' })
+    .click();
   await expect(region(page)).toHaveCount(0);
   await page.evaluate(() => {
     location.hash = 'dashboard';
@@ -218,7 +229,11 @@ test('FOCUS #5 the preview starts by itself, Stop is respected, hide and route l
   });
   await reattached(4);
   // Leaving the Dashboard and coming back reattaches by itself.
-  await region(page).getByRole('link', { name: 'Preview delivery settings on Emulators' }).click();
+  await (
+    await settings(page)
+  )
+    .getByRole('link', { name: 'Preview delivery settings on Emulators' })
+    .click();
   await expect(region(page)).toHaveCount(0);
   await page.evaluate(() => {
     location.hash = 'dashboard';
@@ -250,7 +265,11 @@ for (const device of ['offline', 'unknown']) {
     ).toBeVisible();
     // Several dashboard polls pass with the device offline and no stream is ever requested.
     await page.waitForTimeout(3000);
-    await region(page).getByRole('button', { name: 'Check availability', exact: true }).click();
+    await (
+      await settings(page)
+    )
+      .getByRole('button', { name: 'Check availability', exact: true })
+      .click();
     await expect(
       region(page).getByText('Prerequisites available', { exact: true }).first(),
     ).toBeVisible();
@@ -262,11 +281,15 @@ test('PV3 PV4 PV5 PV6 saved fractional FPS and unsupported-combination request p
   page,
 }) => {
   const capture = await open(page, 'preview_saved');
-  const fps = region(page).getByLabel('Target FPS', { exact: true });
-  const source = region(page).getByLabel('Requested source', { exact: true });
-  const quality = region(page).getByLabel('Picture quality', { exact: true });
+  const fps = (await settings(page)).getByLabel('Target FPS', { exact: true });
+  const source = (await settings(page)).getByLabel('Requested source', { exact: true });
+  const quality = (await settings(page)).getByLabel('Picture quality', { exact: true });
   await expect(quality).toHaveValue('balanced');
-  await region(page).getByRole('button', { name: 'Check availability', exact: true }).click();
+  await (
+    await settings(page)
+  )
+    .getByRole('button', { name: 'Check availability', exact: true })
+    .click();
   await expect(fps.getByRole('option', { name: '12.5 FPS', exact: true })).toBeAttached();
   await expect(region(page).getByText('Saved default: 12.5 FPS', { exact: true })).toBeVisible();
   await expect(region(page).getByText(/Saved source:\s*scrcpy/)).toBeVisible();
@@ -345,11 +368,15 @@ test('PV4 recorded source selections display requested and actual sources with s
     ['adb', 'ADB'],
     ['auto', 'MuMu native'],
   ]) {
-    await region(page).getByLabel('Target FPS', { exact: true }).selectOption('15');
-    await region(page)
+    await (await settings(page)).getByLabel('Target FPS', { exact: true }).selectOption('15');
+    await (
+      await settings(page)
+    )
       .getByLabel('Picture quality', { exact: true })
       .selectOption(source === 'auto' ? 'balanced' : 'native');
-    await region(page)
+    await (
+      await settings(page)
+    )
       .getByLabel('Requested source', { exact: true })
       .selectOption(source ?? '');
     await start(page);
@@ -385,15 +412,21 @@ for (const [scenario, requested, actual] of [
     page,
   }) => {
     await open(page, scenario);
-    await region(page).getByLabel('Picture quality', { exact: true }).selectOption('native');
-    await region(page)
+    await (
+      await settings(page)
+    )
+      .getByLabel('Picture quality', { exact: true })
+      .selectOption('native');
+    await (
+      await settings(page)
+    )
       .getByLabel('Requested source', { exact: true })
       .selectOption(requested ?? '');
     await start(page);
     await expect(verdict(page)).toHaveText('Receiving via fallback');
-    await expect(region(page).getByLabel('Requested source', { exact: true })).toHaveValue(
-      requested ?? '',
-    );
+    await expect(
+      (await settings(page)).getByLabel('Requested source', { exact: true }),
+    ).toHaveValue(requested ?? '');
     await expect(
       region(page)
         .locator('p')
@@ -416,7 +449,11 @@ for (const [scenario, text] of [
 ]) {
   test(`PV6 recorded availability ${scenario}`, async ({ page }) => {
     const capture = await open(page, scenario);
-    await region(page).getByRole('button', { name: 'Check availability', exact: true }).click();
+    await (
+      await settings(page)
+    )
+      .getByRole('button', { name: 'Check availability', exact: true })
+      .click();
     await expect(
       region(page)
         .getByText(text ?? '', { exact: false })
@@ -748,7 +785,7 @@ test('PV3 PV4 PV5 PV7 PV8 C-02 recorded Low receives a portrait picture with rea
     '/api/stream.mjpg?instance=main&stream_id=pv1&fps=15&scale=0.4&q=70&backend=auto',
   );
   const capture = await open(page, 'preview', 390);
-  await region(page).getByLabel('Picture quality', { exact: true }).selectOption('low');
+  await (await settings(page)).getByLabel('Picture quality', { exact: true }).selectOption('low');
   const response = page.waitForResponse((r) => new URL(r.url()).pathname === '/api/stream.mjpg');
   await start(page);
   expect((await response).headers()['x-preview-fixture-mode']).toBe('recorded');
@@ -765,7 +802,7 @@ test('PV3 PV4 PV5 PV7 PV8 C-02 recorded Low receives a portrait picture with rea
     region(page).getByText('Displayed source: MuMu native', { exact: true }),
   ).toBeVisible();
   await expect(region(page).getByText('Source age unknown', { exact: true })).toBeVisible();
-  await expect(region(page).getByText(/^Frame received \d+\.\d s ago$/)).toBeVisible();
+  await expect(region(page).getByText(/^Frame received \d+ s ago$/)).toBeVisible();
   const bounds = await region(page).locator('canvas').boundingBox();
   expect(bounds).not.toBeNull();
   if (bounds !== null) {
@@ -819,14 +856,14 @@ test('PV8 keyboard controls, visible focus and verdict-only polite announcements
   expect(await region(page).locator('canvas').getAttribute('aria-live')).toBeNull();
   await region(page).getByRole('button', { name: 'Stop preview', exact: true }).focus();
   await page.keyboard.press('Enter');
-  const fps = region(page).getByLabel('Target FPS', { exact: true });
+  const fps = (await settings(page)).getByLabel('Target FPS', { exact: true });
   await fps.focus();
   await page.keyboard.press('ArrowDown');
-  const source = region(page).getByLabel('Requested source', { exact: true });
+  const source = (await settings(page)).getByLabel('Requested source', { exact: true });
   await source.focus();
   await page.keyboard.press('ArrowDown');
   await expect(source).toHaveValue('mumu');
-  const quality = region(page).getByLabel('Picture quality', { exact: true });
+  const quality = (await settings(page)).getByLabel('Picture quality', { exact: true });
   await quality.focus();
   await page.keyboard.press('ArrowDown');
   await expect(quality).toHaveValue('low');

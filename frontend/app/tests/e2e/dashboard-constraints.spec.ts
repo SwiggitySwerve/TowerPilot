@@ -374,7 +374,7 @@ test('F4-05: in the sketch scenario the running manual collector reads Running, 
   await openScenario(page, 'sketch');
   const gem = slot(page, 'gem');
   await expect(gem.locator('.tp-chip').first()).toHaveAttribute('data-state', 'running');
-  await expect(gem).toContainText('collecting gems');
+  await expect(gem).toContainText('Collecting gems');
   const turnOn = gem.getByRole('button', { name: 'Turn on' });
   await expect(turnOn).toHaveAttribute('aria-disabled', 'true');
   const reasonId = (await turnOn.getAttribute('aria-describedby')) ?? '';
@@ -398,9 +398,9 @@ test('F-038: in the sketch scenario Start playing and Collect gems only are disa
       const style = getComputedStyle(element);
       return { background: style.backgroundColor, border: style.borderTopStyle };
     });
-    // Not the primary fill (#2969b5) and not a solid tier border.
+    // Not the primary fill (#2969b5); a dim solid edge (dashed edges belong to Unknown alone).
     expect(look.background).not.toBe('rgb(41, 105, 181)');
-    expect(look.border).toBe('dashed');
+    expect(look.border).toBe('solid');
     const reasonId = await button.getAttribute('aria-describedby');
     await expect(page.locator(`[id="${reasonId ?? ''}"]`)).toContainText('Blocked');
     // Playwright treats aria-disabled as disabled; force the click a person could still make.

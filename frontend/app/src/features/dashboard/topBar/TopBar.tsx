@@ -62,8 +62,14 @@ export function TopBar({
           )}
         </span>
         <span className="tp-topbar-connection">
-          {vm.connection.word === null ? null : <Chip state={vm.connection.word} />}
-          <span>{connectionLine?.short ?? words.connection.connection_unconfirmed.short}</span>
+          {vm.connection.word === null && vm.connection.line === 'connected' ? (
+            <Chip state="running" label={words.connection.connected.short} />
+          ) : (
+            <>
+              {vm.connection.word === null ? null : <Chip state={vm.connection.word} />}
+              <span>{connectionLine?.short ?? words.connection.connection_unconfirmed.short}</span>
+            </>
+          )}
         </span>
         {readOnly ? null : (
           <span

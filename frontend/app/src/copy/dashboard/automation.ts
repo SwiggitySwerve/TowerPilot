@@ -66,7 +66,7 @@ export const automation = {
   instance: entry('Instance'),
   step: entry('Step'),
   boundary: entry('Boundary wait'),
-  endsAutomation: entry('ends automation, not the battle'),
+  endsAutomation: entry('Ends automation, not the battle'),
   foreign: entry('From another install'),
   stopThere: entry('Stop it there, or turn input off'),
   retained: entry('Last known automation'),
@@ -88,15 +88,18 @@ export const automation = {
     const stamp = Number.isNaN(date.getTime()) ? null : date.toLocaleString('en-US');
     return made(
       stamp === null
-        ? `start time not recorded${pid === null ? '' : `, PID ${String(pid)}`}`
-        : `started ${stamp}${pid === null ? '' : `, PID ${String(pid)}`}`,
+        ? `Start time not recorded${pid === null ? '' : `, PID ${String(pid)}`}`
+        : `Started ${stamp}${pid === null ? '' : `, PID ${String(pid)}`}`,
     );
   },
-  startUnknown: (pid: number) => made(`start time not recorded, PID ${String(pid)}`),
+  startUnknown: (pid: number) => made(`Start time not recorded, PID ${String(pid)}`),
+  /** Mid-line, after a run name ('Farm - wave 123'). */
   wave: (wave: number) => made(`wave ${wave.toLocaleString('en-US')}`),
+  /** A wave on a line of its own (Automation's row). */
+  waveLine: (wave: number) => made(`Wave ${wave.toLocaleString('en-US')}`),
   lastWave: (wave: number, age: number | null) =>
     made(
-      `last reported wave ${wave.toLocaleString('en-US')}, ${age === null ? 'age not recorded' : ageAgo(age)}`,
+      `Last reported wave ${wave.toLocaleString('en-US')}, ${age === null ? 'age not recorded' : ageAgo(age)}`,
     ),
   lastIdle: (age: number) => made(`Last known: idle, ${ageAgo(age)}`),
   lastListed: (age: number) => made(`last listed ${ageAgo(age)}`),

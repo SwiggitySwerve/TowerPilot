@@ -769,9 +769,9 @@ function BattleContent() {
             ) : (
               <ServerValue value={vm.label} kind="name" />
             )}
-            {words.separator.short}
+            {words.listSeparator.short}
             {vm.wave === null ? words.waveUnknown.short : words.wave(vm.wave)}
-            {words.separator.short}
+            {words.listSeparator.short}
             {words.scope.short}
           </span>
           <span>
@@ -783,7 +783,10 @@ function BattleContent() {
               <span>{lastRead(vm.readAgeSec)}</span>
             ) : null}
             {(vm.header.row === 'B5' || vm.header.row === 'B6') && vm.reportAgeSec !== null ? (
-              <span>{words.reported(vm.reportAgeSec)}</span>
+              <span>
+                {words.listSeparator.short}
+                {words.reported(vm.reportAgeSec)}
+              </span>
             ) : null}
           </span>
         </div>

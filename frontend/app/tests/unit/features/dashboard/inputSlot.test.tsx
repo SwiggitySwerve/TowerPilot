@@ -145,10 +145,10 @@ describe('Game input capability rows', () => {
     h.read('status', statusBody(revoked));
     h.read('config', e0Config(false));
     const region = renderRegion(h.state(), <InputSlot />);
-    expect(screen.getByText('automation input stopped')).toBeInTheDocument();
+    expect(screen.getByText('Automation input stopped')).toBeInTheDocument();
     h.read('config', e0Config(true));
     region.setState(h.state());
-    expect(screen.queryByText('automation input stopped')).toBeNull();
+    expect(screen.queryByText('Automation input stopped')).toBeNull();
     expect(region.view.container.querySelector('.tp-pill')).toHaveTextContent('Setting:Allowed');
     expect(turnOff()).not.toBeNull();
   });
@@ -164,10 +164,10 @@ describe('Game input capability rows', () => {
     h.read('config', e0Config(false));
     renderRegion(h.state(), <InputSlot />);
     expect(
-      screen.getByText('an earlier turn-on has no answer; taps may be allowed'),
+      screen.getByText('An earlier turn-on has no answer; taps may be allowed'),
     ).toBeInTheDocument();
     expect(turnOff()).not.toBeNull();
-    expect(screen.queryByText('automation input stopped')).toBeNull();
+    expect(screen.queryByText('Automation input stopped')).toBeNull();
   });
 
   it('F-022: Turn input off answered input_stopped retires a held Turn on; its late enable_ok never shows "Turned on"', async () => {

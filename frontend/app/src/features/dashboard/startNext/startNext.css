@@ -1,3 +1,13 @@
+.tp-region[data-region='startNext'] {
+  container-type: inline-size;
+}
+
+@container (max-width: 560px) {
+  .tp-start-next__picker {
+    flex-basis: 100%;
+  }
+}
+
 .tp-start-next {
   display: grid;
   gap: var(--tp-space-2);
@@ -7,6 +17,12 @@
 .tp-start-next p,
 .tp-start-next ul {
   margin: 0;
+}
+
+/* What Start does first: a note, styled like the region's other reasons. */
+.tp-start-next > p {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
 }
 
 .tp-start-next__controls {
@@ -53,14 +69,23 @@
   gap: var(--tp-space-1);
 }
 
+/* A reason and its Why share one line; an open Why takes the full width. */
 .tp-start-next__reason,
 .tp-start-next__readiness {
-  display: grid;
-  gap: var(--tp-space-1);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-1) var(--tp-space-2);
   color: var(--tp-color-text-muted);
 }
 
+.tp-start-next__reason > details[open],
+.tp-start-next__readiness > details[open] {
+  flex-basis: 100%;
+}
+
 .tp-start-next a {
+  font-size: var(--tp-font-size-13);
   display: inline-flex;
   margin-block: 0;
   align-items: center;

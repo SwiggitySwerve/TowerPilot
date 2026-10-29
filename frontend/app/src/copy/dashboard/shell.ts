@@ -33,7 +33,7 @@ export const shell = {
   },
   /** Spec 3.2: the setting-pill prefixes. */
   pills: {
-    yourChoice: entry('Your choice:'),
+    yourChoice: entry('Setting:'),
     setting: entry('Setting:'),
   },
   /** Spec 3.7 and S-091: the revocations every fallback keeps. */

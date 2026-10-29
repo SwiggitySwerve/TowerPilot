@@ -28,10 +28,10 @@ function nextCell(view: ReturnType<typeof renderRegion>['view']) {
   return cell;
 }
 
-it('F-055: a recorded blocker code reads as its word (not_observed: "not seen on screen yet"), never the code in plain view', () => {
+it('F-055: a recorded blocker code reads as its word (not_observed: "Not seen on screen yet"), never the code in plain view', () => {
   const { view } = renderRegion(withBlocker('not_observed'), <ThisBattle />);
   const cell = nextCell(view);
-  expect(within(cell).getByText('not seen on screen yet')).toBeInTheDocument();
+  expect(within(cell).getByText('Not seen on screen yet')).toBeInTheDocument();
   expect(cell.textContent).not.toContain('not_observed');
   expect(textOutsideCatalogue(view.container)).toEqual([]);
 });
@@ -39,7 +39,7 @@ it('F-055: a recorded blocker code reads as its word (not_observed: "not seen on
 it('F-055: an unknown blocker code reads "blocked", with the code as sent only under Why', () => {
   const { view } = renderRegion(withBlocker('brand_new_reason'), <ThisBattle />);
   const cell = nextCell(view);
-  expect(within(cell).getByText('blocked')).toBeInTheDocument();
+  expect(within(cell).getByText('Blocked')).toBeInTheDocument();
   const server = cell.querySelector('details [data-server-text="message"]');
   expect(server).toHaveTextContent('brand_new_reason');
   expect(textOutsideCatalogue(view.container)).toEqual([]);

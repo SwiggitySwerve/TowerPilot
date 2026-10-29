@@ -94,7 +94,11 @@ it('F-003: shows the emulator name and plain Connected for a device read no olde
   );
   const page = top(tick(state, 10));
   expect(screen.getByText('Main Tower')).toBeInTheDocument();
-  expect(screen.getByText('Connected').closest('.tp-chip')).toBeNull();
+  // A confirmed connection is a green chip like every other state.
+  expect(screen.getByText('Connected').closest('.tp-chip')).toHaveAttribute(
+    'data-state',
+    'running',
+  );
   expect(screen.queryByText('Running')).not.toBeInTheDocument();
   page.setState(tick(state, 11));
   expect(screen.queryByText('Connected')).not.toBeInTheDocument();
@@ -201,7 +205,7 @@ it.each(['process', 'sending', 'unread'])(
     expect(reason).toBeVisible();
     expect(reason?.textContent).toMatch(
       kind === 'process'
-        ? /process is listed/
+        ? /while automation runs/
         : kind === 'sending'
           ? /is sending/
           : /readable process list/,

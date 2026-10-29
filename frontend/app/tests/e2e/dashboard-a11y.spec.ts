@@ -46,8 +46,9 @@ const RANK = [
   'needsYou',
   'thisBattle',
   'startNext',
-  'recent',
+  // The screen precedes Plan and history: they share the side column, screen first.
   'preview',
+  'recent',
 ] as const;
 
 async function focusOrder(

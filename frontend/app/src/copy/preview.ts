@@ -79,7 +79,7 @@ export const previewSavedFps = (value: number | null) =>
 export const previewReceiptAge = (value: number | null) =>
   value === null
     ? made('Frame receipt age unknown')
-    : made(`Frame received ${value.toFixed(1)} s ago`);
+    : made(`Frame received ${Math.round(value)} s ago`);
 export const previewSourceAge = (value: number | null) =>
   value === null
     ? made('Source age unknown')

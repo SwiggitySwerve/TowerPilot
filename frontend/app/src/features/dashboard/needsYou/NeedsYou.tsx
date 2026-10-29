@@ -217,6 +217,7 @@ function NeedItem({ item }: { readonly item: NeedItemVM }) {
         {item.impact === null ? null : (
           <span className="tp-need__impact">
             <span>{words.start[item.impact.start].short}</span>
+            <span aria-hidden="true">{words.separator.short}</span>
             <span>{words.collection[item.impact.collection].short}</span>
           </span>
         )}

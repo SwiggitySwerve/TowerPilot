@@ -63,7 +63,7 @@ test('AC1 idle: rows in server order with the blocker, Due and the countdown', a
     'Shopping',
   ]);
   const rows = region(page).locator('.tp-battle__routine');
-  await expect(rows.nth(0)).toContainText('not seen on screen yet');
+  await expect(rows.nth(0)).toContainText('Not seen on screen yet');
   await expect(rows.nth(1).locator('.tp-battle__next')).toContainText('Due');
   await expect(rows.nth(2).locator('.tp-battle__next')).toContainText(/in \d+ s/u);
 });

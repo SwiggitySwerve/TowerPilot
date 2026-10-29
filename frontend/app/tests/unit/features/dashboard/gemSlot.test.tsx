@@ -122,15 +122,15 @@ describe('S-001 Pause harvesting (INV-1) as drawn', () => {
 });
 
 describe('S-034 your choice and what is seen are separate facts, drawn as separate marks', () => {
-  it('S-034 manual_collector: "Your choice: Not set" beside Running "collecting gems, started by Collect gems only"', () => {
+  it('S-034 manual_collector: "Setting: Not set" beside Running "Collecting gems, started by Collect gems only"', () => {
     const { view } = drawGem(sample('status.manual_collector'));
     const choice = pill(view.container);
-    expect(choice).toHaveTextContent('Your choice:Not set');
+    expect(choice).toHaveTextContent('Setting:Not set');
     expect(choice?.querySelector('.tp-chip')).toBeNull();
     expect(chip(view.container)).toHaveAttribute('data-state', 'running');
-    expect(screen.getByText('collecting gems')).toBeInTheDocument();
-    expect(screen.getByText('started by Collect gems only')).toBeInTheDocument();
-    expect(view.container.textContent).not.toContain('Your choice:On');
+    expect(screen.getByText('Collecting gems')).toBeInTheDocument();
+    expect(screen.getByText('Started by Collect gems only')).toBeInTheDocument();
+    expect(view.container.textContent).not.toContain('Setting:On');
     expect(textOutsideCatalogue(view.container)).toEqual([]);
   });
 
@@ -141,7 +141,7 @@ describe('S-034 your choice and what is seen are separate facts, drawn as separa
     desired['enabled'] = false;
     desired['revision'] = 2;
     const { view } = drawGem(harvest);
-    expect(pill(view.container)).toHaveTextContent('Your choice:Off');
+    expect(pill(view.container)).toHaveTextContent('Setting:Off');
     expect(chip(view.container)).toHaveAttribute('data-state', 'stopping');
   });
 });
@@ -160,13 +160,13 @@ describe('S-080 the source picker drives its description at once', () => {
     });
     const source = () => region.view.container.querySelector('.tp-source');
     expect(source()).toHaveTextContent(
-      'Gem settings fromFarmad gems every 30 s, floating gems off',
+      'Gem settings fromFarmAd gems every 30 s, floating gems off',
     );
     const picker = screen.getByRole('combobox', { name: 'Gem settings from' });
     await userEvent.selectOptions(picker, 'bp_quest');
     expect(region.commands.selectGemSource).toHaveBeenCalledWith('bp_quest');
     expect(source()).toHaveTextContent(
-      'Gem settings fromQuestad gems off, floating gems every 16 m',
+      'Gem settings fromQuestAd gems off, floating gems every 16 m',
     );
     expect(picker).toHaveFocus();
     expect(picker).toHaveValue('bp_quest');
@@ -185,7 +185,7 @@ describe('Gem harvesting capability rows', () => {
     ];
     for (const [name, word] of cases) {
       const { view } = drawGem(sample(`status.${name}`));
-      expect(pill(view.container)).toHaveTextContent(`Your choice:${word}`);
+      expect(pill(view.container)).toHaveTextContent(`Setting:${word}`);
       view.unmount();
     }
   });
@@ -194,7 +194,7 @@ describe('Gem harvesting capability rows', () => {
     const harvest = sampleRecord('status.off');
     (harvest['desired'] as Record<string, unknown>)['choice'] = 'sometimes';
     const { view } = drawGem(harvest, { root: { collection_guard: CLEAR_GUARD } });
-    expect(pill(view.container)).toHaveTextContent('Your choice:Unknown');
+    expect(pill(view.container)).toHaveTextContent('Setting:Unknown');
     expect(pause()).not.toBeNull();
     expect(turnOn()).toBeNull();
   });
@@ -214,7 +214,7 @@ describe('Gem harvesting capability rows', () => {
           h.read('status', statusBody(on));
         },
       });
-      expect(pill(view.container)).toHaveTextContent(`Your choice:${word}`);
+      expect(pill(view.container)).toHaveTextContent(`Setting:${word}`);
       expect(pause() !== null).toBe(paused);
       view.unmount();
     }
@@ -222,13 +222,13 @@ describe('Gem harvesting capability rows', () => {
 
   it('F-024: collecting, manual collector, live paused, stopping and a stale collector each read their own row', () => {
     const cases: readonly [string, string, string][] = [
-      ['collecting', 'running', 'collecting gems'],
-      ['manual_collector', 'running', 'collecting gems'],
-      ['live_paused', 'paused', 'gem routines off for this battle'],
-      ['stopping', 'stopping', 'stop not confirmed'],
-      ['stale_collector', 'unknown', 'collector state unknown'],
-      ['waiting_for_battle', 'waiting', 'waiting to track a battle'],
-      ['transferring', 'waiting', 'handing over to your run'],
+      ['collecting', 'running', 'Collecting gems'],
+      ['manual_collector', 'running', 'Collecting gems'],
+      ['live_paused', 'paused', 'Gem routines off for this battle'],
+      ['stopping', 'stopping', 'Stop not confirmed'],
+      ['stale_collector', 'unknown', 'Collector state unknown'],
+      ['waiting_for_battle', 'waiting', 'Waiting to track a battle'],
+      ['transferring', 'waiting', 'Handing over to your run'],
     ];
     for (const [name, word, line] of cases) {
       const { view } = drawGem(sample(`status.${name}`));
@@ -259,7 +259,7 @@ describe('Gem harvesting capability rows', () => {
   it('F-025: the meta line names the source run and its gem routines; policy_invalid shows its message and disables Turn on; source_changed says so', () => {
     const off = drawGem(sample('status.off'), { root: { collection_guard: CLEAR_GUARD } });
     expect(off.view.container.querySelector('.tp-source')).toHaveTextContent(
-      'Gem settings fromFarmad gems every 30 s, floating gems off',
+      'Gem settings fromFarmAd gems every 30 s, floating gems off',
     );
     const link = screen.getByRole('link', { name: 'Saved settings in Runs' });
     // RUN-12: the exact run the source names, on the new Runs page.
@@ -288,7 +288,7 @@ describe('Gem harvesting capability rows', () => {
     );
     const shown = drawGem(changed, { root: { collection_guard: CLEAR_GUARD } });
     if (vm.sourceChanged) {
-      expect(screen.getByText('changed since you turned it on')).toBeInTheDocument();
+      expect(screen.getByText('Changed since you turned it on')).toBeInTheDocument();
     }
     expect(textOutsideCatalogue(shown.view.container)).toEqual([]);
   });
@@ -352,7 +352,7 @@ describe('Gem harvesting capability rows', () => {
       region.setState(h.state());
     }
     expect(screen.getByRole('combobox', { name: 'Gem settings from' })).toHaveFocus();
-    expect(pill(region.view.container)).toHaveTextContent('Your choice:Not set');
+    expect(pill(region.view.container)).toHaveTextContent('Setting:Not set');
     await Promise.resolve();
   });
 
@@ -494,21 +494,21 @@ describe('Gem harvesting capability rows', () => {
 
   it('F-031: another driver: gathers, not gathering, not reported, stale and a foreign process each read their own line', () => {
     const cases: readonly [string, string, string][] = [
-      ['owned_by_run_gathers', 'running', 'the run collects gems itself'],
+      ['owned_by_run_gathers', 'running', 'The run collects gems itself'],
       [
         'owned_by_run_not_gathering',
         'waiting',
-        "harvesting waits while the run uses the emulator; the run isn't collecting gems",
+        "Harvesting waits while the run uses the emulator; the run isn't collecting gems",
       ],
-      ['owned_by_run_not_reported', 'unknown', "can't tell whether the run collects gems"],
-      ['owned_by_run_stale', 'unknown', "can't tell whether the run collects gems"],
-      ['foreign_process', 'waiting', 'harvesting waits: another install holds the emulator'],
+      ['owned_by_run_not_reported', 'unknown', "Can't tell whether the run collects gems"],
+      ['owned_by_run_stale', 'unknown', "Can't tell whether the run collects gems"],
+      ['foreign_process', 'waiting', 'Harvesting waits: another install holds the emulator'],
     ];
     for (const [name, word, line] of cases) {
       const { view } = drawGem(sample(`status.${name}`));
       expect(chip(view.container), name).toHaveAttribute('data-state', word);
       expect(within(view.container).getByText(line)).toBeInTheDocument();
-      expect(within(view.container).queryByText('collecting gems')).toBeNull();
+      expect(within(view.container).queryByText('Collecting gems')).toBeNull();
       if (name === 'foreign_process')
         expect(within(view.container).getByText('PID 4242')).toBeInTheDocument();
       view.unmount();
@@ -583,13 +583,13 @@ describe('what was claimed and missed this battle, and why', () => {
   const counts = (container: HTMLElement) => container.querySelector('[data-gem-counts]');
   const cause = (container: HTMLElement) => container.querySelector('[data-gem-cause]');
 
-  it('failing ad claims read as a stated warning, with the counts and the cause, never as "collecting gems"', () => {
+  it('failing ad claims read as a stated warning, with the counts and the cause, never as "Collecting gems"', () => {
     const { view } = drawGem(sample('status.working_collector_claims_failing'));
     expect(chip(view.container)).toHaveAttribute('data-state', 'failed');
     expect(
       within(view.container).getByText('Ad gem claims failing: 4 in a row'),
     ).toBeInTheDocument();
-    expect(within(view.container).queryByText('collecting gems')).toBeNull();
+    expect(within(view.container).queryByText('Collecting gems')).toBeNull();
     expect(counts(view.container)).toHaveTextContent(
       'Seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups; 4 ad windows missed',
     );
@@ -598,10 +598,10 @@ describe('what was claimed and missed this battle, and why', () => {
     expect(textOutsideCatalogue(view.container)).toEqual([]);
   });
 
-  it('a collector that is claiming reads "collecting gems" with the confirmations seen and the latest miss', () => {
+  it('a collector that is claiming reads "Collecting gems" with the confirmations seen and the latest miss', () => {
     const { view } = drawGem(sample('status.collecting'));
     expect(chip(view.container)).toHaveAttribute('data-state', 'running');
-    expect(within(view.container).getByText('collecting gems')).toBeInTheDocument();
+    expect(within(view.container).getByText('Collecting gems')).toBeInTheDocument();
     expect(counts(view.container)).toHaveTextContent(
       'Seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups; 1 ad window missed',
     );
@@ -614,7 +614,7 @@ describe('what was claimed and missed this battle, and why', () => {
 
   it('a full run that owns the emulator shows the counts its own driver published', () => {
     const { view } = drawGem(sample('status.owned_by_run_gathers'));
-    expect(within(view.container).getByText('the run collects gems itself')).toBeInTheDocument();
+    expect(within(view.container).getByText('The run collects gems itself')).toBeInTheDocument();
     expect(counts(view.container)).toHaveTextContent('2 ad windows missed');
     expect(cause(view.container)).toHaveTextContent('Last missed ad window: window ran out');
   });
@@ -631,7 +631,7 @@ describe('what was claimed and missed this battle, and why', () => {
   it('the published finder_suspected adds one warning line and keeps the row and its other lines', () => {
     const { view } = drawGem(sample('status.working_collector_finder_suspected'));
     expect(chip(view.container)).toHaveAttribute('data-state', 'running');
-    expect(within(view.container).getByText('collecting gems')).toBeInTheDocument();
+    expect(within(view.container).getByText('Collecting gems')).toBeInTheDocument();
     const lines = view.container.querySelectorAll('[data-gem-finder-suspected]');
     expect(lines).toHaveLength(1);
     expect(lines[0]).toHaveTextContent(

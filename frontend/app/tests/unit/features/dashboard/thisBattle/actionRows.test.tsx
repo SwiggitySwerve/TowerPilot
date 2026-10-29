@@ -41,7 +41,7 @@ it('AC1 idle: one row per item named by its label, with the blocker, Due and the
     (n) => n.textContent,
   );
   expect(names).toEqual(['Ad gems', 'Floating gems', 'Shopping']);
-  expect(row(h, 'Ad gems').getByText('not seen on screen yet')).toBeInTheDocument();
+  expect(row(h, 'Ad gems').getByText('Not seen on screen yet')).toBeInTheDocument();
   expect(row(h, 'Floating gems').getByText('Due')).toBeInTheDocument();
   expect(row(h, 'Shopping').getByText('in 18 s')).toBeInTheDocument();
   expect(row(h, 'Ad gems').getByText('On')).toBeInTheDocument();

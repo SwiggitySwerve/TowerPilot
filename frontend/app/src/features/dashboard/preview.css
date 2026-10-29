@@ -7,14 +7,44 @@
 .tp-preview {
   min-width: 0;
   max-width: 100%;
-  padding: var(--tp-space-3);
-  border: 1px solid var(--tp-color-border-active);
-  border-radius: var(--tp-radius-control);
-  background: var(--tp-color-surface-raised);
+  padding: var(--tp-space-3) var(--tp-space-4);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-surface);
   overflow-wrap: anywhere;
 }
 .tp-preview h2 {
-  margin-top: 0;
+  margin: 0 0 var(--tp-space-2);
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-12);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.tp-preview [data-preview-verdict] {
+  display: block;
+  font-size: var(--tp-font-size-15);
+  color: var(--tp-color-text-strong);
+}
+.tp-preview[data-verdict='failed'] [data-preview-verdict],
+.tp-preview[data-verdict='stale'] [data-preview-verdict] {
+  color: var(--tp-color-warn);
+}
+.tp-preview__facts {
+  display: grid;
+  gap: 0;
+  margin-block: var(--tp-space-2);
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+  font-variant-numeric: tabular-nums;
+}
+.tp-preview .tp-preview__facts p {
+  margin: 0;
+}
+.tp-preview__note,
+.tp-preview__note p {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
 }
 .tp-preview p {
   margin: var(--tp-space-2) 0;
@@ -30,7 +60,6 @@
   min-height: 32px;
   min-width: 24px;
 }
-.tp-preview button,
 .tp-preview select {
   padding: 0.4rem 0.6rem;
   border: 1px solid var(--tp-color-border-active);
@@ -40,6 +69,70 @@
   font: inherit;
   max-width: 100%;
 }
+/* A disabled preview control looks like every other disabled button. */
+.tp-preview .tp-button:disabled {
+  border-color: var(--tp-color-border);
+  background: transparent;
+  opacity: 0.7;
+}
+/* Title and Hide screen share the card's first line, like every region header. */
+/* Title, verdict and its Why on one wrapping line, Hide screen at its end, like a region header. */
+.tp-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-2);
+}
+/* Collapsed, Hide screen alone takes the header's end. */
+.tp-preview > h2 + .tp-button {
+  margin-inline-start: auto;
+}
+.tp-preview__verdict {
+  margin-inline-start: auto;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-1) var(--tp-space-2);
+  min-width: 0;
+}
+.tp-preview__verdict > details[open] {
+  flex-basis: 100%;
+}
+/* Hide screen sits on the title's line without making it taller than other region titles. */
+.tp-preview > .tp-button {
+  min-height: var(--tp-control-height-small);
+  margin-block: -0.3rem;
+}
+.tp-preview > h2 {
+  margin: 0;
+}
+.tp-preview > .tp-button {
+  justify-self: end;
+}
+/* Controls and status, then the frame, then its facts and settings. */
+.tp-preview__content {
+  flex-basis: 100%;
+  display: grid;
+  grid-template-areas: 'status' 'picture' 'meta';
+  gap: var(--tp-space-2);
+  margin-top: var(--tp-space-2);
+}
+.tp-preview__status {
+  grid-area: status;
+  min-width: 0;
+}
+.tp-preview__picture {
+  grid-area: picture;
+}
+.tp-preview__meta {
+  grid-area: meta;
+  min-width: 0;
+}
+.tp-preview__status > :first-child,
+.tp-preview__meta > :first-child {
+  margin-top: 0;
+}
+/* Between 700 and 1200 px the frame stands left of its controls and facts. */
 .tp-preview button:disabled {
   color: var(--tp-color-text-muted);
   cursor: not-allowed;
@@ -48,9 +141,15 @@
   outline: 2px solid var(--tp-color-text);
   outline-offset: 3px;
 }
+/* Every disclosure in the panel reads like the page's other disclosures. */
+.tp-preview__settings > summary {
+  color: var(--tp-color-text-nav);
+  font-size: var(--tp-font-size-13);
+}
 .tp-preview__actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--tp-space-2);
   margin-block: var(--tp-space-2);
 }
@@ -59,6 +158,7 @@
   gap: var(--tp-space-1);
   margin-block: var(--tp-space-2);
 }
+/* The frame is drawn at the game's own shape: no letterbox bars around it. */
 .tp-preview__picture {
   display: grid;
   justify-items: center;
@@ -66,10 +166,13 @@
 .tp-preview canvas {
   display: block;
   width: auto;
-  height: 55svh;
+  height: 70svh;
   max-width: 100%;
-  max-height: 55svh;
+  max-height: 70svh;
   object-fit: contain;
+  /* An outline, not a border: the frame keeps the picture's exact aspect ratio. */
+  outline: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
 }
 .tp-preview__settings > div > span + span {
   margin-inline-start: 0.35rem;
@@ -77,10 +180,14 @@
 .tp-preview canvas[hidden] {
   display: none;
 }
+.tp-preview dt {
+  color: var(--tp-color-text-muted);
+}
 .tp-preview dl {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--tp-space-1);
+  font-size: var(--tp-font-size-13);
   font-variant-numeric: tabular-nums;
 }
 .tp-preview dd {
@@ -90,13 +197,102 @@
   display: inline-flex;
   align-items: center;
 }
+/* Below 1200 px the screen sits right after Control, ahead of the lists. */
+.tp-dashboard-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  min-width: 0;
+}
+/*
+ * Below 1200 px the two columns dissolve into one grid (see the two blocks below).
+ * The screen is drawn after Needs you while the DOM keeps it after Start next; it
+ * holds view-only controls, so tab order stays Control, the lists, then the screen.
+ */
+@media (max-width: 1199.98px) {
+  .tp-dashboard-layout > .tp-dashboard,
+  .tp-dashboard-layout > .tp-dashboard-side {
+    display: contents;
+  }
+}
+/* Below 700 px: Control, Needs you, the screen, then the rest, in one column. */
+@media (max-width: 699.98px) {
+  .tp-dashboard-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--tp-space-2);
+  }
+  .tp-dashboard > :not([data-region='control'], [data-region='needsYou']) {
+    order: 2;
+  }
+  .tp-preview {
+    order: 1;
+    width: 100%;
+  }
+  .tp-dashboard-side > [data-region='recent'] {
+    order: 3;
+  }
+  .tp-preview canvas {
+    height: 60svh;
+    max-height: 60svh;
+  }
+}
+/* 700 to 1200 px: Control and the screen side by side at the top; the lists span below. */
+@media (min-width: 700px) and (max-width: 1199.98px) {
+  .tp-dashboard-layout {
+    grid-template-columns: minmax(0, 1fr) 18rem;
+    gap: var(--tp-space-2);
+  }
+  /* Control and Needs you on the left, the screen beside both; the second row absorbs any difference. */
+  .tp-dashboard-layout {
+    grid-template-rows: auto 1fr;
+  }
+  .tp-dashboard > [data-region='control'] {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .tp-dashboard > [data-region='needsYou'] {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+  }
+  .tp-preview {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: start;
+  }
+  /* The narrow screen column: title and Hide screen first, the verdict under them. */
+  .tp-preview > .tp-button {
+    margin-inline-start: auto;
+  }
+  .tp-preview__verdict {
+    order: 1;
+    flex-basis: 100%;
+    margin-inline-start: 0;
+  }
+  .tp-preview__content {
+    order: 2;
+  }
+  .tp-dashboard > :not([data-region='control'], [data-region='needsYou']),
+  .tp-dashboard-side > [data-region='recent'] {
+    grid-column: 1 / -1;
+  }
+  .tp-preview canvas {
+    height: 50svh;
+    max-height: 50svh;
+  }
+}
 @media (min-width: 1200px) {
   .tp-dashboard-layout {
-    grid-template-columns: minmax(0, 1100px) 300px;
+    grid-template-columns: minmax(0, 1fr) clamp(340px, 26vw, 440px);
+  }
+  .tp-dashboard-layout > .tp-dashboard {
+    max-width: none;
   }
 }
 @media (max-width: 480px) {
-  .tp-preview button {
+  .tp-preview .tp-button {
     min-height: 44px;
     width: 100%;
   }
