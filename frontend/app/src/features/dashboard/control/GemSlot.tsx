@@ -126,6 +126,7 @@ function OverlayLine({ vm }: { readonly vm: GemSlotVM }) {
     <p className="tp-seen__extra" data-overlay={overlay.applied ? 'applied' : 'pending'}>
       <span>{text.overlay.lead.short}</span>
       <span>{text.overlay.routine(target('ad_gems'), target('floating_gems'))}</span>
+      <span aria-hidden="true">{text.overlay.separator}</span>
       <span>{(overlay.applied ? text.overlay.applied : text.overlay.pending).short}</span>
       {liveChoice ? <span>{text.overlay.liveChoice.short}</span> : null}
       {unsupported ? <span>{text.overlay.unsupported.short}</span> : null}
@@ -152,10 +153,15 @@ function SourceLine({ vm, id }: { readonly vm: GemSlotVM; readonly id: string })
   const source = vm.source;
   if (source.value === null) return null;
   const invalid = vm.cause?.kind === 'source_invalid' && source.isServerSource;
+  // Beside the picker the run is already on screen: the line keeps it for the
+  // controls it describes but does not draw it twice.
+  const pickerShown = source.pickerShown && source.choices.length > 0;
   return (
     <p className="tp-source" id={id}>
-      <span>{text.sourcePicker.short}</span>
-      {source.label === null ? null : <ServerValue kind="name" value={source.label} />}
+      <span className={pickerShown ? 'tp-visually-hidden' : 'tp-source__run'}>
+        <span>{text.sourcePicker.short}</span>
+        {source.label === null ? null : <ServerValue kind="name" value={source.label} />}
+      </span>
       <span className="tp-source__routines">
         {invalid
           ? text.sourceInvalid.short

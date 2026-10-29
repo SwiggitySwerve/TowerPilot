@@ -471,10 +471,10 @@ describe('Gem harvesting capability rows', () => {
     }
   });
 
-  it('F-030: an applied overlay reads "This battle: ad gems on, floating gems off - applied" and keeps its own timing; pending never reads applied; live choice wins; no token appears', () => {
+  it('F-030: an applied overlay reads "This battle: ad gems on, floating gems off · applied" and keeps its own timing; pending never reads applied; live choice wins; no token appears', () => {
     const applied = drawGem(sample('status.overlay_applied'));
     const line = applied.view.container.querySelector('[data-overlay]');
-    expect(line).toHaveTextContent('This battle:ad gems on, floating gems offapplied');
+    expect(line).toHaveTextContent('This battle:ad gems on, floating gems off·applied');
     expect(line).toHaveTextContent('the battle keeps its own timing');
     expect(applied.view.container.textContent).not.toContain('harvest-overlay-');
     expect(applied.view.container.textContent).not.toContain('0000000000000000000000000');

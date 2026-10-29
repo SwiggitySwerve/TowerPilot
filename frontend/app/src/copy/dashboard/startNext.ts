@@ -11,6 +11,8 @@ export const startNext = {
   learn: entry('Learn missing screens'),
   startReason: entry('Start playing:'),
   collectReason: entry('Collect gems only:'),
+  /** One line for both actions when they are blocked for the same reason. */
+  bothReason: entry('Start playing and Collect gems only:'),
   space: made(' '),
   setting: entry('Setting:'),
   readiness: {
@@ -29,11 +31,11 @@ export const startNext = {
     connection_blocked: entry('The emulator is not connected'),
     guard_blocks: entry('The launch guard blocks this action'),
     setup_battle_unresolved: entry(
-      "Setup's test battle wasn't confirmed back on Home - see Needs you",
+      "Setup's test battle wasn't confirmed back on Home; review it in Needs you",
     ),
     pick_single_run: entry('Pick a single run'),
     preview_unavailable: entry("Can't read this run's gem settings"),
-    context_changed: entry('The account or emulator changed - check the selected run'),
+    context_changed: entry('The account or emulator changed — check the selected run'),
     gem_routines_off: entry('Ad gems and Floating gems are both off in the saved settings'),
     ownership_unconfirmed: entry('Emulator ownership is not confirmed'),
     automation_listed: entry('A collector or other automation is still recorded'),

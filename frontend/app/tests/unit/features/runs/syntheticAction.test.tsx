@@ -215,7 +215,7 @@ it.each(['unknown', 'lost'] as const)(
     if (kind === 'lost') page.fake.next(write.request.path).lose();
     await page.advance(100);
     expect(page.view.container.querySelector('[data-battle-outcome]')).toHaveTextContent(
-      'No reply - outcome unknown',
+      'No reply — outcome unknown',
     );
     expect(action(page).runNow.enabled).toBe(false);
     await act(() => page.data.commands.runNow(required(captured)));

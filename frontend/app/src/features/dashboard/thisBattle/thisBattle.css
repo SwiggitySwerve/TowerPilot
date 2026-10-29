@@ -112,6 +112,42 @@
   flex-wrap: wrap;
   gap: var(--tp-space-2);
 }
+/* Try once: its caution as a caption, then one equal tile per target. */
+.tp-shopping-try {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-2);
+  margin-block: var(--tp-space-2) 0;
+}
+.tp-shopping-try > p {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+/* Every target an equal share of the row. */
+.tp-shopping-try > div {
+  flex: 1 1 10rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tp-space-2);
+  padding: var(--tp-space-1) var(--tp-space-1) var(--tp-space-1) var(--tp-space-3);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface-strong);
+}
+/* Below a four-across region the targets pair up, never leaving one alone on a row. */
+@container (max-width: 820px) {
+  .tp-shopping-try > div {
+    flex-basis: calc(50% - var(--tp-space-2));
+  }
+}
+@container (max-width: 380px) {
+  .tp-shopping-try > div {
+    flex-basis: 100%;
+  }
+}
 .tp-battle__queue-entry,
 .tp-shopping-try__action {
   display: flex;
@@ -183,7 +219,7 @@
   .tp-battle__reason {
     grid-column: 1 / -1;
   }
-  .tp-battle__last .tp-battle__result > span:first-child {
+  .tp-battle__last .tp-battle__result > span:first-child:not(.tp-chip) {
     flex-basis: 100%;
   }
 }
@@ -199,9 +235,14 @@
 }
 
 /* Words of one cell or of the header never run together ("On every 12 m", "up to date reported 2 s ago"). */
-.tp-battle__setting > span:not(.tp-battle__column-label) + span,
+.tp-battle__setting > span:not(.tp-battle__column-label),
 .tp-battle__header > span > span {
   margin-inline-start: 0.3em;
+}
+
+/* A value right after its (screen-reader) column label starts flush with the label. */
+.tp-battle__column-label + span {
+  margin-inline-start: 0;
 }
 
 /* A2-7 AC1: an action's Settings, one "label value unit" line each; long labels wrap. */
@@ -234,4 +275,11 @@
   flex-wrap: wrap;
   align-items: baseline;
   column-gap: 0.3em;
+}
+
+/* A result's age: a quieter fact after the result. */
+.tp-battle__age {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+  white-space: nowrap;
 }

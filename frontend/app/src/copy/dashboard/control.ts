@@ -124,7 +124,7 @@ export const control = {
       ),
     /** IN-02 to IN-09: why Turn input off is offered (S-006, INV-2). */
     offReasons: {
-      taps_allowed: entry('Automation may tap this emulator.'),
+      taps_allowed: entry('Automation may tap this emulator'),
       setting_unknown: entry("The input setting can't be read, so taps may be allowed."),
       enable_unresolved: entry('An earlier turn-on has no answer.'),
       harvest_not_reported: entry("This server doesn't report whether automation input is revoked"),
@@ -300,8 +300,10 @@ export const control = {
     /** GM-24, GM-25, F-030: this battle's gem toggles (overlay facts, restated as reported). */
     overlay: {
       lead: entry('This battle:'),
+      /** Between the routine targets and whether they are applied yet. */
+      separator: made('·'),
       applied: entry('applied'),
-      pending: entry('pending'),
+      pending: entry('waiting to apply'),
       liveChoice: entry('your choice for this battle wins'),
       unsupported: entry("the run can't take this setting"),
       ownTiming: entry('the battle keeps its own timing'),

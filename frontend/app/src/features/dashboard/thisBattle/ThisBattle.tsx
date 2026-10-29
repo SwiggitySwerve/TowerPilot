@@ -112,8 +112,8 @@ function Result({ row, queue }: { readonly row: RoutineRowVM; readonly queue: Qu
     <div className="tp-battle__result">
       <Decision value={row.result.chip} />
       {row.resultAgeSec === null ? null : (
-        <span>
-          {words.separator.short}
+        <span className="tp-battle__age">
+          <span className="tp-visually-hidden">{words.listSeparator.short}</span>
           {ageAgo(row.resultAgeSec)}
         </span>
       )}
@@ -486,6 +486,7 @@ function ShoppingTryOnceAction({
       <button
         type="button"
         className="tp-button"
+        data-tier="secondary"
         aria-labelledby={`${id}-label ${id}-target`}
         aria-disabled={item.button.enabled ? undefined : true}
         aria-describedby={describedBy(item.button.enabled, sharedReason, `${id}-reason`)}
@@ -575,8 +576,9 @@ function Queue({
         focusKey="battle-queue"
         preview={
           <>
-            {value.items.slice(0, 3).map((item) => (
+            {value.items.slice(0, 3).map((item, index) => (
               <span key={item.key}>
+                {index === 0 ? null : words.listSeparator.short}
                 {item.label === null ? (
                   words.queue.unknownUpgrade.short
                 ) : (

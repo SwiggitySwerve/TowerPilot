@@ -12,8 +12,15 @@
 
 .tp-need__count {
   display: inline-flex;
-  color: var(--tp-color-text-muted);
+  align-items: center;
+  min-width: 1.4rem;
+  justify-content: center;
+  padding: 0 0.4rem;
+  border-radius: var(--tp-radius-pill);
+  background: var(--tp-color-surface-active);
+  color: var(--tp-color-text-strong);
   font-size: var(--tp-font-size-12);
+  font-weight: 700;
 }
 
 /* F4-02: an issue and its actions share one line when they fit (spec 2.2 sketch); they wrap when not. */
@@ -56,6 +63,19 @@
   min-height: var(--tp-control-height-small);
 }
 
+/* The step that resolves the issue: shaped like a secondary button, still a link (it opens a page). */
+.tp-need__actions > a.tp-need__fix {
+  padding: 0 0.8rem;
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface-strong);
+  color: var(--tp-color-text-strong);
+  font-weight: 600;
+  text-decoration: none;
+}
+.tp-need__actions > a.tp-need__fix:hover {
+  border-color: var(--tp-color-text-nav);
+}
 .tp-need__actions > .tp-disclosure[open] {
   flex-basis: 100%;
 }

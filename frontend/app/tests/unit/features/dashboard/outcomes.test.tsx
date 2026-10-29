@@ -29,20 +29,20 @@ const stopWording: Record<string, string> = {
   stopped: 'The answer reported this automation stopped',
   stopped_family: 'The answer reported this automation stopped',
   released: 'The automation ended; emulator ownership was released',
-  stopping: 'Stop requested - waiting for the worker to end',
+  stopping: 'Stop requested — waiting for the worker to end',
   ended: 'The automation had ended; this answer does not attribute its end',
   ended_after_termination: 'This Stop signalled processes; the automation has ended',
   active: 'The automation is still active',
-  unverified_lease_held: 'Worker unverified - listed holders still hold the emulator',
+  unverified_lease_held: 'Worker unverified — listed holders still hold the emulator',
   unverified_lease_held_after_stop: 'Processes signalled; another holder still holds the emulator',
-  unverified_lease_unreadable: 'Worker unverified - emulator ownership cannot be read',
+  unverified_lease_unreadable: 'Worker unverified — emulator ownership cannot be read',
   unverified_lease_unreadable_after_stop: 'Processes signalled; emulator ownership cannot be read',
-  unverified_lease_free: 'Worker unverified - the answer reported no emulator holder',
-  operation_changed: 'Nothing was applied - the operation changed',
-  operation_unknown: 'Nothing was applied - the operation is unknown',
-  operation_required: 'Nothing was applied - an operation is required',
-  not_cancellable: 'Nothing was applied - this operation cannot be cancelled',
-  stop_outcome_partial: 'Stop partly applied - stopping is not confirmed',
+  unverified_lease_free: 'Worker unverified — the answer reported no emulator holder',
+  operation_changed: 'Nothing was applied — the operation changed',
+  operation_unknown: 'Nothing was applied — the operation is unknown',
+  operation_required: 'Nothing was applied — an operation is required',
+  not_cancellable: 'Nothing was applied — this operation cannot be cancelled',
+  stop_outcome_partial: 'Stop partly applied — stopping is not confirmed',
 };
 
 describe('outcome receipts', () => {
@@ -201,7 +201,7 @@ describe('outcome receipts', () => {
       meta: { operationId: '00000001-0000-4000-8000-000000000000' },
     });
     const { view, setState, commands } = renderRegion(h.state(), <Outcomes />);
-    expect(shown(view).getByText('No reply - may or may not have stopped')).toBeVisible();
+    expect(shown(view).getByText('No reply — may or may not have stopped')).toBeVisible();
     h.read('status', statusBody(sample('status.off')));
     setState(h.state());
     expect(
@@ -259,7 +259,7 @@ describe('outcome receipts', () => {
 
   it.each([
     ['action_lock', 'Nothing was stopped; try again'],
-    [null, 'No reply - may or may not have stopped'],
+    [null, 'No reply — may or may not have stopped'],
   ])('F-015: defensive Stop %s remains explicit', async (code, wording) => {
     const h = storeHarness();
     h.intent({ id: 's', kind: 'stop', meta: { operationId: 'A' } });
@@ -290,7 +290,7 @@ describe('outcome receipts', () => {
     const line = selectOutcomes(h.state()).lines[0];
     if (line?.detail.kind !== 'input') throw new Error('Input detail required');
     expect(view.container.querySelector('.tp-notice__lead')).toHaveTextContent(
-      'Game input - Turn input off, 0 s ago:',
+      'Game input — Turn input off, 0 s ago:',
     );
     expect(view.container.querySelector('.tp-notice')).not.toHaveAttribute('data-state', 'idle');
     if (['disable_input_stopped', 'disable_driver_input_refused'].includes(name))
@@ -325,7 +325,7 @@ describe('outcome receipts', () => {
       );
       expect(message?.textContent).toBe(body['error']);
       expect(message).toBeVisible();
-      expect(shown(view).getByText('Input is NOT revoked - turn off again')).toBeVisible();
+      expect(shown(view).getByText('Input is NOT revoked — turn off again')).toBeVisible();
       expect(view.container.querySelector('.tp-notice')).toHaveAttribute('data-state', 'failed');
       const retry = view.getByRole('button', { name: 'Turn off again' });
       expect(retry).toBeEnabled();
@@ -409,7 +409,7 @@ describe('outcome receipts', () => {
     h.answer('off', answerOf(sampleRecord('automation_access.disable_input_stopped')));
     const { view, setState } = renderRegion(h.state(), <Outcomes />);
     expect(
-      shown(view).getByText('Not fully confirmed - an earlier Allow game input has no answer'),
+      shown(view).getByText('Not fully confirmed — an earlier Allow game input has no answer'),
     ).toBeVisible();
     expect(view.container.querySelector('[data-outcome-id="off"] .tp-notice')).not.toHaveAttribute(
       'data-state',
@@ -420,7 +420,7 @@ describe('outcome receipts', () => {
     expect(
       within(
         view.container.querySelector<HTMLElement>('[data-outcome-id="off"]') ?? view.container,
-      ).getByText('Earlier result - newer facts are available'),
+      ).getByText('Earlier result — newer facts are available'),
     ).toBeVisible();
     await audit(view);
   });
@@ -428,7 +428,7 @@ describe('outcome receipts', () => {
   it('F-021: stopping stays pending until a later complete Off read and becomes history after On', async () => {
     const h = answerState('input_off', 'automation_access.disable_stopping');
     const { view, setState } = renderRegion(h.state(), <Outcomes />);
-    expect(shown(view).getByText('Stopping - waiting for the collector to end')).toBeVisible();
+    expect(shown(view).getByText('Stopping — waiting for the collector to end')).toBeVisible();
     await audit(view);
     const off = sampleRecord('status.off');
     off['input_revoked'] = true;
@@ -440,7 +440,7 @@ describe('outcome receipts', () => {
     await audit(view);
     h.read('status', statusBody(sample('status.starting_due')));
     setState(h.state());
-    expect(shown(view).getByText('Earlier result - newer facts are available')).toBeVisible();
+    expect(shown(view).getByText('Earlier result — newer facts are available')).toBeVisible();
     expect(
       shown(view).queryByText('A later fresh read confirmed the collector stopped'),
     ).toBeNull();
@@ -478,7 +478,7 @@ describe('outcome receipts', () => {
         Number(ownPath(sampleRecord(`post_harvest.${name}`), 'body', 'desired', 'revision')) + 1;
       h.read('status', statusBody(next));
       setState(h.state());
-      expect(shown(view).getByText('Earlier result - newer facts are available')).toBeVisible();
+      expect(shown(view).getByText('Earlier result — newer facts are available')).toBeVisible();
       await audit(view);
     },
   );

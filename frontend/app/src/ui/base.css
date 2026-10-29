@@ -20,6 +20,8 @@ body {
 
 a {
   color: var(--tp-color-busy);
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-underline-offset: 0.15em;
 }
 
 /*

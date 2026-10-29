@@ -61,7 +61,6 @@
   font: inherit;
 }
 
-.tp-start-next__reason p,
 .tp-start-next__readiness > p {
   display: flex;
   align-items: baseline;
@@ -69,8 +68,20 @@
   gap: var(--tp-space-1);
 }
 
-/* A reason and its Why share one line; an open Why takes the full width. */
-.tp-start-next__reason,
+/* A reason reads as one sentence: its Why follows the last word, an open Why takes the full width. */
+.tp-start-next__reason {
+  color: var(--tp-color-text-muted);
+}
+.tp-start-next__reason > p {
+  display: inline;
+}
+.tp-start-next__reason > p > * {
+  vertical-align: baseline;
+}
+.tp-start-next__reason > .tp-disclosure:not([open]) {
+  display: inline-block;
+  margin-inline-start: var(--tp-space-2);
+}
 .tp-start-next__readiness {
   display: flex;
   flex-wrap: wrap;

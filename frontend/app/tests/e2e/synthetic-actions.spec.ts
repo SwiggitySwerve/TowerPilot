@@ -196,7 +196,7 @@ for (const width of WIDTHS) {
     await expect(run(page)).not.toHaveAttribute('aria-disabled', 'true');
     await exactPost(page, run(page), 'synthetic_run_now_reply_unknown');
     const outcome = battle(page).locator('[data-battle-outcome]');
-    await expect(outcome).toContainText('No reply - outcome unknown');
+    await expect(outcome).toContainText('No reply — outcome unknown');
     await expect(run(page)).toHaveAttribute('aria-disabled', 'true');
     await enter(run(page));
     await check(page);

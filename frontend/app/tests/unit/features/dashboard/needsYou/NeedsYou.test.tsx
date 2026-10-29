@@ -288,7 +288,7 @@ it('F-082: pending equipment restoration links to setup and the exact operation 
   });
   const h = renderRegion(state, <NeedsYou />);
   const row = within(item(h, 'setup_outcome'));
-  expect(row.getByText('Equipment not restored yet - other automation is on hold')).toBeVisible();
+  expect(row.getByText('Equipment not restored yet — other automation is on hold')).toBeVisible();
   expect(row.getByRole('link', { name: 'Review setup result' })).toHaveAttribute(
     'href',
     '#recognition',
@@ -351,7 +351,7 @@ it.each([
     state = addCase(state, 'calibrate', FAILED_SETUP);
     const h = renderRegion(state, <NeedsYou />);
     const row = within(item(h, 'setup_outcome'));
-    expect(row.getByText(/^Setup failed - /)).toBeVisible();
+    expect(row.getByText(/^Setup failed — /)).toBeVisible();
     expect(row.getByText(startLine)).toBeVisible();
     expect(row.getByText(collectionLine)).toBeVisible();
     if (start !== true) expect(row.queryByText('Start is off')).toBeNull();
@@ -441,7 +441,7 @@ it('F-084: three or fewer items have no Show all and detector reports stay under
 it('F-084: the empty state names every checked source and its age without claiming health', async () => {
   const h = renderRegion(tick(readyState(), 9), <NeedsYou />);
   expect(h.view.container.querySelectorAll('[data-need]')).toHaveLength(0);
-  expect(h.view.getByText(/^No unresolved issues reported - checked 9 s ago/)).toHaveTextContent(
+  expect(h.view.getByText(/^No unresolved issues reported — checked 9 s ago/)).toHaveTextContent(
     '9 s ago (Live status: answered); 9 s ago (Setup progress: answered); 9 s ago (Runs and readiness: answered); 9 s ago (Connection tools: answered); 9 s ago (Setup steps: answered); 9 s ago (Configuration: answered); 9 s ago (Profiles: answered)',
   );
   expect(h.view.queryByRole('button', { name: /Show all/ })).toBeNull();

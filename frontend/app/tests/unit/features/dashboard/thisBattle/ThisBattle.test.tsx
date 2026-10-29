@@ -81,7 +81,7 @@ it.each([
 ])('F-049: %s says only that no battle is tracked', async (name) => {
   const h = renderRegion(state(name), <ThisBattle />);
   expect(
-    h.view.getByText('No tracked battle - Run now needs automation watching a battle'),
+    h.view.getByText('No tracked battle. Routines and Run now appear once automation watches one'),
   ).toBeVisible();
   fireEvent.click(h.view.getByText('Why'));
   expect(
@@ -112,12 +112,12 @@ it.each(['replaced_generation', 'prepared'])(
     const initial = withIntent(state());
     const h = renderRegion(initial, <ThisBattle />);
     expect(
-      h.view.getByText('No reply - outcome unknown', { selector: '.tp-notice__line' }),
+      h.view.getByText('No reply — outcome unknown', { selector: '.tp-notice__line' }),
     ).toBeVisible();
-    expect(h.view.getByRole('status')).toHaveTextContent('No reply - outcome unknown');
+    expect(h.view.getByRole('status')).toHaveTextContent('No reply — outcome unknown');
     h.setState(addCase(initial, 'battlesActive', `battles_active.${name}`));
     expect(
-      h.view.queryByText('No reply - outcome unknown', { selector: '.tp-notice__line' }),
+      h.view.queryByText('No reply — outcome unknown', { selector: '.tp-notice__line' }),
     ).not.toBeInTheDocument();
     noCalls(h);
     await check(h);
@@ -345,17 +345,17 @@ it.each(['lost', '500'])(
     );
     const h = renderRegion(initial, <ThisBattle />);
     expect(
-      h.view.getByText('No reply - outcome unknown', { selector: '.tp-notice__line' }),
+      h.view.getByText('No reply — outcome unknown', { selector: '.tp-notice__line' }),
     ).toBeVisible();
     expect(
       h.view
-        .getByText('No reply - outcome unknown', { selector: '.tp-notice__line' })
+        .getByText('No reply — outcome unknown', { selector: '.tp-notice__line' })
         .closest('.tp-notice'),
     ).toHaveTextContent('Unknown');
     expect(
       row(h, 'Ad gems').getByRole('button', { name: /^Run now .+/ }),
     ).toHaveAccessibleDescription('An earlier Run now outcome is unknown');
-    expect(h.view.getByRole('status')).toHaveTextContent('No reply - outcome unknown');
+    expect(h.view.getByRole('status')).toHaveTextContent('No reply — outcome unknown');
     const announcement = h.view.getByRole('status').firstChild;
     h.setState(addCase(tick(initial, 1), 'battlesActive', `battles_active.${runtime}`));
     expect(h.view.getByRole('status').firstChild).toBe(announcement);
@@ -372,7 +372,7 @@ it.each(['lost', '500'])(
       }),
     );
     expect(
-      h.view.queryByText('No reply - outcome unknown', { selector: '.tp-notice__line' }),
+      h.view.queryByText('No reply — outcome unknown', { selector: '.tp-notice__line' }),
     ).not.toBeInTheDocument();
     expect(
       h.view
@@ -428,13 +428,13 @@ it('F-059: only a later command with the exact retained key settles the action',
   Reflect.set(battle, 'commands', [command]);
   h.setState(addBody(tick(initial, 1), 'battlesActive', structuredClone(body)));
   expect(
-    h.view.getByText('No reply - outcome unknown', { selector: '.tp-notice__line' }),
+    h.view.getByText('No reply — outcome unknown', { selector: '.tp-notice__line' }),
   ).toBeVisible();
   h.view.getByRole('button', { name: 'Send same request again' }).focus();
   command.request_keys = ['key-1'];
   h.setState(addBody(tick(initial, 2), 'battlesActive', structuredClone(body)));
   expect(
-    h.view.queryByText('No reply - outcome unknown', { selector: '.tp-notice__line' }),
+    h.view.queryByText('No reply — outcome unknown', { selector: '.tp-notice__line' }),
   ).not.toBeInTheDocument();
   expect(h.view.queryByRole('button', { name: 'Send same request again' })).not.toBeInTheDocument();
   expect(h.view.getByRole('heading', { name: 'This battle' })).toHaveFocus();
@@ -476,7 +476,7 @@ it.each([
   );
   expect(
     h.view
-      .getByText('Request refused - nothing recorded', { selector: '.tp-notice__line' })
+      .getByText('Request refused — nothing recorded', { selector: '.tp-notice__line' })
       .closest('.tp-notice'),
   ).toHaveTextContent('Failed');
   expect(h.view.queryByRole('button', { name: 'Send same request again' })).not.toBeInTheDocument();

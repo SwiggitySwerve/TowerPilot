@@ -22,7 +22,7 @@ function withGuards(name: string) {
   });
 }
 
-it('F-038: with both guards blocking, Start and Collect are disabled with their own reasons and no "Ready" is drawn', () => {
+it('F-038: with both guards blocking the same operation, Start and Collect are disabled, share one reason naming both, and no "Ready" is drawn', () => {
   const state = withGuards('guards_setup_and_collection_blocking_the_same_operation');
   expect(selectStartNext(state).readiness.line).toBe('ready');
   const { view } = renderRegion(state, <StartNext />);
@@ -30,9 +30,10 @@ it('F-038: with both guards blocking, Start and Collect are disabled with their 
     const button = view.getByRole('button', { name });
     expect(button).toHaveAttribute('aria-disabled', 'true');
     const reason = document.getElementById(button.getAttribute('aria-describedby') ?? '');
-    expect(reason).toHaveTextContent(`${name}:`);
+    expect(reason).toHaveTextContent(/^Start playing and Collect gems only:/u);
     expect(reason).toHaveTextContent('Blocked');
   }
+  expect(view.container.querySelectorAll('.tp-start-next__reason')).toHaveLength(1);
   expect(view.queryByText('Ready')).toBeNull();
   expect(textOutsideCatalogue(view.container)).toEqual([]);
 });

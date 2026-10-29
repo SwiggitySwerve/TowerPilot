@@ -8,7 +8,7 @@ import { recent } from './recent.ts';
 export const thisBattle = {
   title: entry('This battle'),
   scope: entry('this battle only'),
-  separator: entry(' - '),
+  separator: entry(' — '),
   /** Between the facts of one line (run, wave, scope); sentences keep `separator`. */
   listSeparator: entry(' · '),
   runUnknown: entry('Run not reported'),
@@ -49,7 +49,7 @@ export const thisBattle = {
   dismissed: entry('Dismissed'),
   changed: entry('Changed for this battle'),
   noTracked: entry(
-    'No tracked battle - Run now needs automation watching a battle',
+    'No tracked battle. Routines and Run now appear once automation watches one',
     'The game may still be in a battle; nothing is tracking it',
   ),
   on: entry('On'),
@@ -169,12 +169,12 @@ export const thisBattle = {
     off: entry('Off'),
   },
   outcomeUnknown: entry(
-    'No reply - outcome unknown',
+    'No reply — outcome unknown',
     'This action may have been recorded. Sending the same request again uses the identical body and key.',
   ),
   mayRecorded: entry('may have been recorded'),
   recorded: entry('Request recorded'),
-  refused: entry('Request refused - nothing recorded'),
+  refused: entry('Request refused — nothing recorded'),
   resendUnavailable: entry('Send same request again needs an available battle read'),
   queue: {
     title: entry('Queue for this battle'),

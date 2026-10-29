@@ -112,7 +112,10 @@ it.each(dashboardCaseNames('status'))(
         expect(reasonId).not.toBeNull();
         const reason = document.getElementById(reasonId ?? '');
         expect(reason).toBeVisible();
-        expect(reason).toHaveTextContent(`${label}:`);
+        // One reason shared by both buttons is said once, naming both.
+        expect(reason?.textContent).toMatch(
+          new RegExp(`^(${label}|Start playing and Collect gems only):`, 'u'),
+        );
         expect(reason).toHaveTextContent('Blocked');
         if (typeof own(guard, 'code') === 'string')
           expect(reason).toHaveAttribute('data-guard-code', own(guard, 'code'));
@@ -248,13 +251,17 @@ it.each(['input_off', 'connection_blocked'] as const)(
     }
     const { view, commands } = renderRegion(state, <StartNext />);
     const reason = blocker === 'input_off' ? 'Game input is off' : 'The emulator is not connected';
+    expect(view.getAllByText(reason)).toHaveLength(1);
     for (const [action, label] of [
       ['start', 'Start playing'],
       ['collect', 'Collect gems only'],
     ] as const) {
       const button = view.getByRole('button', { name: label });
       expect(button).toHaveAttribute('aria-disabled', 'true');
-      expect(button).toHaveAccessibleDescription(`${label}: Blocked ${reason}`);
+      // Both blocked for the same reason: one line names both buttons and describes each.
+      expect(button).toHaveAccessibleDescription(
+        `Start playing and Collect gems only: Blocked ${reason}`,
+      );
       fireEvent.click(button);
       expect(commands[action]).not.toHaveBeenCalled();
     }
