@@ -350,7 +350,7 @@ export function SettingsModuleForm({
   const main = vm.fields.filter((field) => !inAdvanced(field.path));
   const extra = vm.fields.filter((field) => inAdvanced(field.path));
   return (
-    <fieldset className="tp-settings" data-module={vm.id}>
+    <fieldset className="tp-settings tp-tile" data-module={vm.id}>
       <legend id={`${own}-legend`} tabIndex={-1}>
         {legend === undefined ? (
           vm.title === null ? null : (

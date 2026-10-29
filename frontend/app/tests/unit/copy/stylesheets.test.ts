@@ -1,6 +1,7 @@
 // @vitest-environment node
+import { identifier, stylesheets } from '../../support/css.ts';
 import { SRC } from '../../support/paths.ts';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parse } from 'postcss';
 import { describe, expect, it } from 'vitest';
@@ -14,24 +15,6 @@ import { describe, expect, it } from 'vitest';
  */
 
 const ALLOWED = new Set(['""', "''", 'none', 'normal']);
-
-function stylesheets(folder: string): string[] {
-  return readdirSync(folder, { withFileTypes: true }).flatMap((entry) => {
-    const full = path.join(folder, entry.name);
-    if (entry.isDirectory()) return stylesheets(full);
-    return entry.name.endsWith('.css') ? [full] : [];
-  });
-}
-
-/** A CSS identifier with its escapes resolved (`c\6f ntent`, `c\ontent`), lower-cased. */
-function identifier(raw: string): string {
-  return raw
-    .replace(/\\([0-9a-fA-F]{1,6})[ \t\n\r\f]?/g, (_escape, hex: string) =>
-      String.fromCodePoint(Number.parseInt(hex, 16)),
-    )
-    .replace(/\\(.)/g, '$1')
-    .toLowerCase();
-}
 
 /** The values of every `content` declaration; `justify-content` and comments are not matched. */
 export function contentDeclarations(css: string): string[] {

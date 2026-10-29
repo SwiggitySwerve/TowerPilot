@@ -14,17 +14,22 @@
 .tp-settings__field[data-field] {
   margin-inline: 0;
 }
+/* The module's surface is its .tp-tile (src/ui/ui.css); this file only lays it out. */
 .tp-settings {
   min-width: 0;
   margin: var(--tp-space-3) 0 0;
-  padding: var(--tp-space-2) 0 0;
-  border: 0;
-  border-top: 1px solid var(--tp-color-border);
 }
 
 .tp-settings legend {
-  padding: 0;
   font-weight: 600;
+}
+
+/* A field group inside the module (a list field) is a plain group, not a framed box. */
+.tp-settings fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 .tp-settings__intro,

@@ -235,6 +235,56 @@
 .tp-region__inline > details[open] {
   flex-basis: 100%;
 }
+
+/*
+ * One surface grammar (council-tiles synthesis): a Region is the only outlined
+ * surface; a tile is a borderless fill with a smaller radius; a tile inside a
+ * tile collapses to a divider, so nesting never draws a box in a box. Features
+ * take their surfaces from here (tests/unit/copy/surfaces.test.ts).
+ */
+:root {
+  --tp-page-gap: var(--tp-space-3);
+}
+/* A page's column of regions, one gap apart. */
+.tp-page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-page-gap);
+  min-width: 0;
+}
+.tp-tile {
+  min-width: 0;
+  padding: var(--tp-space-3);
+  border: 0;
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface-raised);
+}
+/* A fieldset tile: no native frame, and its legend sits inside the fill, not on an edge. */
+fieldset.tp-tile {
+  min-inline-size: 0;
+  margin-inline: 0;
+}
+fieldset.tp-tile > legend {
+  float: left;
+  width: 100%;
+  margin-block-end: var(--tp-space-2);
+  padding: 0;
+}
+fieldset.tp-tile > legend + * {
+  clear: both;
+}
+/* A tile in a tile is a divided group of its parent's fill. */
+.tp-tile .tp-tile {
+  padding: var(--tp-space-2) 0 0;
+  border-block-start: 1px solid var(--tp-color-border);
+  border-radius: 0;
+  background: none;
+}
+/* Attention is the one tile that may draw an edge: it carries meaning, not framing. */
+.tp-tile[data-tone='attention'] {
+  box-shadow: inset 3px 0 0 var(--tp-color-warn);
+  padding-inline-start: calc(var(--tp-space-3) + 3px);
+}
 /* Slot (2.2): label, facts, action, meta on rows shared by the three slots. */
 .tp-slot {
   display: grid;
