@@ -251,6 +251,91 @@ def test_no_tray_available_keeps_serving_instead_of_dying(launcher, monkeypatch)
     assert waited == [True]                       # blocked, did not return
 
 
+def test_the_icon_goes_when_the_dashboard_stops(launcher, monkeypatch):
+    stopped = threading.Event()
+
+    class FakeIcon:
+        def __init__(self):
+            self.ended = threading.Event()
+
+        def stop(self):
+            self.ended.set()
+
+        def run(self):
+            stopped.set()                         # the dashboard thread ends while the icon is up
+            assert self.ended.wait(5)
+    monkeypatch.setattr(launcher, "build_icon", lambda on_quit: FakeIcon())
+    assert launcher.run_tray(stopped) == 0
+
+
+def test_no_tray_available_ends_with_the_dashboard(launcher, monkeypatch):
+    def no_tray(on_quit):
+        raise ImportError("no pystray on this machine")
+    monkeypatch.setattr(launcher, "build_icon", no_tray)
+    stopped = threading.Event()
+    stopped.set()
+    assert launcher.run_tray(stopped) == 0
+
+
+# --------------------------------------------------------- background
+@pytest.fixture
+def background(launcher, monkeypatch):
+    """main(background=True) logs to the file even with a console; put the streams back afterwards."""
+    monkeypatch.setattr(sys, "stdout", sys.stdout)
+    monkeypatch.setattr(sys, "stderr", sys.stderr)
+    yield launcher
+    if sys.stdout is not None and getattr(sys.stdout, "name", "") == str(launcher.LOG):
+        sys.stdout.close()
+
+
+def test_a_background_repetition_over_a_running_dashboard_does_nothing(background, monkeypatch):
+    monkeypatch.setattr(background, "serving", lambda timeout=1.0: True)
+    monkeypatch.setattr(background, "open_ui", lambda: pytest.fail("no browser from the restart task"))
+    monkeypatch.setattr(background, "serve", lambda: pytest.fail("no second dashboard"))
+    assert background.main(tray=lambda: pytest.fail("no second icon"), background=True) == 0
+    assert "launcher start" in background.LOG.read_text(encoding="utf-8")
+
+
+def test_a_background_start_serves_and_shows_the_icon_without_a_browser(background, monkeypatch):
+    finish = threading.Event()
+    monkeypatch.setattr(background, "serving", lambda timeout=1.0: False)
+    monkeypatch.setattr(background, "serve", lambda: finish.wait(5))
+    asked = []
+    monkeypatch.setattr(background, "open_when_ready", lambda **kw: asked.append(kw["show"]) or True)
+    import logging
+    monkeypatch.setattr(logging.getLogger("werkzeug"), "level", logging.NOTSET)
+    try:
+        assert background.main(tray=lambda: 0, background=True) == 0
+    finally:
+        finish.set()
+    assert asked == [False]
+    assert logging.getLogger("werkzeug").level == logging.WARNING     # no log line per request
+
+
+def test_a_refused_background_start_is_logged_without_a_dialog(background, monkeypatch):
+    monkeypatch.setattr(background, "serving", lambda timeout=1.0: False)
+
+    def refused():
+        raise SystemExit(3)                       # dashboard.serve's landing-hold refusal
+    monkeypatch.setattr(background, "serve", refused)
+    monkeypatch.setattr(background, "report_startup_failure",
+                        lambda message: pytest.fail("a dialog every repetition"))
+    assert background.main(tray=lambda: pytest.fail("no icon"), background=True) == 1
+    assert "The dashboard stopped before it was ready." in background.LOG.read_text(encoding="utf-8")
+
+
+def test_open_when_ready_can_wait_without_opening(launcher, monkeypatch):
+    monkeypatch.setattr(launcher, "serving", lambda *a, **k: True)
+    monkeypatch.setattr(launcher, "open_ui", lambda: pytest.fail("browser while hidden"))
+    assert launcher.open_when_ready(show=False) is True
+
+
+def test_the_restart_task_runs_the_tray_launcher_in_the_background():
+    script = (ROOT / "tools/register_dashboard_task.ps1").read_text(encoding="utf-8")
+    assert "'tools\\portable_launcher.py'" in script
+    assert "'--headless \"{0}\" \"{1}\" --background' -f $python, $launcher" in script
+
+
 # ------------------------------------------------------------ packaging
 def test_the_portable_launcher_starts_pythonw_with_no_window_to_keep_open():
     build = (ROOT / "tools/build_portable.py").read_text(encoding="utf-8")

@@ -160,6 +160,20 @@ def test_actions_history_and_interrupted_observation(dash, monkeypatch):
     assert client.get('/api/battles?limit=0').status_code == 400
 
 
+def test_workers_start_with_a_windowless_console_never_detached(dash, monkeypatch):
+    # Detached, a uv venv's pythonw trampoline handed its python.exe no console, which then opened a
+    # visible Windows Terminal on every collector start (2026-10-28).
+    import subprocess
+    cfg = dash.load_config()
+    cfg['presets'] = dash._compiled_runs(cfg)
+    flags = []
+    monkeypatch.setattr(operations, 'launch',
+                        lambda root, config, kind, body, cmd, popen, **kwargs: flags.append(kwargs['creationflags']))
+    dash._launch_operation(cfg, 'run', {'preset': 'bp_farm'}, ['python', 'orchestrator.py'])
+    assert flags == [dash.NO_WINDOW]
+    assert not flags[0] & getattr(subprocess, 'DETACHED_PROCESS', 0x8)
+
+
 def test_launch_freezes_compiled_settings_and_retry_uses_original_envelope(dash, monkeypatch):
     cfg = dash.load_config()
     cfg['presets'] = dash._compiled_runs(cfg)
