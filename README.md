@@ -155,7 +155,8 @@ means no harvesting. Three parts keep it up:
   port. Create it before copying runtime files and delete it afterwards so the restart task below cannot start a
   half-landed tree. The file is git-ignored; a forgotten one keeps every start refused.
 - **Restart task.** `tools/register_dashboard_task.ps1` (re)registers the Scheduled Task "TowerPilot Dashboard":
-  it runs `conhost.exe --headless <repo>\.venv\Scripts\python.exe <repo>\backend\dashboard.py` in the repo folder,
+  it runs `conhost.exe --headless <repo>\.venv\Scripts\python.exe <repo>\tools\portable_launcher.py --background` in the repo folder
+  (the dashboard behind Start Tower Pilot's notification-area icon, but never opening a browser tab or a dialog; output in `backend\logs\launcher.log`; Quit on the icon lasts until the next repetition),
   starts at logon and repeats every 5 minutes with `MultipleInstances = IgnoreNew` and `-Priority 4` (Normal; the Task Scheduler default of 7 is BelowNormal, which the dashboard, its workers and the gem collector all inherit and which starves them under other CPU load; the collector also raises itself to AboveNormal at startup). A running dashboard is left
   alone, and a dead one comes back within 5 minutes (conhost reports exit code 0 to the Task whatever Python returned, so read refusals in the `_dashboard` event log, not in the Task result). Re-running the script replaces the definition without stopping
   a running dashboard. Preview with `-WhatIf`; test on a scratch task with

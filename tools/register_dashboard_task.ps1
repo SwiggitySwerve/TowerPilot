@@ -17,8 +17,10 @@
 
 .PARAMETER Execute
 .PARAMETER Argument
-  The task's action. The defaults run the dashboard under a hidden console:
-  conhost.exe --headless "<repo>\.venv\Scripts\python.exe" "<repo>\backend\dashboard.py". Override both only for a
+  The task's action. The defaults run the dashboard as the tray app, under a hidden console: conhost.exe --headless
+  "<repo>\.venv\Scripts\python.exe" "<repo>\tools\portable_launcher.py" --background. That is Start Tower Pilot's
+  notification-area icon (click it to open the dashboard) without a browser tab or dialog on any repetition; output
+  goes to backend\logs\launcher.log. Quit on the icon stops the dashboard until the next repetition. Override both only for a
   scratch task whose action is harmless (for example cmd.exe /c exit 0).
 
 .PARAMETER RepeatMinutes
@@ -55,12 +57,12 @@ if ($Remove) {
 
 if (-not $Execute) {
     $python = Join-Path $repo '.venv\Scripts\python.exe'
-    $dashboard = Join-Path $repo 'backend\dashboard.py'
-    foreach ($path in @($python, $dashboard)) {
+    $launcher = Join-Path $repo 'tools\portable_launcher.py'
+    foreach ($path in @($python, $launcher)) {
         if (-not (Test-Path -LiteralPath $path)) { throw "Missing $path - create the .venv first (see README)." }
     }
     $Execute = Join-Path $env:SystemRoot 'System32\conhost.exe'
-    $Argument = '--headless "{0}" "{1}"' -f $python, $dashboard
+    $Argument = '--headless "{0}" "{1}" --background' -f $python, $launcher
 }
 
 $user = [Security.Principal.WindowsIdentity]::GetCurrent().Name
