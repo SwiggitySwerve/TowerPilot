@@ -266,12 +266,74 @@ fieldset.tp-tile {
 }
 fieldset.tp-tile > legend {
   float: left;
-  width: 100%;
   margin-block-end: var(--tp-space-2);
   padding: 0;
 }
-fieldset.tp-tile > legend + * {
+/* A fieldset tile's header end sits on the legend's line. */
+fieldset.tp-tile > .tp-tile__end {
+  float: right;
+  margin-block-end: var(--tp-space-2);
+}
+fieldset.tp-tile > legend + :not(.tp-tile__end),
+fieldset.tp-tile > .tp-tile__end + * {
   clear: both;
+}
+.tp-tile__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-1) var(--tp-space-2);
+  margin-block-end: var(--tp-space-2);
+}
+.tp-tile__title {
+  margin: 0;
+  color: var(--tp-color-text-strong);
+  font-size: var(--tp-font-size-13);
+  font-weight: 700;
+}
+.tp-tile__title:focus {
+  outline: none;
+}
+.tp-tile__title:focus-visible {
+  outline: 2px solid var(--tp-color-focus);
+}
+.tp-tile__end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-2);
+  margin-inline-start: auto;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+.tp-tile > .tp-copy-line {
+  margin-block-end: var(--tp-space-2);
+}
+.tp-tile__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  min-width: 0;
+}
+/* Before the collapse rule, so a compact tile inside a tile still collapses. */
+.tp-tile[data-density='compact'] {
+  padding: var(--tp-space-2);
+}
+.tp-tile[data-density='compact'] > .tp-tile__body {
+  gap: var(--tp-space-1);
+}
+/* Tiles side by side, as many columns as fit. */
+.tp-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: var(--tp-space-3);
+  min-width: 0;
+}
+.tp-tiles[data-min='narrow'] {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
+}
+.tp-tiles[data-min='wide'] {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr));
 }
 /* A tile in a tile is a divided group of its parent's fill. */
 .tp-tile .tp-tile {
@@ -284,6 +346,106 @@ fieldset.tp-tile > legend + * {
 .tp-tile[data-tone='attention'] {
   box-shadow: inset 3px 0 0 var(--tp-color-warn);
   padding-inline-start: calc(var(--tp-space-3) + 3px);
+}
+
+/* Facts: labelled values (dl > div > dt + dd), the label column shared by every row. */
+.tp-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--tp-space-1) var(--tp-space-3);
+  min-width: 0;
+  margin: 0;
+}
+.tp-facts__item {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  min-width: 0;
+}
+.tp-facts dt {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+.tp-facts dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--tp-color-text-strong);
+  overflow-wrap: anywhere;
+}
+.tp-facts[data-layout='cells'] {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr));
+  gap: var(--tp-space-2) var(--tp-space-3);
+}
+.tp-facts[data-layout='cells'] > .tp-facts__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  grid-column: auto;
+}
+.tp-facts[data-layout='cells'] dt {
+  font-size: var(--tp-font-size-12);
+}
+@media (max-width: 480px) {
+  .tp-facts[data-layout='rows'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tp-facts[data-layout='rows'] > .tp-facts__item {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* ActionRow: buttons, then their visible reasons, then the outcome. */
+.tp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-1);
+  min-width: 0;
+}
+.tp-actions__buttons,
+.tp-actions__reason {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-1) var(--tp-space-2);
+  min-width: 0;
+}
+.tp-reason > .tp-copy-line__why {
+  display: inline-block;
+  margin-inline-start: var(--tp-space-2);
+}
+
+/* CopyLine intro and note: the short line and its Why on one muted line. */
+.tp-copy-line[data-variant] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--tp-space-2);
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+.tp-copy-line[data-variant] > details[open] {
+  flex-basis: 100%;
+}
+.tp-copy-line[data-variant='intro'] > p {
+  max-width: 72ch;
+}
+.tp-copy-line[data-variant='note'] {
+  font-size: var(--tp-font-size-12);
+}
+
+/* ShownList: a bounded list with the rest behind one Disclosure. */
+.tp-shown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tp-shown-list > .tp-disclosure {
+  margin-block-start: var(--tp-space-2);
 }
 /* Slot (2.2): label, facts, action, meta on rows shared by the three slots. */
 .tp-slot {

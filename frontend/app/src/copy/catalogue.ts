@@ -45,6 +45,8 @@ export const copy = {
   },
   common: {
     why: entry('Why'),
+    /** A bounded list's disclosure (ShownList); its count is how many more items it holds. */
+    showMore: entry('Show more'),
   },
   routes: {
     dashboard: entry('Dashboard'),
