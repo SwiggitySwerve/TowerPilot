@@ -3,7 +3,7 @@ import { entry } from '../entry.ts';
 /** Catalogue entries of the Dashboard's topBar part (spec section 6.2). Owned by its region. */
 export const topBar = {
   accountDetails: entry('Account details'),
-  emulator: entry('Emulator:'),
+  emulator: entry('Emulator'),
   emulatorUnknown: entry('Emulator name unknown'),
   instance: entry('Configured instance:'),
   details: entry('Details'),

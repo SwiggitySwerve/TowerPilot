@@ -84,7 +84,7 @@ export const copy = {
     startNext,
     recent,
     topbar: {
-      account: entry('Account:'),
+      account: entry('Account'),
       noAccount: entry('No active account'),
       accountUnknown: entry('Account unknown', 'The account could not be read.'),
     },
