@@ -3,7 +3,7 @@
 > **Status:** Active
 > **Type:** Skill index
 > **Created:** 2026-08-18
-> **Updated:** 2026-08-18
+> **Updated:** 2026-10-30
 
 **Always consult the matching skill when your task matches a trigger below.** Match your task against the tables and load every matching skill before writing code.
 
@@ -55,6 +55,7 @@ Skills in this table MUST NOT be auto-loaded by trigger inference. Load them onl
 | About to write or modify a script that loops over multiple repos/targets and mutates state, about to author an inline `Bash` loop over repos, or user asks to "automate this across N repos / projects / packages" | `skills/no-bulk-scripts` |
 | Creating deferred/pending task documents; deferring any discovered work | `skills/pending-tasks` |
 | Staging, committing, pushing, opening a PR, or merging | `skills/git-workflow` |
+| Picking up, filing, ordering or closing a feature/fix; "what's left"; syncing with upstream TaBuPeH/TowerPilot | `skills/delivery-flow` |
 | After completing any substantial implementation task (feature, bugfix, refactor) | `skills/skill-compliance` |
 | A `USAGE-LIMIT GATE` deny on an Agent dispatch; "we ran out of session limit" / pausing-resuming around the Claude 5h/7d usage windows; installing or reverting the guard on a machine | `skills/usage-limit-guard` |
 | User asks to be grilled, stress-tested, or interviewed about a plan/design ("grill me", "poke holes in this", "stress-test this design") | `skills/grill-me` |
