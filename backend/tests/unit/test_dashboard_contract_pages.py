@@ -70,6 +70,7 @@ from dashboard_contract_cases_profile_target_more_2 import PM2, STEPS as PM2_STE
 from dashboard_contract_cases_action_executions import AX, FAMILY_ROW as AX_ROW, NOTE as AX_NOTE, ROWS as AX_ROWS, action_executions_cases
 from dashboard_contract_cases_action_executions_more import AXM, FAMILY_ROW as AXM_ROW, NOTE as AXM_NOTE, ROWS as AXM_ROWS, action_executions_more_cases
 from dashboard_contract_cases_action_projection import BP as AP_FAMILY, FAMILY_ROW as AP_ROW, NOTE as AP_NOTE, ROWS as AP_ROWS, battle_actions_projection_cases
+from dashboard_contract_cases_scan_metrics import SM as SMT, FAMILY_ROW as SMT_ROW, NOTE as SMT_NOTE, ROWS as SMT_ROWS, scan_metrics_cases
 from dashboard_contract_cases_profile import run_profile_cases, run_schedule_cases
 from dashboard_contract_cases_settings import run_settings_cases
 from dashboard_contract_cases_runs import run_controls_live_cases, run_controls_save_cases
@@ -93,7 +94,7 @@ FAMILIES = [run_controls_save_cases, run_controls_live_cases, run_history_cases,
             run_kind_guard_cases, profile_patch_fenced_cases, ad_gems_failed_attempt_poll_cases, plan_removal_effects_cases, profile_target_more_cases,
             settings_modules_more_cases, settings_modules_more_2_cases, profile_target_more_2_cases, action_executions_cases, battle_actions_projection_cases,
             action_executions_more_cases,
-            runtime_release_cases]
+            runtime_release_cases, scan_metrics_cases]
 UNNAMED_ALLOWED = 49      # cases no row names (the settling reads of one scenario); report.json lists them
 
 NOTES = dict(
@@ -900,8 +901,8 @@ NOT_PRODUCIBLE.update({
         'No producer: the calibrator records report entries per target (calibrate_report.json) and the setup battle / final screen in its state '
         '(player/flow_capture.py _save_setup_battle, player/calibrate.py record_final_screen), and GET /api/calibrate/status echoes them (cases '
         'calibrate_status_setup_battle_*, calibrate_status_restoration_required_*, scan_plan_separates_*). Nothing in backend/ names a "gap" for '
-        'those targets, summarises targeted results or records a scan duration/metric to compare (grep of backend/player, backend/control: no '
-        'first_perk, rare_dialog, scan_metrics or comparable_*); README R-06 says "when their producer exists" and the screens brief keeps '
+        'those targets or summarises targeted results. GET /api/calibrate/metrics now records per-operation instruments (scan_metrics family), '
+        'but no owner judges comparable scans yet; README R-06 says "when their producer exists" and the screens brief keeps '
         'roadmap item 9 open: a UI fixture cannot close the live gate.'),
 })
 COVERAGE.update({
@@ -1441,7 +1442,9 @@ NOTES.update(action_executions=AX_NOTE.strip(), battle_actions_projection=AP_NOT
 COVERAGE.update({row: keys(AX, *cases) for row, cases in AX_ROWS.items()})
 COVERAGE.update({row: keys(AP_FAMILY, *cases) for row, cases in AP_ROWS.items()})
 COVERAGE.update({row: keys(AXM, *cases) for row, cases in AXM_ROWS.items()})
-FAMILY_ROWS = {AXM: AXM_ROW, AP_FAMILY: AP_ROW, AX: AX_ROW, PM2: 'F6-14 follow-up recordings (r12f: seven more run-entry edits of an inactive profile)', SM2: 'F6-15 follow-up recordings (r12f: a modules restore alone, a profile with no blueprints, a malformed tournament list)', SMM: 'F6-15 open recordings (r12e: more of the settings modules)', PTM: 'F6-14 open recordings (r12e: more of an inactive profile)', AP: 'F6-11 6.4 (r12d: the failed Ad gems attempt through the collector own poll)', PRE: 'F6-11 6.5 (r12d: what removing the plan changes)', KG: 'F6-11 RL12 (r12d: a run kind is fixed)', PFD: 'F6-14b (brief section 7: fenced writes to the active profile)', TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', REL: 'P10A (item 10 p10a: /api/runtime.release, the identity of the tree the server runs from; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
+NOTES.update(scan_metrics=SMT_NOTE.strip())
+COVERAGE.update({row: keys(SMT, *cases) for row, cases in SMT_ROWS.items()})
+FAMILY_ROWS = {SMT: SMT_ROW, AXM: AXM_ROW, AP_FAMILY: AP_ROW, AX: AX_ROW, PM2: 'F6-14 follow-up recordings (r12f: seven more run-entry edits of an inactive profile)', SM2: 'F6-15 follow-up recordings (r12f: a modules restore alone, a profile with no blueprints, a malformed tournament list)', SMM: 'F6-15 open recordings (r12e: more of the settings modules)', PTM: 'F6-14 open recordings (r12e: more of an inactive profile)', AP: 'F6-11 6.4 (r12d: the failed Ad gems attempt through the collector own poll)', PRE: 'F6-11 6.5 (r12d: what removing the plan changes)', KG: 'F6-11 RL12 (r12d: a run kind is fixed)', PFD: 'F6-14b (brief section 7: fenced writes to the active profile)', TC: 'F6-11 part 2 / RL4 (stable pre-write codes of run-templates/add)', RMX: 'F6-11 RL2 (mixed shopping_plan + routine reset-all)', PAR: 'F6-11 RL9, RL12, RL13 (label delete, coin<->dissonance, rides/cycles)', SB: 'F6-12 SQ5 (server bounds of the queue)', SM: 'F6-15 (brief section 6)', LR: 'F6-15 (brief section 6, restore values)', LE: 'F6-15 r12b2 (review R1: who may edit a restore value)', SR: 'F6-15 r12b2 (review R2: a selection writes only the selection)', PRS: 'F6-13 (brief section 7)', PRB: 'F6-13 (brief section 7)', PRM: 'F6-13 (brief section 7)', PRP: 'F6-13 (brief section 7, frame.png headers)', ENV: 'P10B (item 10 p10b: the runtime environment report and the OCR probe; root request)', REL: 'P10A (item 10 p10a: /api/runtime.release, the identity of the tree the server runs from; root request)', CF: 'F6PE-P02', EBI: 'M-02 (BlueStacks, page-author request)', CFP: 'F6C-R1-04', RF: 'R12-01..05 (frontend-f6-recognition fixes_round_1.open_items[0])',
                RESET: 'F6-11 RL2 (6.1)', TF: 'F6-11 RL4 guarded (root decision: run-templates/add gains expected_revision and expected_context)', SQ: 'F6-12 (brief section 8)', PTG: 'F6-14 (brief section 6)', ENTRY: 'F6-11 RL3 (6.2)', TEMPLATES: 'F6-11 RL4 (6.3)', DETAILS: 'F6-11 RL7 (6.4)', PLAN_DELETE: 'F6-11 RL8 (6.5)', SAVE: 'RUN-04..07', LIVE: 'RUN-08..11', HL: 'H-01', HD: 'H-01, H-02', CFG: 'G-01', PR: 'G-02', PP: 'G-03', SP: 'S-01', ST: 'G-04', LO: 'E-01', CO: 'C-01', AB: 'A-01', AC: 'P-01', PF: 'P-02', EI: 'M-01', EA: 'M-02', ET: 'M-03', RS: 'T-01', RD: 'T-02', RR: 'R-01, R-02, R-06', CW: 'R-02', RI: 'R-03', SA: 'R-04', RL: 'R-05'}
 
 
@@ -1487,10 +1490,10 @@ PUBLISHED_ORDER = ['run_controls_save_cases', 'run_controls_live_cases', 'run_hi
                    'run_kind_guard_cases', 'profile_patch_fenced_cases', 'ad_gems_failed_attempt_poll_cases', 'plan_removal_effects_cases', 'profile_target_more_cases',
                    'settings_modules_more_cases', 'settings_modules_more_2_cases', 'profile_target_more_2_cases', 'action_executions_cases', 'battle_actions_projection_cases',
                    'action_executions_more_cases',
-                   'runtime_release_cases']
+                   'runtime_release_cases', 'scan_metrics_cases']
 
 
-CODED_PATHS = frozenset({'/api/calibrate/start', '/api/calibrate/observe', '/api/calibrate/apply', '/api/calibrate/stop', '/api/calibrate/status',
+CODED_PATHS = frozenset({'/api/calibrate/start', '/api/calibrate/observe', '/api/calibrate/apply', '/api/calibrate/stop', '/api/calibrate/status', '/api/calibrate/metrics',
                           '/api/screen-analysis/start', '/api/screen-analysis/status', '/api/screen-analysis/frame.png'})
 
 
@@ -1675,6 +1678,29 @@ def test_the_r17b_executions_family_is_made_by_the_real_routes_and_is_the_same_t
     assert render(build(dash, tmp_path / 'two', monkeypatch, [action_executions_more_cases])) == first
     families = json.loads(first)['cases']
     assert {name: len(cases) for name, cases in families.items()} == {AXM: 9}
+
+
+def test_the_p9a_scan_metrics_family_is_made_by_the_real_route_and_is_the_same_twice(dash, tmp_path, monkeypatch):
+    """The family item 9 p9a added (GET /api/calibrate/metrics: what one calibration measured, sealed with its operation) on its own: every assertion of its generator runs, the metrics
+    files are written by the real recorder, and two runs are byte-identical."""
+    first = render(build(dash, tmp_path / 'one', monkeypatch, [scan_metrics_cases]))
+    assert render(build(dash, tmp_path / 'two', monkeypatch, [scan_metrics_cases])) == first
+    families = json.loads(first)['cases']
+    assert {name: len(cases) for name, cases in families.items()} == {SMT: 14}
+
+
+def test_the_scan_metrics_samples_do_not_depend_on_the_machine(dash, tmp_path, monkeypatch):
+    """The identity block of a metrics file names the interpreter and the Windows build it ran on: facts of the machine that generates the sample. The family pins them in its worlds;
+    generated again as if this were another machine (another Python, another Windows build) it must be byte-identical."""
+    import platform
+    here = render(build(dash, tmp_path / 'here', monkeypatch, [scan_metrics_cases]))
+    with monkeypatch.context() as elsewhere:
+        elsewhere.setattr(platform, 'python_version', lambda: '3.13.7')
+        elsewhere.setattr(platform, 'version', lambda: '10.0.19045')
+        there = render(build(dash, tmp_path / 'there', monkeypatch, [scan_metrics_cases]))
+    assert there == here, 'a sample of scan_metrics recorded a fact of the machine that generated it'
+    identities = [case['body']['metrics']['identity'] for case in json.loads(here)['cases'][SMT].values() if (case['body'].get('metrics') or {}).get('identity')]
+    assert identities and {(item['python'], item['windows']) for item in identities} == {('3.12.0', '10.0.26100')}
 
 
 def test_the_p10a_family_is_made_by_the_real_routes_and_is_the_same_twice(dash, tmp_path, monkeypatch):

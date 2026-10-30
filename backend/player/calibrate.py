@@ -41,6 +41,8 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 import cv2
 
 import settings
+from runtime import scan_identity, scan_metrics
+from player.calibration_report import entries_since
 from vision import pills
 from vision.pills import TAB_BANDS
 
@@ -67,6 +69,7 @@ def _paths() -> dict:
     return {"state": os.path.join(logs, "calibrate_state.json"),
             "stop": os.path.join(logs, "calibrate_stop"),
             "report": os.path.join(logs, "calibrate_report.json"),
+            "metrics": os.path.join(logs, "calibrate_metrics.json"),
             "evidence": os.path.join(logs, "calibrate_evidence")}
 
 
@@ -901,6 +904,32 @@ def _prepare_display():
 
 
 def main() -> None:
+    """Run the calibration. A worker with an accepted operation also records what the scan did (runtime/scan_metrics.py), whatever its outcome."""
+    try:
+        from runtime.operations import environment_operation, worker_build
+        ledger, operation_id = environment_operation()
+    except Exception:       # noqa: BLE001 - an incomplete identity is the worker bootstrap's refusal to make, not the recorder's
+        ledger, operation_id = None, None
+    if operation_id:
+        try:
+            run = scan_metrics.run_of(ledger.get(operation_id))        # what was asked and on which account, device and rendering: the comparison reads it from the file
+            scan_metrics.begin(operation_id, scan_identity.identity(_Path(settings.ROOT).parent, worker_build()), run)
+        except Exception:   # noqa: BLE001 - a measurement never changes a scan
+            pass
+    outcome, failure = "completed", None
+    try:
+        _main()
+    except SystemExit as exc:
+        outcome, failure = ("exited" if exc.code in (None, 0) else "raised"), (None if exc.code in (None, 0) else exc)
+        raise
+    except BaseException as exc:
+        outcome, failure = "raised", exc
+        raise
+    finally:
+        scan_metrics.end_and_write(lambda: _paths()["metrics"], outcome, failure)
+
+
+def _main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--instance", default="main")
     ap.add_argument("--preset", default=None, help="tray/dashboard parity")
@@ -944,6 +973,13 @@ def main() -> None:
     from runtime import logger
     from player import scan
     from device import layout
+    p = _paths()
+    st = _state_load(p)
+    for phase in st.get('phases', {}).values():
+        for record in [phase, *phase.get('steps', [])]:
+            for field in ('started_at', 'finished_at', 'started'):
+                record.pop(field, None)
+    _state_save(p, st)
     try:
         _prepare_display()
     except Exception as exc:
@@ -954,17 +990,27 @@ def main() -> None:
         _state_save(p, st)
         raise
     p = _paths()
+    if scan_metrics.active():
+        scan_metrics.discard_stale(p["metrics"])
+        from player import accounts
+        scan_metrics.evaluate(lambda: scan_metrics.set_start_state(
+            scan_identity.start_state(accounts.template_dir(settings.ROOT, settings.CONFIG), _state_load(p))))
     if a.observe:
         if os.path.exists(p["stop"]):
             os.remove(p["stop"])
         from player import bootstrap
-        bootstrap.observe(p, watch=a.observe_watch)
+        with scan_metrics.phase("observe"):
+            bootstrap.observe(p, watch=a.observe_watch)
         return
     if a.bootstrap:
         if os.path.exists(p["stop"]):
             os.remove(p["stop"])
         from player import bootstrap
-        bootstrap.run(p, a.overwrite, flows=a.flows, battle_only=a.battle_only, routes=routes)
+        started = time.time()
+        with scan_metrics.phase("bootstrap",
+                                coverage=lambda: scan_metrics.bootstrap_coverage(_state_load(p), started),
+                                status=lambda: _state_load(p).get("phases", {}).get("bootstrap", {}).get("status", "done")):
+            bootstrap.run(p, a.overwrite, flows=a.flows, battle_only=a.battle_only, routes=routes)
         return
     from player.scan_plan import missing_navigation
     missing = missing_navigation(settings.ROOT, settings.CONFIG, a.phases.split(","), include_wave=False)
@@ -1018,6 +1064,7 @@ def main() -> None:
         rec = st["phases"].get(name, {})
         if rec.get("status") == "done":
             logger.event("calibrate", stage="skip_done", phase=name)
+            scan_metrics.phase_carried_over(name)
             continue
         if _stop_requested(p):
             logger.event("calibrate", stage="stopped", before=name)
@@ -1029,6 +1076,8 @@ def main() -> None:
         cal.progress(name, 'Starting ' + name.replace('_', ' '))
         stopped = False
         previous_player = json.loads(json.dumps(cal.player))
+        result = None
+        scan_metrics.phase_begin(name)
         try:
             result = fn(cal)
             st["phases"][name] = {"status": "done", "results": result}
@@ -1051,6 +1100,11 @@ def main() -> None:
             logger.event("calibrate", stage="phase_error", phase=name,
                          error=str(e)[:300])
         st["phases"][name].update(started_at=phase_started, finished_at=time.time())
+        scan_metrics.evaluate(lambda: scan_metrics.phase_end(
+            name, st["phases"][name]["status"], coverage=scan_metrics.coverage_of_result(result, cal.player),
+            error=st["phases"][name].get("error") or st["phases"][name].get("at"),
+            unverified=[e["rel"] for e in entries_since(cal.entries, phase_started)
+                        if e.get("phase") == name and not e.get("verified")]))
         st["player"] = cal.player
         st["entries"] = cal.entries
         cal.progress(name, name.replace('_', ' ').capitalize() + ': ' + st['phases'][name]['status']

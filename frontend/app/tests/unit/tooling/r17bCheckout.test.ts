@@ -20,6 +20,7 @@ import { REPO } from '../../support/paths.ts';
 
 /**
  * Approved e02b205 dashboard fixtures and the r17c-landed (b23bf8c) synthetic fixture.
+ * The pages fixture also appends setup scan metrics; all established families keep their approved bytes.
  * Pins fail closed on changed or missing checkout bytes.
  */
 describe('AC6 landed r17b checkout provenance', () => {
@@ -27,7 +28,7 @@ describe('AC6 landed r17b checkout provenance', () => {
     [DASHBOARD_FIXTURE_PATH, 'a1adee857b2810076eb125970c5dd7f0e0d5439cb16e3e3560ef8c46e593c66c'],
     [
       DASHBOARD_PAGES_FIXTURE_PATH,
-      'c2a1afdfc7a7adbdd5a8e321468ba917992e5436e7ca8f03a1073681149fc7cf',
+      'd1cc8c995349415bdee534eb435f68b751e93eda6f4c775d793c49e45d062943',
     ],
     [
       SYNTHETIC_ACTION_FIXTURE_PATH,

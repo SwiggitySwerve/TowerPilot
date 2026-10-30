@@ -13,6 +13,11 @@ from runtime import build_info
 _BUILD = build_info.snapshot(Path(__file__).resolve().parents[2], 'worker')
 
 
+def worker_build():
+    """This process's source identity as captured when it loaded (revision, fingerprint), never recomputed: what a worker records about itself."""
+    return dict(_BUILD)
+
+
 def environment_operation():
     operation_id = os.environ.get('TOWER_OPERATION_ID')
     path = os.environ.get('TOWER_OPERATION_DB')
@@ -159,9 +164,15 @@ def _worker_operation(kind=None):
         state = {}
         name = 'scan' if op['kind'] == 'scan' else 'calibrate'
         filenames = (f'{name}_state.json', f'{name}_report.json') if op['kind'] in ('calibrate', 'observe', 'scan') else ('screen_analysis.json', 'screen_analysis.png') if op['kind'] == 'screen_analysis' else ()
+        if op['kind'] in ('calibrate', 'observe'):
+            filenames += (f'{name}_metrics.json',)      # the worker's own measurements (runtime/scan_metrics.py); absent for an older worker
         restore = restore and op['kind'] in ('calibrate', 'observe', 'scan')
         for filename in filenames:
             try:
+                if filename.endswith('_metrics.json'):
+                    measured = json.loads((directory / filename).read_text(encoding='utf-8'))
+                    if not isinstance(measured, dict) or measured.get('operation_id') != operation_id:
+                        raise ValueError('Metrics do not belong to this operation')
                 reference, raw = _retain_artifact(directory, operation_id, filename)
                 if reference is None:
                     continue
@@ -172,6 +183,9 @@ def _worker_operation(kind=None):
                         state = {}
                         raise ValueError('Operation state must be a JSON object')
             except (OSError, ValueError) as exc:
+                if filename.endswith('_metrics.json'):
+                    logger.event('metrics_error', operation_id=operation_id, error=str(exc)[:300])
+                    continue            # measurements are evidence about a scan, never a reason to fail it
                 failure = failure or {'code': 'invalid_artifact', 'message': str(exc)}
         phase_names = {'c': 'cards', 'g': 'global', 'm': 'modules', 'u': 'guardians', 'b': 'bots', 'w': 'workshop', 'e': 'equipped_modules'}
         if op['kind'] == 'scan':

@@ -256,8 +256,9 @@ def seal(w, *, kind='calibrate', status='awaiting_apply', player=None, state=Non
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(raw)
     refs = {'calibrate_state.json': {'path': str(path), 'revision': hashlib.sha256(raw).hexdigest()}}
-    for name, content in (files or {}).items():     # more sealed artifacts: the report and the two manifests
-        sealed = (json.dumps(dict(content, operation_id=op['id']) if name == 'calibrate_report.json' else content)).encode()
+    for name, content in (files or {}).items():     # more sealed artifacts: the report and the two manifests (a callable is given the operation id: a file that names its own operation)
+        content = content(op['id']) if callable(content) else content
+        sealed = content if isinstance(content, bytes) else (json.dumps(dict(content, operation_id=op['id']) if name == 'calibrate_report.json' else content)).encode()     # bytes are put on disk as they are (a file that is not JSON)
         other = path.with_name(name)
         other.write_bytes(sealed)
         refs[name] = {'path': str(other), 'revision': hashlib.sha256(sealed).hexdigest()}

@@ -13,13 +13,13 @@ import time
 import uuid
 
 
+# Local state, tests, and generated git-ignored output (a Playwright run rewrites playwright-report and test-results under frontend/app).
 _EXCLUDED = {'tests', '__pycache__', 'accounts', 'logs', 'runs', 'captures',
-             'profiles', 'templates', '.venv', 'node_modules'}
+             'profiles', 'templates', '.venv', 'node_modules', 'playwright-report', 'test-results'}
 
 
-def source_fingerprint(root: Path) -> str:
-    """Hash application source only; stable across file timestamps and checkout paths."""
-    digest = hashlib.sha256()
+def source_files(root: Path) -> list[Path]:
+    """The application source a fingerprint covers: every .py under backend and frontend except local state and tests."""
     sources = []
 
     def unreadable(error: OSError) -> None:
@@ -34,9 +34,25 @@ def source_fingerprint(root: Path) -> str:
             sources.extend(Path(current) / name for name in filenames if name.endswith('.py'))
     if not sources:
         raise FileNotFoundError('No application Python source found')
+    return sources
+
+
+def source_fingerprint(root: Path, overrides: dict | None = None) -> str:
+    """Hash application source only; stable across file timestamps and checkout paths.
+
+    `overrides` maps a root-relative posix path of a covered file to the bytes that file WOULD have: the fingerprint of
+    a tree that is not on disk (the declared before side of a measured pair). A key that names no covered file is an error.
+    """
+    digest = hashlib.sha256()
+    sources = source_files(root)
+    if overrides:
+        unknown = set(overrides) - {path.relative_to(root).as_posix() for path in sources}
+        if unknown:
+            raise ValueError('override names no source file: ' + ', '.join(sorted(unknown)))
     for path in sorted(sources):
-        digest.update(path.relative_to(root).as_posix().encode('utf-8') + b'\0')
-        digest.update(path.read_bytes())
+        rel = path.relative_to(root).as_posix()
+        digest.update(rel.encode('utf-8') + b'\0')
+        digest.update(overrides[rel] if overrides and rel in overrides else path.read_bytes())
         digest.update(b'\0')
     return digest.hexdigest()
 

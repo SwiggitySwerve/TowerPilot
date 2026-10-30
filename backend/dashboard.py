@@ -106,7 +106,7 @@ def api_runtime():
 # operation as it is now), the way a person's Stop does. Every other route keeps {ok, error} until its consumer moves to codes:
 # dashboard_contract_v1.json is bound to that shape.
 CODED_REFUSAL_ENDPOINTS = frozenset({
-    'api_calibrate_start', 'api_calibrate_observe', 'api_calibrate_apply', 'api_calibrate_status',
+    'api_calibrate_start', 'api_calibrate_observe', 'api_calibrate_apply', 'api_calibrate_status', 'api_calibrate_metrics',
     'api_screen_analysis_start', 'api_screen_analysis_status', 'api_screen_analysis_frame'})
 
 
@@ -3224,6 +3224,25 @@ def api_calibrate_status():
     return jsonify({"restore_pending": os.path.exists(os.path.join(_calibration_dir(cfg), "module_restore.json")), "running": bool(processes), "selection": selection,
                     "activity": activity,
                     "taps_allowed": _taps_allowed(cfg), **out})
+
+
+@app.get("/api/calibrate/metrics")
+def api_calibrate_metrics():
+    """What one calibration or observation measured (roadmap item 9): the calibrate_metrics.json its worker wrote and the operation sealed
+    (runtime/scan_metrics.py). The operation is the one named by operation_id, else the latest of the context, exactly as /api/calibrate/status.
+    `metrics` is null for an operation that sealed none (an older worker, a failure before the file was written, none yet); a file that
+    changed after it was sealed, is not JSON or belongs to another operation is named in `artifact_errors` and is not shown. Read-only:
+    nothing is measured, retired or written here."""
+    operation = _requested_operation(load_config(), ('calibrate', 'observe'), reconcile=False)
+    if operation is None:
+        return jsonify(operation=None, metrics=None)
+    out = {"operation": operation_api.public(operation), "metrics": None}
+    if 'calibrate_metrics.json' in operation['result_refs']:
+        try:
+            out['metrics'], _ = _operation_artifact_json(operation, 'calibrate_metrics.json')
+        except operation_api.Conflict as exc:
+            out['artifact_errors'] = {'metrics': str(exc)}
+    return jsonify(out)
 
 
 class ApplyRefused(ValueError):

@@ -9,6 +9,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 from player.bootstrap_layout import manifest
+from player.calibration_report import entries_since, observed_since
 
 
 def region(frame, rect):
@@ -563,7 +564,7 @@ class Scanner:
         for route in manifest().get('routes', []):
             spec = route.get('icon')
             if route.get('from') == name and spec and icon_present(frame,spec) and icon_present(follow,spec):
-                if not any(e.get('rel')==spec['rel'] and e.get('verified') and e.get('t',0)>=self.started_at
+                if not any(e.get('rel')==spec['rel'] and e.get('verified') and observed_since(e, self.started_at)
                            for e in self.cal.entries):
                     self.cut(spec, frame, follow, lines, icon=True, screen=name)
         self.update_screen_map(name)
@@ -587,8 +588,8 @@ class Scanner:
         expected = {t['rel'] for t in manifest()['screens'][name]['targets']}
         expected.update(rel for rel, definition in manifest().get('asset_bindings', {}).items()
                         if definition['screen'] == name)
-        evidence = {e['rel']:e for e in self.cal.entries
-                    if e.get('t', 0) >= self.started_at and e.get('rel') in expected}
+        evidence = {e['rel']:e for e in entries_since(self.cal.entries, self.started_at)
+                    if e.get('rel') in expected}
         optional = {r['icon']['rel'] for r in manifest()['routes']
                     if r.get('optional') and r.get('icon') and r['from']==name}
         # a control this account has not unlocked (verify_asset_rels: 'locked')
@@ -734,8 +735,7 @@ class Scanner:
         from player.calibrate import _merge_draft
         _merge_draft(self.cal.player)
         self.finish_step(message="Returned to Home; discoveries saved")
-        attention = sum(not e.get("verified") for e in self.cal.entries
-                        if e.get("t", 0) >= self.started_at)
+        attention = sum(not e.get("verified") for e in entries_since(self.cal.entries, self.started_at))
         # optional skips (a CLAIM button no finished quest shows) are listed,
         # never a reason to hold the scan in needs_attention
         skipped = [s for s in self.skipped if not s.get("optional")]
