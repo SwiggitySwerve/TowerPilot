@@ -19,6 +19,11 @@ export const PAGE_IDS = [
 
 export type PageId = (typeof PAGE_IDS)[number];
 
+/** Pages reachable by address only: the navigation does not list them (`#gallery`, the item gallery). */
+export const HIDDEN_PAGE_IDS = ['gallery'] as const;
+
+export type HiddenPageId = (typeof HIDDEN_PAGE_IDS)[number];
+
 /**
  * Where a page opens: the Runs page's live editor, one run's saved settings, or one
  * gathering policy of the Collection page.

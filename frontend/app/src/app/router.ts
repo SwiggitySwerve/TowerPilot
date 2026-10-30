@@ -1,5 +1,12 @@
 import { useMemo, useSyncExternalStore } from 'react';
-import { PAGE_IDS, pageHref, type PageId, type PageTarget } from '../ui/routes.ts';
+import {
+  HIDDEN_PAGE_IDS,
+  PAGE_IDS,
+  pageHref,
+  type HiddenPageId,
+  type PageId,
+  type PageTarget,
+} from '../ui/routes.ts';
 
 /**
  * A tiny hash router: `#dashboard`-style routes like the legacy page's, so
@@ -7,9 +14,14 @@ import { PAGE_IDS, pageHref, type PageId, type PageTarget } from '../ui/routes.t
  * may take one target after a slash: the Runs page opens `#runs/saved/<run>`
  * (one run's saved settings) or `#runs/live` (this battle's live settings).
  */
-export const ROUTE_IDS = PAGE_IDS;
+export const ROUTE_IDS = [...PAGE_IDS, ...HIDDEN_PAGE_IDS] as const;
 
-export type RouteId = PageId;
+export type RouteId = PageId | HiddenPageId;
+
+/** The navigation's page for a route, or null for a page the navigation does not list. */
+export function navigationPage(id: RouteId): PageId | null {
+  return PAGE_IDS.find((page) => page === id) ?? null;
+}
 
 export const DEFAULT_ROUTE: RouteId = 'dashboard';
 

@@ -22,6 +22,8 @@ import { ConnectedRuntimePage } from './runtime.ts';
 import { runtime } from '../copy/runtime.ts';
 import { recognition } from '../copy/recognition.ts';
 import { ConnectedRecognitionPage } from './recognition.ts';
+import { gallery } from '../copy/gallery.ts';
+import { GalleryPage } from '../features/gallery/GalleryPage.tsx';
 
 export interface PageDefinition {
   /** The page's name, used for the tab title and the route announcement. */
@@ -42,4 +44,5 @@ export const PAGES: Readonly<Record<RouteId, PageDefinition>> = {
   emulators: { title: emulators.pageName, Page: EmulatorsPage },
   runtime: { title: runtime.pageName, Page: ConnectedRuntimePage },
   recognition: { title: recognition.pageName, Page: ConnectedRecognitionPage },
+  gallery: { title: gallery.pageName, Page: GalleryPage },
 };

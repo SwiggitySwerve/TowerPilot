@@ -6,7 +6,7 @@ import { RegionBoundary } from '../ui/RegionBoundary.tsx';
 import { DashboardProvider, readFaults } from './DashboardProvider.tsx';
 import { NotFoundPage } from './NotFoundPage.tsx';
 import { PageFailed } from './PageFailed.tsx';
-import { useRoute, type RouteMatch } from './router.ts';
+import { navigationPage, useRoute, type RouteMatch } from './router.ts';
 import { PAGES } from './routes.ts';
 import { SkipLink } from './SkipLink.tsx';
 import type { FaultSet } from '../features/dashboard/context.ts';
@@ -62,7 +62,7 @@ export function App({ data: given, faults: givenFaults }: AppProps = {}) {
       <DashboardProvider data={data} faults={faults}>
         <SkipLink />
         <div className="tp-app-shell">
-          <AppNavigation currentPage={route.kind === 'page' ? route.id : null} />
+          <AppNavigation currentPage={route.kind === 'page' ? navigationPage(route.id) : null} />
           <div className="tp-workspace">
             <RegionBoundary
               resetKey={resetKey}
