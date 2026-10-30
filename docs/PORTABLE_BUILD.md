@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** Build and release guide
 > **Created:** 2026-09-11
-> **Updated:** 2026-10-27
+> **Updated:** 2026-10-30
 > **Tags:** release, portable, environment limits
 
 Users download the `windows-x64.zip`, extract it into a writable folder, and
@@ -54,9 +54,9 @@ reports kind `checkout`; one with an unreadable file reports `unknown`.
 
 | ID | Environment | What it shows |
 |---|---|---|
-| E1 | Windows 11 development machine, fresh temporary folder, the published ZIP | The weakest check: system Python and per-user state exist on this machine |
-| E2 | GitHub `windows-latest` runner, through `release.yml` | A fresh hosted VM with no emulator. Preinstalled Python and Node are present |
-| E3 | A clean extraction of the portable ZIP into a new folder, on E1 and on E2 | The "installs and runs" check |
+| E1 | Windows 11 development machine, manual check of an extracted ZIP | Tray icon, browser and Emulators page; system Python and per-user state exist on this machine |
+| E2 | GitHub `windows-latest` runner, through `release.yml` | Full offline backend suite, dashboard checks/build, archive gates and portable qualification; preinstalled Python and Node are present, no emulator |
+| E3 | Fresh temporary extraction of the built portable ZIP, automated on E2; available locally on E1 | Bundled interpreter imports, runtime identity, dashboard app responses, generic config seeding and unchanged shipped files; no listening server or device I/O |
 
 Windows 10 is not one of these environments; it is untested. The full list of limits for
 a version (browsers, emulators, display, the scrcpy preview, Windows text recognition, ad
@@ -67,13 +67,39 @@ the version being built, with that heading, in both ZIPs.
 ## Release workflow
 
 `release.yml` runs the steps in this order: tag and `VERSION` check, dependency install
-(the hash-checked lock, then the pinned `pytest`), the release boundary tests, the
+(the hash-checked lock, then the pinned `pytest`), the source release boundary tests,
+the full offline backend suite, the
 dashboard app checks and build, both builds, the archive check (`tools/check_release_zips.py`),
-and the prerelease publication.
+portable qualification and acceptance validation, and the prerelease publication.
 
-There is no scripted check of the installed ZIP yet. For E3, extract the portable ZIP into a new
-folder, double-click `Start Tower Pilot.cmd`, and confirm the tray icon, the dashboard in
-Chrome or Edge, and that the Emulators page opens. Record the result with the build.
+`tools/qualify_portable.py` first checks the archive and sidecar, then extracts into a
+fresh temporary folder whose name contains spaces. Its bundled `runtime/python.exe`
+runs with a scrubbed environment and no system Python on PATH. Before application
+imports, an audit guard refuses socket operations and child-process launches. It
+imports bundled dependencies and the dashboard, uses Flask's in-process client to
+check `/api/runtime`, serves every built app file byte-for-byte, and checks that
+`/api/config` seeds the shipped example bytes. Runtime identity must match the build,
+source and app inventory. Every shipped file must remain unchanged. The child has a
+120-second timeout; the temporary extraction is removed after success or failure.
+
+The JSON report records the archive SHA-256, individual checks and any failure.
+`tools/validate_acceptance.py` requires both the report and the original ZIP with its
+sidecar. It refuses incomplete or failed reports and independently repeats qualification
+in another fresh extraction before accepting matching results. JSON alone cannot prove
+who wrote it; validation never trusts a report-only success claim. The workflow retains
+the report as the `portable-acceptance` Actions artifact, including qualification failures.
+
+To repeat locally:
+
+```powershell
+python tools/qualify_portable.py --archive dist/TowerPilot-<version>-windows-x64.zip --report dist/portable-acceptance.json
+python tools/validate_acceptance.py dist/portable-acceptance.json --archive dist/TowerPilot-<version>-windows-x64.zip
+```
+
+These checks do not launch the tray, a browser, a listening dashboard, workers or an
+emulator. For E1 visual acceptance, double-click `Start Tower Pilot.cmd` in a clean
+extraction and confirm the tray icon, the dashboard in Chrome or Edge, and that the
+Emulators page opens. Record that manual result separately.
 
 A later run of the workflow for a version that already has a release replaces that release's
 assets (`gh release upload --clobber`). Before accepting artifacts, compare their SHA-256 with the
