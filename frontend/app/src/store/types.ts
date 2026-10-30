@@ -57,7 +57,12 @@ export type IntentView = Omit<IntentRecord, 'epoch' | 'request' | 'answer'> & {
 
 /** A click that sent nothing, and why (X2b "Pause not sent", a Start whose readiness did not permit it). */
 export interface LocalNotice {
-  readonly kind: 'pause_not_sent' | 'start_not_sent' | 'command_not_sent';
+  readonly kind:
+    | 'pause_not_sent'
+    | 'start_not_sent'
+    | 'takeover_changed'
+    | 'takeover_unreadable'
+    | 'command_not_sent';
   readonly reason: string;
   readonly atSeq: number;
   readonly atMs: number;

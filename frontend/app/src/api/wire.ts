@@ -75,6 +75,7 @@ import {
 } from '../contract/runControls.ts';
 import { refusalAnswerSchema } from '../contract/refusal.ts';
 import { startTransferAnswerSchema } from '../contract/startTransfer.ts';
+import { takeoverLaunchAnswerSchema, takeoverPreviewAnswerSchema } from '../contract/takeover.ts';
 import { harvestStatusSchema } from '../contract/status.ts';
 import { schedulePatchAnswerSchema } from '../contract/schedule.ts';
 import {
@@ -367,6 +368,7 @@ export type ReadEndpointId =
   | 'wizardEmulators'
   | 'runControls'
   | 'readiness'
+  | 'takeoverPreview'
   | 'harvest'
   | 'profileFiles'
   | 'profileSource'
@@ -381,6 +383,7 @@ export type WriteEndpointId =
   | 'automationAccess'
   | 'cancel'
   | 'control'
+  | 'takeover'
   | 'handoff'
   | 'reconnect'
   | 'actions'
@@ -414,6 +417,7 @@ export const WRITE_ENDPOINT_IDS = [
   'automationAccess',
   'cancel',
   'control',
+  'takeover',
   'handoff',
   'reconnect',
   'actions',
@@ -624,6 +628,9 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       shoppingRunReadAnswerSchema,
     ]),
     readiness: endpoint('readiness', 'GET', [contract.readiness]),
+    // GET /api/takeover/preview?preset= and POST /api/control action=takeover (takeover fixture).
+    takeoverPreview: endpoint('takeoverPreview', 'GET', [takeoverPreviewAnswerSchema]),
+    takeover: endpoint('takeover', 'POST', [takeoverLaunchAnswerSchema]),
     harvest: endpoint('harvest', 'GET', [harvest]),
     harvestWrite: endpoint('harvestWrite', 'POST', [contract.postHarvest, contract.refusal]),
     automationAccess: endpoint('automationAccess', 'POST', [

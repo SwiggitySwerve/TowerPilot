@@ -229,6 +229,7 @@ export function recordingCommands(): RecordingCommands {
     handoff: vi.fn(done),
     start: vi.fn(done),
     collect: vi.fn(done),
+    takeOver: vi.fn(done),
     reconnect: vi.fn(done),
     runNow: vi.fn(done),
     resend: vi.fn(done),

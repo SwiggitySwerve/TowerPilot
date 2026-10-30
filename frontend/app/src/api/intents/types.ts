@@ -22,6 +22,7 @@ export type IntentKind =
   | 'handoff'
   | 'start'
   | 'start_gems'
+  | 'takeover'
   | 'clear_flag'
   | 'reconnect'
   | 'run_now'
@@ -58,6 +59,7 @@ export const INTENT_KINDS: readonly IntentKind[] = [
   'handoff',
   'start',
   'start_gems',
+  'takeover',
   'clear_flag',
   'reconnect',
   'run_now',

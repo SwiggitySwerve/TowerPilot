@@ -39,6 +39,7 @@ export const outcomes = {
     handoff: entry('Confirm a new manual battle'),
     start: entry('Start playing'),
     start_gems: entry('Collect gems only'),
+    takeover: entry('Take over this battle'),
     clear_flag: entry('Clear next-run flag'),
     reconnect: entry('Reconnect'),
     run_now: entry('Run now'),
@@ -199,6 +200,21 @@ export const outcomes = {
     context_changed: entry('Context changed; the request was refused'),
     unknown: entry('No reply — the launch may have been recorded'),
   },
+  takeover: {
+    started: entry(
+      'Takeover requested; the worker has not attached yet',
+      'Attached is shown in This battle only once the server reports the battle as taken over.',
+    ),
+    failed: entry('The accepted takeover failed'),
+    cancelled: entry('The accepted takeover was cancelled'),
+    interrupted: entry('The accepted takeover ended before completion'),
+    succeeded: entry('The accepted takeover has finished'),
+    refused: entry('The takeover was refused'),
+    guard_refused: entry('The launch guard refused the takeover'),
+    owner_refused: entry('The emulator owner refused the takeover'),
+    context_changed: entry('Context changed; the takeover was refused'),
+    unknown: entry('No reply — the takeover may have been recorded'),
+  },
   recorded: entry('Request recorded'),
   cleared: entry('Next-run flag cleared'),
   clearUnknown: entry('May have been cancelled'),
@@ -227,6 +243,12 @@ export const outcomes = {
   notSent: {
     pause_not_sent: entry("Pause not sent: the server didn't name the active emulator"),
     start_not_sent: entry('Start not sent'),
+    takeover_changed: entry(
+      'Takeover not sent: the emulator or its owner changed since this page last read it',
+    ),
+    takeover_unreadable: entry(
+      "Takeover not sent: the server's preview of this run couldn't be read",
+    ),
     command_not_sent: entry('Request not sent'),
   },
 } as const;

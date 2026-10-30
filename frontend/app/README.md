@@ -123,3 +123,6 @@ owns the app, source and repository roots used by test tooling.
 - Contract tests read three backend fixtures in `backend/tests/fixtures/` (`harvest_status_v1.json`,
   `dashboard_contract_v1.json`, `dashboard_contract_pages_v1.json`) through
   `scripts/contract-fixture.mjs` and fail on drift.
+  The takeover routes have a fourth, `dashboard_contract_takeover_v1.json`, whose
+  `scenarios` layout `scripts/generate-takeover-contract.mjs` reads (it names every recorded
+  case; `npm run contract:generate` does not run it).

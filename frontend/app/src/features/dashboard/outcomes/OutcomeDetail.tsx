@@ -120,6 +120,7 @@ export function OutcomeDetail({ line }: { readonly line: OutcomeLineVM }) {
         </>
       );
     case 'start':
+    case 'takeover':
       return (
         <>
           {d.operation === null ? null : <ServerValue kind="id" value={d.operation} />}

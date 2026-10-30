@@ -21,6 +21,7 @@ import {
 import { battleIdentity, battleView } from '../../core/battle.ts';
 import { commandView, commandViewTerminal, type CommandView } from '../../core/commands.ts';
 import { entries, finite, id, list, own, ownPath, revision, text } from '../../core/read.ts';
+import { workerAttached } from '../../core/takeover.ts';
 import {
   actionGate,
   commandReceiptPending,
@@ -139,6 +140,8 @@ export interface ThisBattleVM {
   readonly sharedReason: string | null;
   readonly commands: readonly BattleCommandVM[];
   readonly noTrackedBattle: boolean;
+  /** The takeover worker read this battle off the screen (core/takeover.ts `workerAttached`). */
+  readonly takenOver: boolean;
   readonly battleKey: string;
   /** The battle's run (`blueprint`), for the "Saved settings in Runs" link (Runs brief RUN-12). */
   readonly runKey: string | null;
@@ -555,6 +558,7 @@ export function selectThisBattle(state: DashboardState): ThisBattleVM {
       confirmationReason: fromServer('message', own(shopping.lastConfirmation, 'reason')),
     },
     noTrackedBattle: header.row === 'B2',
+    takenOver: workerAttached(battle),
     routines:
       header.row === 'B2' || projection !== null
         ? []

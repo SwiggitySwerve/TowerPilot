@@ -207,7 +207,7 @@ export interface HarvestDetailVM {
 
 /** A Start or Collect answer (S-102, 7.4). */
 export interface StartDetailVM {
-  readonly kind: 'start';
+  readonly kind: 'start' | 'takeover';
   readonly class: StartAnswerClass['kind'];
   readonly operation: ServerText<'id'> | null;
   readonly transfer: 'none' | 'unconfirmed' | 'handover' | null;
@@ -391,6 +391,7 @@ const SLOTS: Readonly<Record<IntentKindCode, OutcomeSlot>> = {
   handoff: 'needs',
   start: 'start',
   start_gems: 'start',
+  takeover: 'battle',
   reconnect: 'connection',
   run_now: 'battle',
   run_save: 'runs',
@@ -605,9 +606,9 @@ function harvestDetail(answer: HarvestAnswerClass): HarvestDetailVM {
   }
 }
 
-function startDetail(answer: StartAnswerClass): StartDetailVM {
+function startDetail(answer: StartAnswerClass, kind: StartDetailVM['kind']): StartDetailVM {
   const detail: StartDetailVM = {
-    kind: 'start',
+    kind,
     class: answer.kind,
     operation: null,
     transfer: null,
@@ -690,7 +691,9 @@ function answerDetail(
     }
     case 'start':
     case 'start_gems':
-      return startDetail(classifyStartAnswer(raw));
+      return startDetail(classifyStartAnswer(raw), 'start');
+    case 'takeover':
+      return startDetail(classifyStartAnswer(raw), 'takeover');
     case 'clear_flag': {
       const answer = classifyClearFlagAnswer(raw);
       return { kind: 'clear_flag', class: answer.kind, code: codeOf(answer.code) };

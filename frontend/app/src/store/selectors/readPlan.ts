@@ -55,7 +55,7 @@ function statusMode(state: DashboardState): 'active' | 'idle' {
   if (
     anyProcessListed(state) ||
     calibrationRunning(state) ||
-    sendingKind(state, ['start', 'start_gems', 'reconnect']) ||
+    sendingKind(state, ['start', 'start_gems', 'takeover', 'reconnect']) ||
     anyUnresolved(state)
   ) {
     return 'active';

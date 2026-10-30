@@ -32,6 +32,7 @@ import { ServerValue } from '../../../ui/ServerValue.tsx';
 import { useDashboard, useView } from '../context.ts';
 import { DashboardRegion } from '../shared/DashboardRegion.tsx';
 import { WhyTip } from '../shared/WhyTip.tsx';
+import { TakeOver } from './TakeOver.tsx';
 import './thisBattle.css';
 
 const words = copy.dashboard.thisBattle;
@@ -801,10 +802,13 @@ function BattleContent() {
   if (vm.noTrackedBattle)
     return (
       // F4-02: an empty region is one line beside its title.
-      <RegionInline>
-        <span>{words.noTracked.short}</span>
-        <span>{words.gameUntracked.short}</span>
-      </RegionInline>
+      <>
+        <RegionInline>
+          <span>{words.noTracked.short}</span>
+          <span>{words.gameUntracked.short}</span>
+        </RegionInline>
+        <TakeOver />
+      </>
     );
   return (
     <>
@@ -825,6 +829,9 @@ function BattleContent() {
               label={words.waveLabel.short}
               value={vm.wave === null ? words.unknown.short : words.fieldNumber(vm.wave)}
             />
+            {vm.takenOver ? (
+              <Fact label={words.takeover.started.short} value={words.takeover.attached.short} />
+            ) : null}
           </Facts>
           <div className="tp-battle__status">
             {vm.header.word === null ? null : <Chip state={vm.header.word} />}

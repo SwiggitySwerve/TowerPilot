@@ -49,6 +49,17 @@ export const thisBattle = {
   changed: entry('Changed for this battle'),
   noTracked: entry('No tracked battle'),
   gameUntracked: entry('The game may still be in a battle'),
+  /** Take over the battle on screen (backend control/takeover.py): the control, its dialog and the server-confirmed result. */
+  takeover: {
+    action: entry('Take over this battle'),
+    title: entry('Take over the battle on screen?'),
+    body: entry(
+      "Tower Pilot will play it with the picked run's settings, with Repeat and Rewards off. The battle itself is never ended.",
+    ),
+    confirm: entry('Take over'),
+    started: entry('Started'),
+    attached: entry('Taken over from the screen'),
+  },
   on: entry('On'),
   off: entry('Off'),
   unknown: entry('Unknown'),

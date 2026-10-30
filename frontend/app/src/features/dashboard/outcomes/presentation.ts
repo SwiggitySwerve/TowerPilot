@@ -39,6 +39,8 @@ export function outcomeEntry(line: OutcomeLineVM): CopyEntry {
       return t.harvest[d.class];
     case 'start':
       return t.start[d.class];
+    case 'takeover':
+      return t.takeover[d.class];
     case 'kill':
       return t.kill[d.class];
     case 'handoff':
