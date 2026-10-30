@@ -1,19 +1,18 @@
 import { actions as sharedActions } from './actions.ts';
 import { entry, made } from './entry.ts';
-import { durationText, isoText } from './format.ts';
+import { durationText, isoText, serverDateText } from './format.ts';
 import type { CopyText } from './text.ts';
 
 export const history = {
   pageName: entry('Run history'),
-  introduction: entry(
-    'Recorded battles for this emulator and account. Inspecting a record does not change the game or its settings.',
-  ),
   records: entry('Records'),
+  recordTable: entry('Recorded battles'),
   detail: entry('Selected record'),
   separator: entry(': '),
   paging: entry('Record pages'),
   recordsLoaded: entry('Records loaded'),
   filter: entry('Recorded status'),
+  filtersAndPaging: entry('Filters and paging'),
   filters: {
     all: entry('All statuses'),
     active: entry('Active'),
@@ -28,10 +27,14 @@ export const history = {
   previous: entry('Previous page'),
   next: entry('Next page'),
   back: entry('Back to records'),
+  noPrevious: entry('No earlier page.'),
+  noNext: entry('No next page was reported.'),
+  recordUnavailable: entry('This record has no ID to read.'),
   reading: entry('Loading records…'),
   readingDetail: entry('Loading selected record…'),
   targetUnknown: entry('Select an emulator and account before reading history.'),
   choose: entry('Choose a record to inspect its evidence.'),
+  scrollHint: entry('More records on this page are below; scroll the list to see them.'),
   empty: entry('No records on this page.'),
   unnamed: entry('Unnamed battle'),
   unknown: entry('Unknown / not recorded'),
@@ -129,9 +132,7 @@ export const history = {
   actions: {
     heading: entry('Actions in this battle'),
     list: entry('Recorded action executions'),
-    readNote: entry(
-      'Executions of timed actions recorded for this battle, newest first. This is a read, not a live status.',
-    ),
+    readNote: entry('Newest first; recorded evidence, not live status.'),
     states: {
       not_reported: entry('This server did not report action history for this record.'),
       before_history: entry(
@@ -149,6 +150,7 @@ export const history = {
     complete: entry('All recorded executions for this battle are shown.'),
     older: entry('Older executions'),
     olderBusy: entry('Loading older executions…'),
+    olderPending: entry('Wait for the current older-executions read.'),
     olderRetry: entry('Retry older executions'),
     olderLoaded: (count: number) =>
       made(count === 1 ? '1 older execution loaded' : `${count} older executions loaded`),
@@ -192,7 +194,6 @@ export const history = {
     durationValue: (ms: number) => made(durationText(ms / 1000)),
   },
   boundary: entry('End evidence'),
-  noTotal: entry('The server publishes no total record count.'),
   page: (page: number) => made(`Page ${page}`),
   number: (value: number | null): CopyText =>
     value === null ? history.unknown.short : made(String(value)),
@@ -202,6 +203,10 @@ export const history = {
     const instant = value === null ? null : isoText(value * 1000);
     return instant === null ? history.unknown.short : made(instant);
   },
+  recordTime: (value: number | null): CopyText =>
+    value === null || isoText(value * 1000) === null
+      ? history.unknown.short
+      : made(serverDateText(value)),
   loaded: (at: number): CopyText => {
     const instant = isoText(at);
     return instant === null ? history.unknown.short : made(`Last loaded ${instant}`);

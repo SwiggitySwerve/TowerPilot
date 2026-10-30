@@ -4,9 +4,10 @@ import { settingsList } from './settingsList.ts';
 export const configEquipment = {
   tournament: entry('Standing tournament deck changes'),
   tournamentIntro: entry(
-    'Ordered card template names for tournament entry. An empty list leaves the deck unchanged.',
+    'An empty list leaves the deck unchanged.',
+    'Card template names are applied in order at tournament entry.',
   ),
-  account: entry('Account:'),
+  account: entry('Account'),
   legacy: entry('Legacy installation'),
   check: entry('Read tournament settings'),
   unavailable: entry(
@@ -24,7 +25,7 @@ export const configEquipment = {
   addModule: entry('Add restore module'),
   removeModule: entry('Remove restore module'),
   restoreIntro: entry(
-    'Saved restore choices for this loadout. At battle entry, hand-equipping can permanently rewrite the active game preset. Saving does not apply equipment.',
+    'At battle entry, hand-equipping can permanently rewrite the active game preset.',
   ),
   unused: entry(
     'Restore changes cannot be saved: use this loadout in a run of the active profile first.',

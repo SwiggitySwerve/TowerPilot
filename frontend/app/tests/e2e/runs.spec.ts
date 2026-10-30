@@ -47,10 +47,7 @@ test('RUN-12 app navigation opens the new Runs page, and the Dashboard links ope
   await expect(page.locator('#runsLive-title')).toBeFocused();
   await page.goBack();
   await openScenario(page, 'idle');
-  await page
-    .locator('[data-slot="gem"]')
-    .getByRole('link', { name: 'Saved settings in Runs' })
-    .click();
+  await page.locator('[data-slot="gem"]').getByRole('link', { name: 'Edit run' }).click();
   await expect(page).toHaveURL(/#runs\/saved\/bp_farm$/u);
   await expect(page.locator('#runsSaved-title')).toBeFocused();
   // The run picker itself: the saved section now also holds Add a run and entry-settings selects.

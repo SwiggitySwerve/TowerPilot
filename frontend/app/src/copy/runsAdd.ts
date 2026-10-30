@@ -4,7 +4,7 @@ const idTaken = entry('That run identifier is already taken. Choose another; you
 
 export const runsAdd = {
   title: entry('Add a run'),
-  scope: entry('Save a run from a recipe. Adding never starts a run or changes the schedule.'),
+  scope: entry('Adding never starts a run or changes the schedule.'),
   recipe: entry('Recipe'),
   runId: entry('Run identifier'),
   choose: entry('Choose equipment'),

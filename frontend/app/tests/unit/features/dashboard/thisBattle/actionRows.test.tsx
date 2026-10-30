@@ -24,7 +24,9 @@ function items(body: Record<string, unknown>): Record<string, unknown>[] {
 }
 
 function row(h: RegionHarness, name: string) {
-  const element = h.view.getByText(name, { selector: 'strong bdi' }).closest('li');
+  const element = h.view
+    .getByText(name, { selector: 'strong bdi' })
+    .closest<HTMLElement>('.tp-battle__routine');
   if (element === null) throw new Error(`Missing action row ${name}`);
   return within(element);
 }
@@ -173,13 +175,14 @@ it('AC5 the stale case: last known 2 s ago on every item, no Due, Run now off wi
   const h = render('projection_fails_later_the_last_projection_stays_and_its_stamps_stop');
   expect(h.view.getAllByText('Last known, 2 s ago')).toHaveLength(3);
   expect(h.view.queryByText('Due')).toBeNull();
-  expect(h.view.getByText('Action readings stopped updating')).toBeInTheDocument();
+  expect(h.view.queryByText('Action readings stopped updating')).toBeNull();
   expect(
     h.view.getAllByText(
       'The action readings are old; Run now and changes wait for a current reading',
     ),
   ).toHaveLength(1);
   const shared = h.view.container.querySelector('#battle-run-now-reason');
+  expect(shared).toBeVisible();
   expect(shared).toHaveTextContent(
     'The action readings are old; Run now and changes wait for a current reading',
   );
@@ -200,13 +203,20 @@ it('AC5 the stale case: last known 2 s ago on every item, no Due, Run now off wi
 
 it('AC5 a newer schema and another profile are read only with their reasons', async () => {
   const newer = render('projection_written_by_a_newer_driver_is_read_only');
-  expect(newer.view.getByText('Action readings are read only')).toBeInTheDocument();
+  expect(newer.view.queryByText('Action readings are read only')).toBeNull();
   expect(newer.view.getAllByText('Not current')).toHaveLength(3);
   expect(
     newer.view.getByText(
       'A newer version wrote these action readings; Run now and changes are not offered',
     ),
-  ).toBeInTheDocument();
+  ).toBeVisible();
+  expect(newer.view.getByRole('button', { name: 'Run now Ad gems' })).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  );
+  expect(newer.view.getByRole('button', { name: 'Run now Ad gems' })).toHaveAccessibleDescription(
+    'A newer version wrote these action readings; Run now and changes are not offered',
+  );
   await check(newer);
   newer.view.unmount();
   const foreign = render('idle_ad_and_floating_gems_due_shopping_waiting', (body) => {
@@ -214,7 +224,8 @@ it('AC5 a newer schema and another profile are read only with their reasons', as
       account: 'someone',
     });
   });
-  expect(foreign.view.getByText('Action readings are read only')).toBeInTheDocument();
+  expect(foreign.view.queryByText('Action readings are read only')).toBeNull();
+  expect(foreign.view.container.querySelector('#battle-run-now-reason')).toBeVisible();
   expect(foreign.view.getByRole('button', { name: 'Run now Ad gems' })).toHaveAttribute(
     'aria-disabled',
     'true',

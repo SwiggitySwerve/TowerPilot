@@ -405,6 +405,45 @@ describe('PE6 target-bound entry editor', () => {
 });
 
 describe('RL3 and RL6 saved entry editor', () => {
+  it('RL3 entry groups preserve field order, individual save targets and all settings', async () => {
+    const page = await open();
+    expect(form().getByRole('heading', { level: 4, name: 'Identity' })).toBeVisible();
+    expect(form().getByRole('heading', { level: 4, name: 'Entry behavior' })).toBeVisible();
+    expect(form().getByRole('heading', { level: 4, name: 'Policies' })).toBeVisible();
+    expect(
+      [...root().querySelectorAll('[data-entry-field]')].map((field) =>
+        field.getAttribute('data-entry-field'),
+      ),
+    ).toEqual(selectRunEntry(page.data.store.getSnapshot()).fields.map((field) => field.key));
+    expect(
+      root().querySelector('[data-entry-section="identity"] [data-entry-field="tier"]'),
+    ).not.toBeNull();
+    expect(
+      root().querySelector('[data-entry-section="behavior"] [data-entry-field="max_wave"]'),
+    ).not.toBeNull();
+    expect(
+      root().querySelector('[data-entry-section="policies"] [data-entry-field="shopping"]'),
+    ).not.toBeNull();
+    expect(page.fake.writes()).toEqual([]);
+  });
+
+  it('RL3 an untouched missing label stays neutral; invalid typed text has a visible local error and sends nothing', async () => {
+    const page = await open();
+    const input = row('label').getByLabelText('Run label');
+    expect(input).toHaveValue('');
+    expect(input).not.toHaveAttribute('aria-invalid', 'true');
+    expect(row('label').getByRole('button', { name: 'Save field' })).toHaveAccessibleDescription(
+      'Enter a nonblank label.',
+    );
+    await page.user.type(input, ' ');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(row('label').getByRole('alert')).toHaveTextContent('Enter a nonblank label.');
+    expect(row('label').getByRole('alert')).toBeVisible();
+    expect(input).toHaveAccessibleDescription('Enter a nonblank label.');
+    await save(page, 'label');
+    expect(page.fake.writes()).toEqual([]);
+  });
+
   it('RL3 F6-11-P2-06 sends 31 perk bans once, shows the recorded refusal and keeps the raw draft under its original target', async () => {
     const entry = sample('perk_bans_thirty_one_entries');
     const items = stringList(own(entry.request.body, 'value'));
@@ -483,7 +522,7 @@ describe('RL3 and RL6 saved entry editor', () => {
       const control = root().querySelector<
         HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       >(
-        `[data-entry-field="${field}"] input:not([type="checkbox"]), [data-entry-field="${field}"] select, [data-entry-field="${field}"] textarea, [data-entry-field="${field}"] > input[type="checkbox"]`,
+        `[data-entry-field="${field}"] input:not([type="checkbox"]), [data-entry-field="${field}"] select, [data-entry-field="${field}"] textarea, [data-entry-field="${field}"] > .tp-check-field:not(.tp-run-entry__remove) > input[type="checkbox"]`,
       );
       if (own(entry.request.body, 'op') === 'delete' && field === 'perk_bans')
         await page.user.click(row(field).getByLabelText('Leave the game’s perk bans alone'));

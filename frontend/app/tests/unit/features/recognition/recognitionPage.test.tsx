@@ -114,6 +114,18 @@ describe('Recognition page R1 learn screens', () => {
     const page = await openRecognition();
     expect(page.fake.writes()).toEqual([]);
     const learn = region('recognitionLearn');
+    expect(
+      within(learn).getByRole('checkbox', {
+        name: 'Also capture battle controls in one test battle',
+      }),
+    ).toHaveAccessibleDescription(
+      'Starts and ends one setup test battle. Never an existing battle or tournament.',
+    );
+    expect(
+      within(learn)
+        .getByText('Starts and ends one setup test battle. Never an existing battle or tournament.')
+        .closest('details'),
+    ).toBeNull();
     await page.user.click(within(learn).getByRole('button', { name: 'Learn screens' }));
     const open = dialog();
     expect(within(open).getByText(/Starts no battle/u)).toBeInTheDocument();
@@ -361,6 +373,12 @@ describe('Recognition page R3 evidence and roadmap item 9', () => {
     expect(group('first_perk')?.querySelector('[data-entry-status="written"]')).not.toBeNull();
     expect(group('rare_dialog')?.querySelector('[data-entry-status="stale"]')).not.toBeNull();
     expect(group('module')?.dataset['count']).toBe('0');
+    // Targeted groups and the remaining report share one home per image.
+    const images = [...evidence.querySelectorAll('[data-entry-status]')].map(
+      (entry) => entry.querySelector('[data-server-text]')?.textContent,
+    );
+    expect(images.length).toBeGreaterThan(0);
+    expect(new Set(images).size).toBe(images.length);
     expect(within(group('module') ?? evidence).getByText('Not in this report')).toBeInTheDocument();
     expect(within(evidence).getByText('Target gap summary: not reported')).toBeInTheDocument();
     expect(
@@ -386,6 +404,34 @@ describe('Recognition page R3 evidence and roadmap item 9', () => {
     expect(range?.querySelector('[data-entry-status="verified"]')).toBeNull();
     expect(range?.querySelector('[data-entry-status="other"]')).not.toBeNull();
     expect(within(range ?? document.body).queryByText('Verified on screen')).toBeNull();
+  });
+
+  it('R3 a stale image outside every group is read on the page, not folded into the other-entries disclosure', async () => {
+    const found = pages(
+      'recognition_reads.calibrate_status_setup_battle_finished_and_home_verified_with_target_evidence',
+    );
+    const body = structuredClone(found.body) as { report: { entries: Record<string, unknown>[] } };
+    const first = body.report.entries[0];
+    if (first === undefined) throw new Error('no entry');
+    body.report.entries.push(
+      { ...first, rel: 'misc/stale-one.png', status: 'stale', verified: false },
+      { ...first, rel: 'misc/written-one.png', status: 'written', verified: false, reason: null },
+      { ...first, rel: 'misc/routine-one.png', status: 'verified', verified: true, reason: null },
+    );
+    await openRecognition({ calibrate: () => ({ ...found, body }) });
+    const evidence = region('recognitionEvidence');
+    const attention = evidence.querySelector<HTMLElement>('[data-report-attention]');
+    expect(attention).not.toBeNull();
+    expect(within(attention ?? document.body).getByText('misc/stale-one.png')).toBeVisible();
+    expect(attention?.querySelector('[data-entry-status="stale"]')).not.toBeNull();
+    expect(within(attention ?? document.body).getByText('misc/written-one.png')).toBeVisible();
+    expect(attention?.closest('details')).toBeNull();
+    // Only a verified image without a reported reason stays behind the disclosure.
+    const routine = evidence.querySelector<HTMLElement>('[data-report-entries]');
+    expect(routine?.closest('details')).not.toBeNull();
+    expect(routine).toHaveTextContent('misc/routine-one.png');
+    expect(routine).not.toHaveTextContent('misc/stale-one.png');
+    expect(routine).not.toHaveTextContent('misc/written-one.png');
   });
 
   it('R3 unverified copies, changed results and restoration required stay distinct', async () => {

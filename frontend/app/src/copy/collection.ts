@@ -8,6 +8,7 @@ import { editingTarget } from './editingTarget.ts';
  */
 export const collection = {
   pageName: entry('Collection'),
+  savedSettings: entry('Saved settings'),
   activeProfile: entry('Active profile:'),
   noActiveProfile: entry('none'),
   activeOnly: entry('Return editing to the active profile to change these'),
@@ -36,23 +37,27 @@ export const collection = {
       'A saved choice is not a collected reward',
       'These choices let automation try the reward when it is due; a choice being on does not mean the reward was claimed.',
     ),
+    quotaLabel: entry('Daily quota and reset time'),
     quota: entry(
-      'Daily quota and reset time: not reported',
+      'Not reported',
       'The server does not report how many rewards are left today or when they reset, so this page does not guess.',
     ),
   },
   policies: {
     title: entry('Gathering policies'),
+    list: entry('Saved policies'),
+    new: entry('New policies'),
+    more: entry('More policies'),
     intro: entry(
-      'Each run uses one policy; several runs can share it',
-      'Changing a policy changes every run that uses it. Choose which policy a run uses in its saved settings on the Runs page.',
+      'Changing a policy changes every run that uses it',
+      'Each run uses one policy; several runs can share it. Choose which policy a run uses in its saved settings on the Runs page. New policies remain unused until chosen there.',
     ),
     none: entry('This profile has no gathering policies'),
     noTemplate: entry(
       'No template gathering defaults can be read',
       'Creation needs the starting values published by the server. Read the saved settings again; this page never invents defaults.',
     ),
-    usedBy: entry('Used by:'),
+    usedBy: entry('Used by'),
     unused: entry('Not used by any run'),
     open: entry('Edit'),
     missing: entry('A run names a policy this profile does not define:'),
@@ -89,8 +94,8 @@ export const collection = {
   copy: {
     title: entry('Copy a policy'),
     intro: entry(
-      'A new policy starts as a copy of an existing one',
-      'Every saved field of the source is copied, including ones this page does not show. No run uses the copy until you choose it in Runs.',
+      'All saved source fields are copied',
+      'This includes fields this page does not show.',
     ),
     from: entry('Copy from'),
     id: entry('New identifier'),
@@ -100,30 +105,25 @@ export const collection = {
   },
   create: {
     title: entry('Create a policy from a template'),
-    intro: entry(
-      'Save the template’s gathering defaults as a new policy',
-      'The template value is saved unchanged. No run uses the policy until you choose it in Runs; creating it starts nothing.',
-    ),
+    intro: entry('Template values are saved unchanged', 'Creating a policy starts nothing.'),
     template: entry('Template gathering default'),
     id: entry('New policy identifier'),
     save: entry('Save policy'),
   },
   chores: {
     title: entry('Between-run chores'),
+    saved: entry('Saved chores'),
     intro: entry(
       'On lets a chore run between runs when it is due',
       'Due means its local day or interval allows it; a chore being on is not a record that it ran or succeeded.',
     ),
     names: {
       quest_scan: entry('Quest scan', 'Reads the quest list between runs.'),
-      shatter: entry(
-        'Shatter surplus blue modules',
-        'Destroys surplus blue modules between runs. Destroyed modules cannot be recovered.',
-      ),
+      shatter: entry('Shatter surplus blue modules'),
       housekeeping: entry('Housekeeping', 'Small tidy-up steps between runs.'),
     },
     unknown: entry('Not known to this version: kept as saved'),
-    destroys: entry('Destroys modules when it runs'),
+    destroys: entry('Destroys modules when it runs; cannot be undone'),
     on: entry('On'),
     save: entry('Save chores'),
   },

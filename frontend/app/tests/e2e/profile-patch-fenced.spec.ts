@@ -211,10 +211,10 @@ async function savedReadback(page: Page, name: string) {
         page.getByRole('button', { name: 'Start a day plan', exact: true }),
       ).toBeVisible();
     } else {
+      await page.getByText('Compare the last read saved plan', { exact: true }).click();
       await expect(
         page.getByText(String(own(source, 'revision')), { exact: true }).first(),
       ).toBeVisible();
-      await page.getByText('Compare the last read saved plan', { exact: true }).click();
       const rendered = await page.locator('.tp-schedule__compare pre').textContent();
       expect(JSON.parse(rendered ?? '')).toEqual(ownPath(source, 'profile', 'plan'));
     }

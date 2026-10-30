@@ -6,12 +6,15 @@ export const runtimeConfig = {
   openId: entry(' ('),
   closeId: entry(')'),
   machine: entry('Machine tap and logging settings'),
-  machineNotice: entry('Saved on this computer. Applies the next time automation starts.'),
-  fallbackScope: entry('Machine fallback · next time automation starts'),
-  defaultsNotice: entry('Saving changes the fallback; existing emulator overrides are kept.'),
-  overrideNotice: entry(
-    "Effective value; saving here creates or replaces this emulator's override. Applies the next time automation starts on this emulator.",
-  ),
+  groupNotices: {
+    defaults: entry(
+      'Machine fallback · next time automation starts. Existing emulator overrides are kept.',
+    ),
+    overrides: entry(
+      "This emulator · next time automation starts. Saving creates or replaces this emulator's override.",
+    ),
+    machine: entry('This computer · every emulator · next time automation starts.'),
+  },
   fallback: entry('Saved defaults / Machine fallback'),
   instancePreset: entry("This emulator's saved default preset: "),
   fallbackNotice: entry(

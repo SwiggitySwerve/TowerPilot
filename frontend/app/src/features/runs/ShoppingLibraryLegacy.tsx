@@ -56,6 +56,7 @@ export function LegacyEditor({
           <label>
             <span>{t.label.short}</span>
             <input
+              className="tp-field-control"
               value={model.label}
               onChange={(event) => {
                 edit('label', event.currentTarget.value);
@@ -65,7 +66,11 @@ export function LegacyEditor({
         </div>
       )}
       {model.lines.map((line, index) => (
-        <fieldset key={line.key} data-library-directive={line.key}>
+        <fieldset
+          className="tp-library__directive"
+          key={line.key}
+          data-library-directive={line.key}
+        >
           <legend>{t.line(index + 1)}</legend>
           <label className="tp-library__check">
             <input
@@ -81,6 +86,7 @@ export function LegacyEditor({
             <label>
               <span>{t.tab.short}</span>
               <select
+                className="tp-field-control"
                 value={line.tab}
                 onChange={(event) => {
                   edit(`${line.key}:tab`, event.currentTarget.value);
@@ -95,6 +101,7 @@ export function LegacyEditor({
             <label>
               <span>{t.mode.short}</span>
               <select
+                className="tp-field-control"
                 value={line.mode}
                 onChange={(event) => {
                   edit(`${line.key}:mode`, event.currentTarget.value);
@@ -110,6 +117,7 @@ export function LegacyEditor({
               <label>
                 <span id={`${own}:${line.key}:clicks-label`}>{t.clicks.short}</span>
                 <input
+                  className="tp-field-control"
                   type="text"
                   inputMode="numeric"
                   value={line.clicks}
@@ -153,7 +161,7 @@ export function LegacyEditor({
               </label>
             ))}
           </fieldset>
-          <div className="tp-library__actions">
+          <div className="tp-library__actions tp-control-row">
             <span>
               <Button
                 id={`${own}:${line.key}:-1`}

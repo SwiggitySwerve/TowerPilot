@@ -4,6 +4,9 @@ import type {
   RecognitionAdvancedStore,
 } from '../../../store/recognitionAdvanced.ts';
 import { selectAdvanced } from '../../../store/selectors/recognitionAdvanced.ts';
+import { ActionRow, Reason } from '../../../ui/ActionRow.tsx';
+import { Fact, Facts } from '../../../ui/Facts.tsx';
+import { ShownList } from '../../../ui/ShownList.tsx';
 import { Button } from '../../../ui/Button.tsx';
 import { Coordinates, Data, Values } from './Data.tsx';
 export function Analysis({
@@ -23,7 +26,30 @@ export function Analysis({
   return (
     <>
       <p>{t.observation.short}</p>
-      <div className="tp-advanced__actions">
+      <ActionRow
+        reason={
+          <>
+            {blocked ? (
+              <Reason
+                id="analysis-blocked"
+                entry={
+                  state.context === null
+                    ? t.noTarget
+                    : target?.checking === true
+                      ? t.checking
+                      : t.pending
+                }
+              />
+            ) : null}
+            {state.context === null || target?.analysisBusy === true ? (
+              <Reason
+                id="analysis-read-blocked"
+                entry={state.context === null ? t.noTarget : t.reading}
+              />
+            ) : null}
+          </>
+        }
+      >
         <Button
           tier="secondary"
           label={t.analyze.short}
@@ -42,21 +68,7 @@ export function Analysis({
             ? { disabled: true, reasonId: 'analysis-read-blocked' }
             : {})}
         />
-      </div>
-      {blocked ? (
-        <p id="analysis-blocked">
-          {state.context === null
-            ? t.noTarget.short
-            : target?.checking === true
-              ? t.checking.short
-              : t.pending.short}
-        </p>
-      ) : null}
-      {state.context === null || target?.analysisBusy === true ? (
-        <p id="analysis-read-blocked">
-          {state.context === null ? t.noTarget.short : t.reading.short}
-        </p>
-      ) : null}
+      </ActionRow>
       {target?.contextError === true ? <p role="status">{t.contextError.short}</p> : null}
       {answer.kind !== 'none' ? (
         <div role="status">
@@ -81,6 +93,7 @@ export function Analysis({
       <label className="tp-advanced__field">
         {t.operation.short}
         <input
+          className="tp-field-control"
           value={target?.selectedOperation ?? ''}
           onChange={(e) => {
             store.selectOperation(e.target.value);
@@ -99,24 +112,15 @@ export function Analysis({
             {a.code === null ? null : <Data value={a.code} />}
           </div>
           {a.available ? (
-            <>
-              <p>
-                {t.screen.short}
-                <Data value={a.screen} />
-              </p>
-              <p>
-                {t.candidates.short}
-                <Values values={a.candidates} />
-              </p>
-              <p>
-                {t.tested.short}
-                <Values values={[a.tested, a.total, a.completed]} />
-              </p>
-              <p>
-                {t.captured.short}
-                <Data value={a.capturedAt} />
-              </p>
-            </>
+            <Facts layout="cells">
+              <Fact label={t.screen.short} value={<Data value={a.screen} />} />
+              <Fact label={t.candidates.short} value={<Values values={a.candidates} />} />
+              <Fact
+                label={t.tested.short}
+                value={<Values values={[a.tested, a.total, a.completed]} />}
+              />
+              <Fact label={t.captured.short} value={<Data value={a.capturedAt} />} />
+            </Facts>
           ) : null}
           {a.frame !== null && !target.snapshotError ? (
             <div className="tp-advanced__snapshot">
@@ -149,31 +153,25 @@ export function Analysis({
           ) : null}
           {target.snapshotError ? <p>{t.snapshotError.short}</p> : null}
           {a.noMatches ? <p>{t.noMatches.short}</p> : null}
-          <ul>
-            {a.matches.map((m) => (
-              <li key={m.id}>
-                <p>
-                  {t.names.short}
-                  <Values values={m.names} />
-                </p>
-                <p>
-                  {t.roles.short}
-                  {m.roles.length === 0 ? (
-                    <span>{t.unknownRole.short}</span>
-                  ) : (
-                    <Values values={m.roles} />
-                  )}
-                </p>
-                <p>
-                  {t.rect.short}
-                  <Coordinates value={m.rect} />
-                  {t.inliers.short}
-                  <Data value={m.inliers} />
-                </p>
+          <ShownList
+            items={a.matches}
+            itemKey={(match) => match.id}
+            more={t.more.short}
+            render={(m) => (
+              <>
+                <Facts layout="cells">
+                  <Fact label={t.names.short} value={<Values values={m.names} />} />
+                  <Fact
+                    label={t.roles.short}
+                    value={m.roles.length === 0 ? t.unknownRole.short : <Values values={m.roles} />}
+                  />
+                  <Fact label={t.rect.short} value={<Coordinates value={m.rect} />} />
+                  <Fact label={t.inliers.short} value={<Data value={m.inliers} />} />
+                </Facts>
                 {m.ambiguous ? <p>{t.ambiguous.short}</p> : null}
-              </li>
-            ))}
-          </ul>
+              </>
+            )}
+          />
         </>
       )}
     </>

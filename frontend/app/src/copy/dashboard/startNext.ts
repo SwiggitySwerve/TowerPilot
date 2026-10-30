@@ -13,6 +13,8 @@ export const startNext = {
   collectReason: entry('Collect gems only:'),
   /** One line for both actions when they are blocked for the same reason. */
   bothReason: entry('Start playing and Collect gems only:'),
+  /** The selected run's readiness, on the reasons grid when it is not plain Ready. */
+  readinessLabel: entry('Selected run:'),
   space: made(' '),
   setting: entry('Setting:'),
   readiness: {

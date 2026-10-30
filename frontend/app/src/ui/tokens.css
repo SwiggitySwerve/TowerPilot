@@ -61,10 +61,20 @@
   --tp-font-size-title: 1.25rem;
   --tp-font-size-12: 0.75rem;
   --tp-font-size-13: 0.8125rem;
+  --tp-font-size-14: 0.875rem;
   --tp-font-size-15: 0.9375rem;
 
-  /* Control heights (44 px for halt and primary at narrow widths, spec 8.4) */
+  /* Every control in a row shares its size; action importance changes colour only. */
   --tp-control-height: 2rem;
-  --tp-control-height-small: 1.75rem;
+  --tp-control-height-small: var(--tp-control-height);
   --tp-control-height-touch: 2.75rem;
+  --tp-control-font-size: 0.875rem;
+  --tp-control-line-height: 1.4;
+  --tp-control-padding-block: 0.2rem;
+}
+
+@media (max-width: 600px), (pointer: coarse) {
+  :root {
+    --tp-control-height: var(--tp-control-height-touch);
+  }
 }

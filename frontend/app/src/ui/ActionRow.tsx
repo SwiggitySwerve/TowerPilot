@@ -11,13 +11,13 @@ export interface ReasonProps {
 /**
  * A disabled control's visible reason (spec 3.3, 8.6). The id sits on the short
  * line alone, so the button's description is exactly that line; the "why", when
- * there is one, folds behind its disclosure beside it.
+ * there is one, opens from the help icon beside it.
  */
 export function Reason({ id, entry }: ReasonProps) {
   return (
     <span className="tp-reason">
       <span id={id}>{entry.short}</span>
-      <Why why={entry.why} />
+      <Why subject={entry.short} why={entry.why} />
     </span>
   );
 }
@@ -25,7 +25,7 @@ export function Reason({ id, entry }: ReasonProps) {
 export interface ActionRowProps {
   /** The row's buttons, in tab order. */
   readonly children: CopyNode;
-  /** `Reason` lines of the row's disabled buttons; they hold no control, so tab order is the buttons'. */
+  /** Visible reasons for disabled buttons, with optional background help icons after the actions. */
   readonly reason?: CopyNode;
   /** The newest outcome of the row's commands. */
   readonly outcome?: CopyNode;

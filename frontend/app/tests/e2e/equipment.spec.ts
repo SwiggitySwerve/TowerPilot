@@ -6,6 +6,7 @@ import { loadJsonWithIdentity } from '../../scripts/contract-fixture.mjs';
 import { EQUIPMENT_FIXTURE_PATH } from '../support/equipment-fixtures.mjs';
 import { own, ownPath, record } from '../../src/core/read.ts';
 import { contextFromConfig } from '../../src/api/context.ts';
+import { undersizedControlTargets } from './helpers/target-box.ts';
 
 const OUT = path.resolve('../../backend/logs/reviews/frontend-f6-screens');
 mkdirSync(OUT, { recursive: true });
@@ -41,14 +42,7 @@ async function accessibility(page: Page) {
   expect(violations).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(
-    await page.locator('.tp-equipment').evaluate((root) =>
-      [...root.querySelectorAll('button, select, input, summary')]
-        .filter((node) => {
-          const rect = node.getBoundingClientRect();
-          return rect.width > 0 && rect.height > 0 && (rect.width < 24 || rect.height < 24);
-        })
-        .map((node) => node.id),
-    ),
+    await undersizedControlTargets(page.locator('.tp-equipment'), { width: 24, height: 24 }),
   ).toEqual([]);
 }
 
@@ -252,10 +246,14 @@ for (const width of widths) {
       'href',
       '#runs/saved/farm_deep',
     );
-    const help = page.locator('#equipment\\:help');
+    const help = page.getByRole('button', { name: 'About equipment selection', exact: true });
     await help.focus();
-    await page.keyboard.press('Enter');
-    await expect(page.getByText(/A global preset selects the game/)).toBeVisible();
+    await expect(
+      page.getByRole('tooltip').getByText(/A global preset selects the game/),
+    ).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await expect(help).toBeFocused();
     await accessibility(page);
     await shot(page, 'mixed-help', width);
     expect(await posts(page)).toHaveLength(0);

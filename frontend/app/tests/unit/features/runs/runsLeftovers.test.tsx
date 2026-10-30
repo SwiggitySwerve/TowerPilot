@@ -594,10 +594,20 @@ const detailsOf = (routine: string): HTMLDetailsElement => {
 };
 const rowsOf = (routine: string): Record<string, string> =>
   Object.fromEntries(
-    [...detailsOf(routine).querySelectorAll('.tp-run-details__row')].map((row) => [
-      row.querySelector('dt span')?.textContent ?? '',
-      row.querySelector('dd')?.textContent ?? '',
-    ]),
+    [...detailsOf(routine).querySelectorAll('.tp-run-details__row')].flatMap((row) => {
+      const facts = row.querySelectorAll('.tp-facts__item');
+      return facts.length > 0
+        ? [...facts].map((fact) => [
+            fact.querySelector('dt')?.textContent ?? '',
+            fact.querySelector('dd')?.textContent ?? '',
+          ])
+        : [
+            [
+              row.querySelector('dt span')?.textContent ?? '',
+              row.querySelector('dd')?.textContent ?? '',
+            ],
+          ];
+    }),
   );
 
 describe('F6-11 RL7 battle details in the live section', () => {
@@ -605,7 +615,7 @@ describe('F6-11 RL7 battle details in the live section', () => {
     await openLive(recordedBattle('runtime_ad_orbit_shopping'));
     const summaries = [
       ...liveRegion().querySelectorAll<HTMLElement>(
-        '[data-part="runsDetails"] > details > summary',
+        '[data-part="runsDetails"] .tp-tile__body > details > summary',
       ),
     ];
     expect(summaries.map((s) => s.textContent)).toEqual([
@@ -630,8 +640,13 @@ describe('F6-11 RL7 battle details in the live section', () => {
       Collection: 'Window closes in 18 s',
       'Next look': 'Due now, waiting for the automation',
       'Latest failed attempt': 'None recorded',
-      Counts: 'Attempts 0, confirmed 1, skipped 0, windows missed 0',
-      'Last timing': 'Schedule wait not reported, response delay not reported, verification 2 s',
+      Attempts: '0',
+      Confirmed: '1',
+      Skipped: '0',
+      'Windows missed': '0',
+      'Schedule wait': 'Not reported',
+      'Response delay': 'Not reported',
+      Verification: '2 s',
     });
     // The reason is the server's code, shown as sent.
     expect(detailsOf('ad_gems').querySelector('[data-server-text="id"]')?.textContent).toBe(
@@ -721,10 +736,15 @@ describe('F6-11 RL7 battle details in the live section', () => {
         'u',
       ),
     );
-    expect(rows['Counts']).toBe('Attempts 1, confirmed 0, skipped 0, windows missed 0');
-    expect(rows['Last timing']).toBe(
-      'Schedule wait not reported, response delay not reported, verification 2 s',
-    );
+    expect(rows).toMatchObject({
+      Attempts: '1',
+      Confirmed: '0',
+      Skipped: '0',
+      'Windows missed': '0',
+      'Schedule wait': 'Not reported',
+      'Response delay': 'Not reported',
+      Verification: '2 s',
+    });
     expect(
       within(detailsOf('ad_gems')).getByRole('link', { name: 'Events of this battle on Runtime' }),
     ).toHaveAttribute(

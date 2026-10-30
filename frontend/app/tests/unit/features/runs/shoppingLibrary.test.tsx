@@ -73,7 +73,7 @@ async function open(source: () => DashboardCase = () => INITIAL, options: PageOp
     },
   });
   await page.advance(100);
-  await page.user.click(within(root()).getByText('Shared shopping policies', { exact: true }));
+  await page.user.click(within(root()).getByText('Manage policies', { exact: true }));
   return page;
 }
 async function edit(page: PageHarness, id = 'main_list') {
@@ -116,6 +116,53 @@ afterEach(() => {
 });
 
 describe('SQ9 shared shopping policies', () => {
+  it('SQ9 closed summaries retain invalid-field signals while exact errors remain beside the open fields', async () => {
+    const page = await open();
+    const form = await edit(page);
+    const reserve = form.getByLabelText('Cash reserve', { exact: true });
+    await page.user.clear(reserve);
+    await page.user.type(reserve, 'nope');
+    const summary = root().querySelector(':scope > details > summary');
+    const localSummary = policy('main_list').querySelector('details > summary');
+    expect(summary).toHaveTextContent('Needs attention');
+    expect(summary).toHaveTextContent('1 problem');
+    expect(localSummary).toHaveTextContent('Needs attention');
+    expect(reserve).toHaveAttribute('aria-invalid', 'true');
+    expect(reserve).toHaveAccessibleDescription(expect.stringContaining('Use digits'));
+    await page.user.click(within(root()).getByText('Manage policies', { exact: true }));
+    expect(summary).toBeVisible();
+    expect(reserve).not.toBeVisible();
+    expect(root().querySelector(':scope > p')).toBeVisible();
+    expect(root().querySelector(':scope > p')).toHaveTextContent(
+      'Shared saves affect these runs in future battles',
+    );
+    expect(page.fake.writes()).toEqual([]);
+  });
+
+  it('RL3 invalid machine fallback settings are signalled before their disclosure opens', async () => {
+    // The default settings read is valid; this recorded read saves a preset the machine no longer lists.
+    const page = await open(() => INITIAL, {
+      before: (fake) => {
+        fake.route('GET', '/api/settings', () =>
+          dashboardPagesCase(
+            'settings_modules_more.read_with_an_unlisted_saved_run_defaults_preset',
+          ),
+        );
+      },
+    });
+    const defaults = document.querySelector<HTMLElement>('[data-run-defaults]');
+    if (defaults === null) throw new Error('missing saved defaults');
+    const summary = defaults.querySelector('summary');
+    expect(summary).toHaveTextContent('Needs attention');
+    expect(summary).toHaveTextContent('1 problem');
+    expect(within(defaults).getByText('Choose one of the listed options')).not.toBeVisible();
+    await page.user.click(
+      within(defaults).getByText('Saved defaults / Machine fallback', { exact: true }),
+    );
+    expect(within(defaults).getByText('Choose one of the listed options')).toBeVisible();
+    expect(page.fake.writes()).toEqual([]);
+  });
+
   it('SQ9 shows all policy usages, names affected runs, forbids used deletion and passes catalogue/axe', async () => {
     const page = await open();
     const main = within(policy('main_list'));

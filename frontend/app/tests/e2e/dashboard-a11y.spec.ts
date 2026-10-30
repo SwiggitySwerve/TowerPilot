@@ -198,7 +198,9 @@ for (const width of WIDTHS) {
       await openScenario(page, scenario, { width });
       const boxes = await page.evaluate(() =>
         [...document.querySelectorAll<HTMLElement>('button, a[href], select, summary')]
-          .filter((element) => element.getClientRects().length > 0)
+          .filter((element) =>
+            element.checkVisibility({ visibilityProperty: true, opacityProperty: true }),
+          )
           .map((element) => {
             const box = element.getBoundingClientRect();
             const style = getComputedStyle(element);
@@ -278,7 +280,7 @@ for (const width of WIDTHS) {
   });
 }
 
-test('8.8: with focus on Turn input off and a Why open, five counted status deliveries keep both', async ({
+test('8.8: with focus on Turn input off and a help tip open, five counted status deliveries keep both', async ({
   page,
 }) => {
   let deliveries = 0;
@@ -287,15 +289,16 @@ test('8.8: with focus on Turn input off and a Why open, five counted status deli
   });
   await openScenario(page, 'collecting');
   const input = page.locator('[data-slot="input"]');
-  const why = input.locator('details').first();
-  await why.locator('summary').click();
-  await expect(why).toHaveAttribute('open', '');
+  const why = input.getByRole('button', { name: /^About / }).first();
+  // Hover opens it without moving focus; the pointer stays on the icon while focus sits on Turn off.
+  await why.hover();
+  await expect(why).toHaveAttribute('aria-expanded', 'true');
   const turnOff = input.getByRole('button', { name: 'Turn input off' });
   await turnOff.focus();
   const start = deliveries;
   await expect.poll(() => deliveries - start, { timeout: 20_000 }).toBeGreaterThanOrEqual(5);
   await expect(turnOff).toBeFocused();
-  await expect(why).toHaveAttribute('open', '');
+  await expect(why).toHaveAttribute('aria-expanded', 'true');
 });
 
 test('8.11: Dismiss by keyboard moves focus to the next line or the Control heading, never the body', async ({

@@ -8,6 +8,8 @@ import {
 } from '../../core/shoppingPlan.ts';
 import { selectShoppingLive } from '../../store/selectors/shoppingLive.ts';
 import { Button } from '../../ui/Button.tsx';
+import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
+import { Tile } from '../../ui/Tile.tsx';
 import { pageHref } from '../../ui/routes.ts';
 import { useDashboard, useView } from '../dashboard/context.ts';
 import { QueueEditor } from '../shopping/QueueEditor.tsx';
@@ -24,11 +26,14 @@ export function LiveShopping() {
       commands.editDraft(vm.scope, key, value);
   };
   return (
-    <section className="tp-shopping-live" aria-labelledby="shopping-live-title">
-      <h3 id="shopping-live-title">{t.title.short}</h3>
-      <p>{t.scope.short}</p>
+    <Tile
+      className="tp-shopping-live"
+      titleId="shopping-live-title"
+      title={t.title.short}
+      intro={t.scope}
+    >
       {vm.supported ? (
-        <details open>
+        <details open className="tp-disclosure">
           <summary>{t.edit.short}</summary>
           <QueueEditor
             vm={vm.editor}
@@ -53,11 +58,19 @@ export function LiveShopping() {
             }}
           />
           <p>{t.overrides.short}</p>
-          {vm.routineEnabled === null ? null : (
-            <p>{vm.routineEnabled ? t.on.short : t.off.short}</p>
-          )}
-          {typeof vm.routineInterval === 'number' ? <p>{t.interval(vm.routineInterval)}</p> : null}
-          <div className="tp-runs__actions">
+          <ActionRow
+            reason={
+              vm.reason === null ? null : (
+                <Reason
+                  id="shopping-live-reason"
+                  entry={
+                    Object.entries(t.reasons).find(([key]) => key === vm.reason)?.[1] ??
+                    t.reasons.unsupported
+                  }
+                />
+              )
+            }
+          >
             <Button
               tier="secondary"
               label={t.save.short}
@@ -75,21 +88,20 @@ export function LiveShopping() {
                 }}
               />
             ) : null}
-          </div>
+          </ActionRow>
           <QueueRefusal message={vm.refusal} />
         </details>
       ) : null}
-      {vm.reason === null ? null : (
-        <div id="shopping-live-reason">
-          {
-            (
-              Object.entries(t.reasons).find(([key]) => key === vm.reason)?.[1] ??
-              t.reasons.unsupported
-            ).short
+      {vm.supported || vm.reason === null ? null : (
+        <Reason
+          id="shopping-live-reason"
+          entry={
+            Object.entries(t.reasons).find(([key]) => key === vm.reason)?.[1] ??
+            t.reasons.unsupported
           }
-        </div>
+        />
       )}
       <a href={pageHref('dashboard')}>{t.dashboard.short}</a>
-    </section>
+    </Tile>
   );
 }

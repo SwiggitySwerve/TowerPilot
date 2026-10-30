@@ -18,10 +18,7 @@ export const emulators = {
   pageName: entry('Emulators'),
   target: {
     title: entry('This emulator'),
-    scope: entry(
-      'The emulator this page acts on',
-      'Requests here change which emulator Tower Pilot drives or start one; nothing happens on page load, and nothing here bounces a connection or starts setup on its own.',
-    ),
+    connection: entry('Identity and connection'),
     instance: entry('Instance:'),
     account: entry('Account:'),
     noAccount: entry('none chosen'),
@@ -36,7 +33,7 @@ export const emulators = {
     liveAge: (seconds: number) => made(`read ${age(seconds)}`),
     liveNote: entry(
       'From the status read, not from this page',
-      'A configured address, an open port or a running emulator is not a connected device; only the adb server listing the address as a device is.',
+      'A configured address, an open port or a running emulator is not a connected device; only the adb server listing the address as a device is. Opening this page never starts an emulator, reconnects or starts setup.',
     ),
     reconnect: entry('Reconnect'),
     boot: entry(
@@ -47,10 +44,20 @@ export const emulators = {
       'No address is configured for this instance yet',
       'A first install: Use this one fills the empty address (the server refuses if one was set meanwhile), Start it and the tools install need none. Nothing connects until you choose.',
     ),
-    dashboard: entry('Stops and Pause harvesting: Dashboard'),
+    dashboard: entry('Open Dashboard'),
+    dashboardActions: entry('Stop automation or pause harvesting on the Dashboard.'),
   },
   resolution: {
     title: entry('Screen size'),
+    dimensions: entry('Dimensions'),
+    orientation: entry('Orientation'),
+    layout: entry('Layout'),
+    result: entry('Result'),
+    response: entry('Response'),
+    noteLabel: entry('Note'),
+    error: entry('Error'),
+    checked: entry('Last check'),
+    saved: entry('Saved result'),
     check: entry('Check screen size'),
     checking: entry('Checking the screen size'),
     noAddress: entry('Set an address first'),
@@ -101,7 +108,7 @@ export const emulators = {
     start: entry('Start it'),
     openGame: entry('Open The Tower'),
     prepare: entry('Prepare'),
-    suggestion: entry('Suggestion: exactly one emulator is up'),
+    suggested: entry('Suggested', 'Exactly one emulator is up, so it is the likely one to use.'),
     alsoSeen: entry('also listed as'),
     notProbed: entry('Not probed:'),
     configured: entry('Configured instances'),
@@ -128,8 +135,8 @@ export const emulators = {
   },
   tools: {
     title: entry('Connection tools'),
-    intro: entry(
-      'Android platform tools for the connection',
+    identity: entry(
+      'Android platform tools',
       'Installed once on this computer. Keep The Tower installed and signed in on your emulator.',
     ),
     installed: entry('Installed'),

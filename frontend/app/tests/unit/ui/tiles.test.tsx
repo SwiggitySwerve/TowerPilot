@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import { copy } from '../../../src/copy/catalogue.ts';
+import { helpTipName } from '../../../src/copy/helpTip.ts';
 import { ActionRow, Reason } from '../../../src/ui/ActionRow.tsx';
 import { Button } from '../../../src/ui/Button.tsx';
 import { CopyLine } from '../../../src/ui/CopyLine.tsx';
@@ -43,8 +44,9 @@ describe('Tile (surface grammar)', () => {
     const link = within(tile).getByRole('link', { name: OTHER.short });
     expect(heading.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(tile).getByText(WITH_WHY.short)).toBeVisible();
-    expect(tile.querySelector('.tp-copy-line[data-variant="intro"] summary')).toHaveTextContent(
-      copy.common.why.short,
+    expect(within(tile).getByRole('button', { name: helpTipName(WITH_WHY.short) })).toHaveAttribute(
+      'aria-expanded',
+      'false',
     );
     expect(tile).not.toHaveAttribute('data-density');
     expect(tile).not.toHaveAttribute('data-tone');
@@ -151,9 +153,13 @@ describe('ActionRow and Reason', () => {
     expect(blocked).toHaveAccessibleDescription(WITH_WHY.short);
     expect(screen.getByText(WITH_WHY.short)).toBeVisible();
     // The "why" is one click away, beside the reason, never inside the description.
-    const why = container.querySelector('.tp-actions__reason details');
-    expect(why).not.toBeNull();
-    expect(why).not.toHaveAttribute('open');
+    const why = screen.getByRole('button', { name: helpTipName(WITH_WHY.short) });
+    expect(why.closest('.tp-actions__reason')).not.toBeNull();
+    expect(why).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(why);
+    expect(screen.getByRole('tooltip')).toHaveTextContent(WITH_WHY.why ?? '');
+    expect(blocked).toHaveAccessibleDescription(WITH_WHY.short);
+    await userEvent.keyboard('{Escape}');
     await userEvent.click(blocked);
     expect(onClick).not.toHaveBeenCalled();
     // Buttons first, then the reason, then the outcome.
@@ -192,7 +198,7 @@ describe('CopyLine variants', () => {
     );
     const lines = [...container.querySelectorAll('.tp-copy-line')];
     expect(lines.map((line) => line.getAttribute('data-variant'))).toEqual([null, 'intro', 'note']);
-    expect(lines[1]?.querySelector('summary')).toHaveTextContent(copy.common.why.short);
+    expect(lines[1]?.querySelector('button')).toHaveAccessibleName(helpTipName(WITH_WHY.short));
     expect(lines[2]?.querySelector('details')).toBeNull();
     expect(textOutsideCatalogue(container)).toEqual([]);
     expect(await axe(container)).toHaveNoViolations();

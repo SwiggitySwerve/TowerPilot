@@ -144,15 +144,87 @@ for (const width of WIDTHS) {
     for (const value of ['', 'A', 'Recorded battle '.repeat(30), 'x'.repeat(1200)]) {
       label = value;
       await page.getByRole('button', { name: 'Refresh records' }).click();
-      const row = page.locator(ROWS);
+      const row = page.locator(ROWS).locator('..');
       await expect(row).toContainText(value || 'Unnamed battle');
-      await expect(row).toContainText('Tier: 0');
-      await expect(row).toContainText('Recorded start: Unknown / not recorded');
-      await expect(row).toContainText('future_record_state');
+      await expect(row.getByText('Tier', { exact: true }).locator('..').locator('dd')).toHaveText(
+        '0',
+      );
+      await expect(row.locator('time')).toHaveText('Unknown / not recorded');
+      await expect(
+        row.getByText('Recorded status', { exact: true }).locator('..').locator('dd'),
+      ).toHaveText('future_record_state');
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );
     }
+    expect(await posts(page)).toEqual([]);
+  });
+
+  test(`H2: record workspace keeps labeled facts in view without sideways scrolling at ${width}`, async ({
+    page,
+  }) => {
+    await openHistory(page, width);
+    const workspace = page.getByRole('region', { name: 'Recorded battles', exact: true });
+    const row = workspace.locator('li').first();
+    for (const label of ['Recorded status', 'Run', 'Tier', 'Last observed wave', 'Final wave']) {
+      await expect(row.getByText(label, { exact: true })).toBeVisible();
+      await expect(row.getByText(label, { exact: true }).locator('..').locator('dd')).toBeVisible();
+    }
+    await expect(row.getByText('Recorded start', { exact: true })).toBeVisible();
+    await expect(row.locator('time')).toBeVisible();
+    expect(
+      await workspace.evaluate((element) => ({
+        bounded: element.scrollHeight > element.clientHeight,
+        fits: element.scrollWidth <= element.clientWidth + 1,
+        height: element.getBoundingClientRect().height,
+      })),
+    ).toEqual({ bounded: true, fits: true, height: expect.any(Number) });
+    const box = await workspace.boundingBox();
+    expect(box?.height).toBeLessThanOrEqual((page.viewportSize()?.height ?? 900) * 0.65 + 1);
+    const scrollHint = page.getByText(
+      'More records on this page are below; scroll the list to see them.',
+      { exact: true },
+    );
+    await expect(scrollHint).toBeVisible();
+    await expect(workspace).toHaveAccessibleDescription(await scrollHint.innerText());
+    await workspace.focus();
+    await page.keyboard.press('PageDown');
+    await expect.poll(() => workspace.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    // Before a selection the list has the page: no empty Selected record pane beside it.
+    await expect(page.locator('[data-region="history-detail-region"]')).toHaveCount(0);
+    if (width >= 1100) {
+      const records = await page.locator('[data-region="history-records-region"]').boundingBox();
+      const main = await page.getByRole('main').boundingBox();
+      expect(records?.width).toBeGreaterThan((main?.width ?? 0) * 0.9);
+    }
+    await page.screenshot({
+      path: fileURLToPath(new URL(`history-workspace-${width}.png`, SCREENS)),
+      fullPage: true,
+    });
+    const id = await row.locator('[data-server-text="id"]').first().textContent();
+    const instant = await row.locator('time').getAttribute('title');
+    await row.locator(ROWS).click();
+    const detail = page.locator('.tp-history__evidence');
+    await expect(detail).toBeVisible();
+    await expect(
+      detail.getByText('Record ID', { exact: true }).locator('..').locator('dd'),
+    ).toHaveText(id ?? '');
+    await expect(
+      detail.getByText('Recorded start', { exact: true }).locator('..').locator('dd'),
+    ).toHaveText(instant ?? '');
+    if (width >= 1100) {
+      const records = await page.locator('[data-region="history-records-region"]').boundingBox();
+      const detailPane = await page.locator('[data-region="history-detail-region"]').boundingBox();
+      expect(detailPane?.y).toBe(records?.y);
+      expect(detailPane?.x).toBeGreaterThan((records?.x ?? 0) + (records?.width ?? 0));
+    }
+    await page.screenshot({
+      path: fileURLToPath(new URL(`history-workspace-selected-${width}.png`, SCREENS)),
+      fullPage: true,
+    });
     expect(await posts(page)).toEqual([]);
   });
 

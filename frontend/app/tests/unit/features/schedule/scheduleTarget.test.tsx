@@ -92,6 +92,16 @@ async function setup(storage = createMemoryStorage()) {
     },
   };
 }
+it('PE3 inactive-plan removal keeps activation and legacy-rule consequences visible', async () => {
+  const s = await setup();
+  renderRegion(initialDashboardState(), <SchedulePage schedule={s.schedule} />);
+  expect(
+    screen.getByText(
+      'Deletes all day plans and weekday mapping from this profile. Legacy rules apply if activated and loaded; the active scheduler is unchanged.',
+    ),
+  ).toBeVisible();
+  expect(s.fake.writes()).toEqual([]);
+});
 it('PE3 reads second and saves the exact recorded fenced plan while a runner is listed', async () => {
   const s = await setup();
   expect(own(s.entry().source, 'name')).toBe('second');

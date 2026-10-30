@@ -52,7 +52,7 @@ async function open(page: Page, width: number, module: Module, mode = 'saved') {
   );
   await navigateApp(page, module === 'run-defaults' ? 'Runs' : 'Runtime');
   if (module === 'run-defaults') {
-    const disclosure = page.locator('[data-run-defaults] > summary');
+    const disclosure = page.locator('[data-run-defaults] > details > summary');
     await disclosure.focus();
     await page.keyboard.press('Enter');
     await expect(disclosure).toBeFocused();
@@ -151,7 +151,7 @@ for (const width of [1360, 1054, 390]) {
         },
       );
       await page.reload();
-      await page.locator('[data-run-defaults] > summary').click();
+      await page.locator('[data-run-defaults] > details > summary').click();
       await expect(picker).toHaveValue('');
       await expect(
         picker.getByRole('option', { name: 'Empty value (not listed)', exact: true }),

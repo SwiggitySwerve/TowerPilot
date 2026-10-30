@@ -73,52 +73,8 @@ const ALLOWLIST: Readonly<Record<string, readonly string[]>> = {
     '.tp-app-navigation__toggle',
     ".tp-app-navigation a[aria-current='page']",
   ],
-  'features/abilities/abilities.css': [
-    '.tp-abilities__card',
-    ".tp-abilities input:not([type='checkbox']), .tp-abilities select",
-  ],
-  'features/collection/collection.css': ['.tp-collection__field select, .tp-collection__input'],
-  'features/dashboard/dashboard.css': ['.tp-picker select', '.tp-toast'],
-  'features/dashboard/needsYou/needsYou.css': [
-    '.tp-need__count',
-    '.tp-need__actions > a.tp-need__fix',
-  ],
-  'features/dashboard/preview.css': ['.tp-preview', '.tp-preview select'],
-  'features/dashboard/startNext/startNext.css': ['.tp-start-next__picker select'],
-  'features/dashboard/thisBattle/thisBattle.css': [
-    '.tp-shopping-try > div',
-    '@container (max-width: 740px) > .tp-battle__routine',
-  ],
-  'features/emulators/emulators.css': ['.tp-emulators__field select, .tp-emulators__input'],
-  'features/equipment/equipment.css': [
-    '.tp-equipment__restore-row input',
-    '.tp-equipment__card, .tp-equipment__editor, .tp-equipment__help',
-    '.tp-equipment select',
-    '.tp-equipment pre',
-    '.tp-equipment__save',
-  ],
-  'features/history/history.css': [
-    '.tp-history button, .tp-history select',
-    '.tp-history__panel',
-    '.tp-history pre',
-    '.tp-history__execution',
-  ],
-  'features/profiles/profiles.css': ['.tp-profiles__field select, .tp-profiles__input'],
-  'features/recognition/advanced/advanced.css': ['.tp-advanced__field input'],
-  'features/recognition/recognition.css': ['.tp-recognition select, .tp-recognition__number'],
-  'features/runs/run-entry.css': [
-    ".tp-run-entry__field input:not([type='checkbox']), .tp-run-entry__field select, .tp-run-entry__field textarea",
-  ],
-  'features/runs/runs.css': ['.tp-runs__picker select', '.tp-run-input'],
-  'features/runtime/runtime.css': ['.tp-runtime input'],
-  'features/schedule/schedule.css': [
-    '.tp-schedule__observed, .tp-schedule__week',
-    '.tp-schedule__block',
-    '.tp-schedule input, .tp-schedule select',
-    '.tp-schedule__save',
-  ],
-  'features/settings/settings.css': ['.tp-settings__input, .tp-settings__field select'],
-  'features/shopping/shopping.css': ['.tp-shop__field input, .tp-shop__field select'],
+  'features/dashboard/dashboard.css': ['.tp-toast'],
+  'features/dashboard/needsYou/needsYou.css': ['.tp-need__count'],
 };
 
 const UI = path.join(SRC, 'ui');

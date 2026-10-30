@@ -4,6 +4,7 @@ import type { CopyEntry } from '../../copy/text.ts';
 import type { ProfileOutcomeVM } from '../../store/selectors/profiles.ts';
 import { Button } from '../../ui/Button.tsx';
 import { Disclosure } from '../../ui/Disclosure.tsx';
+import { Fact, Facts } from '../../ui/Facts.tsx';
 import { Notice } from '../../ui/Notice.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
 import { useDashboard } from '../dashboard/context.ts';
@@ -115,18 +116,50 @@ export function ProfileOutcome({ outcome }: { readonly outcome: ProfileOutcomeVM
         }
       />
       {outcome.currentContext === null ? null : (
-        <p className="tp-profiles__summary" data-current-context="true">
-          <span>{t.outcomes.currentContext.short}</span>
-          {Object.entries(outcome.currentContext).map(([key, value]) => (
-            <span key={key}>
-              {value === null ? (
-                t.outcomes.contextUnknown.short
-              ) : (
-                <ServerValue kind="name" value={value} />
-              )}
-            </span>
-          ))}
-        </p>
+        <div data-current-context="true">
+          <Facts>
+            <Fact
+              label={t.outcomes.contextLabels.instance.short}
+              value={
+                outcome.currentContext.instance === null ? (
+                  t.outcomes.contextUnknown.short
+                ) : (
+                  <ServerValue kind="name" value={outcome.currentContext.instance} />
+                )
+              }
+            />
+            <Fact
+              label={t.outcomes.contextLabels.account.short}
+              value={
+                outcome.currentContext.account === null ? (
+                  t.outcomes.contextUnknown.short
+                ) : (
+                  <ServerValue kind="name" value={outcome.currentContext.account} />
+                )
+              }
+            />
+            <Fact
+              label={t.outcomes.contextLabels.profile.short}
+              value={
+                outcome.currentContext.profile === null ? (
+                  t.outcomes.contextUnknown.short
+                ) : (
+                  <ServerValue kind="name" value={outcome.currentContext.profile} />
+                )
+              }
+            />
+            <Fact
+              label={t.outcomes.contextLabels.serial.short}
+              value={
+                outcome.currentContext.serial === null ? (
+                  t.outcomes.contextUnknown.short
+                ) : (
+                  <ServerValue kind="name" value={outcome.currentContext.serial} />
+                )
+              }
+            />
+          </Facts>
+        </div>
       )}
     </div>
   );

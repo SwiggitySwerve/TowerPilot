@@ -74,21 +74,89 @@
   font-weight: 600;
 }
 
+/*
+ * Shared geometry for commands, link-buttons and editable fields. Min-height
+ * permits long labels and larger text to grow instead of being clipped.
+ */
+.tp-button,
+.tp-field-control {
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--tp-control-height);
+  margin: 0;
+  padding-block: var(--tp-control-padding-block);
+  border: 1px solid var(--tp-color-border-active);
+  border-radius: var(--tp-radius-control);
+  font-family: var(--tp-font-sans);
+  font-size: var(--tp-control-font-size);
+  line-height: var(--tp-control-line-height);
+}
+
+.tp-field-control {
+  padding-inline: 0.6rem;
+  background: var(--tp-color-surface-strong);
+  color: var(--tp-color-text);
+}
+
+.tp-field-control[aria-invalid='true'] {
+  border-color: var(--tp-color-bad);
+  box-shadow: inset 0 0 0 1px var(--tp-color-bad);
+}
+.tp-field-control::placeholder {
+  color: var(--tp-color-text-muted);
+  opacity: 1;
+}
+
+.tp-control-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--tp-space-2);
+  min-width: 0;
+}
+
+.tp-control-row > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* A command's explanation follows the whole row, so fields align with its buttons. */
+.tp-control-row > .tp-actions {
+  display: contents;
+}
+.tp-control-row > .tp-actions > .tp-actions__reason,
+.tp-control-row > .tp-actions > .tp-actions__outcome {
+  flex-basis: 100%;
+}
+
+.tp-check-field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  min-height: var(--tp-control-height);
+  min-width: var(--tp-control-height);
+}
+.tp-check-field input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  flex: none;
+}
+
 /* Buttons: primary (Start playing only), secondary, halt (every revocation), quiet. */
 .tp-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  min-height: var(--tp-control-height);
-  padding: 0.2rem 0.8rem;
-  border: 1px solid transparent;
-  border-radius: var(--tp-radius-control);
-  font: inherit;
-  font-size: var(--tp-font-size-13);
+  padding-inline: 0.8rem;
+  border-color: transparent;
   font-weight: 600;
   cursor: pointer;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  text-decoration: none;
 }
 
 .tp-button[aria-busy='true'] {
@@ -98,10 +166,15 @@
   background: var(--tp-color-primary);
   color: var(--tp-color-on-action);
 }
+.tp-button:not([data-tier]),
 .tp-button[data-tier='secondary'] {
   background: var(--tp-color-surface-strong);
   border-color: var(--tp-color-border-active);
   color: var(--tp-color-text-strong);
+}
+.tp-button[aria-pressed='true'] {
+  border-color: var(--tp-color-focus);
+  box-shadow: inset 0 0 0 1px var(--tp-color-focus);
 }
 .tp-button[data-tier='halt'] {
   background: var(--tp-color-halt-fill);
@@ -109,7 +182,6 @@
   color: var(--tp-color-halt-text);
 }
 .tp-button[data-tier='quiet'] {
-  min-height: var(--tp-control-height-small);
   background: transparent;
   border-color: var(--tp-color-border);
   color: var(--tp-color-text-nav);
@@ -131,10 +203,11 @@
   margin: 0;
 }
 
-/* CopyLine and Why: the short line, with the "why" behind a native disclosure (C-7). */
+/* Catalogue lines keep their short text visible, with optional background in HelpTip. */
 .tp-copy-line p {
   margin: 0;
 }
+/* Native diagnostic disclosures still used for reported server evidence. */
 .tp-copy-line__why {
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);
@@ -325,15 +398,15 @@ fieldset.tp-tile > .tp-tile__end + * {
 /* Tiles side by side, as many columns as fit. */
 .tp-tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
   gap: var(--tp-space-3);
   min-width: 0;
 }
 .tp-tiles[data-min='narrow'] {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
 }
 .tp-tiles[data-min='wide'] {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 26rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
 }
 /* A tile in a tile is a divided group of its parent's fill. */
 .tp-tile .tp-tile {
@@ -385,6 +458,19 @@ fieldset.tp-tile > .tp-tile__end + * {
 .tp-facts[data-layout='cells'] dt {
   font-size: var(--tp-font-size-12);
 }
+.tp-facts[data-layout='inline'] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-1) var(--tp-space-3);
+}
+.tp-facts[data-layout='inline'] > .tp-facts__item {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-1) var(--tp-space-2);
+  max-width: 100%;
+}
 @media (max-width: 480px) {
   .tp-facts[data-layout='rows'] {
     grid-template-columns: minmax(0, 1fr);
@@ -410,12 +496,15 @@ fieldset.tp-tile > .tp-tile__end + * {
   gap: var(--tp-space-1) var(--tp-space-2);
   min-width: 0;
 }
+.tp-actions__buttons {
+  align-items: end;
+}
 .tp-reason > .tp-copy-line__why {
   display: inline-block;
   margin-inline-start: var(--tp-space-2);
 }
 
-/* CopyLine intro and note: the short line and its Why on one muted line. */
+/* CopyLine intro and note: the short line and its help icon on one muted line. */
 .tp-copy-line[data-variant] {
   display: flex;
   flex-wrap: wrap;
@@ -423,9 +512,6 @@ fieldset.tp-tile > .tp-tile__end + * {
   gap: 0 var(--tp-space-2);
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);
-}
-.tp-copy-line[data-variant] > details[open] {
-  flex-basis: 100%;
 }
 .tp-copy-line[data-variant='intro'] > p {
   max-width: 72ch;
@@ -447,7 +533,7 @@ fieldset.tp-tile > .tp-tile__end + * {
 .tp-shown-list > .tp-disclosure {
   margin-block-start: var(--tp-space-2);
 }
-/* Slot (2.2): label, facts, action, meta on rows shared by the three slots. */
+/* Slot (2.2): label, facts, action, meta on rows shared by the three slots; a tile's fill. */
 .tp-slot {
   display: grid;
   grid-template-rows: subgrid;
@@ -455,9 +541,10 @@ fieldset.tp-tile > .tp-tile__end + * {
   row-gap: 0.375rem;
   min-width: 0;
   padding: var(--tp-space-2) var(--tp-space-3);
-  border: 1px solid var(--tp-color-border);
+  /* A slot is a tile of its Region (surface grammar): a borderless fill, never a box in a box. */
+  border: 0;
   border-radius: var(--tp-radius-control);
-  background: var(--tp-color-surface-inner);
+  background: var(--tp-color-surface-raised);
 }
 .tp-slot > * {
   min-width: 0;
@@ -592,19 +679,20 @@ fieldset.tp-tile > .tp-tile__end + * {
   overflow-wrap: anywhere;
 }
 
-/* Spec 2.3, 8.4: halt and primary targets are at least 44 by 44 px at narrow widths. */
+/* Every control tier has the same touch target, including quiet links and fields. */
 @media (max-width: 600px), (pointer: coarse) {
-  .tp-button[data-tier='halt'],
-  .tp-button[data-tier='primary'],
-  .tp-fallback .tp-button,
-  .tp-fallback .tp-disclosure > summary,
-  .tp-fallback .tp-copy-line__why > summary,
-  .tp-fallback + .tp-button {
+  .tp-button,
+  .tp-field-control,
+  .tp-main details > summary,
+  .tp-main label:has(input:is([type='checkbox'], [type='radio'])),
+  .tp-main a[href] {
     min-width: var(--tp-control-height-touch);
     min-height: var(--tp-control-height-touch);
   }
-  .tp-fallback summary {
-    line-height: var(--tp-control-height-touch);
+  .tp-main a[href] {
+    display: inline-flex;
+    align-items: center;
+    margin-block: 0;
   }
 }
 .tp-dialog__name {
@@ -625,7 +713,8 @@ fieldset.tp-tile > .tp-tile__end + * {
  * edges belong to Unknown alone. Placed last so it wins over every tier rule;
  * its reason is a visible line.
  */
-.tp-button[aria-disabled='true'] {
+.tp-button[aria-disabled='true'],
+.tp-button:disabled {
   border-color: color-mix(in srgb, var(--tp-color-border-active) 55%, transparent);
   border-style: solid;
   background: transparent;

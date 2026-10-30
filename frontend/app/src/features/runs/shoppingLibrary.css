@@ -5,13 +5,15 @@
 .tp-library .tp-disclosure__body {
   min-width: 0;
 }
-.tp-library__policy,
-.tp-library fieldset {
+.tp-library fieldset:not(.tp-tile) {
   min-width: 0;
-  margin: 1rem 0;
-  padding: 1rem;
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-control);
+  margin: var(--tp-space-2) 0;
+  padding: 0;
+  border: 0;
+}
+.tp-library fieldset.tp-library__directive {
+  padding-block-start: var(--tp-space-2);
+  border-block-start: 1px solid var(--tp-color-border);
 }
 .tp-library legend {
   max-width: 100%;
@@ -25,7 +27,6 @@
 .tp-library pre {
   white-space: pre-wrap;
 }
-.tp-library__actions,
 .tp-library__fields {
   display: flex;
   flex-wrap: wrap;
@@ -41,12 +42,8 @@
   display: grid;
   gap: 0.35rem;
 }
-.tp-library input:not([type='checkbox']),
-.tp-library select {
-  box-sizing: border-box;
+.tp-library .tp-field-control {
   width: 100%;
-  min-width: 0;
-  min-height: 2rem;
 }
 .tp-library label.tp-library__check {
   display: flex;
@@ -84,21 +81,11 @@
   font-weight: 600;
 }
 @media (max-width: 600px) {
-  .tp-library .tp-button,
-  .tp-library input:not([type='checkbox']),
-  .tp-library select,
-  .tp-library summary {
-    min-height: 44px;
-  }
   .tp-library__fields {
     flex-direction: column;
   }
   .tp-library__fields > label {
     flex: auto;
     width: 100%;
-  }
-  .tp-library__policy,
-  .tp-library fieldset {
-    padding: 0.65rem;
   }
 }

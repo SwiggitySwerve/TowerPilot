@@ -1,15 +1,16 @@
 import { entry, made } from './entry.ts';
 import { settings } from './settings.ts';
+import { serverDateText } from './format.ts';
 
 export const schedule = {
   contextChanged: settings.outcomes.context_changed,
   space: made(' '),
   pageName: entry('Schedule'),
-  intro: entry(
-    'Saved run blocks and their priority. Saving changes future scheduler loading; it never starts, stops or ends a battle.',
-  ),
+  intro: entry('Saving changes future scheduler loading; it never starts, stops or ends a battle.'),
   scope: entry('Saving: whole plan and weekday mapping in this profile.'),
   target: entry('Emulator / account / profile'),
+  emulator: entry('Emulator'),
+  account: entry('Account'),
   unknownTarget: entry('Select an emulator and profile before editing a schedule.'),
   noProfile: entry('No active profile. Choose, copy or promote a profile in Profiles.'),
   missing: entry(
@@ -21,23 +22,26 @@ export const schedule = {
   /** F6-11 RL8 (classic Plan tab "add a plan"). */
   startPlan: entry(
     'Start a day plan',
-    'Drafts one day plan used every day of the week, holding one block that runs the run you choose. Choose its block kind, then Save schedule. A saved plan replaces the legacy rules.',
+    'Drafts one day plan used every day of the week, holding one block that runs the run you choose. Choose its block kind, then Save schedule.',
   ),
+  startImpact: entry('A saved plan replaces the legacy rules.'),
   startPlanInactive: entry(
     'Start a day plan',
-    'Drafts one day plan used every day of the week, holding one block that runs the run you choose. Choose its block kind, then Save schedule. These saved rules apply if this profile is activated and loaded; the active scheduler is unchanged.',
+    'Drafts one day plan used every day of the week, holding one block that runs the run you choose. Choose its block kind, then Save schedule.',
+  ),
+  startImpactInactive: entry(
+    'These saved rules apply if this profile is activated and loaded; the active scheduler is unchanged.',
   ),
   startRun: entry('Run for the first block'),
   startNoRun: entry('Add a run in Runs first: every plan block names a run.'),
   started: entry('Day plan started in your draft. Choose the block kind, then save.'),
   /** F6-11 RL8 (classic Plan tab "remove"): delete the whole plan section. */
-  removePlan: entry(
-    'Remove the day plan',
-    'Deletes the whole plan from this profile. The scheduler then uses its legacy rules instead. Removing it never starts, stops or ends a battle; you can start a new day plan afterwards.',
+  removePlan: entry('Remove the day plan'),
+  removeImpact: entry(
+    'Deletes all day plans and weekday mapping. Legacy rules apply on the next scheduler load.',
   ),
-  removePlanInactive: entry(
-    'Remove the day plan',
-    'Deletes the whole plan from this saved profile. Its legacy rules apply if it is activated and loaded. The active scheduler is unchanged.',
+  removeImpactInactive: entry(
+    'Deletes all day plans and weekday mapping from this profile. Legacy rules apply if activated and loaded; the active scheduler is unchanged.',
   ),
   removeTitle: entry('Remove the day plan from this profile?'),
   removeBody: entry(
@@ -97,30 +101,38 @@ export const schedule = {
   reading: entry('Reading saved plan…'),
   readError: entry('Saved plan could not be read for this target. The draft is kept.'),
   savedSource: entry('Saved profile revision'),
+  revisions: entry('Saved plan and draft'),
+  revisionState: entry('Revisions'),
+  revisionsMatch: entry('Saved and draft starting revisions match'),
+  revisionsDiffer: entry('Saved and draft starting revisions differ'),
   compare: entry('Compare the last read saved plan'),
   baseRevision: entry('Draft starting revision'),
   days: entry('Named day plans'),
-  priority: entry(
-    'Order is priority: the first eligible block wins. Until is exclusive. Split a cross-midnight window into blocks on both days.',
-  ),
+  priority: entry('The first eligible block wins.'),
+  crossMidnight: entry('Split a cross-midnight window into blocks on both days.'),
   dayPlan: entry('Day plan'),
   run: entry('Saved run'),
   kind: entry('Block kind'),
   after: entry('From (HH:MM)'),
   until: entry('Until (HH:MM, exclusive)'),
   count: entry('Runs/day (blank = unlimited)'),
-  blankTimes: entry(
-    'Blank From means midnight; blank Until means the rest of the day. Run counts are per block per day.',
-  ),
-  quota: entry('Remaining quota: not reported'),
-  nextStart: entry('Next start: not reported'),
+  blankTimes: entry('Blank From = midnight; blank Until = rest of day.'),
+  quota: entry('Remaining quota'),
+  nextStart: entry('Next start'),
   add: entry('Add block'),
   up: entry('Move up'),
   down: entry('Move down'),
+  firstBlock: entry('Already first in priority order.'),
+  lastBlock: entry('Already last in priority order.'),
   remove: entry('Delete block'),
   addHint: entry('Add copies the first block; edit the copy before saving.'),
   addUnavailable: entry('There is no saved block to copy. Repair or choose a profile in Profiles.'),
   week: entry('Weekday mapping'),
+  editWeek: entry('Edit weekday mapping'),
+  otherWeekdays: entry('Other weekdays'),
+  allWeekdays: entry('All weekdays'),
+  noDefault: entry('No Default assigned'),
+  otherAssignment: entry('Other entered value — open the mapping editor'),
   weekHint: entry(
     'A blank weekday inherits Default. Default must name a plan unless every weekday has an explicit plan.',
   ),
@@ -176,14 +188,20 @@ export const schedule = {
   validation: entry('Profile validation and save details'),
   warnings: entry('Saved profile warnings'),
   observed: entry('Observed scheduler choice'),
-  observedProfile: entry('Observed active profile:'),
-  editingProfile: entry('Plan for:'),
+  observedProfile: entry('Observed active profile'),
+  editingProfile: entry('Plan for'),
+  winner: entry('Current choice'),
   unavailable: entry('Scheduler observation unavailable'),
   stale: entry('Last observation is stale; no current winner or next check is confirmed.'),
   noWinner: entry('No eligible block reported'),
   notRunning: entry('Scheduler is not reported running'),
   unknownEmulator: entry('Emulator is unknown to this schedule report'),
-  observedAt: entry('Observed at (Unix seconds)'),
+  observedAt: entry('Observed at'),
+  observedEpoch: entry('Observed at (Unix seconds)'),
+  observationEvidence: entry('Exact observation times'),
+  clock: (seconds: number) => made(serverDateText(seconds)),
+  displayTimezone: () =>
+    made(`Times shown in ${Intl.DateTimeFormat().resolvedOptions().timeZone}.`),
   previousWinner: entry('Previously observed choice'),
   timezone: entry('Scheduler timezone / UTC offset'),
   nextCheck: entry('Next check (clock proposal)'),

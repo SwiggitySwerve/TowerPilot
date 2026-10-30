@@ -3,7 +3,7 @@ import './ui.css';
 
 export interface FactsProps {
   /** `rows`: label column beside value column; `cells`: label over value, cells wrapping. */
-  readonly layout?: 'rows' | 'cells';
+  readonly layout?: 'rows' | 'cells' | 'inline';
   /** Feature hook classes, kept beside `tp-facts`. */
   readonly className?: string;
   /** `Fact` items. */

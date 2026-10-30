@@ -8,10 +8,14 @@ export function ScopedSettingsModule({
   vm,
   legend,
   intro,
+  description,
+  applyNotice,
 }: {
   readonly vm: SettingsModuleVM;
   readonly legend: CopyEntry;
-  readonly intro: CopyEntry;
+  readonly intro?: CopyEntry;
+  readonly description?: CopyEntry | null;
+  readonly applyNotice?: CopyEntry | null;
 }) {
   const { commands } = useDashboard();
   return (
@@ -19,7 +23,9 @@ export function ScopedSettingsModule({
       <SettingsModuleForm
         vm={vm}
         legend={legend}
-        intro={intro}
+        {...(intro === undefined ? {} : { intro })}
+        {...(description === undefined ? {} : { description })}
+        {...(applyNotice === undefined ? {} : { applyNotice })}
         onEdit={commands.editDraft}
         onDiscard={commands.discardDraft}
         onSave={(command) => {
@@ -30,7 +36,7 @@ export function ScopedSettingsModule({
       {vm.outcome === null ? null : (
         <div data-settings-outcome-scope={vm.id}>
           <span>{legend.short}</span>
-          <span>{intro.short}</span>
+          {intro === undefined ? null : <span>{intro.short}</span>}
         </div>
       )}
     </div>

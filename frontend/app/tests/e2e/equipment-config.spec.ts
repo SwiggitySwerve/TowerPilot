@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { expect, test, type Page, type Route, type Locator } from '@playwright/test';
 import { axeCounts, posts, WCAG_AA_TAGS } from './helpers/helpers.ts';
+import { undersizedControlTargets } from './helpers/target-box.ts';
 import {
   DASHBOARD_PAGES_FIXTURE_PATH,
   loadJsonWithIdentity,
@@ -126,20 +127,11 @@ async function accessibility(page: Page, width: number) {
   expect(violations).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(
-    await page.locator('.tp-equipment').evaluate(
-      (root, width) =>
-        [...root.querySelectorAll('button, select, input, summary')]
-          .filter((node) => {
-            const r = node.getBoundingClientRect();
-            return (
-              r.width > 0 &&
-              r.height > 0 &&
-              (r.width < 24 || r.height < (width === 390 && node.tagName === 'BUTTON' ? 44 : 24))
-            );
-          })
-          .map((node) => node.outerHTML),
-      width,
-    ),
+    await undersizedControlTargets(page.locator('.tp-equipment'), {
+      width: 24,
+      height: 24,
+      buttonHeight: width === 390 ? 44 : 24,
+    }),
   ).toEqual([]);
 }
 
@@ -488,7 +480,11 @@ for (const width of [1360, 1054, 390]) {
     page,
   }) => {
     await open(page, width, 'lists');
-    await expect(page.getByText('Account:', { exact: true })).toBeVisible();
+    await expect(
+      page
+        .locator('[data-region="equipment-tournament"]')
+        .getByText('Tournament settings scope', { exact: true }),
+    ).toBeVisible();
     await lists(page);
     const button = tournament(page).getByRole('button', { name: 'Save', exact: true });
     await button.focus();

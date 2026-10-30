@@ -116,7 +116,7 @@ describe('non-dashboard input control', () => {
     });
     const region = renderRegion(h.state(), <HeaderInputControl />);
     within(screen.getByRole('list', { name: 'Request results' }))
-      .getByText('Why')
+      .getByRole('button', { name: 'About this message' })
       .focus();
     const control = screen.getByRole('button', { name: 'Turn input off' });
 

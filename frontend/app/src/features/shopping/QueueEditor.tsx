@@ -9,9 +9,12 @@ import type {
   QueueEditorVM,
 } from '../../store/selectors/shoppingQueue.ts';
 import { Button } from '../../ui/Button.tsx';
+import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
+import { Facts, Fact } from '../../ui/Facts.tsx';
 import { useAnnounce } from '../../ui/LiveRegion.tsx';
 import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
-import { Why } from '../../ui/Why.tsx';
+import { HelpTip } from '../../ui/HelpTip.tsx';
+import { Tile } from '../../ui/Tile.tsx';
 import './shopping.css';
 
 const t = copy.shopping;
@@ -41,32 +44,52 @@ function Problem({ id, review }: { readonly id: string; readonly review: FieldRe
   );
 }
 
+/** Background for a numeric field: its own explanation, then its hint's. Nothing without either. */
+function FieldHelp({ label, hint }: { readonly label: CopyEntry; readonly hint: CopyEntry }) {
+  if (label.why === undefined && hint.why === undefined) return null;
+  return (
+    <HelpTip label={label.short}>
+      {label.why === undefined ? null : <p>{label.why}</p>}
+      {hint.why === undefined ? null : <p>{hint.why}</p>}
+    </HelpTip>
+  );
+}
+
 function NumberInput(props: {
   readonly id: string;
   readonly label: CopyEntry;
   readonly hint: CopyEntry;
+  /** Shared guidance shown once above the queue, rather than under every entry. */
+  readonly hintId?: string;
   readonly review: FieldReview;
   readonly onChange: (value: string) => void;
 }) {
-  const { id, label, hint, review, onChange } = props;
+  const { id, label, hint, hintId, review, onChange } = props;
   const invalid = review.problem !== null;
+  const descriptionId = hintId ?? `${id}-hint`;
   return (
     <div className="tp-shop__field">
-      <label htmlFor={id}>{label.short}</label>
+      <span className="tp-shop__label">
+        <label htmlFor={id}>{label.short}</label>
+        {hintId === undefined ? <FieldHelp label={label} hint={hint} /> : null}
+      </span>
       <input
         id={id}
+        className="tp-field-control"
         type="text"
         inputMode="decimal"
         value={review.raw}
         aria-invalid={invalid || undefined}
-        aria-describedby={invalid ? `${id}-problem ${id}-hint` : `${id}-hint`}
+        aria-describedby={invalid ? `${id}-problem ${descriptionId}` : descriptionId}
         onChange={(event) => {
           onChange(event.currentTarget.value);
         }}
       />
-      <span id={`${id}-hint`} className="tp-shop__hint">
-        {hint.short}
-      </span>
+      {hintId === undefined ? (
+        <span id={descriptionId} className="tp-shop__hint">
+          {hint.short}
+        </span>
+      ) : null}
       <Problem id={`${id}-problem`} review={review} />
     </div>
   );
@@ -85,9 +108,29 @@ function Choice<K extends string>(props: {
   const chosen = choices.find((choice) => choice.value === value);
   return (
     <div className="tp-shop__field">
-      <label htmlFor={id}>{label.short}</label>
+      <span className="tp-shop__label">
+        <label htmlFor={id}>{label.short}</label>
+        <HelpTip label={label.short}>
+          {choices.map((choice) => {
+            if (choice.known === null) return null;
+            const { short, why } = words[choice.known];
+            return (
+              <p key={choice.value}>
+                <strong>{short}</strong>
+                {why === undefined ? null : (
+                  <>
+                    {t.space}
+                    {why}
+                  </>
+                )}
+              </p>
+            );
+          })}
+        </HelpTip>
+      </span>
       <select
         id={id}
+        className="tp-field-control"
         value={value}
         aria-invalid={problem !== null || undefined}
         aria-describedby={problem === null ? undefined : `${id}-problem`}
@@ -111,13 +154,9 @@ function Choice<K extends string>(props: {
           {t.problems[problem].short}
         </span>
       )}
-      {chosen?.known == null ? (
-        chosen === undefined ? null : (
-          <span className="tp-shop__hint">{t.unknownChoice.short}</span>
-        )
-      ) : (
-        <Why why={words[chosen.known].why} />
-      )}
+      {chosen !== undefined && chosen.known === null ? (
+        <span className="tp-shop__hint">{t.unknownChoice.short}</span>
+      ) : null}
     </div>
   );
 }
@@ -143,12 +182,18 @@ function Entry(props: {
   const base = `${idBase}:entry:${entry.id}`;
   return (
     <li className="tp-shop__entry" data-upgrade={entry.id}>
-      <fieldset>
-        <legend id={`${base}:name`}>
-          {t.position(entry.position)}
-          {t.space}
-          {entry.label === null ? null : <ServerValue kind="name" value={entry.label} />}
-        </legend>
+      <Tile
+        as="fieldset"
+        titleId={`${base}:name`}
+        title={
+          <>
+            {t.position(entry.position)}
+            {t.space}
+            {entry.label === null ? null : <ServerValue kind="name" value={entry.label} />}
+          </>
+        }
+        density="compact"
+      >
         <label className="tp-shop__check">
           <input
             id={`${base}:enabled`}
@@ -169,6 +214,7 @@ function Entry(props: {
               id={`${base}:${field}`}
               label={label}
               hint={hint}
+              hintId={`${idBase}:hint:${field}`}
               review={entry.fields[field]}
               onChange={(value) => {
                 actions.onEdit(entryKey(entry.id, field), value);
@@ -177,38 +223,39 @@ function Entry(props: {
           ))}
         </div>
         <div className="tp-shop__moves">
-          <Button
-            id={`${base}:up`}
-            tier="quiet"
-            label={t.up.short}
-            targetId={`${base}:name`}
-            {...(entry.first ? { disabled: true, reasonId: `${base}:first` } : {})}
-            onClick={() => {
-              moved(entry.id, -1);
-            }}
-          />
-          <Button
-            id={`${base}:down`}
-            tier="quiet"
-            label={t.down.short}
-            targetId={`${base}:name`}
-            {...(entry.last ? { disabled: true, reasonId: `${base}:last` } : {})}
-            onClick={() => {
-              moved(entry.id, 1);
-            }}
-          />
-          {entry.first ? (
-            <span id={`${base}:first`} className="tp-shop__hint">
-              {t.firstPlace.short}
-            </span>
-          ) : null}
-          {entry.last ? (
-            <span id={`${base}:last`} className="tp-shop__hint">
-              {t.lastPlace.short}
-            </span>
-          ) : null}
+          <ActionRow
+            reason={
+              entry.first || entry.last ? (
+                <>
+                  {entry.first ? <Reason id={`${base}:first`} entry={t.firstPlace} /> : null}
+                  {entry.last ? <Reason id={`${base}:last`} entry={t.lastPlace} /> : null}
+                </>
+              ) : null
+            }
+          >
+            <Button
+              id={`${base}:up`}
+              tier="quiet"
+              label={t.up.short}
+              targetId={`${base}:name`}
+              {...(entry.first ? { disabled: true, reasonId: `${base}:first` } : {})}
+              onClick={() => {
+                moved(entry.id, -1);
+              }}
+            />
+            <Button
+              id={`${base}:down`}
+              tier="quiet"
+              label={t.down.short}
+              targetId={`${base}:name`}
+              {...(entry.last ? { disabled: true, reasonId: `${base}:last` } : {})}
+              onClick={() => {
+                moved(entry.id, 1);
+              }}
+            />
+          </ActionRow>
         </div>
-      </fieldset>
+      </Tile>
     </li>
   );
 }
@@ -220,57 +267,70 @@ function Picker(props: {
 }) {
   const { section, idBase, actions } = props;
   return (
-    <fieldset className="tp-shop__page">
-      <legend>
-        {section.known !== null ? (
+    <Tile
+      as="fieldset"
+      className="tp-shop__page"
+      titleId={`${idBase}:section:${section.key}`}
+      title={
+        section.known !== null ? (
           t.sections[section.known].short
         ) : section.server === null ? (
           t.otherSection.short
         ) : (
           <ServerValue kind="name" value={section.server} />
-        )}
-      </legend>
-      <ul>
-        {section.items.map((item) => {
-          const base = `${idBase}:pick:${item.id}`;
-          return (
-            <li key={item.id} className="tp-shop__pick" data-upgrade={item.id}>
-              <label className="tp-shop__check">
-                <input
-                  id={`${base}:included`}
-                  type="checkbox"
-                  checked={item.included}
-                  aria-describedby={item.excluded ? `${base}:reason` : undefined}
-                  onChange={(event) => {
-                    if (event.currentTarget.checked) actions.onInclude(item.id);
-                    else actions.onLeaveOut(item.id);
-                  }}
-                />
-                {item.label === null ? null : <ServerValue kind="name" value={item.label} />}
-              </label>
-              <label className="tp-shop__check tp-shop__exclude">
-                <input
-                  id={`${base}:excluded`}
-                  type="checkbox"
-                  checked={item.excluded}
-                  onChange={(event) => {
-                    actions.onExclude(item.id, event.currentTarget.checked);
-                  }}
-                />
-                <span>{t.excluded.short}</span>
-              </label>
-              {item.excluded && item.exclusionReason !== null ? (
-                <span id={`${base}:reason`} className="tp-shop__hint">
-                  {t.excludedReason.short}
-                  {t.space}
-                  <ServerValue kind="message" value={item.exclusionReason} />
-                </span>
-              ) : null}
-            </li>
-          );
-        })}
-      </ul>
-    </fieldset>
+        )
+      }
+      density="compact"
+    >
+      <div
+        className="tp-shop__page-viewport"
+        role="region"
+        aria-labelledby={`${idBase}:section:${section.key}`}
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- The bounded upgrade list must support keyboard scrolling.
+        tabIndex={0}
+      >
+        <ul>
+          {section.items.map((item) => {
+            const base = `${idBase}:pick:${item.id}`;
+            return (
+              <li key={item.id} className="tp-shop__pick" data-upgrade={item.id}>
+                <label className="tp-shop__check">
+                  <input
+                    id={`${base}:included`}
+                    type="checkbox"
+                    checked={item.included}
+                    aria-describedby={item.excluded ? `${base}:reason` : undefined}
+                    onChange={(event) => {
+                      if (event.currentTarget.checked) actions.onInclude(item.id);
+                      else actions.onLeaveOut(item.id);
+                    }}
+                  />
+                  {item.label === null ? null : <ServerValue kind="name" value={item.label} />}
+                </label>
+                <label className="tp-shop__check tp-shop__exclude">
+                  <input
+                    id={`${base}:excluded`}
+                    type="checkbox"
+                    checked={item.excluded}
+                    onChange={(event) => {
+                      actions.onExclude(item.id, event.currentTarget.checked);
+                    }}
+                  />
+                  <span>{t.excluded.short}</span>
+                </label>
+                {item.excluded && item.exclusionReason !== null ? (
+                  <span id={`${base}:reason`} className="tp-shop__hint">
+                    {t.excludedReason.short}
+                    {t.space}
+                    <ServerValue kind="message" value={item.exclusionReason} />
+                  </span>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </Tile>
   );
 }
 
@@ -302,8 +362,12 @@ export function QueueEditor(props: QueueEditorProps) {
   const review = vm.review;
   return (
     <div className="tp-shop">
-      <fieldset className="tp-shop__rules">
-        <legend>{t.rules.short}</legend>
+      <Tile
+        as="fieldset"
+        className="tp-shop__rules"
+        titleId={`${idBase}:rules`}
+        title={t.rules.short}
+      >
         <NumberInput
           id={`${idBase}:reserve`}
           label={t.reserve}
@@ -335,29 +399,60 @@ export function QueueEditor(props: QueueEditorProps) {
             props.onEdit('cadence', value);
           }}
         />
-      </fieldset>
+      </Tile>
       <div className="tp-shop__columns">
-        <section className="tp-shop__queue" aria-labelledby={`${idBase}:queue`}>
-          <h4 id={`${idBase}:queue`}>{t.queue.short}</h4>
-          <p className="tp-shop__hint">{t.queueHint.short}</p>
+        <Tile
+          className="tp-shop__queue"
+          titleId={`${idBase}:queue`}
+          title={t.queue.short}
+          level={4}
+          intro={t.queueHint}
+        >
           {vm.entries.length === 0 ? (
             <p>{t.emptyQueue.short}</p>
           ) : (
-            <ol>
-              {vm.entries.map((entry) => (
-                <Entry key={entry.id} entry={entry} idBase={idBase} actions={props} moved={moved} />
-              ))}
-            </ol>
+            <>
+              <Facts layout="cells" className="tp-shop__guidance">
+                {FIELDS.map(({ field, label, hint }) => (
+                  <Fact
+                    key={field}
+                    id={`${idBase}:hint:${field}`}
+                    label={
+                      <>
+                        {label.short}
+                        <FieldHelp label={label} hint={hint} />
+                      </>
+                    }
+                    value={hint.short}
+                  />
+                ))}
+              </Facts>
+              <ol>
+                {vm.entries.map((entry) => (
+                  <Entry
+                    key={entry.id}
+                    entry={entry}
+                    idBase={idBase}
+                    actions={props}
+                    moved={moved}
+                  />
+                ))}
+              </ol>
+            </>
           )}
-        </section>
-        <section className="tp-shop__picker" aria-labelledby={`${idBase}:picker`}>
-          <h4 id={`${idBase}:picker`}>{t.picker.short}</h4>
-          <p className="tp-shop__hint">{t.pickerHint.short}</p>
+        </Tile>
+        <Tile
+          className="tp-shop__picker"
+          titleId={`${idBase}:picker`}
+          title={t.picker.short}
+          level={4}
+          intro={t.pickerHint}
+        >
           {vm.orderProvisional ? <p className="tp-shop__hint">{t.orderProvisional.short}</p> : null}
           {vm.picker.map((section) => (
             <Picker key={section.key} section={section} idBase={idBase} actions={props} />
           ))}
-        </section>
+        </Tile>
       </div>
       {review.problems === 0 ? null : (
         <p className="tp-shop__problem">{t.problemCount(review.problems)}</p>

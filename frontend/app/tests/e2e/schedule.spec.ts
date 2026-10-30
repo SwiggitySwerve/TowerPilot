@@ -43,7 +43,7 @@ const counts = (page: Page) => page.getByRole('textbox', { name: 'Runs/day (blan
 const blocks = (page: Page) => page.getByRole('group', { name: /^Block / });
 const save = (page: Page) => page.getByRole('button', { name: 'Save schedule', exact: true });
 async function mapSunday(page: Page) {
-  await page.getByText('Weekday mapping', { exact: true }).click();
+  await page.getByText('Edit weekday mapping', { exact: true }).click();
   await page.getByLabel('Sunday', { exact: true }).fill('tourney_day');
 }
 async function screenshot(page: Page, name: string, width: number) {
@@ -90,7 +90,7 @@ for (const width of widths) {
   }) => {
     await open(page, width, { save: 'profile_patch.count_fraction' });
     await counts(page).first().fill('1.9999999999999999999');
-    await page.getByText('Weekday mapping', { exact: true }).click();
+    await page.getByText('Edit weekday mapping', { exact: true }).click();
     await page.getByLabel('Monday', { exact: true }).fill('unknown_day');
     await save(page).click();
     await expect(
@@ -131,7 +131,7 @@ for (const width of widths) {
     page,
   }) => {
     await open(page, width, { save: 'profile_patch.week_names_an_unknown_day_plan' });
-    await page.getByText('Weekday mapping', { exact: true }).click();
+    await page.getByText('Edit weekday mapping', { exact: true }).click();
     const sunday = page.getByLabel('Sunday', { exact: true });
     await sunday.fill('no_such_day');
     await save(page).click();
@@ -265,9 +265,17 @@ for (const width of widths) {
     await open(page, width);
     await expect(page.getByText('Farm', { exact: true })).toBeVisible();
     await expect(page.getByText('UTC', { exact: true })).toBeVisible();
+    await expect(page.locator('time[datetime="2027-01-16T00:00:00.000Z"]')).toBeVisible();
+    await page.getByText('Exact observation times', { exact: true }).click();
     await expect(page.getByText('2027-01-16T00:00:00+00:00', { exact: true })).toBeVisible();
-    await expect(page.getByText('Remaining quota: not reported', { exact: true })).toHaveCount(2);
-    await expect(page.getByText('Next start: not reported', { exact: true })).toHaveCount(2);
+    for (const label of ['Remaining quota', 'Next start']) {
+      const facts = page
+        .locator('.tp-facts__item')
+        .filter({ has: page.locator('dt', { hasText: label }) });
+      await expect(facts).toHaveCount(2);
+      await expect(facts.nth(0).locator('dd')).toHaveText('Not reported');
+      await expect(facts.nth(1).locator('dd')).toHaveText('Not reported');
+    }
     await expectAppStyles(page);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
@@ -279,7 +287,9 @@ for (const width of widths) {
       .evaluateAll((nodes) =>
         nodes
           .filter(
-            (n) => n.getBoundingClientRect().height > 0 && n.getBoundingClientRect().height < 43.5,
+            (n) =>
+              n.getBoundingClientRect().height > 0 &&
+              n.getBoundingClientRect().height < (window.innerWidth <= 600 ? 43.5 : 31.5),
           )
           .map((n) => n.textContent),
       );
@@ -530,7 +540,7 @@ test('S6 a fresh observation expires in the browser without a fabricated next st
   const observation = page.getByRole('region', { name: 'Observed scheduler choice' });
   await expect(observation.getByText(/Last observation is stale/)).toBeVisible();
   await expect(
-    observation.getByText('No next clock check reported', { exact: true }),
+    observation.getByRole('definition').filter({ hasText: /^No next clock check reported$/ }),
   ).toBeVisible();
   await expect(observation.getByText('Previously observed choice', { exact: false })).toBeVisible();
   expect(await posts(page)).toEqual([]);

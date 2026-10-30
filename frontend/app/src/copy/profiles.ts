@@ -15,6 +15,7 @@ export const profiles = {
   pageName: entry('Profiles'),
   account: {
     title: entry('Local game account'),
+    binding: entry('Account binding'),
     scope: entry(
       'A name you choose on this computer for one game account',
       'It is not your game login and is never detected from the game. Choosing it binds this emulator to that account and its automation profile; it does not end a run, reconnect or scan.',
@@ -41,9 +42,10 @@ export const profiles = {
     id: entry('Identifier'),
     idHelp: entry('Letters, digits, underscores or hyphens, starting with a letter'),
     label: entry('Name shown (optional)'),
-    importCurrent: entry(
-      "Copy this installation's current settings and calibration into it",
-      'Only when they belong to this same game account: another account would get screens and settings learned on this one.',
+    importCurrent: entry("Copy this installation's current settings and calibration into it"),
+    importCondition: entry(
+      'Only for this same game account.',
+      'Another account would get screens and settings learned on this one.',
     ),
     submit: entry('Create account'),
   },
@@ -55,9 +57,11 @@ export const profiles = {
     notSaved: entry('Saved tier unavailable'),
     default: entry('Default:'),
     defaultNote: entry('not recorded in the profile'),
+    recordedState: entry('Profile tier'),
     value: (tier: number) => made(String(tier)),
     byOperator: entry('entered by you, not read from the game'),
     byOther: entry('recorded by'),
+    source: entry('Source'),
     sourceUnknown: entry('source not reported'),
     save: entry('Save highest tier'),
     invalid: {
@@ -68,10 +72,14 @@ export const profiles = {
   },
   setup: {
     title: entry('Setup'),
+    connection: entry('Connection and setup'),
+    toolsLabel: entry('Connection tools'),
+    progress: entry('Setup progress'),
+    readiness: entry('Run readiness'),
     tools: {
-      installed: entry('Connection tools installed'),
-      not_installed: entry('Connection tools not installed'),
-      unknown: entry('Connection tools: not read'),
+      installed: entry('Installed'),
+      not_installed: entry('Not installed'),
+      unknown: entry('Not read'),
     },
     calibration: {
       running: entry('A setup step is running'),
@@ -79,10 +87,9 @@ export const profiles = {
       idle: entry('No setup step running'),
       unknown: entry('Setup progress: not read'),
     },
-    runs: (ready: number, notReady: number, unknown: number) =>
-      made(
-        `Runs ready to start: ${String(ready)}; not ready: ${String(notReady)}${unknown > 0 ? `; not checked: ${String(unknown)}` : ''}`,
-      ),
+    ready: entry('Runs ready to start'),
+    notReady: entry('Not ready'),
+    unknown: entry('Not checked'),
     runsUnknown: entry('Run readiness: not read'),
     note: entry(
       'A saved account does not mean its screens are learned',
@@ -93,12 +100,11 @@ export const profiles = {
   },
   files: {
     title: entry('Automation profile'),
+    inventory: entry('Profile files'),
     scope: entry(
       'The saved settings automation uses for this account',
-      'Copying a profile or saving a scan draft only writes a file. Activate makes a profile the one automation uses from its next start; a profile with problems cannot be activated.',
+      'Copying a profile or saving a scan draft only writes a file. A profile with problems cannot be activated.',
     ),
-    active: entry('Active profile:'),
-    noActive: entry('none'),
     valid: entry('No problems found'),
     problems: (n: number) => made(plural(n, 'problem', 'problems')),
     warnings: (n: number) => made(plural(n, 'warning', 'warnings')),
@@ -124,6 +130,7 @@ export const profiles = {
   },
   activate: {
     title: entry('Activate a profile'),
+    effect: entry('Automation uses this profile from its next start.'),
     picker: entry('Profile to activate'),
     choose: entry('Choose a profile'),
     submit: entry('Activate'),
@@ -139,9 +146,10 @@ export const profiles = {
     title: entry('Use no profile'),
     active: entry('Active profile:'),
     none: entry('none - the scheduler runs its legacy rules'),
-    submit: entry(
-      'Use no profile',
-      'Unbinds the active profile from this account. The scheduler then runs its legacy rules. The profile file stays, and Activate binds it again.',
+    submit: entry('Use no profile'),
+    consequence: entry(
+      'Unbinds the active profile; automation uses legacy rules from its next start. Nothing starts or stops now.',
+      'The profile file stays, and Activate binds it again.',
     ),
     confirm: entry('Use no profile?'),
     effect: entry(
@@ -239,7 +247,12 @@ export const profiles = {
       'Not saved: the account or profile changed',
       'Your draft stays with the account and profile you reviewed. Nothing is sent again.',
     ),
-    currentContext: entry('Current emulator / account / profile / serial:'),
+    contextLabels: {
+      instance: entry('Current emulator'),
+      account: entry('Current account'),
+      profile: entry('Current profile'),
+      serial: entry('Current serial'),
+    },
     contextUnknown: entry('Not reported'),
     refusedCreate: entry(
       'Not created',

@@ -154,6 +154,8 @@ export interface EmulatorsPageVM {
   };
   readonly suggestion: {
     readonly serial: ServerText<'id'> | null;
+    /** Detected row containing this suggestion; null when it is not in the scan list. */
+    readonly rowKey: string | null;
     readonly name: ServerText<'name'> | null;
     readonly emulator: ServerText<'name'> | null;
     readonly alsoSeen: readonly ServerText<'id'>[];
@@ -589,6 +591,11 @@ export function selectEmulatorsPage(state: DashboardState): EmulatorsPageVM {
   }
 
   const suggestion = inventory?.suggestion ?? null;
+  const suggestedSerial = fromServer('id', suggestion?.serial);
+  const suggestedRowKey =
+    suggestedSerial === null
+      ? null
+      : (rows.find((row) => row.serial === suggestedSerial)?.key ?? null);
   const active = inventory === null ? null : activeConfigured(inventory);
   const toolsSlot = state.reads.wizardTools;
   const tools = toolsView(answeredBody(state, 'wizardTools'));
@@ -676,7 +683,8 @@ export function selectEmulatorsPage(state: DashboardState): EmulatorsPageVM {
       suggestion === null || inventory === null || otherInstance
         ? null
         : {
-            serial: fromServer('id', suggestion.serial),
+            serial: suggestedSerial,
+            rowKey: suggestedRowKey,
             name: fromServer('name', suggestion.name),
             emulator: fromServer('name', suggestion.emulator),
             alsoSeen: ids(suggestion.alsoSeen),

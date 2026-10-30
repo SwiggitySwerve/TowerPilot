@@ -57,9 +57,7 @@ for (const width of [1360, 1054]) {
   }) => {
     await openScenario(page, 'collecting', { width });
     const battle = page.locator('[data-region="thisBattle"]');
-    const empty = battle.getByText(
-      'No tracked battle. Routines and Run now appear once automation watches one',
-    );
+    const empty = battle.getByText('No tracked battle');
     await expect(empty).toBeVisible();
     const region = await battle.boundingBox();
     expect(region?.height ?? Infinity).toBeLessThanOrEqual(60);
@@ -84,16 +82,19 @@ test('F4-02: routine column labels show once on wide layouts and per row at 390;
   const battle = page.locator('[data-region="thisBattle"]');
   const header = battle.locator('.tp-battle__columns');
   await expect(header).toBeVisible();
-  await expect(header).toHaveAttribute('aria-hidden', 'true');
+  await expect(battle.getByRole('table', { name: 'This battle' })).toBeVisible();
+  await expect(header.getByRole('columnheader')).toHaveCount(5);
+  await expect(header.getByRole('columnheader', { name: 'Last result' })).toBeVisible();
   const cellLabels = battle.locator('.tp-battle__routine .tp-battle__column-label');
   await expect(cellLabels).toHaveCount(9);
   for (const label of await cellLabels.all()) {
     const box = await label.boundingBox();
     expect(box?.width ?? 0).toBeLessThanOrEqual(1);
   }
-  await expect(battle.getByRole('listitem').first()).toContainText('Last result');
+  await expect(battle.locator('.tp-battle__routine').first()).toContainText('Last result');
   await page.setViewportSize({ width: 390, height: 900 });
-  await expect(header).toBeHidden();
+  expect((await header.boundingBox())?.width ?? Infinity).toBeLessThanOrEqual(1);
+  await expect(header.getByRole('columnheader')).toHaveCount(5);
   for (const label of await cellLabels.all()) await expect(label).toBeVisible();
 });
 

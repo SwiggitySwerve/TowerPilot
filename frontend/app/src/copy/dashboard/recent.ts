@@ -15,19 +15,32 @@ function iso(seconds: number): string {
 
 /** Catalogue entries of the Dashboard's recent part (spec section 6.2). Owned by its region. */
 export const recent = {
-  schedule: entry('Schedule:'),
-  scheduleLink: entry('Schedule'),
-  lastBattle: entry('Last battle:'),
+  schedule: entry('Schedule'),
+  scheduleLink: entry('Schedule page'),
+  lastBattle: entry('Last battle'),
   historyLink: entry('Run history'),
   separator: entry(' · '),
   lastKnown: entry('Last known:'),
-  lastSeen: entry('last seen:'),
+  /** The tiles' fact labels: one labelled value each, never a run joined by dots. */
+  facts: {
+    nextBlock: entry('Next block'),
+    nextCheck: entry('Next check'),
+    switch: entry('Switch'),
+    lastSeen: entry('Last seen'),
+    seen: entry('Seen'),
+    run: entry('Run'),
+    end: entry('End'),
+    when: entry('When'),
+    wave: entry('Wave'),
+  },
+  switchWaits: entry('waits for the run to end'),
+  notRecorded: entry('Not recorded'),
+  /** The last battle's recorded detail (end time, status, run, result). */
+  details: entry('Details'),
   winnerUnknown: entry('Block name not recorded'),
   battleUnknown: entry('Battle name not recorded'),
   noClock: entry('no clock check planned'),
-  switchAtEnd: entry('a switch waits for the run to end'),
   noAge: entry('age not available'),
-  noWave: entry('wave not recorded'),
   noTime: entry('End time not recorded'),
   reason: entry('Recorded reason:'),
   status: entry('Recorded status:'),
@@ -59,10 +72,10 @@ export const recent = {
     tracking_ended: entry('tracking ended'),
   },
   wave: automation.wave,
-  nextCheck: (at: number, offsetSec: number | null) =>
-    made(
-      `next check ${iso(at + (offsetSec ?? 0)).slice(11, 16)}${offsetSec === null ? ' UTC' : ''}`,
-    ),
+  waveValue: automation.waveValue,
+  /** The Next check fact: the local clock time of the next check (UTC when no offset is known). */
+  nextCheckAt: (at: number, offsetSec: number | null) =>
+    made(`${iso(at + (offsetSec ?? 0)).slice(11, 16)}${offsetSec === null ? ' UTC' : ''}`),
   inDuration: (seconds: number) => {
     const whole = Math.max(0, Math.floor(seconds));
     const hours = Math.floor(whole / 3600);

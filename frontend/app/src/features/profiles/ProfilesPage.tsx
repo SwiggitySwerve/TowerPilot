@@ -2,7 +2,7 @@ import { EditingTargetPicker } from './EditingTargetPicker.tsx';
 import { editingTarget as targetCopy } from '../../copy/editingTarget.ts';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { profiles as t } from '../../copy/profiles.ts';
-import type { CopyEntry, CopyNode } from '../../copy/text.ts';
+import type { CopyEntry, CopyNode, CopyText } from '../../copy/text.ts';
 import {
   selectProfilesPage,
   type ProfileRowVM,
@@ -11,13 +11,17 @@ import {
 } from '../../store/selectors/profiles.ts';
 import type { ProfileWriteCommand } from '../../store/commands.ts';
 import type { CommandVM } from '../../store/viewModels.ts';
+import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
+import { CopyLine } from '../../ui/CopyLine.tsx';
+import { Fact, Facts } from '../../ui/Facts.tsx';
+import { Tile, Tiles } from '../../ui/Tile.tsx';
 import { Button } from '../../ui/Button.tsx';
 import { ConfirmDialog } from '../../ui/ConfirmDialog.tsx';
 import { Disclosure } from '../../ui/Disclosure.tsx';
 import { RegionBoundary } from '../../ui/RegionBoundary.tsx';
 import { Region, RegionBody, RegionEnd } from '../../ui/Region.tsx';
 import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
-import { Why } from '../../ui/Why.tsx';
+import { HelpTip } from '../../ui/HelpTip.tsx';
 import {
   FaultPoint,
   useDashboard,
@@ -54,34 +58,22 @@ function WriteButton({
 }) {
   const own = useId();
   const { command } = vm;
+  const enabled = vm.enabled && command !== null;
   return (
-    <span className="tp-profiles__action">
-      {vm.enabled && command !== null ? (
-        <Button
-          tier={tier}
-          label={label.short}
-          focusKey={focusKey}
-          onClick={() => {
-            onSend(command);
-          }}
-        />
-      ) : (
-        <>
-          <Button
-            tier={tier}
-            label={label.short}
-            focusKey={focusKey}
-            busy={vm.sending}
-            disabled
-            reasonId={`${own}-reason`}
-            onClick={() => undefined}
-          />
-          <span id={`${own}-reason`} className="tp-reason">
-            {reasonOf(vm.reason).short}
-          </span>
-        </>
-      )}
-    </span>
+    <ActionRow
+      reason={enabled ? undefined : <Reason id={`${own}-reason`} entry={reasonOf(vm.reason)} />}
+    >
+      <Button
+        tier={tier}
+        label={label.short}
+        focusKey={focusKey}
+        busy={vm.sending}
+        {...(enabled ? { disabled: false } : { disabled: true, reasonId: `${own}-reason` })}
+        onClick={() => {
+          if (enabled) onSend(command);
+        }}
+      />
+    </ActionRow>
   );
 }
 
@@ -110,7 +102,7 @@ function TextField({
       <span>{label.short}</span>
       <input
         type="text"
-        className="tp-profiles__input"
+        className="tp-profiles__input tp-field-control"
         autoComplete="off"
         spellCheck={false}
         value={value}
@@ -136,12 +128,18 @@ function TextField({
   );
 }
 
+/** A heading's background, as a help icon beside it; nothing without a "why". */
+function helpFor(subject: CopyText, why: CopyText | undefined) {
+  return why === undefined ? undefined : <HelpTip label={subject}>{why}</HelpTip>;
+}
+
 function CheckField({
   label,
   checked,
   scope,
   path,
   consent,
+  condition,
 }: {
   readonly label: CopyEntry;
   readonly checked: boolean;
@@ -149,13 +147,16 @@ function CheckField({
   readonly path: string;
   /** Record this key when ticked (consent for one reviewed write), '' when cleared. */
   readonly consent?: string;
+  readonly condition?: CopyEntry;
 }) {
   const { commands } = useDashboard();
+  const own = useId();
   return (
     <span className="tp-profiles__check">
       <label>
         <input
           type="checkbox"
+          aria-describedby={condition === undefined ? undefined : `${own}-condition`}
           checked={checked}
           disabled={scope === null}
           data-focus-key={`${scope ?? 'none'}:${path}`}
@@ -167,7 +168,15 @@ function CheckField({
         />
         <span>{label.short}</span>
       </label>
-      {label.why === undefined ? null : <Why why={label.why} />}
+      {condition === undefined ? null : (
+        <span className="tp-profiles__condition">
+          <span id={`${own}-condition`}>{condition.short}</span>
+          {condition.why === undefined ? null : (
+            <HelpTip label={condition.short}>{condition.why}</HelpTip>
+          )}
+        </span>
+      )}
+      {label.why === undefined ? null : <HelpTip label={label.short}>{label.why}</HelpTip>}
     </span>
   );
 }
@@ -194,6 +203,7 @@ function ProfileSelect({
     <label className="tp-profiles__field">
       <span>{label.short}</span>
       <select
+        className="tp-field-control"
         value={value}
         disabled={scope === null}
         data-focus-key={`${scope ?? 'none'}:${path}`}
@@ -292,18 +302,33 @@ function UnbindProfile({
     asking !== null && command !== null && asking.epoch === command.epoch ? command : null;
   if (asking !== null && current === null) setAsking(null);
   return (
-    <fieldset className="tp-profiles__form" data-form="unbind">
-      <legend>{t.unbind.title.short}</legend>
-      <div className="tp-profiles__row">
-        <p className="tp-profiles__summary">
-          <span>{t.unbind.active.short}</span>
-          {unbind.active === null ? (
-            <span>{t.unbind.none.short}</span>
-          ) : (
-            <ServerValue kind="name" value={unbind.active} />
-          )}
-        </p>
-        <span className="tp-profiles__action">
+    <div data-form="unbind">
+      <Tile
+        as="fieldset"
+        className="tp-profiles__form"
+        titleId="profiles-unbind-title"
+        title={t.unbind.title.short}
+      >
+        <Facts>
+          <Fact
+            label={t.unbind.active.short}
+            value={
+              unbind.active === null ? (
+                t.unbind.none.short
+              ) : (
+                <ServerValue kind="name" value={unbind.active} />
+              )
+            }
+          />
+        </Facts>
+        <CopyLine entry={t.unbind.consequence} variant="note" />
+        <ActionRow
+          reason={
+            unbind.command.enabled ? undefined : (
+              <Reason id={`${own}-reason`} entry={reasonOf(unbind.command.reason)} />
+            )
+          }
+        >
           <Button
             tier="quiet"
             label={t.unbind.submit.short}
@@ -316,53 +341,61 @@ function UnbindProfile({
               if (unbind.command.enabled && command !== null) setAsking(command);
             }}
           />
-          {unbind.command.enabled ? null : (
-            <span id={`${own}-reason`} className="tp-reason">
-              {reasonOf(unbind.command.reason).short}
-            </span>
-          )}
-        </span>
-        {t.unbind.submit.why === undefined ? null : <Why why={t.unbind.submit.why} />}
-      </div>
-      {unbind.outcome === null ? null : <ProfileOutcome outcome={unbind.outcome} />}
-      <ConfirmDialog
-        open={current !== null}
-        tier="primary"
-        title={t.unbind.confirm.short}
-        body={
-          <div>
-            <p>{t.unbind.effect.short}</p>
-            <div className="tp-profiles__summary">
-              <span>{t.unbind.account.short}</span>
-              {unbind.account === null ? (
-                <span>{t.unbind.installation.short}</span>
-              ) : (
-                <ServerValue kind="name" value={unbind.account} />
-              )}
+        </ActionRow>
+        {unbind.outcome === null ? null : <ProfileOutcome outcome={unbind.outcome} />}
+        <ConfirmDialog
+          open={current !== null}
+          tier="primary"
+          title={t.unbind.confirm.short}
+          body={
+            <div>
+              <p>{t.unbind.effect.short}</p>
+              <Facts>
+                <Fact
+                  label={t.unbind.account.short}
+                  value={
+                    unbind.account === null ? (
+                      t.unbind.installation.short
+                    ) : (
+                      <ServerValue kind="name" value={unbind.account} />
+                    )
+                  }
+                />
+                <Fact
+                  label={t.unbind.emulator.short}
+                  value={
+                    unbind.instance === null ? (
+                      t.outcomes.contextUnknown.short
+                    ) : (
+                      <ServerValue kind="name" value={unbind.instance} />
+                    )
+                  }
+                />
+                <Fact
+                  label={t.unbind.profile.short}
+                  value={
+                    unbind.active === null ? (
+                      t.outcomes.contextUnknown.short
+                    ) : (
+                      <ServerValue kind="name" value={unbind.active} />
+                    )
+                  }
+                />
+              </Facts>
             </div>
-            <div className="tp-profiles__summary">
-              <span>{t.unbind.emulator.short}</span>
-              {unbind.instance === null ? null : (
-                <ServerValue kind="name" value={unbind.instance} />
-              )}
-            </div>
-            <div className="tp-profiles__summary">
-              <span>{t.unbind.profile.short}</span>
-              {unbind.active === null ? null : <ServerValue kind="name" value={unbind.active} />}
-            </div>
-          </div>
-        }
-        confirmLabel={t.unbind.send.short}
-        cancelLabel={t.unbind.cancel.short}
-        onCancel={() => {
-          setAsking(null);
-        }}
-        onConfirm={() => {
-          setAsking(null);
-          if (current !== null) onSend(current);
-        }}
-      />
-    </fieldset>
+          }
+          confirmLabel={t.unbind.send.short}
+          cancelLabel={t.unbind.cancel.short}
+          onCancel={() => {
+            setAsking(null);
+          }}
+          onConfirm={() => {
+            setAsking(null);
+            if (current !== null) onSend(current);
+          }}
+        />
+      </Tile>
+    </div>
   );
 }
 
@@ -403,132 +436,162 @@ function AccountSection() {
         {account.readAgeSec === null ? null : <span>{t.account.readAge(account.readAgeSec)}</span>}
       </RegionEnd>
       <RegionBody>
-        <div className="tp-profiles__scope">
-          <span>{t.account.scope.short}</span>
-          <Why why={t.account.scope.why} />
-        </div>
-        <p className="tp-profiles__summary">
-          <span>{t.account.emulator.short}</span>
-          {account.instance === null ? null : <ServerValue kind="id" value={account.instance} />}
-        </p>
-        {account.read === 'not_read' ? <p>{t.account.reading.short}</p> : null}
-        {account.read === 'settling' ? <p>{t.account.settling.short}</p> : null}
-        {account.read === 'unavailable' ? <p>{t.account.unavailable.short}</p> : null}
-        {account.read === 'ready' ? (
-          <p className="tp-profiles__summary" data-active-account="true">
-            {account.active === null ? (
-              <span>{t.account.noneActive.short}</span>
-            ) : (
-              <>
-                <span>{t.account.inUse.short}</span>
-                {account.active.label === null ? null : (
-                  <ServerValue kind="name" value={account.active.label} />
-                )}
-                {account.active.id === null ? null : (
-                  <ServerValue kind="id" value={account.active.id} />
-                )}
-              </>
-            )}
-          </p>
-        ) : null}
-        {account.read === 'ready' && account.accounts.length === 0 ? (
-          <p>{t.account.noAccounts.short}</p>
-        ) : null}
-        {account.accounts.length === 0 ? null : (
-          <div className="tp-profiles__row" ref={rowRef}>
-            <label className="tp-profiles__field">
-              <span>{t.account.picker.short}</span>
-              <select
-                value={account.pick ?? ''}
-                disabled={account.pickScope === null}
-                data-focus-key="profiles:account:pick"
-                onChange={(event) => {
-                  setConfirming(false);
-                  if (account.pickScope !== null)
-                    commands.editDraft(account.pickScope, 'id', event.currentTarget.value);
-                }}
-              >
-                {account.pick === null ? (
-                  <option value="">{t.reasons.choose_account.short}</option>
-                ) : null}
-                {account.accounts.map((choice) =>
-                  choice.option === null ? null : (
-                    <ServerOption key={choice.key} value={choice.key} label={choice.option} />
-                  ),
-                )}
-              </select>
-            </label>
-            <WriteButton
-              vm={account.select}
-              label={t.account.use}
-              focusKey="profiles:account:use"
-              onSend={(command) => {
-                if (keeps > 0) setConfirming(true);
-                else send(command);
-              }}
-            />
-          </div>
-        )}
-        {confirming && account.select.command !== null ? (
-          <div
-            ref={confirmRef}
-            className="tp-profiles__confirm"
-            role="group"
-            aria-labelledby={question}
-            data-switch-confirm="true"
+        <NotSent />
+        <Tiles min="wide">
+          <Tile
+            titleId="profiles-binding-title"
+            title={t.account.binding.short}
+            intro={{ short: t.account.scope.short }}
+            end={helpFor(t.account.binding.short, t.account.scope.why)}
           >
-            <p id={question}>{t.account.keeps(account.keeps.edits, account.keeps.unresolved)}</p>
-            <Button
-              tier="secondary"
-              label={t.account.confirmSwitch.short}
-              focusKey="profiles:account:confirm"
-              onClick={() => {
-                const command = account.select.command;
-                closeConfirm();
-                if (command !== null) send(command);
-              }}
-            />
-            <Button
-              tier="quiet"
-              label={t.account.cancel.short}
-              focusKey="profiles:account:cancel"
-              onClick={closeConfirm}
-            />
+            <Facts>
+              <Fact
+                label={t.account.emulator.short}
+                value={
+                  account.instance === null ? (
+                    t.outcomes.contextUnknown.short
+                  ) : (
+                    <ServerValue kind="id" value={account.instance} />
+                  )
+                }
+              />
+              {account.read === 'ready' ? (
+                <Fact
+                  label={t.account.inUse.short}
+                  value={
+                    <span className="tp-profiles__summary" data-active-account="true">
+                      {account.active === null ? (
+                        t.account.noneActive.short
+                      ) : (
+                        <>
+                          {account.active.label === null ? null : (
+                            <ServerValue kind="name" value={account.active.label} />
+                          )}
+                          {account.active.id === null ? null : (
+                            <ServerValue kind="id" value={account.active.id} />
+                          )}
+                        </>
+                      )}
+                    </span>
+                  }
+                />
+              ) : null}
+            </Facts>
+            {account.read === 'not_read' ? <p>{t.account.reading.short}</p> : null}
+            {account.read === 'settling' ? <p>{t.account.settling.short}</p> : null}
+            {account.read === 'unavailable' ? <p>{t.account.unavailable.short}</p> : null}
+            {account.read === 'ready' && account.accounts.length === 0 ? (
+              <p>{t.account.noAccounts.short}</p>
+            ) : null}
+            {account.accounts.length === 0 ? null : (
+              <div className="tp-profiles__row tp-control-row" ref={rowRef}>
+                <label className="tp-profiles__field">
+                  <span>{t.account.picker.short}</span>
+                  <select
+                    className="tp-field-control"
+                    value={account.pick ?? ''}
+                    disabled={account.pickScope === null}
+                    data-focus-key="profiles:account:pick"
+                    onChange={(event) => {
+                      setConfirming(false);
+                      if (account.pickScope !== null)
+                        commands.editDraft(account.pickScope, 'id', event.currentTarget.value);
+                    }}
+                  >
+                    {account.pick === null ? (
+                      <option value="">{t.reasons.choose_account.short}</option>
+                    ) : null}
+                    {account.accounts.map((choice) =>
+                      choice.option === null ? null : (
+                        <ServerOption key={choice.key} value={choice.key} label={choice.option} />
+                      ),
+                    )}
+                  </select>
+                </label>
+                <WriteButton
+                  vm={account.select}
+                  label={t.account.use}
+                  focusKey="profiles:account:use"
+                  onSend={(command) => {
+                    if (keeps > 0) setConfirming(true);
+                    else send(command);
+                  }}
+                />
+              </div>
+            )}
+            {confirming && account.select.command !== null ? (
+              <div
+                ref={confirmRef}
+                className="tp-profiles__confirm"
+                role="group"
+                aria-labelledby={question}
+                data-switch-confirm="true"
+              >
+                <p id={question}>
+                  {t.account.keeps(account.keeps.edits, account.keeps.unresolved)}
+                </p>
+                <ActionRow>
+                  <Button
+                    tier="secondary"
+                    label={t.account.confirmSwitch.short}
+                    focusKey="profiles:account:confirm"
+                    onClick={() => {
+                      const command = account.select.command;
+                      closeConfirm();
+                      if (command !== null) send(command);
+                    }}
+                  />
+                  <Button
+                    tier="quiet"
+                    label={t.account.cancel.short}
+                    focusKey="profiles:account:cancel"
+                    onClick={closeConfirm}
+                  />
+                </ActionRow>
+              </div>
+            ) : null}
+            {account.outcome === null ? null : <ProfileOutcome outcome={account.outcome} />}
+          </Tile>
+          <div data-form="create">
+            <Tile
+              as="fieldset"
+              className="tp-profiles__form"
+              titleId="profiles-create-title"
+              title={t.create.title.short}
+            >
+              <TextField
+                label={t.create.id}
+                value={account.create.id}
+                scope={account.create.scope}
+                path="id"
+                help={t.create.idHelp}
+              />
+              <TextField
+                label={t.create.label}
+                value={account.create.label}
+                scope={account.create.scope}
+                path="label"
+              />
+              {account.create.importOffered ? (
+                <CheckField
+                  label={t.create.importCurrent}
+                  condition={t.create.importCondition}
+                  checked={account.create.importCurrent}
+                  scope={account.create.scope}
+                  path="import_current"
+                />
+              ) : null}
+              <div className="tp-profiles__actions">
+                <WriteButton
+                  vm={account.create.command}
+                  label={t.create.submit}
+                  focusKey="profiles:create:submit"
+                  onSend={send}
+                />
+              </div>
+            </Tile>
           </div>
-        ) : null}
-        {account.outcome === null ? null : <ProfileOutcome outcome={account.outcome} />}
-        <fieldset className="tp-profiles__form" data-form="create">
-          <legend>{t.create.title.short}</legend>
-          <TextField
-            label={t.create.id}
-            value={account.create.id}
-            scope={account.create.scope}
-            path="id"
-            help={t.create.idHelp}
-          />
-          <TextField
-            label={t.create.label}
-            value={account.create.label}
-            scope={account.create.scope}
-            path="label"
-          />
-          {account.create.importOffered ? (
-            <CheckField
-              label={t.create.importCurrent}
-              checked={account.create.importCurrent}
-              scope={account.create.scope}
-              path="import_current"
-            />
-          ) : null}
-          <div className="tp-profiles__actions">
-            <WriteButton
-              vm={account.create.command}
-              label={t.create.submit}
-              focusKey="profiles:create:submit"
-              onSend={send}
-            />
-          </div>
-        </fieldset>
+        </Tiles>
       </RegionBody>
     </>
   );
@@ -541,33 +604,40 @@ function TierSection() {
   const tier = vm.tier;
   return (
     <RegionBody>
-      <p className="tp-profiles__summary" data-tier-saved="true">
-        {tier.current !== null ? (
-          <>
-            <span>{t.tier.current.short}</span>
-            <span>{t.tier.value(tier.current)}</span>
-          </>
-        ) : tier.defaultValue !== null ? (
-          <>
-            <span>{t.tier.default.short}</span>
-            <span>{t.tier.value(tier.defaultValue)}</span>
-            <span>{t.tier.defaultNote.short}</span>
-          </>
-        ) : (
-          <span>{t.tier.notSaved.short}</span>
-        )}
-        {tier.current === null ? null : tier.setBy === 'operator' ? (
-          <span>{t.tier.byOperator.short}</span>
-        ) : tier.setBy === 'other' && tier.setByText !== null ? (
-          <span>
-            <span>{t.tier.byOther.short}</span>
-            <ServerValue kind="id" value={tier.setByText} />
-          </span>
-        ) : (
-          <span>{t.tier.sourceUnknown.short}</span>
-        )}
-      </p>
-      <div className="tp-profiles__row">
+      <div data-tier-saved="true">
+        <Facts>
+          <Fact
+            label={tier.current !== null ? t.tier.current.short : t.tier.default.short}
+            value={
+              tier.current !== null
+                ? t.tier.value(tier.current)
+                : tier.defaultValue !== null
+                  ? t.tier.value(tier.defaultValue)
+                  : t.tier.notSaved.short
+            }
+          />
+          {tier.current === null && tier.defaultValue !== null ? (
+            <Fact label={t.tier.recordedState.short} value={t.tier.defaultNote.short} />
+          ) : null}
+          {tier.current === null ? null : (
+            <Fact
+              label={t.tier.source.short}
+              value={
+                tier.setBy === 'operator' ? (
+                  t.tier.byOperator.short
+                ) : tier.setBy === 'other' && tier.setByText !== null ? (
+                  <>
+                    {t.tier.byOther.short} <ServerValue kind="id" value={tier.setByText} />
+                  </>
+                ) : (
+                  t.tier.sourceUnknown.short
+                )
+              }
+            />
+          )}
+        </Facts>
+      </div>
+      <div className="tp-profiles__row tp-control-row">
         <TextField
           label={t.tier.input}
           value={tier.shown}
@@ -596,27 +666,46 @@ function SetupSection() {
   const setup = vm.setup;
   return (
     <RegionBody>
-      <ul className="tp-profiles__setup">
-        <li data-setup="tools" data-state={setup.tools}>
-          <span>{t.setup.tools[setup.tools].short}</span>
-          <a href={EMULATORS}>{t.setup.emulators.short}</a>
-        </li>
-        <li data-setup="calibration" data-state={setup.calibration}>
-          <span>{t.setup.calibration[setup.calibration].short}</span>
-        </li>
-        <li data-setup="runs">
-          <span>
-            {setup.runs === null
-              ? t.setup.runsUnknown.short
-              : t.setup.runs(setup.runs.ready, setup.runs.notReady, setup.runs.unknown)}
-          </span>
+      <Tiles>
+        <Tile titleId="profiles-connection-title" title={t.setup.connection.short}>
+          <Facts>
+            <Fact
+              label={t.setup.toolsLabel.short}
+              value={
+                <span className="tp-profiles__status" data-setup="tools" data-state={setup.tools}>
+                  <span>{t.setup.tools[setup.tools].short}</span>
+                  <a href={EMULATORS}>{t.setup.emulators.short}</a>
+                </span>
+              }
+            />
+            <Fact
+              label={t.setup.progress.short}
+              value={
+                <span data-setup="calibration" data-state={setup.calibration}>
+                  {t.setup.calibration[setup.calibration].short}
+                </span>
+              }
+            />
+          </Facts>
+        </Tile>
+        <Tile titleId="profiles-readiness-title" title={t.setup.readiness.short}>
+          <div data-setup="runs">
+            {setup.runs === null ? (
+              <p>{t.setup.runsUnknown.short}</p>
+            ) : (
+              <Facts layout="cells">
+                <Fact label={t.setup.ready.short} value={setup.runs.ready} />
+                <Fact label={t.setup.notReady.short} value={setup.runs.notReady} />
+                {setup.runs.unknown > 0 ? (
+                  <Fact label={t.setup.unknown.short} value={setup.runs.unknown} />
+                ) : null}
+              </Facts>
+            )}
+          </div>
           <a href={RECOGNITION}>{t.setup.recognition.short}</a>
-        </li>
-      </ul>
-      <div className="tp-profiles__scope">
-        <span>{t.setup.note.short}</span>
-        <Why why={t.setup.note.why} />
-      </div>
+          <CopyLine entry={t.setup.note} variant="note" />
+        </Tile>
+      </Tiles>
     </RegionBody>
   );
 }
@@ -631,188 +720,235 @@ function FilesSection() {
   };
   return (
     <RegionBody>
-      <div className="tp-profiles__scope">
-        <span>{t.files.scope.short}</span>
-        <Why why={t.files.scope.why} />
-      </div>
-      <div className="tp-profiles__summary" data-active-profile="true">
-        <span>{t.files.active.short}</span>
-        {files.active === null ? (
-          <span>{t.files.noActive.short}</span>
-        ) : (
-          <ServerValue kind="name" value={files.active} />
-        )}
-        {files.activeValidation === null ? (
-          files.activeSourceError === null ? null : (
-            <span>
-              <span>{t.files.sourceUnavailable.short}</span>
-              <ServerValue kind="message" value={files.activeSourceError} />
-            </span>
-          )
-        ) : (
-          <Validation validation={files.activeValidation} />
-        )}
-      </div>
-      {files.read === 'not_read' ? <p>{t.files.reading.short}</p> : null}
-      {files.read === 'settling' ? <p>{t.files.settling.short}</p> : null}
-      {files.read === 'unavailable' ? <p>{t.files.unavailable.short}</p> : null}
-      {files.read === 'ready' && files.rows.length === 0 ? <p>{t.files.none.short}</p> : null}
-      {files.rows.length === 0 ? null : (
-        <table className="tp-profiles__table">
-          <thead>
-            <tr>
-              <th scope="col">{t.files.columns.name.short}</th>
-              <th scope="col">{t.files.columns.kind.short}</th>
-              <th scope="col">{t.files.columns.modified.short}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {files.rows.map((row) => (
-              <tr key={row.key} data-profile={row.key} data-active={row.active}>
-                <td>
-                  {row.name === null ? null : <ServerValue kind="name" value={row.name} />}
-                  {row.active ? (
-                    <span className="tp-profiles__mark">{t.files.activeMark.short}</span>
-                  ) : null}
-                </td>
-                <td>
-                  <span>
-                    <span>{t.files.kinds[row.kind].short}</span>
-                    {row.note === null ? null : (
-                      <span className="tp-profiles__help">
-                        <ServerValue kind="message" value={row.note} />
-                      </span>
-                    )}
-                  </span>
-                </td>
-                <td>
-                  {row.mtime === null ? t.files.modifiedUnknown.short : t.files.modified(row.mtime)}
-                </td>
+      <Tile
+        titleId="profiles-inventory-title"
+        title={t.files.inventory.short}
+        intro={{ short: t.files.scope.short }}
+        end={helpFor(t.files.inventory.short, t.files.scope.why)}
+      >
+        {files.read === 'not_read' ? <p>{t.files.reading.short}</p> : null}
+        {files.read === 'settling' ? <p>{t.files.settling.short}</p> : null}
+        {files.read === 'unavailable' ? <p>{t.files.unavailable.short}</p> : null}
+        {files.read === 'ready' && files.rows.length === 0 ? <p>{t.files.none.short}</p> : null}
+        {files.rows.length === 0 ? null : (
+          <table className="tp-profiles__table">
+            <thead>
+              <tr>
+                <th scope="col">{t.files.columns.name.short}</th>
+                <th scope="col">{t.files.columns.kind.short}</th>
+                <th scope="col">{t.files.columns.modified.short}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      <fieldset className="tp-profiles__form" data-form="automation">
-        <legend>{targetCopy.automation.short}</legend>
-        <fieldset className="tp-profiles__form" data-form="activate">
-          <legend>{t.activate.title.short}</legend>
-          <div className="tp-profiles__row">
-            <ProfileSelect
-              label={t.activate.picker}
-              value={files.activate.pick ?? ''}
-              rows={files.rows}
-              scope={files.activate.scope}
-              path="name"
-              empty={t.activate.choose}
-              onPick={(name) => {
-                if (name !== '') void commands.checkProfile(name);
-              }}
-            />
-            <WriteButton
-              vm={files.activate.command}
-              label={t.activate.submit}
-              focusKey="profiles:activate:submit"
-              onSend={send}
-            />
-          </div>
-          {files.activate.check === 'checking' ? <p>{t.activate.checking.short}</p> : null}
-          {files.activate.validation === null ? null : (
-            <Validation validation={files.activate.validation} />
-          )}
-          {files.activate.checkError === null ? null : (
-            <p>
-              <span>{t.reasons.unreadable.short}</span>
-              <ServerValue kind="message" value={files.activate.checkError} />
-            </p>
-          )}
-          {files.activate.outcome === null ? null : (
-            <ProfileOutcome outcome={files.activate.outcome} />
-          )}
-        </fieldset>
-        {files.unbind === null ? null : <UnbindProfile unbind={files.unbind} onSend={send} />}
-      </fieldset>
-      <EditingTargetPicker key={vm.epoch} />
-      <fieldset className="tp-profiles__form" data-form="copy">
-        <legend>{t.copy.title.short}</legend>
-        <div className="tp-profiles__row">
-          <ProfileSelect
-            label={t.copy.from}
-            value={files.copy.from}
-            rows={files.copy.sources}
-            scope={files.copy.scope}
-            path="from"
-            empty={t.reasons.choose_source}
-          />
-          <TextField
-            label={t.copy.name}
-            value={files.copy.name}
-            scope={files.copy.scope}
-            path="name"
-          />
+            </thead>
+            <tbody>
+              {files.rows.map((row) => (
+                <tr key={row.key} data-profile={row.key} data-active={row.active}>
+                  <td className="tp-profiles__file-name">
+                    {row.name === null ? null : <ServerValue kind="name" value={row.name} />}
+                    {row.active ? (
+                      <span className="tp-profiles__mark">{t.files.activeMark.short}</span>
+                    ) : null}
+                  </td>
+                  <td className="tp-profiles__file-kind">
+                    <span className="tp-profiles__mobile-label" aria-hidden="true">
+                      {t.files.columns.kind.short}
+                    </span>
+                    <span>
+                      <span>{t.files.kinds[row.kind].short}</span>
+                      {row.note === null ? null : (
+                        <span className="tp-profiles__help">
+                          <ServerValue kind="message" value={row.note} />
+                        </span>
+                      )}
+                    </span>
+                  </td>
+                  <td className="tp-profiles__file-modified">
+                    <span className="tp-profiles__mobile-label" aria-hidden="true">
+                      {t.files.columns.modified.short}
+                    </span>
+                    {row.mtime === null
+                      ? t.files.modifiedUnknown.short
+                      : t.files.modified(row.mtime)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Tile>
+      <Tiles min="wide">
+        <div data-form="automation" data-active-profile="true">
+          <Tile
+            as="fieldset"
+            className="tp-profiles__form"
+            titleId="profiles-automation-title"
+            title={targetCopy.automation.short}
+          >
+            {files.unbind === null ? (
+              <Facts>
+                <Fact
+                  label={t.unbind.active.short}
+                  value={
+                    files.active === null ? (
+                      targetCopy.none.short
+                    ) : (
+                      <ServerValue kind="name" value={files.active} />
+                    )
+                  }
+                />
+              </Facts>
+            ) : null}
+            <div>
+              {files.activeValidation === null ? (
+                files.activeSourceError === null ? null : (
+                  <span>
+                    <span>{t.files.sourceUnavailable.short}</span>
+                    <ServerValue kind="message" value={files.activeSourceError} />
+                  </span>
+                )
+              ) : (
+                <Validation validation={files.activeValidation} />
+              )}
+            </div>
+            <div data-form="activate">
+              <Tile
+                as="fieldset"
+                className="tp-profiles__form"
+                titleId="profiles-activate-title"
+                title={t.activate.title.short}
+                level={4}
+              >
+                <CopyLine entry={t.activate.effect} variant="note" />
+                <div className="tp-profiles__row tp-control-row">
+                  <ProfileSelect
+                    label={t.activate.picker}
+                    value={files.activate.pick ?? ''}
+                    rows={files.rows}
+                    scope={files.activate.scope}
+                    path="name"
+                    empty={t.activate.choose}
+                    onPick={(name) => {
+                      if (name !== '') void commands.checkProfile(name);
+                    }}
+                  />
+                  <WriteButton
+                    vm={files.activate.command}
+                    label={t.activate.submit}
+                    focusKey="profiles:activate:submit"
+                    onSend={send}
+                  />
+                </div>
+                {files.activate.check === 'checking' ? <p>{t.activate.checking.short}</p> : null}
+                {files.activate.validation === null ? null : (
+                  <Validation validation={files.activate.validation} />
+                )}
+                {files.activate.checkError === null ? null : (
+                  <p>
+                    <span>{t.reasons.unreadable.short}</span>
+                    <ServerValue kind="message" value={files.activate.checkError} />
+                  </p>
+                )}
+                {files.activate.outcome === null ? null : (
+                  <ProfileOutcome outcome={files.activate.outcome} />
+                )}
+              </Tile>
+            </div>
+            {files.unbind === null ? null : <UnbindProfile unbind={files.unbind} onSend={send} />}
+          </Tile>
         </div>
-        {files.copy.exists ? (
-          <CheckField
-            label={t.copy.overwrite}
-            checked={files.copy.overwrite}
-            scope={files.copy.scope}
-            path="overwrite"
-            consent={files.copy.overwriteKey}
-          />
-        ) : null}
-        <div className="tp-profiles__actions">
-          <WriteButton
-            vm={files.copy.command}
-            label={t.copy.submit}
-            focusKey="profiles:copy:submit"
-            onSend={send}
-          />
+        <EditingTargetPicker key={vm.epoch} />
+        <div data-form="copy">
+          <Tile
+            as="fieldset"
+            className="tp-profiles__form"
+            titleId="profiles-copy-title"
+            title={t.copy.title.short}
+          >
+            <div className="tp-profiles__row tp-control-row">
+              <ProfileSelect
+                label={t.copy.from}
+                value={files.copy.from}
+                rows={files.copy.sources}
+                scope={files.copy.scope}
+                path="from"
+                empty={t.reasons.choose_source}
+              />
+              <TextField
+                label={t.copy.name}
+                value={files.copy.name}
+                scope={files.copy.scope}
+                path="name"
+              />
+            </div>
+            {files.copy.exists ? (
+              <CheckField
+                label={t.copy.overwrite}
+                checked={files.copy.overwrite}
+                scope={files.copy.scope}
+                path="overwrite"
+                consent={files.copy.overwriteKey}
+              />
+            ) : null}
+            <div className="tp-profiles__actions">
+              <WriteButton
+                vm={files.copy.command}
+                label={t.copy.submit}
+                focusKey="profiles:copy:submit"
+                onSend={send}
+              />
+            </div>
+          </Tile>
         </div>
-      </fieldset>
-      <fieldset className="tp-profiles__form" data-form="promote">
-        <legend>{t.promote.title.short}</legend>
-        <div className="tp-profiles__row">
-          <ProfileSelect
-            label={t.promote.draft}
-            value={files.promote.draft}
-            rows={files.promote.drafts}
-            scope={files.promote.scope}
-            path="draft"
-            empty={t.promote.noDrafts}
-          />
-          <TextField
-            label={t.promote.name}
-            value={files.promote.name}
-            scope={files.promote.scope}
-            path="name"
-          />
-          <ProfileSelect
-            label={t.promote.base}
-            value={files.promote.base}
-            rows={files.promote.bases}
-            scope={files.promote.scope}
-            path="base"
-            empty={t.reasons.choose_source}
-          />
+        <div data-form="promote">
+          <Tile
+            as="fieldset"
+            className="tp-profiles__form"
+            titleId="profiles-promote-title"
+            title={t.promote.title.short}
+          >
+            <div className="tp-profiles__row tp-control-row">
+              <ProfileSelect
+                label={t.promote.draft}
+                value={files.promote.draft}
+                rows={files.promote.drafts}
+                scope={files.promote.scope}
+                path="draft"
+                empty={t.promote.noDrafts}
+              />
+              <TextField
+                label={t.promote.name}
+                value={files.promote.name}
+                scope={files.promote.scope}
+                path="name"
+              />
+              <ProfileSelect
+                label={t.promote.base}
+                value={files.promote.base}
+                rows={files.promote.bases}
+                scope={files.promote.scope}
+                path="base"
+                empty={t.reasons.choose_source}
+              />
+            </div>
+            {files.promote.exists ? (
+              <CheckField
+                label={t.promote.overwrite}
+                checked={files.promote.overwrite}
+                scope={files.promote.scope}
+                path="overwrite"
+                consent={files.promote.overwriteKey}
+              />
+            ) : null}
+            <div className="tp-profiles__actions">
+              <WriteButton
+                vm={files.promote.command}
+                label={t.promote.submit}
+                focusKey="profiles:promote:submit"
+                onSend={send}
+              />
+            </div>
+          </Tile>
         </div>
-        {files.promote.exists ? (
-          <CheckField
-            label={t.promote.overwrite}
-            checked={files.promote.overwrite}
-            scope={files.promote.scope}
-            path="overwrite"
-            consent={files.promote.overwriteKey}
-          />
-        ) : null}
-        <div className="tp-profiles__actions">
-          <WriteButton
-            vm={files.promote.command}
-            label={t.promote.submit}
-            focusKey="profiles:promote:submit"
-            onSend={send}
-          />
-        </div>
-      </fieldset>
+      </Tiles>
       {files.filesOutcome === null ? null : <ProfileOutcome outcome={files.filesOutcome} />}
     </RegionBody>
   );
@@ -827,7 +963,7 @@ function NotSent() {
   return (
     <div className="tp-profiles__not-sent" data-not-sent={vm.notSent} role="status">
       <span>{entry.short}</span>
-      {entry.why === undefined ? null : <Why why={entry.why} />}
+      {entry.why === undefined ? null : <HelpTip label={entry.short}>{entry.why}</HelpTip>}
     </div>
   );
 }
@@ -861,7 +997,6 @@ export function ProfilesPage() {
       <main id="main" className="tp-main" tabIndex={-1}>
         <FaultPoint part="page" />
         <div className="tp-profiles">
-          <NotSent />
           <ProfilesRegion id="profilesAccount" title={t.account.title}>
             <AccountSection />
           </ProfilesRegion>

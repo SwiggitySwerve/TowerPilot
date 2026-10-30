@@ -16,7 +16,10 @@ import {
   type AbilityNode,
 } from '../../store/abilitiesDraft.ts';
 import type { AbilitiesStore } from '../../store/abilities.ts';
+import { Tile } from '../../ui/Tile.tsx';
+import { ActionRow } from '../../ui/ActionRow.tsx';
 import { AbilityField, Json } from './AbilityField.tsx';
+import { AbilityHelp } from './AbilityHelp.tsx';
 import { abilityFieldId, type AbilityProblem } from '../../store/selectors/abilities.ts';
 
 export function RuleEditor({
@@ -55,10 +58,11 @@ export function RuleEditor({
     });
   };
   return (
-    <section aria-labelledby="abilities-rules">
-      <h3 id="abilities-rules">{t.rules.short}</h3>
-      <p>{t.cooldownHelp.short}</p>
-      <p>{t.unavailable.short}</p>
+    <Tile
+      titleId="abilities-rules"
+      title={t.rules.short}
+      end={<AbilityHelp subject={t.rules.short} entries={[t.cooldownHelp, t.unavailable]} />}
+    >
       <p role="status" className="tp-visually-hidden">
         {announcement}
       </p>
@@ -81,7 +85,7 @@ export function RuleEditor({
               id={abilityFieldId(['rules', index])}
               tabIndex={-1}
               data-rule-key={item.key}
-              className="tp-abilities__card"
+              className="tp-abilities__card tp-abilities__rule"
             >
               <h4>{ruleNumber(index)}</h4>
               {supported ? (
@@ -89,6 +93,7 @@ export function RuleEditor({
                   <label>
                     {t.when.short}
                     <select
+                      className="tp-field-control"
                       id={abilityFieldId(['rules', index, 'condition'])}
                       aria-label={abilityLabel(`rule_${index + 1}_condition`)}
                       value={trigger}
@@ -128,6 +133,7 @@ export function RuleEditor({
                   <label>
                     {t.action.short}
                     <select
+                      className="tp-field-control"
                       id={abilityFieldId(['rules', index, 'do'])}
                       aria-label={abilityLabel(`rule_${index + 1}_action`)}
                       value={actionName}
@@ -184,7 +190,7 @@ export function RuleEditor({
                   <Json value={rule} />
                 </>
               )}
-              <div className="tp-abilities__actions">
+              <ActionRow>
                 {(['up', 'down', 'delete'] as const).map((a) => (
                   <button
                     className="tp-button"
@@ -206,22 +212,24 @@ export function RuleEditor({
                     {a === 'up' ? t.up.short : a === 'down' ? t.down.short : t.remove.short}
                   </button>
                 ))}
-              </div>
+              </ActionRow>
             </li>
           );
         })}
       </ol>
-      <button
-        type="button"
-        className="tp-button"
-        id="abilities-add-rule"
-        onClick={() => {
-          store.rule('add');
-          setAnnouncement(t.add.short);
-        }}
-      >
-        {t.add.short}
-      </button>
-    </section>
+      <ActionRow>
+        <button
+          type="button"
+          className="tp-button"
+          id="abilities-add-rule"
+          onClick={() => {
+            store.rule('add');
+            setAnnouncement(t.add.short);
+          }}
+        >
+          {t.add.short}
+        </button>
+      </ActionRow>
+    </Tile>
   );
 }

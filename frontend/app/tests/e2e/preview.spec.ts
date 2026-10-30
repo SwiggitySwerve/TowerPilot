@@ -832,7 +832,7 @@ test('PV8 keyboard controls, visible focus and verdict-only polite announcements
   page,
 }) => {
   await openScenario(page, 'preview', { width: 390 });
-  const show = region(page).locator('button[aria-expanded]');
+  const show = region(page).locator('button[aria-controls="preview-content"]');
   await show.focus();
   // The screen is open by default: Enter hides it, Enter again shows it and it reattaches.
   await page.keyboard.press('Enter');

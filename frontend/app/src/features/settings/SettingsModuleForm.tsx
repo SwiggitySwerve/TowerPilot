@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { settings as t } from '../../copy/settings.ts';
 import { settingsList as lists } from '../../copy/settingsList.ts';
 import type { CopyEntry } from '../../copy/text.ts';
+import type { ServerText } from '../../copy/server.ts';
 import type {
   SettingsFieldVM,
   SettingsModuleVM,
@@ -9,7 +10,9 @@ import type {
   SettingsSaveCommand,
 } from '../../store/selectors/settingsModule.ts';
 import { Button } from '../../ui/Button.tsx';
+import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
 import { Disclosure } from '../../ui/Disclosure.tsx';
+import { HelpTip } from '../../ui/HelpTip.tsx';
 import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
 import { Why } from '../../ui/Why.tsx';
 import { SaveOutcome } from './SaveOutcome.tsx';
@@ -19,6 +22,12 @@ export interface SettingsModuleFormProps {
   readonly vm: SettingsModuleVM;
   /** The legend: the page's own wording, else the server's module title. */
   readonly legend?: CopyEntry;
+  /** Use the containing region's heading when this is its only form. */
+  readonly labelledBy?: string;
+  /** Replace server module prose; null when the parent already supplies this context. */
+  readonly description?: CopyEntry | null;
+  /** Replace the apply notice; null when the same scope/timing is visible in the parent. */
+  readonly applyNotice?: CopyEntry | null;
   /** A line under the legend (what the timers mean, what is spent). */
   readonly intro?: CopyEntry;
   /** Field paths drawn inside one disclosure (advanced geometry), with its label. */
@@ -34,6 +43,21 @@ export interface SettingsModuleFormProps {
 function reasonOf(reason: string | null): CopyEntry {
   const reasons: Readonly<Record<string, CopyEntry>> = t.reasons;
   return (reason === null ? undefined : reasons[reason]) ?? t.reasons.context_unknown;
+}
+
+/** The server's description of one field, as background beside its label (never its bounds or errors). */
+function FieldHelp({
+  description,
+  labelledBy,
+}: {
+  readonly description: ServerText<'message'> | null;
+  readonly labelledBy: string | undefined;
+}) {
+  return description === null ? null : (
+    <HelpTip label={t.aboutField.short} labelledBy={labelledBy}>
+      <ServerValue kind="message" value={description} />
+    </HelpTip>
+  );
 }
 
 function PartInput({
@@ -75,7 +99,7 @@ function PartInput({
             ? 'decimal'
             : undefined
         }
-        className="tp-settings__input"
+        className="tp-settings__input tp-field-control"
         autoComplete="off"
         spellCheck={false}
         value={typeof part.raw === 'string' ? part.raw : ''}
@@ -113,20 +137,18 @@ export function SettingsField({
   const labelId = `${own}-label`;
   const errorId = field.invalid === null ? null : `${own}-error`;
   const label = field.label === null ? null : <ServerValue kind="name" value={field.label} />;
-  const help = (
-    <>
-      {field.description === null ? null : (
-        <span className="tp-settings__help">
-          <ServerValue kind="message" value={field.description} />
-        </span>
-      )}
-      {field.invalid === null ? null : (
-        <span id={errorId ?? undefined} className="tp-settings__invalid">
-          {t.invalid[field.invalid.reason].short}
-        </span>
-      )}
-    </>
+  const tip = (
+    <FieldHelp
+      description={field.description}
+      labelledBy={field.label === null ? undefined : labelId}
+    />
   );
+  const help =
+    field.invalid === null ? null : (
+      <span id={errorId ?? undefined} className="tp-settings__invalid">
+        {t.invalid[field.invalid.reason].short}
+      </span>
+    );
   if (field.type === 'string-list') {
     const edit = (key: string, value: string | boolean) => {
       if (scope === null) return;
@@ -135,10 +157,13 @@ export function SettingsField({
       onEdit(scope, key, value);
     };
     return (
-      <fieldset className="tp-settings__field" data-field={field.path}>
-        <legend id={labelId}>{label}</legend>
+      <fieldset className="tp-settings__field" data-field={field.path} aria-labelledby={labelId}>
+        <legend>
+          <span id={labelId}>{label}</span>
+          {tip}
+        </legend>
         {field.listRows.map((row, index) => (
-          <div key={row.key} className="tp-settings__list-row">
+          <div key={row.key} className="tp-settings__list-row tp-control-row">
             <label htmlFor={`${own}-${row.key}`}>
               <span id={`${own}-${row.key}-label`}>{lists.entry(index)}</span>
             </label>
@@ -146,7 +171,7 @@ export function SettingsField({
               id={`${own}-${row.key}`}
               type="text"
               inputMode="text"
-              className="tp-settings__input"
+              className="tp-settings__input tp-field-control"
               value={row.raw}
               disabled={scope === null}
               aria-labelledby={`${labelId} ${own}-${row.key}-label`}
@@ -195,9 +220,6 @@ export function SettingsField({
             {lists.listInvalid.short}
           </span>
         )}
-        {field.description === null ? null : (
-          <ServerValue kind="message" value={field.description} />
-        )}
       </fieldset>
     );
   }
@@ -206,19 +228,22 @@ export function SettingsField({
     const on = part?.raw === true;
     return (
       <div className="tp-settings__field tp-settings__field--check" data-field={field.path}>
-        <label className="tp-settings__check">
-          <input
-            type="checkbox"
-            checked={on}
-            disabled={scope === null}
-            data-focus-key={`${scope ?? 'none'}:${field.path}`}
-            onChange={(event) => {
-              if (scope !== null && part !== undefined)
-                onEdit(scope, part.key, event.currentTarget.checked);
-            }}
-          />
-          <span id={labelId}>{label}</span>
-        </label>
+        <span className="tp-settings__label-row">
+          <label className="tp-settings__check">
+            <input
+              type="checkbox"
+              checked={on}
+              disabled={scope === null}
+              data-focus-key={`${scope ?? 'none'}:${field.path}`}
+              onChange={(event) => {
+                if (scope !== null && part !== undefined)
+                  onEdit(scope, part.key, event.currentTarget.checked);
+              }}
+            />
+            <span id={labelId}>{label}</span>
+          </label>
+          {tip}
+        </span>
         {on && note !== null ? (
           <span className="tp-settings__note" data-note={field.path}>
             <span>{note.short}</span>
@@ -233,10 +258,14 @@ export function SettingsField({
     const part = field.parts[0];
     return (
       <div className="tp-settings__field" data-field={field.path}>
-        <span id={labelId} className="tp-settings__label">
-          {label}
+        <span className="tp-settings__label-row">
+          <span id={labelId} className="tp-settings__label">
+            {label}
+          </span>
+          {tip}
         </span>
         <select
+          className="tp-field-control"
           value={typeof part?.raw === 'string' ? part.raw : ''}
           disabled={scope === null}
           aria-labelledby={labelId}
@@ -265,8 +294,11 @@ export function SettingsField({
   if (field.type === null) {
     return (
       <div className="tp-settings__field" data-field={field.path}>
-        <span id={labelId} className="tp-settings__label">
-          {label}
+        <span className="tp-settings__label-row">
+          <span id={labelId} className="tp-settings__label">
+            {label}
+          </span>
+          {tip}
         </span>
         <span className="tp-settings__help">{t.unknownType.short}</span>
       </div>
@@ -283,15 +315,18 @@ export function SettingsField({
       className={`tp-settings__field${pair ? ' tp-settings__field--pair' : ''}`}
       data-field={field.path}
     >
-      <span className="tp-settings__label">
-        <span id={labelId}>{label}</span>
-        {field.unit === null ? null : (
-          <span className="tp-settings__unit">
-            <ServerValue kind="id" value={field.unit} />
-          </span>
-        )}
+      <span className="tp-settings__label-row">
+        <span className="tp-settings__label">
+          <span id={labelId}>{label}</span>
+          {field.unit === null ? null : (
+            <span className="tp-settings__unit">
+              <ServerValue kind="id" value={field.unit} />
+            </span>
+          )}
+        </span>
+        {tip}
       </span>
-      <span className="tp-settings__parts">
+      <span className="tp-settings__parts tp-control-row">
         {field.parts.map((part, index) => (
           <PartInput
             key={part.key}
@@ -326,6 +361,9 @@ export function SettingsField({
 export function SettingsModuleForm({
   vm,
   legend,
+  labelledBy,
+  description,
+  applyNotice,
   intro,
   advanced,
   notes,
@@ -347,29 +385,51 @@ export function SettingsModuleForm({
       onEdit={onEdit}
     />
   );
+  const moduleDescription =
+    description === null
+      ? null
+      : description === undefined
+        ? vm.description === null
+          ? null
+          : { text: <ServerValue kind="message" value={vm.description} /> }
+        : { text: description.short };
+  // The page's own line about the module, then the server's description of it: background, not state.
+  const aboutModule =
+    intro === undefined && moduleDescription === null ? null : (
+      <HelpTip
+        label={legend?.short ?? t.aboutModule.short}
+        labelledBy={
+          labelledBy ?? (legend === undefined && vm.title !== null ? `${own}-subject` : undefined)
+        }
+      >
+        {intro === undefined ? null : <p>{intro.short}</p>}
+        {intro?.why === undefined ? null : <p>{intro.why}</p>}
+        {moduleDescription === null ? null : <p>{moduleDescription.text}</p>}
+      </HelpTip>
+    );
   const main = vm.fields.filter((field) => !inAdvanced(field.path));
   const extra = vm.fields.filter((field) => inAdvanced(field.path));
   return (
-    <fieldset className="tp-settings tp-tile" data-module={vm.id}>
-      <legend id={`${own}-legend`} tabIndex={-1}>
-        {legend === undefined ? (
-          vm.title === null ? null : (
-            <ServerValue kind="name" value={vm.title} />
-          )
-        ) : (
-          legend.short
-        )}
-      </legend>
-      {intro === undefined ? null : (
-        <div className="tp-settings__intro">
-          <span>{intro.short}</span>
-          {intro.why === undefined ? null : <Why why={intro.why} />}
-        </div>
-      )}
-      {vm.description === null ? null : (
-        <p className="tp-settings__help">
-          <ServerValue kind="message" value={vm.description} />
-        </p>
+    <fieldset
+      className="tp-settings tp-tile"
+      data-module={vm.id}
+      aria-labelledby={labelledBy ?? `${own}-subject`}
+    >
+      {labelledBy === undefined ? (
+        <legend id={`${own}-legend`} className="tp-tile__title" tabIndex={-1}>
+          <span id={`${own}-subject`}>
+            {legend === undefined ? (
+              vm.title === null ? null : (
+                <ServerValue kind="name" value={vm.title} />
+              )
+            ) : (
+              legend.short
+            )}
+          </span>
+          {aboutModule}
+        </legend>
+      ) : aboutModule === null ? null : (
+        <div className="tp-settings__aside">{aboutModule}</div>
       )}
       {vm.readOnly === null ? null : (
         <div className="tp-settings__read-only" data-read-only={vm.readOnly}>
@@ -385,15 +445,27 @@ export function SettingsModuleForm({
           <div className="tp-settings__fields">{extra.map(draw)}</div>
         </Disclosure>
       )}
-      {vm.applyNotice === null ? null : (
+      {applyNotice === null || (applyNotice === undefined && vm.applyNotice === null) ? null : (
         <p className="tp-settings__help">
-          <ServerValue kind="message" value={vm.applyNotice} />
+          {applyNotice === undefined ? (
+            vm.applyNotice === null ? null : (
+              <ServerValue kind="message" value={vm.applyNotice} />
+            )
+          ) : (
+            applyNotice.short
+          )}
         </p>
       )}
       {vm.readOnly === null ? (
         <div className="tp-settings__actions">
-          {/* F6C-03: one Save element whatever its state, so a focused Save keeps focus. */}
-          <span className="tp-settings__action">
+          <ActionRow
+            reason={
+              save.enabled && command !== null ? null : (
+                <Reason id={`${own}-reason`} entry={reasonOf(save.reason)} />
+              )
+            }
+          >
+            {/* F6C-03: one Save element whatever its state, so a focused Save keeps focus. */}
             <Button
               tier="secondary"
               label={t.save.short}
@@ -406,33 +478,28 @@ export function SettingsModuleForm({
                 if (save.enabled && command !== null) onSave(command);
               }}
             />
-            {save.enabled && command !== null ? null : (
-              <span id={`${own}-reason`} className="tp-reason">
-                {reasonOf(save.reason).short}
-              </span>
-            )}
-          </span>
-          {vm.dirty && vm.scope !== null ? (
-            <Button
-              tier="quiet"
-              label={t.discard.short}
-              focusKey={`${vm.id}:discard`}
-              onClick={() => {
-                if (vm.scope !== null) onDiscard(vm.scope);
-              }}
-            />
-          ) : null}
-          {vm.reconcile !== null && vm.scope !== null ? (
-            <Button
-              tier="secondary"
-              label={t.reconcile.short}
-              focusKey={`${vm.id}:reconcile`}
-              onClick={() => {
-                if (vm.scope !== null && vm.reconcile !== null)
-                  onEdit(vm.scope, vm.reconcile.key, vm.reconcile.revision);
-              }}
-            />
-          ) : null}
+            {vm.dirty && vm.scope !== null ? (
+              <Button
+                tier="quiet"
+                label={t.discard.short}
+                focusKey={`${vm.id}:discard`}
+                onClick={() => {
+                  if (vm.scope !== null) onDiscard(vm.scope);
+                }}
+              />
+            ) : null}
+            {vm.reconcile !== null && vm.scope !== null ? (
+              <Button
+                tier="secondary"
+                label={t.reconcile.short}
+                focusKey={`${vm.id}:reconcile`}
+                onClick={() => {
+                  if (vm.scope !== null && vm.reconcile !== null)
+                    onEdit(vm.scope, vm.reconcile.key, vm.reconcile.revision);
+                }}
+              />
+            ) : null}
+          </ActionRow>
         </div>
       ) : null}
       {vm.outcome === null ? null : <SaveOutcome outcome={vm.outcome} onDismiss={onDismiss} />}

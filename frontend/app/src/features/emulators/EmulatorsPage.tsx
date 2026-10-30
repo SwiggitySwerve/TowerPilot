@@ -13,14 +13,18 @@ import {
 import { selectOutcomes } from '../../store/selectors/outcomes.ts';
 import type { CommandVM } from '../../store/viewModels.ts';
 import { Button } from '../../ui/Button.tsx';
+import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
 import { Chip } from '../../ui/Chip.tsx';
+import { CopyLine } from '../../ui/CopyLine.tsx';
+import { HelpTip } from '../../ui/HelpTip.tsx';
 import { ConfirmDialog } from '../../ui/ConfirmDialog.tsx';
+import { Fact, Facts } from '../../ui/Facts.tsx';
 import { Notice } from '../../ui/Notice.tsx';
 import { RegionBoundary } from '../../ui/RegionBoundary.tsx';
 import { Region, RegionBody, RegionEnd } from '../../ui/Region.tsx';
 import { pageHref } from '../../ui/routes.ts';
 import { ServerValue } from '../../ui/ServerValue.tsx';
-import { Why } from '../../ui/Why.tsx';
+import { Tile, Tiles } from '../../ui/Tile.tsx';
 import {
   FaultPoint,
   useDashboard,
@@ -49,48 +53,41 @@ function reasonOf(reason: string | null): CopyEntry {
   return (reason === null ? undefined : reasons[reason]) ?? t.reasons.context_unknown;
 }
 
-function Line({ entry }: { readonly entry: CopyEntry }) {
-  return (
-    <div className="tp-emulators__line">
-      <span>{entry.short}</span>
-      {entry.why === undefined ? null : <Why why={entry.why} />}
-    </div>
-  );
-}
-
 /** One action button, the same element whatever its state; disabled with its visible reason. */
 function Action({
   vm,
   label,
   focusKey,
   onClick,
+  beside,
   tier = 'secondary',
 }: {
   readonly vm: CommandVM<unknown>;
   readonly label: CopyEntry;
   readonly focusKey: string;
   readonly onClick: () => void;
+  readonly beside?: CopyNode;
   readonly tier?: 'secondary' | 'quiet';
 }) {
   const own = useId();
   return (
-    <span className="tp-emulators__action">
-      <Button
-        tier={tier}
-        label={label.short}
-        focusKey={focusKey}
-        busy={vm.sending}
-        {...(vm.enabled ? {} : { disabled: true as const, reasonId: `${own}-reason` })}
-        onClick={() => {
-          if (vm.enabled) onClick();
-        }}
-      />
-      {vm.enabled ? null : (
-        <span id={`${own}-reason`} className="tp-reason">
-          {reasonOf(vm.reason).short}
-        </span>
-      )}
-    </span>
+    <div className="tp-emulators__action">
+      <ActionRow
+        reason={vm.enabled ? null : <Reason id={`${own}-reason`} entry={reasonOf(vm.reason)} />}
+      >
+        <Button
+          tier={tier}
+          label={label.short}
+          focusKey={focusKey}
+          busy={vm.sending}
+          {...(vm.enabled ? {} : { disabled: true as const, reasonId: `${own}-reason` })}
+          onClick={() => {
+            if (vm.enabled) onClick();
+          }}
+        />
+        {beside}
+      </ActionRow>
+    </div>
   );
 }
 
@@ -285,36 +282,52 @@ function Resolution({ vm }: { readonly vm: ResolutionVM }) {
   const r = t.resolution;
   return (
     <div className="tp-emulators__resolution" data-resolution={vm.kind}>
-      <ul className="tp-emulators__facts">
+      <Facts className="tp-emulators__facts">
         {vm.kind === 'no_result' ? (
           <>
-            <li>{(vm.answered ? r.unreadable : r.noAnswer).short}</li>
-            {vm.status === null ? null : <li>{r.status(vm.status)}</li>}
+            <Fact label={r.result.short} value={(vm.answered ? r.unreadable : r.noAnswer).short} />
+            {vm.status === null ? null : (
+              <Fact label={r.response.short} value={r.status(vm.status)} />
+            )}
           </>
         ) : vm.kind === 'measured' ? (
           <>
-            <li data-size="true">{r.size(vm.width, vm.height)}</li>
-            <li>{(vm.portrait ? r.portrait : r.landscape).short}</li>
-            {vm.portrait ? <li>{(vm.reference ? r.reference : r.notReference).short}</li> : null}
+            <Fact
+              label={r.dimensions.short}
+              value={<span data-size="true">{r.size(vm.width, vm.height)}</span>}
+            />
+            <Fact
+              label={r.orientation.short}
+              value={(vm.portrait ? r.portrait : r.landscape).short}
+            />
+            {vm.portrait ? (
+              <Fact
+                label={r.layout.short}
+                value={(vm.reference ? r.reference : r.notReference).short}
+              />
+            ) : null}
             {vm.note === null ? null : (
-              <li>
-                <ServerValue kind="message" value={vm.note} />
-              </li>
+              <Fact
+                label={r.noteLabel.short}
+                value={<ServerValue kind="message" value={vm.note} />}
+              />
             )}
           </>
         ) : (
           <>
-            <li>{r.failed.short}</li>
+            <Fact label={r.result.short} value={r.failed.short} />
             {vm.error === null ? null : (
-              <li>
-                <ServerValue kind="message" value={vm.error} />
-              </li>
+              <Fact label={r.error.short} value={<ServerValue kind="message" value={vm.error} />} />
             )}
           </>
         )}
-        {vm.checkedAgeSec === null ? null : <li>{r.checkedAgo(vm.checkedAgeSec)}</li>}
-        {vm.kind === 'no_result' || vm.savedAt === null ? null : <li>{r.savedAt(vm.savedAt)}</li>}
-      </ul>
+        {vm.checkedAgeSec === null ? null : (
+          <Fact label={r.checked.short} value={r.checkedAgo(vm.checkedAgeSec)} />
+        )}
+        {vm.kind === 'no_result' || vm.savedAt === null ? null : (
+          <Fact label={r.saved.short} value={r.savedAt(vm.savedAt)} />
+        )}
+      </Facts>
     </div>
   );
 }
@@ -332,134 +345,190 @@ function TargetSection() {
         {vm.connectionAgeSec === null ? null : <span>{t.target.liveAge(vm.connectionAgeSec)}</span>}
       </RegionEnd>
       <RegionBody>
-        <Line entry={t.target.scope} />
+        <NotSent />
         <PageOwnerNotice />
-        <dl className="tp-emulators__facts-list">
-          <div>
-            <dt>{t.target.instance.short}</dt>
-            <dd>{vm.instance === null ? null : <ServerValue kind="id" value={vm.instance} />}</dd>
-          </div>
-          <div>
-            <dt>{t.target.account.short}</dt>
-            <dd>
-              {vm.account === null ? (
-                t.target.noAccount.short
-              ) : (
-                <ServerValue kind="id" value={vm.account} />
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>{t.target.address.short}</dt>
-            <dd data-configured-serial="true">
-              {vm.configuredSerial === null ? (
-                t.target.notSet.short
-              ) : (
-                <>
-                  <ServerValue kind="id" value={vm.configuredSerial} />
-                  {vm.configuredName === null ? null : (
-                    <ServerValue kind="name" value={vm.configuredName} />
+        <Tiles min="wide">
+          <Tile titleId="emulators-connection-title" title={t.target.connection.short}>
+            <Facts className="tp-emulators__facts-list">
+              <div className="tp-facts__item">
+                <dt>{t.target.instance.short}</dt>
+                <dd>
+                  {vm.instance === null ? null : <ServerValue kind="id" value={vm.instance} />}
+                </dd>
+              </div>
+              <div className="tp-facts__item">
+                <dt>{t.target.account.short}</dt>
+                <dd>
+                  {vm.account === null ? (
+                    t.target.noAccount.short
+                  ) : (
+                    <ServerValue kind="id" value={vm.account} />
                   )}
-                  <span className="tp-emulators__muted">
-                    {
-                      (vm.portOpen === true
-                        ? t.target.port.open
-                        : vm.portOpen === false
-                          ? t.target.port.closed
-                          : t.target.port.unknown
-                      ).short
-                    }
-                  </span>
-                </>
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>{t.target.live.short}</dt>
-            <dd data-live={vm.connection.line}>
-              {vm.connection.word === null ? null : <Chip state={vm.connection.word} />}
-              <span>{line?.short}</span>
-              <Why why={t.target.liveNote.why ?? t.target.liveNote.short} />
-            </dd>
-          </div>
-        </dl>
-        {vm.unconfigured ? (
-          <div data-unconfigured="true">
-            <Line entry={t.target.unconfigured} />
-          </div>
-        ) : null}
-        {vm.boot === null ? null : (
-          <div className="tp-emulators__line" data-boot="true">
-            <span>{t.target.boot.short}</span>
-            {vm.boot.ageSec === null ? null : <span>{t.target.liveAge(vm.boot.ageSec)}</span>}
-            {t.target.boot.why === undefined ? null : <Why why={t.target.boot.why} />}
-          </div>
-        )}
-        <div className="tp-emulators__row">
-          <Action
-            vm={vm.reconnect}
-            label={t.target.reconnect}
-            focusKey="emulators:reconnect"
-            onClick={() => {
-              if (vm.reconnect.command !== null) void commands.reconnect(vm.reconnect.command);
-            }}
-          />
-          <a href={pageHref('dashboard')}>{t.target.dashboard.short}</a>
-        </div>
-        {vm.reconnectOutcome === null ? null : <Outcome outcome={vm.reconnectOutcome} />}
-        {vm.adoptOutcome === null ? null : <Outcome outcome={vm.adoptOutcome} />}
-        <section className="tp-emulators__sub" aria-labelledby="emulators-resolution-title">
-          <h3 id="emulators-resolution-title">{t.resolution.title.short}</h3>
-          <div className="tp-emulators__row">
-            <Action
-              vm={{
-                shown: true,
-                enabled: serial !== null && !checking,
-                reason: serial === null ? 'no_address' : checking ? 'sending' : null,
-                sending: checking,
-                command: null,
-              }}
-              label={t.resolution.check}
-              focusKey="emulators:resolution"
-              onClick={() => {
-                if (serial === null) return;
-                setChecking(true);
-                void commands.checkResolution(serial).finally(() => {
-                  setChecking(false);
-                });
-              }}
-            />
-          </div>
-          {checking ? <p>{t.resolution.checking.short}</p> : null}
-          {vm.resolution.check === null ? null : <Resolution vm={vm.resolution.check} />}
-          {(vm.resolution.check === null || vm.resolution.check.kind === 'no_result') &&
-          vm.resolution.saved !== null ? (
-            <Resolution vm={vm.resolution.saved} />
-          ) : null}
-          <Line entry={t.resolution.note} />
-        </section>
+                </dd>
+              </div>
+              <div className="tp-facts__item">
+                <dt>{t.target.address.short}</dt>
+                <dd data-configured-serial="true">
+                  {vm.configuredSerial === null ? (
+                    t.target.notSet.short
+                  ) : (
+                    <>
+                      <ServerValue kind="id" value={vm.configuredSerial} />
+                      {vm.configuredName === null ? null : (
+                        <ServerValue kind="name" value={vm.configuredName} />
+                      )}
+                      <span className="tp-emulators__muted">
+                        {
+                          (vm.portOpen === true
+                            ? t.target.port.open
+                            : vm.portOpen === false
+                              ? t.target.port.closed
+                              : t.target.port.unknown
+                          ).short
+                        }
+                      </span>
+                    </>
+                  )}
+                </dd>
+              </div>
+              <div className="tp-facts__item">
+                <dt>{t.target.live.short}</dt>
+                <dd data-live={vm.connection.line}>
+                  {vm.connection.word === null ? null : <Chip state={vm.connection.word} />}
+                  <span>{line?.short}</span>
+                  <HelpTip label={t.target.live.short}>
+                    <p>{t.target.liveNote.short}</p>
+                    {t.target.liveNote.why === undefined ? null : <p>{t.target.liveNote.why}</p>}
+                  </HelpTip>
+                </dd>
+              </div>
+            </Facts>
+            {vm.unconfigured ? (
+              <div className="tp-emulators__line" data-unconfigured="true">
+                <p>{t.target.unconfigured.short}</p>
+                {t.target.unconfigured.why === undefined ? null : (
+                  <HelpTip label={t.target.unconfigured.short}>
+                    <p>{t.target.unconfigured.why}</p>
+                  </HelpTip>
+                )}
+              </div>
+            ) : null}
+            {vm.boot === null ? null : (
+              <div className="tp-emulators__line" data-boot="true">
+                <span>{t.target.boot.short}</span>
+                {vm.boot.ageSec === null ? null : <span>{t.target.liveAge(vm.boot.ageSec)}</span>}
+                {t.target.boot.why === undefined ? null : (
+                  <HelpTip label={t.target.boot.short}>
+                    <p>{t.target.boot.why}</p>
+                  </HelpTip>
+                )}
+              </div>
+            )}
+            <div className="tp-emulators__row">
+              <Action
+                vm={vm.reconnect}
+                label={t.target.reconnect}
+                focusKey="emulators:reconnect"
+                onClick={() => {
+                  if (vm.reconnect.command !== null) void commands.reconnect(vm.reconnect.command);
+                }}
+                beside={
+                  <>
+                    <a className="tp-button" data-tier="quiet" href={pageHref('dashboard')}>
+                      {t.target.dashboard.short}
+                    </a>
+                    <HelpTip label={t.target.dashboard.short}>
+                      <p>{t.target.dashboardActions.short}</p>
+                    </HelpTip>
+                  </>
+                }
+              />
+            </div>
+            {vm.reconnectOutcome === null ? null : <Outcome outcome={vm.reconnectOutcome} />}
+            {vm.adoptOutcome === null ? null : <Outcome outcome={vm.adoptOutcome} />}
+          </Tile>
+          <Tile
+            className="tp-emulators__sub"
+            titleId="emulators-resolution-title"
+            title={t.resolution.title.short}
+            end={
+              <HelpTip label={t.resolution.title.short}>
+                <p>{t.resolution.note.short}</p>
+                {t.resolution.note.why === undefined ? null : <p>{t.resolution.note.why}</p>}
+              </HelpTip>
+            }
+          >
+            <ActionRow>
+              <Action
+                vm={{
+                  shown: true,
+                  enabled: serial !== null && !checking,
+                  reason: serial === null ? 'no_address' : checking ? 'sending' : null,
+                  sending: checking,
+                  command: null,
+                }}
+                label={t.resolution.check}
+                focusKey="emulators:resolution"
+                onClick={() => {
+                  if (serial === null) return;
+                  setChecking(true);
+                  void commands.checkResolution(serial).finally(() => {
+                    setChecking(false);
+                  });
+                }}
+              />
+            </ActionRow>
+            {checking ? <p>{t.resolution.checking.short}</p> : null}
+            {vm.resolution.check === null ? null : <Resolution vm={vm.resolution.check} />}
+            {(vm.resolution.check === null || vm.resolution.check.kind === 'no_result') &&
+            vm.resolution.saved !== null ? (
+              <Resolution vm={vm.resolution.saved} />
+            ) : null}
+          </Tile>
+        </Tiles>
       </RegionBody>
     </>
   );
 }
 
+type SuggestionVM = NonNullable<EmulatorsPageVM['suggestion']>;
+
+/** The "Suggested" label with the reason it is suggested, as help beside it. */
+function SuggestedLabel() {
+  const d = t.detected;
+  return (
+    <span className="tp-emulators__suggested">
+      <span>{d.suggested.short}</span>
+      {d.suggested.why === undefined ? null : (
+        <HelpTip label={d.suggested.short}>
+          <p>{d.suggested.why}</p>
+        </HelpTip>
+      )}
+    </span>
+  );
+}
+
 function Row({
   row,
+  suggestion,
   onUse,
   onLaunch,
   onPrepare,
 }: {
   readonly row: EmulatorRowVM;
+  /** The suggestion that names this row's address: the row carries it, no separate block repeats it. */
+  readonly suggestion: SuggestionVM | null;
   readonly onUse: (command: EmulatorWriteCommand, row: EmulatorRowVM) => void;
   readonly onLaunch: (command: EmulatorWriteCommand) => void;
   readonly onPrepare: (command: EmulatorWriteCommand) => void;
 }) {
   const d = t.detected;
   return (
-    <tr data-row={row.key}>
+    <tr data-row={row.key} {...(suggestion === null ? {} : { 'data-suggestion': 'true' })}>
       <td>
         <CellLabel entry={d.columns.emulator} />
         {row.emulator === null ? null : <ServerValue kind="name" value={row.emulator} />}
+        {suggestion === null ? null : <SuggestedLabel />}
       </td>
       <td>
         <CellLabel entry={d.columns.instance} />
@@ -467,7 +536,7 @@ function Row({
       </td>
       <td>
         <CellLabel entry={d.columns.state} />
-        <span className="tp-emulators__cell">
+        <div className="tp-emulators__cell">
           <span>
             {
               (row.running === true
@@ -487,17 +556,34 @@ function Row({
             </span>
           ) : null}
           {row.error === null ? null : <ServerValue kind="message" value={row.error} />}
-        </span>
+        </div>
       </td>
       <td>
         <CellLabel entry={d.columns.address} />
         {row.serial === null ? null : <ServerValue kind="id" value={row.serial} />}
+        {suggestion === null || suggestion.alsoSeen.length === 0 ? null : (
+          <span className="tp-emulators__muted">
+            {d.alsoSeen.short}
+            {suggestion.alsoSeen.map((serial) => (
+              <ServerValue key={serial} kind="id" value={serial} />
+            ))}
+          </span>
+        )}
       </td>
       <td>
         <CellLabel entry={d.columns.actions} />
-        <span className="tp-emulators__cell">
+        <div className="tp-emulators__cell tp-emulators__commands">
           {row.inUse ? <span data-in-use="true">{d.inUse.short}</span> : null}
-          {row.use === null ? null : (
+          {suggestion !== null ? (
+            <Action
+              vm={suggestion.use}
+              label={d.use}
+              focusKey="emulators:use:suggestion"
+              onClick={() => {
+                if (suggestion.use.command !== null) onUse(suggestion.use.command, row);
+              }}
+            />
+          ) : row.use === null ? null : (
             <Action
               vm={row.use}
               label={d.use}
@@ -540,7 +626,7 @@ function Row({
           )}
           {row.launchOutcome === null ? null : <Outcome outcome={row.launchOutcome} />}
           {row.prepareOutcome === null ? null : <Outcome outcome={row.prepareOutcome} />}
-        </span>
+        </div>
       </td>
     </tr>
   );
@@ -570,13 +656,17 @@ function DetectedSection() {
   // (a runner listed meanwhile, another request in flight): nothing is sent from it.
   // Adjusting state while rendering (not in an effect) so the stale dialog never paints once.
   if (vm.writeGate !== null && asking !== null) setAsking(null);
+  // The suggestion names a detected address: that row carries it. Only one no row names stands alone.
+  const suggested = vm.suggestion;
+  const rowSuggestion = (row: EmulatorRowVM) => (row.key === suggested?.rowKey ? suggested : null);
+  const suggestionOnly = suggested?.rowKey == null ? suggested : null;
   return (
     <>
       <RegionEnd>
         {vm.scan.ageSec === null ? null : <span>{d.scanAge(vm.scan.ageSec)}</span>}
       </RegionEnd>
       <RegionBody>
-        <div className="tp-emulators__row">
+        <ActionRow>
           <Button
             tier="secondary"
             label={d.rescan.short}
@@ -585,7 +675,7 @@ function DetectedSection() {
               commands.rescanEmulators();
             }}
           />
-        </div>
+        </ActionRow>
         {vm.scan.read === 'not_read' ? <p>{d.reading.short}</p> : null}
         {vm.scan.read === 'unavailable' ? <p>{d.unavailable.short}</p> : null}
         {vm.scan.error === null ? null : (
@@ -607,33 +697,48 @@ function DetectedSection() {
             }
           </p>
         )}
-        {vm.suggestion === null ? null : (
+        {suggestionOnly === null ? null : (
           <div className="tp-emulators__suggestion" data-suggestion="true">
-            <span>{d.suggestion.short}</span>
-            {vm.suggestion.emulator === null ? null : (
-              <ServerValue kind="name" value={vm.suggestion.emulator} />
-            )}
-            {vm.suggestion.name === null ? null : (
-              <ServerValue kind="name" value={vm.suggestion.name} />
-            )}
-            {vm.suggestion.serial === null ? null : (
-              <ServerValue kind="id" value={vm.suggestion.serial} />
-            )}
-            {vm.suggestion.alsoSeen.length === 0 ? null : (
-              <span>
-                <span>{d.alsoSeen.short}</span>
-                {vm.suggestion.alsoSeen.map((serial) => (
-                  <ServerValue key={serial} kind="id" value={serial} />
-                ))}
-              </span>
-            )}
+            <SuggestedLabel />
+            <Facts layout="inline">
+              {suggestionOnly.emulator === null ? null : (
+                <Fact
+                  label={d.columns.emulator.short}
+                  value={<ServerValue kind="name" value={suggestionOnly.emulator} />}
+                />
+              )}
+              {suggestionOnly.name === null ? null : (
+                <Fact
+                  label={d.columns.instance.short}
+                  value={<ServerValue kind="name" value={suggestionOnly.name} />}
+                />
+              )}
+              {suggestionOnly.serial === null ? null : (
+                <Fact
+                  label={d.columns.address.short}
+                  value={<ServerValue kind="id" value={suggestionOnly.serial} />}
+                />
+              )}
+              {suggestionOnly.alsoSeen.length === 0 ? null : (
+                <Fact
+                  label={d.alsoSeen.short}
+                  value={
+                    <>
+                      {suggestionOnly.alsoSeen.map((serial) => (
+                        <ServerValue key={serial} kind="id" value={serial} />
+                      ))}
+                    </>
+                  }
+                />
+              )}
+            </Facts>
             <Action
-              vm={vm.suggestion.use}
+              vm={suggestionOnly.use}
               label={d.use}
               focusKey="emulators:use:suggestion"
               onClick={() => {
-                const command = vm.suggestion?.use.command;
-                if (command != null) askUse(command);
+                const command = suggestionOnly.use.command;
+                if (command !== null) askUse(command);
               }}
             />
           </div>
@@ -655,6 +760,7 @@ function DetectedSection() {
                 <Row
                   key={row.key}
                   row={row}
+                  suggestion={rowSuggestion(row)}
                   onUse={(command) => {
                     askUse(command);
                   }}
@@ -668,21 +774,32 @@ function DetectedSection() {
           </table>
         )}
         {vm.notProbed.length === 0 ? null : (
-          <ul className="tp-emulators__notes">
-            {vm.notProbed.map((entry, index) => (
-              <li key={String(index)}>
-                <span>{d.notProbed.short}</span>
-                {entry.emulator === null ? null : (
-                  <ServerValue kind="name" value={entry.emulator} />
-                )}
-                {entry.note === null ? null : <ServerValue kind="message" value={entry.note} />}
-              </li>
-            ))}
-          </ul>
+          <Tile titleId="emulators-not-probed-title" title={d.notProbed.short}>
+            <Facts>
+              {vm.notProbed.map((entry, index) => (
+                <Fact
+                  key={String(index)}
+                  label={
+                    entry.emulator === null ? (
+                      d.columns.emulator.short
+                    ) : (
+                      <ServerValue kind="name" value={entry.emulator} />
+                    )
+                  }
+                  value={
+                    entry.note === null ? null : <ServerValue kind="message" value={entry.note} />
+                  }
+                />
+              ))}
+            </Facts>
+          </Tile>
         )}
         {vm.configured.length === 0 ? null : (
-          <section className="tp-emulators__sub" aria-labelledby="emulators-configured-title">
-            <h3 id="emulators-configured-title">{d.configured.short}</h3>
+          <Tile
+            className="tp-emulators__sub"
+            titleId="emulators-configured-title"
+            title={d.configured.short}
+          >
             <ul className="tp-emulators__notes">
               {vm.configured.map((row, index) => (
                 <li key={String(index)} data-configured={row.instance ?? ''}>
@@ -705,7 +822,7 @@ function DetectedSection() {
                 </li>
               ))}
             </ul>
-          </section>
+          </Tile>
         )}
         <ConfirmDialog
           open={asking?.kind === 'use'}
@@ -770,9 +887,12 @@ function ToolsSection() {
     <>
       <RegionEnd>
         {tools.ageSec === null ? null : <span>{t.tools.readAge(tools.ageSec)}</span>}
+        <HelpTip label={t.tools.title.short}>
+          <p>{t.tools.identity.short}</p>
+          {t.tools.identity.why === undefined ? null : <p>{t.tools.identity.why}</p>}
+        </HelpTip>
       </RegionEnd>
       <RegionBody>
-        <Line entry={t.tools.intro} />
         <p
           className="tp-emulators__line"
           data-tools={
@@ -795,13 +915,18 @@ function ToolsSection() {
               ).short
             }
           </span>
-          {tools.stage === null ? null : (
-            <>
-              <span>{t.tools.stage.short}</span>
-              <ServerValue kind="id" value={tools.stage} />
-            </>
-          )}
         </p>
+        <Facts>
+          {tools.stage === null ? null : (
+            <Fact
+              label={t.tools.stage.short}
+              value={<ServerValue kind="id" value={tools.stage} />}
+            />
+          )}
+          {tools.path === null ? null : (
+            <Fact label={t.tools.path.short} value={<ServerValue kind="id" value={tools.path} />} />
+          )}
+        </Facts>
         {tools.message === null ? null : (
           <p role="status">
             <ServerValue kind="message" value={tools.message} />
@@ -813,12 +938,6 @@ function ToolsSection() {
             <span>{t.tools.percent(tools.percent)}</span>
           </p>
         ) : null}
-        {tools.path === null ? null : (
-          <p className="tp-emulators__line">
-            <span>{t.tools.path.short}</span>
-            <ServerValue kind="id" value={tools.path} />
-          </p>
-        )}
         {tools.installed ? null : (
           <>
             <label className="tp-emulators__check">
@@ -840,14 +959,16 @@ function ToolsSection() {
                 onClick={() => {
                   if (install.command !== null) void commands.emulatorWrite(install.command);
                 }}
-              />
-              <Button
-                tier="quiet"
-                label={t.tools.check.short}
-                focusKey="emulators:tools:check"
-                onClick={() => {
-                  commands.checkTools();
-                }}
+                beside={
+                  <Button
+                    tier="quiet"
+                    label={t.tools.check.short}
+                    focusKey="emulators:tools:check"
+                    onClick={() => {
+                      commands.checkTools();
+                    }}
+                  />
+                }
               />
             </div>
             {tools.inProgress ? <p>{t.tools.leaving.short}</p> : null}
@@ -869,12 +990,12 @@ function PreviewSection() {
         {vm.previewAgeSec === null ? null : <span>{t.preview.readAge(vm.previewAgeSec)}</span>}
       </RegionEnd>
       <RegionBody>
-        <div className="tp-emulators__row">
+        <ActionRow>
           <a href={pageHref('dashboard')}>{t.preview.dashboard.short}</a>
-        </div>
+        </ActionRow>
         {vm.previewState === 'ready' ? null : (
-          <div className="tp-emulators__row" data-preview-state={vm.previewState}>
-            <Line entry={t.preview.states[vm.previewState]} />
+          <div className="tp-emulators__row tp-control-row" data-preview-state={vm.previewState}>
+            <CopyLine entry={t.preview.states[vm.previewState]} />
             <Button
               tier="quiet"
               label={t.preview.check.short}
@@ -888,7 +1009,7 @@ function PreviewSection() {
         {vm.preview === null ? null : (
           <SettingsModuleForm
             vm={vm.preview}
-            legend={t.preview.title}
+            labelledBy="emulatorsPreview-title"
             intro={t.preview.intro}
             onEdit={commands.editDraft}
             onDiscard={commands.discardDraft}
@@ -944,7 +1065,6 @@ export function EmulatorsPage() {
       <main id="main" className="tp-main" tabIndex={-1}>
         <FaultPoint part="page" />
         <div className="tp-emulators">
-          <NotSent />
           <EmulatorSettings />
           <EmulatorsRegion id="emulatorsTarget" title={t.target.title}>
             <TargetSection />

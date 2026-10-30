@@ -10,7 +10,7 @@ import { e0Config, postBodies } from '../../../support/dataLayer.ts';
 import { dashboardBody } from '../../../support/dashboardFixture.ts';
 import { sample, sampleRecord, statusBody } from '../../../support/fixture.ts';
 import { answerOf, storeHarness, type StoreHarness } from '../../../support/storeHarness.ts';
-import { renderPage, renderRegion } from './harness.tsx';
+import { factValue, renderPage, renderRegion } from './harness.tsx';
 
 /**
  * Control / Game input as drawn (spec 3.6.3, INV-2; F-017, F-018, F-020,
@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 describe('Game input capability rows', () => {
-  it('F-017: the Permission pill reads Allowed, Off or Unknown from the config read', () => {
+  it('F-017: the Permission fact reads Allowed, Off or Unknown from the config read', () => {
     for (const [allowTaps, word] of [
       [true, 'Allowed'],
       [false, 'Off'],
@@ -46,7 +46,17 @@ describe('Game input capability rows', () => {
       const h = storeHarness({ config: e0Config(allowTaps) });
       h.read('status', statusBody(sample('status.off')));
       const { view } = renderRegion(h.state(), <InputSlot />);
-      expect(view.container.querySelector('.tp-pill')).toHaveTextContent(`Permission:${word}`);
+      expect(factValue(view.container, 'Permission')).toHaveTextContent(word);
+      expect(factValue(view.container, 'Observed')).toBeVisible();
+      if (allowTaps === true) {
+        const ids = turnOff()?.getAttribute('aria-describedby')?.split(/\s+/u) ?? [];
+        expect(ids).toHaveLength(2);
+        for (const id of ids) expect(document.getElementById(id)).toBeVisible();
+        expect(turnOff()).toHaveAccessibleDescription(
+          /Allowed Idle.*No automation is using game input/u,
+        );
+        expect(view.queryByText('Automation may tap this emulator')).toBeNull();
+      }
       expect(textOutsideCatalogue(view.container)).toEqual([]);
       view.unmount();
     }
@@ -87,9 +97,13 @@ describe('Game input capability rows', () => {
       expect(button, name).not.toBeNull();
       expect(button).toHaveAttribute('data-tier', 'halt');
       expect(button).not.toHaveAttribute('aria-disabled');
-      const described = document.getElementById(button?.getAttribute('aria-describedby') ?? '');
-      expect(described).not.toBeNull();
-      expect(described?.textContent).not.toBe('');
+      const descriptionIds = button?.getAttribute('aria-describedby')?.split(/\s+/u) ?? [];
+      expect(descriptionIds.length).toBeGreaterThan(0);
+      for (const id of descriptionIds) {
+        const described = document.getElementById(id);
+        expect(described).toBeVisible();
+        expect(described?.textContent).not.toBe('');
+      }
       expect(view.container.querySelector('.tp-chip')).toHaveAttribute('data-state', 'unknown');
       expect(textOutsideCatalogue(view.container)).toEqual([]);
       view.unmount();
@@ -149,8 +163,8 @@ describe('Game input capability rows', () => {
     h.read('config', e0Config(true));
     region.setState(h.state());
     expect(screen.queryByText('Automation input stopped')).toBeNull();
-    expect(region.view.container.querySelector('.tp-pill')).toHaveTextContent('Permission:Allowed');
-    expect(region.view.getByText('Observed:')).toBeVisible();
+    expect(factValue(region.view.container, 'Permission')).toHaveTextContent('Allowed');
+    expect(factValue(region.view.container, 'Observed')).toBeVisible();
     expect(turnOff()).not.toBeNull();
   });
 

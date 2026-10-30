@@ -130,7 +130,7 @@ describe('S-094 a fallback is drawn once and updated in place', () => {
 });
 
 describe('F-113 focus, selection and open disclosures survive later status', () => {
-  it('F-113: with focus on a control, a Why open and a run selected, five status deliveries keep all three while the facts update', async () => {
+  it('F-113: with focus on a control, a help tip open and a run selected, five status deliveries keep all three while the facts update', async () => {
     let name = 'status.collecting';
     const runs = dashboardBody('runs.ready') as Record<string, Record<string, unknown>>;
     const farm = runs['runs']?.['bp_farm'];
@@ -152,9 +152,10 @@ describe('F-113 focus, selection and open disclosures survive later status', () 
     expect(picker).toHaveValue('bp_quest');
     const input = document.querySelector<HTMLElement>('[data-slot="input"]');
     if (input === null) throw new Error('no input slot');
-    const why = input.querySelector('details');
-    if (why === null) throw new Error('no Why');
-    why.open = true;
+    const why = input.querySelector<HTMLElement>('.tp-help__trigger');
+    if (why === null) throw new Error('no help icon');
+    fireEvent.click(why);
+    expect(why).toHaveAttribute('aria-expanded', 'true');
     // Pause stays offered in both states (choice On), so its focus can be kept.
     const gem = document.querySelector<HTMLElement>('[data-slot="gem"]');
     if (gem === null) throw new Error('no gem slot');
@@ -170,11 +171,12 @@ describe('F-113 focus, selection and open disclosures survive later status', () 
     expect(
       page.fake.requests.filter((entry) => entry.path === '/api/status').length - before,
     ).toBeGreaterThanOrEqual(5);
-    // The facts moved on; the person's focus, open Why and selection did not.
+    // The facts moved on; the person's focus, open help tip and selection did not.
     expect(gemChip()).toBe('waiting');
     expect(pause).toHaveFocus();
     expect(why.isConnected).toBe(true);
-    expect(why.open).toBe(true);
+    expect(why).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('tooltip')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Run to start' })).toHaveValue('bp_quest');
   });
 });

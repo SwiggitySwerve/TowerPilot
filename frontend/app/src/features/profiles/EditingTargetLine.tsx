@@ -5,11 +5,12 @@ import {
   selectEditingTarget,
 } from '../../store/selectors/editingTarget.ts';
 import { TargetSourceError } from './TargetSourceError.tsx';
+import { Fact, Facts } from '../../ui/Facts.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
 import { useView } from '../dashboard/context.ts';
 
 /** Shared editor heading; target and permission come from the store's one projection. */
-export function EditingTargetLine() {
+export function EditingTargetLine({ inPicker = false }: { readonly inPicker?: boolean }) {
   const target = useView(selectEditingTarget);
   const error = useView(editingSourceError);
   const vm = editingTargetVM(target);
@@ -19,27 +20,29 @@ export function EditingTargetLine() {
       data-editing-target={target.name ?? ''}
       data-target-blocked={target.blocked ?? ''}
     >
-      <div className="tp-profiles__summary">
-        <span>{target.inactive ? t.editing.short : t.following.short}</span>
-        {vm.name === null ? (
-          <span>{t.none.short}</span>
-        ) : (
-          <ServerValue kind="name" value={vm.name} />
+      <Facts>
+        <Fact
+          label={target.inactive ? t.editing.short : t.following.short}
+          value={
+            <>
+              {vm.name === null ? t.none.short : <ServerValue kind="name" value={vm.name} />}
+              {target.inactive ? <span>{t.inactive.short}</span> : null}
+            </>
+          }
+        />
+        {inPicker || !target.inactive ? null : (
+          <Fact
+            label={t.active.short}
+            value={
+              vm.active === null ? t.none.short : <ServerValue kind="name" value={vm.active} />
+            }
+          />
         )}
-        {target.inactive ? <span>{t.inactive.short}</span> : null}
-      </div>
-      <div className="tp-profiles__summary">
-        <span>{t.active.short}</span>
-        {vm.active === null ? (
-          <span>{t.none.short}</span>
-        ) : (
-          <ServerValue kind="name" value={vm.active} />
-        )}
-      </div>
+      </Facts>
       {target.blocked === null ? null : (
         <div className="tp-reason">{t.blocked[target.blocked].short}</div>
       )}
-      <a href="#profiles">{t.change.short}</a>
+      {inPicker ? null : <a href="#profiles">{t.change.short}</a>}
       <TargetSourceError error={error} />
     </div>
   );

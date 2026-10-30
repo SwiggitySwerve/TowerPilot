@@ -1,63 +1,16 @@
 .tp-history {
+  display: grid;
+  gap: var(--tp-space-4);
   min-width: 0;
-}
-.tp-history__toolbar,
-.tp-history__toolbar nav,
-.tp-history__detail-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--tp-space-2);
 }
 .tp-history__toolbar label {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--tp-space-2);
-}
-.tp-history button,
-.tp-history select {
-  font: inherit;
-  color: var(--tp-color-text);
-  background: var(--tp-color-surface-strong);
-  border: 1px solid var(--tp-color-border-active);
-  border-radius: var(--tp-radius-control);
-  padding: var(--tp-space-2) var(--tp-space-3);
-  min-height: 2rem;
-  max-width: 100%;
-}
-.tp-history button {
-  cursor: pointer;
-}
-.tp-history button:disabled,
-.tp-history button[aria-disabled='true'] {
-  color: var(--tp-color-text-muted);
-  cursor: default;
-}
-.tp-history__columns {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
-  align-items: start;
-  gap: var(--tp-space-4);
+  gap: var(--tp-space-1);
 }
-.tp-history__panel {
-  min-width: 0;
-  padding: var(--tp-space-4);
-  background: var(--tp-color-surface);
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-card);
+.tp-history__toolbar nav > span {
+  align-self: center;
 }
-.tp-history h2 {
-  font-size: var(--tp-font-size-title);
-  margin-top: 0;
-  scroll-margin-block-start: var(--tp-space-4);
-}
-.tp-history h3 {
-  font-size: var(--tp-font-size-body);
-  margin-block: var(--tp-space-4) var(--tp-space-2);
-}
-.tp-history__note,
-.tp-history dt {
+.tp-history__note {
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-small);
 }
@@ -66,48 +19,78 @@
   border-inline-start: 2px solid var(--tp-color-warn);
   padding-inline-start: var(--tp-space-3);
 }
+.tp-history__table-scroll {
+  min-width: 0;
+  max-block-size: 65dvh;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--tp-color-text-muted) transparent;
+  /* Scroll shadows: a fade shows at an edge only while there is more list past it. */
+  background:
+    linear-gradient(var(--tp-color-surface, Canvas) 30%, transparent) top / 100% 1.5rem no-repeat
+      local,
+    linear-gradient(transparent, var(--tp-color-surface, Canvas) 70%) bottom / 100% 1.5rem no-repeat
+      local,
+    linear-gradient(to bottom, var(--tp-color-border), transparent) top / 100% 0.75rem no-repeat
+      scroll,
+    linear-gradient(to top, var(--tp-color-border), transparent) bottom / 100% 0.75rem no-repeat
+      scroll;
+}
+.tp-history__table-scroll[data-scrolls='true'] {
+  border-block-end: 2px solid var(--tp-color-border);
+}
 .tp-history__records {
   list-style: none;
+  margin: 0;
   padding: 0;
-  display: grid;
-  gap: var(--tp-space-2);
-  max-height: 70dvh;
-  overflow: auto;
+}
+.tp-history__records > li {
+  min-width: 0;
+  padding-block: var(--tp-space-3);
+  border-block-end: 1px solid var(--tp-color-border);
+}
+.tp-history__records > li:first-child {
+  padding-block-start: 0;
 }
 .tp-history .tp-history__record {
   width: 100%;
-  text-align: start;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: stretch;
+  justify-items: start;
   gap: var(--tp-space-1);
-  background: var(--tp-color-surface-inner);
-  overflow-wrap: anywhere;
+  text-align: start;
+  margin-block-end: var(--tp-space-2);
 }
-.tp-history .tp-history__record[aria-pressed='true'] {
-  border-color: var(--tp-color-focus);
-  background: var(--tp-color-surface-active);
+.tp-history__record-start {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-1) var(--tp-space-2);
+  font-weight: 400;
+}
+.tp-history__records .tp-facts {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
+}
+/* The record ID is shown whole: it wraps anywhere rather than being clipped. */
+.tp-history__record-id {
+  grid-column: 1 / -1;
+  min-width: 0;
+  font-family: var(--tp-font-mono);
+  overflow-wrap: anywhere;
 }
 .tp-history__record-name {
   font-weight: 600;
 }
-.tp-history__row-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tp-space-2);
-  font-size: var(--tp-font-size-small);
-}
-.tp-history__facts {
+.tp-history__evidence {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--tp-space-3);
+  gap: var(--tp-space-4);
 }
-.tp-history__facts > div,
 .tp-history__evidence,
 .tp-history__activity li {
   min-width: 0;
   overflow-wrap: anywhere;
-}
-.tp-history dd {
-  margin: 0;
 }
 .tp-history pre {
   max-width: 100%;
@@ -115,9 +98,6 @@
   overflow: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  padding: var(--tp-space-3);
-  background: var(--tp-color-surface-inner);
-  border-radius: var(--tp-radius-control);
   font: var(--tp-font-size-small) / 1.5 var(--tp-font-mono);
 }
 .tp-history pre .tp-server {
@@ -126,20 +106,18 @@
 .tp-history__activity {
   padding-inline-start: var(--tp-space-4);
 }
-/* A2-7 AC4: recorded action executions, one card per row, facts wrapping inside it. */
+/* Executions retain older-page navigation, with divider rows instead of cards. */
 .tp-history__executions {
   list-style: none;
   padding: 0;
   display: grid;
-  gap: var(--tp-space-2);
+  gap: var(--tp-space-3);
 }
 .tp-history__execution {
   min-width: 0;
   overflow-wrap: anywhere;
-  padding: var(--tp-space-3);
-  background: var(--tp-color-surface-inner);
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-control);
+  padding-block: var(--tp-space-3);
+  border-block-start: 1px solid var(--tp-color-border);
 }
 .tp-history__execution-head {
   display: flex;
@@ -151,12 +129,7 @@
 .tp-history__code {
   font-family: var(--tp-font-mono);
 }
-.tp-history__block {
-  display: block;
-}
-.tp-history .tp-history__older {
-  margin-block-start: var(--tp-space-3);
-}
+.tp-history__block,
 .tp-history__activity time {
   display: block;
 }
@@ -168,20 +141,30 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-@media (max-width: 760px) {
-  .tp-history__columns,
-  .tp-history__facts {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .tp-history__panel {
-    padding: var(--tp-space-3);
+
+/* Until a record is selected the list has the page; the detail pane appears beside it only when it has content. */
+@media (min-width: 1100px) {
+  .tp-history[data-detail='open'] {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+    align-items: start;
   }
 }
-/* The touch-target rule shares the breakpoint of src/ui/ui.css; the column collapse above keeps its own. */
-@media (pointer: coarse), (max-width: 600px) {
-  .tp-history button,
-  .tp-history select,
-  .tp-history summary {
-    min-height: var(--tp-control-height-touch);
+/* Full-width list: the name block and the five comparison facts sit in the same columns on every row. */
+@media (min-width: 760px) {
+  .tp-history[data-detail='none'] .tp-history__records > li {
+    display: grid;
+    grid-template-columns: minmax(14rem, 1.1fr) minmax(0, 2.4fr);
+    column-gap: var(--tp-space-4);
+    align-items: start;
+  }
+  .tp-history[data-detail='none'] .tp-history__records .tp-history__record {
+    margin-block-end: 0;
+  }
+  .tp-history[data-detail='none'] .tp-history__records .tp-reason {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .tp-history[data-detail='none'] .tp-history__records .tp-facts {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }

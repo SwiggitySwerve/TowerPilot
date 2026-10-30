@@ -3,6 +3,7 @@ import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { dashboardPagesCase } from '../support/dashboardFixture.ts';
 import { axeIds, bodiesTo, posts } from './helpers/helpers.ts';
+import { undersizedControlTargets } from './helpers/target-box.ts';
 
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
@@ -42,17 +43,7 @@ async function proof(page: Page, state: string, width: number) {
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     ),
   ).toBeLessThanOrEqual(0);
-  const small = await page
-    .locator('main button, main input, main select, main summary')
-    .evaluateAll((elements) =>
-      elements
-        .filter((element) => element.getClientRects().length > 0)
-        .filter((element) => {
-          const box = element.getBoundingClientRect();
-          return box.width < 24 || box.height < 24;
-        })
-        .map((element) => element.outerHTML.slice(0, 120)),
-    );
+  const small = await undersizedControlTargets(page.locator('main'), { width: 24, height: 24 });
   expect(small).toEqual([]);
   if (width === 390)
     expect(
@@ -93,12 +84,11 @@ for (const width of [1360, 1054, 390]) {
         operation === 'delete' ? 'spare' : 'all_on',
       );
       const settings = page.locator('[data-active-profile="true"]');
-      await expect(settings.first()).toContainText('Active profile:mine');
+      const scope = page.getByRole('region', { name: 'Saved settings', exact: true });
+      await expect(scope).toContainText('Active profile:mine');
       await expect(settings.first().getByRole('checkbox').first()).toBeVisible();
       await expect(settings.first().getByRole('checkbox').first()).toBeDisabled();
-      await expect(settings.first()).toContainText(
-        'Return editing to the active profile to change these',
-      );
+      await expect(scope).toContainText('Return editing to the active profile to change these');
       for (const save of await settings.getByRole('button', { name: 'Save', exact: true }).all())
         await expect(save).toBeDisabled();
       if (operation === 'label') {

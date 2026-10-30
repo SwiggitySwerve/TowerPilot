@@ -5,6 +5,8 @@ import type { CopyNode } from '../../copy/text.ts';
 import { selectRunsPage } from '../../store/selectors/runs.ts';
 import { editingTargetVM, selectEditingTarget } from '../../store/selectors/editingTarget.ts';
 import { Button } from '../../ui/Button.tsx';
+import { ActionRow } from '../../ui/ActionRow.tsx';
+import { Tile } from '../../ui/Tile.tsx';
 import { RegionBoundary } from '../../ui/RegionBoundary.tsx';
 import { Region, RegionBody, RegionEnd, RegionInline } from '../../ui/Region.tsx';
 import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
@@ -92,10 +94,10 @@ function LiveSection() {
       </RegionInline>
     ) : (
       <RegionBody>
-        <p className="tp-runs__note">
+        <ActionRow>
           <span>{entry.short}</span>
           {check}
-        </p>
+        </ActionRow>
         {live.earlier.map((earlier) => (
           <RunOutcome key={earlier.line.id} outcome={earlier} />
         ))}
@@ -113,32 +115,30 @@ function LiveSection() {
         </span>
       </RegionEnd>
       <RegionBody>
-        <div className="tp-runs__scope">
-          <span>{t.live.scope.short}</span>
-          <Why why={t.live.scope.why} />
-        </div>
-        {live.boundsKnown ? null : (
-          <div className="tp-runs__note">
-            <span>{t.live.boundsUnknown.short}</span>
-            <Why why={t.live.boundsUnknown.why} />
-          </div>
-        )}
-        <RunEditor
-          editor={live.editor}
-          live
-          saveLabel={t.live.save}
-          onSave={(command) => {
-            void commands.saveLive(command);
-          }}
-          extra={
-            <Button
-              tier="quiet"
-              label={t.live.check.short}
-              focusKey="runs:check-battle"
-              onClick={commands.checkBattle}
-            />
-          }
-        />
+        <Tile titleId="runs-live-routines" title={t.live.routines.short} intro={t.live.scope}>
+          {live.boundsKnown ? null : (
+            <div className="tp-runs__note">
+              <span>{t.live.boundsUnknown.short}</span>
+              <Why why={t.live.boundsUnknown.why} />
+            </div>
+          )}
+          <RunEditor
+            editor={live.editor}
+            live
+            saveLabel={t.live.save}
+            onSave={(command) => {
+              void commands.saveLive(command);
+            }}
+            extra={
+              <Button
+                tier="quiet"
+                label={t.live.check.short}
+                focusKey="runs:check-battle"
+                onClick={commands.checkBattle}
+              />
+            }
+          />
+        </Tile>
         <LiveShopping />
         {line === null ? null : <RunOutcome outcome={line} />}
         {live.earlier.map((earlier) => (
@@ -161,107 +161,110 @@ function SavedSection() {
         {saved.readAgeSec === null ? null : <span>{t.readAge(saved.readAgeSec)}</span>}
       </RegionEnd>
       <RegionBody>
-        <div className="tp-runs__picker">
-          <label className="tp-runs__picker-label">
-            <span>{t.saved.picker.short}</span>
-            <select
-              value={saved.run ?? ''}
-              data-focus-key="runs:run"
-              onChange={(event) => {
-                commands.openRuns(true, event.currentTarget.value);
-              }}
-            >
-              {saved.runs.length === 0 && saved.run === null ? (
-                <option value="">{t.saved.noRuns.short}</option>
-              ) : null}
-              {saved.run !== null && !saved.runListed && saved.runName !== null ? (
-                <ServerOption value={saved.run} label={saved.runName} />
-              ) : null}
-              {saved.runs.map((run) =>
-                run.label === null ? (
-                  <option key={run.key} value={run.key}>
-                    {t.saved.unnamedRun.short}
-                  </option>
-                ) : (
-                  <ServerOption key={run.key} value={run.key} label={run.label} />
-                ),
-              )}
-            </select>
-          </label>
-          {saved.readiness === null ? null : (
-            <span className="tp-runs__readiness">
-              {
-                copy.dashboard.startNext.readiness[
-                  saved.readiness === 'images_missing' ? 'not_ready' : saved.readiness
-                ].short
-              }
-            </span>
-          )}
-          <a href={RECOGNITION}>{t.saved.prepare.short}</a>
-        </div>
-        <ActiveOnly>
-          <AddRun />
-        </ActiveOnly>
-        {saved.run !== null && !saved.runListed ? (
-          <p className="tp-runs__note" data-run-unlisted="true">
-            {t.saved.notListed.short}
-          </p>
-        ) : null}
-        {saved.comboListed ? <p className="tp-runs__note">{t.saved.combo.short}</p> : null}
-        <div className="tp-runs__scope">
-          <span>{t.saved.scope.short}</span>
-          <Why why={t.saved.scope.why} />
-        </div>
-        {saved.notice === null ? null : (
-          <p className="tp-runs__note">
-            <ServerValue kind="message" value={saved.notice} />
-          </p>
-        )}
-        {saved.catalogueUnavailable ? (
-          <div className="tp-runs__note" role="status">
-            <p>{t.saved.catalogueUnavailable.short}</p>
-            {saved.catalogueError === null ? null : (
-              <ServerValue kind="message" value={saved.catalogueError} />
+        <Tile titleId="runs-saved-routines" title={t.saved.routines.short} intro={t.saved.scope}>
+          <div className="tp-runs__picker tp-control-row">
+            <label className="tp-runs__picker-label">
+              <span>{t.saved.picker.short}</span>
+              <select
+                className="tp-field-control"
+                value={saved.run ?? ''}
+                data-focus-key="runs:run"
+                onChange={(event) => {
+                  commands.openRuns(true, event.currentTarget.value);
+                }}
+              >
+                {saved.runs.length === 0 && saved.run === null ? (
+                  <option value="">{t.saved.noRuns.short}</option>
+                ) : null}
+                {saved.run !== null && !saved.runListed && saved.runName !== null ? (
+                  <ServerOption value={saved.run} label={saved.runName} />
+                ) : null}
+                {saved.runs.map((run) =>
+                  run.label === null ? (
+                    <option key={run.key} value={run.key}>
+                      {t.saved.unnamedRun.short}
+                    </option>
+                  ) : (
+                    <ServerOption key={run.key} value={run.key} label={run.label} />
+                  ),
+                )}
+              </select>
+            </label>
+            {saved.readiness === null ? null : (
+              <span className="tp-runs__readiness">
+                {
+                  copy.dashboard.startNext.readiness[
+                    saved.readiness === 'images_missing' ? 'not_ready' : saved.readiness
+                  ].short
+                }
+              </span>
             )}
-            <Button tier="quiet" label={t.saved.checkRuns.short} onClick={commands.checkRuns} />
+            <a className="tp-button" data-tier="quiet" href={RECOGNITION}>
+              {t.saved.prepare.short}
+            </a>
           </div>
-        ) : saved.read === 'not_read' ? (
-          <p>{t.saved.reading.short}</p>
-        ) : null}
-        {saved.read === 'unavailable' ? (
-          <p className="tp-runs__note">
-            <span>{t.saved.unavailable.short}</span>
-            {saved.readError === null ? null : (
-              <ServerValue kind="message" value={saved.readError} />
-            )}
-            {/* SR-8: reading the run again stays possible while its read fails. */}
-            <Button
-              tier="quiet"
-              label={t.saved.check.short}
-              focusKey="runs:check"
-              onClick={commands.checkRun}
-            />
-          </p>
-        ) : null}
-        <ActiveOnly>
-          {saved.editor === null ? null : (
-            <RunEditor
-              editor={saved.editor}
-              live={false}
-              saveLabel={t.saved.save}
-              onSave={(command) => {
-                void commands.saveRun(command);
-              }}
-              extra={
-                <Button
-                  tier="quiet"
-                  label={t.saved.check.short}
-                  focusKey="runs:check"
-                  onClick={commands.checkRun}
-                />
-              }
-            />
+          <ActiveOnly>
+            <AddRun />
+          </ActiveOnly>
+          {saved.run !== null && !saved.runListed ? (
+            <p className="tp-runs__note" data-run-unlisted="true">
+              {t.saved.notListed.short}
+            </p>
+          ) : null}
+          {saved.comboListed ? <p className="tp-runs__note">{t.saved.combo.short}</p> : null}
+          {saved.notice === null ? null : (
+            <p className="tp-runs__note">
+              <ServerValue kind="message" value={saved.notice} />
+            </p>
           )}
+          {saved.catalogueUnavailable ? (
+            <div className="tp-runs__note" role="status">
+              <p>{t.saved.catalogueUnavailable.short}</p>
+              {saved.catalogueError === null ? null : (
+                <ServerValue kind="message" value={saved.catalogueError} />
+              )}
+              <Button tier="quiet" label={t.saved.checkRuns.short} onClick={commands.checkRuns} />
+            </div>
+          ) : saved.read === 'not_read' ? (
+            <p>{t.saved.reading.short}</p>
+          ) : null}
+          {saved.read === 'unavailable' ? (
+            <p className="tp-runs__note">
+              <span>{t.saved.unavailable.short}</span>
+              {saved.readError === null ? null : (
+                <ServerValue kind="message" value={saved.readError} />
+              )}
+              {/* SR-8: reading the run again stays possible while its read fails. */}
+              <Button
+                tier="quiet"
+                label={t.saved.check.short}
+                focusKey="runs:check"
+                onClick={commands.checkRun}
+              />
+            </p>
+          ) : null}
+          <ActiveOnly>
+            {saved.editor === null ? null : (
+              <RunEditor
+                editor={saved.editor}
+                live={false}
+                saveLabel={t.saved.save}
+                onSave={(command) => {
+                  void commands.saveRun(command);
+                }}
+                extra={
+                  <Button
+                    tier="quiet"
+                    label={t.saved.check.short}
+                    focusKey="runs:check"
+                    onClick={commands.checkRun}
+                  />
+                }
+              />
+            )}
+          </ActiveOnly>
+        </Tile>
+        <ActiveOnly>
           <SavedShopping />
         </ActiveOnly>
         <RunEntry />

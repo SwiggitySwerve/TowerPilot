@@ -1,4 +1,4 @@
-import { within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { own, list } from '../../../../src/core/read.ts';
@@ -105,6 +105,25 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+it('C15 context uses its containing heading and one field scope description', async () => {
+  const page = await open();
+  const selected = document.querySelector<HTMLElement>('[data-region="emulatorsContext"]');
+  if (selected === null) throw new Error('Missing selected emulator region');
+  const context = within(selected);
+  expect(context.getAllByRole('heading')).toHaveLength(1);
+  expect(context.getByRole('group', { name: 'Selected emulator — page context' })).toBeVisible();
+  expect(context.getByRole('combobox')).toHaveAccessibleName('Selected emulator');
+  expect(context.queryByText('Choose the emulator every page shows')).toBeNull();
+  expect(context.queryByText(/^Choosing another emulator changes/u)).toBeNull();
+  expect(selected.querySelector('details')).toBeNull();
+  await page.user.hover(
+    context.getByRole('button', { name: 'About Selected emulator — page context' }),
+  );
+  expect(screen.getByRole('tooltip')).toHaveTextContent(/Drafts stay with their original targets/u);
+  expect(page.fake.writes()).toEqual([]);
+  page.data.stop();
+});
+
 it('C15-1 C15-2 C15-3 defaults save exactly the recorded body and read back without device actions', async () => {
   const page = await open();
   const defaults = form('instance-defaults');
@@ -125,7 +144,17 @@ it('C15-1 C15-2 C15-3 defaults save exactly the recorded body and read back with
   expect(defaults.getByRole('textbox', { name: fieldLabel('label') })).toHaveValue(
     String(own(request, 'label')),
   );
-  expect(defaults.getByText('Start automatically at the next tray start.')).toBeVisible();
+  const autostart = defaults.getByRole('checkbox', { name: fieldLabel('autostart') });
+  expect(defaults.queryByText(/Takes effect when the tray next starts/u)).toBeNull();
+  await page.user.hover(
+    within(autostart.closest<HTMLElement>('[data-field]') ?? defaults.getByRole('group')).getByRole(
+      'button',
+      { name: `About ${fieldLabel('autostart')}` },
+    ),
+  );
+  expect(screen.getByRole('tooltip')).toHaveTextContent(
+    'Takes effect when the tray next starts; saving starts nothing now.',
+  );
   page.data.stop();
 });
 

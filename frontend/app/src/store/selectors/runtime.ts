@@ -46,6 +46,8 @@ export function selectRuntimeSettings(state: DashboardState) {
       instance === undefined ? null : ownPath(config, 'instances', instance, 'label'),
     ),
     instance: fromServer('id', instance),
+    account: fromServer('name', state.context?.account),
+    profile: fromServer('name', state.context?.profile),
     readFailure:
       failed === null
         ? null
@@ -141,6 +143,16 @@ export function selectRuntime(state: RuntimeState) {
                     ? 'noFailure'
                     : 'unknownFailure',
               ids: runtimeFields(event, RUNTIME_FILTERS),
+              // Reported evidence only; the server's failure flag remains authoritative.
+              evidence: runtimeFields(event, [
+                'outcome',
+                'reason',
+                'error',
+                'exception_type',
+                'level',
+                'confirmed',
+                'ok',
+              ]).filter((field) => field.value !== null),
               raw: serverJSON(event),
             })),
           },

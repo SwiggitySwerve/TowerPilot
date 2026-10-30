@@ -1,5 +1,6 @@
 import { entry, made } from './entry.ts';
 export const recognitionAdvanced = {
+  more: entry('Show more'),
   space: made(' '),
   separator: made(' · '),
   dimensions: (width: number, height: number) => made(`${width} × ${height}`),
@@ -11,6 +12,11 @@ export const recognitionAdvanced = {
   destination: entry('To'),
   action: entry('Action'),
   status: entry('Status'),
+  statusLabels: {
+    needs_local_verification: entry('Needs local verification'),
+    incomplete: entry('Incomplete'),
+  },
+  captureTargets: entry('Choose a target to repair its crop'),
   verified: entry('Verified controls'),
   total: entry('Total controls'),
   name: entry('Name'),
@@ -59,9 +65,7 @@ export const recognitionAdvanced = {
   libraryError: entry('Image unavailable. Read coverage again to retry this thumbnail.'),
   catalogue: entry('Module naming catalogue'),
   missingSeen: entry('Images requested but not found'),
-  missingWarning: entry(
-    'An empty missing-seen list does not mean coverage is complete. Captured files do not prove recognition.',
-  ),
+  missingWarning: entry('An empty missing-seen list does not mean coverage is complete.'),
   required: entry('Required for this run'),
   notRequired: entry('Not required for this run'),
   optional: entry('Optional variant; never a blocker'),
@@ -81,6 +85,7 @@ export const recognitionAdvanced = {
     'The frame could not be loaded. No frame token is available for saving. Take a frame to try a new capture.',
   ),
   target: entry('Template target name'),
+  targetHint: entry('Relative PNG path, for example buttons/retry.png.'),
   x: entry('x (native pixels)'),
   y: entry('y (native pixels)'),
   w: entry('width (native pixels)'),
@@ -109,9 +114,7 @@ export const recognitionAdvanced = {
     'The previous request is still sending or its outcome is Unknown. Read its result; nothing is resent.',
   ),
   validation: {
-    name: entry(
-      'Use a relative PNG name such as buttons/retry.png, with safe folder and file names.',
-    ),
+    name: entry('Enter a safe relative PNG target name.'),
     numbers: entry(
       'Enter non-negative whole native pixels for every side; blank, fractional and nonfinite values cannot be saved.',
     ),

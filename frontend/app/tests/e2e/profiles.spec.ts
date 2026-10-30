@@ -104,7 +104,7 @@ for (const width of WIDTHS) {
     source = pagesCase('profile_reads.profile_src_unknown_404');
     accounts = pagesCase('accounts_write.read_after_the_failed_tier_write_unchanged').body;
     await page.reload();
-    await expect(tier.locator('[data-tier-saved]')).toHaveText('Saved tier unavailable');
+    await expect(tier.locator('[data-tier-saved] dd')).toHaveText('Saved tier unavailable');
     await expect(
       tier.getByText('No confirmed reply - it may or may not have been done'),
     ).toBeVisible();
@@ -229,7 +229,7 @@ test('F6PE-P04 unreadable active profile has no saved tier claim and retains the
     route.fulfill({ status: 404, json: { ok: false, error: 'mine.yaml unavailable' } }),
   );
   await page.reload();
-  await expect(tier.locator('[data-tier-saved]')).toHaveText('Saved tier unavailable');
+  await expect(tier.locator('[data-tier-saved] dd')).toHaveText('Saved tier unavailable');
   await expect(input).toHaveValue('021');
   await tier.screenshot({ path: path.join(OUT, 'profiles-tier-unavailable-1360.png') });
   expect(await posts(page)).toEqual([]);
@@ -421,9 +421,15 @@ test('P4 tools missing, modules waiting to be restored and a run not ready stay 
 }) => {
   const problems = await openProfiles(page, 'profiles_setup');
   const setup = page.locator('[data-region="profilesSetup"]');
-  await expect(setup.getByText('Connection tools not installed')).toBeVisible();
+  await expect(setup.getByText('Not installed', { exact: true })).toBeVisible();
   await expect(setup.getByText('Original modules are waiting to be restored')).toBeVisible();
-  await expect(setup.getByText('Runs ready to start: 1; not ready: 1')).toBeVisible();
+  const readiness = setup.locator('[data-setup="runs"]');
+  const ready = readiness.locator('.tp-facts__item').filter({ hasText: 'Runs ready to start' });
+  const blocked = readiness.locator('.tp-facts__item').filter({ hasText: 'Not ready' });
+  await expect(ready).toBeVisible();
+  await expect(ready.locator('dd')).toHaveText('1');
+  await expect(blocked).toBeVisible();
+  await expect(blocked.locator('dd')).toHaveText('1');
   await expect(setup).toContainText('A saved account does not mean its screens are learned');
   await expect(setup.getByRole('link', { name: 'Recognition' })).toHaveAttribute(
     'href',
@@ -582,6 +588,18 @@ for (const width of WIDTHS) {
     );
     expect(small).toEqual([]);
     if (width === 390) {
+      const draft = page.locator('[data-profile="mine.draft"]');
+      const name = draft.locator('.tp-profiles__file-name [data-server-text="name"]');
+      await expect(name).toHaveText('mine.draft');
+      expect(await name.evaluate((element) => element.getClientRects().length)).toBe(1);
+      const nameBox = await name.boundingBox();
+      const modifiedBox = await draft.locator('.tp-profiles__file-modified').boundingBox();
+      expect(nameBox).not.toBeNull();
+      expect(modifiedBox).not.toBeNull();
+      if (nameBox !== null && modifiedBox !== null) {
+        expect(modifiedBox.y).toBeGreaterThan(nameBox.y + nameBox.height);
+      }
+      await expect(draft.locator('.tp-profiles__help')).toBeVisible();
       const buttons = await page.locator('main button').evaluateAll((all) =>
         all
           .filter((element) => element.getClientRects().length > 0)

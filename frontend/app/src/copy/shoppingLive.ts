@@ -1,11 +1,9 @@
-import { entry, made } from './entry.ts';
+import { entry } from './entry.ts';
 import { runs } from './runs.ts';
 export const shoppingLive = {
   title: entry('Queue for this battle'),
   edit: entry("Edit this battle's queue"),
-  scope: entry(
-    'Changes affect this battle only. Save records a request; the queue changes after the automation applies it.',
-  ),
+  scope: entry('The queue changes after automation applies the saved request.'),
   save: entry('Save queue for this battle'),
   discard: entry('Discard queue edits'),
   dashboard: entry('Try once in Dashboard This battle'),
@@ -13,9 +11,6 @@ export const shoppingLive = {
   overrides: entry(
     'Routine overrides keep precedence over this queue. The shopping switch and interval above remain unchanged.',
   ),
-  on: entry('Automatic shopping is on'),
-  off: entry('Automatic shopping is off'),
-  interval: (seconds: number) => made(`Shopping interval: ${String(seconds)} seconds`),
   reasons: {
     unsupported: entry(
       'Live queue editing needs a version 2 queue and shopping plan controls advertised by this automation. Create or convert a saved queue for a later battle.',

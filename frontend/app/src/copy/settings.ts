@@ -2,7 +2,7 @@ import { entry, made } from './entry.ts';
 import { ageAgo } from './dashboard/shell.ts';
 
 function bound(value: number): string {
-  return String(value);
+  return Number.isInteger(value) ? value.toLocaleString('en-US') : String(value);
 }
 
 /**
@@ -22,6 +22,8 @@ export const settings = {
   x: entry('x'),
   y: entry('y'),
   on: entry('On'),
+  aboutField: entry('this setting'),
+  aboutModule: entry('these settings'),
   bounds: (min: number | null, max: number | null) =>
     made(
       min !== null && max !== null

@@ -20,6 +20,7 @@ import { runs } from './runs.ts';
 import { runsAdd } from './runsAdd.ts';
 import { runEntry } from './runEntry.ts';
 import { history } from './history.ts';
+import { helpTip } from './helpTip.ts';
 import { runtime } from './runtime.ts';
 import { runtimeConfig } from './runtimeConfig.ts';
 import { shopping } from './shopping.ts';
@@ -71,6 +72,7 @@ export const copy = {
   shoppingLive,
   shoppingSaved,
   history,
+  helpTip,
   runtime,
   runtimeConfig,
   recognition,

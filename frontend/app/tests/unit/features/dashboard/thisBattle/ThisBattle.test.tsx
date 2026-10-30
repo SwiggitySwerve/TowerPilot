@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { act, fireEvent, within } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { expect, it, vi } from 'vitest';
 import { list, ownPath, entries } from '../../../../../src/core/read.ts';
@@ -17,7 +17,7 @@ import {
   regionState,
   tick,
 } from '../../../store/regionHelpers.ts';
-import { renderRegion, type RegionHarness } from '../harness.tsx';
+import { factValue, renderRegion, type RegionHarness } from '../harness.tsx';
 
 const runtime = 'runtime_ad_orbit_shopping';
 function state(name = runtime): DashboardState {
@@ -35,7 +35,9 @@ function changed(changes: readonly [readonly string[], unknown][], name = runtim
   return addBody(regionState(), 'battlesActive', body);
 }
 function row(h: RegionHarness, name: string) {
-  const element = h.view.getByText(name, { selector: 'strong' }).closest('li');
+  const element = h.view
+    .getByText(name, { selector: 'strong' })
+    .closest<HTMLElement>('.tp-battle__routine');
   if (element === null) throw new Error('Missing routine row');
   return within(element);
 }
@@ -64,12 +66,14 @@ it.each([
   ],
 ])('F-049: header reports scope, run and report evidence for %s', async (name, chip, line) => {
   const h = renderRegion(state(name), <ThisBattle />);
-  const end = h.view.container.querySelector('.tp-region__end');
-  expect(end).toHaveTextContent('Farm');
-  expect(end).toHaveTextContent('this battle only');
+  const end = h.view.container.querySelector<HTMLElement>('.tp-region__end');
+  if (end === null) throw new Error('Missing battle header');
+  expect(factValue(end, 'Run')).toHaveTextContent('Farm');
+  expect(h.view.getByRole('heading', { name: 'This battle' })).toBeVisible();
+  expect(end).not.toHaveTextContent('this battle only');
   expect(end).toHaveTextContent(chip);
   expect(end).toHaveTextContent(line);
-  expect(end).toHaveTextContent(/wave/);
+  expect(factValue(end, 'Wave')).toBeVisible();
   noCalls(h);
   await check(h);
 });
@@ -80,13 +84,8 @@ it.each([
   'null_after_reconcile_closed_record',
 ])('F-049: %s says only that no battle is tracked', async (name) => {
   const h = renderRegion(state(name), <ThisBattle />);
-  expect(
-    h.view.getByText('No tracked battle. Routines and Run now appear once automation watches one'),
-  ).toBeVisible();
-  fireEvent.click(h.view.getByText('Why'));
-  expect(
-    h.view.getByText('The game may still be in a battle; nothing is tracking it'),
-  ).toBeVisible();
+  expect(h.view.getByText('No tracked battle')).toBeVisible();
+  expect(h.view.getByText('The game may still be in a battle')).toBeVisible();
   expect(h.view.queryByRole('button', { name: /^Run now .+/ })).not.toBeInTheDocument();
   expect(h.view.container.querySelector('.tp-chip')).toBeNull();
   expect(h.view.container).not.toHaveTextContent(/No battle running|battle ended/);
@@ -490,13 +489,20 @@ it.each([null, 500])(
       changed([[['battle', 'effective', 'shopping_plan', 'cash_reserve'], reserve]]),
       <ThisBattle />,
     );
+    expect(h.view.getByText('Queue for this battle')).toBeVisible();
+    expect(h.view.getByText('Queue for this battle').closest('details')).not.toHaveAttribute(
+      'open',
+    );
+    expect(factValue(h.view.container, 'Purchase rule')).toHaveTextContent(
+      'Highest-priority affordable',
+    );
+    expect(factValue(h.view.container, 'Attempts per pass')).toHaveTextContent('One');
+    expect(factValue(h.view.container, 'Cash reserve')).toHaveTextContent(
+      reserve === null ? 'None' : '500',
+    );
+    for (const label of ['Purchase rule', 'Attempts per pass', 'Cash reserve'])
+      expect(factValue(h.view.container, label)).toBeVisible();
     fireEvent.click(h.view.getByText('Queue for this battle'));
-    expect(h.view.getByText('This battle', { selector: 'p' })).toBeVisible();
-    expect(h.view.getByText('Buy the highest-priority affordable upgrade')).toBeVisible();
-    expect(h.view.getByText('One attempt per pass')).toBeVisible();
-    expect(
-      h.view.getByText(reserve === null ? 'No reserve' : 'Keep a cash reserve of 500'),
-    ).toBeVisible();
     expect(h.view.getByRole('link', { name: 'Edit this battle in Runs' })).toHaveAttribute(
       'href',
       '#runs/live',
@@ -512,8 +518,8 @@ it.each([null, 500])(
 
 it('F-066: legacy shopping policy needs review and keeps both scoped links', async () => {
   const h = renderRegion(state('legacy_shopping_plan'), <ThisBattle />);
-  fireEvent.click(h.view.getByText('Queue for this battle'));
   expect(h.view.getByText('Shopping policy needs review')).toBeVisible();
+  fireEvent.click(h.view.getByText('Queue for this battle'));
   expect(h.view.getAllByRole('link', { name: 'Edit this battle in Runs' }).length).toBeGreaterThan(
     0,
   );
@@ -613,7 +619,9 @@ it('F-068: shopper Why shows decision and confirmations as reported age without 
   expect(detail).toHaveTextContent('verified');
   expect(summary.closest('.tp-battle__last')).toBeInTheDocument();
   expect(h.view.getByText('Queue for this battle').closest('.tp-battle__routine')).toBe(
-    row(h, 'Shopping').getByRole('button', { name: 'Run now Shopping' }).closest('li'),
+    row(h, 'Shopping')
+      .getByRole('button', { name: 'Run now Shopping' })
+      .closest('.tp-battle__routine'),
   );
   expect(detail).not.toHaveTextContent(/cash|price|afford|12345|777|888|999/i);
   h.setState(tick(initial, 5));
@@ -757,12 +765,11 @@ it.each([true, undefined])(
       .closest<HTMLElement>('.tp-notice');
     expect(line).toHaveTextContent('Waiting');
     if (line === null) throw new Error('Missing quantity warning');
-    fireEvent.click(within(line).getByText('Why'));
-    expect(
-      within(line).getByText(
-        "The shopper can't verify how many it bought yet, so it can't confirm your cash reserve is kept",
-      ),
-    ).toBeVisible();
+    fireEvent.click(within(line).getByRole('button', { name: 'About this message' }));
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      "The shopper can't verify how many it bought yet, so it can't confirm your cash reserve is kept",
+    );
+    fireEvent.keyDown(document, { key: 'Escape' });
     expect(
       h.view.queryByText("This shopping policy doesn't protect your cash reserve"),
     ).not.toBeInTheDocument();

@@ -39,8 +39,6 @@ type SetupOutcomeCode = keyof typeof setupLines;
 
 /** Needs-you wording and presentation formats (spec 6.4 and 7.3). */
 export const needsYou = {
-  /** Between an issue's two impacts (Start, collection). */
-  separator: entry(' · '),
   title: entry('Needs you'),
   countOpen: entry('('),
   countClose: entry(')'),
@@ -49,7 +47,8 @@ export const needsYou = {
   review: entry('Review setup result'),
   retryStatus: entry('Retry status'),
   retry: entry('Retry'),
-  why: entry('Why'),
+  /** One item's disclosure: why it needs you, the reads behind it and its operation's events. */
+  details: entry('Details'),
   setupBattle: entry('Setup battle needs review'),
   lines: {
     no_live_status: entry('No live status', 'Retry status to read the current automation state.'),
@@ -67,17 +66,22 @@ export const needsYou = {
     ),
     ...setupLines,
   },
+  /** What the setup guards mean for Start and collection: facts shown once for the group. */
+  impact: {
+    start: entry('Start'),
+    collection: entry('Gem collection'),
+  },
   start: {
-    off: entry('Start is off'),
-    permitted: entry('Start is allowed by the setup guard'),
-    unconfirmed: entry('Start permission is not confirmed'),
+    off: entry('Off'),
+    permitted: entry('Allowed by the setup guard'),
+    unconfirmed: entry('Permission not confirmed'),
   },
   collection: {
     // F4-05: scoped to the action the guard blocks, beside any collector still running.
     on_hold: entry('Starting collection is blocked'),
-    confirmed_manual_battle: entry('Gem collection allowed: you confirmed a new manual battle'),
-    permitted: entry('Gem collection is allowed by the collection guard'),
-    unconfirmed: entry('Gem collection permission is not confirmed'),
+    confirmed_manual_battle: entry('Allowed: you confirmed a new manual battle'),
+    permitted: entry('Allowed by the collection guard'),
+    unconfirmed: entry('Permission not confirmed'),
   },
   guardWhy: entry(
     'Review setup result to resolve the setup battle. Confirming a new manual battle permits gem collection only; Start follows the setup guard.',

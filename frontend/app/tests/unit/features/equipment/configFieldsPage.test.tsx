@@ -564,6 +564,7 @@ it('C15-6 C15-7 tournament form uses raw labelled list rows, explicit add/remove
       'label',
     ),
   );
+  expect(within(form).getByRole('group', { name: label })).toBeVisible();
   const add = within(form).getByRole('button', { name: `Add entry ${label}` });
   fireEvent.click(add);
   const input = within(form).getByRole('textbox', { name: `${label} Entry 1` });

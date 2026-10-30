@@ -1,13 +1,18 @@
+.tp-region[data-region='needsYou'] {
+  container-type: inline-size;
+}
+
+/*
+ * The issues share one grid: headline, action column, Details. Every item's
+ * actions sit in the same column at the column's width, so they line up.
+ */
 .tp-needs {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  gap: var(--tp-space-3);
-}
-
-.tp-region[data-region='needsYou'] {
-  container-type: inline-size;
+  grid-template-columns: minmax(0, 1fr) max-content max-content;
+  column-gap: var(--tp-space-3);
 }
 
 .tp-needs[hidden] {
@@ -27,68 +32,84 @@
   font-weight: 700;
 }
 
-/* F4-02: an issue and its actions share one line when they fit (spec 2.2 sketch); they wrap when not. */
 .tp-need {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
-  gap: 0.125rem var(--tp-space-4);
+  row-gap: var(--tp-space-1);
   min-width: 0;
+  padding-block: var(--tp-space-1);
+}
+.tp-need + .tp-need {
+  border-block-start: 1px solid var(--tp-color-border);
 }
 
-.tp-need__line,
-.tp-need__impact,
-.tp-need__actions {
+.tp-need__line {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
   gap: var(--tp-space-2);
+  min-width: 0;
 }
 
+/* The resolving actions: stacked, each as wide as the column. */
 .tp-need__actions {
-  align-items: center;
-  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--tp-space-1);
 }
-
-@container (min-width: 740px) {
-  .tp-need__actions {
-    flex-basis: auto;
-    margin-inline-start: auto;
-  }
+.tp-need__actions:empty {
+  display: none;
 }
-
-/* What the issue means for Start and collection: detail, after the headline. */
-.tp-need__impact {
-  flex-basis: 100%;
-  column-gap: 0;
-  white-space: pre-wrap;
-  color: var(--tp-color-text-muted);
-  font-size: var(--tp-font-size-13);
-}
-
-.tp-need__actions > a {
-  font-size: var(--tp-font-size-13);
-  display: inline-flex;
-  margin-block: 0;
-  align-items: center;
-  min-height: var(--tp-control-height-small);
+.tp-need__actions > .tp-button {
+  justify-content: center;
 }
 
 /* The step that resolves the issue: shaped like a secondary button, still a link (it opens a page). */
 .tp-need__actions > a.tp-need__fix {
-  padding: 0 0.8rem;
-  border: 1px solid var(--tp-color-border-active);
-  border-radius: var(--tp-radius-control);
-  background: var(--tp-color-surface-strong);
-  color: var(--tp-color-text-strong);
-  font-weight: 600;
   text-decoration: none;
 }
 .tp-need__actions > a.tp-need__fix:hover {
   border-color: var(--tp-color-text-nav);
 }
-.tp-need__actions > .tp-disclosure[open] {
-  flex-basis: 100%;
+
+/* Details sits in the last column; open, it takes the item's full width below the headline. */
+.tp-need > .tp-disclosure {
+  grid-column: 3;
+}
+.tp-need > .tp-disclosure[open] {
+  grid-column: 1 / -1;
+}
+.tp-need .tp-disclosure__body p,
+.tp-need .tp-disclosure__body ul {
+  margin: 0 0 var(--tp-space-1);
+}
+
+/* The guards' impact, said once above the issues. */
+.tp-need__impact {
+  margin-block-end: var(--tp-space-1);
+}
+.tp-need > .tp-need__impact {
+  grid-column: 1 / -1;
+}
+
+/* Narrow: the headline on its own line, actions and Details under it. */
+@container (max-width: 560px) {
+  .tp-needs {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+  .tp-need__line {
+    grid-column: 1 / -1;
+  }
+  .tp-need__actions {
+    grid-column: 1;
+    align-items: flex-start;
+  }
+  .tp-need > .tp-disclosure {
+    grid-column: 2;
+  }
 }
 
 .tp-need__empty {

@@ -57,9 +57,11 @@ test('C1 app navigation opens Collection; two reward switches save once by keybo
   ]);
   await expect(box.locator('[data-outcome="saved"]')).toBeVisible();
   await expect(box.getByRole('checkbox', { name: 'Daily missions' })).toBeChecked();
-  await expect(page.locator('[data-region="collectionRewards"]')).toContainText(
-    'Daily quota and reset time: not reported',
-  );
+  const quota = page
+    .locator('[data-region="collectionRewards"] .tp-facts__item')
+    .filter({ has: page.getByText('Daily quota and reset time', { exact: true }) });
+  await expect(quota.locator('dt')).toHaveText('Daily quota and reset time');
+  await expect(quota.locator('dd')).toContainText('Not reported');
   await box.screenshot({ path: path.join(OUT, 'collection-rewards-saved-1360.png') });
   await page.waitForTimeout(3_000);
   expect((await posts(page)).map((entry) => entry.path)).toEqual(['/api/settings']);
@@ -263,6 +265,23 @@ for (const width of WIDTHS) {
     const problems = await openCollection(page, 'collection', width);
     await page.waitForTimeout(500);
     expect(await axeCounts(page)).toEqual([]);
+    const ad = await page.locator('[data-module="ad:all_on"]').boundingBox();
+    const orbit = await page.locator('[data-module="orbit:all_on"]').boundingBox();
+    const create = await page.locator('[data-form="create"]').boundingBox();
+    const copy = await page.locator('[data-form="copy"]').boundingBox();
+    if (ad === null || orbit === null || create === null || copy === null)
+      throw new Error('Collection settings family or creation form missing');
+    expect(ad.width).toBeCloseTo(orbit.width, 0);
+    expect(ad.y + ad.height).toBeLessThanOrEqual(orbit.y);
+    expect(create.y + create.height).toBeLessThanOrEqual(copy.y);
+    const uses = page.locator('[data-policy="gems_only"] .tp-collection__uses > li');
+    await expect(uses).toHaveText(['farm_deep', 'shards']);
+    const firstUse = await uses.nth(0).boundingBox();
+    const nextUse = await uses.nth(1).boundingBox();
+    if (firstUse === null || nextUse === null) throw new Error('Policy run names missing');
+    expect(
+      nextUse.x >= firstUse.x + firstUse.width || nextUse.y >= firstUse.y + firstUse.height,
+    ).toBe(true);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );

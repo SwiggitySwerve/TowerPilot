@@ -19,7 +19,7 @@ async function open(page: Page, scenario: string, width: number) {
   await expect
     .poll(() => page.evaluate(() => sessionStorage.getItem('tp.context.v1')))
     .not.toBeNull();
-  await library(page).getByText('Shared shopping policies', { exact: true }).click();
+  await library(page).getByText('Manage policies', { exact: true }).click();
   await expect(policy(page, 'main_list')).toBeVisible();
 }
 async function edit(page: Page, id = 'main_list') {
@@ -100,8 +100,8 @@ for (const width of [1360, 1054, 390]) {
       'true',
     );
     await form.getByLabel('Cash reserve', { exact: true }).fill('0');
-    await form.getByLabel('Purchase pattern').selectOption('highest_affordable');
-    await form.getByLabel('Cadence').selectOption('single_attempt');
+    await form.getByLabel('Purchase pattern', { exact: true }).selectOption('highest_affordable');
+    await form.getByLabel('Cadence', { exact: true }).selectOption('single_attempt');
     expect(await posts(page)).toHaveLength(0);
     await check(page, width, 'create');
     await form.getByRole('button', { name: 'Save shared policy' }).click();
@@ -198,7 +198,7 @@ for (const width of [1360, 1054, 390]) {
     await form.getByRole('button', { name: 'Save shared policy' }).click();
     await expect(form.locator('[data-outcome="unknown"]')).toBeVisible();
     await page.reload();
-    await library(page).getByText('Shared shopping policies', { exact: true }).click();
+    await library(page).getByText('Manage policies', { exact: true }).click();
     const restored = await edit(page);
     await expect(restored.getByLabel('Cash reserve', { exact: true })).toHaveValue('750.5');
     await expect(restored.locator('[data-outcome="unknown"]')).toBeVisible();

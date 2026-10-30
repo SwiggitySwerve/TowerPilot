@@ -19,11 +19,7 @@ function duration(seconds: number): string {
   return hours > 0 ? `${String(hours)} h ${String(minutes)} m` : `${String(minutes)} m`;
 }
 
-function plural(count: number, one: string, many: string): string {
-  return `${String(count)} ${count === 1 ? one : many}`;
-}
-
-/** The ad window causes the backend names (`CAUSE_CODES` in control/harvest.py), as the end of "Last missed ad window: ...". */
+/** The ad window causes the backend names (`CAUSE_CODES` in control/harvest.py), as the Last miss fact. */
 const MISSED_WINDOW: Readonly<Record<string, string>> = {
   no_offer_seen: 'no offer seen',
   offer_not_claimed: 'offer seen but not claimed',
@@ -47,11 +43,15 @@ export interface RoutineWords {
   readonly intervalSec: number | null;
 }
 
-function routinePhrase(name: string, routine: RoutineWords | null): string {
+function routinePhrase(
+  name: string,
+  routine: RoutineWords | null,
+  shownState: boolean | null = null,
+): string | null {
   if (routine === null) return `${name} not reported`;
-  if (!routine.enabled) return `${name} off`;
+  if (!routine.enabled) return shownState === false ? null : `${name} off`;
   return routine.intervalSec === null
-    ? `${name} on`
+    ? `${name} ${shownState === true ? 'timing not reported' : 'on'}`
     : `${name} every ${interval(routine.intervalSec)}`;
 }
 
@@ -65,6 +65,11 @@ export const control = {
   input: {
     permission: entry('Permission:'),
     observed: entry('Observed:'),
+    /** The slot's fact labels (the top bar keeps the pill prefixes above). */
+    facts: {
+      permission: entry('Permission'),
+      observed: entry('Observed'),
+    },
     /** IN-01: the Setting pill's values. */
     setting: {
       allowed: entry('Allowed'),
@@ -206,34 +211,42 @@ export const control = {
     /** G3g: the stated warning, with the backend's count of claims in a row that were not confirmed. */
     claimsFailing: (streak: number): CopyText =>
       made(`Ad gem claims failing: ${String(streak)} in a row`),
+    /** The slot's fact labels: one labelled value each, never a fused line. */
+    facts: {
+      setting: entry('Setting'),
+      thisBattle: entry('This battle'),
+      adGems: entry('Ad gems'),
+      orbitGems: entry('Orbit gems'),
+      lastMiss: entry('Last miss'),
+      run: entry('Run'),
+      timing: entry('Timing'),
+    },
+    /** The footer disclosure: diagnostics and provenance, kept off the glance. */
+    details: entry('Details'),
     /**
-     * What this battle's gem collection did. The counts are ad claims (the offer was gone after
-     * the tap) and orbit pickups (a balance rise) the driver saw, lower bounds and never totals, so the words say "at least";
+     * What this battle's gem collection did: ad claims (the offer was gone after the tap),
+     * orbit pickups (a balance rise) and ad windows missed, as the collector counted them;
      * null when nothing is published to say.
      */
     outcomes: {
-      counts: (ad: number | null, orbit: number | null, missed: number | null): CopyText | null => {
-        const seen = [
-          ad === null ? null : plural(ad, 'ad gem claim', 'ad gem claims'),
-          orbit === null ? null : plural(orbit, 'orbit gem pickup', 'orbit gem pickups'),
+      /** The Ad gems fact: claims seen and ad windows missed. */
+      ad: (ad: number | null, missed: number | null): CopyText | null => {
+        const parts = [
+          ad === null ? null : `≥${String(ad)} claimed`,
+          missed === null ? null : `≥${String(missed)} missed`,
         ].filter((part): part is string => part !== null);
-        const confirmed =
-          seen.length === 0
-            ? null
-            : (ad ?? 0) + (orbit ?? 0) === 0
-              ? 'No claims or pickups seen yet this battle'
-              : `Seen this battle (at least): ${seen.join(', ')}`;
-        const lost = missed === null ? null : `${plural(missed, 'ad window', 'ad windows')} missed`;
-        const parts = [confirmed, lost].filter((part): part is string => part !== null);
-        return parts.length === 0 ? null : made(parts.join('; '));
+        return parts.length === 0 ? null : made(parts.join(' · '));
       },
+      /** The Orbit gems fact: pickups seen. */
+      orbit: (orbit: number): CopyText => made(`≥${String(orbit)} picked up`),
       /** The latest miss or downtime period, worded by the backend's cause code; an unknown code reads as an unconfirmed claim. */
       cause: (code: string, agoSec: number | null): CopyText => {
         const when = agoSec === null ? '' : `, ${ageAgo(agoSec)}`;
         const downtime = COLLECTOR_DOWNTIME[code];
+        const missed = MISSED_WINDOW[code] ?? MISSED_WINDOW['not_confirmed'] ?? '';
         return made(
           downtime === undefined
-            ? `Last missed ad window: ${MISSED_WINDOW[code] ?? MISSED_WINDOW['not_confirmed'] ?? ''}${when}`
+            ? `${missed.charAt(0).toUpperCase()}${missed.slice(1)}${when}`
             : `${downtime}${when}`,
         );
       },
@@ -262,13 +275,25 @@ export const control = {
     },
     /** GM-20 to GM-22, F-025, F-026. */
     sourcePicker: entry('Gem settings from'),
+    editRun: entry('Edit run'),
     unnamedRun: entry('Run without a name'),
-    sourceRoutines: (adGems: RoutineWords | null, floatingGems: RoutineWords | null): CopyText =>
-      made(`${routinePhrase('Ad gems', adGems)}, ${routinePhrase('floating gems', floatingGems)}`),
+    sourceRoutines: (
+      adGems: RoutineWords | null,
+      floatingGems: RoutineWords | null,
+      shownState?: {
+        readonly adGems: boolean | null;
+        readonly floatingGems: boolean | null;
+      },
+    ): CopyText => {
+      const parts = [
+        routinePhrase('Ad gems', adGems, shownState?.adGems),
+        routinePhrase('floating gems', floatingGems, shownState?.floatingGems),
+      ].filter((part) => part !== null);
+      return made(parts.length === 0 ? 'No timed routines' : parts.join(', '));
+    },
     sourceNotRead: entry('Saved settings not read yet'),
     sourceUnreadable: entry("Saved settings can't be read"),
     sourceChanged: entry('Changed since you turned it on'),
-    savedSettings: entry('Saved settings in Runs'),
     sourceInvalid: entry("This run's gem settings can't be used"),
     /** GM-20, GM-31: the actions. */
     turnOn: entry('Turn on'),
@@ -301,7 +326,6 @@ export const control = {
     },
     /** GM-24, GM-25, F-030: this battle's gem toggles (overlay facts, restated as reported). */
     overlay: {
-      lead: entry('This battle:'),
       /** Between the routine targets and whether they are applied yet. */
       separator: made('·'),
       applied: entry('applied'),

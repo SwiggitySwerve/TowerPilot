@@ -21,6 +21,14 @@ async function harness(name: string) {
     await Promise.resolve();
   });
   const row = screen.getByRole('button', { name: /Unnamed battle|Farm/ });
+  // Until a record is chosen the list has the page: no empty Selected record pane.
+  expect(screen.queryByRole('heading', { name: 'Selected record' })).toBeNull();
+  expect(screen.getByText('Choose a record to inspect its evidence.')).toBeVisible();
+  // The whole record ID is in the document, never an ellipsised cut of it.
+  const battle = answer.body['battle'] as Record<string, unknown>;
+  expect(row.querySelector('.tp-history__record-id [data-server-text="id"]')?.textContent).toBe(
+    String(battle['id']),
+  );
   fireEvent.click(row);
   await act(async () => {
     api.answer(1, 'history_detail', name);

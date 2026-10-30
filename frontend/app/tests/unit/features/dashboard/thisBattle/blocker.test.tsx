@@ -21,7 +21,7 @@ function withBlocker(code: string) {
 
 function nextCell(view: ReturnType<typeof renderRegion>['view']) {
   const name = view.getByText('Ad gems', { selector: 'strong' });
-  const row = name.closest('li');
+  const row = name.closest('.tp-battle__routine');
   if (row === null) throw new Error('no Ad gems row');
   const cell = row.querySelector('.tp-battle__next');
   if (!(cell instanceof HTMLElement)) throw new Error('no Next cell');

@@ -3,6 +3,7 @@ import { copy } from '../../copy/catalogue.ts';
 import type { CopyEntry } from '../../copy/text.ts';
 import type { RunOutcomeCode, RunOutcomeVM } from '../../store/selectors/runs.ts';
 import { Button } from '../../ui/Button.tsx';
+import { ActionRow } from '../../ui/ActionRow.tsx';
 import { Disclosure } from '../../ui/Disclosure.tsx';
 import { Notice } from '../../ui/Notice.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
@@ -102,7 +103,7 @@ export function RunOutcome({ outcome }: { readonly outcome: RunOutcomeVM }) {
               ),
             })}
         actions={
-          <>
+          <ActionRow>
             {outcome.resendOffered ? (
               <Button
                 tier="secondary"
@@ -147,7 +148,7 @@ export function RunOutcome({ outcome }: { readonly outcome: RunOutcomeVM }) {
                 }}
               />
             ) : null}
-          </>
+          </ActionRow>
         }
       />
     </div>

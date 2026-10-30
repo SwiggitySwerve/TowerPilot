@@ -1,5 +1,5 @@
 import { assertProfilePatchContexts } from '../../../support/profilePatchAssertions.ts';
-import { within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
@@ -159,9 +159,9 @@ describe('C1 global rewards', () => {
     expect(check(module('rewards'), 'daily_missions')).toBeChecked();
     await page.advance(60_000);
     expect(page.fake.writes().map((write) => write.path)).toEqual(['/api/settings']);
-    expect(region('collectionRewards')).toHaveTextContent(
-      'Daily quota and reset time: not reported',
-    );
+    const quota = within(region('collectionRewards')).getByText('Daily quota and reset time');
+    expect(quota.tagName).toBe('DT');
+    expect(quota.nextElementSibling).toHaveTextContent('Not reported');
   });
 
   it('C1 SR-4 F6T-R1-01 a lost save and unchanged read keep Unknown; a new save needs explicit acceptance of the values read', async () => {
@@ -303,8 +303,21 @@ describe('C2 ad gems of a policy', () => {
   it('C2 the timers say start to start and keep the server labels (cadence, window, retry); a valid edit sends whole seconds', async () => {
     const page = await openCollection();
     const box = module('ad:all_on');
-    expect(box).toHaveTextContent('Timers run start to start');
     expect(box).toHaveTextContent('Interval between collection windows');
+    // The server's explanation of the cadence is field help, opened on demand.
+    const cadence = within(box)
+      .getByText('Interval between collection windows')
+      .closest('[data-field]');
+    if (!(cadence instanceof HTMLElement)) throw new Error('cadence field missing');
+    await page.user.click(
+      within(cadence).getByRole('button', {
+        name: 'About Interval between collection windows',
+      }),
+    );
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      'Time from the start of one collection window to the next',
+    );
+    await page.user.keyboard('{Escape}');
     expect(box).toHaveTextContent('Maximum collection window');
     expect(box).toHaveTextContent('After an unconfirmed claim');
     await page.user.clear(part('ad:all_on', 'gem_delay_sec#0'));
@@ -348,7 +361,11 @@ describe('C3 timed orbit taps', () => {
     expect(within(box).getByText('Tap geometry (native screen pixels)')).toBeVisible();
     expect(box.querySelector('details [data-field="gem_orbit.center"]')).not.toBeNull();
     expect(box.querySelector('details [data-field="gem_orbit.interval_sec"]')).toBeNull();
-    expect(within(box).queryByRole('button', { name: /tap/iu })).toBeNull();
+    expect(
+      within(box)
+        .queryAllByRole('button', { name: /tap/iu })
+        .filter((button) => !button.classList.contains('tp-help__trigger')),
+    ).toEqual([]);
   });
 });
 
@@ -400,6 +417,13 @@ describe('C5 policies: list, label, copy, delete', () => {
     const box = region('collectionPolicies');
     expect(box.querySelector('[data-policy="gems_only"]')).toHaveTextContent('farm_deep');
     expect(box.querySelector('[data-policy="gems_only"]')).toHaveTextContent('shards');
+    const uses = box.querySelector<HTMLElement>('[data-policy="gems_only"] .tp-collection__uses');
+    if (uses === null) throw new Error('policy uses list missing');
+    expect(
+      within(uses)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent),
+    ).toEqual(['farm_deep', 'shards']);
     const remove = within(box).getByRole('button', { name: 'Delete this policy' });
     expect(remove).toHaveAttribute('aria-disabled', 'true');
     expect(remove).toHaveAccessibleDescription(

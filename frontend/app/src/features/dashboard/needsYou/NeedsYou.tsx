@@ -13,6 +13,7 @@ import { Button } from '../../../ui/Button.tsx';
 import { Chip } from '../../../ui/Chip.tsx';
 import { ConfirmDialog } from '../../../ui/ConfirmDialog.tsx';
 import { Disclosure } from '../../../ui/Disclosure.tsx';
+import { Fact, Facts } from '../../../ui/Facts.tsx';
 import { RegionBody, RegionCount, RegionEnd } from '../../../ui/Region.tsx';
 import { ServerValue } from '../../../ui/ServerValue.tsx';
 import { useDashboard, useEpochKey, useView } from '../context.ts';
@@ -126,9 +127,32 @@ function OperationEvents({ operationId }: { readonly operationId: ServerText<'id
   );
 }
 
-function ItemWhy({ item, line }: { readonly item: NeedItemVM; readonly line: CopyEntry }) {
+type Impact = NonNullable<NeedItemVM['impact']>;
+
+/** What the guards mean for Start and collection, as two facts. */
+function ImpactFacts({ impact }: { readonly impact: Impact }) {
   return (
-    <Disclosure label={words.why.short} focusKey={`needsYou-${item.code}-why`}>
+    <Facts className="tp-need__impact">
+      <Fact label={words.impact.start.short} value={words.start[impact.start].short} />
+      <Fact
+        label={words.impact.collection.short}
+        value={words.collection[impact.collection].short}
+      />
+    </Facts>
+  );
+}
+
+function sameImpact(a: Impact | null, b: Impact | null): boolean {
+  return a !== null && b !== null && a.start === b.start && a.collection === b.collection;
+}
+
+/**
+ * One item's Details: why it needs you, what was read, the reports, and its
+ * operation's events. Current guard impacts remain visible beside the issue.
+ */
+function ItemDetails({ item, line }: { readonly item: NeedItemVM; readonly line: CopyEntry }) {
+  return (
+    <Disclosure label={words.details.short} focusKey={`needsYou-${item.code}-why`}>
       <p>
         {line.why ??
           (item.code === 'launch_guard'
@@ -199,12 +223,16 @@ function ItemWhy({ item, line }: { readonly item: NeedItemVM; readonly line: Cop
           />
         </p>
       )}
-      {item.handoffCommand === null ? null : <OperationEvents operationId={item.operationId} />}
+      <OperationEvents operationId={item.operationId} />
     </Disclosure>
   );
 }
 
-function NeedItem({ item }: { readonly item: NeedItemVM }) {
+/**
+ * One issue on the group's grid: chip and headline, then its resolving actions
+ * in the shared action column, then one quiet Details disclosure.
+ */
+function NeedItem({ item, shown }: { readonly item: NeedItemVM; readonly shown: Impact | null }) {
   const { commands } = useDashboard();
   const line = lineFor(item);
   const retry = item.code === 'status_need' || item.chip?.line === 'setup_status_unavailable';
@@ -214,13 +242,6 @@ function NeedItem({ item }: { readonly item: NeedItemVM }) {
       <div className="tp-need__line">
         <Chip state={item.chip?.word ?? (item.code === 'launch_guard' ? 'blocked' : 'unknown')} />
         <span>{line.short}</span>
-        {item.impact === null ? null : (
-          <span className="tp-need__impact">
-            <span>{words.start[item.impact.start].short}</span>
-            <span aria-hidden="true">{words.separator.short}</span>
-            <span>{words.collection[item.impact.collection].short}</span>
-          </span>
-        )}
       </div>
       <div className="tp-need__actions">
         {item.handoffCommand === null ? null : (
@@ -245,7 +266,8 @@ function NeedItem({ item }: { readonly item: NeedItemVM }) {
         ) : null}
         {step === null ? null : (
           <a
-            className="tp-need__fix"
+            className="tp-need__fix tp-button"
+            data-tier="secondary"
             href={setupLinks[step]}
             data-focus-key={`needsYou-${item.code}-setup`}
           >
@@ -253,18 +275,20 @@ function NeedItem({ item }: { readonly item: NeedItemVM }) {
           </a>
         )}
         {item.code === 'other_runs_images' ? (
-          <a className="tp-need__fix" href="#recognition">
+          <a className="tp-need__fix tp-button" data-tier="secondary" href="#recognition">
             {words.learn.short}
           </a>
         ) : null}
         {item.code === 'launch_guard' || item.code === 'setup_outcome' ? (
-          <a className="tp-need__fix" href="#recognition">
+          <a className="tp-need__fix tp-button" data-tier="secondary" href="#recognition">
             {words.review.short}
           </a>
         ) : null}
-        {item.handoffCommand !== null ? null : <OperationEvents operationId={item.operationId} />}
-        <ItemWhy item={item} line={line} />
       </div>
+      <ItemDetails item={item} line={line} />
+      {item.impact === null || sameImpact(item.impact, shown) ? null : (
+        <ImpactFacts impact={item.impact} />
+      )}
     </li>
   );
 }
@@ -334,6 +358,13 @@ function NeedsYouContent() {
   const vm = useView(selectNeedsYou);
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? vm.items : vm.visible;
+  // Share an impact only when every issue that reports one agrees.
+  const firstImpact = vm.items.find((item) => item.impact !== null)?.impact ?? null;
+  const shown = vm.items.every(
+    (item) => item.impact === null || sameImpact(item.impact, firstImpact),
+  )
+    ? firstImpact
+    : null;
   return (
     <>
       <span className="tp-need__count">
@@ -366,9 +397,10 @@ function NeedsYouContent() {
             </ul>
           </div>
         ) : null}
+        {vm.count === 0 || shown === null ? null : <ImpactFacts impact={shown} />}
         <NeedList visible={visible}>
           {visible.map((item) => (
-            <NeedItem key={item.code} item={item} />
+            <NeedItem key={item.code} item={item} shown={shown} />
           ))}
         </NeedList>
         {!expanded && vm.showAll ? (

@@ -204,11 +204,6 @@ it.each([
     expect(block).not.toHaveTextContent('0 screen images missing');
     if (name === 'not_ready_config_row') expect(block).toHaveTextContent('Setting:');
     if (name === 'readiness_check_raised') expect(block).toHaveTextContent('Unknown');
-    if (name.startsWith('setup_required')) {
-      expect(
-        within(block).getByText("Confirm this run's equipment and abilities after scanning."),
-      ).toBeVisible();
-    }
     if (hasImages)
       expect(view.getByRole('link', { name: 'Learn missing screens' })).toHaveAttribute(
         'href',

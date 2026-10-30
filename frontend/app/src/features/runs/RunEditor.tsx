@@ -14,6 +14,8 @@ import type {
   UnrecognisedFieldVM,
 } from '../../store/selectors/runs.ts';
 import { Button } from '../../ui/Button.tsx';
+import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
+import { Tile } from '../../ui/Tile.tsx';
 import { ConfirmDialog } from '../../ui/ConfirmDialog.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
 import { Why } from '../../ui/Why.tsx';
@@ -94,17 +96,19 @@ function ToggleCell({
   return (
     <span className="tp-run-cell" data-field={field.field} data-edited={field.edited}>
       <FieldLabel field={field} id={`${own}-label`} shown={shown} />
-      <input
-        type="checkbox"
-        className="tp-run-toggle"
-        checked={checked}
-        aria-labelledby={`${nameId} ${own}-label`}
-        aria-describedby={field.value === null ? `${own}-unknown` : undefined}
-        data-focus-key={`${scope}:${field.path}`}
-        onChange={(event) => {
-          commands.editDraft(scope, field.path, event.currentTarget.checked);
-        }}
-      />
+      <label className="tp-check-field">
+        <input
+          type="checkbox"
+          className="tp-run-toggle"
+          checked={checked}
+          aria-labelledby={`${nameId} ${own}-label`}
+          aria-describedby={field.value === null ? `${own}-unknown` : undefined}
+          data-focus-key={`${scope}:${field.path}`}
+          onChange={(event) => {
+            commands.editDraft(scope, field.path, event.currentTarget.checked);
+          }}
+        />
+      </label>
       {field.value === null && field.shown === null ? (
         <span id={`${own}-unknown`} className="tp-run-cell__note">
           {t.notReported.short}
@@ -144,7 +148,7 @@ function NumberCell({
           inputMode="decimal"
           autoComplete="off"
           spellCheck={false}
-          className="tp-run-input"
+          className="tp-run-input tp-field-control"
           value={shown}
           aria-labelledby={`${nameId} ${own}-label`}
           aria-describedby={`${own}-range${field.invalid === null ? '' : ` ${own}-invalid`}`}
@@ -463,11 +467,13 @@ function LiveResets({
   const o = t.live.overrides;
   const command = current?.reset.command ?? all?.reset.command ?? null;
   return (
-    <section className="tp-run-resets" aria-labelledby={titleId}>
-      <h3 id={titleId} className="tp-run-resets__title">
-        <span>{o.title.short}</span>
-        {o.title.why === undefined ? null : <Why why={o.title.why} />}
-      </h3>
+    <Tile
+      className="tp-run-resets"
+      titleId={titleId}
+      title={o.title.short}
+      level={4}
+      end={<Why why={o.title.why} />}
+    >
       <ul className="tp-run-resets__list">
         {resets.map((item) => (
           <ResetRow
@@ -552,7 +558,7 @@ function LiveResets({
             void commands.resetLive(command);
         }}
       />
-    </section>
+    </Tile>
   );
 }
 
@@ -618,46 +624,52 @@ export function RunEditor<C>({
       </ul>
       {live ? <LiveResets resets={editor.resets} resetAll={editor.resetAll} /> : null}
       <div className="tp-run-editor__actions">
-        {save.enabled && command !== null ? (
-          <Button
-            tier="secondary"
-            label={saveLabel.short}
-            focusKey={`${editor.scope}:save`}
-            describedBy={`${own}-count`}
-            onClick={() => {
-              onSave(command);
-            }}
-          />
-        ) : (
-          <Button
-            tier="secondary"
-            label={saveLabel.short}
-            focusKey={`${editor.scope}:save`}
-            busy={save.sending}
-            disabled
-            reasonId={reasonId}
-            onClick={() => undefined}
-          />
-        )}
-        {editor.discard ? (
-          <Button
-            tier="quiet"
-            label={t.discard.short}
-            focusKey={`${editor.scope}:discard`}
-            onClick={() => {
-              commands.discardDraft(editor.scope);
-            }}
-          />
-        ) : null}
-        {extra}
-        <span id={`${own}-count`} className="tp-run-editor__count">
-          {editor.changeCount > 0 ? t.changes(editor.changeCount) : null}
-        </span>
-        {save.enabled ? null : (
-          <span id={reasonId} className="tp-reason">
-            {ownOr(reasons, save.reason ?? 'no_changes', t.reasons.no_changes).short}
+        <ActionRow
+          reason={
+            save.enabled ? null : (
+              <Reason
+                id={reasonId}
+                entry={ownOr(reasons, save.reason ?? 'no_changes', t.reasons.no_changes)}
+              />
+            )
+          }
+        >
+          {save.enabled && command !== null ? (
+            <Button
+              tier="secondary"
+              label={saveLabel.short}
+              focusKey={`${editor.scope}:save`}
+              describedBy={`${own}-count`}
+              onClick={() => {
+                onSave(command);
+              }}
+            />
+          ) : (
+            <Button
+              tier="secondary"
+              label={saveLabel.short}
+              focusKey={`${editor.scope}:save`}
+              busy={save.sending}
+              disabled
+              reasonId={reasonId}
+              onClick={() => undefined}
+            />
+          )}
+          {editor.discard ? (
+            <Button
+              tier="quiet"
+              label={t.discard.short}
+              focusKey={`${editor.scope}:discard`}
+              onClick={() => {
+                commands.discardDraft(editor.scope);
+              }}
+            />
+          ) : null}
+          {extra}
+          <span id={`${own}-count`} className="tp-run-editor__count">
+            {editor.changeCount > 0 ? t.changes(editor.changeCount) : null}
           </span>
-        )}
+        </ActionRow>
       </div>
     </div>
   );

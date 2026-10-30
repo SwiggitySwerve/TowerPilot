@@ -117,6 +117,18 @@ async function frame(s: Awaited<ReturnType<typeof setup>>) {
   });
   return token;
 }
+it('R11 the crop target has one format hint and one validation message shared by Save', async () => {
+  await setup();
+  const name = screen.getByLabelText('Template target name');
+  expect(name).toHaveAccessibleDescription(
+    'Relative PNG path, for example buttons/retry.png. Enter a safe relative PNG target name.',
+  );
+  expect(screen.getAllByText('Enter a safe relative PNG target name.')).toHaveLength(1);
+  expect(screen.getByRole('button', { name: 'Save crop' })).toHaveAccessibleDescription(
+    'Enter a safe relative PNG target name.',
+  );
+});
+
 it('R9 one analysis click sends once with context and idempotency key; retry only reads', async () => {
   const s = await setup();
   const user = userEvent.setup();
@@ -243,10 +255,9 @@ it('R9 a lost launch stays Unknown on an unchanged status and is never resent', 
 it('R10 plan keeps named missing targets and learned rectangles, with catalogue and library behind disclosures', async () => {
   const s = await setup();
   expect(
-    screen.getByText(
-      'An empty missing-seen list does not mean coverage is complete. Captured files do not prove recognition.',
-    ),
+    screen.getByText('An empty missing-seen list does not mean coverage is complete.'),
   ).toBeVisible();
+  expect(screen.getByText(/Capturing an image is not proof that recognition works/u)).toBeVisible();
   expect(screen.getByText('Grouped image library').closest('details')).not.toHaveAttribute('open');
   expect(
     scanPlan(s.current()?.plan)

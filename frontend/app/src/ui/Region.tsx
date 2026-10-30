@@ -1,5 +1,5 @@
 import type { ErrorInfo } from 'react';
-import type { CopyNode, CopyText } from '../copy/text.ts';
+import type { CopyNode } from '../copy/text.ts';
 import { RegionBoundary } from './RegionBoundary.tsx';
 import './ui.css';
 
@@ -8,7 +8,7 @@ export interface RegionProps {
   readonly id: string;
   /** The heading's id when a page already focuses or links to one (default `${id}-title`). */
   readonly titleId?: string;
-  readonly title: CopyText;
+  readonly title: CopyNode;
   /** Drawn in the body area when the region's content throws; keeps its revocations (S-091). */
   readonly fallback: CopyNode;
   readonly resetKey?: string;

@@ -53,7 +53,9 @@ for (const width of WIDTHS) {
     await button.focus();
     await page.keyboard.press('Enter');
     await expect(form.locator('[data-outcome="saved"]')).toBeVisible();
-    await expect(page.locator('[data-policy="farm_default"]')).toContainText('Not used by any run');
+    await expect(page.locator('.tp-collection__editor [data-used-by]')).toContainText(
+      'Not used by any run',
+    );
     await expect(id).toHaveValue('');
     expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
       withRecordedFence(firstPolicyCase('first_policy_created_from_the_farm_template_default'), {
@@ -129,7 +131,9 @@ for (const width of WIDTHS) {
     await page.unroute('**/api/profile-src/mine');
     await page.getByRole('button', { name: 'Read the saved settings again', exact: true }).click();
     await expect(form.locator('[data-outcome="applied"]')).toBeVisible();
-    await expect(page.locator('[data-policy="farm_default"]')).toContainText('Not used by any run');
+    await expect(page.locator('.tp-collection__editor [data-used-by]')).toContainText(
+      'Not used by any run',
+    );
     expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
     expect(errors).toEqual([]);
   });

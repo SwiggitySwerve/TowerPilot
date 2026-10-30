@@ -6,6 +6,9 @@ import type {
   RecognitionAdvancedStore,
 } from '../../../store/recognitionAdvanced.ts';
 import { selectAdvanced } from '../../../store/selectors/recognitionAdvanced.ts';
+import { ActionRow, Reason } from '../../../ui/ActionRow.tsx';
+import { Fact, Facts } from '../../../ui/Facts.tsx';
+import { CopyLine } from '../../../ui/CopyLine.tsx';
 import { Button } from '../../../ui/Button.tsx';
 import { ConfirmDialog } from '../../../ui/ConfirmDialog.tsx';
 import { Data, Dimensions, Values } from './Data.tsx';
@@ -36,43 +39,47 @@ export function CropEditor({
   const exists = vm.exists;
   const unavailable =
     state.context === null || !state.online || target?.checking === true || vm.cropPending;
-  const reason =
+  const reasonEntry =
     state.context === null
-      ? t.noTarget.short
+      ? t.noTarget
       : !state.online
-        ? t.offline.short
+        ? t.offline
         : target?.checking === true
-          ? t.checking.short
+          ? t.checking
           : vm.cropPending
-            ? t.pending.short
+            ? t.pending
             : vm.cropCheck.kind === 'invalid'
-              ? t.validation[vm.cropCheck.reason].short
+              ? t.validation[vm.cropCheck.reason]
               : null;
+  const reason = reasonEntry?.short ?? null;
   const takeBlocked = unavailable || target?.frameBusy === true;
   const validation = vm.cropCheck.kind === 'invalid' ? vm.cropCheck.reason : null;
+  const validationIsReason = validation !== null && reasonEntry === t.validation[validation];
   const overlay = vm.overlay;
   return (
     <>
       <p>{t.still.short}</p>
-      <p>{t.drag.short}</p>
-      <Button
-        tier="secondary"
-        label={t.takeFrame.short}
-        onClick={() => {
-          void store.takeFrame();
-        }}
-        {...(takeBlocked ? { disabled: true, reasonId: 'frame-blocked' } : {})}
-      />
-      {takeBlocked ? <p id="frame-blocked">{reason ?? t.reading.short}</p> : null}
+      <CopyLine entry={t.drag} variant="note" />
+      <ActionRow
+        reason={takeBlocked ? <Reason id="frame-blocked" entry={reasonEntry ?? t.reading} /> : null}
+      >
+        <Button
+          tier="secondary"
+          label={t.takeFrame.short}
+          onClick={() => {
+            void store.takeFrame();
+          }}
+          {...(takeBlocked ? { disabled: true, reasonId: 'frame-blocked' } : {})}
+        />
+      </ActionRow>
       {target?.frameError === true ? <p role="status">{t.frameError.short}</p> : null}
       {target?.contextError === true ? <p role="status">{t.contextError.short}</p> : null}
       {frame !== null ? (
         <>
           <p>{t.frameAge(Math.max(0, Math.floor((now - frame.takenAt) / 1000)))}</p>
-          <p>
-            {t.native.short}
-            <Dimensions value={frame.size} />
-          </p>
+          <Facts layout="cells">
+            <Fact label={t.native.short} value={<Dimensions value={frame.size} />} />
+          </Facts>
           <Button
             tier="quiet"
             label={fullSize ? t.fitFrame.short : t.fullSize.short}
@@ -163,20 +170,28 @@ export function CropEditor({
       <label className="tp-advanced__field">
         {t.target.short}
         <input
+          className="tp-field-control"
           id="recognition-crop-name"
           value={draft?.name ?? ''}
           aria-invalid={validation === 'name'}
-          aria-describedby={validation === 'name' ? 'crop-validation' : undefined}
+          aria-describedby={
+            validation === 'name' ? 'crop-target-hint crop-validation' : 'crop-target-hint'
+          }
           onChange={(e) => {
             store.edit('name', e.target.value);
           }}
         />
       </label>
+      <p id="crop-target-hint" className="tp-advanced__hint">
+        {t.targetHint.short}
+      </p>
+      {validation === 'name' ? <p id="crop-validation">{t.validation.name.short}</p> : null}
       <div className="tp-advanced__coordinates">
         {fields.map((field) => (
           <label className="tp-advanced__field" key={field}>
             {t[field].short}
             <input
+              className="tp-field-control"
               inputMode="numeric"
               value={draft?.[field] ?? ''}
               aria-invalid={validation === 'numbers' || validation === 'bounds'}
@@ -201,24 +216,38 @@ export function CropEditor({
           </label>
         ))}
       </div>
-      {validation !== null ? <p id="crop-validation">{t.validation[validation].short}</p> : null}
-      <Button
-        tier="secondary"
-        label={exists ? t.replace.short : t.save.short}
-        onClick={() => {
-          if (exists && draft !== undefined && frame !== null && state.key !== null)
-            setReplacement({
-              key: state.key,
-              epoch: state.epoch,
-              name: draft.name,
-              token: frame.token,
-              draft: { ...draft },
-            });
-          else void store.save();
-        }}
-        {...(reason !== null ? { disabled: true, reasonId: 'crop-save-blocked' } : {})}
-      />
-      {reason !== null ? <p id="crop-save-blocked">{reason}</p> : null}
+      {validation !== null && validation !== 'name' ? (
+        <p id="crop-validation">{t.validation[validation].short}</p>
+      ) : null}
+      <ActionRow
+        reason={
+          reason !== null && !validationIsReason ? (
+            <Reason id="crop-save-blocked" entry={reasonEntry ?? t.reading} />
+          ) : null
+        }
+      >
+        <Button
+          tier="secondary"
+          label={exists ? t.replace.short : t.save.short}
+          onClick={() => {
+            if (exists && draft !== undefined && frame !== null && state.key !== null)
+              setReplacement({
+                key: state.key,
+                epoch: state.epoch,
+                name: draft.name,
+                token: frame.token,
+                draft: { ...draft },
+              });
+            else void store.save();
+          }}
+          {...(reason !== null
+            ? {
+                disabled: true,
+                reasonId: validationIsReason ? 'crop-validation' : 'crop-save-blocked',
+              }
+            : {})}
+        />
+      </ActionRow>
       <ConfirmDialog
         open={
           replacement !== null && replacement.key === state.key && replacement.epoch === state.epoch
@@ -266,14 +295,13 @@ export function CropEditor({
               <p>
                 <Data value={answer.rel} />
               </p>
-              <p>
-                {t.size.short}
-                <Values values={[answer.width, answer.height]} />
-              </p>
-              <p>
-                {t.secondBest.short}
-                <Data value={answer.secondBest} />
-              </p>
+              <Facts layout="cells">
+                <Fact
+                  label={t.size.short}
+                  value={<Values values={[answer.width, answer.height]} />}
+                />
+                <Fact label={t.secondBest.short} value={<Data value={answer.secondBest} />} />
+              </Facts>
             </>
           ) : null}
         </div>

@@ -2,7 +2,7 @@
 .tp-runs {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-2);
+  gap: var(--tp-space-4);
   max-width: 1100px;
   min-width: 0;
 }
@@ -12,11 +12,10 @@
   container-type: inline-size;
 }
 
-.tp-runs__battle,
-.tp-runs__picker {
+.tp-runs__battle {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: var(--tp-space-1) var(--tp-space-3);
 }
 
@@ -24,17 +23,6 @@
   display: inline-flex;
   align-items: center;
   gap: var(--tp-space-2);
-}
-
-.tp-runs__picker select {
-  min-height: var(--tp-control-height);
-  max-width: 100%;
-  padding: 0.15rem 0.4rem;
-  border: 1px solid var(--tp-color-border-active);
-  border-radius: var(--tp-radius-control);
-  background: var(--tp-color-surface-strong);
-  color: var(--tp-color-text);
-  font: inherit;
 }
 
 .tp-runs__readiness,
@@ -145,12 +133,12 @@
 .tp-run-cell__note,
 .tp-run-cell__unit {
   color: var(--tp-color-text-muted);
-  font-size: var(--tp-font-size-12);
+  font-size: var(--tp-font-size-14);
 }
 
 .tp-run-cell__invalid {
   color: var(--tp-color-bad);
-  font-size: var(--tp-font-size-12);
+  font-size: var(--tp-font-size-14);
 }
 
 .tp-run-number {
@@ -167,6 +155,7 @@
  */
 .tp-run-cell .tp-run-number > .tp-run-input {
   width: 6rem;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Root note (390): "= 12 m" is one unbroken note; it moves below the input whole if it must. */
@@ -207,19 +196,7 @@
 
 .tp-run-input {
   width: 6rem;
-  min-height: var(--tp-control-height);
-  padding: 0.15rem 0.4rem;
-  border: 1px solid var(--tp-color-border-active);
-  border-radius: var(--tp-radius-control);
-  background: var(--tp-color-surface-strong);
-  color: var(--tp-color-text);
-  font: inherit;
   font-variant-numeric: tabular-nums;
-}
-
-.tp-run-cell[data-invalid='true'] .tp-run-input {
-  border-color: var(--tp-color-bad);
-  border-width: 2px;
 }
 
 .tp-run-cell[data-edited='true'] .tp-run-input,
@@ -236,10 +213,6 @@
 }
 
 .tp-run-editor__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--tp-space-2) var(--tp-space-3);
   margin-top: var(--tp-space-2);
 }
 
@@ -282,6 +255,10 @@
 }
 
 @container (max-width: 700px) {
+  .tp-run-editor__actions .tp-actions__buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
   .tp-run-columns {
     display: none;
   }
@@ -312,14 +289,6 @@
   .tp-run-input,
   .tp-run-cell .tp-run-number > .tp-run-input {
     width: 5rem;
-  }
-  /* Brief section 5: Save and its neighbours stack as full-width touch targets. */
-  .tp-run-editor__actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .tp-run-editor__actions .tp-button {
-    min-height: var(--tp-control-height-touch);
   }
   .tp-run-cell__label {
     color: var(--tp-color-text-muted);
@@ -372,17 +341,10 @@
   gap: 0 var(--tp-space-1);
   font-weight: 600;
 }
-
-@media (max-width: 700px) {
-  /* F6-11 RL1 at 390: each reset is a full-width button under its row's name. */
-  .tp-run-reset {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .tp-run-reset .tp-button {
+@media (max-width: 600px) {
+  .tp-run-reset > .tp-button {
+    flex-basis: 100%;
     width: 100%;
-    min-height: var(--tp-control-height-touch);
   }
 }
 
@@ -399,13 +361,6 @@
   flex-direction: column;
   gap: var(--tp-space-2);
   min-width: 0;
-}
-
-.tp-run-details__list {
-  display: grid;
-  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
-  gap: var(--tp-space-1) var(--tp-space-3);
-  margin: 0;
 }
 
 .tp-run-details__row {
@@ -437,12 +392,6 @@
   align-items: center;
   min-height: 24px;
   align-self: flex-start;
-}
-
-@media (max-width: 700px) {
-  .tp-run-details__list {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 .tp-run-reset--all {
