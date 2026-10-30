@@ -124,8 +124,25 @@ def test_sighting_sticks_after_the_pentagon_leaves_the_frame(gate):
     assert orchestrator.fleet_gate(gate, _frame(), 3745, 3750) == "fleet_commander"
 
 
-def test_no_sighting_never_fires(gate):
-    assert orchestrator.fleet_gate(gate, _frame(), 1495, 1520) is None
+def test_unsighted_mark_holds_then_fires_on_schedule_at_mark_plus_after(gate):
+    assert orchestrator.fleet_gate(gate, _frame(), 4495, 4495, after=3) is None
+    assert orchestrator.fleet_gate(gate, _frame(), 4495, 4497, after=3) is None
+    assert orchestrator.fleet_gate(gate, _frame(), 4495, 4498, after=3) == "schedule_unsighted"
+
+
+def test_sighting_fires_from_the_mark_itself_before_after_waves(gate):
+    f = _frame()
+    _poly(f, (400, 900), 45, HUE["saboteur"], 5)
+    assert orchestrator.fleet_gate(gate, f, 4495, 4495, after=3) == "fleet_saboteur"
+
+
+def test_first_look_at_a_mark_keeps_one_frame(gate, monkeypatch):
+    events = []
+    monkeypatch.setattr(orchestrator.logger, "event",
+                        lambda kind, **kw: events.append(kind))
+    for wave in (4495, 4496):
+        orchestrator.fleet_gate(gate, _frame(), 4495, wave, after=3)
+    assert events.count("fleet_watch") == 1
 
 
 def test_gate_can_be_switched_off_for_the_plain_schedule(gate, monkeypatch):
@@ -157,7 +174,7 @@ def test_sighting_stays_latched_after_a_later_scan_error(gate, monkeypatch):
 
     monkeypatch.setattr(fleet_scan, "scan", failed_scan)
     assert orchestrator.fleet_gate(gate, frame, 1495, 1500) == "fleet_commander"
-    assert orchestrator.fleet_gate(gate, frame, 2495, 2498) is None
+    assert orchestrator.fleet_gate(gate, frame, 2495, 2497, after=3) is None
 
 
 def test_fleet_settings_and_field_stay_frozen_for_the_current_battle(gate, monkeypatch):
@@ -172,7 +189,7 @@ def test_fleet_settings_and_field_stay_frozen_for_the_current_battle(gate, monke
     calls = []
     monkeypatch.setattr(fleet_scan, "scan", lambda frame, **kw: calls.append(kw) or {})
     assert orchestrator.marks()[:2] == [95, 195]
-    assert orchestrator.fleet_gate(gate, _frame(), 95, 98) is None
+    assert orchestrator.fleet_gate(gate, _frame(), 95, 97, after=3) is None
     assert calls[0]["field"] == FIELD
     assert calls[0]["min_area"] == 900
 
@@ -192,40 +209,44 @@ def test_a_new_run_forgets_sightings_and_skip_logging(gate, monkeypatch):
     assert next_run.fleet_seen == {}
     assert next_run.nuked_marks == set()
     assert next_run.fleet_try_at == 0.0
-    assert orchestrator.fleet_gate(next_run, _frame(), 1495, 1498) is None
+    assert orchestrator.fleet_gate(next_run, _frame(), 1495, 1497, after=3) is None
 
 
 @pytest.mark.parametrize("loop", ["observe", "fast_wall"])
-@pytest.mark.parametrize("sighted", [False, True])
-def test_both_observation_loops_require_a_sighting_before_firing(
-        gate, monkeypatch, loop, sighted):
+@pytest.mark.parametrize("sighted,wave,fires", [
+    (True, 1495, True),      # a sighting fires from the mark itself
+    (False, 1497, False),    # unsighted: hold until mark + after_waves
+    (False, 1498, True),     # then fire on schedule anyway
+])
+def test_both_observation_loops_scan_from_the_mark_with_the_schedule_as_floor(
+        gate, monkeypatch, loop, sighted, wave, fires):
     frame = _frame()
     if sighted:
         _poly(frame, (400, 900), 45, HUE["commander"], 5)
     abilities = {"rescue_bar": None, "dm_below": 0.2,
-                 "nuke_on_fleet": {"after_waves": 1, "window_waves": 60}}
+                 "nuke_on_fleet": {"after_waves": 3, "window_waves": 60}}
     monkeypatch.setattr(orchestrator, "preset", lambda: {"abilities": abilities})
     monkeypatch.setattr(orchestrator, "marks", lambda: [1495])
     monkeypatch.setattr(orchestrator.detect, "death_screen", lambda f: (False, None))
     monkeypatch.setattr(orchestrator.detect, "second_wind_badge", lambda f: (False, 0.0))
     monkeypatch.setitem(orchestrator.CONFIG["rois"], "wall_bar", None)
     monkeypatch.setattr(orchestrator, "demon_mode_always", lambda *a: False)
-    gate.tracker.last = 1498
+    gate.tracker.last = wave
     gate.tracker.update = lambda wave: None
     gate.gems = SimpleNamespace(poll=lambda f: f)
     fired = []
     monkeypatch.setattr(orchestrator, "fire_button",
                         lambda f, name, reason, **kw: fired.append((name, reason)) or True)
     if loop == "observe":
-        orchestrator.watch_frame(gate, frame, observation={"raw_wave": 1498})
+        orchestrator.watch_frame(gate, frame, observation={"raw_wave": wave})
     else:
         samples = []
         monkeypatch.setattr(orchestrator.capture, "grab", lambda: samples.append(1) or frame)
-        monkeypatch.setattr(orchestrator.wave_reader, "read_wave", lambda f: 1498)
+        monkeypatch.setattr(orchestrator.wave_reader, "read_wave", lambda f: wave)
         monkeypatch.setattr(orchestrator.detect, "wall_overheal",
                             lambda f: (1.0, "immune" if len(samples) >= 8 else "normal"))
         monkeypatch.setattr(orchestrator.time, "sleep", lambda *a: None)
         gate.post_sw_until = float("inf")
         assert orchestrator._fast_wall_watch(gate, abilities) == "immune"
-    assert fired == ([("nuke", "fleet_1495")] if sighted else [])
-    assert gate.nuked_marks == ({1495} if sighted else set())
+    assert fired == ([("nuke", "fleet_1495")] if fires else [])
+    assert gate.nuked_marks == ({1495} if fires else set())
