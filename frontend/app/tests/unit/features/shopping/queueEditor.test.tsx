@@ -7,7 +7,7 @@ import { own, ownPath } from '../../../../src/core/read.ts';
 import {
   includeUpgrade,
   leaveOutUpgrade,
-  moveUpgrade,
+  moveUpgradeTo,
   queuePlan,
   reviewQueue,
   setExcluded,
@@ -29,8 +29,8 @@ const BASE: QueueBase = {
 };
 
 let latest: QueueDraft = {};
-function Harness() {
-  const [draft, setDraft] = useState<QueueDraft>({});
+function Harness({ initial = {} }: { readonly initial?: QueueDraft }) {
+  const [draft, setDraft] = useState<QueueDraft>(initial);
   latest = draft;
   return (
     <QueueEditor
@@ -45,13 +45,9 @@ function Harness() {
       onLeaveOut={(upgrade) => {
         setDraft((current) => leaveOutUpgrade(current, upgrade));
       }}
-      onMove={(upgrade, step) => {
-        const next = moveUpgrade(BASE, latest, upgrade, step);
-        if (next === null) return null;
-        setDraft(next);
-        return (
-          reviewQueue(BASE, next).entries.find((entry) => entry.id === upgrade)?.position ?? null
-        );
+      onMove={(upgrade, to) => {
+        const next = moveUpgradeTo(BASE, latest, upgrade, to);
+        if (next !== null) setDraft(next);
       }}
       onExclude={(upgrade, excluded) => {
         setDraft((current) => setExcluded(current, upgrade, excluded));
@@ -59,10 +55,15 @@ function Harness() {
     />
   );
 }
+/** The names in the priority queue, in order. */
 const queued = () =>
-  [...document.querySelectorAll('.tp-shop__entry')].map((item) =>
-    item.getAttribute('data-upgrade'),
-  );
+  [...document.querySelectorAll('.tp-queue__item .tp-queue__name')].map((item) => item.textContent);
+const page = (name: string) => within(screen.getByRole('list', { name, hidden: true }));
+/** A chip by its name; a never-buy upgrade's mark adds its name to the button's name. */
+const chip = (grid: string, name: string) =>
+  page(grid).getByRole('button', {
+    name: new RegExp(`^${name}(Never buy|Needs attention)*$`, 'u'),
+  });
 
 describe('F6-12 shared queue editor (recorded shopping_read_before_any_save)', () => {
   it('SQ6 named Up/Down keep focus on the moved entry, announce its position and stop at the ends', async () => {
@@ -73,57 +74,58 @@ describe('F6-12 shared queue editor (recorded shopping_read_before_any_save)', (
       </main>,
     );
     const user = userEvent.setup();
-    expect(queued()).toEqual(['damage', 'health']);
-    const down = document.getElementById('test:entry:damage:down');
-    if (down === null) throw new Error('no Move down');
-    expect(down).toHaveAccessibleName(/Move down.*Damage/u);
-    down.focus();
+    expect(queued()).toEqual(['Damage', 'Health']);
+    const down = () => screen.getByRole('button', { name: /Move down.*Damage/u });
+    down().focus();
     await user.keyboard('{Enter}');
-    expect(queued()).toEqual(['health', 'damage']);
-    expect(document.activeElement?.id).toBe('test:entry:damage:down');
-    expect(screen.getByRole('status')).toHaveTextContent('Moved to position 2.');
-    // Now last: Move down is unavailable with a reason and does nothing.
-    expect(document.getElementById('test:entry:damage:down')).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
+    expect(queued()).toEqual(['Health', 'Damage']);
+    expect(document.activeElement).toBe(down());
+    expect(screen.getByRole('status')).toHaveTextContent('Moved to position 2 of 2');
+    // Now last: Move down is unavailable and does nothing.
+    expect(down()).toHaveAttribute('aria-disabled', 'true');
     await user.keyboard('{Enter}');
-    expect(queued()).toEqual(['health', 'damage']);
+    expect(queued()).toEqual(['Health', 'Damage']);
   });
 
-  it('SQ4 SQ5 the picker includes one queue across pages, keeps limits when left out, and typed text stays', () => {
+  it('SQ4 SQ5 chips put one queue across pages, keep limits when left out, and typed text stays', () => {
     renderRegion(
       initialDashboardState(),
       <main>
-        <Harness />
+        <Harness initial={{ 'entry:damage:tap_limit': '1.5e' }} />
       </main>,
     );
-    const tapHint = 'Blank means unlimited.';
-    expect(screen.getAllByText(tapHint)).toHaveLength(1);
-    expect(screen.getByText(tapHint)).toBeVisible();
-    for (const input of screen.getAllByRole('textbox', { name: 'Tap attempts this battle' })) {
-      expect(input).toHaveAccessibleDescription(tapHint);
-    }
-    fireEvent.click(document.getElementById('test:pick:attack_speed:included') ?? document.body);
-    expect(queued()).toEqual(['damage', 'health', 'attack_speed']);
-    const tap = document.getElementById('test:entry:damage:tap_limit');
-    if (!(tap instanceof HTMLInputElement)) throw new Error('no tap limit');
-    fireEvent.change(tap, { target: { value: '1.5e' } });
-    expect(tap).toHaveValue('1.5e');
+    // Every chip of every page is on the page; only the selected ones carry fields.
+    expect(page('Attack').getAllByRole('button')).toHaveLength(17);
+    const tap = screen.getByRole('spinbutton', { name: 'Tap attempts this battle: Damage' });
+    expect(tap).toHaveValue(null);
     expect(tap).toHaveAttribute('aria-invalid', 'true');
-    expect(tap).toHaveAccessibleDescription(/Not a number/u);
-    expect(tap).toHaveAccessibleDescription(/Blank means unlimited/u);
-    // The teaching clause lives in the field's help, opened on demand and not in the page.
+    expect(tap).toHaveAccessibleDescription(/Damage Tap attempts this battle Not a number/u);
+    expect(screen.getAllByRole('spinbutton', { name: /Tap attempts this battle/u })).toHaveLength(
+      2,
+    );
+    fireEvent.click(chip('Attack', 'Attack Speed'));
+    expect(queued()).toEqual(['Damage', 'Health', 'Attack Speed']);
+    expect(chip('Attack', 'Attack Speed')).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.change(
+      screen.getByRole('spinbutton', { name: 'Tap attempts this battle: Attack Speed' }),
+      { target: { value: '4' } },
+    );
+    expect(reviewQueue(BASE, latest).entries.at(-1)?.fields.tap_limit.raw).toBe('4');
+    // The teaching clause lives in the help, opened on demand and not in the page.
     expect(screen.queryByText(/Counts taps sent, not levels bought/u)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'About Tap attempts this battle' }));
-    expect(screen.getByRole('tooltip')).toHaveTextContent('Counts taps sent, not levels bought.');
-    expect(screen.getAllByText(tapHint)).toHaveLength(1);
-    fireEvent.click(document.getElementById('test:pick:damage:included') ?? document.body);
-    const damage = document.querySelector('[data-upgrade="damage"].tp-shop__entry');
-    if (!(damage instanceof HTMLElement)) throw new Error('no damage entry');
-    expect(within(damage).getByRole('checkbox', { name: 'Included in queue' })).not.toBeChecked();
-    expect(tap).toHaveValue('1.5e');
+    fireEvent.click(screen.getByRole('button', { name: /About Selected upgrades show/u }));
+    expect(screen.getByRole('tooltip')).toHaveTextContent('The tap limit counts taps sent');
+    fireEvent.click(chip('Attack', 'Damage'));
+    expect(queued()).toEqual(['Health', 'Attack Speed']);
+    expect(
+      screen.queryByRole('spinbutton', { name: 'Tap attempts this battle: Damage' }),
+    ).toBeNull();
+    expect(latest['entry:damage:tap_limit']).toBe('1.5e');
     expect(screen.getByText('1 field needs a value before this queue can be sent.')).toBeVisible();
+    fireEvent.click(chip('Attack', 'Damage'));
+    expect(
+      screen.getByRole('spinbutton', { name: 'Tap attempts this battle: Damage' }),
+    ).toHaveAttribute('aria-invalid', 'true');
   });
 
   it('SQ4 Defense Absolute starts excluded with its reason; including it removes the exclusion', () => {
@@ -133,14 +135,44 @@ describe('F6-12 shared queue editor (recorded shopping_read_before_any_save)', (
         <Harness />
       </main>,
     );
-    const excluded = document.getElementById('test:pick:defense_absolute:excluded');
-    expect(excluded).toBeChecked();
-    expect(document.getElementById('test:pick:defense_absolute:reason')).not.toBeNull();
-    fireEvent.click(
-      document.getElementById('test:pick:defense_absolute:included') ?? document.body,
+    const never = page('Never buy');
+    expect(never.getByRole('button', { name: 'Defense Absolute' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
     );
-    expect(document.getElementById('test:pick:defense_absolute:excluded')).not.toBeChecked();
-    expect(queued().at(-1)).toBe('defense_absolute');
+    expect(
+      within(chip('Defense', 'Defense Absolute')).getByRole('img', { name: 'Never buy' }),
+    ).toBeVisible();
+    expect(chip('Defense', 'Defense Absolute')).toHaveAccessibleDescription(
+      /Excluded by default: /u,
+    );
+    fireEvent.click(chip('Defense', 'Defense Absolute'));
+    expect(never.getByRole('button', { name: 'Defense Absolute' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    expect(queued().at(-1)).toBe('Defense Absolute');
+    fireEvent.click(never.getByRole('button', { name: 'Defense Absolute' }));
+    expect(queued().at(-1)).not.toBe('Defense Absolute');
+  });
+
+  it('SQ4 a wave range is edited beside its upgrade and a drag moves any distance', () => {
+    renderRegion(
+      initialDashboardState(),
+      <main>
+        <Harness />
+      </main>,
+    );
+    const from = screen.getByRole('spinbutton', { name: 'From wave: Health' });
+    fireEvent.change(from, { target: { value: '5' } });
+    expect(
+      reviewQueue(BASE, latest).entries.find((e) => e.id === 'health')?.fields.from_wave.raw,
+    ).toBe('5');
+    fireEvent.click(chip('Attack', 'Attack Speed'));
+    fireEvent.click(chip('Attack', 'Range'));
+    const drag = moveUpgradeTo(BASE, latest, 'range', 0);
+    expect(drag).not.toBeNull();
+    expect(queued()).toEqual(['Damage', 'Health', 'Attack Speed', 'Range']);
   });
 
   it('SQ3 the purchase rules use catalogue words; reserve 0 is a value', async () => {

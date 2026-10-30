@@ -130,13 +130,14 @@ async function edit(page: Page) {
   await editor.getByRole('textbox', { name: 'Cash reserve', exact: true }).fill('750.5');
   await editor.getByLabel('Purchase pattern', { exact: true }).selectOption('weighted_split');
   await editor.getByLabel('Cadence', { exact: true }).selectOption('while_affordable');
-  const health = editor.locator('.tp-shop__entry[data-upgrade="health"]');
-  await health.getByRole('button', { name: /Move up/ }).click();
-  await health.getByRole('textbox', { name: 'Weight', exact: true }).fill('3');
-  await health.getByRole('textbox', { name: 'Until wave (exclusive)', exact: true }).fill('20');
+  await editor.getByRole('button', { name: /Move up.*Health/ }).click();
+  await editor.getByRole('spinbutton', { name: 'Weight: Health', exact: true }).fill('3');
+  await editor.locator('details:not(:has(details)):has(.tp-shop__waves) > summary').click();
   await editor
-    .locator('.tp-shop__entry[data-upgrade="damage"]')
-    .getByRole('textbox', { name: 'Tap attempts this battle', exact: true })
+    .getByRole('spinbutton', { name: 'Until wave (exclusive): Health', exact: true })
+    .fill('20');
+  await editor
+    .getByRole('spinbutton', { name: 'Tap attempts this battle: Damage', exact: true })
     .fill('');
 }
 

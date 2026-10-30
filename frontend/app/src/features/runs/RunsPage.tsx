@@ -9,7 +9,7 @@ import { ActionRow } from '../../ui/ActionRow.tsx';
 import { Tile } from '../../ui/Tile.tsx';
 import { RegionBoundary } from '../../ui/RegionBoundary.tsx';
 import { Region, RegionBody, RegionEnd, RegionInline } from '../../ui/Region.tsx';
-import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
+import { ServerValue } from '../../ui/ServerValue.tsx';
 import { Why } from '../../ui/Why.tsx';
 import {
   FaultPoint,
@@ -24,6 +24,7 @@ import { BattleDetails } from './BattleDetails.tsx';
 import { RunEditor } from './RunEditor.tsx';
 import { LiveShopping } from './LiveShopping.tsx';
 import { RunEntry } from './RunEntry.tsx';
+import { RunsList } from './RunsList.tsx';
 import { SavedShopping } from './SavedShopping.tsx';
 import { AddRun } from './AddRun.tsx';
 import { ShoppingLibrary } from './ShoppingLibrary.tsx';
@@ -32,9 +33,6 @@ import { RunDefaults } from './RunDefaults.tsx';
 import './runs.css';
 
 const t = copy.runs;
-
-/** The previous Runs page keeps the shopping queue and the entry settings (brief RUN-14, RUN-17). */
-const RECOGNITION = '#recognition';
 
 /** PE6: these forms keep their active values; the entry editor has its own target. */
 function ActiveOnly({ children }: { readonly children: CopyNode }) {
@@ -162,47 +160,7 @@ function SavedSection() {
       </RegionEnd>
       <RegionBody>
         <Tile titleId="runs-saved-routines" title={t.saved.routines.short} intro={t.saved.scope}>
-          <div className="tp-runs__picker tp-control-row">
-            <label className="tp-runs__picker-label">
-              <span>{t.saved.picker.short}</span>
-              <select
-                className="tp-field-control"
-                value={saved.run ?? ''}
-                data-focus-key="runs:run"
-                onChange={(event) => {
-                  commands.openRuns(true, event.currentTarget.value);
-                }}
-              >
-                {saved.runs.length === 0 && saved.run === null ? (
-                  <option value="">{t.saved.noRuns.short}</option>
-                ) : null}
-                {saved.run !== null && !saved.runListed && saved.runName !== null ? (
-                  <ServerOption value={saved.run} label={saved.runName} />
-                ) : null}
-                {saved.runs.map((run) =>
-                  run.label === null ? (
-                    <option key={run.key} value={run.key}>
-                      {t.saved.unnamedRun.short}
-                    </option>
-                  ) : (
-                    <ServerOption key={run.key} value={run.key} label={run.label} />
-                  ),
-                )}
-              </select>
-            </label>
-            {saved.readiness === null ? null : (
-              <span className="tp-runs__readiness">
-                {
-                  copy.dashboard.startNext.readiness[
-                    saved.readiness === 'images_missing' ? 'not_ready' : saved.readiness
-                  ].short
-                }
-              </span>
-            )}
-            <a className="tp-button" data-tier="quiet" href={RECOGNITION}>
-              {t.saved.prepare.short}
-            </a>
-          </div>
+          <RunsList />
           <ActiveOnly>
             <AddRun />
           </ActiveOnly>

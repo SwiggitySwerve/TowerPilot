@@ -51,6 +51,18 @@ function liveRegion(): HTMLElement {
   return found;
 }
 
+/** The runs list's rows, in list order: one record row per run of the profile. */
+function runRows(): HTMLElement[] {
+  return [...savedRegion().querySelectorAll<HTMLElement>('[data-runs-list] li')];
+}
+
+/** The row of the run called `label`. */
+function runRow(label: string): HTMLElement {
+  const found = runRows().find((row) => row.querySelector('strong')?.textContent === label);
+  if (found === undefined) throw new Error(`no run row ${label}`);
+  return found;
+}
+
 function savedInput(name: RegExp): HTMLInputElement {
   const input = within(savedRegion()).getByRole('textbox', { name });
   if (!(input instanceof HTMLInputElement)) throw new Error('not an input');
@@ -80,12 +92,11 @@ describe('Runs page: saved settings', () => {
         }));
       },
     });
-    const picker = within(savedRegion()).getByRole('combobox', { name: 'Run' });
-    const options = within(picker)
-      .getAllByRole('option')
-      .map((option) => option.getAttribute('value'));
-    expect(options).not.toContain('combo');
-    expect(picker).toHaveValue('bp_farm');
+    // Every run of the profile has its row, labelled; Combo is not a run with controls.
+    expect(runRows().map((row) => row.querySelector('strong')?.textContent)).toEqual(['Farm']);
+    expect(within(runRow('Farm')).getByText('Editing')).toBeVisible();
+    expect(within(runRow('Farm')).getByText('Coin run')).toBeVisible();
+    expect(within(runRow('Farm')).getByRole('button', { name: 'Edit Farm' })).toBeVisible();
     expect(
       within(savedRegion()).getByText(
         'Day plans choose a run for each block; edit them on Schedule',
@@ -96,8 +107,7 @@ describe('Runs page: saved settings', () => {
 
   it('RUN-01 S-081 a link to a run the profile does not list says so and never shows another run', async () => {
     await openRuns('#runs/saved/bp_missing');
-    const picker = within(savedRegion()).getByRole('combobox', { name: 'Run' });
-    expect(picker).toHaveValue('bp_missing');
+    expect(within(savedRegion()).queryByText('Editing')).toBeNull();
     expect(savedRegion().querySelector('[data-run-unlisted="true"]')).not.toBeNull();
   });
 
@@ -131,15 +141,11 @@ describe('Runs page: saved settings', () => {
     await page.advance(1_000);
     expect(savedInput(/^Ad gems Every$/u)).toHaveValue('30');
     expect(savedInput(/^Ad gems Every$/u)).toHaveFocus();
-    const picker = within(savedRegion()).getByRole('combobox', { name: 'Run' });
-    const other = within(picker)
-      .getAllByRole('option')
-      .map((option) => option.getAttribute('value'))
-      .find((value) => value !== 'bp_farm');
-    if (other !== undefined && other !== null) {
-      await page.user.selectOptions(picker, other);
+    const other = runRows().find((row) => within(row).queryByText('Editing') === null);
+    if (other !== undefined) {
+      await page.user.click(within(other).getByRole('button', { name: /^Edit / }));
       await page.advance(500);
-      await page.user.selectOptions(picker, 'bp_farm');
+      await page.user.click(within(runRow('Farm')).getByRole('button', { name: 'Edit Farm' }));
       await page.advance(500);
       expect(savedInput(/^Ad gems Every$/u)).toHaveValue('30');
     }
@@ -571,15 +577,14 @@ describe('Runs page: review fixes (F6R-02 to F6R-07)', () => {
     await page.advance(1_000);
     const unknown = 'No reply - it may or may not have saved';
     expect(within(savedRegion()).getByText(unknown)).toBeVisible();
-    const picker = within(savedRegion()).getByRole('combobox', { name: 'Run' });
     const farmSave = page.data.store.getSnapshot().intents.find((r) => r.kind === 'run_save');
-    await page.user.selectOptions(picker, 'bp_other');
+    await page.user.click(within(runRow('Other')).getByRole('button', { name: 'Edit Other' }));
     await page.advance(1_000);
     expect(savedRegion().querySelector('.tp-run-outcome')).toBeNull();
     await typeSaved(page, '45');
     expect(saveButton(savedRegion(), 'Save run settings')).not.toHaveAttribute('aria-disabled');
     // Back on its own run: its own line, still Unknown (a read without the value proves nothing).
-    await page.user.selectOptions(picker, 'bp_farm');
+    await page.user.click(within(runRow('Farm')).getByRole('button', { name: 'Edit Farm' }));
     await page.advance(1_000);
     expect(savedRegion().querySelector('.tp-run-outcome')).toHaveAttribute(
       'data-intent',
@@ -800,19 +805,22 @@ describe('Runs page: review fixes (F6R-02 to F6R-07)', () => {
   });
 
   it.each([
-    ['runs.ready', 'Ready'],
-    ['runs.not_ready_image_row', 'Not ready'],
-  ])('RUN-13 %s: the run readiness line and the exact Recognition link', async (runsCase, line) => {
-    await openRuns('#runs/saved/bp_farm', {
-      before: (fake) => {
-        fake.route('GET', '/api/runs', () => ({ status: 200, body: dashboardBody(runsCase) }));
-      },
-    });
-    const region = savedRegion();
-    expect(region.querySelector('.tp-runs__readiness')).toHaveTextContent(line);
-    expect(
-      within(region).getByRole('link', { name: 'Prepare runs on the Recognition page' }),
-    ).toHaveAttribute('href', '#recognition');
-    expect(textOutsideCatalogue(document.body)).toEqual([]);
-  });
+    ['runs.ready', 'Ready', false],
+    ['runs.not_ready_image_row', '1 screen images missing', true],
+  ])(
+    'RUN-13 %s: each run row has its readiness line and, until ready, the exact Recognition link',
+    async (runsCase, line, prepare) => {
+      await openRuns('#runs/saved/bp_farm', {
+        before: (fake) => {
+          fake.route('GET', '/api/runs', () => ({ status: 200, body: dashboardBody(runsCase) }));
+        },
+      });
+      const row = runRow('Farm');
+      expect(row.querySelector('.tp-runs__readiness')).toHaveTextContent(line);
+      const link = within(row).queryByRole('link', { name: 'Prepare' });
+      if (prepare) expect(link).toHaveAttribute('href', '#recognition');
+      else expect(link).toBeNull();
+      expect(textOutsideCatalogue(document.body)).toEqual([]);
+    },
+  );
 });

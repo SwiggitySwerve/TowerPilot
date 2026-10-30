@@ -4,8 +4,7 @@ import {
   draftChanges,
   includeUpgrade,
   leaveOutUpgrade,
-  moveUpgrade,
-  reviewQueue,
+  moveUpgradeTo,
   setExcluded,
   type QueueDraft,
 } from '../../core/shoppingPlan.ts';
@@ -175,14 +174,9 @@ export function SavedShopping() {
                 onExclude={(upgrade, excluded) => {
                   stage(setExcluded(vm.draft, upgrade, excluded));
                 }}
-                onMove={(upgrade, step) => {
-                  const next = moveUpgrade(vm.base, vm.draft, upgrade, step);
-                  if (next === null) return null;
-                  stage(next);
-                  return (
-                    reviewQueue(vm.base, next).entries.find((entry) => entry.id === upgrade)
-                      ?.position ?? null
-                  );
+                onMove={(upgrade, to) => {
+                  const next = moveUpgradeTo(vm.base, vm.draft, upgrade, to);
+                  if (next !== null) stage(next);
                 }}
               />
             ) : vm.conversion === null ? (

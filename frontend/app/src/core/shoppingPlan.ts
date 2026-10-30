@@ -344,6 +344,24 @@ export function leaveOutUpgrade(draft: QueueDraft, upgrade: string): QueueDraft 
   return { ...draft, [entryKey(upgrade, 'enabled')]: false };
 }
 
+/**
+ * Move an upgrade to zero-based place `to` of the queue (the place it holds after the move);
+ * null when it is not queued or `to` is outside the queue. A drag moves any distance.
+ */
+export function moveUpgradeTo(
+  base: QueueBase,
+  draft: QueueDraft,
+  upgrade: string,
+  to: number,
+): QueueDraft | null {
+  const order = [...orderOf(baseOf(base, draft), draft)];
+  const from = order.indexOf(upgrade);
+  if (from < 0 || to < 0 || to >= order.length) return null;
+  order.splice(from, 1);
+  order.splice(to, 0, upgrade);
+  return withOrder(draft, order);
+}
+
 /** Move an upgrade one place up (-1) or down (1); null at either end. */
 export function moveUpgrade(
   base: QueueBase,
@@ -351,13 +369,8 @@ export function moveUpgrade(
   upgrade: string,
   step: -1 | 1,
 ): QueueDraft | null {
-  const order = [...orderOf(baseOf(base, draft), draft)];
-  const from = order.indexOf(upgrade);
-  const to = from + step;
-  if (from < 0 || to < 0 || to >= order.length) return null;
-  order.splice(from, 1);
-  order.splice(to, 0, upgrade);
-  return withOrder(draft, order);
+  const from = orderOf(baseOf(base, draft), draft).indexOf(upgrade);
+  return from < 0 ? null : moveUpgradeTo(base, draft, upgrade, from + step);
 }
 
 /**
