@@ -43,6 +43,7 @@ import { sendRunNow } from '../api/intents/routineAction.ts';
 import { sendLiveReset, sendLiveSave, sendSavedSave } from '../api/intents/runs.ts';
 import type { SendResult } from '../api/intents/send.ts';
 import { sendCollect, startClick } from '../api/intents/start.ts';
+import { takeoverClick } from '../api/intents/takeover.ts';
 import { sendStop } from '../api/intents/stop.ts';
 import {
   createPoller,
@@ -678,6 +679,27 @@ export function createDashboardData(options: DashboardDataOptions = {}): Dashboa
         notice('start_not_sent', result.reason);
       } else {
         store.dispatch({ type: 'clear_notice', kind: 'start_not_sent' });
+      }
+    },
+    takeOver: async (command) => {
+      if (!fenced(command)) return;
+      const context = launchContext();
+      if (context === null || !tracker.confirmed()) {
+        notice('command_not_sent', 'context_unknown');
+        return;
+      }
+      const result = await takeoverClick(
+        { machine, transport, newKey, epoch: tracker.epoch },
+        { preset: command.preset, context, pageContext: context },
+      );
+      if (result.kind === 'not_sent') {
+        notice(
+          result.reason === 'changed' ? 'takeover_changed' : 'takeover_unreadable',
+          result.reason,
+        );
+      } else {
+        store.dispatch({ type: 'clear_notice', kind: 'takeover_changed' });
+        store.dispatch({ type: 'clear_notice', kind: 'takeover_unreadable' });
       }
     },
     collect: (command) => {

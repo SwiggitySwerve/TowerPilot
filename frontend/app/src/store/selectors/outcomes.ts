@@ -56,6 +56,7 @@ import type {
   ReadSettlementCode,
 } from '../types.ts';
 import { controlFacts, highestStopRevision, type ControlFacts } from './controlFacts.ts';
+import { takeoverEnd } from './takeoverOperation.ts';
 import type { ReconnectCommand } from './topBar.ts';
 
 /**
@@ -207,7 +208,7 @@ export interface HarvestDetailVM {
 
 /** A Start or Collect answer (S-102, 7.4). */
 export interface StartDetailVM {
-  readonly kind: 'start';
+  readonly kind: 'start' | 'takeover';
   readonly class: StartAnswerClass['kind'];
   readonly operation: ServerText<'id'> | null;
   readonly transfer: 'none' | 'unconfirmed' | 'handover' | null;
@@ -215,6 +216,8 @@ export interface StartDetailVM {
   readonly wasStoppingAtHandover: readonly ServerText<'id'>[];
   readonly waitedSec: number | null;
   readonly code: string | null;
+  /** A takeover's operation error code (the worker's refusal), as the server sent it. */
+  readonly operationCode: ServerText<'id'> | null;
 }
 
 /** A kill (S-060): never "killed"; whether a later D-4 read still lists that exact process. */
@@ -391,6 +394,7 @@ const SLOTS: Readonly<Record<IntentKindCode, OutcomeSlot>> = {
   handoff: 'needs',
   start: 'start',
   start_gems: 'start',
+  takeover: 'battle',
   reconnect: 'connection',
   run_now: 'battle',
   run_save: 'runs',
@@ -605,9 +609,9 @@ function harvestDetail(answer: HarvestAnswerClass): HarvestDetailVM {
   }
 }
 
-function startDetail(answer: StartAnswerClass): StartDetailVM {
+function startDetail(answer: StartAnswerClass, kind: StartDetailVM['kind']): StartDetailVM {
   const detail: StartDetailVM = {
-    kind: 'start',
+    kind,
     class: answer.kind,
     operation: null,
     transfer: null,
@@ -615,6 +619,7 @@ function startDetail(answer: StartAnswerClass): StartDetailVM {
     wasStoppingAtHandover: [],
     waitedSec: null,
     code: null,
+    operationCode: null,
   };
   switch (answer.kind) {
     case 'started': {
@@ -636,7 +641,11 @@ function startDetail(answer: StartAnswerClass): StartDetailVM {
     case 'cancelled':
     case 'interrupted':
     case 'succeeded':
-      return { ...detail, operation: fromServer('id', answer.operationId) };
+      return {
+        ...detail,
+        operation: fromServer('id', answer.operationId),
+        operationCode: kind === 'takeover' ? fromServer('id', own(answer.error, 'code')) : null,
+      };
     case 'context_changed':
     case 'refused':
       return { ...detail, code: codeOf(answer.code) };
@@ -690,7 +699,9 @@ function answerDetail(
     }
     case 'start':
     case 'start_gems':
-      return startDetail(classifyStartAnswer(raw));
+      return startDetail(classifyStartAnswer(raw), 'start');
+    case 'takeover':
+      return startDetail(classifyStartAnswer(raw), 'takeover');
     case 'clear_flag': {
       const answer = classifyClearFlagAnswer(raw);
       return { kind: 'clear_flag', class: answer.kind, code: codeOf(answer.code) };
@@ -1016,7 +1027,11 @@ export function selectOutcomes(state: DashboardState): OutcomesVM {
   for (const record of facts.records) {
     if (record.dismissed) continue;
     const settled = settledByRead(state, record);
-    const detail = answerDetail(state, facts, record);
+    // A takeover accepted and then ended by its worker (a refusal at the entry gate): the read of
+    // its operation, worded like an accepted launch that ended.
+    const ended = takeoverEnd(state, record);
+    const detail =
+      ended === null ? answerDetail(state, facts, record) : startDetail(ended, 'takeover');
     const line: Omit<OutcomeLineVM, 'word'> = {
       id: record.id,
       target: fromServer('id', record.meta.operationId ?? record.meta.preset ?? record.meta.action),
@@ -1052,9 +1067,11 @@ export function selectOutcomes(state: DashboardState): OutcomesVM {
       error:
         record.answer === null ? null : fromServer('message', own(record.answer.body, 'error')),
       operationError:
-        record.answer === null
-          ? null
-          : errorMessage(own(own(record.answer.body, 'operation'), 'error')),
+        ended !== null
+          ? errorMessage(ended.error)
+          : record.answer === null
+            ? null
+            : errorMessage(own(own(record.answer.body, 'operation'), 'error')),
       harvestPausedCurrent: harvestPausedCurrent(state, record),
       stopAgain: stopAgain(state, facts, record),
       attemptRefused:

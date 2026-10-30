@@ -74,6 +74,11 @@ export interface LaunchCommand extends Fenced {
   readonly preset: string;
 }
 
+/** Take over the battle on screen with `preset`'s settings (backend control/takeover.py). */
+export interface TakeoverCommand extends Fenced {
+  readonly preset: string;
+}
+
 export interface RunNowCommand extends Fenced {
   readonly operationId: string;
   readonly battleId: string;
@@ -130,6 +135,8 @@ export interface DashboardCommands {
   readonly handoff: (command: HandoffCommand) => Promise<void>;
   readonly start: (command: LaunchCommand) => Promise<void>;
   readonly collect: (command: LaunchCommand) => Promise<void>;
+  /** After the person confirmed the dialog: read the run's takeover preview, then send once. */
+  readonly takeOver: (command: TakeoverCommand) => Promise<void>;
   /**
    * F-004, M8: reconnect the address the view model showed (sent in the body), after a
    * click-time config read still names the same context; one connection request at a time.

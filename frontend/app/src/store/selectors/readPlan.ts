@@ -13,6 +13,11 @@ import {
   trackedOperationPath,
   trackedOperationWorking,
 } from './recognitionOperation.ts';
+import {
+  followedTakeover,
+  takeoverOperationPath,
+  takeoverOperationWorking,
+} from './takeoverOperation.ts';
 import type { DashboardState, IntentView, ResourceId } from '../types.ts';
 import type { ReadPlan } from '../../api/poller.ts';
 
@@ -55,7 +60,7 @@ function statusMode(state: DashboardState): 'active' | 'idle' {
   if (
     anyProcessListed(state) ||
     calibrationRunning(state) ||
-    sendingKind(state, ['start', 'start_gems', 'reconnect']) ||
+    sendingKind(state, ['start', 'start_gems', 'takeover', 'reconnect']) ||
     anyUnresolved(state)
   ) {
     return 'active';
@@ -84,6 +89,13 @@ export function selectReadPlan(state: DashboardState, resource: ResourceId): Rea
       return path === null
         ? { path: null, mode: 'off' }
         : { path, mode: trackedOperationWorking(state) ? 'active' : 'off' };
+    }
+    case 'takeoverOperation': {
+      // This battle: the operation of an accepted takeover, until the worker ends it.
+      const path = takeoverOperationPath(state);
+      return path === null || !takeoverOperationWorking(state)
+        ? { path: null, mode: 'off' }
+        : { path, mode: 'active' };
     }
     case 'battlesActive': {
       const answered = state.reads.battlesActive.lastAnswered;
@@ -403,6 +415,8 @@ export function readTriggers(
     ) {
       wanted.add('runs');
     }
+    if (answered && record.kind === 'takeover' && followedTakeover(next) !== null)
+      wanted.add('takeoverOperation');
   }
   const identityBefore = identityKey(previous);
   const identityNow = identityKey(next);

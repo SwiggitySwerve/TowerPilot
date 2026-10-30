@@ -191,7 +191,8 @@ export function settledPhase(
           : 'refused';
     }
     case 'start':
-    case 'start_gems': {
+    case 'start_gems':
+    case 'takeover': {
       const outcome = classifyStartAnswer(raw);
       switch (outcome.kind) {
         case 'unknown':

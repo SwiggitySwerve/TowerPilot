@@ -152,9 +152,24 @@
     "response": {"battle": null},
     "status": 200
    },
+   "operation_accepted_read_by_id": {
+    "request": null,
+    "response": {"operation": {"cancellable": true, "context": {"account": null, "adb_host": "127.0.0.1", "adb_port": 50000, "artifact_dir": "<root>/logs/main", "config_revision": "<sha256>", "device_key": "<sha256>", "instance": "main", "profile": "mine", "profile_path": "<root>/profiles/mine.yaml", "profile_revision": "<sha256>", "rendering": null, "selected_run": "bp_farm", "serial": "fake:1"}, "created_at": 1800000000.0, "error": null, "id": "<id-1>", "idempotency_key": "real-worker-2", "kind": "run", "progress": {}, "recovery_action": null, "request": {"action": "takeover", "attach": {"attestation": "current_battle_takeover", "expected_battle": {"battle_id": null, "generation": null, "observed_wave": null}, "mode": "current_battle", "policy_revision": "5e55f85597292d3321c3a0724f017818bc14c369ea3e2e58cc3fa2a586aa5f30", "tier": {"provenance": "unknown", "value": null}}, "expected_context": {"account": null, "instance": "main", "profile": "mine", "rendering": null, "serial": "fake:1"}, "preset": "bp_farm"}, "result_refs": {}, "revision": 2, "status": "accepted", "step": "accepted", "updated_at": 1800000000.0, "worker": {"creation_time": 1800000000.0, "pid": 4242}}},
+    "status": 200
+   },
    "operation_after_the_real_worker_refused": {
     "request": null,
     "response": {"operation": {"error": {"code": "attach_no_battle", "message": "the battle is not on screen or its wave cannot be read"}, "status": "failed"}},
+    "status": 200
+   },
+   "operation_failed_read_by_id_after_the_real_worker_refused": {
+    "request": null,
+    "response": {"operation": {"cancellable": false, "context": {"account": null, "adb_host": "127.0.0.1", "adb_port": 50000, "artifact_dir": "<root>/logs/main", "config_revision": "<sha256>", "device_key": "<sha256>", "instance": "main", "profile": "mine", "profile_path": "<root>/profiles/mine.yaml", "profile_revision": "<sha256>", "rendering": null, "selected_run": "bp_farm", "serial": "fake:1"}, "created_at": 1800000000.0, "error": {"code": "attach_no_battle", "message": "the battle is not on screen or its wave cannot be read"}, "id": "<id-1>", "idempotency_key": "real-worker-2", "kind": "run", "progress": {}, "recovery_action": null, "request": {"action": "takeover", "attach": {"attestation": "current_battle_takeover", "expected_battle": {"battle_id": null, "generation": null, "observed_wave": null}, "mode": "current_battle", "policy_revision": "5e55f85597292d3321c3a0724f017818bc14c369ea3e2e58cc3fa2a586aa5f30", "tier": {"provenance": "unknown", "value": null}}, "expected_context": {"account": null, "instance": "main", "profile": "mine", "rendering": null, "serial": "fake:1"}, "preset": "bp_farm"}, "result_refs": {}, "revision": 4, "status": "failed", "step": "accepted", "updated_at": 1800000000.0, "worker": {"creation_time": 1800000000.0, "pid": 4242}}},
+    "status": 200
+   },
+   "operation_running_read_by_id": {
+    "request": null,
+    "response": {"operation": {"cancellable": true, "context": {"account": null, "adb_host": "127.0.0.1", "adb_port": 50000, "artifact_dir": "<root>/logs/main", "config_revision": "<sha256>", "device_key": "<sha256>", "instance": "main", "profile": "mine", "profile_path": "<root>/profiles/mine.yaml", "profile_revision": "<sha256>", "rendering": null, "selected_run": "bp_farm", "serial": "fake:1"}, "created_at": 1800000000.0, "error": null, "id": "<id-1>", "idempotency_key": "real-worker-2", "kind": "run", "progress": {}, "recovery_action": null, "request": {"action": "takeover", "attach": {"attestation": "current_battle_takeover", "expected_battle": {"battle_id": null, "generation": null, "observed_wave": null}, "mode": "current_battle", "policy_revision": "5e55f85597292d3321c3a0724f017818bc14c369ea3e2e58cc3fa2a586aa5f30", "tier": {"provenance": "unknown", "value": null}}, "expected_context": {"account": null, "instance": "main", "profile": "mine", "rendering": null, "serial": "fake:1"}, "preset": "bp_farm"}, "result_refs": {}, "revision": 3, "status": "running", "step": "accepted", "updated_at": 1800000000.0, "worker": {"creation_time": 1800000000.0, "pid": 4242}}},
     "status": 200
    },
    "same_request_reads_the_failed_operation_back": {

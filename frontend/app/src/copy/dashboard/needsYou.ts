@@ -5,6 +5,7 @@ const sources = {
   status: entry('Live status'),
   calibrate: entry('Setup progress'),
   calibrateOperation: entry('Screen learning'),
+  takeoverOperation: entry('Takeover progress'),
   runs: entry('Runs and readiness'),
   wizardTools: entry('Connection tools'),
   wizardState: entry('Setup steps'),

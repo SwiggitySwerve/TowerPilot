@@ -307,6 +307,21 @@ const SENDERS: readonly (readonly [IntentKind, (machine: IntentMachine) => void]
       ),
   ],
   [
+    'takeover',
+    (machine) =>
+      machine.send({
+        kind: 'takeover',
+        target: 'takeover',
+        endpoint: 'takeover',
+        path: '/api/control',
+        body: { action: 'takeover', preset: 'bp_farm', idempotency_key: 'key-0001' },
+        key: 'key-0001',
+        meta: { preset: 'bp_farm' },
+        context: E0_CONTEXT,
+        supersedes: [],
+      }),
+  ],
+  [
     'clear_flag',
     (machine) => sendClearFlag(machine, { operationId: OP, expectedRevision: 2 }, E0_CONTEXT),
   ],

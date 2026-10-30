@@ -34,6 +34,7 @@ export type PolledResource =
   | 'status'
   | 'calibrate'
   | 'calibrateOperation'
+  | 'takeoverOperation'
   | 'battlesActive'
   | 'schedule'
   | 'battles'
@@ -55,6 +56,7 @@ export const POLLED_RESOURCES: readonly PolledResource[] = [
   'status',
   'calibrate',
   'calibrateOperation',
+  'takeoverOperation',
   'battlesActive',
   'schedule',
   'battles',
@@ -156,6 +158,15 @@ export const POLICIES: Readonly<Record<PolledResource, Policy>> = Object.freeze(
   // Recognition page (R1, R2, R8): the operation this page follows, by its id, while it works.
   calibrateOperation: {
     endpoint: 'calibrate',
+    activeMs: 1000,
+    idleMs: null,
+    hiddenMs: 10000,
+    backoff: 'none',
+    onVisible: true,
+  },
+  // This battle: the operation an accepted takeover started, by its id, until the worker ends it.
+  takeoverOperation: {
+    endpoint: 'takeoverOperation',
     activeMs: 1000,
     idleMs: null,
     hiddenMs: 10000,

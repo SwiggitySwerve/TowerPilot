@@ -38,6 +38,7 @@ function emptyReads(): Readonly<Record<ResourceId, ReadSlot>> {
     status: EMPTY_SLOT,
     calibrate: EMPTY_SLOT,
     calibrateOperation: EMPTY_SLOT,
+    takeoverOperation: EMPTY_SLOT,
     battlesActive: EMPTY_SLOT,
     schedule: EMPTY_SLOT,
     battles: EMPTY_SLOT,

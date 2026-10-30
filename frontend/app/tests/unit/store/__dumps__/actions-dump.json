@@ -134,6 +134,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -1335,6 +1336,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -2616,6 +2618,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -3649,6 +3652,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -4751,6 +4755,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -5971,6 +5976,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -6965,6 +6971,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -7852,6 +7859,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": true,
+    "takenOver": false,
     "routines": [],
     "commands": [],
     "sharedReason": null
@@ -7961,6 +7969,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": true,
+    "takenOver": false,
     "routines": [],
     "commands": [],
     "sharedReason": null
@@ -8070,6 +8079,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": true,
+    "takenOver": false,
     "routines": [],
     "commands": [],
     "sharedReason": null
@@ -8207,6 +8217,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -8503,6 +8514,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -8890,6 +8902,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -9899,6 +9912,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -10906,6 +10920,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -11839,6 +11854,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -12794,6 +12810,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -13749,6 +13766,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -14704,6 +14722,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -15659,6 +15678,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -16754,6 +16774,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [],
     "sharedReason": null
@@ -17784,6 +17805,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [],
     "sharedReason": null
@@ -18705,6 +18727,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [
      {
@@ -19766,6 +19789,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [
      {
@@ -20812,6 +20836,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [],
     "sharedReason": null
@@ -21734,6 +21759,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [],
     "sharedReason": null
@@ -22741,6 +22767,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [
      {
@@ -23877,6 +23904,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [],
     "sharedReason": null
@@ -24889,6 +24917,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [
      {
@@ -25788,6 +25817,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -26853,6 +26883,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [],
     "sharedReason": "action_schema_newer"
@@ -27786,6 +27817,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [
      {
@@ -28848,6 +28880,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [
      {
@@ -29909,6 +29942,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [],
     "commands": [],
     "sharedReason": null
@@ -30699,6 +30733,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -31653,6 +31688,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -32591,6 +32627,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -33523,6 +33560,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -34880,6 +34918,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -35840,6 +35879,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -36822,6 +36862,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -37754,6 +37795,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -38714,6 +38756,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -39646,6 +39689,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -40578,6 +40622,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -41565,6 +41610,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -42578,6 +42624,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -43627,6 +43674,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -44641,6 +44689,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -45764,6 +45813,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -46852,6 +46902,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -48029,6 +48080,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -49184,6 +49236,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -50272,6 +50325,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -51360,6 +51414,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -52515,6 +52570,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -53549,6 +53605,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -54583,6 +54640,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -55702,6 +55760,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -56857,6 +56916,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -57891,6 +57951,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -58925,6 +58986,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -59959,6 +60021,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -60993,6 +61056,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
@@ -62027,6 +62091,7 @@
      "confirmationReason": null
     },
     "noTrackedBattle": false,
+    "takenOver": false,
     "routines": [
      {
       "routine": "ad_gems",
