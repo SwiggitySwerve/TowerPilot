@@ -19,11 +19,12 @@ import * as contract16 from './dashboard_contract_pages_v1_recognition_advanced.
 import * as contract17 from './dashboard_contract_pages_v1_recognition.29aa411f.ts';
 import * as contract18 from './dashboard_contract_pages_v1_runs.ff4f699f.ts';
 import * as contract19 from './dashboard_contract_pages_v1_runtime.477f4cbd.ts';
-import * as contract20 from './dashboard_contract_pages_v1_schedule.0709b095.ts';
-import * as contract21 from './dashboard_contract_pages_v1_shopping.84476b5e.ts';
-import * as contract22 from './dashboard_contract_v1.e1fe970f.ts';
-import * as contract23 from './equipment_samples_v1.bdd7ca73.ts';
-import * as contract24 from './harvest_status_v1.1534d7dc.ts';
+import * as contract20 from './dashboard_contract_pages_v1_scan_metrics.f9007d4c.ts';
+import * as contract21 from './dashboard_contract_pages_v1_schedule.0709b095.ts';
+import * as contract22 from './dashboard_contract_pages_v1_shopping.84476b5e.ts';
+import * as contract23 from './dashboard_contract_v1.e1fe970f.ts';
+import * as contract24 from './equipment_samples_v1.bdd7ca73.ts';
+import * as contract25 from './harvest_status_v1.1534d7dc.ts';
 const contracts = {
   b46631ae6f207d5bd18edab010fc6b09fa967ac0ef925ef9f75c5abebf4e7a01: contract0,
   f47a0b036f3206d02e6e0049d0af35f075b3e99786b00495c30bf1e7f43f59df: contract1,
@@ -45,11 +46,12 @@ const contracts = {
   '29aa411f14e2d1aefe33574307f66e9e9af0f2282ef00a9b195218ab4e8c14ee': contract17,
   ff4f699fa4c34a5ec9d5c2734cca24f400204aa76bbde70701d02464b04060be: contract18,
   '477f4cbd9c25a87e494d9ef7913cb1ead6cba86a8b5adc62a8b9414c84c5554a': contract19,
-  '0709b095431a852946a2fc668035a174751cd40fc9e7c9e8aa9563526dec61b2': contract20,
-  '84476b5eef9ba07ed6cc61d7a45bf81a2406e2c0f01c32b3462eef05d1e1ab18': contract21,
-  e1fe970f063ba915a6de1ae1ba2fe99aa79e4b143790057c834926728f6a7979: contract22,
-  bdd7ca73fc29c1818a201eaa1dcbac863d40172733c1096db7e1ef4a39e2b909: contract23,
-  '1534d7dcaf4eed851d2122df8392391dc985a28adcdd0efa941fa4bfb2480d6e': contract24,
+  f9007d4ce877f364527c728b8a4f82f36e4ee7132d03fb110c95cbaf1c6bfc59: contract20,
+  '0709b095431a852946a2fc668035a174751cd40fc9e7c9e8aa9563526dec61b2': contract21,
+  '84476b5eef9ba07ed6cc61d7a45bf81a2406e2c0f01c32b3462eef05d1e1ab18': contract22,
+  e1fe970f063ba915a6de1ae1ba2fe99aa79e4b143790057c834926728f6a7979: contract23,
+  bdd7ca73fc29c1818a201eaa1dcbac863d40172733c1096db7e1ef4a39e2b909: contract24,
+  '1534d7dcaf4eed851d2122df8392391dc985a28adcdd0efa941fa4bfb2480d6e': contract25,
 };
 /** Unknown identities fail loudly; no default-identity fallback. */
 export function contractForFixture(identity: { readonly path: string; readonly sha256: string }) {

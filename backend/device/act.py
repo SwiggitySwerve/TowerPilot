@@ -6,7 +6,7 @@ import subprocess
 import time
 
 from settings import CONFIG, instance, adb_args, input_args, run_hidden
-from runtime import logger
+from runtime import logger, scan_metrics
 
 
 class TapRefused(RuntimeError):
@@ -67,9 +67,11 @@ def tap(x: int, y: int, reason: str = "", instant: bool = False,
     """Log each dispatch, dry run and refusal at the shared input boundary."""
     with logger.attempt('device.tap', x=x, y=y, reason=reason,
                         instant=instant, deadline=deadline) as attempt:
+        scan_metrics.tap(reason)
         try:
             result = _tap(x, y, reason, instant, deadline)
         except TapRefused as exc:
+            scan_metrics.input_refused()
             attempt.finish('failed' if exc.__cause__ is not None else 'refused', dispatched=False)
             raise
         attempt.finish('dry_run' if result['dry_run'] else 'dispatched', **result)
@@ -140,9 +142,11 @@ def swipe(x0: int, y0: int, x1: int, y1: int, ms: int = 400,
     """Log the invocation outcome without interpreting the game's response."""
     with logger.attempt('device.swipe', x=x0, y=y0, x1=x1, y1=y1,
                         ms=ms, reason=reason, deadline=deadline) as attempt:
+        scan_metrics.swipe(reason)
         try:
             result = _swipe(x0, y0, x1, y1, ms, reason, deadline)
         except TapRefused as exc:
+            scan_metrics.input_refused()
             attempt.finish('failed' if exc.__cause__ is not None else 'refused', dispatched=False)
             raise
         attempt.finish('dry_run' if result['dry_run'] else 'dispatched', **result)

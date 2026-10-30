@@ -1,6 +1,7 @@
 """Source-at-start provenance must survive later edits and packaged installs."""
 import hashlib
 import json
+from pathlib import Path
 
 import pytest
 
@@ -48,6 +49,85 @@ def test_unreadable_source_is_unknown_not_current(tmp_path, monkeypatch):
     current = build_info.compare(tmp_path, started)
     assert current['source_changed'] is None
     assert current['error']['type'] == 'PermissionError'
+
+# The exclusion list as it was before item 9 (a literal copy, not read from the module, so the reference does not move when the module's list grows).
+_EXCLUDED_BEFORE_ITEM_9 = {'tests', '__pycache__', 'accounts', 'logs', 'runs', 'captures', 'profiles', 'templates', '.venv', 'node_modules'}
+
+
+def _fingerprint_before_item_9(root):
+    """The fingerprint algorithm exactly as it was before runtime/build_info.source_files was extracted (the regression reference)."""
+    import hashlib
+    import os
+    digest = hashlib.sha256()
+    sources = []
+    for directory in ('backend', 'frontend'):
+        base = root / directory
+        if not base.exists():
+            continue
+        for current, directories, filenames in os.walk(base):
+            directories[:] = sorted(name for name in directories if name not in _EXCLUDED_BEFORE_ITEM_9)
+            sources.extend(Path(current) / name for name in filenames if name.endswith('.py'))
+    for path in sorted(sources):
+        digest.update(path.relative_to(root).as_posix().encode('utf-8') + b'\0')
+        digest.update(path.read_bytes())
+        digest.update(b'\0')
+    return digest.hexdigest()
+
+
+def _tree(tmp_path):
+    for rel, text in (('backend/a.py', 'a = 1\n'), ('backend/sub/b.py', 'b = 2\n'), ('frontend/helper.py', 'd = 3\n'), ('backend/tests/test_a.py', 'def test(): pass\n'),
+                      ('backend/accounts/x.py', 'secret\n'), ('backend/logs/y.py', 'log\n'), ('backend/notes.txt', 'not python\n')):
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding='utf-8')
+    return tmp_path
+
+
+def test_the_fingerprint_is_unchanged_by_extracting_the_file_list(tmp_path):
+    root = _tree(tmp_path)
+    assert build_info.source_fingerprint(root) == _fingerprint_before_item_9(root)
+    assert [p.relative_to(root).as_posix() for p in sorted(build_info.source_files(root))] == ['backend/a.py', 'backend/sub/b.py', 'frontend/helper.py']
+
+
+def test_source_fingerprint_ignores_a_tests_directory_change(tmp_path):
+    root = _tree(tmp_path)
+    before = build_info.source_fingerprint(root)
+    (root / 'backend' / 'tests' / 'test_a.py').write_text('def test(): assert False\n', encoding='utf-8')
+    (root / 'backend' / 'tests' / 'new_test.py').write_text('x = 1\n', encoding='utf-8')
+    assert build_info.source_fingerprint(root) == before
+    (root / 'backend' / 'a.py').write_text('a = 2\n', encoding='utf-8')
+    assert build_info.source_fingerprint(root) != before
+
+
+def test_source_fingerprint_ignores_generated_report_directories(tmp_path):
+    """frontend/app/playwright-report and test-results are git-ignored output a Playwright run rewrites: they are not the code a scan ran."""
+    root = _tree(tmp_path)
+    before = build_info.source_fingerprint(root)
+    for rel in ('frontend/app/playwright-report/r12f/write-report.py', 'frontend/app/test-results/run-1/helper.py', 'backend/test-results/x.py', 'frontend/playwright-report/y.py'):
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('generated = True\n', encoding='utf-8')
+    assert build_info.source_fingerprint(root) == before
+    (root / 'frontend/app/playwright-report/r12f/write-report.py').write_text('generated = False\n', encoding='utf-8')
+    assert build_info.source_fingerprint(root) == before
+    assert [p.relative_to(root).as_posix() for p in sorted(build_info.source_files(root))] == ['backend/a.py', 'backend/sub/b.py', 'frontend/helper.py']
+    (root / 'frontend' / 'app' / 'real.py').write_text('code = 1\n', encoding='utf-8')            # a source file in the same folder is still covered
+    assert build_info.source_fingerprint(root) != before
+
+
+def test_overrides_give_the_fingerprint_of_a_tree_that_is_not_on_disk(tmp_path):
+    root = _tree(tmp_path)
+    declared = build_info.source_fingerprint(root, {'backend/a.py': b'a = 2\n'})
+    assert declared != build_info.source_fingerprint(root)
+    (root / 'backend' / 'a.py').write_bytes(b'a = 2\n')
+    assert build_info.source_fingerprint(root) == declared
+
+
+def test_an_override_that_names_no_covered_file_is_an_error(tmp_path):
+    root = _tree(tmp_path)
+    for rel in ('backend/tests/test_a.py', 'backend/missing.py', 'backend/notes.txt'):
+        with pytest.raises(ValueError, match='names no source file'):
+            build_info.source_fingerprint(root, {rel: b'x'})
 
 
 # --------------------------------------------------------------- release identity (item 10 p10a)

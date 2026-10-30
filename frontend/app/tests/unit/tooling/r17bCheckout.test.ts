@@ -27,7 +27,7 @@ describe('AC6 landed r17b checkout provenance', () => {
     [DASHBOARD_FIXTURE_PATH, 'e1fe970f063ba915a6de1ae1ba2fe99aa79e4b143790057c834926728f6a7979'],
     [
       DASHBOARD_PAGES_FIXTURE_PATH,
-      '22176e4df054d799e282a4b52ff863a87a7dc5e89c4218a76c56192b955e6f67',
+      '96157baaf763ef1d0229156003c32dbf6ce22c6c2c6ad8bf6f34af2808e4ca30',
     ],
     [
       SYNTHETIC_ACTION_FIXTURE_PATH,

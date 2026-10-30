@@ -1,3 +1,7 @@
+import { z } from 'zod';
+import { recognitionStatusAnswerSchema as baseStatusAnswerSchema } from './generated/dashboard_contract_pages_v1_recognition.29aa411f.ts';
+import { scanMetricsStatusAnswerSchema } from './generated/dashboard_contract_pages_v1_scan_metrics.f9007d4c.ts';
+
 /**
  * The Recognition page's contract (screens brief R1 to R8): strict schemas generated from the
  * recognition_reads and calibrate_writes families of
@@ -10,6 +14,11 @@ export {
   calibrateStartAnswerSchema,
   calibrateStopAnswerSchema,
   recognitionConfigAnswerSchema,
-  recognitionStatusAnswerSchema,
   recognitionStatusReadbackAnswerSchema,
 } from './generated/dashboard_contract_pages_v1_recognition.29aa411f.ts';
+
+// Keep the established samples and accept the separately recorded metrics status answer.
+export const recognitionStatusAnswerSchema = z.union([
+  baseStatusAnswerSchema,
+  scanMetricsStatusAnswerSchema,
+]);

@@ -308,6 +308,26 @@ export const PAGES_RECOGNITION_DESCRIPTOR = {
   })),
 };
 
+/** Sealed scan instruments and the status answer that exposes their artifact reference.
+ * @type {Descriptor}
+ */
+export const PAGES_SCAN_METRICS_DESCRIPTOR = {
+  name: 'dashboard_contract_pages_v1_scan_metrics',
+  boundTo: 'families',
+  families: /** @type {const} */ ([
+    ['scan_metrics', 'GET', '/api/calibrate/metrics', 'ScanMetricsAnswer'],
+    ['scan_metrics', 'GET', '/api/calibrate/status', 'ScanMetricsStatusAnswer'],
+  ]).map(([family, method, route, name]) => ({
+    key: `${family} ${method} ${route}`,
+    source: `cases.${family}`,
+    method,
+    pathPrefix: route,
+    name,
+    rawPath: 'answer',
+    pick: ['status', 'body'],
+  })),
+};
+
 /** R9-R11: operation-bound analysis, coverage reads and sanctioned human crops.
  * @type {Descriptor}
  */
@@ -558,6 +578,7 @@ export const CONTRACT_INPUTS = [
   },
   { file: DASHBOARD_PAGES_FIXTURE_PATH, descriptor: PAGES_RECOGNITION_ADVANCED_DESCRIPTOR },
   { file: DASHBOARD_PAGES_FIXTURE_PATH, descriptor: PAGES_ACTIONS_DESCRIPTOR },
+  { file: DASHBOARD_PAGES_FIXTURE_PATH, descriptor: PAGES_SCAN_METRICS_DESCRIPTOR },
   {
     file: DASHBOARD_PAGES_FIXTURE_PATH,
     descriptor: {

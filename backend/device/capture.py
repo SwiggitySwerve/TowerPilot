@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 
 from settings import CONFIG, adb_args, run_hidden
-from runtime import logger
+from runtime import logger, scan_metrics
 from device import adbclient
 
 
@@ -93,6 +93,7 @@ def grab(serial: str | None = None, display: str | None = None, *, discover=Fals
                           deadline=deadline)
             adbclient.check_deadline(deadline)
         except Exception as exc:
+            scan_metrics.capture_failed()
             logger.event('capture_failed', serial=serial, display=display,
                          retries=diagnostic['retries'],
                          duration_ms=round((time.monotonic_ns() - started) / 1_000_000, 3),
@@ -102,12 +103,18 @@ def grab(serial: str | None = None, display: str | None = None, *, discover=Fals
         if diagnostic['retries']:
             logger.event('capture_recovered', retries=diagnostic['retries'],
                          duration_ms=round((time.monotonic_ns() - started) / 1_000_000, 3))
-    adbclient.check_deadline(deadline)
+    try:
+        adbclient.check_deadline(deadline)
+    except Exception:
+        scan_metrics.capture_failed()       # late evidence is refused: the capture happened but is not a frame the caller gets
+        raise
+    scan_metrics.capture_ok()
     return frame
 
 
 def _capture_retry(diagnostic, **fields):
     diagnostic['retries'] += 1
+    scan_metrics.capture_retry()
     logger.event('capture_retry', retry=diagnostic['retries'],
                  duration_ms=round((time.monotonic_ns() - diagnostic['started']) / 1_000_000, 3),
                  **fields)

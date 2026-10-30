@@ -5,7 +5,7 @@ deliberate difference is the route list, which may differ from the baseline only
 import action_golden as golden
 
 # The routes added on purpose: item 6's one generic read route (a new action adds none) and item 3's read-only takeover preview (T3c).
-ADDED_ROUTES = ['/api/actions/executions', '/api/takeover/preview']
+ADDED_ROUTES = ['/api/actions/executions', '/api/calibrate/metrics', '/api/takeover/preview']
 
 
 def test_capabilities_and_runtime_routines_equal_the_captured_snapshots(tmp_path, dash):
