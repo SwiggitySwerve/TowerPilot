@@ -47,3 +47,13 @@ def owned_uws(entries) -> dict:
         if rel.startswith("uw/") and rel.endswith(".png") and entry.get("verified"):
             out[rel[len("uw/"):-len(".png")]] = True
     return out
+
+
+def observed_since(entry, since):
+    """Inclusive timestamp rule, usable after a caller's short-circuit guards."""
+    return entry.get('t', 0) >= since
+
+
+def entries_since(entries, since):
+    """Calibration entries observed since this operation's wall-clock start (inclusive)."""
+    return [entry for entry in entries if observed_since(entry, since)]
