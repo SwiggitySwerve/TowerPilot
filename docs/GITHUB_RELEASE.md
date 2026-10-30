@@ -1,6 +1,6 @@
 ## Recommended: Windows portable app
 
-Download **TowerPilot-0.5-beta-windows-x64.zip** below. Extract the whole ZIP into
+Download **TowerPilot-0.6-beta-windows-x64.zip** below. Extract the whole ZIP into
 a writable folder and double-click **Start Tower Pilot.cmd**. Your browser opens
 Setup. Python and dependencies are included—no Python installation or terminal
 commands are required. No console window opens: Tower Pilot sits in the
@@ -9,8 +9,8 @@ right-click it to quit.
 
 ## Source distribution / developers
 
-Download **TowerPilot-0.5-beta-source.zip** below, or clone the repository and
-check out `v0.5-beta`. Install Python 3.12, then double-click **Start Tower
+Download **TowerPilot-0.6-beta-source.zip** below, or clone the repository and
+check out `v0.6-beta`. Install Python 3.12, then double-click **Start Tower
 Pilot.cmd**; the source launcher creates its environment and installs dependencies.
 Alternatively run `py -3.12 -m pip install -r requirements.txt`, then
 `py -3.12 backend/dashboard.py` and open http://127.0.0.1:8620/ui/app/#emulators. The source ZIP includes the dashboard app build; a clone builds it
@@ -19,21 +19,24 @@ once with `cd frontend/app; npm ci; npm run build`.
 GitHub's automatically generated “Source code” downloads are also source-only;
 choose **windows-x64.zip** if you do not want to install Python.
 
-## What changed in 0.5-beta
+## What changed in 0.6-beta
 
-- **No console window.** The launcher starts without one and puts Tower Pilot
-  in the notification area near the clock: click the icon to open the
-  dashboard, right-click it to quit. A run in progress keeps going.
-- **New run type: Dissonance.** Coin runs entered through the game's Dissonant
-  Run dialog with one workshop tab disabled, with its own equipment, no
-  shopping, optional all-weapons-on and a wall rescue that also fires the
-  fleet-mark Nuke.
-- **Perk bans per run type.** A run type can keep its own list of perks banned;
-  the app sets them on the Perks dialog before the run and verifies every
-  change.
-- One entry path for every coin-kind run, so a dissonance run type can never
-  start an ordinary run by mistake.
-- Details and the beta limits: `docs/RELEASE_0.5_BETA.md`.
+- **A new dashboard.** One app with a sidebar for every page and the live emulator
+  screen beside the controls. It only claims what it can prove: an unanswered click
+  shows Unknown until a later read settles it.
+- **Gem harvesting that stays on or off** across restarts, and **shopping you can
+  order**, with a cash reserve it never spends below.
+- **Take over the battle on screen** from the Dashboard. Tower Pilot plays the battle
+  that is already running and never ends it.
+- **Fleet Nukes fire at a fleet that is on screen**, and the gem collector holds up on
+  a busy PC.
+- **Setup keeps what it verified**, and says plainly whether a scan was only accepted,
+  applied or leaves the run ready.
+- **A smoother live preview** from MuMu's native capture, with screenshots as the
+  fallback.
+- **Checked releases:** pinned packages and platform-tools, and ZIPs that are checked and
+  extracted into a clean folder before they are published.
+- Details and the beta limits: `docs/RELEASE_0.6_BETA.md`.
 
 ## First setup
 
@@ -70,6 +73,6 @@ dependencies retain their own licenses; game artwork is not covered.
   Windows text recognition, ad overlays) is listed under "Environment limits" in
   `docs/RELEASE_0.6_BETA.md` in the repository.
 
-Local validation: **1,239 Python tests passed, 3 skipped; 25 frontend tests passed**.
-The release workflow checks package boundaries and the dashboard before building.
+The release workflow runs the offline backend suite, the dashboard checks and the
+archive checks before it builds and publishes.
 SHA-256 sidecars accompany both ZIPs; each ZIP also contains per-file checksums.
