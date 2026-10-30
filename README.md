@@ -2,24 +2,24 @@
 > **Status:** Active
 > **Type:** Project guide
 > **Created:** 2026-08-24
-> **Updated:** 2026-10-30
+> **Updated:** 2026-10-25
 > **Tags:** autopilot, the-tower, distribution
 
-**0.6-beta — Windows x64 portable release.** Download the `windows-x64` ZIP,
+**0.5-beta — Windows x64 portable release.** Download the `windows-x64` ZIP,
 extract the whole folder, and double-click **Start Tower Pilot.cmd**. Python and
 dependencies are bundled; no separate Python installation is needed. The default
 browser opens Setup automatically; use current Chrome or Edge. The server runs in
 the background: Tower Pilot sits in the notification area near the clock (click
 to open the dashboard, right-click to quit). The separate `source` ZIP requires
 Python 3.12.
-See [what changed and the beta limits](docs/RELEASE_0.6_BETA.md).
+See [what changed and the beta limits](docs/RELEASE_0.5_BETA.md).
 
 The development preview prefers native MuMu capture, with an optional scrcpy
 package and socket screenshots as fallbacks. See [video preview setup and
 configuration](docs/VIDEO_PREVIEW.md). The portable ZIP does not bundle the
 scrcpy decoder, so the scrcpy preview is unavailable there.
 
-[Download 0.6-beta](https://github.com/TaBuPeH/TowerPilot/releases/tag/v0.6-beta)
+[Download 0.5-beta](https://github.com/TaBuPeH/TowerPilot/releases/tag/v0.5-beta)
 — choose **windows-x64.zip** for the app with Python included, or **source.zip**
 for development. Both now carry the full source, the agent rule book
 (`CLAUDE.md`, `AGENTS.md`) and the `.claude/` skills and hooks.
