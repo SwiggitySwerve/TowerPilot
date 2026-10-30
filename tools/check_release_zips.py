@@ -10,7 +10,7 @@ from collections.abc import Mapping
 from pathlib import Path, PurePosixPath
 
 from build_release import APP_BUILD, ROOT, app_build_problems, release_files
-from release_archive_policy import content_problems, dependency_images, metadata_problems, state_path
+from release_archive_policy import content_problems, dependency_files, dependency_images, metadata_problems, state_path
 
 FORBIDDEN_SEGMENTS = {'node_modules', 'test-results', 'playwright-report', 'coverage'}
 FORBIDDEN_SUFFIXES = {'.map', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.ico',
@@ -48,6 +48,7 @@ def _inventory_problems(entries: Mapping[str, bytes]) -> list[str]:
 def _check_archive(path: Path, prefix: str, disk_build: Mapping[str, bytes] | None = None,
                    app_sources: set[str] | None = None, *, portable: bool = False,
                    images: Mapping[str, str] | None = None,
+                   pinned_files: Mapping[str, str] | None = None,
                    forbidden: tuple[str, ...] = ()) -> tuple[list[str], int]:
     problems = []
     sidecar = path.with_suffix('.zip.sha256')
@@ -105,7 +106,8 @@ def _check_archive(path: Path, prefix: str, disk_build: Mapping[str, bytes] | No
     except (OSError, zipfile.BadZipFile, RuntimeError, NotImplementedError) as error:
         return problems + [f'cannot read archive: {error}'], count
     problems.extend(_inventory_problems(entries))
-    problems.extend(content_problems(entries, forbidden))
+    problems.extend(content_problems(entries, forbidden,
+                                     pinned_files=pinned_files if portable else None))
     problems.extend(metadata_problems(entries, prefix, portable=portable))
     app_prefix = APP_BUILD + '/'
     app = {name[len(app_prefix):]: data for name, data in entries.items()
@@ -135,6 +137,7 @@ def main(argv: list[str]) -> int:
         parser.error('--archive and --kind must be used together')
     try:
         images = dependency_images(Path(__file__).resolve().parent)
+        pinned_files = dependency_files(Path(__file__).resolve().parent)
         forbidden = tuple(line.strip() for line in args.forbid_file.read_text(encoding='utf-8-sig').splitlines()
                           if line.strip() and not line.lstrip().startswith('#')) if args.forbid_file else ()
     except (OSError, UnicodeError, ValueError, KeyError, TypeError) as error:
@@ -148,7 +151,7 @@ def main(argv: list[str]) -> int:
             return 1
         prefix = args.archive.name[:-4] if args.kind == 'portable' else args.archive.name[:-len('-source.zip')]
         problems, count = _check_archive(args.archive, prefix, portable=args.kind == 'portable',
-                                         images=images, forbidden=forbidden)
+                                         images=images, pinned_files=pinned_files, forbidden=forbidden)
         for problem in problems:
             print(f'{args.archive.name}: {problem}')
         if problems:
@@ -181,7 +184,8 @@ def main(argv: list[str]) -> int:
             (f'TowerPilot-{version}-source.zip', f'TowerPilot-{version}', False),
             (f'TowerPilot-{version}-windows-x64.zip', f'TowerPilot-{version}-windows-x64', True)):
         archive_problems, count = _check_archive(dist / filename, prefix, disk_build, app_sources,
-                                                 portable=portable, images=images, forbidden=forbidden)
+                                                 portable=portable, images=images,
+                                                 pinned_files=pinned_files, forbidden=forbidden)
         problems.extend(f'{filename}: {problem}' for problem in archive_problems)
         summaries.append(f'{filename}: {count} entries')
     if problems:

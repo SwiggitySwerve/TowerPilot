@@ -1,11 +1,14 @@
 """Release archive rules: reject local state and personal content at the ZIP boundary.
 
 Dependency image exceptions are trusted checker data, never archive-supplied data.
-Only dependency licence/notice files (dist-info licences and the app build's generated
+Exact pinned artifact bytes waive content markers. Source-built metadata may
+match pinned PKG-INFO after CRLF-to-LF normalization at generation time only;
+the checker always requires the exact installed-byte hash. Dependency licence/notice files
+(dist-info licences and the app build's generated
 npm THIRD_PARTY_NOTICES.txt) waive the e-mail marker. Source strings that only look
 like a marker (action keys of the form <action>@<instance>.<field>) are waived one exact
 string per file by tools/release_marker_allowlist.json. Every text file still receives
-all other marker checks and the caller's local forbid list.
+the caller's local forbid list, including files with pinned provenance.
 """
 import hashlib
 import json
@@ -37,15 +40,30 @@ MARKERS = {
 }
 
 
-def dependency_images(directory: Path) -> dict[str, str]:
-    """Load trusted exact paths/hashes, verifying their provenance against pins."""
+def pins_digest(data: bytes) -> str:
+    """SHA-256 of portable_pins.json as git stores it (LF), whatever line endings the checkout wrote."""
+    return hashlib.sha256(data.replace(b'\r\n', b'\n')).hexdigest()
+
+
+def _dependency_manifest(directory: Path) -> tuple[dict, dict, set[tuple[str, str, str]]]:
+    """Read trusted checker data and verify its pinned input identity."""
     pins_bytes = (directory / 'portable_pins.json').read_bytes()
     pins = json.loads(pins_bytes)
     manifest = json.loads((directory / 'dependency_images.json').read_bytes())
-    if manifest['generation']['pins_sha256'] != hashlib.sha256(pins_bytes).hexdigest():
-        raise ValueError('dependency image allowlist is stale against portable pins')
+    if manifest['generation']['pins_sha256'] != pins_digest(pins_bytes):
+        raise ValueError('dependency allowlist is stale against portable pins')
     artifacts = {(row['requirement'], artifact['filename'], artifact['sha256'])
                  for row in pins['packages'] for artifact in row['artifacts']}
+    inspected = {(row['requirement'], row['filename'], row['sha256'])
+                 for row in manifest['inspected_artifacts']}
+    if inspected != artifacts:
+        raise ValueError('dependency provenance does not match portable pins')
+    return manifest, pins, artifacts
+
+
+def dependency_images(directory: Path) -> dict[str, str]:
+    """Load trusted exact paths/hashes, verifying their provenance against pins."""
+    manifest, _, artifacts = _dependency_manifest(directory)
     images = {}
     for image in manifest['images']:
         provenance = (image['package'] + '==' + image['version'],
@@ -69,6 +87,52 @@ def state_path(name: str) -> bool:
             or any(name == directory or name.startswith(directory + '/')
                    for directory in STATE_DIRECTORIES)
             or (name.startswith('backend/profiles/') and name != 'backend/profiles/default.yaml'))
+
+
+def dependency_files(directory: Path) -> dict[str, str]:
+    """Load exact installed-byte hashes from trusted generated checker data."""
+    manifest, pins, artifacts = _dependency_manifest(directory)
+    wheels = {filename for _, filename, _ in artifacts if filename.endswith('.whl')}
+    if manifest['files'].keys() != wheels:
+        raise ValueError('dependency file allowlist must cover every pinned wheel')
+    files = {}
+    for members in manifest['files'].values():
+        for path, digest in members.items():
+            if (not path.startswith('runtime/Lib/site-packages/')
+                    or any(part in {'', '.', '..'} for part in path.split('/'))
+                    or '\\' in path):
+                raise ValueError('invalid dependency file allowlist entry')
+            _record_dependency_file(files, path, digest)
+    sources = {filename: (requirement, digest) for requirement, filename, digest in artifacts
+               if not filename.endswith('.whl')}
+    for entry in manifest['source_metadata']:
+        requirement, digest = sources[entry['artifact']]
+        package, version = requirement.split('==')
+        expected = ('runtime/Lib/site-packages/' + package.replace('-', '_')
+                    + '-' + version + '.dist-info/METADATA')
+        if (entry['path'] != expected or entry['artifact_sha256'] != digest
+                or entry['verified_as'] != 'sdist-pkg-info-crlf-to-lf'
+                or len(entry['source_member'].split('/')) != 2
+                or not entry['source_member'].endswith('/PKG-INFO')):
+            raise ValueError('invalid source metadata provenance')
+        _record_dependency_file(files, entry['path'], entry['sha256'])
+    license = manifest['python_license']
+    if license is not None:
+        pin = pins['python']
+        if (license['path'] != 'runtime/LICENSE.txt' or license['source_member'] != 'LICENSE.txt'
+                or license['artifact'] != pin['filename'] or license['artifact_sha256'] != pin['sha256']
+                or license['verified_as'] != 'exact-member'):
+            raise ValueError('invalid Python license provenance')
+        _record_dependency_file(files, license['path'], license['sha256'])
+    return files
+
+
+def _record_dependency_file(files: dict[str, str], path: str, digest: str) -> None:
+    if (path in files or PurePosixPath(path).name in {'RECORD', 'INSTALLER'}
+            or PurePosixPath(path).suffix.lower() == '.pyc'
+            or not re.fullmatch('[0-9a-f]{64}', digest)):
+        raise ValueError('invalid dependency file allowlist entry')
+    files[path] = digest
 
 
 APP_NOTICES_PATH = APP_BUILD + '/' + APP_NOTICES
@@ -105,7 +169,8 @@ def release_notes_path(version: str) -> str:
 
 
 def content_problems(entries: Mapping[str, bytes], forbidden: Sequence[str],
-                     allowed: Mapping[tuple[str, str], frozenset[str]] | None = None) -> list[str]:
+                     allowed: Mapping[tuple[str, str], frozenset[str]] | None = None,
+                     pinned_files: Mapping[str, str] | None = None) -> list[str]:
     allowed = marker_allowlist(Path(__file__).parent) if allowed is None else allowed
     problems = []
     for name, data in entries.items():
@@ -113,7 +178,11 @@ def content_problems(entries: Mapping[str, bytes], forbidden: Sequence[str],
             continue
         encoding = 'utf-16' if data.startswith((b'\xff\xfe', b'\xfe\xff')) else 'utf-8-sig'
         text = data.decode(encoding, errors='replace')
+        upstream = (pinned_files is not None
+                    and pinned_files.get(name) == hashlib.sha256(data).hexdigest())
         for marker, pattern in MARKERS.items():
+            if upstream:
+                continue
             if marker == 'email' and _dependency_licence(name):
                 continue
             waived = allowed.get((name, marker), frozenset())

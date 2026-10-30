@@ -1,5 +1,6 @@
 """Windows x64 portable build; Python/pip are needed on the build machine only."""
 import hashlib
+import json
 import platform
 import shutil
 import subprocess
@@ -14,9 +15,10 @@ from build_release import (APP_BUILD, APP_NOTICES, ROOT, command_line, release_f
                            stage_files, write_identity)
 from release_archive_policy import release_notes_path
 
-PYTHON = '3.12.10'
-URL = f'https://www.python.org/ftp/python/{PYTHON}/python-{PYTHON}-embed-amd64.zip'
-SHA256 = '4acbed6dd1c744b0376e3b1cf57ce906f9dc9e95e68824584c8099a63025a3c3'
+_PYTHON_PIN = json.loads((ROOT / 'tools/portable_pins.json').read_bytes())['python']
+PYTHON = _PYTHON_PIN['version']
+URL = _PYTHON_PIN['url']
+SHA256 = _PYTHON_PIN['sha256']
 SOURCE_LAUNCHERS = {'Start-TowerPilot.ps1', 'Start Tower Pilot.cmd'}
 SOURCE_BUILD_NOTICE = (
     'Source-build exception: tpk_ar==0.2.4 has no wheel on PyPI; its sdist SHA-256 is pinned.\n'
