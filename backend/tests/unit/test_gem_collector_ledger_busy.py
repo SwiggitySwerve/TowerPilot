@@ -127,6 +127,111 @@ def test_a_collector_that_fails_logs_the_stack_that_failed(monkeypatch):
     assert name == 'gem_collector_failed' and kw['error_type'] == 'OperationalError'
     assert 'boom' in kw['trace'] and 'Traceback' in kw['trace']
 
+class WireSock:
+    """The adb server's socket as the device layer sees it: each read answers with the next scripted item (or raises it)."""
+
+    def __init__(self, *answers):
+        self.answers = iter(answers)
+
+    def settimeout(self, timeout):
+        pass
+
+    def recv(self, n):
+        answer = next(self.answers)
+        if isinstance(answer, BaseException):
+            raise answer
+        return answer
+
+
+def lost_on_the_wire(*answers):
+    """The error the real device layer raises when the adb socket gives out: caught from adbclient itself, so its
+    traceback passes through the adb socket reader exactly as the live ones did (2026-10-29, 2026-10-30)."""
+    from device import adbclient
+    try:
+        adbclient._status(WireSock(*answers), 'exec')
+    except Exception as exc:                    # noqa: BLE001 - the point is to hold the real exception
+        return exc
+    raise AssertionError('the scripted wire did not fail')
+
+
+def collector_exit(monkeypatch, failure, **world):
+    """The error the collector's entry point ends with when its first capture fails with `failure`."""
+    with pytest.raises(Exception) as caught:
+        run_world(monkeypatch, [failure], entry='run_logged', **world)
+    return caught.value
+
+
+@pytest.mark.parametrize('answers,named', [
+    ((TimeoutError('timed out'),), 'TimeoutError: timed out'),                     # 10-30 00:30:55: dumpsys never answered
+    ((ConnectionResetError('reset by peer'),), 'ConnectionResetError: reset by peer'),
+    ((b'FAIL', b'000e', b'device offline'), 'AdbError: exec: device offline'),     # adb says offline while the VM boots
+], ids=['timeout', 'reset', 'offline'])
+def test_an_adb_socket_loss_ends_the_collector_as_device_unavailable_naming_what_failed(monkeypatch, answers, named):
+    from towerpilot_workflows.harvest import DeviceUnavailable
+    failure = lost_on_the_wire(*answers)
+    raised = collector_exit(monkeypatch, failure)
+    assert type(raised) is DeviceUnavailable and raised.__cause__ is failure
+    assert named in str(raised)
+
+
+def test_a_failed_screencap_ends_the_collector_as_device_unavailable_with_the_capture_error_as_cause(monkeypatch):
+    from device import capture
+    from towerpilot_workflows.harvest import DeviceUnavailable
+    failure = capture.CaptureError('screencap failed: timed out')          # 10-29 18:13..18:19, four collectors in a row
+    raised = collector_exit(monkeypatch, failure)
+    assert type(raised) is DeviceUnavailable and raised.__cause__ is failure
+    assert str(raised) == 'CaptureError: screencap failed: timed out'
+
+
+def test_the_failed_event_still_reports_the_original_error(monkeypatch):
+    import gem_collector as worker
+    from device import capture
+    events = []
+    monkeypatch.setattr(worker.logger, 'event', lambda name, **kw: events.append((name, kw)))
+    monkeypatch.setattr(worker, 'main', lambda instance, preset: (_ for _ in ()).throw(capture.CaptureError('screencap failed: x')))
+    with pytest.raises(Exception):
+        worker.run_logged('main', 'bp_farm')
+    [(name, kw)] = events
+    assert name == 'gem_collector_failed' and kw['error_type'] == 'CaptureError' and 'screencap failed: x' in kw['error']
+
+
+def test_a_missing_roi_is_a_setup_gap_not_a_device_loss(monkeypatch):
+    """A CaptureError subtype, but the circuit must still stop on it: retrying never calibrates the ROI."""
+    from device import capture
+    from towerpilot_workflows.harvest import DeviceUnavailable
+    failure = capture.RoiNotCalibrated("ROI 'wave_box' not calibrated in config.yaml")
+    raised = collector_exit(monkeypatch, failure)
+    assert raised is failure and not isinstance(raised, DeviceUnavailable)
+    assert isinstance(failure, capture.CaptureError)       # every existing `except CaptureError` still catches it
+
+
+@pytest.mark.parametrize('failure', [
+    OSError('No space left on device'),                  # the collector's own file work, not the device
+    TimeoutError('a lock wait that is not the adb socket'),
+    ConnectionError('a socket that is not the adb server'),
+    RuntimeError('Another runner owns the emulator'),
+    sqlite3.OperationalError('no such table: battles'),
+    ValueError('bad frame'),
+], ids=lambda failure: type(failure).__name__)
+def test_an_error_that_is_not_the_device_keeps_its_own_type(monkeypatch, failure):
+    from towerpilot_workflows.harvest import DeviceUnavailable
+    raised = collector_exit(monkeypatch, failure)
+    assert raised is failure and not isinstance(raised, DeviceUnavailable)
+
+
+def test_an_error_of_the_collectors_own_logic_inside_a_pass_is_not_taken_for_the_device(monkeypatch):
+    """The same type as a device loss, raised by the gem routines and not through the adb socket."""
+    from towerpilot_workflows.harvest import DeviceUnavailable
+
+    def poll(frame, reads=None):
+        raise TimeoutError('timed out')
+    gems = types.SimpleNamespace(ad_gems=types.SimpleNamespace(enabled=True), orbit=types.SimpleNamespace(enabled=True),
+                                 busy=lambda: [], poll=poll)
+    with pytest.raises(TimeoutError) as caught:
+        run_world(monkeypatch, ['battle'], gems=gems, entry='run_logged')
+    assert not isinstance(caught.value, DeviceUnavailable)
+
+
 def test_a_locked_terminal_record_is_closed_before_a_new_battle_is_observed(monkeypatch):
     """The person leaves the results and starts another battle while the finish is locked out."""
     log, state = [], dict(status='active')

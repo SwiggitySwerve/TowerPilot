@@ -336,7 +336,10 @@ class Backoff:
     sooner than `min_spacing` after the previous one began, a refusal is rechecked every `refusal_retry`
     seconds, and `circuit` consecutive fast failures stop relaunching until an explicit On.
     State: `newest_created_at`, `newest_updated_at` (None while an attempt is still running), `failures`,
-    `refusal_at`. Facts come from the operations ledger, which stays the authority for the circuit.
+    `device_losses` (default 0), `refusal_at`. Facts come from the operations ledger, which stays the authority for the
+    circuit. A fast exit the device caused (the emulator dropped or is half up) is a device loss, not a failure: it lengthens
+    the delay like one (`delay(failures + device_losses)`, so a half-up emulator is not relaunched every `min_spacing`) but
+    only `failures` reaches the circuit.
     """
     base: int = 30
     factor: int = 2
@@ -365,7 +368,8 @@ class Backoff:
         failures = state.get('failures', 0)
         spacing = None
         if state.get('newest_updated_at') is not None:
-            spacing = max(state['newest_updated_at'] + self.delay(failures), state['newest_created_at'] + self.min_spacing)
+            spacing = max(state['newest_updated_at'] + self.delay(failures + state.get('device_losses', 0)),
+                          state['newest_created_at'] + self.min_spacing)
         refusal_at = state.get('refusal_at')
         waits = [t for t in (spacing, refusal_at) if t is not None and t > now]
         until = max(waits) if waits else None

@@ -475,6 +475,70 @@ def test_long_runs_cancellations_and_fence_refusals_are_not_failures(h):
     assert h.tick(NOW + harvest.MIN_SPACING_SEC + 31)['failures'] == 0
 
 
+LOST = {'code': 'DeviceUnavailable', 'message': 'TimeoutError: timed out'}
+BROKEN = {'code': 'RuntimeError', 'message': 'a bug of the collector'}
+
+
+def exit_fast(h, now, error):
+    finish_last(h, 'failed', ran=5, now=now, error=error)
+    return h.tick(now + 1)
+
+
+def test_device_loss_exits_never_open_the_circuit_but_still_back_off(h):
+    """A half-up emulator (adb says device, screencap hangs) kills every collector from the device."""
+    choose(h)
+    now = NOW
+    assert h.tick(now)['action'] == 'launched'
+    for lost in range(1, harvest.CIRCUIT + 3):
+        result = exit_fast(h, now, LOST)
+        assert (result['failures'], result['circuit_open']) == (0, False), lost
+        assert (result['state'], result['code']) == ('backing_off', 'backing_off')
+        assert result['next_attempt_at'] == now + harvest.backoff(lost)       # not 10 s: each loss lengthens the wait
+        assert (result['last_outcome']['error'], result['last_outcome']['message']) == ('DeviceUnavailable', LOST['message'])
+        now = result['next_attempt_at']
+        assert h.tick(now)['action'] == 'launched'
+
+
+def test_other_fast_failures_still_open_the_circuit(h):
+    choose(h)
+    now = NOW
+    assert h.tick(now)['action'] == 'launched'
+    for failures in range(1, harvest.CIRCUIT + 1):
+        result = exit_fast(h, now, BROKEN)
+        assert result['failures'] == failures
+        now = result['next_attempt_at'] or now
+        if failures < harvest.CIRCUIT:
+            assert h.tick(now)['action'] == 'launched'
+    assert (result['state'], result['code'], result['circuit_open']) == ('blocked', 'collector_failing', True)
+
+
+def test_a_device_loss_neither_counts_nor_resets_the_streak(h):
+    choose(h)
+    now = NOW
+    assert h.tick(now)['action'] == 'launched'
+    errors = [BROKEN, LOST, BROKEN, LOST, LOST, BROKEN, LOST, BROKEN, BROKEN]     # five failures with losses between them
+    for index, error in enumerate(errors, 1):
+        result = exit_fast(h, now, error)
+        assert result['circuit_open'] is (index == len(errors)), index
+        if not result['circuit_open']:
+            now = result['next_attempt_at']
+            assert h.tick(now)['action'] == 'launched'
+    assert result['failures'] == 5                                           # the losses were skipped, the breaks counted
+    assert result['code'] == 'collector_failing'
+
+
+def test_a_device_loss_that_ran_a_while_still_ends_the_streak(h):
+    choose(h)
+    assert h.tick()['action'] == 'launched'
+    result = exit_fast(h, NOW, BROKEN)
+    assert result['failures'] == 1
+    now = result['next_attempt_at']
+    assert h.tick(now)['action'] == 'launched'
+    finish_last(h, 'failed', ran=harvest.FAIL_WINDOW_SEC + 1, now=now + 200, error=LOST)     # it collected for a while first
+    again = h.tick(now + 201)
+    assert (again['failures'], again['action']) == (0, 'launched')
+
+
 def test_a_quick_clean_exit_still_waits_the_minimum_spacing(h):
     choose(h)
     assert h.tick()['action'] == 'launched'
