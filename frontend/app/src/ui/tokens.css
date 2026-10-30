@@ -33,6 +33,13 @@
   --tp-color-unknown: #a385ff;
   --tp-color-blocked: #ff9248;
 
+  /* Item sections (the legacy workshop pages) and marks; a chip's edge and tint come from these */
+  --tp-color-section-attack: #b95660;
+  --tp-color-section-defense: #4e92c7;
+  --tp-color-section-utility: #c69a42;
+  --tp-color-section-neutral: #75839a;
+  --tp-color-mark-mastered: #ffd60a;
+
   /* Actions */
   --tp-color-primary: #2969b5;
   --tp-color-danger: #a93232;
@@ -47,6 +54,7 @@
   --tp-radius-control: 6px;
   --tp-radius-card: 9px;
   --tp-radius-pill: 999px;
+  --tp-radius-item: 12px;
   --tp-space-1: 0.25rem;
   --tp-space-2: 0.5rem;
   --tp-space-3: 0.75rem;
@@ -71,10 +79,23 @@
   --tp-control-font-size: 0.875rem;
   --tp-control-line-height: 1.4;
   --tp-control-padding-block: 0.2rem;
+
+  /* Item grids (ChipGrid): one box size for every chip, so rows and columns line up */
+  --tp-chip-min-width: 12rem;
+  --tp-chip-height: 4.5rem;
+  --tp-chip-gap: 0.4rem;
+  --tp-chip-field-height: 1.75rem;
+  --tp-queue-item-height: 3.25rem;
+  --tp-item-button-size: 1.6rem;
 }
 
 @media (max-width: 600px), (pointer: coarse) {
   :root {
     --tp-control-height: var(--tp-control-height-touch);
+    /* A toggle and its inline fields stack, each a 44 px target */
+    --tp-chip-height: 7rem;
+    --tp-chip-field-height: var(--tp-control-height-touch);
+    --tp-queue-item-height: 3.5rem;
+    --tp-item-button-size: var(--tp-control-height-touch);
   }
 }
