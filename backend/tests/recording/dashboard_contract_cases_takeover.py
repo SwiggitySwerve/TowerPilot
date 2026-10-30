@@ -254,9 +254,12 @@ def real_worker_refused(app, rec, monkeypatch, tmp_path):
     got = app.client.post('/api/control', json=request).get_json()
     ledger = operations.ledger(app.dash.ROOT)
     op = ledger.get(got['operation_id'])
+    rec.add('operation_accepted_read_by_id', app.client.get(f"/api/operations/{op['id']}"))          # what the Dashboard polls, whole, until the worker ends it
     ledger.transition(op['id'], op['revision'], 'running', worker={'pid': 1, 'creation_time': 1.0})
+    rec.add('operation_running_read_by_id', app.client.get(f"/api/operations/{op['id']}"))
     outcome, taps = run_worker(app, op['id'], [frame(screen='home', wave=None)], monkeypatch, tmp_path)
     assert outcome == 'returned' and taps == []
+    rec.add('operation_failed_read_by_id_after_the_real_worker_refused', app.client.get(f"/api/operations/{op['id']}"))
     rec.add('operation_after_the_real_worker_refused', app.client.get(f"/api/operations/{op['id']}"),
             pick=lambda got_: {'operation': {name: got_['operation'].get(name) for name in ('status', 'error')}})
     rec.add('no_battle_after_the_real_worker_refused', app.client.get('/api/battles/active'), pick=lambda got_: {'battle': got_['battle']})

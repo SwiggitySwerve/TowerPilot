@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Strict schemas for the two takeover routes, from the recorded fixture
+ * Strict schemas for the three takeover routes, from the recorded fixture
  * (backend/tests/fixtures/dashboard_contract_takeover_v1.json, written by the backend's
  * tests/recording/dashboard_contract_cases_takeover.py).
  *
@@ -26,15 +26,17 @@ const APP = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const TAKEOVER_FIXTURE_NAME = 'backend/tests/fixtures/dashboard_contract_takeover_v1.json';
 export const TAKEOVER_FIXTURE_PATH = path.resolve(APP, '../..', TAKEOVER_FIXTURE_NAME);
 
-/** The two routes of the fixture and the schema each one gets. */
+/** The three routes of the fixture and the schema each one gets. */
 export const TAKEOVER_FAMILIES = /** @type {const} */ ([
   ['takeover_preview', 'TakeoverPreviewAnswer', 'takeoverPreviewAnswerSchema'],
   ['takeover_launch', 'TakeoverLaunchAnswer', 'takeoverLaunchAnswerSchema'],
+  ['takeover_operation', 'TakeoverOperationAnswer', 'takeoverOperationAnswerSchema'],
 ]);
 
 /**
  * `<scenario>.<case>` to family: GET /api/takeover/preview, and POST /api/control
- * `action: "takeover"` (accepted, replayed and every refusal).
+ * `action: "takeover"` (accepted, replayed and every refusal), and GET /api/operations/<id> (the
+ * takeover's own operation, whole, from accepted to failed or interrupted).
  * @type {Readonly<Record<string, string>>}
  */
 export const CASE_FAMILIES = {
@@ -66,10 +68,16 @@ export const CASE_FAMILIES = {
   'refusals.tournament_recognition_missing': 'takeover_launch',
   'refusals_collector.attach_battle_changed': 'takeover_launch',
   'refusals_collector.collector_stopping': 'takeover_launch',
+  'launch_free.failed_after_accept_read_by_id': 'takeover_operation',
+  'attached_battle.operation_after_stop': 'takeover_operation',
+  'real_worker_refused.operation_accepted_read_by_id': 'takeover_operation',
+  'real_worker_refused.operation_running_read_by_id': 'takeover_operation',
+  'real_worker_refused.operation_failed_read_by_id_after_the_real_worker_refused':
+    'takeover_operation',
 };
 
 /**
- * Recorded cases of routes other than the two above (battle and operation reads, Stop, a live
+ * Recorded cases of routes other than the three above (battle reads, Stop, a live
  * control) or test-harness projections of a replayed receipt; the value says which.
  * @type {Readonly<Record<string, string>>}
  */
@@ -78,7 +86,6 @@ export const UNBOUND_CASES = {
     'GET /api/battles/active',
   'attached_battle.live_control_recorded_but_unreadable_is_a_500_outcome_unknown':
     'POST live-controls',
-  'attached_battle.operation_after_stop': 'GET /api/operations/<id>',
   'attached_battle.retrying_the_takeover_after_stop_replays_the_receipt':
     'harness projection of the replayed receipt (no operation member)',
   'attached_battle.second_control_while_the_first_is_pending_is_an_uncoded_409':
@@ -87,11 +94,11 @@ export const UNBOUND_CASES = {
   'attached_battle.the_same_request_reads_the_recorded_command_back_accepted': 'POST live-controls',
   'launch_collector.battle_after_taking_over_the_collectors_battle': 'GET /api/battles/active',
   'launch_collector.battle_with_the_later_wave_but_no_entry_observation': 'GET /api/battles/active',
-  'launch_free.failed_after_accept_read_by_id': 'GET /api/operations/<id>',
   'real_worker.battle_read_after_the_real_worker_entered': 'GET /api/battles/active',
   'real_worker.collector_record_after_the_real_worker_entered': 'the collector ledger record',
   'real_worker_refused.no_battle_after_the_real_worker_refused': 'GET /api/battles/active',
-  'real_worker_refused.operation_after_the_real_worker_refused': 'GET /api/operations/<id>',
+  'real_worker_refused.operation_after_the_real_worker_refused':
+    'harness projection of GET /api/operations/<id> (status and error only)',
   'real_worker_refused.same_request_reads_the_failed_operation_back':
     'harness projection of the replayed receipt (no operation member)',
 };

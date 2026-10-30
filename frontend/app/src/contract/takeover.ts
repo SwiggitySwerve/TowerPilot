@@ -2,8 +2,10 @@
 export {
   takeoverPreviewAnswerSchema,
   takeoverLaunchAnswerSchema,
-} from './generated/takeover/dashboard_contract_takeover_v1.b6fd1d46.ts';
+  takeoverOperationAnswerSchema,
+} from './generated/takeover/dashboard_contract_takeover_v1.6008a665.ts';
 export type {
   TakeoverPreviewAnswer,
   TakeoverLaunchAnswer,
-} from './generated/takeover/dashboard_contract_takeover_v1.b6fd1d46.ts';
+  TakeoverOperationAnswer,
+} from './generated/takeover/dashboard_contract_takeover_v1.6008a665.ts';

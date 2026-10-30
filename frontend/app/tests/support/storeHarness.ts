@@ -44,6 +44,7 @@ const PATHS: Readonly<Record<ResourceId, string>> = {
   status: '/api/status',
   calibrate: '/api/calibrate/status',
   calibrateOperation: '/api/calibrate/status?operation_id=00000001-0000-4000-8000-000000000000',
+  takeoverOperation: '/api/operations/00000001-0000-4000-8000-000000000000',
   battlesActive: '/api/battles/active',
   schedule: '/api/schedule/status?instance=main',
   battles: '/api/battles?limit=3&instance=main',

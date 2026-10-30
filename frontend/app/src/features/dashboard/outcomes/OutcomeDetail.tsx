@@ -124,6 +124,7 @@ export function OutcomeDetail({ line }: { readonly line: OutcomeLineVM }) {
       return (
         <>
           {d.operation === null ? null : <ServerValue kind="id" value={d.operation} />}
+          {d.operationCode === null ? null : <ServerValue kind="id" value={d.operationCode} />}
           <Ids values={d.stoppedAtHandover} />
           <Ids values={d.wasStoppingAtHandover} stopping />
         </>

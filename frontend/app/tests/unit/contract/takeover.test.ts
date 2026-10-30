@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ENDPOINTS, parseAnswer } from '../../../src/api/wire.ts';
 import {
   takeoverLaunchAnswerSchema,
+  takeoverOperationAnswerSchema,
   takeoverPreviewAnswerSchema,
 } from '../../../src/contract/takeover.ts';
 import {
@@ -17,9 +18,14 @@ import { takeoverCaseNames, takeoverRecorded } from '../../support/takeoverFixtu
 const SCHEMAS = {
   takeover_preview: takeoverPreviewAnswerSchema,
   takeover_launch: takeoverLaunchAnswerSchema,
+  takeover_operation: takeoverOperationAnswerSchema,
 } as const;
 
-const ENDPOINT_OF = { takeover_preview: 'takeoverPreview', takeover_launch: 'takeover' } as const;
+const ENDPOINT_OF = {
+  takeover_preview: 'takeoverPreview',
+  takeover_launch: 'takeover',
+  takeover_operation: 'takeoverOperation',
+} as const;
 
 const names = takeoverCaseNames();
 const bound = names.filter((path) => path in CASE_FAMILIES);

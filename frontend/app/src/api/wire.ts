@@ -75,7 +75,11 @@ import {
 } from '../contract/runControls.ts';
 import { refusalAnswerSchema } from '../contract/refusal.ts';
 import { startTransferAnswerSchema } from '../contract/startTransfer.ts';
-import { takeoverLaunchAnswerSchema, takeoverPreviewAnswerSchema } from '../contract/takeover.ts';
+import {
+  takeoverLaunchAnswerSchema,
+  takeoverOperationAnswerSchema,
+  takeoverPreviewAnswerSchema,
+} from '../contract/takeover.ts';
 import { harvestStatusSchema } from '../contract/status.ts';
 import { schedulePatchAnswerSchema } from '../contract/schedule.ts';
 import {
@@ -369,6 +373,7 @@ export type ReadEndpointId =
   | 'runControls'
   | 'readiness'
   | 'takeoverPreview'
+  | 'takeoverOperation'
   | 'harvest'
   | 'profileFiles'
   | 'profileSource'
@@ -628,8 +633,10 @@ export function createEndpoints(contract: ContractSchemas): Readonly<Record<Endp
       shoppingRunReadAnswerSchema,
     ]),
     readiness: endpoint('readiness', 'GET', [contract.readiness]),
-    // GET /api/takeover/preview?preset= and POST /api/control action=takeover (takeover fixture).
+    // GET /api/takeover/preview?preset=, POST /api/control action=takeover and GET /api/operations/{id}
+    // of the takeover's operation (takeover fixture).
     takeoverPreview: endpoint('takeoverPreview', 'GET', [takeoverPreviewAnswerSchema]),
+    takeoverOperation: endpoint('takeoverOperation', 'GET', [takeoverOperationAnswerSchema]),
     takeover: endpoint('takeover', 'POST', [takeoverLaunchAnswerSchema]),
     harvest: endpoint('harvest', 'GET', [harvest]),
     harvestWrite: endpoint('harvestWrite', 'POST', [contract.postHarvest, contract.refusal]),

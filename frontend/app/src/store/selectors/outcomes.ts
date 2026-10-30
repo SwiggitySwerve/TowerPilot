@@ -56,6 +56,7 @@ import type {
   ReadSettlementCode,
 } from '../types.ts';
 import { controlFacts, highestStopRevision, type ControlFacts } from './controlFacts.ts';
+import { takeoverEnd } from './takeoverOperation.ts';
 import type { ReconnectCommand } from './topBar.ts';
 
 /**
@@ -215,6 +216,8 @@ export interface StartDetailVM {
   readonly wasStoppingAtHandover: readonly ServerText<'id'>[];
   readonly waitedSec: number | null;
   readonly code: string | null;
+  /** A takeover's operation error code (the worker's refusal), as the server sent it. */
+  readonly operationCode: ServerText<'id'> | null;
 }
 
 /** A kill (S-060): never "killed"; whether a later D-4 read still lists that exact process. */
@@ -616,6 +619,7 @@ function startDetail(answer: StartAnswerClass, kind: StartDetailVM['kind']): Sta
     wasStoppingAtHandover: [],
     waitedSec: null,
     code: null,
+    operationCode: null,
   };
   switch (answer.kind) {
     case 'started': {
@@ -637,7 +641,11 @@ function startDetail(answer: StartAnswerClass, kind: StartDetailVM['kind']): Sta
     case 'cancelled':
     case 'interrupted':
     case 'succeeded':
-      return { ...detail, operation: fromServer('id', answer.operationId) };
+      return {
+        ...detail,
+        operation: fromServer('id', answer.operationId),
+        operationCode: kind === 'takeover' ? fromServer('id', own(answer.error, 'code')) : null,
+      };
     case 'context_changed':
     case 'refused':
       return { ...detail, code: codeOf(answer.code) };
@@ -1019,7 +1027,11 @@ export function selectOutcomes(state: DashboardState): OutcomesVM {
   for (const record of facts.records) {
     if (record.dismissed) continue;
     const settled = settledByRead(state, record);
-    const detail = answerDetail(state, facts, record);
+    // A takeover accepted and then ended by its worker (a refusal at the entry gate): the read of
+    // its operation, worded like an accepted launch that ended.
+    const ended = takeoverEnd(state, record);
+    const detail =
+      ended === null ? answerDetail(state, facts, record) : startDetail(ended, 'takeover');
     const line: Omit<OutcomeLineVM, 'word'> = {
       id: record.id,
       target: fromServer('id', record.meta.operationId ?? record.meta.preset ?? record.meta.action),
@@ -1055,9 +1067,11 @@ export function selectOutcomes(state: DashboardState): OutcomesVM {
       error:
         record.answer === null ? null : fromServer('message', own(record.answer.body, 'error')),
       operationError:
-        record.answer === null
-          ? null
-          : errorMessage(own(own(record.answer.body, 'operation'), 'error')),
+        ended !== null
+          ? errorMessage(ended.error)
+          : record.answer === null
+            ? null
+            : errorMessage(own(own(record.answer.body, 'operation'), 'error')),
       harvestPausedCurrent: harvestPausedCurrent(state, record),
       stopAgain: stopAgain(state, facts, record),
       attemptRefused:

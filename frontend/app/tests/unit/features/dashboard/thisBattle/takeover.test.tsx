@@ -172,6 +172,69 @@ it('a click reads the preview, sends the one request and words an accepted launc
   }
 });
 
+const OPERATION = /^\/api\/operations\//u;
+
+it('follows the accepted operation and shows the worker’s refusal in its own words, code and detail', async () => {
+  const refusal = takeoverRecorded(
+    'real_worker_refused.operation_failed_read_by_id_after_the_real_worker_refused',
+  );
+  const error = (refusal.body['operation'] as { error: { code: string; message: string } }).error;
+  const page = await takeOver((fake) => {
+    const preview = takeoverRecorded('preview_free.run_preview_nothing_owns_the_emulator');
+    fake.route('GET', PREVIEW, () => ({ status: preview.status, body: preview.body }));
+    const accepted = takeoverRecorded('launch_free.accepted_nothing_owns_the_emulator');
+    fake.route('POST', '/api/control', () => ({ status: accepted.status, body: accepted.body }));
+    fake.route('GET', OPERATION, () => ({ status: refusal.status, body: refusal.body }));
+  });
+  try {
+    await page.advance(3000);
+    const text = page.view.container.textContent;
+    expect(text).toContain(error.code);
+    expect(text).toContain(error.message);
+    expect(text).not.toContain('Takeover requested; the worker has not attached yet');
+    expect(text).not.toContain('Taken over');
+    expect(postBodies(page.fake, '/api/control')).toHaveLength(1);
+    const reads = page.fake.requests.filter((request) => OPERATION.test(request.path));
+    expect(reads.length).toBeGreaterThan(0);
+    await page.advance(10000);
+    expect(page.fake.requests.filter((request) => OPERATION.test(request.path))).toHaveLength(
+      reads.length,
+    );
+  } finally {
+    page.data.stop();
+  }
+});
+
+it('keeps reading the operation while the worker has not ended it, and says requested until it does', async () => {
+  const running = takeoverRecorded('real_worker_refused.operation_running_read_by_id');
+  const failed = takeoverRecorded(
+    'real_worker_refused.operation_failed_read_by_id_after_the_real_worker_refused',
+  );
+  let answer = running;
+  const page = await takeOver((fake) => {
+    const preview = takeoverRecorded('preview_free.run_preview_nothing_owns_the_emulator');
+    fake.route('GET', PREVIEW, () => ({ status: preview.status, body: preview.body }));
+    const accepted = takeoverRecorded('launch_free.accepted_nothing_owns_the_emulator');
+    fake.route('POST', '/api/control', () => ({ status: accepted.status, body: accepted.body }));
+    fake.route('GET', OPERATION, () => ({ status: answer.status, body: answer.body }));
+  });
+  try {
+    await page.advance(5000);
+    expect(page.view.container.textContent).toContain(
+      'Takeover requested; the worker has not attached yet',
+    );
+    const reads = page.fake.requests.filter((request) => OPERATION.test(request.path));
+    expect(reads.length).toBeGreaterThan(1);
+    answer = failed;
+    await page.advance(3000);
+    const text = page.view.container.textContent;
+    expect(text).toContain('attach_no_battle');
+    expect(text).not.toContain('Takeover requested; the worker has not attached yet');
+  } finally {
+    page.data.stop();
+  }
+});
+
 it('shows the server’s own words for a refusal', async () => {
   const refused = takeoverRecorded('refusals.takeover_not_compatible');
   const page = await takeOver((fake) => {
