@@ -313,3 +313,71 @@ def test_populated_hud_pass_verifies_saved_labels_before_return_without_device_i
     assert start['action'] == end['action'] == 'setup_upgrade_verification'
     assert start['attempt_id'] == end['attempt_id']
     assert end['outcome'] == outcome
+
+
+@pytest.mark.parametrize('corrupt', [False, True])
+def test_range_candidate_readback_keeps_template_stale(tmp_path, monkeypatch, corrupt):
+    import hashlib
+    from pathlib import Path
+
+    rel = 'stats/bounce_shot_range.png'
+    flow, panel, _, _, _ = _setup(tmp_path, monkeypatch, labels=('Bounce Shot Range',))
+    flow.cal.p['evidence'] = str(tmp_path / 'evidence')
+    target = settings.template_path(rel)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(b'existing wrong template')
+    flow.cal.entries = [dict(rel=rel, status='stale', verified=False)]
+    crop = panel[70:160, 30:400].copy()
+    original_write = Path.write_bytes
+
+    def write(path, data):
+        if corrupt and 'repair_candidates' in path.parts and not path.stem.endswith('-source'):
+            data = b'x' * len(data)  # same size is not byte identity
+        return original_write(path, data)
+
+    monkeypatch.setattr(Path, 'write_bytes', write)
+    record = fc._record_repair_candidate(flow, rel, crop, panel, (30, 70), ['Bounce Shot Range'], 1, 2)
+    assert target.read_bytes() == b'existing wrong template'
+    entry = flow.cal.entries[0]
+    assert entry['status'] == 'stale' and entry['verified'] is False
+    if corrupt:
+        assert record is None and 'repair_candidate' not in entry
+    else:
+        assert record['sha256'] == hashlib.sha256(Path(record['path']).read_bytes()).hexdigest()
+        assert record['grabs'] == 2 and record['grabbed_at'] == [1, 2]
+        assert 'repair_candidates' in Path(record['path']).parts
+        assert record['rect'] == [30, 70, 370, 90]
+        assert np.array_equal(cv2.imread(record['source_frame'])[70:160, 30:400], crop)
+
+
+def test_range_candidate_is_cut_from_its_recorded_source_frame(tmp_path, monkeypatch):
+    from pathlib import Path
+
+    flow, panel, grabs, taps, _ = _setup(tmp_path, monkeypatch, labels=('Bounce Shot Range',))
+    flow.cal.p['evidence'] = str(tmp_path / 'evidence')
+    rel = 'stats/bounce_shot_range.png'
+    target = settings.template_path(rel)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    assert cv2.imwrite(str(target), _panel(('Bounce Shot Chance',)))
+    original = target.read_bytes()
+    reads = []
+    def read(crops, **kwargs):
+        reads.append(len(crops))
+        return ['Bounce Shot Chance' if len(reads) == 1 else 'Bounce Shot Range']
+    monkeypatch.setattr(textocr, 'read_texts', read)
+    frames = []
+    def grab():
+        # Each independent observation moves the label down one pixel.
+        frame = np.roll(panel, len(frames), axis=0)
+        frames.append(frame)
+        return frame.copy()
+    flow.s.grab = grab
+    fc.capture_upgrade_labels(flow)
+    entry = next(e for e in flow.cal.entries if e['rel'] == rel)
+    record = entry['repair_candidate']
+    x, y, w, h = record['rect']
+    source = cv2.imread(record['source_frame'])
+    assert np.array_equal(source[y:y+h, x:x+w], cv2.imread(record['path']))
+    assert target.read_bytes() == original
+    assert entry['status'] == 'stale' and not entry['verified']
+    assert len(frames) >= 2 and not taps

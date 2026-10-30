@@ -1984,7 +1984,13 @@ def _record_repair_candidate(flow, rel, crop, frame, point, texts, first_grab_at
         source_written = cv2.imwrite(str(source_path), frame)        # False, not an exception, when the frame cannot be written
     except (OSError, cv2.error) as error:
         return failed(f'the candidate files could not be written: {error!r}')
-    if not source_written or not source_path.is_file() or crop_path.stat().st_size != len(data):
+    try:
+        source_readback = cv2.imread(str(source_path)) if source_written else None
+        files_match = (crop_path.read_bytes() == data and source_readback is not None
+                       and np.array_equal(source_readback, frame))
+    except (OSError, cv2.error) as error:
+        return failed(f'the candidate readback failed: {error!r}')
+    if not files_match:
         return failed('the candidate crop or its source frame is not on disk as written')
     record = dict(rel=rel, sha256=digest, path=str(crop_path), source_frame=str(source_path), screen='battle',
                   rect=[int(point[0]), int(point[1]), int(crop.shape[1]), int(crop.shape[0])], semantic_texts=list(texts), grabs=2,
@@ -2073,7 +2079,10 @@ def capture_upgrade_labels(flow):
                             if score < .98: continue                  # the second grab does not show the same label
                             texts=read_many([crop])
                             if bc.stat_slug(texts[0]) != name: continue   # the cropped label does not read as the expected stat
-                            if _record_repair_candidate(flow,f'stats/{name}.png',crop,frame,point,texts,first_grab_at,second_grab_at) is not None:
+                            # The retained source is the FIRST frame; a moving label's
+                            # location on the confirmation frame is not its source rect.
+                            _,_,_,source_point=cv2.minMaxLoc(cv2.matchTemplate(frame,crop,cv2.TM_CCOEFF_NORMED))
+                            if _record_repair_candidate(flow,f'stats/{name}.png',crop,frame,source_point,texts,first_grab_at,second_grab_at) is not None:
                                 candidates[name]=True
                                 page_candidates.append(f'stats/{name}.png')
                         for name,crop in pending.items():
