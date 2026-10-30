@@ -61,6 +61,8 @@ second input owner: the device lease and the operations ledger stay the only own
 | `shopping` | `AfterCompletion` | the orchestrator's `Shopper` (a sweep that sends input is a row; input-free sweeps are counted checks) |
 | `harvest_launch` | `Backoff` | the dashboard's reconciler: every accepted launch, refusal and failure |
 
+`harvest_launch` counts two kinds of fast exit (under `Backoff.window`) of a launched collector. A **failure** (any error) counts toward both the backoff delay and the circuit (`Backoff.circuit` in a row stop relaunching until an explicit On). A **device loss** (error code `DeviceUnavailable`, raised by `gem_collector.run_logged` when the adb transport timed out or dropped or no frame came back) lengthens the delay the same way but never reaches the circuit and neither counts as a failure nor ends the streak, so an emulator that flaps or is half up (adb says `device`, screencap hangs) is retried ever more slowly (`delay(failures + device_losses)`, capped at `Backoff.cap`) and is never abandoned. `CollectorRefused` is neither. An exit that ran for `Backoff.window` or longer ends the streak whatever its error.
+
 ## What a page reads (A2-7)
 
 A page renders any timed action from one item of `battle.runtime.actions` (built only by `ActionSession.project`) and the history reads, with no table of its own:

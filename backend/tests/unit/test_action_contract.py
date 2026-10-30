@@ -155,6 +155,19 @@ def test_five_fast_failures_open_the_circuit_and_fast_failure_has_one_definition
     assert not policy.fast_failure('cancelled', 1, False) and not policy.fast_failure('succeeded', 1, False)
 
 
+def test_device_losses_lengthen_the_delay_but_never_count_toward_the_circuit():
+    policy = Backoff()
+    losses = dict(facts(created=1.0, updated=2.0, failures=0), device_losses=9)
+    decision, _ = policy.evaluate(3.0, losses)
+    assert (decision.kind, decision.next_attempt_at) == ('wait', 2.0 + policy.delay(9))      # the cap: 900 s, not the 10 s spacing
+    assert policy.evaluate(10_000.0, losses)[0].kind == 'due'                                  # nine losses open nothing
+    mixed = dict(facts(created=1.0, updated=2.0, failures=4), device_losses=3)
+    decision, _ = policy.evaluate(3.0, mixed)
+    assert (decision.kind, decision.next_attempt_at) == ('wait', 2.0 + policy.delay(7))        # losses and failures share one ladder
+    assert policy.evaluate(10_000.0, dict(mixed, failures=5))[0].kind == 'blocked'             # the circuit reads failures alone
+    assert policy.evaluate(3.0, facts(created=1.0, updated=2.0, failures=1))[0].next_attempt_at == 2.0 + policy.delay(1)   # absent = 0
+
+
 # ------------------------------------------------------------------- fields
 LEGACY_FIELDS = {
     'ad_gems': {'enabled': bool, 'interval_sec': (1, 3600), 'window_sec': (5, 60)},

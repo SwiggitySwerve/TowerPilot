@@ -10,7 +10,7 @@ import time
 import traceback
 from types import SimpleNamespace
 import settings
-from device import capture
+from device import adbclient, capture
 from runtime import logger, priority
 from runtime.stage_clock import clock
 from vision import wave_reader, screen
@@ -299,10 +299,27 @@ def main(instance, preset):
         pace(pass_started)
 
 
+def device_lost(exc):
+    """Did the emulator, not this collector's own logic, end the pass? A capture that returned no frame (CaptureError) or an
+    adb error is the device layer's own type. A bare OSError (a socket timeout or reset) is the device's only when it was
+    raised through the adb socket code: the same type from the ledger, the logs or the gem routines is a real failure."""
+    if isinstance(exc, (capture.CaptureError, adbclient.AdbError)):
+        return True
+    trace = exc.__traceback__ if isinstance(exc, OSError) else None
+    while trace is not None:
+        if trace.tb_frame.f_globals.get('__name__') == adbclient.__name__:
+            return True
+        trace = trace.tb_next
+    return False
+
+
 def run_logged(instance, preset):
     try:main(instance, preset)
     except Exception as exc:
         logger.event('gem_collector_failed', error=str(exc), error_type=type(exc).__name__, trace=traceback.format_exc(limit=12))
+        if device_lost(exc):    # the lifecycle host does not count this toward its circuit: the emulator failed, not the collector
+            from towerpilot_workflows.harvest import DeviceUnavailable
+            raise DeviceUnavailable(f'{type(exc).__name__}: {exc}') from exc
         raise
 
 
