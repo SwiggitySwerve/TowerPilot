@@ -1,0 +1,33 @@
+{
+  "_comment": "Upstream items this tree removed on purpose, each with the reason. tools/upstream_parity.py reports everything else as a gap. Remove an entry when the tool calls it no longer needed.",
+  "event": {
+    "ad_gems_cap_reached": "came from orchestrator.free_gems_due, which nothing upstream called",
+    "ad_gems_claimed": "came from orchestrator.free_gems_mark_claimed, which nothing upstream called; the collector logs ad_gems_claim",
+    "calibrate_cards_progress": "card scan progress goes through Calibration.progress('cards', ...) (player/calibrate.py)",
+    "combo_stop_timeout": "the day plan no longer kills a runner after 8 h (hard rule 3); it logs combo_boundary_overdue and keeps waiting",
+    "flow_battle_incomplete": "setup errors fail closed through _setup_lifecycle; 'did not return Home' raises (player/flow_capture.py)",
+    "flow_intro_sprint_error": "capture_intro_sprint errors propagate to _setup_lifecycle instead of being logged and ignored",
+    "flow_uw_error": "capture_uw_weapons errors propagate to _setup_lifecycle instead of being logged and ignored",
+    "module_assumed_equipped": "loadout equips are verified after the tap instead of assumed from absence (interactions/loadout.py)"
+  },
+  "def": {
+    "backend/orchestrator.py:free_gems_due": "never called upstream (dead code)",
+    "backend/orchestrator.py:free_gems_mark_claimed": "never called upstream (dead code)",
+    "backend/orchestrator.py:store_gems_due": "replaced by global_rewards.store_decide",
+    "backend/player/manifest_matcher.py:LocalMatcher": "test-only helper, moved to backend/tests/support/manifest_matcher.py",
+    "backend/player/manifest_matcher.py:read_regions": "test-only helper, moved to backend/tests/support/manifest_matcher.py",
+    "backend/scheduling/chores.py:_done_today": "replaced by chores.decide on catalog schedules",
+    "backend/scheduling/daystate.py:_utc_today": "only served the dead free_gems_* counters",
+    "backend/scheduling/daystate.py:bump_utc_today": "only served the dead free_gems_* counters",
+    "backend/scheduling/daystate.py:get_utc_today": "only served the dead free_gems_* counters",
+    "backend/scheduling/global_rewards.py:check_due": "replaced by global_rewards.decide",
+    "backend/scheduling/global_rewards.py:checked": "replaced by global_rewards.settle",
+    "backend/scheduling/global_rewards.py:store_claimed": "replaced by global_rewards.store_settle",
+    "backend/scheduling/global_rewards.py:store_due": "replaced by global_rewards.store_decide",
+    "frontend/dashboard.py:_clear_stop_flag": "inlined in the clear_flag control action (backend/dashboard.py)",
+    "frontend/dashboard.py:_connected": "status reports connected from the adb transport state instead of a TCP dial"
+  },
+  "file": {
+    "backend/player/manifest_matcher.py": "test-only helper, moved to backend/tests/support/manifest_matcher.py"
+  }
+}

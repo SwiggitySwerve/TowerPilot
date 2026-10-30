@@ -1,7 +1,7 @@
 """Read-only live gem-collection health check for the running dashboard.
 
-Run after every change that reaches the live collector (docs/FOCUS.md, definition
-of done) and compare with the previous run:
+Run after every change that reaches the live collector (.claude/skills/delivery-flow,
+step 5) and compare with the previous run:
 
     python tools/gem_health.py            # current collector
     python tools/gem_health.py --hours 3  # only the last 3 hours

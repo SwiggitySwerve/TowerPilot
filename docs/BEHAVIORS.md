@@ -2,7 +2,7 @@
 > **Status:** Active
 > **Type:** Knowledge
 > **Created:** 2026-08-24
-> **Updated:** 2026-10-24
+> **Updated:** 2026-10-30
 > **Tags:** orchestrator, behaviors, rules, policies, configuration
 
 Every click the autopilot makes during a live run, what triggers it, why it
@@ -178,12 +178,13 @@ double-debounced, match-located tap - a blind coordinate tap once opened
 the guild store. Badge-driven flows visit within a randomized
 `missions.visit_delay_sec` window ("wander over", not pounce), back off 25+
 minutes when a visit claimed nothing, and the guild *store* is only checked
-after a guild claim actually landed. Ad-gems (v29): claimable up to **60
-times per UTC day** (6 gems each) - claims are paced by a jittered 10-25
-minute retry clock, counted per confirmed claim in a UTC-keyed daystate
-counter, and stop dead at the cap (`ad_gems_cap_reached` logged once/day;
-the cap resets at 00:00 UTC, which is 3 AM local - a local-date counter
-would drift by those hours daily). *Knobs:* `gather.quests_8h`,
+after a guild claim actually landed. Ad-gems: the gem collector watches for
+the HUD offer in collection windows of at most `attempt_timeout_sec` (60 s),
+opened `confirmed_cooldown_sec` apart start to start (default 720 s;
+`player/gather_settings.py`), and a window ends at its first confirmed
+claim (`ad_gems_claim`, `ad_gems_window_ended`). The game's daily claim
+limit is not counted; when it is reached the offer simply stops appearing.
+*Knobs:* `gather.quests_8h`,
 `quest_rewards`, `guild`, `ad_gems`. All flows navigate menus **the bot
 opened**; recovery taps are gated on `bot_left_battle` - a human-opened
 menu is never touched.

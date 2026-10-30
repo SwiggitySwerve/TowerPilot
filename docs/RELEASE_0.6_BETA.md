@@ -2,13 +2,12 @@
 > **Status:** Draft. The version number and the change list are confirmed when the release is tagged.
 > **Type:** Release notes
 > **Created:** 2026-10-24
-> **Updated:** 2026-10-25
+> **Updated:** 2026-10-30
 > **Tags:** release, environment limits, portable
 
 > [!warning] Draft until the Windows 11 checks are recorded
 > Do not publish this note until the checks of the tagged build (see
 > [the portable build guide](PORTABLE_BUILD.md)) are recorded and the limits below still match them.
-> The release builders do not yet package this file; it is added to the allowed docs when the version is raised to 0.6-beta.
 
 Recommended download: **windows-x64 portable ZIP** for Windows 11 x64. Extract the
 whole ZIP into a writable folder, then double-click **Start Tower Pilot.cmd**. Python
