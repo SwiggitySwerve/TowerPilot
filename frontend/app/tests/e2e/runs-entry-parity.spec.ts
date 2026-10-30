@@ -275,10 +275,11 @@ for (const width of [1360, 1054, 390]) {
     await page.evaluate(() => {
       window.location.hash = '#runs';
     });
-    const picker = page.getByRole('combobox', { name: 'Run', exact: true });
+    // The runs list holds one row for every listed run.
+    const picker = page.locator('[data-runs-list] .tp-record-row__name');
     const gone = own(plan('read_runs_after_the_removal_the_day_plan_run_is_gone').body, 'runs');
     await expect
-      .poll(async () => picker.locator('option').allTextContents())
+      .poll(async () => picker.allTextContents())
       .toEqual(
         Object.values(Object.fromEntries(entries(gone)))
           .filter((r) => own(r, 'label') !== undefined)
@@ -306,7 +307,7 @@ for (const width of [1360, 1054, 390]) {
     const listed = entries(
       own(plan('read_runs_after_the_plan_was_added_back_the_day_plan_run_is_listed').body, 'runs'),
     ).filter(([key]) => key !== 'combo');
-    await expect(picker.locator('option')).toHaveCount(listed.length);
+    await expect(picker).toHaveCount(listed.length);
     await expect(
       page.getByText('Day plans choose a run for each block; edit them on Schedule', {
         exact: true,

@@ -239,6 +239,16 @@ export interface RunChoiceVM {
   readonly key: string;
   readonly name: ServerText<'id'> | null;
   readonly label: ServerText<'name'> | null;
+  /** The run's kind as the profile names it (coin, shard, tournament, ...), or null. */
+  readonly kind: string | null;
+  /** The equipment loadout it starts with: a loadout name, `as_is` for the current one, or null. */
+  readonly loadout: ServerText<'name'> | null;
+  readonly asIs: boolean;
+  readonly tier: number | null;
+  readonly restartViaHome: boolean;
+  readonly readiness: ReadinessView['line'];
+  /** How many recognition images the run still needs (`images_missing` only). */
+  readonly imageCount: number;
 }
 
 export interface SavedSectionVM {
@@ -643,11 +653,25 @@ function answered(read: ReadRecord | null): boolean {
 
 function savedSection(state: DashboardState, lines: readonly OutcomeLineVM[]): SavedSectionVM {
   const runsBody = answeredBody(state, 'runs');
-  const runs = entries(own(runsBody, 'runs')).flatMap(([key, run]): RunChoiceVM[] =>
-    !runDefined(run) || key === 'combo'
-      ? []
-      : [{ key, name: fromServer('id', key), label: fromServer('name', own(run, 'label')) }],
-  );
+  const runs = entries(own(runsBody, 'runs')).flatMap(([key, run]): RunChoiceVM[] => {
+    if (!runDefined(run) || key === 'combo') return [];
+    const ready = readiness(ownPath(runsBody, 'readiness', key));
+    const loadout = text(own(run, 'loadout'));
+    return [
+      {
+        key,
+        name: fromServer('id', key),
+        label: fromServer('name', own(run, 'label')),
+        kind: text(own(run, 'kind')) ?? null,
+        loadout: loadout === undefined || loadout === 'as_is' ? null : fromServer('name', loadout),
+        asIs: loadout === 'as_is',
+        tier: finite(own(run, 'tier')) ?? null,
+        restartViaHome: own(run, 'restart_via_home') === true,
+        readiness: ready.line,
+        imageCount: ready.imageCount,
+      },
+    ];
+  });
   const wanted = runsPageRun(state);
   // A battle names its run without the `bp_` of /api/runs (dashboard.py strips it): one run.
   const listed =

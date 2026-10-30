@@ -9,40 +9,46 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--tp-space-3);
 }
-.tp-shop__columns {
+/* The queue is one column on the left; the chip grids take the rest (the retired editor's two panes). */
+.tp-shop__layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--tp-space-4);
+  align-items: start;
   margin-block: var(--tp-space-3);
 }
-.tp-shop__queue ol,
-.tp-shop__page ul {
+.tp-shop__queue > .tp-tile__body,
+.tp-shop__picker > .tp-tile__body {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-2);
+  gap: var(--tp-space-3);
+  min-width: 0;
+}
+.tp-shop__reasons,
+.tp-shop__problems,
+.tp-shop__waves {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-1);
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.tp-shop__picker > .tp-tile__body {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-  align-items: start;
-  gap: var(--tp-space-3);
+.tp-shop__wave {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-1) var(--tp-space-3);
 }
-.tp-shop__picker > .tp-tile__body > .tp-shop__hint {
-  grid-column: 1 / -1;
+.tp-shop__wave > strong {
+  flex: 1 1 8rem;
+  min-width: 0;
 }
-.tp-shop__page-viewport {
-  max-height: 28rem;
-  overflow-y: auto;
-  padding: var(--tp-space-1);
-  scrollbar-gutter: stable;
-}
-.tp-shop__fields {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--tp-space-2);
+.tp-shop__wave-field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tp-space-1);
+  font-size: var(--tp-font-size-13);
 }
 .tp-shop__label {
   display: flex;
@@ -70,34 +76,21 @@
   height: 24px;
   flex: none;
 }
-.tp-shop__pick {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--tp-space-1) var(--tp-space-3);
-}
-.tp-shop__exclude {
-  font-size: 0.9em;
-}
 .tp-shop__hint {
+  margin: 0;
   color: var(--tp-color-text-muted);
   font-size: 0.9em;
 }
 .tp-shop__problem {
   color: var(--tp-color-bad);
 }
-.tp-shop__guidance {
-  color: var(--tp-color-text-muted);
-  font-size: var(--tp-font-size-13);
-}
-@container (max-width: 900px) {
-  .tp-shop__fields {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@container (min-width: 40rem) {
+  .tp-shop__layout {
+    grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
   }
 }
 @container (max-width: 560px) {
-  .tp-shop__rules > .tp-tile__body,
-  .tp-shop__fields {
+  .tp-shop__rules > .tp-tile__body {
     grid-template-columns: minmax(0, 1fr);
   }
 }

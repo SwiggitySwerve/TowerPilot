@@ -6,7 +6,7 @@ import {
   draftChanges,
   includeUpgrade,
   leaveOutUpgrade,
-  moveUpgrade,
+  moveUpgradeTo,
   setExcluded,
   stagePlan,
   type QueueBase,
@@ -19,7 +19,6 @@ import {
 } from '../../store/selectors/shoppingLibrary.ts';
 import type { ProfilePatchCommand } from '../../store/selectors/collection.ts';
 import type { QueueEditorVM } from '../../store/selectors/shoppingQueue.ts';
-import { selectQueueEditor } from '../../store/selectors/shoppingQueue.ts';
 import { Button } from '../../ui/Button.tsx';
 import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
 import { Fact, Facts } from '../../ui/Facts.tsx';
@@ -109,14 +108,9 @@ function LibraryQueue({
       onExclude={(upgrade, excluded) => {
         onDraft(setExcluded(draft, upgrade, excluded));
       }}
-      onMove={(upgrade, step) => {
-        const next = moveUpgrade(base, draft, upgrade, step);
-        if (next === null) return null;
-        onDraft(next);
-        return (
-          selectQueueEditor(base, next).entries.find((entry) => entry.id === upgrade)?.position ??
-          null
-        );
+      onMove={(upgrade, to) => {
+        const next = moveUpgradeTo(base, draft, upgrade, to);
+        if (next !== null) onDraft(next);
       }}
     />
   );

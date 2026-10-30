@@ -87,20 +87,17 @@ async function weighted(page: PageHarness) {
   await page.user.type(reserve, '750.5');
   await page.user.selectOptions(form.getByLabelText('Purchase pattern'), 'weighted_split');
   await page.user.selectOptions(form.getByLabelText('Cadence'), 'while_affordable');
-  const health = policy('main_list').querySelector<HTMLElement>('li[data-upgrade="health"]');
-  const damage = policy('main_list').querySelector<HTMLElement>('li[data-upgrade="damage"]');
-  if (health === null || damage === null) throw new Error('missing upgrades');
-  await page.user.clear(within(health).getByLabelText('Weight', { exact: true }));
-  await page.user.type(within(health).getByLabelText('Weight', { exact: true }), '3');
+  const weight = form.getByRole('spinbutton', { name: 'Weight: Health' });
+  await page.user.clear(weight);
+  await page.user.type(weight, '3');
   await page.user.type(
-    within(health).getByLabelText('Until wave (exclusive)', { exact: true }),
+    form.getByRole('spinbutton', { name: 'Until wave (exclusive): Health' }),
     '20',
   );
-  await page.user.clear(within(damage).getByLabelText('Tap attempts this battle', { exact: true }));
-  const up = within(health).getByRole('button', { name: /Move up/ });
-  up.focus();
+  await page.user.clear(form.getByRole('spinbutton', { name: 'Tap attempts this battle: Damage' }));
+  form.getByRole('button', { name: /Move up.*Health/ }).focus();
   await page.user.keyboard('{Enter}');
-  expect(document.activeElement).toBe(up);
+  expect(form.getByRole('button', { name: /Move up.*Health/ })).toHaveFocus();
   return form;
 }
 async function send(page: PageHarness, id = 'main_list') {

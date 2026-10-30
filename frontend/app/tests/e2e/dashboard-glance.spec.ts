@@ -183,8 +183,8 @@ for (const width of [1360, 390]) {
       await source.click();
       await expect(page).toHaveURL(/#runs\/saved\/bp_farm$/u);
       await expect(
-        page.locator('[data-region="runsSaved"] select[data-focus-key="runs:run"]'),
-      ).toHaveValue('bp_farm');
+        page.locator('[data-region="runsSaved"] [data-runs-list] li', { hasText: 'Editing' }),
+      ).toContainText('Farm');
       expect(await posts(page)).toEqual([]);
     });
   }

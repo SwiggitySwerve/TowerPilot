@@ -1,4 +1,5 @@
 import { entry, made } from './entry.ts';
+import type { CopyText } from './text.ts';
 
 /**
  * F6-12 shopping queues (brief backend/logs/reviews/ui-pages/f6-12-shopping-brief.md): the words
@@ -53,6 +54,19 @@ export const shopping = {
   untilWave: entry('Until wave (exclusive)'),
   untilWaveHint: entry('Blank means no last wave.'),
   waves: entry('Waves and weight'),
+  waveRanges: entry('Wave ranges'),
+  waveRangesHint: entry(
+    'Blank from wave uses the server default; blank until wave means no last wave.',
+  ),
+  unlimited: entry('∞'),
+  times: entry('×'),
+  chipFields: entry(
+    'Selected upgrades show their tap limit (blank means unlimited) and, in Weighted split, their weight.',
+    'The tap limit counts taps sent, not levels bought. The weight is the confirmed single purchases per weighted turn; blank uses the server default.',
+  ),
+  problemLine: (item: CopyText, field: CopyText, problem: CopyText) =>
+    made(`${item} ${field}: ${problem}`),
+  fieldProblems: entry('Fields to fix'),
   up: entry('Move up'),
   down: entry('Move down'),
   firstPlace: entry('Already first.'),
