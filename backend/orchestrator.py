@@ -132,7 +132,7 @@ def fleet_gate(rs, frame, mark: int, wave: int, after: int = 0) -> str | None:
     run_cfg = _battle_session.config if _battle_session is not None else CONFIG
     cfg = (run_cfg.get("fleet") or {}).get("sighting") or {}
     if not cfg.get("enabled", True):
-        return "schedule"
+        return "schedule" if wave >= mark + int(after) else None
     seen = rs.fleet_seen.setdefault(mark, {"types": {}, "blue": False})
     if not seen.get("watched"):
         seen["watched"] = True

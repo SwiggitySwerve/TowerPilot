@@ -147,7 +147,8 @@ def test_first_look_at_a_mark_keeps_one_frame(gate, monkeypatch):
 
 def test_gate_can_be_switched_off_for_the_plain_schedule(gate, monkeypatch):
     monkeypatch.setitem(orchestrator.CONFIG, "fleet", {"sighting": {"enabled": False}})
-    assert orchestrator.fleet_gate(gate, _frame(), 1495, 1498) == "schedule"
+    assert orchestrator.fleet_gate(gate, _frame(), 1495, 1497, after=3) is None
+    assert orchestrator.fleet_gate(gate, _frame(), 1495, 1498, after=3) == "schedule"
 
 
 def test_fire_skip_is_logged_once_per_mark_with_the_button_state(gate, monkeypatch):
@@ -213,13 +214,17 @@ def test_a_new_run_forgets_sightings_and_skip_logging(gate, monkeypatch):
 
 
 @pytest.mark.parametrize("loop", ["observe", "fast_wall"])
-@pytest.mark.parametrize("sighted,wave,fires", [
-    (True, 1495, True),      # a sighting fires from the mark itself
-    (False, 1497, False),    # unsighted: hold until mark + after_waves
-    (False, 1498, True),     # then fire on schedule anyway
+@pytest.mark.parametrize("sighting,sighted,wave,fires", [
+    (True, True, 1495, True),      # a sighting fires from the mark itself
+    (True, False, 1497, False),    # unsighted: hold until mark + after_waves
+    (True, False, 1498, True),     # then fire on schedule anyway
+    (False, True, 1497, False),    # sighting off: the plain schedule, never early
+    (False, True, 1498, True),
 ])
 def test_both_observation_loops_scan_from_the_mark_with_the_schedule_as_floor(
-        gate, monkeypatch, loop, sighted, wave, fires):
+        gate, monkeypatch, loop, sighting, sighted, wave, fires):
+    if not sighting:
+        monkeypatch.setitem(orchestrator.CONFIG, "fleet", {"sighting": {"enabled": False}})
     frame = _frame()
     if sighted:
         _poly(frame, (400, 900), 45, HUE["commander"], 5)
