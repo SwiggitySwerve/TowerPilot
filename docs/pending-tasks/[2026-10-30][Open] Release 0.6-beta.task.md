@@ -17,7 +17,7 @@ is still to be written.
 
 ## What Needs to Happen
 
-1. Land [Portable build qualification in the release workflow](%5B2026-10-30%5D%5BOpen%5D%20Portable%20build%20qualification%20in%20the%20release%20workflow.task.md) first.
+1. Land [Portable build qualification in the release workflow](%5B2026-10-30%5D%5BOpen%5D%20Portable%20build%20qualification%20in%20the%20release%20workflow.task.md) and [Portable archive gate rejects pinned dependency text](%5B2026-10-30%5D%5BOpen%5D%20Portable%20archive%20gate%20rejects%20pinned%20dependency%20text.task.md) first.
 2. Write the user-facing change list in `docs/RELEASE_0.6_BETA.md` from the merged PRs
    (`gh pr list -R SwiggitySwerve/TowerPilot --state merged`).
 3. Raise `VERSION` to `0.6-beta` in a release PR; follow `docs/GITHUB_RELEASE.md` for the tag.
