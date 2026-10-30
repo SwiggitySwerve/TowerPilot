@@ -40,12 +40,17 @@ MARKERS = {
 }
 
 
+def pins_digest(data: bytes) -> str:
+    """SHA-256 of portable_pins.json as git stores it (LF), whatever line endings the checkout wrote."""
+    return hashlib.sha256(data.replace(b'\r\n', b'\n')).hexdigest()
+
+
 def _dependency_manifest(directory: Path) -> tuple[dict, dict, set[tuple[str, str, str]]]:
     """Read trusted checker data and verify its pinned input identity."""
     pins_bytes = (directory / 'portable_pins.json').read_bytes()
     pins = json.loads(pins_bytes)
     manifest = json.loads((directory / 'dependency_images.json').read_bytes())
-    if manifest['generation']['pins_sha256'] != hashlib.sha256(pins_bytes).hexdigest():
+    if manifest['generation']['pins_sha256'] != pins_digest(pins_bytes):
         raise ValueError('dependency allowlist is stale against portable pins')
     artifacts = {(row['requirement'], artifact['filename'], artifact['sha256'])
                  for row in pins['packages'] for artifact in row['artifacts']}

@@ -3,7 +3,7 @@
   "generation": {
     "command": "python tools/generate_dependency_images.py --archive dist/<portable.zip>",
     "method": "Download every pinned artifact into a temporary directory; verify SHA-256 before inspecting wheel members and the source-build exception. Member hashes cover exact uncompressed bytes at installed paths; no images are stored in the repository.",
-    "pins_sha256": "70f2f9a03b5ac9c48035a81e7ca09435683c78a23d27233392bbf5c223939fe4"
+    "pins_sha256": "6fc919822cae7c4df88d1c536550c7206c383c29e025023d7d9ef30a04e040cd"
   },
   "inspected_artifacts": [
     {

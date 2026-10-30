@@ -15,6 +15,8 @@ import zipfile
 from collections.abc import Mapping
 from pathlib import Path, PurePosixPath
 
+from release_archive_policy import pins_digest
+
 
 def _verified_download(artifact: dict, directory: Path) -> Path:
     path = directory / artifact['filename']
@@ -114,7 +116,7 @@ def generate(pins_path: Path, artifact_dir: Path,
                       'SHA-256 before inspecting wheel members and the source-build exception. '
                       'Member hashes cover exact uncompressed bytes at installed paths; no images '
                       'are stored in the repository.',
-            'pins_sha256': hashlib.sha256(pins_bytes).hexdigest(),
+            'pins_sha256': pins_digest(pins_bytes),
         },
         'inspected_artifacts': inspected,
         'images': sorted(images, key=lambda image: image['path']),

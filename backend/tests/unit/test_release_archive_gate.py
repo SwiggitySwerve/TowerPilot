@@ -251,6 +251,22 @@ def test_recorded_image_provenance_matches_every_pin(checker: ModuleType) -> Non
     assert len(images) == sum(row['png_count'] for row in inspected) == 3
 
 
+def test_recorded_pins_hash_is_the_committed_bytes_whatever_the_checkout_line_endings(
+        checker: ModuleType, tmp_path: Path) -> None:
+    """The recorded pins hash is taken over the bytes git stores (LF). A CRLF checkout of the same
+    file still loads the gate; a changed pin still makes it stale (CI failed on a CRLF-generated hash)."""
+    committed = subprocess.run(['git', 'show', 'HEAD:tools/portable_pins.json'], cwd=REPO,
+                               capture_output=True, check=True).stdout
+    manifest = (REPO / 'tools/dependency_images.json').read_bytes()
+    for pins in (committed, committed.replace(b'\n', b'\r\n')):
+        (tmp_path / 'portable_pins.json').write_bytes(pins)
+        (tmp_path / 'dependency_images.json').write_bytes(manifest)
+        assert checker.dependency_images(tmp_path)
+    (tmp_path / 'portable_pins.json').write_bytes(committed.replace(b'"python"', b'"pythn"', 1))
+    with pytest.raises(ValueError, match='stale'):
+        checker.dependency_images(tmp_path)
+
+
 def identity(artifact: Artifact) -> dict[str, str]:
     return json.loads(artifact[3]['release_identity.json'])
 
