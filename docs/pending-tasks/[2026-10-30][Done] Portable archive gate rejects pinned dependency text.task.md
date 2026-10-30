@@ -1,5 +1,5 @@
 # Portable archive gate rejects pinned dependency text
-> **Status:** Open
+> **Status:** Done
 > **Type:** Task
 > **Created:** 2026-10-30
 > **Updated:** 2026-10-30
@@ -58,7 +58,7 @@ or code, because archive-supplied files cannot vouch for themselves.
 
 ## Context
 
-Found while proving [Portable build qualification in the release workflow](%5B2026-10-30%5D%5BOpen%5D%20Portable%20build%20qualification%20in%20the%20release%20workflow.task.md)
+Found while proving [Portable build qualification in the release workflow](%5B2026-10-30%5D%5BDone%5D%20Portable%20build%20qualification%20in%20the%20release%20workflow.task.md)
 (PR #26): with only this gate bypassed, `tools/qualify_portable.py` passes every check on the
 real ZIP (archive, imports, identity, app, config, unchanged). The failure predates PR #26:
 the existing "Check release archives" step fails on the same build. The fork has not
@@ -72,3 +72,9 @@ published a release since 0.5-beta, so this was never exercised.
 - [ ] Every `windows-user-profile` hit is explained as upstream bytes or fixed in the build.
 - [ ] Synthetic tests prove a changed byte or a build-written path still fails.
 - [ ] `tools/qualify_portable.py` passes on the same build, gate included.
+
+---
+
+## Outcome
+
+Landed in [SwiggitySwerve/TowerPilot#28](https://github.com/SwiggitySwerve/TowerPilot/pull/28), merge commit `582af228`, on 2026-10-30. All three windows-user-profile hits were upstream wheel bytes; nothing was written by the build. The pins hash is taken over LF bytes so a CRLF checkout cannot break the gate.

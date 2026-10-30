@@ -14,8 +14,10 @@ breaks.
 
 ## Goal for this stretch
 
-Put what the fork has built into users' hands: the takeover control on the new dashboard,
-a qualified 0.6-beta release, and the fork's work offered back upstream.
+Put what the fork has built into users' hands: a qualified 0.6-beta release, and the fork's
+work offered back upstream. Landed on 2026-10-30: takeover controls (#27), portable
+qualification (#26) and its archive gate (#28), setup scan metrics (#29) and sides (#31),
+action history (#30).
 
 ---
 
@@ -23,16 +25,11 @@ a qualified 0.6-beta release, and the fork's work offered back upstream.
 
 | # | Task | Blocked by |
 |---|---|---|
-| 1 | [Takeover controls on the new dashboard](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Takeover%20controls%20on%20the%20new%20dashboard.task.md) | - |
-| 2 | [Portable build qualification in the release workflow](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Portable%20build%20qualification%20in%20the%20release%20workflow.task.md) | - |
-| 3 | [Portable archive gate rejects pinned dependency text](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Portable%20archive%20gate%20rejects%20pinned%20dependency%20text.task.md) | - |
-| 4 | [Release 0.6-beta](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Release%200.6-beta.task.md) | 2 and 3; the person records E1/E3 |
-| 5 | [Setup scan metrics and identity](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Setup%20scan%20metrics%20and%20identity.task.md) | - |
-| 6 | [Setup scan sides and capture swap](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Setup%20scan%20sides%20and%20capture%20swap.task.md) | 5; live gates D3, D5, D8 |
-| 7 | [Guild store sold-out recognition](pending-tasks/%5B2026-10-19%5D%5BOpen%5D%20Guild%20store%20sold-out%20recognition.task.md) | a calibration session the person starts |
-| 8 | [Guild store terminal section evidence](pending-tasks/%5B2026-10-20%5D%5BOpen%5D%20Guild%20store%20terminal%20section%20evidence.task.md) | a calibration session the person starts |
-| 9 | [Action history leftovers](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Action%20history%20leftovers.task.md) | - |
-| 10 | [Render-time latency measurement](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Render-time%20latency%20measurement.task.md) | the person: is the harness sample enough? |
+| 1 | [Release 0.6-beta](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Release%200.6-beta.task.md) | notes and version in progress; the person records E1/E3 and decides publication |
+| 2 | [Guild store sold-out recognition](pending-tasks/%5B2026-10-19%5D%5BOpen%5D%20Guild%20store%20sold-out%20recognition.task.md) | code in progress; then a calibration session the person starts |
+| 3 | [Setup scan sides and capture swap](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Setup%20scan%20sides%20and%20capture%20swap.task.md) | scan sides landed (#31); the file swap needs a race-free worker guard; live gates D3, D5, D8 |
+| 4 | [Guild store terminal section evidence](pending-tasks/%5B2026-10-20%5D%5BOpen%5D%20Guild%20store%20terminal%20section%20evidence.task.md) | a calibration session the person starts |
+| 5 | [Render-time latency measurement](pending-tasks/%5B2026-10-30%5D%5BOpen%5D%20Render-time%20latency%20measurement.task.md) | the person: is the harness sample enough? |
 
 At most two in flight, and only when they touch different files.
 

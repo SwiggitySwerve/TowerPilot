@@ -22,7 +22,8 @@ Run the activity named in each row, then record the evidence (event, timestamp, 
 | Check | How it shows up | Evidence so far (2026-10-30) |
 |---|---|---|
 | Shopping buys an upgrade (roadmap item 6; feedback step 6) | an `action_executions` row with action `shopping`; a `shop_sweep_end` that is not `skipped` | 0 shopping rows in `backend/logs/operations.sqlite3`; all 14,259 `shop_sweep_end` events are `skipped`, mostly `reserve_or_no_eligible_upgrades` |
-| Taking over a live battle (roadmap item 3) | `attach_*` events | none in any events log |
+| Taking over a live battle (roadmap item 3) | `attach_*` events | none in any events log; the Dashboard control landed in #27 |
+| Setup scan metrics on a real scan (L1: clean Home, no battle, harvesting paused) | the sealed metrics of the setup operation (`/api/calibrate/metrics`, #29) | no live scan since #29 |
 | `ensure_home` treats the END ROUND confirmation as a battle (r18g, `de0db599`) | the confirmation frame held, not tapped through | not observed |
 | Perk bans applied before a run (0.6 release note) | `perk_bans_applied` or `perk_bans_failed` | none in any events log |
 | Collect on a person's manual battle (roadmap item 1) | `roadmap-item1/acceptance.json` (local) still partial at P4 | needs a fresh live run, or the person accepts P4 as is |

@@ -1,5 +1,5 @@
 # Action history leftovers
-> **Status:** Open
+> **Status:** Done
 > **Type:** Task
 > **Created:** 2026-10-30
 > **Updated:** 2026-10-30
@@ -44,3 +44,9 @@ review left open, listed in that commit's message:
 
 Opus approved `d89b808c` with nits: 10 of 11 fix removals turn tests red and live rows
 cannot be refused. The local review lane is `backend/logs/reviews/roadmap-item7-r18h-foundation/`.
+
+---
+
+## Outcome
+
+Landed in [SwiggitySwerve/TowerPilot#30](https://github.com/SwiggitySwerve/TowerPilot/pull/30), merge commit `1903c697`, on 2026-10-30. UW history rows are now written when the toggle returns, so a crash cannot lose a buffered row; the retry deadline is taken before the write.
