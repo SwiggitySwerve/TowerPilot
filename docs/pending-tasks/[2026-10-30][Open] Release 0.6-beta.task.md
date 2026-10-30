@@ -17,12 +17,15 @@ is still to be written.
 
 ## What Needs to Happen
 
-1. Land [Portable build qualification in the release workflow](%5B2026-10-30%5D%5BOpen%5D%20Portable%20build%20qualification%20in%20the%20release%20workflow.task.md) first.
+1. Land [Portable build qualification in the release workflow](%5B2026-10-30%5D%5BDone%5D%20Portable%20build%20qualification%20in%20the%20release%20workflow.task.md) and [Portable archive gate rejects pinned dependency text](%5B2026-10-30%5D%5BDone%5D%20Portable%20archive%20gate%20rejects%20pinned%20dependency%20text.task.md) first.
 2. Write the user-facing change list in `docs/RELEASE_0.6_BETA.md` from the merged PRs
    (`gh pr list -R SwiggitySwerve/TowerPilot --state merged`).
 3. Raise `VERSION` to `0.6-beta` in a release PR; follow `docs/GITHUB_RELEASE.md` for the tag.
 4. Record E1 and E3 by hand on Windows 11 and E2 from the workflow run
    (`docs/PORTABLE_BUILD.md`), then set the note's status from Draft to final.
+5. At publication only: point `README.md` (its version line, release-note link and download
+   link) at the published `v0.6-beta` release on the host the person chose. Until then the
+   README stays on 0.5-beta, because a link to an unpublished release is broken.
 
 ---
 
@@ -38,6 +41,10 @@ is still to be written.
 ---
 
 ## Context
+
+Progress 2026-10-30: [#33](https://github.com/SwiggitySwerve/TowerPilot/pull/33) writes the
+change list, raises `VERSION` to `0.6-beta` and updates the release body
+(`docs/GITHUB_RELEASE.md`); no tag is pushed.
 
 The note's builder-packaging warning was stale (`tools/build_release.py:25` already lists
 `RELEASE_0.6_BETA.md`) and was removed on 2026-10-30. Whether to release from the fork, or

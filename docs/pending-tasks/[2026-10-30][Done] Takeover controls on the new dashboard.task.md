@@ -1,5 +1,5 @@
 # Takeover controls on the new dashboard
-> **Status:** Open
+> **Status:** Done
 > **Type:** Task
 > **Created:** 2026-10-30
 > **Updated:** 2026-10-30
@@ -62,3 +62,9 @@ patch. Hard rule 3 applies: a takeover adopts a live run and must never end one.
 - [ ] Frontend typecheck, lint and unit tests pass; contract fixtures match the routes.
 - [ ] First live takeover observed in the events log (`attach_*` events), see
   [Live acceptance checks owed](%5B2026-10-30%5D%5BOpen%5D%20Live%20acceptance%20checks%20owed.task.md).
+
+---
+
+## Outcome
+
+Landed in [SwiggitySwerve/TowerPilot#27](https://github.com/SwiggitySwerve/TowerPilot/pull/27), merge commit `49efad7c`, on 2026-10-30. The first live takeover is still owed; it is a row in Live acceptance checks owed.

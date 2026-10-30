@@ -1,5 +1,5 @@
 # Setup scan metrics and identity
-> **Status:** Open
+> **Status:** Done
 > **Type:** Task
 > **Created:** 2026-10-30
 > **Updated:** 2026-10-30
@@ -65,3 +65,9 @@ while it runs).
 - [ ] Each scan names the build and account it ran under.
 - [ ] Offline tests prove the counters; full backend suite passes; contract fixtures regenerated.
 - [ ] One L1 live scan on the new build shows plausible counts (live check, person).
+
+---
+
+## Outcome
+
+Landed in [SwiggitySwerve/TowerPilot#29](https://github.com/SwiggitySwerve/TowerPilot/pull/29), merge commit `6de745eb`, on 2026-10-30. The L1 live scan that shows real counts is still owed; it is a row in Live acceptance checks owed.

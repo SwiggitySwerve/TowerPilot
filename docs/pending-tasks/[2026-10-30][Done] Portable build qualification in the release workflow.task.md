@@ -1,5 +1,5 @@
 # Portable build qualification in the release workflow
-> **Status:** Open
+> **Status:** Done
 > **Type:** Task
 > **Created:** 2026-10-30
 > **Updated:** 2026-10-30
@@ -58,3 +58,9 @@ qualification run must never touch an emulator or adb (the tests refuse ports 50
 - [ ] `release.yml` runs the offline suite and qualifies the portable ZIP before publishing.
 - [ ] `docs/PORTABLE_BUILD.md` describes exactly the checks that run.
 - [ ] One workflow run on a test tag shows the qualification step green.
+
+---
+
+## Outcome
+
+Landed in [SwiggitySwerve/TowerPilot#26](https://github.com/SwiggitySwerve/TowerPilot/pull/26), merge commit `11a649ed`, on 2026-10-30. With the archive gate fixed (#28), the real portable ZIP qualifies with every check, gate included.
