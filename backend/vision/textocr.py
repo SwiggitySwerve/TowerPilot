@@ -26,7 +26,7 @@ from pathlib import Path
 import cv2
 
 import settings
-from runtime import priority
+from runtime import priority, scan_metrics
 from runtime.stage_clock import clock
 
 WINOCR = settings.ROOT / "tools" / "winocr.ps1"
@@ -79,6 +79,7 @@ def read_lines(bgr, scale: float = 3.0, *, timeout: float = 120,
     recognition from an empty reading; existing callers keep their behavior.
     """
     deadline = time.monotonic()+timeout if raise_on_error else None
+    scan_metrics.ocr_call(1)
     img = bgr
     if scale != 1.0:
         img = cv2.resize(bgr, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
@@ -92,6 +93,7 @@ def read_lines(bgr, scale: float = 3.0, *, timeout: float = 120,
             timeout = deadline-time.monotonic()
             if timeout <= 0:
                 raise subprocess.TimeoutExpired('Windows OCR preparation', 0)
+        scan_metrics.ocr_launch()
         p = settings.run_hidden(
             ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
              "-File", str(WINOCR), path],
@@ -110,10 +112,12 @@ def read_lines(bgr, scale: float = 3.0, *, timeout: float = 120,
         rows.sort()
         return rows
     except subprocess.TimeoutExpired:
+        scan_metrics.ocr_timeout()
         if raise_on_error:
             raise
         return []
     except (OSError, subprocess.SubprocessError):
+        scan_metrics.ocr_error()
         if raise_on_error:
             raise
         return []
@@ -182,6 +186,7 @@ class _WarmReader:
         return not alive
 
     def _start(self):
+        scan_metrics.ocr_launch()      # a warm reader start is a PowerShell launch like a cold batch's
         proc = settings.spawn_hidden(
             ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
              "-File", str(WINOCR), "-Serve"],
@@ -296,6 +301,7 @@ def read_texts(crops, scales=(2.0, 3.0, 4.0), *, timeout=120,
         raise ValueError('Cannot batch an empty OCR crop')
     deadline = time.monotonic() + timeout if raise_on_error else None
     _TIMING.clear()
+    scan_metrics.ocr_call(len(crops))
     try:
         # An abandoned warm reader may still hold its current image for a moment;
         # its leftover crop must not turn a timeout into a different failure.
@@ -344,6 +350,7 @@ def read_texts(crops, scales=(2.0, 3.0, 4.0), *, timeout=120,
             _TIMING.setdefault('path', 'cold')
             cold_started = time.monotonic()
             try:
+                scan_metrics.ocr_launch()
                 p = settings.run_hidden(
                     ['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
                      '-EncodedCommand', encoded], capture_output=True, timeout=remaining)
@@ -353,7 +360,11 @@ def read_texts(crops, scales=(2.0, 3.0, 4.0), *, timeout=120,
                 raise subprocess.CalledProcessError(p.returncode, p.args,
                                                     output=p.stdout, stderr=p.stderr)
             return _vote(_batch_rows(_decode(p.stdout).splitlines(), len(entries)), len(crops), scales)
-    except (OSError, ValueError, subprocess.SubprocessError):
+    except (OSError, ValueError, subprocess.SubprocessError) as exc:
+        if isinstance(exc, subprocess.TimeoutExpired):
+            scan_metrics.ocr_timeout()
+        else:
+            scan_metrics.ocr_error()
         if raise_on_error:
             raise
         return [''] * len(crops)
