@@ -7,35 +7,23 @@
 }
 
 .tp-automation-list p {
-  margin: 0.125rem 0;
+  margin: 0;
 }
 
-.tp-automation-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--tp-space-1) var(--tp-space-2);
-}
-
+/* A state and its Why on one line: the chip, its words, the disclosure. */
+.tp-automation-state-line,
 .tp-automation-state {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--tp-space-1);
+  gap: var(--tp-space-1) var(--tp-space-2);
+  min-width: 0;
+}
+.tp-automation-state-line > details[open] {
+  flex-basis: 100%;
 }
 
 .tp-automation-note {
   font-size: var(--tp-font-size-12);
   color: var(--tp-color-text-muted);
-}
-
-@container (min-width: 740px) {
-  .tp-automation-list [data-operation-key] {
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: var(--tp-space-2);
-  }
-  .tp-automation-head {
-    flex-basis: 100%;
-  }
 }

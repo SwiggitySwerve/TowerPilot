@@ -4,19 +4,28 @@ import type { CopyEntry, CopyText } from '../../../copy/text.ts';
 import type { ChipVM } from '../../../store/viewModels.ts';
 import { Chip } from '../../../ui/Chip.tsx';
 
-/** A chip line of a Control slot: the word (when the row has one), the line, extra lines. */
+/**
+ * A chip line of a Control slot: the word (when the row has one), the line, extra
+ * lines. A line that only names the chip's state more exactly is the chip's label
+ * instead (`chipLabel`, `line` null), so the state is said once.
+ */
 export function SeenLine({
   chip,
   line,
   prefix,
   extra,
+  chipLabel,
 }: {
   readonly chip: ChipVM;
-  readonly line: CopyText;
+  readonly line: CopyText | null;
   readonly prefix?: CopyText;
   readonly extra?: CopyText | null;
+  readonly chipLabel?: CopyText;
 }) {
-  const stateChip = chip.word === null ? null : <Chip state={chip.word} />;
+  const stateChip =
+    chip.word === null ? null : (
+      <Chip state={chip.word} {...(chipLabel === undefined ? {} : { label: chipLabel })} />
+    );
   return (
     <p className="tp-seen" data-row={chip.row} data-evidence={chip.evidence ?? undefined}>
       {prefix === undefined ? (
@@ -27,7 +36,7 @@ export function SeenLine({
           {stateChip}
         </span>
       )}
-      <span className="tp-seen__line">{line}</span>
+      {line === null ? null : <span className="tp-seen__line">{line}</span>}
       {extra === null || extra === undefined ? null : (
         <span className="tp-seen__extra">{extra}</span>
       )}

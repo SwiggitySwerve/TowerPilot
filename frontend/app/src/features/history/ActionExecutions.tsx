@@ -3,8 +3,11 @@ import { actions as shared } from '../../copy/actions.ts';
 import { copy } from '../../copy/catalogue.ts';
 import { history as t } from '../../copy/history.ts';
 import type { ServerText } from '../../copy/server.ts';
-import type { CopyEntry, CopyNode, CopyText } from '../../copy/text.ts';
+import type { CopyEntry } from '../../copy/text.ts';
 import type { HistoryDetailVM } from '../../store/selectors/history.ts';
+import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
+import { Facts, Fact } from '../../ui/Facts.tsx';
+import { Tile } from '../../ui/Tile.tsx';
 import { Disclosure } from '../../ui/Disclosure.tsx';
 import { useAnnounce } from '../../ui/LiveRegion.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
@@ -39,15 +42,6 @@ function Word<K extends string>({
       </>
     );
   return words[word.kind].short;
-}
-
-function Fact({ label, children }: { readonly label: CopyText; readonly children: CopyNode }) {
-  return (
-    <div>
-      <dt>{label}</dt>
-      <dd>{children}</dd>
-    </div>
-  );
 }
 
 /** The action's label, or its code in plain monospace when the server sent no label (Q4). */
@@ -85,61 +79,79 @@ function Execution({
         </strong>
         <time>{t.time(row.startedAt)}</time>
       </div>
-      <dl className="tp-history__facts">
-        <Fact label={t.actions.state.short}>
-          <Word word={row.state} words={t.actions.stateWords} />
-          {row.open ? (
-            <span className="tp-history__note tp-history__block">{t.actions.readAt(readAtMs)}</span>
-          ) : null}
-        </Fact>
+      <Facts layout="cells" className="tp-history__facts">
+        <Fact
+          label={t.actions.state.short}
+          value={
+            <>
+              <Word word={row.state} words={t.actions.stateWords} />
+              {row.open ? (
+                <span className="tp-history__note tp-history__block">
+                  {t.actions.readAt(readAtMs)}
+                </span>
+              ) : null}
+            </>
+          }
+        />
         {row.result === null ? null : (
-          <Fact label={t.actions.result.short}>
-            <Word word={row.result} words={t.actions.stateWords} />
-          </Fact>
+          <Fact
+            label={t.actions.result.short}
+            value={<Word word={row.result} words={t.actions.stateWords} />}
+          />
         )}
         {row.effect === null ? null : (
-          <Fact label={t.actions.effect.short}>
-            <Word word={row.effect} words={shared.effects} />
-          </Fact>
+          <Fact
+            label={t.actions.effect.short}
+            value={<Word word={row.effect} words={shared.effects} />}
+          />
         )}
-        <Fact label={t.actions.trigger.short}>
-          <Word word={row.trigger} words={t.actions.triggers} />
-        </Fact>
-        <Fact label={t.actions.finished.short}>
-          <Finished row={row} />
-        </Fact>
+        <Fact
+          label={t.actions.trigger.short}
+          value={<Word word={row.trigger} words={t.actions.triggers} />}
+        />
+        <Fact label={t.actions.finished.short} value={<Finished row={row} />} />
         {row.showsDuration ? (
-          <Fact label={t.actions.duration.short}>
-            {row.durationMs === null
-              ? t.actions.noDuration.short
-              : t.actions.durationValue(row.durationMs)}
-          </Fact>
+          <Fact
+            label={t.actions.duration.short}
+            value={
+              row.durationMs === null
+                ? t.actions.noDuration.short
+                : t.actions.durationValue(row.durationMs)
+            }
+          />
         ) : null}
         {row.aggregate === null ? null : (
           <>
-            <Fact label={t.actions.checks.short}>{t.number(row.aggregate.count)}</Fact>
-            <Fact label={t.actions.firstCheck.short}>{t.time(row.aggregate.firstAt)}</Fact>
-            <Fact label={t.actions.lastCheck.short}>{t.time(row.aggregate.lastAt)}</Fact>
+            <Fact label={t.actions.checks.short} value={t.number(row.aggregate.count)} />
+            <Fact label={t.actions.firstCheck.short} value={t.time(row.aggregate.firstAt)} />
+            <Fact label={t.actions.lastCheck.short} value={t.time(row.aggregate.lastAt)} />
           </>
         )}
-        <Fact label={t.actions.coverage.short}>
-          <Word word={row.coverage} words={t.actions.coverages} />
-        </Fact>
+        <Fact
+          label={t.actions.coverage.short}
+          value={<Word word={row.coverage} words={t.actions.coverages} />}
+        />
         {row.label === null || row.action === null ? null : (
-          <Fact label={t.actions.code.short}>
-            <code className="tp-history__code">
-              <ServerValue kind="id" value={row.action} />
-            </code>
-          </Fact>
+          <Fact
+            label={t.actions.code.short}
+            value={
+              <code className="tp-history__code">
+                <ServerValue kind="id" value={row.action} />
+              </code>
+            }
+          />
         )}
         {row.instance === null ? null : (
-          <Fact label={t.actions.instance.short}>
-            <code className="tp-history__code">
-              <ServerValue kind="id" value={row.instance} />
-            </code>
-          </Fact>
+          <Fact
+            label={t.actions.instance.short}
+            value={
+              <code className="tp-history__code">
+                <ServerValue kind="id" value={row.instance} />
+              </code>
+            }
+          />
         )}
-      </dl>
+      </Facts>
       {row.reason === null ? null : (
         <Disclosure label={copy.common.why.short}>
           <ServerValue kind="message" value={row.reason} />
@@ -191,8 +203,7 @@ export function ActionExecutions({
     announce(t.errors[failure].short);
   }, [announce, failure]);
   return (
-    <section aria-label={t.actions.heading.short}>
-      <h3>{t.actions.heading.short}</h3>
+    <Tile titleId="history-actions" title={t.actions.heading.short}>
       {vm.state === 'rows' ? (
         <>
           <p className="tp-history__note">{t.actions.readNote.short}</p>
@@ -222,22 +233,32 @@ export function ActionExecutions({
             </p>
           ) : null}
           {vm.canLoadOlder ? (
-            <button
-              type="button"
-              className="tp-history__older"
-              aria-disabled={vm.older.busy}
-              onClick={() => {
-                if (vm.older.busy) return;
-                asked.current = rows.length;
-                onOlder();
-              }}
+            <ActionRow
+              reason={
+                vm.older.busy ? (
+                  <Reason id="history-older-busy" entry={t.actions.olderPending} />
+                ) : null
+              }
             >
-              {vm.older.busy
-                ? t.actions.olderBusy.short
-                : vm.older.error === null
-                  ? t.actions.older.short
-                  : t.actions.olderRetry.short}
-            </button>
+              <button
+                type="button"
+                className="tp-button tp-history__older"
+                data-tier="secondary"
+                aria-disabled={vm.older.busy}
+                aria-describedby={vm.older.busy ? 'history-older-busy' : undefined}
+                onClick={() => {
+                  if (vm.older.busy) return;
+                  asked.current = rows.length;
+                  onOlder();
+                }}
+              >
+                {vm.older.busy
+                  ? t.actions.olderBusy.short
+                  : vm.older.error === null
+                    ? t.actions.older.short
+                    : t.actions.olderRetry.short}
+              </button>
+            </ActionRow>
           ) : null}
           {vm.older.error === null ? null : (
             <p className="tp-history__notice">
@@ -264,6 +285,6 @@ export function ActionExecutions({
           ) : null}
         </>
       )}
-    </section>
+    </Tile>
   );
 }

@@ -212,7 +212,7 @@ describe('Schedule Wanted rows', () => {
   });
   it('S3 unknown week mapping keeps the draft; all day and week edits use a single revisioned request', async () => {
     const s = await setup({ save: 'profile_patch.week_names_an_unknown_day_plan' });
-    fireEvent.click(screen.getByText('Weekday mapping', { exact: true }));
+    fireEvent.click(screen.getByText('Edit weekday mapping', { exact: true }));
     fireEvent.change(screen.getByLabelText('Sunday'), { target: { value: 'no_such_day' } });
     fireEvent.change(firstCount(), { target: { value: '60' } });
     await change(() => s.schedule.save());
@@ -631,8 +631,14 @@ describe('Schedule Wanted rows', () => {
     const vm = selectSchedule(s.schedule.getSnapshot(), s.entry()?.observedAtMs ?? Date.now());
     expect(vm.observationState).not.toBeNull();
     expect(vm.nextCheck).toBeNull();
-    expect(screen.getAllByText('Remaining quota: not reported')).toHaveLength(2);
-    expect(screen.getAllByText('Next start: not reported')).toHaveLength(2);
+    for (const label of ['Remaining quota', 'Next start']) {
+      const facts = screen.getAllByText(label, { selector: 'dt' });
+      expect(facts).toHaveLength(2);
+      for (const fact of facts) {
+        expect(fact.nextElementSibling).toHaveTextContent(/^Not reported$/u);
+        expect(fact.nextElementSibling).toBeVisible();
+      }
+    }
     expect(s.fake.writes()).toHaveLength(0);
   });
   it('S6 winner, observed time and server timezone use only the report; clock proposal promises no start', async () => {
@@ -641,6 +647,13 @@ describe('Schedule Wanted rows', () => {
     expect(vm.winner).toBe('Farm');
     expect(vm.timezone).toBe('UTC');
     expect(vm.nextCheck).toBe('2027-01-16T00:00:00+00:00');
+    expect(screen.getByText('1/15/2027, 1:00:00 AM')).toBeVisible();
+    expect(screen.getByText('1/15/2027, 5:00:00 PM')).toBeVisible();
+    expect(screen.getByText('Times shown in America/Denver.')).toBeVisible();
+    expect(screen.getByText('2027-01-16T00:00:00+00:00', { exact: true })).not.toBeVisible();
+    fireEvent.click(screen.getByText('Exact observation times', { exact: true }));
+    expect(screen.getByText('2027-01-16T00:00:00+00:00', { exact: true })).toBeVisible();
+    expect(screen.getByText('1800000000', { exact: true })).toBeVisible();
     expect(screen.getByText(/Handoffs wait for a natural run boundary/)).toBeVisible();
     expect(
       selectSchedule(s.schedule.getSnapshot(), (s.entry()?.observedAtMs ?? Date.now()) + 92000)
@@ -648,6 +661,75 @@ describe('Schedule Wanted rows', () => {
     ).toBe('stale');
     expect(textOutsideCatalogue(document.body)).toEqual([]);
     expect(await axe(document.body)).toHaveNoViolations();
+  });
+  it('S6 summarizes revision agreement and retains both full revisions in Compare', async () => {
+    const s = await setup();
+    expect(screen.getByText('Saved and draft starting revisions match')).toBeVisible();
+    const revisionLabel = screen.getByText('Saved profile revision', { selector: 'dt' });
+    expect(revisionLabel.nextElementSibling).not.toBeVisible();
+    fireEvent.click(screen.getByText('Compare the last read saved plan'));
+    expect(revisionLabel.nextElementSibling).toBeVisible();
+    expect(revisionLabel.nextElementSibling).toHaveTextContent(
+      s.entry()?.baseRevision ?? 'missing',
+    );
+    expect(
+      screen.getByText('Draft starting revision', { selector: 'dt' }).nextElementSibling,
+    ).toHaveTextContent(s.entry()?.baseRevision ?? 'missing');
+    const entry = s.entry();
+    if (entry === null) throw new Error('No schedule entry');
+    // Supplemental UI state: revision identity differs without changing either saved plan or draft.
+    await change(() => {
+      s.schedule.update((state) => ({
+        ...state,
+        entries: {
+          ...state.entries,
+          [state.key ?? '']: { ...entry, baseRevision: 'different-read-revision' },
+        },
+      }));
+    });
+    expect(screen.getByText('Saved and draft starting revisions differ')).toBeVisible();
+    expect(s.fake.writes()).toHaveLength(0);
+  });
+  it('S3 summarizes Default and explicit weekdays while keeping the mapping editor closed', async () => {
+    const s = await setup();
+    const mapping = screen.getByRole('region', { name: 'Weekday mapping' });
+    expect(
+      within(mapping).getByText('Default', { selector: 'dt' }).nextElementSibling,
+    ).toHaveTextContent('farm_day');
+    expect(
+      within(mapping).getByText('Saturday', { selector: 'dt' }).nextElementSibling,
+    ).toHaveTextContent('tourney_day');
+    expect(
+      within(mapping).getByText('Other weekdays', { selector: 'dt' }).nextElementSibling,
+    ).toHaveTextContent('Use Default');
+    expect(screen.getByLabelText('Sunday')).not.toBeVisible();
+    await change(() => {
+      s.schedule.mapWeek('sunday', 'tourney_day');
+    });
+    expect(
+      within(mapping).getByText('Sunday', { selector: 'dt' }).nextElementSibling,
+    ).toHaveTextContent('tourney_day');
+    await change(() => {
+      s.schedule.mapWeek('sunday', 'entered-but-not-listed');
+    });
+    expect(
+      within(mapping).getByText('Other entered value — open the mapping editor'),
+    ).toBeVisible();
+    fireEvent.click(screen.getByText('Edit weekday mapping'));
+    expect(screen.getByLabelText('Sunday')).toHaveValue('entered-but-not-listed');
+    expect(s.fake.writes()).toHaveLength(0);
+  });
+  it('S2 keeps cross-midnight and whole-plan removal consequences visible without Why', async () => {
+    const s = await setup();
+    expect(
+      screen.getByText('Split a cross-midnight window into blocks on both days.'),
+    ).toBeVisible();
+    expect(
+      screen.getByText(
+        'Deletes all day plans and weekday mapping. Legacy rules apply on the next scheduler load.',
+      ),
+    ).toBeVisible();
+    expect(s.fake.writes()).toHaveLength(0);
   });
   it('S2 S6 generated contracts cover backend overlap/exclusive-end/midnight/daily-cap/tournament cases', () => {
     for (const [family, key] of [
@@ -696,6 +778,9 @@ describe('F6-11 RL8 start a day plan (backend/logs/reviews/ui-pages/f6-11-runs-l
         .getAllByRole('option')
         .map((option) => option.textContent),
     ).toEqual(['farm', 'farm_deep', 'shards', 'tourney']);
+    // The description is help beside the action; what a saved plan does stays on the page.
+    expect(screen.getByRole('button', { name: 'About Start a day plan' })).toBeInTheDocument();
+    expect(screen.getByText('A saved plan replaces the legacy rules.')).toBeVisible();
     await startPlan(s);
     expect(s.fake.writes()).toHaveLength(0);
     expect(s.entry()?.dirty).toBe(true);

@@ -18,13 +18,11 @@ const at = serverDateText;
  */
 export const recognition = {
   pageName: entry('Recognition'),
-  intro: entry(
-    "Learn and check how Tower Pilot recognizes this emulator's screens",
-    'Opening this page only reads. Every scan, apply and stop is one click of yours, with its own consent, and nothing is sent again on its own.',
-  ),
+  moreItems: entry('Show more'),
   space: made(' '),
   target: {
     title: entry('This emulator and account'),
+    details: entry('Target'),
     instance: entry('Emulator:'),
     serial: entry('Address:'),
     account: entry('Account:'),
@@ -69,6 +67,13 @@ export const recognition = {
   },
   operation: {
     title: entry('Operation'),
+    details: entry('Recorded operation'),
+    source: entry('Source'),
+    revisionLabel: entry('Revision'),
+    createdLabel: entry('Created'),
+    updatedLabel: entry('Updated'),
+    workerLabel: entry('Worker'),
+    time: (seconds: number) => made(at(seconds)),
     none: entry('No calibrator operation in this context yet'),
     sources: {
       launch: entry('Started from this page'),
@@ -152,7 +157,7 @@ export const recognition = {
     activity: entry('Last activity:'),
     activityAt: (seconds: number) => made(`at ${at(seconds)}`),
     phases: entry('Steps'),
-    noPhases: entry('No step recorded yet'),
+    notRecorded: entry('Not recorded'),
     phaseStatus: entry('status'),
     finalScreen: entry('Final screen:'),
     finalVerified: entry('verified by the calibrator'),
@@ -161,14 +166,15 @@ export const recognition = {
       'A screen name without the calibrator verifying it is not a recognized screen.',
     ),
     observedAt: (seconds: number) => made(`observed ${at(seconds)}`),
-    noFinalScreen: entry('No final screen recorded'),
     setupBattle: entry('Test battle:'),
     battleStarted: (seconds: number) => made(`started ${at(seconds)}`),
     battleFinished: (seconds: number) => made(`finished ${at(seconds)}`),
-    noSetupBattle: entry('No test battle recorded'),
   },
   evidence: {
     title: entry('Recognition evidence'),
+    stale: entry('Old report: latest read failed'),
+    other: entry('Other image entries'),
+    attention: entry('Other image entries to check'),
     intro: entry(
       'What this report wrote, image by image',
       'Verified means the calibrator matched the image on screen. A written file, a self score or a captured count is not verification.',
@@ -209,10 +215,6 @@ export const recognition = {
   },
   roadmap: {
     title: entry('Targeted evidence'),
-    intro: entry(
-      'Range, First Perk, module and rare-dialog images this report wrote',
-      'Only what the report wrote is listed. A missing group is not in this report; it is not a gap the page worked out.',
-    ),
     groups: {
       range: entry('Range'),
       first_perk: entry('First Perk'),
@@ -231,11 +233,15 @@ export const recognition = {
   },
   learn: {
     title: entry('Learn screens'),
+    options: entry('Scan options'),
     intro: entry(
       'Extracts the installed artwork and checks Home and the menus',
-      'Optional: capture battle controls in one normal test battle that setup starts and ends itself. Existing images are kept unless you choose to replace them.',
+      'Existing images are kept unless you choose to replace them.',
     ),
     battle: entry('Also capture battle controls in one test battle'),
+    battleEffect: entry(
+      'Starts and ends one setup test battle. Never an existing battle or tournament.',
+    ),
     overwrite: entry('Replace images that already exist'),
     start: entry('Learn screens'),
     confirm: entry('Start learning screens?'),
@@ -255,6 +261,7 @@ export const recognition = {
     cancel: entry('Cancel'),
   },
   observe: {
+    method: entry('Read without taps'),
     title: entry('Capture without tapping'),
     intro: entry(
       'Captures what is on screen now, or watches for a while',
@@ -311,11 +318,8 @@ export const recognition = {
   },
   run: {
     title: entry('What a run still needs'),
-    intro: entry(
-      'Choose a run and check what it still needs to recognize',
-      'Choosing a run sends nothing. Check reads its readiness once; Prepare is a separate click with its own consent.',
-    ),
     pick: entry('Run'),
+    image: entry('Image'),
     none: entry('Choose a run'),
     notRead: entry('Runs not read yet'),
     unavailable: entry('Runs could not be read'),

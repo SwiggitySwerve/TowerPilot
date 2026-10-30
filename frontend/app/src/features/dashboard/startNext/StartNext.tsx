@@ -3,6 +3,7 @@ import { recognitionHref } from '../../../core/recognition.ts';
 import { copy } from '../../../copy/catalogue.ts';
 import type { CopyText } from '../../../copy/text.ts';
 import { selectStartNext, type StartNextVM } from '../../../store/selectors/startNext.ts';
+import { ActionRow } from '../../../ui/ActionRow.tsx';
 import { Button } from '../../../ui/Button.tsx';
 import { Chip } from '../../../ui/Chip.tsx';
 import { Disclosure } from '../../../ui/Disclosure.tsx';
@@ -57,19 +58,35 @@ function sharedReason(reasons: StartNextVM['reasons']): Reason | null {
     : null;
 }
 
-/** One reason line that describes both buttons. */
-function BothReason({ reason, id }: { readonly reason: Reason; readonly id: string }) {
+/**
+ * One blocked action's reason on the reasons grid: the action's label in the
+ * label column, Blocked and the reason beside it, its Why after. The id sits on
+ * the line, so each button's description reads "{label}: Blocked {reason}".
+ */
+function ReasonLine({
+  reason,
+  id,
+  label,
+  focusKey,
+}: {
+  readonly reason: Reason;
+  readonly id: string;
+  readonly label: CopyText;
+  readonly focusKey: string;
+}) {
   return (
     <div className="tp-start-next__reason">
       <p id={id} data-guard-code={reason.guardCode ?? reason.code}>
-        <span className="tp-start-next__label">{words.bothReason.short}</span>
+        <span className="tp-start-next__label">{label}</span>
         {words.space}
-        <Chip state="blocked" />
-        {words.space}
-        <span>{reasonText(reason)}</span>
+        <span className="tp-start-next__value">
+          <Chip state="blocked" />
+          {words.space}
+          <span>{reasonText(reason)}</span>
+        </span>
       </p>
       {reason.message === null ? null : (
-        <Disclosure label={copy.common.why.short} focusKey="startNext:start:why">
+        <Disclosure label={copy.common.why.short} focusKey={focusKey}>
           <ServerValue value={reason.message} kind="message" />
         </Disclosure>
       )}
@@ -101,13 +118,77 @@ function StartNextBody() {
   const shared = sharedReason(vm.reasons);
   const collectReasonId = shared === null ? `${id}-collect-reason` : startReasonId;
   const startPermitted = vm.start.enabled;
+  // "Ready" only while Start is permitted: never beside a Blocked line.
+  const readinessShown = !(vm.readiness.line === 'ready' && !startPermitted);
+  const readinessMore = vm.readiness.details.length > 0 || vm.readiness.imageCount > 0;
   return (
     <RegionBody>
       <div className="tp-start-next">
-        <div className="tp-start-next__controls">
+        <ActionRow
+          reason={
+            <div className="tp-start-next__reasons">
+              {shared !== null ? (
+                <ReasonLine
+                  reason={shared}
+                  id={startReasonId}
+                  label={words.bothReason.short}
+                  focusKey="startNext:start:why"
+                />
+              ) : (
+                vm.reasons.map((reason) => (
+                  <ReasonLine
+                    key={reason.action}
+                    reason={reason}
+                    id={reason.action === 'start' ? startReasonId : collectReasonId}
+                    label={
+                      reason.action === 'start'
+                        ? words.startReason.short
+                        : words.collectReason.short
+                    }
+                    focusKey={`startNext:${reason.action}:why`}
+                  />
+                ))
+              )}
+              {readinessShown || readinessMore ? (
+                <div className="tp-start-next__readiness">
+                  {readinessShown ? (
+                    <p data-readiness={vm.readiness.line}>
+                      <span className="tp-start-next__label">
+                        {vm.readiness.line === 'ready'
+                          ? words.startReason.short
+                          : words.readinessLabel.short}
+                      </span>
+                      {words.space}
+                      <span className="tp-start-next__value">
+                        {vm.readiness.line === 'readiness_check_failed' ||
+                        vm.readiness.line === 'readiness_unknown' ? (
+                          <Chip state="unknown" />
+                        ) : null}
+                        <span>{readinessText(vm.readiness.line, vm.readiness.imageCount)}</span>
+                      </span>
+                    </p>
+                  ) : null}
+                  {vm.readiness.line === 'not_ready' ? (
+                    <ReadinessDetails details={vm.readiness.details} />
+                  ) : vm.readiness.details.length > 0 ? (
+                    <Disclosure label={copy.common.why.short} focusKey="startNext:readiness:why">
+                      <ReadinessDetails details={vm.readiness.details} />
+                    </Disclosure>
+                  ) : null}
+                  {vm.readiness.imageCount > 0 ? (
+                    <a href={recognitionHref(vm.picker.selected)} data-focus-key="startNext:learn">
+                      {words.learn.short}
+                    </a>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          }
+        >
           <label className="tp-start-next__picker" htmlFor={`${id}-run`}>
             <span>{words.picker.short}</span>
             <select
+              className="tp-field-control"
               id={`${id}-run`}
               value={vm.picker.selected ?? ''}
               data-focus-key="startNext:run"
@@ -147,66 +228,13 @@ function StartNextBody() {
               if (vm.collect.command !== null) void commands.collect(vm.collect.command);
             }}
           />
+        </ActionRow>
+        <div className="tp-start-next__foot">
+          {vm.transferHint === null ? null : <p>{words.transfer[vm.transferHint].short}</p>}
+          <a href={recognitionHref(vm.picker.selected)} data-focus-key="startNext:prepare">
+            {words.prepare.short}
+          </a>
         </div>
-        {shared !== null ? (
-          <BothReason reason={shared} id={startReasonId} />
-        ) : (
-          vm.reasons.map((reason) => (
-            <div key={reason.action} className="tp-start-next__reason">
-              <p
-                id={reason.action === 'start' ? startReasonId : collectReasonId}
-                data-guard-code={reason.guardCode ?? reason.code}
-              >
-                <span className="tp-start-next__label">
-                  {reason.action === 'start' ? words.startReason.short : words.collectReason.short}
-                </span>
-                {words.space}
-                <Chip state="blocked" />
-                {words.space}
-                <span>{reasonText(reason)}</span>
-              </p>
-              {reason.message === null ? null : (
-                <Disclosure
-                  label={copy.common.why.short}
-                  focusKey={`startNext:${reason.action}:why`}
-                >
-                  <ServerValue value={reason.message} kind="message" />
-                </Disclosure>
-              )}
-            </div>
-          ))
-        )}
-        <div className="tp-start-next__readiness">
-          {/* "Ready" only while Start is permitted: never beside a Blocked line. */}
-          {vm.readiness.line === 'ready' && !startPermitted ? null : (
-            <p data-readiness={vm.readiness.line}>
-              {vm.readiness.line === 'readiness_check_failed' ||
-              vm.readiness.line === 'readiness_unknown' ? (
-                <Chip state="unknown" />
-              ) : null}
-              {vm.readiness.line === 'ready' ? (
-                <span className="tp-start-next__label">{words.startReason.short}</span>
-              ) : null}
-              <span>{readinessText(vm.readiness.line, vm.readiness.imageCount)}</span>
-            </p>
-          )}
-          {vm.readiness.line === 'not_ready' ? (
-            <ReadinessDetails details={vm.readiness.details} />
-          ) : vm.readiness.details.length > 0 ? (
-            <Disclosure label={copy.common.why.short} focusKey="startNext:readiness:why">
-              <ReadinessDetails details={vm.readiness.details} />
-            </Disclosure>
-          ) : null}
-          {vm.readiness.imageCount > 0 ? (
-            <a href={recognitionHref(vm.picker.selected)} data-focus-key="startNext:learn">
-              {words.learn.short}
-            </a>
-          ) : null}
-        </div>
-        {vm.transferHint === null ? null : <p>{words.transfer[vm.transferHint].short}</p>}
-        <a href={recognitionHref(vm.picker.selected)} data-focus-key="startNext:prepare">
-          {words.prepare.short}
-        </a>
       </div>
     </RegionBody>
   );

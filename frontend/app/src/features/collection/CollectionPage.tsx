@@ -11,11 +11,16 @@ import {
 import type { SaveOutcomeVM, SettingsModuleVM } from '../../store/selectors/settingsModule.ts';
 import type { CommandVM } from '../../store/viewModels.ts';
 import { Button } from '../../ui/Button.tsx';
-import { Disclosure } from '../../ui/Disclosure.tsx';
+import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
+import { CopyLine } from '../../ui/CopyLine.tsx';
+import { Fact, Facts } from '../../ui/Facts.tsx';
+import { HelpTip } from '../../ui/HelpTip.tsx';
 import { RegionBoundary } from '../../ui/RegionBoundary.tsx';
 import { Region, RegionBody, RegionEnd } from '../../ui/Region.tsx';
 import { pageHref, type PageTarget } from '../../ui/routes.ts';
 import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
+import { ShownList } from '../../ui/ShownList.tsx';
+import { Tile } from '../../ui/Tile.tsx';
 import { Why } from '../../ui/Why.tsx';
 import {
   FaultPoint,
@@ -45,15 +50,6 @@ function reasonOf(reason: string | null): CopyEntry {
   return (reason === null ? undefined : reasons[reason]) ?? t.reasons.context_unknown;
 }
 
-function Line({ entry }: { readonly entry: CopyEntry }) {
-  return (
-    <div className="tp-collection__line">
-      <span>{entry.short}</span>
-      {entry.why === undefined ? null : <Why why={entry.why} />}
-    </div>
-  );
-}
-
 function TargetLabel({ id }: { readonly id?: string }) {
   const name = useView(selectCollectionTargetName);
   return name === null ? null : (
@@ -61,6 +57,32 @@ function TargetLabel({ id }: { readonly id?: string }) {
       <span>{t.profile.short}</span>
       <ServerValue kind="name" value={name} />
     </span>
+  );
+}
+
+/** Run names remain separate list items; only the selected policy offers run links. */
+function PolicyUses({
+  runs,
+  links,
+}: {
+  readonly runs: PolicyEditorVM['usedBy'];
+  readonly links?: PolicyEditorVM['usedByKeys'];
+}) {
+  if (runs.length === 0) return <span>{t.policies.unused.short}</span>;
+  return (
+    <ul className="tp-collection__uses">
+      {runs.map((run, index) => (
+        <li key={run}>
+          {links === undefined ? (
+            <ServerValue kind="id" value={run} />
+          ) : (
+            <a href={pageHref('runs', { kind: 'saved', run: links[index] ?? '' })}>
+              <ServerValue kind="id" value={run} />
+            </a>
+          )}
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -81,12 +103,16 @@ function PatchButton({
   focusKey,
   id,
   onSend,
+  before,
+  after,
 }: {
   readonly vm: CommandVM<ProfilePatchCommand>;
   readonly label: CopyEntry;
   readonly focusKey: string;
   readonly id?: string;
   readonly onSend: (command: ProfilePatchCommand) => void;
+  readonly before?: CopyNode;
+  readonly after?: CopyNode;
 }) {
   const own = useId();
   const inactive = useCollection(null).inactive;
@@ -94,8 +120,11 @@ function PatchButton({
   const enabled = vm.enabled && command !== null;
   // F6C-03: one button element whatever its state, so a focused button keeps focus.
   return (
-    <span className="tp-collection__action">
-      <TargetLabel id={`${own}-target`} />
+    <ActionRow
+      reason={enabled ? null : <Reason id={`${own}-reason`} entry={reasonOf(vm.reason)} />}
+    >
+      {before}
+      {inactive ? <TargetLabel id={`${own}-target`} /> : null}
       <Button
         {...(id === undefined ? {} : { id })}
         {...(inactive ? { targetId: `${own}-target` } : {})}
@@ -108,12 +137,8 @@ function PatchButton({
           if (command !== null && vm.enabled) onSend(command);
         }}
       />
-      {enabled ? null : (
-        <span id={`${own}-reason`} className="tp-reason">
-          {reasonOf(vm.reason).short}
-        </span>
-      )}
-    </span>
+      {after}
+    </ActionRow>
   );
 }
 
@@ -122,7 +147,7 @@ function TextField({
   value,
   scope,
   path,
-  help,
+  helpId,
   invalid,
   pin = {},
 }: {
@@ -130,14 +155,14 @@ function TextField({
   readonly value: string;
   readonly scope: string | null;
   readonly path: string;
-  readonly help?: CopyEntry;
+  readonly helpId?: string;
   readonly invalid?: CopyEntry | null;
   /** Draft values to record with this edit when the draft has none (the copy's source). */
   readonly pin?: Readonly<Record<string, string>>;
 }) {
   const { commands } = useDashboard();
   const own = useId();
-  const described = [help === undefined ? null : `${own}-help`, invalid ? `${own}-invalid` : null]
+  const described = [helpId ?? null, invalid ? `${own}-invalid` : null]
     .filter((entry) => entry !== null)
     .join(' ');
   return (
@@ -145,7 +170,7 @@ function TextField({
       <span id={`${own}-label`}>{label.short}</span>
       <input
         type="text"
-        className="tp-collection__input"
+        className="tp-collection__input tp-field-control"
         autoComplete="off"
         spellCheck={false}
         value={value}
@@ -160,11 +185,6 @@ function TextField({
           commands.editDraft(scope, path, event.currentTarget.value);
         }}
       />
-      {help === undefined ? null : (
-        <span id={`${own}-help`} className="tp-collection__help">
-          {help.short}
-        </span>
-      )}
       {invalid ? (
         <span id={`${own}-invalid`} className="tp-collection__invalid">
           {invalid.short}
@@ -215,16 +235,7 @@ function Module({
   const page = useCollection(null);
   if (vm === null) return null;
   return (
-    <fieldset className="tp-collection__form" disabled={page.inactive} data-active-profile="true">
-      <legend>
-        <span>{t.activeProfile.short}</span>
-        {page.profile === null ? (
-          t.noActiveProfile.short
-        ) : (
-          <ServerValue kind="name" value={page.profile} />
-        )}
-      </legend>
-      {page.inactive ? <div className="tp-reason">{t.activeOnly.short}</div> : null}
+    <fieldset className="tp-collection__module" disabled={page.inactive} data-active-profile="true">
       <SettingsModuleForm
         vm={vm}
         legend={legend}
@@ -252,7 +263,7 @@ function useCollection(selected: string | null): CollectionPageVM {
 
 function ReadLine({ vm }: { readonly vm: CollectionPageVM }) {
   if (vm.settingsRead === 'ready' && vm.sourceRead === 'ready') return null;
-  if (vm.settingsRead === 'other_context') return <Line entry={t.otherContext} />;
+  if (vm.settingsRead === 'other_context') return <CopyLine entry={t.otherContext} />;
   const unavailable = vm.settingsRead === 'unavailable' || vm.sourceRead === 'unavailable';
   return <p>{(unavailable ? t.unavailable : t.reading).short}</p>;
 }
@@ -267,26 +278,46 @@ function RewardsSection({ selected }: { readonly selected: string | null }) {
         {vm.settingsAgeSec === null ? null : <span>{t.readAge(vm.settingsAgeSec)}</span>}
       </RegionEnd>
       <RegionBody>
-        <div className="tp-collection__scope">
-          <span>{t.scope.short}</span>
-          <Why why={t.scope.why ?? t.scope.short} />
-        </div>
-        <p className="tp-collection__summary">
-          <span>{t.profile.short}</span>
-          {vm.profile === null ? null : <ServerValue kind="name" value={vm.profile} />}
-          <a href={pageHref('dashboard')}>{t.dashboard.short}</a>
-        </p>
-        <ReadLine vm={vm} />
-        <Button
-          tier="quiet"
-          label={t.check.short}
-          focusKey="collection:check"
-          onClick={() => {
-            commands.checkCollection();
-          }}
-        />
+        <Tile titleId="collection-saved-title" title={t.savedSettings.short} intro={t.scope}>
+          <NotSent />
+          <Facts layout="cells">
+            <Fact
+              label={t.activeProfile.short}
+              value={
+                vm.profile === null ? (
+                  t.noActiveProfile.short
+                ) : (
+                  <ServerValue kind="name" value={vm.profile} />
+                )
+              }
+            />
+            <Fact
+              label={t.rewards.quotaLabel.short}
+              value={
+                <>
+                  <span>{t.rewards.quota.short}</span>
+                  {t.rewards.quota.why === undefined ? null : (
+                    <HelpTip label={t.rewards.quotaLabel.short}>{t.rewards.quota.why}</HelpTip>
+                  )}
+                </>
+              }
+            />
+          </Facts>
+          {vm.inactive ? <div className="tp-reason">{t.activeOnly.short}</div> : null}
+          <ReadLine vm={vm} />
+          <ActionRow>
+            <Button
+              tier="quiet"
+              label={t.check.short}
+              focusKey="collection:check"
+              onClick={() => {
+                commands.checkCollection();
+              }}
+            />
+            <a href={pageHref('dashboard')}>{t.dashboard.short}</a>
+          </ActionRow>
+        </Tile>
         <Module vm={vm.rewards} legend={t.rewards.title} intro={t.rewards.note} />
-        <Line entry={t.rewards.quota} />
       </RegionBody>
     </>
   );
@@ -319,56 +350,56 @@ function Editor({
     void commands.patchProfile(command);
   };
   return (
-    <section className="tp-collection__editor" aria-labelledby="collection-editor-title">
-      <h3 id="collection-editor-title" tabIndex={-1}>
-        {editor.label === null ? null : <ServerValue kind="name" value={editor.label} />}
-        {editor.idText === null ? null : (
-          <span className="tp-collection__id">
-            <ServerValue kind="id" value={editor.idText} />
-          </span>
-        )}
-      </h3>
-      <p className="tp-collection__summary" data-used-by="true">
-        {editor.usedBy.length === 0 ? (
-          <span>{t.policies.unused.short}</span>
-        ) : (
-          <>
-            <span>{t.policies.usedBy.short}</span>
-            {editor.usedBy.map((run, index) => (
-              <a
-                key={run}
-                href={pageHref('runs', { kind: 'saved', run: editor.usedByKeys[index] ?? '' })}
-              >
-                <ServerValue kind="id" value={run} />
-              </a>
-            ))}
-          </>
-        )}
-      </p>
-      <div className="tp-collection__row" data-form="label">
-        <TextField
-          label={t.editor.label}
-          value={editor.labelDraft}
-          scope={editor.labelScope}
-          path="label"
-          pin={editor.pin}
-        />
+    <Tile
+      className="tp-collection__editor"
+      titleId="collection-editor-title"
+      title={
+        <>
+          {editor.label === null ? null : <ServerValue kind="name" value={editor.label} />}
+          {editor.idText === null ? null : (
+            <span className="tp-collection__id">
+              <ServerValue kind="id" value={editor.idText} />
+            </span>
+          )}
+        </>
+      }
+    >
+      <div data-used-by="true">
+        <Facts>
+          <Fact
+            label={t.policies.usedBy.short}
+            value={<PolicyUses runs={editor.usedBy} links={editor.usedByKeys} />}
+          />
+        </Facts>
+      </div>
+      <div className="tp-collection__row tp-control-row" data-form="label">
         <PatchButton
+          before={
+            <TextField
+              label={t.editor.label}
+              value={editor.labelDraft}
+              scope={editor.labelScope}
+              path="label"
+              pin={editor.pin}
+            />
+          }
           vm={editor.saveLabel}
           label={t.editor.saveLabel}
           focusKey={`collection:label:${editor.id}`}
           onSend={send}
+          after={
+            editor.labelDirty && editor.labelScope !== null ? (
+              <Button
+                tier="quiet"
+                label={t.editor.cancel.short}
+                focusKey={`collection:label:${editor.id}:cancel`}
+                onClick={() => {
+                  if (editor.labelScope !== null) commands.discardDraft(editor.labelScope);
+                }}
+              />
+            ) : null
+          }
         />
-        {editor.labelDirty && editor.labelScope !== null ? (
-          <Button
-            tier="quiet"
-            label={t.editor.cancel.short}
-            focusKey={`collection:label:${editor.id}:cancel`}
-            onClick={() => {
-              if (editor.labelScope !== null) commands.discardDraft(editor.labelScope);
-            }}
-          />
-        ) : null}
       </div>
       {editor.labelOutcome === null ? null : <PatchOutcome outcome={editor.labelOutcome} />}
       <Module
@@ -376,37 +407,44 @@ function Editor({
         legend={t.editor.gather}
         notes={{ guild_store: t.editor.guildStore }}
       />
-      <Module vm={editor.ad} legend={t.editor.ad} intro={t.editor.timing} />
+      <p className="tp-collection__help">
+        {t.editor.timing.short}
+        {t.editor.timing.why === undefined ? null : (
+          <HelpTip label={t.editor.timing.short}>{t.editor.timing.why}</HelpTip>
+        )}
+      </p>
+      <Module vm={editor.ad} legend={t.editor.ad} />
       <Module
         vm={editor.orbit}
         legend={t.editor.orbit}
-        intro={t.editor.timing}
         advanced={{ label: t.editor.geometry, paths: GEOMETRY }}
       />
-      <div className="tp-collection__row" data-form="delete">
+      <div className="tp-collection__row tp-control-row" data-form="delete">
         {confirming && editor.remove.command !== null ? (
           <div className="tp-collection__confirm" role="group" aria-label={t.editor.remove.short}>
-            <p>{t.editor.confirmRemove.short}</p>
-            <Button
-              tier="secondary"
-              label={t.editor.confirm.short}
-              id={confirmId}
-              focusKey="collection:delete:confirm"
-              onClick={() => {
-                const command = editor.remove.command;
-                setConfirming(false);
-                if (command !== null) send(command);
-              }}
-            />
-            <Button
-              tier="quiet"
-              label={t.editor.cancel.short}
-              focusKey="collection:delete:cancel"
-              onClick={() => {
-                restoreDeleteFocus.current = true;
-                setConfirming(false);
-              }}
-            />
+            <CopyLine entry={t.editor.confirmRemove} />
+            <ActionRow>
+              <Button
+                tier="secondary"
+                label={t.editor.confirm.short}
+                id={confirmId}
+                focusKey="collection:delete:confirm"
+                onClick={() => {
+                  const command = editor.remove.command;
+                  setConfirming(false);
+                  if (command !== null) send(command);
+                }}
+              />
+              <Button
+                tier="quiet"
+                label={t.editor.cancel.short}
+                focusKey="collection:delete:cancel"
+                onClick={() => {
+                  restoreDeleteFocus.current = true;
+                  setConfirming(false);
+                }}
+              />
+            </ActionRow>
           </div>
         ) : (
           <PatchButton
@@ -421,7 +459,7 @@ function Editor({
         )}
       </div>
       {editor.removeOutcome === null ? null : <PatchOutcome outcome={editor.removeOutcome} />}
-    </section>
+    </Tile>
   );
 }
 
@@ -434,204 +472,226 @@ function PoliciesSection({ selected }: { readonly selected: string | null }) {
   };
   return (
     <RegionBody>
-      <EditingTargetLine />
-      <Line entry={t.policies.intro} />
-      {vm.sourceRead === 'ready' && vm.policies.length === 0 ? (
-        <p>{t.policies.none.short}</p>
-      ) : null}
-      {vm.policies.length === 0 ? null : (
-        <ul className="tp-collection__policies">
-          {vm.policies.map((row) => (
-            <li key={row.id} data-policy={row.id} data-selected={row.selected}>
-              <a
-                href={pageHref('collection', { kind: 'policy', policy: row.id })}
-                aria-current={row.selected ? 'true' : undefined}
-              >
-                {row.name === null ? null : <ServerValue kind="name" value={row.name} />}
-              </a>
-              <span className="tp-collection__help">
-                {row.usedBy.length === 0 ? (
-                  <span>{t.policies.unused.short}</span>
-                ) : (
-                  <>
-                    <span>{t.policies.usedBy.short}</span>
-                    {row.usedBy.map((run) => (
-                      <ServerValue key={run} kind="id" value={run} />
-                    ))}
-                  </>
+      <Tile
+        titleId="collection-policy-list-title"
+        title={t.policies.list.short}
+        intro={t.policies.intro}
+      >
+        <EditingTargetLine />
+        {vm.sourceRead === 'ready' && vm.policies.length === 0 ? (
+          <p>{t.policies.none.short}</p>
+        ) : null}
+        {vm.policies.length === 0 ? null : (
+          <ShownList
+            className="tp-collection__policies"
+            items={vm.policies}
+            itemKey={(row) => row.id}
+            more={t.policies.more.short}
+            render={(row) => (
+              <div data-policy={row.id} data-selected={row.selected}>
+                <a
+                  href={pageHref('collection', { kind: 'policy', policy: row.id })}
+                  aria-current={row.selected ? 'true' : undefined}
+                >
+                  {row.name === null ? null : <ServerValue kind="name" value={row.name} />}
+                </a>
+                {row.selected ? null : (
+                  <Facts>
+                    <Fact
+                      label={t.policies.usedBy.short}
+                      value={<PolicyUses runs={row.usedBy} />}
+                    />
+                  </Facts>
                 )}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-      {vm.missing.length === 0 ? null : (
-        <div className="tp-collection__problems" data-missing="true">
-          <p>{t.policies.missing.short}</p>
-          <ul>
-            {vm.missing.map((entry, index) => (
-              <li key={String(index)}>
-                {entry.run === null ? null : <ServerValue kind="id" value={entry.run} />}
-                {entry.policy === null ? null : <ServerValue kind="id" value={entry.policy} />}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {vm.problems.length === 0 ? null : (
-        <Disclosure label={t.policies.problems.short} count={vm.problems.length}>
-          <ul className="tp-collection__problems">
-            {vm.problems.map((problem, index) => (
-              <li key={String(index)}>
-                <ServerValue kind="message" value={problem} />
-              </li>
-            ))}
-          </ul>
-        </Disclosure>
-      )}
-      {vm.validatorError === null ? null : (
-        <p>
-          <span>{t.policies.validatorError.short}</span>
-          <ServerValue kind="message" value={vm.validatorError} />
-        </p>
-      )}
+              </div>
+            )}
+          />
+        )}
+        {vm.missing.length === 0 ? null : (
+          <div className="tp-collection__problems" data-missing="true">
+            <p>{t.policies.missing.short}</p>
+            <ul>
+              {vm.missing.map((entry, index) => (
+                <li key={String(index)}>
+                  {entry.run === null ? null : <ServerValue kind="id" value={entry.run} />}
+                  {entry.policy === null ? null : <ServerValue kind="id" value={entry.policy} />}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {vm.problems.length === 0 ? null : (
+          <div>
+            <Facts>
+              <Fact label={t.policies.problems.short} value={vm.problems.length} />
+            </Facts>
+            <ul className="tp-collection__problems">
+              {vm.problems.map((problem, index) => (
+                <li key={String(index)}>
+                  <ServerValue kind="message" value={problem} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {vm.validatorError === null ? null : (
+          <p>
+            <span>{t.policies.validatorError.short}</span>
+            <ServerValue kind="message" value={vm.validatorError} />
+          </p>
+        )}
+      </Tile>
       {vm.editor === null ? null : (
         <Editor key={vm.editor.id} editor={vm.editor} focusOnOpen={selected === vm.editor.id} />
       )}
       {vm.deletedOutcomes.map((entry) => (
-        <div key={entry.outcome.id}>
-          <span>{t.editor.deletion.short}</span>
-          {entry.id === null ? null : <ServerValue kind="id" value={entry.id} />}
+        <Tile
+          key={entry.outcome.id}
+          titleId={`collection-deletion-${entry.outcome.id}`}
+          title={t.editor.deletion.short}
+          end={entry.id === null ? null : <ServerValue kind="id" value={entry.id} />}
+        >
           <PatchOutcome outcome={entry.outcome} />
-        </div>
+        </Tile>
       ))}
-      <fieldset className="tp-collection__form" data-form="create">
-        <legend>{t.create.title.short}</legend>
-        <Line entry={t.create.intro} />
-        {vm.create.choices.length === 0 ? (
-          <div data-first-policy="unavailable">
-            <Line entry={t.policies.noTemplate} />
-          </div>
-        ) : (
-          <div className="tp-collection__row">
-            <label className="tp-collection__field">
-              <span>{t.create.template.short}</span>
-              <select
-                value={vm.create.template}
-                disabled={vm.create.scope === null}
-                data-focus-key="collection:create:template"
-                onChange={(event) => {
-                  if (vm.create.scope !== null) {
-                    for (const [key, value] of Object.entries(vm.create.pin))
-                      commands.editDraft(vm.create.scope, key, value);
-                    commands.editDraft(vm.create.scope, 'template', event.currentTarget.value);
-                  }
-                }}
-              >
-                {vm.create.choices.map((choice) => (
-                  <ServerOption key={choice.key} value={choice.key} label={choice.label} />
-                ))}
-              </select>
-            </label>
-            <TextField
-              label={t.create.id}
-              value={vm.create.id}
-              scope={vm.create.scope}
-              path="id"
-              pin={vm.create.pin}
-              help={t.copy.idHelp}
-              invalid={
-                vm.create.id !== '' && vm.create.idReason !== null
-                  ? reasonOf(vm.create.idReason)
-                  : null
+      <Tile titleId="collection-new-policies-title" title={t.policies.new.short}>
+        <p id="collection-policy-id-help" className="tp-collection__help">
+          {t.copy.idHelp.short}
+        </p>
+        <fieldset className="tp-collection__form tp-tile" data-form="create">
+          <legend className="tp-tile__title">{t.create.title.short}</legend>
+          <CopyLine entry={t.create.intro} variant="intro" />
+          {vm.create.choices.length === 0 ? (
+            <div data-first-policy="unavailable">
+              <CopyLine entry={t.policies.noTemplate} />
+            </div>
+          ) : (
+            <div className="tp-collection__row tp-control-row">
+              <label className="tp-collection__field">
+                <span>{t.create.template.short}</span>
+                <select
+                  className="tp-field-control"
+                  value={vm.create.template}
+                  disabled={vm.create.scope === null}
+                  data-focus-key="collection:create:template"
+                  onChange={(event) => {
+                    if (vm.create.scope !== null) {
+                      for (const [key, value] of Object.entries(vm.create.pin))
+                        commands.editDraft(vm.create.scope, key, value);
+                      commands.editDraft(vm.create.scope, 'template', event.currentTarget.value);
+                    }
+                  }}
+                >
+                  {vm.create.choices.map((choice) => (
+                    <ServerOption key={choice.key} value={choice.key} label={choice.label} />
+                  ))}
+                </select>
+              </label>
+              <TextField
+                label={t.create.id}
+                value={vm.create.id}
+                scope={vm.create.scope}
+                path="id"
+                pin={vm.create.pin}
+                helpId="collection-policy-id-help"
+                invalid={
+                  vm.create.id !== '' && vm.create.idReason !== null
+                    ? reasonOf(vm.create.idReason)
+                    : null
+                }
+              />
+            </div>
+          )}
+          <div className="tp-collection__row tp-control-row">
+            <PatchButton
+              vm={vm.create.save}
+              label={t.create.save}
+              focusKey="collection:create:save"
+              onSend={send}
+              after={
+                vm.create.dirty && vm.create.scope !== null ? (
+                  <Button
+                    tier="quiet"
+                    label={t.editor.cancel.short}
+                    focusKey="collection:create:cancel"
+                    onClick={() => {
+                      if (vm.create.scope !== null) commands.discardDraft(vm.create.scope);
+                    }}
+                  />
+                ) : null
               }
             />
           </div>
-        )}
-        <div className="tp-collection__row">
-          <PatchButton
-            vm={vm.create.save}
-            label={t.create.save}
-            focusKey="collection:create:save"
-            onSend={send}
-          />
-          {vm.create.dirty && vm.create.scope !== null ? (
-            <Button
-              tier="quiet"
-              label={t.editor.cancel.short}
-              focusKey="collection:create:cancel"
-              onClick={() => {
-                if (vm.create.scope !== null) commands.discardDraft(vm.create.scope);
-              }}
+          {vm.create.outcome === null ? null : <PatchOutcome outcome={vm.create.outcome} />}
+        </fieldset>
+        <fieldset className="tp-collection__form tp-tile" data-form="copy">
+          <legend className="tp-tile__title">{t.copy.title.short}</legend>
+          <CopyLine entry={t.copy.intro} variant="intro" />
+          <div className="tp-collection__row tp-control-row">
+            <label className="tp-collection__field">
+              <span>{t.copy.from.short}</span>
+              <select
+                className="tp-field-control"
+                value={vm.copy.from}
+                disabled={vm.copy.scope === null}
+                data-focus-key="collection:copy:from"
+                onChange={(event) => {
+                  if (vm.copy.scope !== null) {
+                    for (const [key, value] of Object.entries(vm.copy.pin))
+                      commands.editDraft(vm.copy.scope, key, value);
+                    commands.editDraft(vm.copy.scope, 'from', event.currentTarget.value);
+                  }
+                }}
+              >
+                {vm.policies.map((row) =>
+                  row.name === null ? null : (
+                    <ServerOption key={row.id} value={row.id} label={row.name} />
+                  ),
+                )}
+              </select>
+            </label>
+            <TextField
+              label={t.copy.id}
+              value={vm.copy.id}
+              scope={vm.copy.scope}
+              path="id"
+              pin={vm.copy.pin}
+              helpId="collection-policy-id-help"
+              invalid={
+                vm.copy.id !== '' && vm.copy.idReason !== null ? reasonOf(vm.copy.idReason) : null
+              }
             />
-          ) : null}
-        </div>
-        {vm.create.outcome === null ? null : <PatchOutcome outcome={vm.create.outcome} />}
-      </fieldset>
-      <fieldset className="tp-collection__form" data-form="copy">
-        <legend>{t.copy.title.short}</legend>
-        <Line entry={t.copy.intro} />
-        <div className="tp-collection__row">
-          <label className="tp-collection__field">
-            <span>{t.copy.from.short}</span>
-            <select
-              value={vm.copy.from}
-              disabled={vm.copy.scope === null}
-              data-focus-key="collection:copy:from"
-              onChange={(event) => {
-                if (vm.copy.scope !== null) {
-                  for (const [key, value] of Object.entries(vm.copy.pin))
-                    commands.editDraft(vm.copy.scope, key, value);
-                  commands.editDraft(vm.copy.scope, 'from', event.currentTarget.value);
-                }
-              }}
-            >
-              {vm.policies.map((row) =>
-                row.name === null ? null : (
-                  <ServerOption key={row.id} value={row.id} label={row.name} />
-                ),
-              )}
-            </select>
-          </label>
-          <TextField
-            label={t.copy.id}
-            value={vm.copy.id}
-            scope={vm.copy.scope}
-            path="id"
-            pin={vm.copy.pin}
-            help={t.copy.idHelp}
-            invalid={
-              vm.copy.id !== '' && vm.copy.idReason !== null ? reasonOf(vm.copy.idReason) : null
-            }
-          />
-          <TextField
-            label={t.copy.label}
-            value={vm.copy.label}
-            scope={vm.copy.scope}
-            path="label"
-            pin={vm.copy.pin}
-          />
-        </div>
-        <div className="tp-collection__row">
-          <PatchButton
-            vm={vm.copy.save}
-            label={t.copy.save}
-            focusKey="collection:copy:save"
-            onSend={send}
-          />
-          {vm.copy.dirty && vm.copy.scope !== null ? (
-            <Button
-              tier="quiet"
-              label={t.editor.cancel.short}
-              focusKey="collection:copy:cancel"
-              onClick={() => {
-                if (vm.copy.scope !== null) commands.discardDraft(vm.copy.scope);
-              }}
+            <TextField
+              label={t.copy.label}
+              value={vm.copy.label}
+              scope={vm.copy.scope}
+              path="label"
+              pin={vm.copy.pin}
             />
-          ) : null}
-        </div>
-        {vm.copy.outcome === null ? null : <PatchOutcome outcome={vm.copy.outcome} />}
-      </fieldset>
+          </div>
+          <div className="tp-collection__row tp-control-row">
+            <PatchButton
+              vm={vm.copy.save}
+              label={t.copy.save}
+              focusKey="collection:copy:save"
+              onSend={send}
+              after={
+                vm.copy.dirty && vm.copy.scope !== null ? (
+                  <Button
+                    tier="quiet"
+                    label={t.editor.cancel.short}
+                    focusKey="collection:copy:cancel"
+                    onClick={() => {
+                      if (vm.copy.scope !== null) commands.discardDraft(vm.copy.scope);
+                    }}
+                  />
+                ) : null
+              }
+            />
+          </div>
+          {vm.copy.outcome === null ? null : <PatchOutcome outcome={vm.copy.outcome} />}
+        </fieldset>
+      </Tile>
     </RegionBody>
   );
 }
@@ -648,69 +708,74 @@ function ChoresSection() {
   const chores = vm.chores;
   return (
     <RegionBody>
-      <EditingTargetLine />
-      <Line entry={t.chores.intro} />
-      <ul className="tp-collection__chores">
-        {chores.rows.map((row) => {
-          const known = choreEntry(row.name);
-          return (
-            <li key={row.name} data-chore={row.name} data-changed={row.changed}>
-              <label className="tp-collection__check">
-                <input
-                  type="checkbox"
-                  checked={row.enabled}
-                  disabled={chores.scope === null || row.unknown}
-                  data-focus-key={`collection:chore:${row.name}`}
-                  onChange={(event) => {
-                    if (chores.scope !== null) {
-                      for (const [key, value] of Object.entries(chores.pin))
-                        commands.editDraft(chores.scope, key, value);
-                      commands.editDraft(chores.scope, row.name, event.currentTarget.checked);
-                    }
+      <Tile titleId="collection-chores-title" title={t.chores.saved.short} intro={t.chores.intro}>
+        <EditingTargetLine />
+        <ul className="tp-collection__chores">
+          {chores.rows.map((row) => {
+            const known = choreEntry(row.name);
+            return (
+              <li key={row.name} data-chore={row.name} data-changed={row.changed}>
+                <label className="tp-collection__check">
+                  <input
+                    type="checkbox"
+                    checked={row.enabled}
+                    disabled={chores.scope === null || row.unknown}
+                    data-focus-key={`collection:chore:${row.name}`}
+                    onChange={(event) => {
+                      if (chores.scope !== null) {
+                        for (const [key, value] of Object.entries(chores.pin))
+                          commands.editDraft(chores.scope, key, value);
+                        commands.editDraft(chores.scope, row.name, event.currentTarget.checked);
+                      }
+                    }}
+                  />
+                  <span>
+                    {known === null ? (
+                      row.nameText === null ? null : (
+                        <ServerValue kind="id" value={row.nameText} />
+                      )
+                    ) : (
+                      known.short
+                    )}
+                  </span>
+                </label>
+                {known?.why === undefined ? null : (
+                  <HelpTip label={known.short}>{known.why}</HelpTip>
+                )}
+                {row.name === 'shatter' ? (
+                  <span className="tp-collection__warn">{t.chores.destroys.short}</span>
+                ) : null}
+                {row.unknown ? (
+                  <span className="tp-collection__help">{t.chores.unknown.short}</span>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+        <div className="tp-collection__row tp-control-row">
+          <PatchButton
+            vm={chores.save}
+            label={t.chores.save}
+            focusKey="collection:chores:save"
+            onSend={(command) => {
+              void commands.patchProfile(command);
+            }}
+            after={
+              chores.scope !== null && chores.rows.some((row) => row.changed) ? (
+                <Button
+                  tier="quiet"
+                  label={t.editor.cancel.short}
+                  focusKey="collection:chores:discard"
+                  onClick={() => {
+                    if (chores.scope !== null) commands.discardDraft(chores.scope);
                   }}
                 />
-                <span>
-                  {known === null ? (
-                    row.nameText === null ? null : (
-                      <ServerValue kind="id" value={row.nameText} />
-                    )
-                  ) : (
-                    known.short
-                  )}
-                </span>
-              </label>
-              {known?.why === undefined ? null : <Why why={known.why} />}
-              {row.name === 'shatter' ? (
-                <span className="tp-collection__warn">{t.chores.destroys.short}</span>
-              ) : null}
-              {row.unknown ? (
-                <span className="tp-collection__help">{t.chores.unknown.short}</span>
-              ) : null}
-            </li>
-          );
-        })}
-      </ul>
-      <div className="tp-collection__row">
-        <PatchButton
-          vm={chores.save}
-          label={t.chores.save}
-          focusKey="collection:chores:save"
-          onSend={(command) => {
-            void commands.patchProfile(command);
-          }}
-        />
-        {chores.scope !== null && chores.rows.some((row) => row.changed) ? (
-          <Button
-            tier="quiet"
-            label={t.editor.cancel.short}
-            focusKey="collection:chores:discard"
-            onClick={() => {
-              if (chores.scope !== null) commands.discardDraft(chores.scope);
-            }}
+              ) : null
+            }
           />
-        ) : null}
-      </div>
-      {chores.outcome === null ? null : <PatchOutcome outcome={chores.outcome} />}
+        </div>
+        {chores.outcome === null ? null : <PatchOutcome outcome={chores.outcome} />}
+      </Tile>
     </RegionBody>
   );
 }
@@ -759,7 +824,6 @@ export function CollectionPage({ target }: { readonly target: PageTarget | null 
       <main id="main" className="tp-main" tabIndex={-1}>
         <FaultPoint part="page" />
         <div className="tp-collection">
-          <NotSent />
           <CollectionRegion id="collectionRewards" title={t.rewards.title}>
             <RewardsSection selected={selected} />
           </CollectionRegion>

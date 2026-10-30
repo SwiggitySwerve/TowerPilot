@@ -77,8 +77,11 @@ async function openConfig(module: Module, initial?: string) {
     },
   });
   await page.advance(1000);
-  if (module === 'run-defaults')
-    await page.user.click(screen.getByText('Saved defaults / Machine fallback'));
+  if (module === 'run-defaults') {
+    const summary = document.querySelector<HTMLElement>('[data-run-defaults] > details > summary');
+    if (summary === null) throw new Error('run defaults disclosure missing');
+    await page.user.click(summary);
+  }
   return {
     ...page,
     setRead: (name: string) => {
@@ -397,7 +400,13 @@ it('C15-5 C-03 an unlisted saved preset stays visible until a listed choice is e
   expect(picker).toHaveValue('ghost');
   expect(picker).toHaveAttribute('aria-invalid', 'true');
   expect(save('run-defaults')).toHaveAttribute('aria-disabled', 'true');
-  expect(box('run-defaults')).toHaveTextContent(
+  expect(box('run-defaults')).not.toHaveTextContent("An emulator's own default preset");
+  await page.user.hover(
+    within(box('run-defaults')).getByRole('button', {
+      name: 'About Machine fallback · Run defaults',
+    }),
+  );
+  expect(screen.getByRole('tooltip')).toHaveTextContent(
     "An emulator's own default preset takes precedence",
   );
   expect(page.fake.writes()).toEqual([]);
@@ -480,8 +489,8 @@ it('C15-10 C15-11 C15-12 C15-13 C15-14 defaults precede overrides with separate 
   const root = document.querySelector<HTMLElement>('[data-runtime-module="loop-defaults"]');
   if (root === null) throw new Error('missing defaults');
   expect(within(root).getByRole('group')).toHaveAccessibleName(/Machine defaults/);
-  expect(root).toHaveTextContent(
-    'Saving changes the fallback; existing emulator overrides are kept.',
+  expect(root.closest('[data-runtime-group="defaults"]')).toHaveTextContent(
+    'Machine fallback · next time automation starts. Existing emulator overrides are kept.',
   );
   const config = pages(RUNTIME_CONFIG_CONTEXT).body as {
     active_instance: string;

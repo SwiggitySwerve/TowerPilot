@@ -291,11 +291,11 @@ test('R5 a watch longer than 600 s stays as typed and sends nothing; 30 s sends 
   await field.fill('601');
   await expect(field).toHaveValue('601');
   await expect(observe).toContainText('At most 600 seconds');
-  await observe.getByRole('button', { name: 'Watch' }).click({ force: true });
+  await observe.getByRole('button', { name: 'Watch', exact: true }).click({ force: true });
   await page.waitForTimeout(500);
   expect(await posts(page)).toEqual([]);
   await field.fill('30');
-  await observe.getByRole('button', { name: 'Watch' }).click();
+  await observe.getByRole('button', { name: 'Watch', exact: true }).click();
   await expect(
     region(page, 'recognitionOperation').locator('[data-kind="calibrate_observe"]'),
   ).toHaveAttribute('data-outcome', 'accepted');

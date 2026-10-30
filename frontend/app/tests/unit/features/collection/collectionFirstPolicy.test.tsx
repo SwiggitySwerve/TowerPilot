@@ -117,7 +117,9 @@ it.each([
     await page.advance(1_000);
     const policy = document.querySelector('[data-policy="farm_default"]');
     expect(policy).toHaveTextContent('farm_default');
-    expect(policy).toHaveTextContent('Not used by any run');
+    expect(document.querySelector('.tp-collection__editor [data-used-by]')).toHaveTextContent(
+      'Not used by any run',
+    );
     expect(form().querySelector('[data-outcome="saved"]')).toBeVisible();
     expect(
       within(document.querySelector<HTMLElement>('[data-form="copy"]') ?? document.body).getByRole(
@@ -195,7 +197,7 @@ it('C-01 C5 F6C-R1-04 lost answer stays unknown on an unchanged read; only a lat
   await page.advance(1_000);
   expect(form().querySelector('[data-outcome="applied"]')).toBeVisible();
   expect(idField()).toHaveValue('');
-  expect(document.querySelector('[data-policy="farm_default"]')).toHaveTextContent(
+  expect(document.querySelector('.tp-collection__editor [data-used-by]')).toHaveTextContent(
     'Not used by any run',
   );
   await page.advance(60_000);

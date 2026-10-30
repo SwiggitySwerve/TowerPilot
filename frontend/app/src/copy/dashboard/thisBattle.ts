@@ -7,12 +7,10 @@ import { recent } from './recent.ts';
 /** This battle: report, routine results, retained actions and the read-only queue. */
 export const thisBattle = {
   title: entry('This battle'),
-  scope: entry('this battle only'),
   separator: entry(' — '),
   /** Between the facts of one line (run, wave, scope); sentences keep `separator`. */
   listSeparator: entry(' · '),
-  runUnknown: entry('Run not reported'),
-  waveUnknown: entry('wave not reported'),
+  waveLabel: entry('Wave'),
   columns: {
     routine: entry('Routine'),
     battle: entry('Setting'),
@@ -29,7 +27,8 @@ export const thisBattle = {
   },
   tryOnce: entry('Try once'),
   tryNotice: entry(
-    'Try once can spend cash even while automatic shopping is off; one attempt may wait or buy nothing',
+    'Try once can spend cash even while automatic shopping is off',
+    'One attempt may wait or buy nothing.',
   ),
   tryTargets: {
     shopping: entry('Shopping'),
@@ -48,10 +47,8 @@ export const thisBattle = {
   dismissDescription: entry('Dismiss (does not cancel the request)'),
   dismissed: entry('Dismissed'),
   changed: entry('Changed for this battle'),
-  noTracked: entry(
-    'No tracked battle. Routines and Run now appear once automation watches one',
-    'The game may still be in a battle; nothing is tracking it',
-  ),
+  noTracked: entry('No tracked battle'),
+  gameUntracked: entry('The game may still be in a battle'),
   on: entry('On'),
   off: entry('Off'),
   unknown: entry('Unknown'),
@@ -178,19 +175,21 @@ export const thisBattle = {
   resendUnavailable: entry('Send same request again needs an available battle read'),
   queue: {
     title: entry('Queue for this battle'),
-    scope: entry('This battle'),
+    rule: entry('Purchase rule'),
+    attempts: entry('Attempts per pass'),
+    reserve: entry('Cash reserve'),
     empty: entry('No upgrades selected'),
     review: entry('Shopping policy needs review'),
-    noReserve: entry('No reserve'),
+    noReserve: entry('None'),
     unknownRule: entry('Purchase rule not reported'),
     rules: {
-      highest_affordable: entry('Buy the highest-priority affordable upgrade'),
-      round_robin: entry('Take turns through the queue'),
-      weighted_split: entry('Split purchases by queue weights'),
+      highest_affordable: entry('Highest-priority affordable'),
+      round_robin: entry('Round robin'),
+      weighted_split: entry('Queue weights'),
     },
     cadence: {
-      single_attempt: entry('One attempt per pass'),
-      while_affordable: entry('Keep attempting purchases while affordable'),
+      single_attempt: entry('One'),
+      while_affordable: entry('While affordable'),
     },
     cadenceUnknown: entry('Attempts per pass not reported'),
     noCap: entry('No tap cap'),
@@ -217,7 +216,6 @@ export const thisBattle = {
   lastKnown: (n: number) => made(`Last known, ${ageAgo(n)}`),
   fieldNumber: (n: number) => made(n.toLocaleString('en-US', { maximumFractionDigits: 3 })),
   reported: (n: number) => made(`reported ${ageAgo(n)}`),
-  reserve: (n: number) => made(`Keep a cash reserve of ${n.toLocaleString('en-US')}`),
   tapCap: (n: number) => made(`Tap cap: ${String(n)}`),
   weight: (n: number) => made(`Weight: ${String(n)}`),
   purchases: (n: number) => made(`${String(n)} purchases confirmed`),

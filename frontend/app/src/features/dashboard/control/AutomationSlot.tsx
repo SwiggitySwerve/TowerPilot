@@ -4,6 +4,7 @@ import { Chip } from '../../../ui/Chip.tsx';
 import { selectAutomationSlot } from '../../../store/selectors/automationSlot.ts';
 import { SlotAction, SlotFacts, SlotMeta } from '../../../ui/Slot.tsx';
 import { Button } from '../../../ui/Button.tsx';
+import { Fact, Facts } from '../../../ui/Facts.tsx';
 import { useDashboard, useView } from '../context.ts';
 import { StopButton } from '../shared/StopButton.tsx';
 import { AutomationFacts, AutomationMeta } from './automation/AutomationRow.tsx';
@@ -12,35 +13,18 @@ import './automation/automation.css';
 
 const text = copy.dashboard.automation;
 
-/** The Automation slot body (spec 3.6.4, INV-3): owned by the Control region. */
+/**
+ * The Automation slot body (spec 3.6.4, INV-3): owned by the Control region.
+ * DOM order is the visual order: the Stops (on the label's line), then each
+ * target's facts with its Why, then the Details footer, so Stop stays ahead
+ * of every disclosure in tab order.
+ */
 export function AutomationSlot() {
   const view = useView(selectAutomationSlot);
   const { commands } = useDashboard();
   const retained = view.stops.filter((stop) => !view.rows.some((row) => row.stop.key === stop.key));
   return (
     <>
-      <SlotFacts>
-        {view.summary === null ? null : <AutomationLine seen={view.summary} />}
-        {view.rows.length === 0 ? null : (
-          <ul className="tp-automation-list">
-            {view.rows.map((row) => (
-              <li key={row.key}>
-                <AutomationFacts row={row} />
-              </li>
-            ))}
-          </ul>
-        )}
-        {view.setup === null ? null : (
-          <p>
-            <span>{text.setup.short}</span>
-            {view.setup.step === null ? (
-              <span>{text.setupStepUnknown.short}</span>
-            ) : (
-              <ServerValue kind="detail" value={view.setup.step} />
-            )}
-          </p>
-        )}
-      </SlotFacts>
       <SlotAction>
         <ul className="tp-automation-list">
           {view.rows.map((row) => (
@@ -102,9 +86,39 @@ export function AutomationSlot() {
           ))}
         </ul>
       </SlotAction>
-      <SlotMeta>
-        {view.summary === null ? null : <AutomationWhy seen={view.summary} />}
+      <SlotFacts>
+        {view.summary === null ? null : (
+          <div className="tp-automation-state-line">
+            <AutomationLine seen={view.summary} />
+            <AutomationWhy seen={view.summary} />
+          </div>
+        )}
         {view.rows.length === 0 ? null : (
+          <ul className="tp-automation-list">
+            {view.rows.map((row) => (
+              <li key={row.key}>
+                <AutomationFacts row={row} />
+              </li>
+            ))}
+          </ul>
+        )}
+        {view.setup === null ? null : (
+          <Facts>
+            <Fact
+              label={text.setup.short}
+              value={
+                view.setup.step === null ? (
+                  text.setupStepUnknown.short
+                ) : (
+                  <ServerValue kind="detail" value={view.setup.step} />
+                )
+              }
+            />
+          </Facts>
+        )}
+      </SlotFacts>
+      {view.rows.length === 0 ? null : (
+        <SlotMeta>
           <ul className="tp-automation-list">
             {view.rows.map((row) => (
               <li key={row.key}>
@@ -112,8 +126,8 @@ export function AutomationSlot() {
               </li>
             ))}
           </ul>
-        )}
-      </SlotMeta>
+        </SlotMeta>
+      )}
     </>
   );
 }

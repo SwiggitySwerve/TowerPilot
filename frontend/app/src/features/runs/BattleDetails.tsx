@@ -3,6 +3,8 @@ import type { CopyEntry, CopyNode } from '../../copy/text.ts';
 import { actionName } from '../../core/actions.ts';
 import type { AdDetailsVM, RoutineDetailsVM, TimeVM } from '../../store/selectors/runs.ts';
 import { Disclosure } from '../../ui/Disclosure.tsx';
+import { Fact, Facts } from '../../ui/Facts.tsx';
+import { Tile } from '../../ui/Tile.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
 import { Why } from '../../ui/Why.tsx';
 
@@ -99,23 +101,22 @@ function AdRows({ ad }: { readonly ad: AdDetailsVM }) {
         <Recorded value={ad.failedAttempt} />
       </Row>
       <Row label={d.counts}>
-        <span>
-          {d.countsLine(
-            ad.counters.attempts,
-            ad.counters.confirmed,
-            ad.counters.skips,
-            ad.counters.windowsMissed,
-          )}
-        </span>
+        <Facts layout="cells">
+          <Fact label={d.attempts.short} value={ad.counters.attempts ?? d.notReported.short} />
+          <Fact label={d.confirmed.short} value={ad.counters.confirmed ?? d.notReported.short} />
+          <Fact label={d.skipped.short} value={ad.counters.skips ?? d.notReported.short} />
+          <Fact
+            label={d.windowsMissed.short}
+            value={ad.counters.windowsMissed ?? d.notReported.short}
+          />
+        </Facts>
       </Row>
       <Row label={d.timing}>
-        <span>
-          {d.timingLine(
-            ad.durations.schedulingWaitSec,
-            ad.durations.responseDelaySec,
-            ad.durations.verificationSec,
-          )}
-        </span>
+        <Facts layout="cells">
+          <Fact label={d.scheduleWait.short} value={d.seconds(ad.durations.schedulingWaitSec)} />
+          <Fact label={d.responseDelay.short} value={d.seconds(ad.durations.responseDelaySec)} />
+          <Fact label={d.verification.short} value={d.seconds(ad.durations.verificationSec)} />
+        </Facts>
       </Row>
     </>
   );
@@ -129,14 +130,14 @@ function RoutineDetails({ details }: { readonly details: RoutineDetailsVM }) {
     <Disclosure label={d.title(name.short)} focusKey={`runs:details:${details.routine}`}>
       <div className="tp-run-details" data-routine-details={details.routine}>
         {known || details.code === null ? null : <ServerValue kind="id" value={details.code} />}
-        <dl className="tp-run-details__list">
+        <Facts className="tp-run-details__list">
           {details.ad === null ? null : <AdRows ad={details.ad} />}
           {details.refusal === undefined ? null : (
             <Row label={d.refusal}>
               <Recorded value={details.refusal} />
             </Row>
           )}
-        </dl>
+        </Facts>
         <a className="tp-run-details__inspect" href={details.inspectHash}>
           {d.inspect.short}
         </a>
@@ -160,16 +161,18 @@ export function BattleDetails({
 }) {
   if (details.length === 0) return null;
   return (
-    <div className="tp-run-details-all" data-part="runsDetails">
-      {lastKnown ? (
-        <div className="tp-runs__note">
-          <span>{d.lastKnown.short}</span>
-          <Why why={d.lastKnown.why} />
-        </div>
-      ) : null}
-      {details.map((item) => (
-        <RoutineDetails key={item.routine} details={item} />
-      ))}
+    <div data-part="runsDetails">
+      <Tile className="tp-run-details-all" titleId="runs-battle-details" title={d.heading.short}>
+        {lastKnown ? (
+          <div className="tp-runs__note">
+            <span>{d.lastKnown.short}</span>
+            <Why why={d.lastKnown.why} />
+          </div>
+        ) : null}
+        {details.map((item) => (
+          <RoutineDetails key={item.routine} details={item} />
+        ))}
+      </Tile>
     </div>
   );
 }

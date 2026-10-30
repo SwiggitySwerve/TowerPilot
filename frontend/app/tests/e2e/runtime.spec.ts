@@ -67,14 +67,17 @@ for (const width of [1360, 1054, 390]) {
   }) => {
     const problems = await open(page, width);
     await expect(
-      page.getByText('This emulator · next time automation starts', { exact: true }),
-    ).toHaveCount(3);
+      page
+        .locator('[data-runtime-group="overrides"]')
+        .getByText(/This emulator · next time automation starts/),
+    ).toBeVisible();
     await expect(
-      page.getByText('This computer · every emulator · next time automation starts', {
-        exact: true,
-      }),
-    ).toHaveCount(2);
-    await expect(page.getByText(/Dry run is not an emergency stop/)).toBeVisible();
+      page
+        .locator('[data-runtime-group="machine"]')
+        .getByText(/This computer · every emulator · next time automation starts/),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'About Settings safety and readback' }).hover();
+    await expect(page.getByRole('tooltip')).toContainText(/Dry run is not an emergency stop/);
     expect(await posts(page)).toEqual([]);
     await shot(page, `page-${width}`);
     await layout(page, width);
@@ -91,9 +94,9 @@ for (const width of [1360, 1054, 390]) {
     const filters = page.locator('.tp-runtime__filters > summary');
     await filters.focus();
     await page.keyboard.press('Enter');
-    await expect(page.getByLabel('Exact kind')).not.toBeVisible();
+    await expect(page.getByLabel('Kind')).not.toBeVisible();
     await page.keyboard.press('Enter');
-    await expect(page.getByLabel('Exact kind')).toBeVisible();
+    await expect(page.getByLabel('Kind')).toBeVisible();
     await expect(filters).toBeFocused();
     const limit = page.getByLabel('Event limit (1–1000)');
     await limit.fill('1001');
@@ -105,7 +108,7 @@ for (const width of [1360, 1054, 390]) {
     );
     await shot(page, `invalid-limit-${width}`);
     await limit.fill('200');
-    await page.getByLabel('Exact kind').fill('unapplied');
+    await page.getByLabel('Kind').fill('unapplied');
     const details = page.locator('[data-event-key]').first();
     const summary = details.locator('summary');
     await summary.focus();
@@ -117,7 +120,7 @@ for (const width of [1360, 1054, 390]) {
     await page.getByRole('button', { name: 'Refresh events' }).click();
     await read;
     await expect(details).toHaveAttribute('open');
-    await expect(page.getByLabel('Exact kind')).toHaveValue('unapplied');
+    await expect(page.getByLabel('Kind')).toHaveValue('unapplied');
     await page.getByLabel(/Auto-refresh every 5 seconds/).check();
     await summary.focus();
     await page.waitForResponse((r) => new URL(r.url()).pathname === '/api/diagnostics/events');
@@ -179,6 +182,14 @@ for (const width of [1360, 1054, 390]) {
             .locator('..')
             .locator('pre'),
         ).toContainText('"alive": null');
+        const raw = page.getByRole('region', {
+          name: 'Retained raw runtime response',
+          exact: true,
+        });
+        await raw.focus();
+        await expect(raw).toBeFocused();
+        await page.keyboard.press('PageDown');
+        await expect.poll(() => raw.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
       }
       await shot(page, `${name}-${width}`);
       await layout(page, width);
@@ -189,7 +200,7 @@ for (const width of [1360, 1054, 390]) {
     page,
   }) => {
     await open(page, width);
-    await page.getByLabel('Exact operation ID').fill('op-1');
+    await page.getByLabel('Operation ID').fill('op-1');
     const read = page.waitForResponse((r) =>
       r.url().includes('/api/diagnostics/events?operation_id=op-1'),
     );
@@ -197,9 +208,9 @@ for (const width of [1360, 1054, 390]) {
     await read;
     await expect(page).toHaveURL(/#runtime\?operation_id=op-1$/);
     await page.reload();
-    await expect(page.getByLabel('Exact operation ID')).toHaveValue('op-1');
+    await expect(page.getByLabel('Operation ID')).toHaveValue('op-1');
     await expect(page.locator('[data-event-key]')).toHaveCount(3);
-    await page.getByLabel('Exact kind').fill('unsent');
+    await page.getByLabel('Kind').fill('unsent');
     const download = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Export last result as JSON' }).click();
     const file = await (await download).path();

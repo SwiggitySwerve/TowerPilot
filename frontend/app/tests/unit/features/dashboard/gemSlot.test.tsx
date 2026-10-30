@@ -1,4 +1,4 @@
-import { act, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -11,7 +11,7 @@ import { e0Config, postBodies } from '../../../support/dataLayer.ts';
 import { dashboardBody } from '../../../support/dashboardFixture.ts';
 import { sample, sampleNames, sampleRecord, statusBody } from '../../../support/fixture.ts';
 import { storeHarness, type StoreHarness } from '../../../support/storeHarness.ts';
-import { renderPage, renderRegion } from './harness.tsx';
+import { factValue, renderPage, renderRegion } from './harness.tsx';
 
 /**
  * Control / Gem harvesting as drawn (spec 3.6.2, INV-1; F-023 to F-032,
@@ -61,7 +61,7 @@ function drawGem(harvest: unknown, options: GemOptions = {}) {
 const pause = () => screen.queryByRole('button', { name: 'Pause harvesting' });
 const turnOn = () => screen.queryByRole('button', { name: 'Turn on' });
 const chip = (container: HTMLElement) => container.querySelector('.tp-chip');
-const pill = (container: HTMLElement) => container.querySelector('.tp-pill');
+const choiceFact = (container: HTMLElement) => factValue(container, 'Setting');
 
 /** Two saved runs: Farm (the fixture's source) and Quest. */
 const TWO_RUNS = {
@@ -124,13 +124,13 @@ describe('S-001 Pause harvesting (INV-1) as drawn', () => {
 describe('S-034 your choice and what is seen are separate facts, drawn as separate marks', () => {
   it('S-034 manual_collector: "Setting: Not set" beside Running "Collecting gems, started by Collect gems only"', () => {
     const { view } = drawGem(sample('status.manual_collector'));
-    const choice = pill(view.container);
-    expect(choice).toHaveTextContent('Setting:Not set');
-    expect(choice?.querySelector('.tp-chip')).toBeNull();
+    const choice = choiceFact(view.container);
+    expect(choice).toHaveTextContent('Not set');
+    expect(choice.querySelector('.tp-chip')).toBeNull();
     expect(chip(view.container)).toHaveAttribute('data-state', 'running');
     expect(screen.getByText('Collecting gems')).toBeInTheDocument();
     expect(screen.getByText('Started by Collect gems only')).toBeInTheDocument();
-    expect(view.container.textContent).not.toContain('Setting:On');
+    expect(choice).not.toHaveTextContent('On');
     expect(textOutsideCatalogue(view.container)).toEqual([]);
   });
 
@@ -141,7 +141,7 @@ describe('S-034 your choice and what is seen are separate facts, drawn as separa
     desired['enabled'] = false;
     desired['revision'] = 2;
     const { view } = drawGem(harvest);
-    expect(pill(view.container)).toHaveTextContent('Setting:Off');
+    expect(choiceFact(view.container)).toHaveTextContent('Off');
     expect(chip(view.container)).toHaveAttribute('data-state', 'stopping');
   });
 });
@@ -170,14 +170,18 @@ describe('S-080 the source picker drives its description at once', () => {
     );
     expect(picker).toHaveFocus();
     expect(picker).toHaveValue('bp_quest');
+    expect(screen.getByRole('link', { name: 'Edit run' })).toHaveAttribute(
+      'href',
+      '#runs/saved/bp_quest',
+    );
     expect(textOutsideCatalogue(region.view.container)).toEqual([]);
   });
 });
 
 describe('Gem harvesting capability rows', () => {
-  it('F-023: the pill reads On, Off, Not set or Unknown from the record alone', () => {
+  it('F-023: the Setting fact reads On, Off, Not set or Unknown from the record alone', () => {
     const cases: readonly [string, string][] = [
-      ['collecting', 'On'],
+      ['waiting_for_battle', 'On'],
       ['off', 'Off'],
       ['unset', 'Not set'],
       ['status_failed', 'Unknown'],
@@ -185,16 +189,21 @@ describe('Gem harvesting capability rows', () => {
     ];
     for (const [name, word] of cases) {
       const { view } = drawGem(sample(`status.${name}`));
-      expect(pill(view.container)).toHaveTextContent(`Setting:${word}`);
+      expect(choiceFact(view.container)).toHaveTextContent(word);
       view.unmount();
     }
+    const { view } = drawGem(sample('status.collecting'));
+    expect(view.container.querySelector('[data-fact="setting"]')).toBeNull();
+    expect(chip(view.container)).toHaveAttribute('data-state', 'running');
+    expect(chip(view.container)).toHaveTextContent('Collecting gems');
+    expect(pause()).not.toBeNull();
   });
 
   it('F-023: a malformed choice reads Unknown with Pause and without Turn on', () => {
     const harvest = sampleRecord('status.off');
     (harvest['desired'] as Record<string, unknown>)['choice'] = 'sometimes';
     const { view } = drawGem(harvest, { root: { collection_guard: CLEAR_GUARD } });
-    expect(pill(view.container)).toHaveTextContent('Setting:Unknown');
+    expect(choiceFact(view.container)).toHaveTextContent('Unknown');
     expect(pause()).not.toBeNull();
     expect(turnOn()).toBeNull();
   });
@@ -214,7 +223,7 @@ describe('Gem harvesting capability rows', () => {
           h.read('status', statusBody(on));
         },
       });
-      expect(pill(view.container)).toHaveTextContent(`Setting:${word}`);
+      expect(choiceFact(view.container)).toHaveTextContent(word);
       expect(pause() !== null).toBe(paused);
       view.unmount();
     }
@@ -261,7 +270,7 @@ describe('Gem harvesting capability rows', () => {
     expect(off.view.container.querySelector('.tp-source')).toHaveTextContent(
       'Gem settings fromFarmAd gems every 30 s, floating gems off',
     );
-    const link = screen.getByRole('link', { name: 'Saved settings in Runs' });
+    const link = screen.getByRole('link', { name: 'Edit run' });
     // RUN-12: the exact run the source names, on the new Runs page.
     expect(link).toHaveAttribute('href', '#runs/saved/bp_farm');
     off.view.unmount();
@@ -352,7 +361,7 @@ describe('Gem harvesting capability rows', () => {
       region.setState(h.state());
     }
     expect(screen.getByRole('combobox', { name: 'Gem settings from' })).toHaveFocus();
-    expect(pill(region.view.container)).toHaveTextContent('Setting:Not set');
+    expect(choiceFact(region.view.container)).toHaveTextContent('Not set');
     await Promise.resolve();
   });
 
@@ -473,9 +482,14 @@ describe('Gem harvesting capability rows', () => {
 
   it('F-030: an applied overlay reads "This battle: ad gems on, floating gems off · applied" and keeps its own timing; pending never reads applied; live choice wins; no token appears', () => {
     const applied = drawGem(sample('status.overlay_applied'));
-    const line = applied.view.container.querySelector('[data-overlay]');
-    expect(line).toHaveTextContent('This battle:ad gems on, floating gems off·applied');
-    expect(line).toHaveTextContent('the battle keeps its own timing');
+    const line = applied.view.container.querySelector<HTMLElement>('[data-overlay]');
+    expect(factValue(applied.view.container, 'This battle')).toContainElement(line);
+    expect(line).toHaveTextContent('ad gems on, floating gems offapplied');
+    expect(factValue(applied.view.container, 'Timing')).toHaveTextContent(/^Ad gems every 30 s$/u);
+    const timing = applied.view.getByText('the battle keeps its own timing');
+    expect(timing).not.toBeVisible();
+    fireEvent.click(applied.view.getByText('Details'));
+    expect(timing).toBeVisible();
     expect(applied.view.container.textContent).not.toContain('harvest-overlay-');
     expect(applied.view.container.textContent).not.toContain('0000000000000000000000000');
     applied.view.unmount();
@@ -490,6 +504,37 @@ describe('Gem harvesting capability rows', () => {
     }
     drawGem(sample('status.overlay_live_choice'));
     expect(screen.getByText('your choice for this battle wins')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['different', true],
+    ['unreported', null],
+  ] as const)('F-030: %s battle settings never hide the saved source setting', (_case, target) => {
+    const harvest = sampleRecord('status.overlay_applied');
+    setPath(harvest, ['overlay', 'targets', 'floating_gems'], target);
+    const { view } = drawGem(harvest);
+    expect(factValue(view.container, 'Timing')).toHaveTextContent(
+      'Ad gems every 30 s, floating gems off',
+    );
+  });
+
+  it('F-030: an enabled routine with missing source timing keeps the uncertainty visible', () => {
+    const harvest = sampleRecord('status.overlay_applied');
+    setPath(harvest, ['source', 'policy', 'ad_gems', 'interval_sec'], null);
+    const { view } = drawGem(harvest);
+    expect(factValue(view.container, 'Timing')).toHaveTextContent(/^Ad gems timing not reported$/u);
+    expect(factValue(view.container, 'This battle')).toHaveTextContent('ad gems on');
+  });
+
+  it('F-030: matching off settings leave a named timing description and the battle state', () => {
+    const harvest = sampleRecord('status.overlay_applied');
+    setPath(harvest, ['source', 'policy', 'ad_gems', 'enabled'], false);
+    setPath(harvest, ['overlay', 'targets', 'ad_gems'], false);
+    const { view } = drawGem(harvest);
+    expect(factValue(view.container, 'Timing')).toHaveTextContent(/^No timed routines$/u);
+    expect(factValue(view.container, 'This battle')).toHaveTextContent(
+      'ad gems off, floating gems off',
+    );
   });
 
   it('F-031: another driver: gathers, not gathering, not reported, stale and a foreign process each read their own line', () => {
@@ -551,6 +596,9 @@ describe('Gem harvesting capability rows', () => {
       const mark = found.view.container.querySelector('[data-collector-at-start]');
       expect(mark).toHaveAttribute('data-collector-at-start', code);
       expect(mark).toHaveTextContent(line);
+      expect(mark).not.toBeVisible();
+      fireEvent.click(found.view.getByText('Details'));
+      expect(mark).toBeVisible();
       expect(textOutsideCatalogue(found.view.container)).toEqual([]);
       found.view.unmount();
     }
@@ -580,8 +628,12 @@ describe('Gem harvesting capability rows', () => {
 });
 
 describe('what was claimed and missed this battle, and why', () => {
-  const counts = (container: HTMLElement) => container.querySelector('[data-gem-counts]');
-  const cause = (container: HTMLElement) => container.querySelector('[data-gem-cause]');
+  const counts = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('[data-gem-counts="ad"]');
+  const orbit = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('[data-gem-counts="orbit"]');
+  const cause = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('[data-gem-cause]');
 
   it('failing ad claims read as a stated warning, with the counts and the cause, never as "Collecting gems"', () => {
     const { view } = drawGem(sample('status.working_collector_claims_failing'));
@@ -590,10 +642,8 @@ describe('what was claimed and missed this battle, and why', () => {
       within(view.container).getByText('Ad gem claims failing: 4 in a row'),
     ).toBeInTheDocument();
     expect(within(view.container).queryByText('Collecting gems')).toBeNull();
-    expect(counts(view.container)).toHaveTextContent(
-      'Seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups; 4 ad windows missed',
-    );
-    expect(cause(view.container)).toHaveTextContent('Last missed ad window: offer moved, 2 m ago');
+    expect(counts(view.container)).toHaveTextContent('≥2 claimed · ≥4 missed');
+    expect(cause(view.container)).toHaveTextContent('Offer moved, 2 m ago');
     expect(pause()).not.toBeNull();
     expect(textOutsideCatalogue(view.container)).toEqual([]);
   });
@@ -602,30 +652,32 @@ describe('what was claimed and missed this battle, and why', () => {
     const { view } = drawGem(sample('status.collecting'));
     expect(chip(view.container)).toHaveAttribute('data-state', 'running');
     expect(within(view.container).getByText('Collecting gems')).toBeInTheDocument();
-    expect(counts(view.container)).toHaveTextContent(
-      'Seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups; 1 ad window missed',
-    );
-    expect(cause(view.container)).toHaveTextContent(
-      'Last missed ad window: no offer seen, 1 m ago',
-    );
-    expect(view.container.querySelectorAll('[data-gem-counts], [data-gem-cause]')).toHaveLength(2);
+    expect(counts(view.container)).toHaveTextContent('≥2 claimed · ≥1 missed');
+    expect(cause(view.container)).toHaveTextContent('No offer seen, 1 m ago');
+    expect(orbit(view.container)).toHaveTextContent('≥0 picked up');
+    expect(factValue(view.container, 'Ad gems')).toContainElement(counts(view.container));
+    expect(factValue(view.container, 'Orbit gems')).toContainElement(orbit(view.container));
+    expect(cause(view.container)).not.toBeVisible();
+    fireEvent.click(view.getByText('Details'));
+    expect(cause(view.container)).toBeVisible();
+    expect(factValue(view.container, 'Last miss')).toContainElement(cause(view.container));
+    expect(view.container.querySelectorAll('[data-gem-counts], [data-gem-cause]')).toHaveLength(3);
     expect(textOutsideCatalogue(view.container)).toEqual([]);
   });
 
   it('a full run that owns the emulator shows the counts its own driver published', () => {
     const { view } = drawGem(sample('status.owned_by_run_gathers'));
     expect(within(view.container).getByText('The run collects gems itself')).toBeInTheDocument();
-    expect(counts(view.container)).toHaveTextContent('2 ad windows missed');
-    expect(cause(view.container)).toHaveTextContent('Last missed ad window: window ran out');
+    expect(counts(view.container)).toHaveTextContent('≥2 claimed · ≥2 missed');
+    expect(cause(view.container)).toHaveTextContent('Window ran out');
   });
 
   it('with nothing missed and no counters published there is no cause line and no invented count', () => {
     const { view } = drawGem(sample('status.manual_collector'));
     expect(cause(view.container)).toBeNull();
-    expect(counts(view.container)).toHaveTextContent(
-      'Seen this battle (at least): 2 ad gem claims, 0 orbit gem pickups',
-    );
+    expect(counts(view.container)).toHaveTextContent('≥2 claimed');
     expect(counts(view.container)).not.toHaveTextContent('missed');
+    expect(orbit(view.container)).toHaveTextContent('≥0 picked up');
   });
 
   it('the published finder_suspected adds one warning line and keeps the row and its other lines', () => {

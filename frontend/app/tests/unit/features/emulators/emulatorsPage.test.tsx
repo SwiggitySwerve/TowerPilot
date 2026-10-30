@@ -1,4 +1,4 @@
-import { within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
@@ -108,6 +108,14 @@ function dialog(): HTMLElement {
   return found;
 }
 
+/** Open one help icon's tip as a mouse does, read it, and close it again with Escape. */
+async function tipOf(page: Page, inside: HTMLElement, subject: string): Promise<string> {
+  await page.user.hover(within(inside).getByRole('button', { name: `About ${subject}` }));
+  const text = screen.getByRole('tooltip').textContent;
+  await page.user.keyboard('{Escape}');
+  return text;
+}
+
 // A whole app per test.
 vi.setConfig({ testTimeout: 20_000 });
 
@@ -121,6 +129,57 @@ afterEach(() => {
 });
 
 describe('M1 discovery: what the last scan saw, kept apart from configuration and connection', () => {
+  it('shows a matching suggestion once on its detected row, with a single Use action', async () => {
+    const page = await openEmulators();
+    const suggestion = region('emulatorsDetected').querySelector('[data-suggestion]');
+    expect(suggestion).toBe(row('MuMu:0'));
+    expect(within(row('MuMu:0')).getAllByRole('button', { name: 'Use this one' })).toHaveLength(1);
+    expect(within(row('MuMu:0')).getByText('Suggested', { exact: true })).toBeVisible();
+    expect(page.fake.writes()).toEqual([]);
+  });
+
+  it.each(['unmatched', 'in use'] as const)(
+    'keeps an %s suggestion and its own action gating',
+    async (state) => {
+      const found = v1('wizard_emulators.instances_with_names_and_ports');
+      const body = found.body as {
+        suggestion: { serial: string };
+        configured: readonly { serial: string }[];
+      };
+      // Modified recording: no recorded scan covers a suggestion outside the detected rows
+      // or a suggestion already configured by another instance. Preserve the other scan facts.
+      const page = await openEmulators({
+        scan: () => ({
+          ...found,
+          body:
+            state === 'unmatched'
+              ? { ...body, suggestion: { ...body.suggestion, serial: 'unlisted:5555' } }
+              : {
+                  ...body,
+                  configured: [
+                    ...body.configured,
+                    { instance: 'another', serial: body.suggestion.serial, port_open: true },
+                  ],
+                },
+        }),
+      });
+      const suggestion =
+        region('emulatorsDetected').querySelector<HTMLElement>('[data-suggestion]');
+      if (suggestion === null) throw new Error('Suggestion missing');
+      const use = within(suggestion).getByRole('button', { name: 'Use this one' });
+      if (state === 'unmatched') {
+        expect(suggestion).not.toHaveAttribute('data-row');
+        expect(suggestion).toHaveTextContent('unlisted:5555');
+        expect(use).not.toHaveAttribute('aria-disabled');
+      } else {
+        expect(suggestion).toBe(row('MuMu:0'));
+        expect(use).toHaveAttribute('aria-disabled', 'true');
+        expect(use).toHaveAccessibleDescription(/in use/i);
+      }
+      expect(page.fake.writes()).toEqual([]);
+    },
+  );
+
   it('M1 SR-1 opening the page sends no write, no screen-size check and no install; 60 s later still none', async () => {
     const page = await openEmulators();
     await page.advance(60_000);
@@ -129,6 +188,17 @@ describe('M1 discovery: what the last scan saw, kept apart from configuration an
     expect(region('emulatorsDetected')).toHaveTextContent('Main Tower');
     expect(region('emulatorsTarget').querySelector('[data-configured-serial]')).toHaveTextContent(
       'fake:1',
+    );
+    expect(region('emulatorsTools')).not.toHaveTextContent('Android platform tools');
+    expect(await tipOf(page, region('emulatorsTools'), 'Connection tools')).toContain(
+      'Android platform tools',
+    );
+    expect(
+      within(region('emulatorsTarget')).getByRole('link', { name: 'Open Dashboard' }),
+    ).toHaveAttribute('href', '#dashboard');
+    expect(region('emulatorsTarget')).not.toHaveTextContent('pause harvesting');
+    expect(await tipOf(page, region('emulatorsTarget'), 'Open Dashboard')).toContain(
+      'Stop automation or pause harvesting on the Dashboard.',
     );
   });
 
@@ -146,8 +216,9 @@ describe('M1 discovery: what the last scan saw, kept apart from configuration an
         pages('emulator_inventory.two_running_vms_the_configured_one_is_down_no_automatic_choice'),
     });
     const box = region('emulatorsDetected');
-    expect(box).toHaveTextContent('Not probed:');
-    expect(box).toHaveTextContent('a foreign adb restarts the shared daemon');
+    const notProbed = within(box).getByRole('region', { name: 'Not probed:' });
+    expect(notProbed).toHaveTextContent('a foreign adb restarts the shared daemon');
+    expect(within(notProbed).getByText(/a foreign adb restarts the shared daemon/u)).toBeVisible();
     expect(box.querySelector('[data-suggestion]')).toBeNull();
     expect(within(box).getAllByRole('button', { name: 'Use this one' })).toHaveLength(2);
   });
@@ -507,7 +578,7 @@ describe('M6 screen size', () => {
       const box = region('emulatorsTarget');
       expect(box).toHaveTextContent(size);
       expect(box).toHaveTextContent(meaning);
-      expect(box).toHaveTextContent('A size is not recognition');
+      expect(await tipOf(page, box, 'Screen size')).toContain('A size is not recognition');
       expect(page.fake.writes()).toEqual([]);
     },
   );
@@ -517,7 +588,10 @@ describe('M7 preview settings', () => {
   it('M7 SR-5 an invalid frame rate keeps the raw text with its reason; a valid change saves only the changed field', async () => {
     const page = await openEmulators();
     const box = () => region('emulatorsPreview');
-    expect(box()).toHaveTextContent('Saved settings for the preview, not a live video');
+    expect(box()).not.toHaveTextContent('not a live video');
+    expect(await tipOf(page, box(), 'Video preview settings')).toContain(
+      'Saved settings for the preview, not a live video',
+    );
     const fps = () => {
       const found = box().querySelector<HTMLInputElement>('[data-part="fps"]');
       if (found === null) throw new Error('fps missing');

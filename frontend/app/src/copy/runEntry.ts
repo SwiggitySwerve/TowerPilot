@@ -2,7 +2,7 @@ import { entry } from './entry.ts';
 
 export const runEntry = {
   title: entry('Entry and equipment'),
-  scope: entry('Saved for this run. Save one field at a time; this does not change a live battle.'),
+  scope: entry('Save one field at a time.'),
   unavailable: entry('Read this profile and its field vocabulary to edit entry settings.'),
   readFailed: entry('The last read is shown read-only. Your draft and save result are kept.'),
   check: entry('Read entry settings'),
@@ -14,15 +14,12 @@ export const runEntry = {
   coin: entry('Coin run (remove the disabled tab)'),
   statistics: entry('Statistics are always on for every run.'),
   chainLightning: entry('This policy needs Chain Lightning, which the player does not own.'),
-  questValue: entry('Enter a number. Quoted text stays text; the saved profile checks the value.'),
-  savingFor: entry('Saving entry settings for:'),
+  questValue: entry('Quoted text stays text; the saved profile checks the value.'),
   picker: entry('Entry run'),
   activeOnly: entry('Return editing to the active profile to change these'),
   none: entry('None (remove this reference)'),
   remove: entry('Leave the game’s perk bans alone'),
-  perks: entry(
-    'One perk fragment per line. Empty clears every ban; leaving the game’s bans alone removes this setting.',
-  ),
+  perks: entry('Empty clears every ban; leaving the game’s bans alone removes this setting.'),
   cap: entry('Empty means no wave cap.'),
   profiles: entry('Open Profiles'),
   gather: entry('Edit gathering policy'),

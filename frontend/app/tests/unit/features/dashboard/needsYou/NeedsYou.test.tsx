@@ -12,7 +12,7 @@ import { dashboardBody } from '../../../../support/dashboardFixture.ts';
 import { postBodies } from '../../../../support/dataLayer.ts';
 import { sample, statusBody } from '../../../../support/fixture.ts';
 import { addBody, addCase, addFailure, regionState, tick } from '../../../store/regionHelpers.ts';
-import { renderPage, renderRegion, type RegionHarness } from '../harness.tsx';
+import { factValue, renderPage, renderRegion, type RegionHarness } from '../harness.tsx';
 
 const BLOCKED = 'status.guards_setup_and_collection_blocking_the_same_operation';
 const RELEASED = 'status.guards_setup_blocking_collection_released_by_handoff';
@@ -132,10 +132,12 @@ it('F-033: changed evidence needs fresh confirmation and collection release leav
     selectNeedsYou(state).items.find((need) => need.code === 'launch_guard')?.handoffCommand,
   );
   h.setState(addCase(state, 'status', RELEASED));
-  expect(h.view.getByText('Start is off')).toBeVisible();
-  expect(
-    h.view.getByText('Gem collection allowed: you confirmed a new manual battle'),
-  ).toBeVisible();
+  expect(factValue(h.view.container, 'Start')).toHaveTextContent('Off');
+  expect(factValue(h.view.container, 'Gem collection')).toHaveTextContent(
+    'Allowed: you confirmed a new manual battle',
+  );
+  expect(factValue(h.view.container, 'Start')).toBeVisible();
+  expect(factValue(h.view.container, 'Gem collection')).toBeVisible();
   expect(h.view.queryByRole('button', { name: 'Confirm a new manual battle...' })).toBeNull();
   expect(
     within(item(h, 'launch_guard')).getByRole('link', { name: 'Review setup result' }),
@@ -257,7 +259,7 @@ it.each([
     await user.click(row.getByRole('button', { name: 'Retry status' }));
     expect(h.commands.checkStatus).toHaveBeenCalledExactlyOnceWith();
     expect(h.commands.handoff).not.toHaveBeenCalled();
-    await user.click(row.getByText('Why'));
+    await user.click(row.getByText('Details'));
     expect(
       row.getByText(scenario === 'failed' ? 'last read 17 s ago' : 'last read 0 s ago'),
     ).toBeVisible();
@@ -302,20 +304,13 @@ it('F-082: pending equipment restoration links to setup and the exact operation 
 });
 
 it.each([
-  ['both blocked', true, true, 'Start is off', 'Starting collection is blocked', undefined],
-  [
-    'only Start blocked',
-    true,
-    false,
-    'Start is off',
-    'Gem collection is allowed by the collection guard',
-    undefined,
-  ],
+  ['both blocked', true, true, 'Off', 'Starting collection is blocked', undefined],
+  ['only Start blocked', true, false, 'Off', 'Allowed by the collection guard', undefined],
   [
     'only collection blocked',
     false,
     true,
-    'Start is allowed by the setup guard',
+    'Allowed by the setup guard',
     'Starting collection is blocked',
     undefined,
   ],
@@ -323,16 +318,16 @@ it.each([
     'collection released by confirmation',
     true,
     false,
-    'Start is off',
-    'Gem collection allowed: you confirmed a new manual battle',
+    'Off',
+    'Allowed: you confirmed a new manual battle',
     'collection_handoff',
   ],
   [
     'guards unreadable',
     null,
     null,
-    'Start permission is not confirmed',
-    'Gem collection permission is not confirmed',
+    'Permission not confirmed',
+    'Permission not confirmed',
     undefined,
   ],
 ])(
@@ -352,13 +347,18 @@ it.each([
     const h = renderRegion(state, <NeedsYou />);
     const row = within(item(h, 'setup_outcome'));
     expect(row.getByText(/^Setup failed — /)).toBeVisible();
-    expect(row.getByText(startLine)).toBeVisible();
-    expect(row.getByText(collectionLine)).toBeVisible();
-    if (start !== true) expect(row.queryByText('Start is off')).toBeNull();
+    // Matching guard impacts are stated once for the whole issue group.
+    const startFact = factValue(h.view.container, 'Start');
+    const collectionFact = factValue(h.view.container, 'Gem collection');
+    expect(startFact).toHaveTextContent(startLine);
+    expect(collectionFact).toHaveTextContent(collectionLine);
+    expect(startFact).toBeVisible();
+    expect(collectionFact).toBeVisible();
+    if (start !== true) expect(startFact).not.toHaveTextContent('Off');
     const detector = row.getByText("No fresh matching control for 'open intro sprint dialog'");
     expect(detector).not.toBeVisible();
     expect(detector).toHaveAttribute('data-server-text', 'message');
-    await userEvent.setup().click(row.getByText('Why'));
+    await userEvent.setup().click(row.getByText('Details'));
     expect(detector).toBeVisible();
     expect(detector.closest('details')).toHaveAttribute('open');
     expect(row.getByText('Final screen not verified')).toBeVisible();
@@ -388,7 +388,7 @@ it.each([
   expect(row.getByText((text) => text.startsWith(line))).toBeVisible();
   const error = row.getByText(/Recorded setup error/);
   expect(error).not.toBeVisible();
-  await userEvent.setup().click(row.getByText('Why'));
+  await userEvent.setup().click(row.getByText('Details'));
   expect(error).toBeVisible();
   expect(error.textContent).toBe('Recorded setup error\nSecond line');
   await verify(h.view.container);
@@ -407,7 +407,7 @@ it('F-084: at most three items show and Show all (n) expands the rest in place a
   await user.click(h.view.getByRole('button', { name: `Show all (${String(vm.count)})` }));
   expect(h.view.container.querySelectorAll('[data-need]')).toHaveLength(vm.count);
   expect(h.view.queryByRole('button', { name: /Show all/ })).toBeNull();
-  const why = within(item(h, 'setup_outcome')).getByText('Why');
+  const why = within(item(h, 'setup_outcome')).getByText('Details');
   await user.click(why);
   const summary = why.closest('summary');
   summary?.focus();
@@ -422,12 +422,12 @@ it('F-084: at most three items show and Show all (n) expands the rest in place a
   await verify(h.view.container);
 });
 
-it('F-084: three or fewer items have no Show all and detector reports stay under Why', async () => {
+it('F-084: three or fewer items have no Show all and detector reports stay under Details', async () => {
   const h = renderRegion(addBody(readyState(), 'status', blockedBody()), <NeedsYou />);
   expect(h.view.queryByRole('button', { name: /Show all/ })).toBeNull();
   const row = within(item(h, 'launch_guard'));
   expect(row.getByRole('link', { name: 'Events for this operation' })).not.toBeVisible();
-  await userEvent.setup().click(row.getByText('Why'));
+  await userEvent.setup().click(row.getByText('Details'));
   expect(row.getByRole('link', { name: 'Events for this operation' })).toHaveAttribute(
     'href',
     `#runtime?operation_id=${String(own(own(dashboardBody(BLOCKED), 'setup_battle_guard'), 'operation_id'))}`,

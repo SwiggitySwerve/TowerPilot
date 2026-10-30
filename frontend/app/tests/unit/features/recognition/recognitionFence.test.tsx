@@ -1,4 +1,4 @@
-import { within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { own } from '../../../../src/core/read.ts';
 import { selectRecognitionPage } from '../../../../src/store/selectors/recognition.ts';
@@ -131,7 +131,16 @@ it.each(
   expect(line()?.textContent).toContain(own(answer.body, 'error'));
   if (code === 'context_changed')
     expect(line()?.textContent).toContain('Not applied: the emulator, account or profile changed');
-  if (code === 'invalid_request') expect(line()?.textContent).toContain('This is a page bug.');
+  if (code === 'invalid_request') {
+    const outcome = line();
+    if (outcome === null) throw new Error('Missing apply outcome');
+    expect(
+      within(outcome).getByText('Not applied: this page sent an invalid request'),
+    ).toBeVisible();
+    await page.user.click(within(outcome).getByRole('button', { name: 'About this message' }));
+    expect(screen.getByRole('tooltip')).toHaveTextContent('This is a page bug.');
+    await page.user.keyboard('{Escape}');
+  }
   const current = own(answer.body, 'current_context');
   if (current !== null && current !== undefined) {
     expect(line()?.querySelector('[data-current-context]')?.textContent).toContain('beta');

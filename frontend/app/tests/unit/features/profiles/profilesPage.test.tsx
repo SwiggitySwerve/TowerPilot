@@ -276,6 +276,14 @@ describe('F6PE Profiles review regressions', () => {
     const input = () =>
       within(region('profilesTier')).getByRole('textbox', { name: /^Highest unlocked tier/u });
     expect(region('profilesTier').querySelector('[data-tier-saved]')).toHaveTextContent('Default:');
+    const defaultValue = within(region('profilesTier'))
+      .getByText('Default:')
+      .closest('.tp-facts__item');
+    expect(defaultValue?.querySelector('dd')).toHaveTextContent(/^1$/u);
+    const recorded = within(region('profilesTier'))
+      .getByText('Profile tier')
+      .closest('.tp-facts__item');
+    expect(recorded?.querySelector('dd')).toHaveTextContent(/^not recorded in the profile$/u);
     await page.user.clear(input());
     await page.user.type(input(), '021');
     source = () => ({
@@ -314,7 +322,7 @@ describe('F6PE Profiles review regressions', () => {
     expect(region('profilesTier')).toHaveTextContent('Not saved: the account or profile changed');
     expect(input).toHaveValue('07');
     expect(region('profilesTier').querySelector('[data-current-context]')).toHaveTextContent(
-      'mainbetatheirsfake:1',
+      'Current emulatormainCurrent accountbetaCurrent profiletheirsCurrent serialfake:1',
     );
     await page.advance(60_000);
     expect(writesTo(page, '/api/account-tier')).toHaveLength(1);
@@ -506,6 +514,18 @@ describe('P1 the local game account of this emulator', () => {
 });
 
 describe('P2 creating a local account', () => {
+  it('P2 account import exposes its same-account condition before consent without opening Why', async () => {
+    const page = await openProfiles({
+      accounts: () => pages('accounts_write.read_before_any_account'),
+    });
+    const box = form('create');
+    expect(within(box).getByText('Only for this same game account.')).toBeVisible();
+    expect(within(box).getByRole('checkbox')).toHaveAccessibleDescription(
+      'Only for this same game account.',
+    );
+    expect(page.fake.writes()).toEqual([]);
+  });
+
   async function create(page: Page, id: string, label = '', importCurrent = false) {
     const box = form('create');
     await page.user.type(within(box).getByRole('textbox', { name: /^Identifier/u }), id);
@@ -837,21 +857,21 @@ describe('P4 setup state', () => {
       'wizard_tools.not_installed',
       'calibrate_status.restore_pending',
       'runs.not_ready_image_row',
-      'Connection tools not installed',
+      'Not installed',
       'Original modules are waiting to be restored',
-      'Runs ready to start: 1; not ready: 1',
+      '1',
     ],
     [
       'wizard_tools.installed',
       'calibrate_status.running_with_steps',
       'runs.ready',
-      'Connection tools installed',
+      'Installed',
       'A setup step is running',
-      'Runs ready to start: 1; not ready: 0',
+      '0',
     ],
   ])(
     'P4 %s, %s, %s stay distinct; the links open their pages and nothing is sent',
-    async (tools, calibrate, runs, toolsLine, calibrationLine, runsLine) => {
+    async (tools, calibrate, runs, toolsLine, calibrationLine, notReady) => {
       const page = await openProfiles(
         {},
         {
@@ -865,7 +885,19 @@ describe('P4 setup state', () => {
       const box = region('profilesSetup');
       expect(within(box).getByText(toolsLine)).toBeVisible();
       expect(within(box).getByText(calibrationLine)).toBeVisible();
-      expect(within(box).getByText(runsLine)).toBeVisible();
+      expect(
+        within(box).getByText('Connection tools').closest('.tp-facts__item')?.querySelector('dd'),
+      ).toContainElement(within(box).getByText(toolsLine));
+      expect(
+        within(box).getByText('Setup progress').closest('.tp-facts__item')?.querySelector('dd'),
+      ).toContainElement(within(box).getByText(calibrationLine));
+      const readiness = box.querySelector('[data-setup="runs"]') as HTMLElement;
+      const ready = within(readiness).getByText('Runs ready to start').closest('.tp-facts__item');
+      const blocked = within(readiness).getByText('Not ready').closest('.tp-facts__item');
+      expect(ready).toBeVisible();
+      expect(ready?.querySelector('dd')).toHaveTextContent(/^1$/u);
+      expect(blocked).toBeVisible();
+      expect(blocked?.querySelector('dd')).toHaveTextContent(notReady);
       expect(within(box).getByRole('link', { name: 'Recognition' })).toHaveAttribute(
         'href',
         '#recognition',
@@ -1296,6 +1328,11 @@ describe('F6-14 PE1 use no profile (landed profile_target, brief f6-14-profiles-
     let config = () => target('inactive_editor_context_before_save');
     const page = await openProfiles({ ...world, config: () => config() });
     expect(unbindForm()).toHaveTextContent('Active profile:mine');
+    expect(
+      within(unbindForm()).getByText(
+        'Unbinds the active profile; automation uses legacy rules from its next start. Nothing starts or stops now.',
+      ),
+    ).toBeVisible();
     await page.user.click(useNone());
     expect(within(openDialog()).getByText(/legacy rules/u)).toBeVisible();
     await page.user.click(within(openDialog()).getByRole('button', { name: 'Cancel' }));

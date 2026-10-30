@@ -126,8 +126,9 @@ it('RL10 RL11 statistics is a notice and UW/rescue links name specific policies'
   await page.advance(100);
   const root = document.querySelector<HTMLElement>('[data-run-entry]');
   if (root === null) throw new Error('missing entry');
-  const box = within(root);
-  expect(box.getByText('Statistics are always on for every run.').tagName).toBe('P');
+  expect(root.querySelector('[data-entry-statistics] dt')).toHaveTextContent('Statistics');
+  expect(root.querySelector('[data-entry-statistics] dd')).toHaveTextContent('Always on');
+  expect(root.querySelector('[data-entry-statistics] input')).toBeNull();
   const fields = selectRunEntry(page.data.store.getSnapshot()).fields;
   expect(fields.find((f) => f.key === 'policies.uw')?.policyEditor).toEqual({
     kind: 'ability',

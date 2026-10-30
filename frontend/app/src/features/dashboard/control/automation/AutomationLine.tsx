@@ -3,7 +3,7 @@ import type { AutomationLine as AutomationLineCode } from '../../../../core/auto
 import type { CopyEntry } from '../../../../copy/text.ts';
 import type { ChipVM } from '../../../../store/viewModels.ts';
 import { Chip } from '../../../../ui/Chip.tsx';
-import { Why } from '../../../../ui/Why.tsx';
+import { WhyTip } from '../../shared/WhyTip.tsx';
 
 const text = copy.dashboard.automation;
 const lines: Readonly<Record<AutomationLineCode, CopyEntry>> = text.lines;
@@ -36,7 +36,8 @@ export function AutomationLine({ seen }: { readonly seen: ChipVM }) {
   );
 }
 
-/** Explanations follow the action row, keeping Stop ahead of disclosures in tab order. */
+/** The background of the line, a help icon after it; Stop stays ahead of it in tab order. */
 export function AutomationWhy({ seen }: { readonly seen: ChipVM }) {
-  return <Why why={(lookup[seen.line] ?? text.lines.cant_tell_whats_running).why} />;
+  const line = lookup[seen.line] ?? text.lines.cant_tell_whats_running;
+  return <WhyTip subject={line.short} why={line.why} />;
 }

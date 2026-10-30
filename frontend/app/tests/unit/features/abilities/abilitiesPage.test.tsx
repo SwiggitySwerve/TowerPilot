@@ -572,6 +572,33 @@ describe('Abilities Wanted rows, real-route answers', () => {
       raw: '0045',
     });
   });
+  it('plan heading leads with its editable label and preserves the ID for deep links', async () => {
+    const s = await setup({ mount: true });
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Farm choreography ID farm_cl' }),
+    ).toHaveAttribute('id', 'abilities-editor');
+    fireEvent.change(screen.getByRole('textbox', { name: 'Plan label' }), {
+      target: { value: 'My future battle plan' },
+    });
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'My future battle plan ID farm_cl' }),
+    ).toHaveAttribute('id', 'abilities-editor');
+    expect(s.fake.writes()).toHaveLength(0);
+  });
+  it('readiness summary and Recognition remain visible with saved policy data closed', async () => {
+    const s = await setup({ mount: true });
+    const link = screen.getByRole('link', { name: 'Open Recognition' });
+    expect(link).toBeVisible();
+    expect(link).toHaveAttribute('href', '#recognition');
+    expect(link.closest('details')).toBeNull();
+    expect(screen.getByText('Not checked by this editor', { exact: true })).toBeVisible();
+    expect(
+      screen.getByText('Recorded ability verification', { exact: true }).nextElementSibling,
+    ).toHaveTextContent('Yes');
+    const summary = screen.getByText('Saved policy data', { selector: 'summary', exact: true });
+    expect(summary.closest('details')).not.toHaveAttribute('open');
+    expect(s.fake.writes()).toHaveLength(0);
+  });
   it('A5 vocabulary supports all published triggers and safe actions with want_on', async () => {
     const s = await setup({ mount: true });
     fireEvent.change(screen.getByRole('combobox', { name: 'Saved plans' }), {

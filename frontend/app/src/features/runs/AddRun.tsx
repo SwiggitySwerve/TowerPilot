@@ -2,6 +2,8 @@ import { useId } from 'react';
 import { copy } from '../../copy/catalogue.ts';
 import { selectRunsAdd } from '../../store/selectors/runsAdd.ts';
 import { Button } from '../../ui/Button.tsx';
+import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
+import { CopyLine } from '../../ui/CopyLine.tsx';
 import { Disclosure } from '../../ui/Disclosure.tsx';
 import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
 import { useDashboard, useView } from '../dashboard/context.ts';
@@ -22,11 +24,12 @@ export function AddRun() {
   return (
     <div className="tp-run-add" data-run-add="true">
       <Disclosure label={t.title.short} focusKey="run-add:open">
-        <p>{t.scope.short}</p>
+        <CopyLine entry={t.scope} variant="intro" />
         <div className="tp-run-add__fields">
           <label>
             <span id={`${reasonId}-recipe`}>{t.recipe.short}</span>
             <select
+              className="tp-field-control"
               aria-labelledby={`${reasonId}-recipe`}
               value={vm.selected}
               onChange={(event) => {
@@ -43,6 +46,7 @@ export function AddRun() {
           <label>
             <span>{t.runId.short}</span>
             <input
+              className="tp-field-control"
               value={vm.runId}
               onChange={(event) => {
                 edit('run_id', event.currentTarget.value);
@@ -66,6 +70,7 @@ export function AddRun() {
                     />
                   ) : field === 'loadout' ? (
                     <select
+                      className="tp-field-control"
                       aria-labelledby={`${reasonId}-${field}`}
                       value={typeof value === 'string' ? value : ''}
                       onChange={(event) => {
@@ -82,6 +87,7 @@ export function AddRun() {
                     </select>
                   ) : field === 'dissonant_tab' ? (
                     <select
+                      className="tp-field-control"
                       aria-labelledby={`${reasonId}-${field}`}
                       value={typeof value === 'string' ? value : ''}
                       onChange={(event) => {
@@ -97,6 +103,7 @@ export function AddRun() {
                     </select>
                   ) : field === 'perk_bans' ? (
                     <textarea
+                      className="tp-field-control"
                       value={typeof value === 'string' ? value : ''}
                       onChange={(event) => {
                         edit(field, event.currentTarget.value);
@@ -104,6 +111,7 @@ export function AddRun() {
                     />
                   ) : (
                     <input
+                      className="tp-field-control"
                       inputMode={field === 'label' ? 'text' : 'numeric'}
                       value={typeof value === 'string' ? value : ''}
                       onChange={(event) => {
@@ -115,24 +123,29 @@ export function AddRun() {
               );
             })}
         </div>
-        {vm.reason === null ? null : <p id={reasonId}>{t.reasons[vm.reason].short}</p>}
         <div className="tp-run-add__actions">
-          <Button
-            tier="secondary"
-            label={t.save.short}
-            {...(vm.command === null ? { disabled: true, reasonId } : {})}
-            onClick={() => {
-              if (vm.command !== null) void commands.addRun(vm.command);
-            }}
-          />
-          <Button tier="quiet" label={t.check.short} onClick={commands.checkRunAdd} />
-          <Button
-            tier="quiet"
-            label={t.discard.short}
-            onClick={() => {
-              commands.discardDraft(vm.scope);
-            }}
-          />
+          <ActionRow
+            reason={
+              vm.reason === null ? null : <Reason id={reasonId} entry={t.reasons[vm.reason]} />
+            }
+          >
+            <Button
+              tier="secondary"
+              label={t.save.short}
+              {...(vm.command === null ? { disabled: true, reasonId } : {})}
+              onClick={() => {
+                if (vm.command !== null) void commands.addRun(vm.command);
+              }}
+            />
+            <Button tier="quiet" label={t.check.short} onClick={commands.checkRunAdd} />
+            <Button
+              tier="quiet"
+              label={t.discard.short}
+              onClick={() => {
+                commands.discardDraft(vm.scope);
+              }}
+            />
+          </ActionRow>
         </div>
         {vm.outcome === null ? null : (
           <div role="status" data-run-add-outcome={vm.outcome.phase}>

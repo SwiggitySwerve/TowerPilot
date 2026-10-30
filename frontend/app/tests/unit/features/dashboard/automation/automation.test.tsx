@@ -1,8 +1,9 @@
-import { fireEvent, within, type RenderResult } from '@testing-library/react';
+import { fireEvent, screen, within, type RenderResult } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AutomationSlot } from '../../../../../src/features/dashboard/control/AutomationSlot.tsx';
 import { ControlRegion } from '../../../../../src/features/dashboard/control/ControlRegion.tsx';
+import { copy } from '../../../../../src/copy/catalogue.ts';
 import { selectAutomationSlot } from '../../../../../src/store/selectors/automationSlot.ts';
 import { selectInputSlot } from '../../../../../src/store/selectors/inputSlot.ts';
 import { textOutsideCatalogue } from '../../../copy/renderedText.ts';
@@ -24,7 +25,7 @@ import {
   serverTimeOf,
   statusBody,
 } from '../../../../support/fixture.ts';
-import { renderRegion } from '../harness.tsx';
+import { factValue, renderRegion } from '../harness.tsx';
 
 let view: RenderResult | undefined;
 afterEach(async () => {
@@ -96,7 +97,14 @@ describe('Automation decisions', () => {
     if (_name === 'harvest missing') delete body['harvest'];
     const h = draw(addBody(regionState(), 'status', body));
     expect(h.view.container.querySelector('.tp-chip')).toHaveAttribute('data-state', 'unknown');
-    expect(h.view.getAllByText('Why').length).toBeGreaterThan(0);
+    // The background is a help icon, never a Why disclosure; opened, it says why nothing is proved.
+    expect(h.view.queryByText('Why')).toBeNull();
+    const icon = h.view.getAllByRole('button', { name: /^About / })[0];
+    if (icon === undefined) throw new Error('no help icon');
+    fireEvent.click(icon);
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      copy.dashboard.automation.lines.cant_tell_whats_running.why ?? '',
+    );
   });
 
   it('F-008: stale scan keeps Last known idle; failed read keeps Stops', () => {
@@ -135,18 +143,18 @@ describe('Automation decisions', () => {
     expect(h.view.getByText('Gem collector')).toBeVisible();
     expect(h.view.getByText('Farm')).toBeVisible();
     expect(h.view.getByText('Screen learning')).toBeVisible();
-    expect(h.view.getByText('Setup running:')).toBeVisible();
+    expect(factValue(h.view.container, 'Setup running')).toBeVisible();
     expect(
       h.view.getByText('Cards: page 2 read; 8 cards identified; scrolling down'),
     ).toHaveAttribute('data-server-text', 'detail');
   });
 
   it.each([
-    ['collecting', 9396, 0, 'Wave 9,396'],
-    ['worker_unverified', 9396, 0, 'Last reported wave 9,396, 0 s ago'],
-    ['collecting', null, 0, 'Wave not reported yet'],
-    ['collecting', 9396, 30, 'Last reported wave 9,396, 30 s ago'],
-  ])('F-009: %s wave %s age %s reads %s', (name, wave, age, line) => {
+    ['collecting', 9396, 0, 'Wave', '9,396'],
+    ['worker_unverified', 9396, 0, 'Last wave', '9,396, 0 s ago'],
+    ['collecting', null, 0, 'Battle', 'Wave not reported yet'],
+    ['collecting', 9396, 30, 'Last wave', '9,396, 30 s ago'],
+  ])('F-009: %s wave %s age %s reads %s', (name, wave, age, label, value) => {
     const harvest = sampleRecord(`status.${name}`);
     const body = object(dashboardBody('battles_active.runtime_ad_orbit_shopping'));
     const battle = object(body['battle']);
@@ -156,16 +164,17 @@ describe('Automation decisions', () => {
     runtime['server_time'] = Number(body['server_time']) - age;
     const state = addBody(status(harvest), 'battlesActive', body);
     const h = draw(state);
-    expect(h.view.getByText(line)).toBeVisible();
+    expect(factValue(h.view.container, label)).toHaveTextContent(value);
+    expect(factValue(h.view.container, label)).toBeVisible();
     expect(h.view.container.textContent).not.toMatch(/No battle running|battle is running/i);
   });
 
   it.each([
     ['waiting_for_battle', 'Waiting to track a battle'],
-    ['collecting', 'Battle: unknown'],
+    ['collecting', 'Unknown'],
   ])('F-009: %s retains the operation when battle status is unavailable', (name, line) => {
     const h = draw(addFailure(status(sample(`status.${name}`)), 'battlesActive'));
-    expect(h.view.getAllByText(line).length).toBeGreaterThan(0);
+    expect(factValue(h.view.container, 'Battle')).toHaveTextContent(line);
     expect(h.view.getByRole('button', { name: /^Stop Gem collector/ })).toBeEnabled();
   });
 
@@ -206,13 +215,19 @@ describe('Automation decisions', () => {
   it('F-010: duplicate purposes keep distinct start times, PIDs, server command lines and Details open for five polls', () => {
     const state = status(sample('status.off'), processes('processes_two_rows_same_runner'));
     const h = draw(state);
-    expect(h.view.getByText(/Started .*, PID 4511/)).toBeVisible();
-    expect(h.view.getByText(/Started .*, PID 4512/)).toBeVisible();
+    expect(h.view.getByText(/Started .*, PID 4511/)).not.toBeVisible();
+    expect(h.view.getByText(/Started .*, PID 4512/)).not.toBeVisible();
+    const rows = h.view.container.querySelectorAll<HTMLElement>('[data-operation-key]');
+    const starts = Array.from(rows, (row) => factValue(row, 'Started'));
+    expect(starts).toHaveLength(2);
+    for (const started of starts) expect(started).toBeVisible();
+    expect(starts[0]?.textContent).not.toBe(starts[1]?.textContent);
     const details = h.view.getAllByText('Details')[0]?.closest('details');
     expect(details).not.toBeNull();
     if (details === null || details === undefined) throw new Error('Missing Details');
     fireEvent.click(within(details).getByText('Details'));
     expect(details).toHaveAttribute('open');
+    expect(factValue(details, 'PID')).toHaveTextContent('4511');
     for (let poll = 1; poll <= 5; poll += 1) {
       h.setState(
         addBody(
@@ -247,9 +262,13 @@ describe('Automation decisions', () => {
       },
     ];
     const h = draw(status(sample('status.off'), rows));
-    expect(h.view.getByText('Start time not recorded, PID 42')).toBeVisible();
+    expect(h.view.getByText('Start time not recorded, PID 42')).not.toBeVisible();
+    expect(factValue(h.view.container, 'Started')).toHaveTextContent('Not recorded');
+    expect(factValue(h.view.container, 'Started')).toBeVisible();
     fireEvent.click(h.view.getByText('Details'));
     expect(h.view.getByText('Details unavailable')).toBeVisible();
+    expect(factValue(h.view.container, 'PID')).toHaveTextContent('42');
+    expect(factValue(h.view.container, 'PID')).toBeVisible();
     fireEvent.click(h.view.getByRole('button', { name: /^Stop Gem collector/ }));
     fireEvent.click(within(h.view.getByRole('dialog')).getByRole('button', { name: 'Stop' }));
     expect(h.commands.stop).toHaveBeenCalledExactlyOnceWith(
@@ -373,7 +392,7 @@ describe('Automation decisions', () => {
     const harvest = sampleRecord('status.worker_unverified');
     object(harvest['operation'])['revision'] = null;
     const h = draw(status(harvest));
-    expect(h.view.getByText('Unknown')).toBeVisible();
+    expect(h.view.container.querySelector('.tp-chip[data-state="unknown"]')).toBeVisible();
     expect(h.view.getByRole('button', { name: /^Stop Gem collector/ })).toHaveAttribute(
       'aria-disabled',
       'true',

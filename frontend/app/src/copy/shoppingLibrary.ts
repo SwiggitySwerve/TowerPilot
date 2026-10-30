@@ -3,6 +3,8 @@ import { entry, made } from './entry.ts';
 /** SQ9/SQ10 shared policy and legacy editor wording. */
 export const shoppingLibrary = {
   title: entry('Shared shopping policies'),
+  manage: entry('Manage policies'),
+  more: entry('Show more policies'),
   profile: entry('Active profile'),
   scope: entry(
     'Shared saves affect these runs in future battles; the current battle keeps its queue.',

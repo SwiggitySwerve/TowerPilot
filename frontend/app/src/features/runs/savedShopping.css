@@ -4,41 +4,6 @@
 .tp-saved-shopping__review {
   overflow-wrap: anywhere;
 }
-.tp-saved-shopping__review dl {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
-  gap: var(--tp-space-2);
-}
-.tp-saved-shopping__review dd {
-  margin: 0;
-}
-.tp-saved-shopping__review dt {
-  color: var(--tp-color-text-muted);
-}
 .tp-saved-shopping__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--tp-space-3);
   margin-block: var(--tp-space-3);
-}
-
-@media (max-width: 480px) {
-  .tp-saved-shopping .tp-button {
-    min-height: 44px;
-  }
-}
-
-/* F6-12-C-05: the saved queue's disclosure. */
-.tp-saved-shopping__details > summary {
-  display: flex;
-  align-items: center;
-  min-height: 24px;
-  font-weight: 600;
-  cursor: pointer;
-}
-@media (max-width: 480px) {
-  .tp-saved-shopping__details > summary {
-    min-height: 44px;
-  }
 }

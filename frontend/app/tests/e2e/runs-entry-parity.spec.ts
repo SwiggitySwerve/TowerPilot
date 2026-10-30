@@ -132,9 +132,9 @@ for (const width of [1360, 1054, 390]) {
     ).toHaveText('farm');
     // The parity case predates expected_context; only that runtime fence is added.
     expect(writes).toEqual([withRecordedFence(entry, fencedRuntime).request.body]);
-    await expect(page.locator('[data-entry-statistics]')).toHaveText(
-      'Statistics are always on for every run.',
-    );
+    await expect(page.locator('[data-entry-statistics] dt')).toHaveText('Statistics');
+    await expect(page.locator('[data-entry-statistics] dd')).toHaveText('Always on');
+    await expect(page.locator('[data-entry-statistics] input')).toHaveCount(0);
     await proof(page, width, 'label-cleared');
     await page.getByRole('combobox', { name: 'Entry run', exact: true }).selectOption('farm_deep');
     await expect(field(page, 'policies.rescue').getByRole('link')).toHaveAttribute(

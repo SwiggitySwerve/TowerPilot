@@ -98,6 +98,12 @@ describe('F6-12 shared queue editor (recorded shopping_read_before_any_save)', (
         <Harness />
       </main>,
     );
+    const tapHint = 'Blank means unlimited.';
+    expect(screen.getAllByText(tapHint)).toHaveLength(1);
+    expect(screen.getByText(tapHint)).toBeVisible();
+    for (const input of screen.getAllByRole('textbox', { name: 'Tap attempts this battle' })) {
+      expect(input).toHaveAccessibleDescription(tapHint);
+    }
     fireEvent.click(document.getElementById('test:pick:attack_speed:included') ?? document.body);
     expect(queued()).toEqual(['damage', 'health', 'attack_speed']);
     const tap = document.getElementById('test:entry:damage:tap_limit');
@@ -106,6 +112,12 @@ describe('F6-12 shared queue editor (recorded shopping_read_before_any_save)', (
     expect(tap).toHaveValue('1.5e');
     expect(tap).toHaveAttribute('aria-invalid', 'true');
     expect(tap).toHaveAccessibleDescription(/Not a number/u);
+    expect(tap).toHaveAccessibleDescription(/Blank means unlimited/u);
+    // The teaching clause lives in the field's help, opened on demand and not in the page.
+    expect(screen.queryByText(/Counts taps sent, not levels bought/u)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'About Tap attempts this battle' }));
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Counts taps sent, not levels bought.');
+    expect(screen.getAllByText(tapHint)).toHaveLength(1);
     fireEvent.click(document.getElementById('test:pick:damage:included') ?? document.body);
     const damage = document.querySelector('[data-upgrade="damage"].tp-shop__entry');
     if (!(damage instanceof HTMLElement)) throw new Error('no damage entry');

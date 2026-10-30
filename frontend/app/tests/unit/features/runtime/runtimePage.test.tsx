@@ -125,11 +125,24 @@ describe('T1 T2 shared Runtime settings', () => {
   it('T1 T2 SR-1 opening only reads; all eight modules, scopes, units and next-start limits are visible', async () => {
     const page = await openRuntime();
     expect(document.querySelectorAll('[data-runtime-module]')).toHaveLength(8);
-    expect(screen.getAllByText('This emulator · next time automation starts')).toHaveLength(3);
+    const overrides = document.querySelector<HTMLElement>('[data-runtime-group="overrides"]');
+    const machine = document.querySelector<HTMLElement>('[data-runtime-group="machine"]');
+    if (overrides === null || machine === null) throw new Error('settings groups missing');
     expect(
-      screen.getAllByText('This computer · every emulator · next time automation starts'),
-    ).toHaveLength(2);
-    expect(screen.getByText(/Dry run is not an emergency stop/)).toBeVisible();
+      within(overrides).getByText(/This emulator · next time automation starts/),
+    ).toBeVisible();
+    expect(
+      within(machine).getByText(/This computer · every emulator · next time automation starts/),
+    ).toBeVisible();
+    expect(screen.getAllByText(/This emulator · next time automation starts/)).toHaveLength(1);
+    expect(
+      screen.getAllByText(/This computer · every emulator · next time automation starts/),
+    ).toHaveLength(1);
+    expect(screen.queryByText(/Dry run is not an emergency stop/)).toBeNull();
+    await page.user.hover(
+      screen.getByRole('button', { name: 'About Settings safety and readback' }),
+    );
+    expect(screen.getByRole('tooltip')).toHaveTextContent(/Dry run is not an emergency stop/);
     expect(input('loop', 'fps')).toBeInTheDocument();
     await page.advance(10000);
     expect(page.fake.writes()).toEqual([]);
@@ -380,7 +393,10 @@ it.each([
   const page = await openRuntime({}, `runtime_state.${name}`);
   const box = document.querySelector('[data-region="runtimeIdentity"]');
   expect(box).toHaveTextContent(line);
-  expect(within(box as HTMLElement).getAllByRole('button')).toHaveLength(1);
+  const actions = within(box as HTMLElement)
+    .getAllByRole('button')
+    .filter((button) => !(button.getAttribute('aria-label') ?? '').startsWith('About '));
+  expect(actions).toHaveLength(1);
   expect(page.fake.writes()).toEqual([]);
 });
 it('T3 unavailable identity retains last evidence and read failure', async () => {
@@ -393,6 +409,90 @@ it('T3 unavailable identity retains last evidence and read failure', async () =>
     'last result remains visible and is stale',
   );
   expect(screen.getByText('server-session-0001')).toBeVisible();
+});
+it('T3 source comparison stays visible while full fingerprint and capability evidence can be expanded', async () => {
+  const page = await openRuntime();
+  const box = document.querySelector<HTMLElement>('[data-region="runtimeIdentity"]');
+  if (box === null) throw new Error('identity missing');
+  expect(within(box).getByText('Matches the source snapshot')).toBeVisible();
+  for (const label of [
+    'Source fingerprint at load',
+    'Disk source fingerprint now',
+    'Capabilities',
+    'Persistence operations',
+  ]) {
+    const term = within(box).getByText(label, { selector: 'dt' });
+    const disclosure = term.nextElementSibling?.querySelector('details');
+    if (disclosure === undefined || disclosure === null)
+      throw new Error(`details missing: ${label}`);
+    expect(disclosure).not.toHaveAttribute('open');
+    const value = disclosure.querySelector('[data-server-text="detail"]');
+    expect(value?.textContent.length).toBeGreaterThan(0);
+    const summary = disclosure.querySelector('summary');
+    if (summary === null) throw new Error('summary missing');
+    await page.user.click(summary);
+    expect(value).toBeVisible();
+  }
+  expect(page.fake.writes()).toEqual([]);
+});
+it('T4 section navigation focuses diagnostics without changing the applied query', async () => {
+  const page = await openRuntime(
+    {},
+    identityDefault,
+    diagnosticsDefault,
+    '#runtime?operation_id=op-1',
+  );
+  await page.user.click(
+    within(screen.getByRole('navigation', { name: 'Runtime sections' })).getByRole('button', {
+      name: 'Diagnostic events',
+    }),
+  );
+  expect(screen.getByRole('heading', { name: 'Diagnostic events' })).toHaveFocus();
+  expect(window.location.hash).toBe('#runtime?operation_id=op-1');
+  expect(screen.queryByText('Filters match exact values.')).toBeNull();
+  await page.user.hover(screen.getByRole('button', { name: 'About Event filters' }));
+  expect(screen.getByRole('tooltip')).toHaveTextContent('Filters match exact values.');
+  expect(page.fake.writes()).toEqual([]);
+});
+it('T1 T2 save context is visible before the forms and common module scope text appears once', async () => {
+  const page = await openRuntime();
+  const target = page.data.store.getSnapshot().context;
+  const context = document.getElementById('runtime-settings-review')?.closest('section');
+  if (target === null || context === null || context === undefined)
+    throw new Error('settings context missing');
+  for (const [label, value] of [
+    ['Instance', target.instance],
+    ['Account', target.account],
+    ['Profile', target.profile],
+  ]) {
+    expect(
+      within(context).getByText(label ?? '', { selector: 'dt' }).nextElementSibling,
+    ).toHaveTextContent(value ?? 'not reported');
+  }
+  expect(
+    screen.queryByText(
+      'Fallback for every emulator on this machine. An emulator that carries its own override keeps it.',
+    ),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByText('Applies to the selected emulator when its runner next starts.'),
+  ).not.toBeInTheDocument();
+  expect(screen.getAllByText(/Machine fallback · next time automation starts/)).toHaveLength(1);
+  expect(page.fake.writes()).toEqual([]);
+});
+it('T5 event timestamps and IDs have separate labels and keep literal values visible', async () => {
+  await openRuntime();
+  const details = document.querySelector<HTMLDetailsElement>('[data-event-key]');
+  if (details === null || details.parentElement === null) throw new Error('event missing');
+  const summary = details.querySelector('summary');
+  if (summary === null) throw new Error('summary missing');
+  expect(
+    within(summary).getByText('Event time (epoch seconds)').nextElementSibling,
+  ).toHaveTextContent('1800000001');
+  expect(
+    within(details.parentElement).getByText('Operation ID', { selector: 'dt' }).nextElementSibling,
+  ).toHaveTextContent('op-1');
+  expect(details).not.toHaveAttribute('open');
 });
 it('T3 F6T-R1-02 missing worker build identity stays not reported and the complete raw runtime response is available', async () => {
   await openRuntime({}, 'runtime_state.worker_alive_and_verified');
@@ -442,15 +542,15 @@ it('T4 restores applied hash filters and Refresh keeps unapplied typing and inva
     diagnosticsDefault,
     '#runtime?operation_id=op-1',
   );
-  expect(screen.getByLabelText('Exact operation ID')).toHaveValue('op-1');
+  expect(screen.getByLabelText('Operation ID')).toHaveValue('op-1');
   expect(eventsRequests(page).at(-1)?.path).toBe('/api/diagnostics/events?operation_id=op-1');
-  await page.user.type(screen.getByLabelText('Exact kind'), 'unapplied');
+  await page.user.type(screen.getByLabelText('Kind'), 'unapplied');
   await page.user.clear(screen.getByLabelText('Event limit (1–1000)'));
   await page.user.type(screen.getByLabelText('Event limit (1–1000)'), '1001');
   await page.user.click(screen.getByRole('button', { name: 'Refresh events' }));
   await page.advance();
   expect(eventsRequests(page).at(-1)?.path).toBe('/api/diagnostics/events?operation_id=op-1');
-  expect(screen.getByLabelText('Exact kind')).toHaveValue('unapplied');
+  expect(screen.getByLabelText('Kind')).toHaveValue('unapplied');
   expect(screen.getByLabelText('Event limit (1–1000)')).toHaveValue('1001');
   expect(screen.getByRole('button', { name: 'Apply filters' })).toHaveAttribute(
     'aria-disabled',
@@ -460,16 +560,16 @@ it('T4 restores applied hash filters and Refresh keeps unapplied typing and inva
 it('T4 Apply sends every exact filter and browser-local Since as epoch seconds', async () => {
   const page = await openRuntime();
   for (const label of [
-    'Exact instance',
-    'Exact operation ID',
-    'Exact battle ID',
-    'Exact command ID',
-    'Exact trace ID',
-    'Exact request ID',
-    'Exact attempt ID',
-    'Exact window ID',
-    'Exact offer ID',
-    'Exact kind',
+    'Instance',
+    'Operation ID',
+    'Battle ID',
+    'Command ID',
+    'Trace ID',
+    'Request ID',
+    'Attempt ID',
+    'Window ID',
+    'Offer ID',
+    'Kind',
   ])
     await page.user.type(screen.getByLabelText(label), label);
   fireEvent.change(screen.getByLabelText(/^Since/), { target: { value: '2027-01-15T12:00' } });
@@ -480,12 +580,12 @@ it('T4 Apply sends every exact filter and browser-local Since as epoch seconds',
   expect(query.size).toBe(12);
   expect(query.get('since')).toBe(String(new Date('2027-01-15T12:00').getTime() / 1000));
   expect(query.get('failures')).toBe('1');
-  expect(window.location.hash).toContain('operation_id=Exact+operation+ID');
+  expect(window.location.hash).toContain('operation_id=Operation+ID');
 });
 it('T4 optional timer uses applied filters, stops on hide and unmount, and leaves focus and drafts alone', async () => {
   const page = await openRuntime();
   await page.user.click(screen.getByLabelText(/Auto-refresh every 5 seconds/));
-  const field = screen.getByLabelText('Exact kind');
+  const field = screen.getByLabelText('Kind');
   await page.user.type(field, 'draft');
   const before = eventsRequests(page).length;
   await page.advance(5000);
@@ -518,6 +618,30 @@ it.each([
   expect(screen.getByRole('heading', { name: 'Scan coverage' })).toBeVisible();
   expect(screen.getByRole('heading', { name: 'Dashboard writer health' })).toBeVisible();
 });
+it('T5 event outcomes and failure evidence remain visible with raw JSON closed', async () => {
+  const page = await openRuntime();
+  const events = document.querySelector<HTMLElement>('[aria-labelledby="runtime-events"]');
+  if (events === null) throw new Error('Event results missing');
+  for (const text of [
+    'accepted',
+    'unconfirmed',
+    'timeout',
+    'completed',
+    'skipped',
+    'the device went away',
+    'error',
+  ]) {
+    expect(within(events).getByText(text, { exact: true })).toBeVisible();
+  }
+  const raw = events.querySelectorAll('details[data-event-key]');
+  expect(raw).toHaveLength(5);
+  for (const details of raw) {
+    expect(details).not.toHaveAttribute('open');
+    expect(details.querySelector('pre')).not.toBeVisible();
+  }
+  expect(page.fake.writes()).toEqual([]);
+});
+
 it('T5 T6 raw JSON, disclosure and focused summary survive refresh and a 400 retains stale results with server text', async () => {
   const page = await openRuntime();
   const details = document.querySelector<HTMLDetailsElement>('[data-event-key]');
@@ -551,7 +675,7 @@ it('T6 export downloads the last applied result with coverage and health, ignori
     diagnosticsDefault,
     '#runtime?operation_id=op-1',
   );
-  await page.user.type(screen.getByLabelText('Exact kind'), 'unsent');
+  await page.user.type(screen.getByLabelText('Kind'), 'unsent');
   let blob: Blob | undefined;
   const create = vi.fn((value: Blob) => {
     blob = value;

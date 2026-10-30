@@ -160,14 +160,15 @@ describe('ServerText and ServerValue (dashboard-spec 6.3, R5-04, R5-05)', () => 
 });
 
 describe('the selector to TopBarAccount slice (F-002, R5-06)', () => {
-  it('shows the matching account with its real catalogue label', () => {
+  it('shows the matching account as bare server text under the section label', () => {
     const vm = selectTopBar({
       body: { active: 'a', accounts: [{ id: 'a', label: 'My Tower' }] },
       observedAt: 12,
     });
     const { container } = render(<TopBarAccount vm={vm} />);
     expect(shown(container)).toBe('My Tower');
-    expect(container.textContent).toBe('Account:My Tower');
+    // The top bar's Account section names it; the slice carries the value alone.
+    expect(container.textContent).toBe('My Tower');
     expect(textOutsideCatalogue(container)).toEqual([]);
     expect(vm.account.kind === 'known' ? vm.account.observedAt : null).toBe(12);
   });

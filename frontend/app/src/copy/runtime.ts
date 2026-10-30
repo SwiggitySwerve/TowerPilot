@@ -2,17 +2,18 @@ import { entry, made } from './entry.ts';
 
 export const runtime = {
   pageName: entry('Runtime'),
-  intro: entry(
-    'Saved runtime settings and bounded diagnostic evidence. Reading this page does not control a process or the game.',
-  ),
+  settingsReview: entry('Settings safety and readback'),
   settings: entry('Saved runtime settings'),
   identity: entry('Build and worker identity'),
   diagnostics: entry('Diagnostic events'),
+  diagnosticQuery: entry('Query and refresh'),
+  sections: entry('Runtime sections'),
+  fullValue: entry('Show full value'),
+  exactMatching: entry('Filters match exact values.'),
+  eventKind: entry('Event'),
   settingsSafety: entry(
     'Saving never changes a running worker, stops input, or proves a worker adopted the values. Dry run is not an emergency stop. Changes apply at the next time automation starts.',
   ),
-  instanceScope: entry('This emulator · next time automation starts'),
-  machineScope: entry('This computer · every emulator · next time automation starts'),
   unknownScope: entry('Scope not reported'),
   checkSettings: entry('Read settings again'),
   settingsStates: {
@@ -32,6 +33,12 @@ export const runtime = {
     logging: entry('Diagnostic logging'),
   },
   target: entry('Settings target'),
+  targetFields: {
+    emulator: entry('Emulator'),
+    instance: entry('Instance'),
+    account: entry('Account'),
+    profile: entry('Profile'),
+  },
   refreshIdentity: entry('Refresh identity'),
   refreshEvents: entry('Refresh events'),
   loading: entry('Reading…'),
@@ -49,11 +56,17 @@ export const runtime = {
     unreadable: entry('Disk source unreadable; comparison cannot be verified'),
   },
   fingerprint: entry(
-    'The fingerprint is a snapshot of Python source on disk at load, not proof every module was imported or frontend assets match.',
+    'Fingerprint: Python source on disk at load.',
+    'It does not prove every module was imported or frontend assets match.',
   ),
   workerSafety: entry('A worker PID and liveness never confirm game state or a game effect.'),
   workers: entry('Workers'),
+  moreWorkers: entry('Show more workers'),
+  moreEvents: entry('Show more events'),
+  eventResults: entry('Returned events'),
+  snapshotAge: entry('Snapshot age at this read (seconds)'),
   rawIdentity: entry('Retained raw runtime response'),
+  retainedEvidence: entry('Retained response'),
   settingsFailureStatus: (status: number | null) =>
     made(
       status === null
@@ -104,16 +117,16 @@ export const runtime = {
   },
   filters: entry('Event filters'),
   filterLabels: {
-    instance: entry('Exact instance'),
-    operation_id: entry('Exact operation ID'),
-    battle_id: entry('Exact battle ID'),
-    command_id: entry('Exact command ID'),
-    trace_id: entry('Exact trace ID'),
-    request_id: entry('Exact request ID'),
-    attempt_id: entry('Exact attempt ID'),
-    window_id: entry('Exact window ID'),
-    offer_id: entry('Exact offer ID'),
-    kind: entry('Exact kind'),
+    instance: entry('Instance'),
+    operation_id: entry('Operation ID'),
+    battle_id: entry('Battle ID'),
+    command_id: entry('Command ID'),
+    trace_id: entry('Trace ID'),
+    request_id: entry('Request ID'),
+    attempt_id: entry('Attempt ID'),
+    window_id: entry('Window ID'),
+    offer_id: entry('Offer ID'),
+    kind: entry('Kind'),
   },
   since: (zone: string) => made(`Since (local date and time · ${zone})`),
   limit: entry('Event limit (1–1000)'),
@@ -157,6 +170,15 @@ export const runtime = {
     last_error: entry('Last writer error'),
   },
   failureNote: entry('The failure flag is a filter aid, not proof of reward success or failure.'),
+  eventFields: {
+    outcome: entry('Outcome'),
+    reason: entry('Reason'),
+    error: entry('Error'),
+    exception_type: entry('Exception type'),
+    level: entry('Level'),
+    confirmed: entry('Confirmed'),
+    ok: entry('OK'),
+  },
   failure: entry('Failure flag: true'),
   noFailure: entry('Failure flag: false'),
   unknownFailure: entry('Failure flag not reported'),
@@ -166,11 +188,5 @@ export const runtime = {
   noExport: entry('Read a result before exporting.'),
   fallback: entry('This Runtime section could not be drawn. Reload to try again.'),
   number: (value: number | null) => made(value === null ? 'not reported' : String(value)),
-  age: (seconds: number | null) =>
-    made(
-      seconds === null
-        ? 'Snapshot age not reported'
-        : `Snapshot age at this read: ${String(seconds)} seconds`,
-    ),
   loaded: (at: number) => made(`Last read: ${new Date(at).toLocaleString()}`),
 };

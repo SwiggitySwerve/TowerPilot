@@ -4,9 +4,9 @@ import type { CopyEntry, CopyNode } from '../../../copy/text.ts';
 import type { StopTargetVM } from '../../../store/selectors/automationSlot.ts';
 import { Button } from '../../../ui/Button.tsx';
 import { ConfirmDialog } from '../../../ui/ConfirmDialog.tsx';
-import { CopyLine } from '../../../ui/CopyLine.tsx';
 import { ServerValue } from '../../../ui/ServerValue.tsx';
 import { useDashboard } from '../context.ts';
+import { WhyTip } from './WhyTip.tsx';
 
 const text = copy.dashboard.shell;
 
@@ -72,9 +72,12 @@ export function StopButton({ stop, targetId, name }: StopButtonProps) {
         />
       )}
       {stop.enabled ? null : (
-        <span id={reasonId} className="tp-reason">
-          {reason === null ? null : <CopyLine entry={reason} />}
-        </span>
+        <>
+          <span id={reasonId} className="tp-reason">
+            {reason === null ? null : reason.short}
+          </span>
+          {reason === null ? null : <WhyTip subject={reason.short} why={reason.why} />}
+        </>
       )}
       {command === null ? null : (
         <ConfirmDialog

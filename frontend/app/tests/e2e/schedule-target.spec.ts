@@ -111,9 +111,12 @@ async function open(page: Page, scenario: string, width: number) {
   });
   await expect(count(page)).toHaveValue('1');
   await expect(page.locator('[data-editing-target="second"]')).toContainText('Active profile:mine');
-  await expect(page.locator('.tp-schedule__observed')).toContainText(
-    'Observed active profile: mine',
-  );
+  await expect(
+    page
+      .locator('.tp-schedule__observed .tp-facts__item')
+      .filter({ has: page.locator('dt', { hasText: 'Observed active profile' }) })
+      .locator('dd'),
+  ).toHaveText('mine');
   expect(await posts(page)).toEqual([]);
 }
 async function proof(page: Page, state: string, width: number) {

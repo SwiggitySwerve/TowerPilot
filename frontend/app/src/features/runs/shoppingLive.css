@@ -16,9 +16,3 @@
   gap: var(--tp-space-2);
   margin-block: var(--tp-space-2);
 }
-@media (max-width: 480px) {
-  .tp-shopping-live .tp-button,
-  .tp-shopping-try .tp-button {
-    min-height: 44px;
-  }
-}

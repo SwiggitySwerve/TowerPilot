@@ -23,9 +23,10 @@ import type { PreviewStore } from '../../store/preview.ts';
 import { useStoreSelector, viewEqual } from '../../store/store.ts';
 import { Chip, type ChipState } from '../../ui/Chip.tsx';
 import { ServerValue } from '../../ui/ServerValue.tsx';
-import { Why } from '../../ui/Why.tsx';
+import { HelpTip } from '../../ui/HelpTip.tsx';
 import { RegionBoundary } from '../../ui/RegionBoundary.tsx';
 import { useDashboard, useEpochKey } from './context.ts';
+import { WhyTip } from './shared/WhyTip.tsx';
 import './preview.css';
 
 /** Each delivery verdict's status tone: the chip shape and colour that go with its words. */
@@ -67,17 +68,26 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
   const report = v.report;
   return (
     <aside
-      className="tp-preview"
+      className="tp-preview tp-region"
       data-region="preview"
       aria-labelledby="preview-title"
       data-verdict={v.verdict}
     >
-      <h2 id="preview-title">{c.title.short}</h2>
+      <h2 id="preview-title" className="tp-region__title">
+        {c.title.short}
+      </h2>
+      <HelpTip label={c.title.short}>
+        <p>{c.viewOnly.short}</p>
+        <p>{c.viewOnly.why}</p>
+      </HelpTip>
       {v.expanded ? (
         <span className="tp-preview__verdict">
           <span data-preview-verdict>
             <Chip state={VERDICT_TONES[v.verdict]} label={c.verdicts[v.verdict].short} />
           </span>
+          {v.verdict === 'unknown' ? (
+            <WhyTip subject={c.verdicts.unknown.short} why={c.unknownDelivery.short} />
+          ) : null}
         </span>
       ) : null}
       <button
@@ -136,7 +146,6 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
               >
                 {c.reconnect.short}
               </button>
-              {v.verdict === 'unknown' ? <Why why={c.unknownDelivery.short} /> : null}
             </div>
             {v.offline ? (
               <p id="preview-connection">
@@ -170,16 +179,12 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
               <p>{previewReceiptAge(v.receiptAge)}</p>
               <p>{previewSourceAge(v.sourceAge)}</p>
             </div>
-            <div className="tp-preview__note">
-              <p>{c.viewOnly.short}</p>
-              <p>{c.consent.short}</p>
-              <p>{c.autoStart.short}</p>
-            </div>
             <details className="tp-preview__settings">
               <summary>{c.settings.short}</summary>
               <label htmlFor="preview-fps">
                 <span id="preview-fps-label">{c.fps.short}</span>
                 <select
+                  className="tp-field-control"
                   id="preview-fps"
                   aria-labelledby="preview-fps-label"
                   value={v.prefs.fps ?? ''}
@@ -205,6 +210,7 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
               <label htmlFor="preview-source">
                 <span id="preview-source-label">{c.source.short}</span>
                 <select
+                  className="tp-field-control"
                   id="preview-source"
                   aria-labelledby="preview-source-label"
                   value={v.prefs.source}
@@ -227,6 +233,7 @@ function PreviewViewer({ store }: { readonly store: PreviewStore }) {
               <label htmlFor="preview-quality">
                 <span id="preview-quality-label">{c.quality.short}</span>
                 <select
+                  className="tp-field-control"
                   id="preview-quality"
                   aria-labelledby="preview-quality-label"
                   value={v.prefs.quality}

@@ -1,5 +1,5 @@
 import { clearTimeout as clearRealTimeout, setTimeout as setRealTimeout } from 'node:timers';
-import { act, render, type RenderResult } from '@testing-library/react';
+import { act, render, within, type RenderResult } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';
 import { afterEach, onTestFinished, vi, type Mock } from 'vitest';
@@ -13,6 +13,15 @@ import {
 } from '../../../../src/features/dashboard/context.ts';
 import { LiveRegionProvider } from '../../../../src/ui/LiveRegion.tsx';
 import { bootDashboard, type BootOptions } from '../../../support/dataLayer.ts';
+
+/** A labelled fact's value, scoped to its description-list term. */
+export function factValue(container: HTMLElement, label: string): HTMLElement {
+  const term = within(container).getByText(label, { selector: 'dt' });
+  const value = term.nextElementSibling;
+  if (!(value instanceof HTMLElement) || value.tagName !== 'DD')
+    throw new Error(`Missing value for fact ${label}`);
+  return value;
+}
 
 /**
  * Two ways to draw the Dashboard in tests (jsdom, no socket):

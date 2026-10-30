@@ -7,29 +7,51 @@ import type { ServerText } from '../../copy/server.ts';
 import { ServerValue } from '../../ui/ServerValue.tsx';
 import { Button } from '../../ui/Button.tsx';
 import { RegionBody } from '../../ui/Region.tsx';
+import { Fact, Facts } from '../../ui/Facts.tsx';
+import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
+import { Tile } from '../../ui/Tile.tsx';
+import { HelpTip } from '../../ui/HelpTip.tsx';
+import { ShownList } from '../../ui/ShownList.tsx';
+import { RawData } from './RawData.tsx';
+
+const IDENTITY_DETAILS = [
+  'source_fingerprint',
+  'disk_source_fingerprint',
+  'capabilities',
+  'persistence_operations',
+];
 
 export function Fields({
   fields,
   labels,
+  disclose = [],
 }: {
   readonly fields: RuntimeFields;
   readonly labels: Readonly<Record<string, CopyEntry>>;
+  readonly disclose?: readonly string[];
 }) {
+  if (fields.length === 0) return null;
   return (
-    <dl className="tp-runtime__facts">
+    <Facts className="tp-runtime__facts">
       {fields.map((field) => (
-        <div key={field.key}>
-          <dt>{labels[field.key]?.short ?? t.notReported.short}</dt>
-          <dd>
-            {field.value === null ? (
+        <Fact
+          key={field.key}
+          label={labels[field.key]?.short ?? t.notReported.short}
+          value={
+            field.value === null ? (
               t.notReported.short
+            ) : disclose.includes(field.key) ? (
+              <details>
+                <summary>{t.fullValue.short}</summary>
+                <ServerValue kind="detail" value={field.value} />
+              </details>
             ) : (
               <ServerValue kind="detail" value={field.value} />
-            )}
-          </dd>
-        </div>
+            )
+          }
+        />
       ))}
-    </dl>
+    </Facts>
   );
 }
 export function ReadState({
@@ -65,51 +87,90 @@ export function IdentitySection({ runtime }: { readonly runtime: RuntimeStore })
   const vm = useStoreSelector(runtime, selectRuntime, viewEqual);
   return (
     <RegionBody>
-      <Button
-        tier="secondary"
-        label={t.refreshIdentity.short}
-        busy={vm.identity.busy}
-        {...(vm.identity.busy ? { disabled: true, reasonId: 'runtime-identity-busy' } : {})}
-        onClick={runtime.refreshIdentity}
-      />
-      {vm.identity.busy ? <p id="runtime-identity-busy">{t.busy.short}</p> : null}
-      <ReadState read={vm.identity} error={vm.identityError} />
-      <p>{t.fingerprint.short}</p>
-      <p>{t.workerSafety.short}</p>
+      <Tile
+        titleId="runtime-source"
+        title={t.source.short}
+        end={
+          <HelpTip label={t.source.short}>
+            <p>{t.fingerprint.short}</p>
+            {t.fingerprint.why === undefined ? null : <p>{t.fingerprint.why}</p>}
+          </HelpTip>
+        }
+      >
+        <ActionRow
+          reason={vm.identity.busy ? <Reason id="runtime-identity-busy" entry={t.busy} /> : null}
+        >
+          <Button
+            tier="secondary"
+            label={t.refreshIdentity.short}
+            busy={vm.identity.busy}
+            {...(vm.identity.busy ? { disabled: true, reasonId: 'runtime-identity-busy' } : {})}
+            onClick={runtime.refreshIdentity}
+          />
+        </ActionRow>
+        <ReadState read={vm.identity} error={vm.identityError} />
+        {vm.identityVM === null ? null : (
+          <>
+            <p data-source-state={vm.identityVM.source}>
+              {t.sourceStates[vm.identityVM.source].short}
+            </p>
+            <Facts>
+              <Fact label={t.snapshotAge.short} value={t.number(vm.identityVM.capturedAge)} />
+            </Facts>
+            <Fields
+              fields={vm.identityVM.server}
+              labels={t.serverFields}
+              disclose={IDENTITY_DETAILS}
+            />
+            <Fields
+              fields={vm.identityVM.runtime}
+              labels={t.runtimeFields}
+              disclose={IDENTITY_DETAILS}
+            />
+          </>
+        )}
+      </Tile>
       {vm.identityVM === null ? null : (
         <>
-          <h3>{t.source.short}</h3>
-          <p data-source-state={vm.identityVM.source}>
-            {t.sourceStates[vm.identityVM.source].short}
-          </p>
-          <p>{t.age(vm.identityVM.capturedAge)}</p>
-          <Fields fields={vm.identityVM.server} labels={t.serverFields} />
-          <Fields fields={vm.identityVM.runtime} labels={t.runtimeFields} />
-          <h3>{t.process.short}</h3>
-          <Fields fields={vm.identityVM.process} labels={t.processFields} />
-          <h3>{t.workers.short}</h3>
-          {vm.identityVM.workers.length === 0 ? (
-            <p>{t.noWorkers.short}</p>
-          ) : (
-            <ul className="tp-runtime__workers">
-              {vm.identityVM.workers.map((worker) => (
-                <li key={worker.key}>
-                  <p data-worker-alive={worker.alive}>{t.aliveStates[worker.alive].short}</p>
-                  <Fields fields={worker.fields} labels={t.workerFields} />
-                </li>
-              ))}
-            </ul>
-          )}
-          <details>
-            <summary>{t.rawIdentity.short}</summary>
-            <pre>
-              {vm.identityVM.raw === null ? (
-                t.notReported.short
-              ) : (
-                <ServerValue kind="detail" value={vm.identityVM.raw} />
-              )}
-            </pre>
-          </details>
+          <Tile titleId="runtime-process" title={t.process.short}>
+            <Fields fields={vm.identityVM.process} labels={t.processFields} />
+          </Tile>
+          <Tile
+            titleId="runtime-workers"
+            title={t.workers.short}
+            end={
+              <HelpTip label={t.workers.short}>
+                <p>{t.workerSafety.short}</p>
+              </HelpTip>
+            }
+          >
+            {vm.identityVM.workers.length === 0 ? (
+              <p>{t.noWorkers.short}</p>
+            ) : (
+              <ShownList
+                items={vm.identityVM.workers}
+                itemKey={(worker) => worker.key}
+                more={t.moreWorkers.short}
+                className="tp-runtime__workers"
+                render={(worker) => (
+                  <>
+                    <p data-worker-alive={worker.alive}>{t.aliveStates[worker.alive].short}</p>
+                    <Fields
+                      fields={worker.fields}
+                      labels={t.workerFields}
+                      disclose={IDENTITY_DETAILS}
+                    />
+                  </>
+                )}
+              />
+            )}
+          </Tile>
+          <Tile titleId="runtime-raw-identity" title={t.retainedEvidence.short}>
+            <details>
+              <summary>{t.rawIdentity.short}</summary>
+              <RawData label={t.rawIdentity.short} value={vm.identityVM.raw} />
+            </details>
+          </Tile>
         </>
       )}
     </RegionBody>

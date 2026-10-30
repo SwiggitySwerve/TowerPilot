@@ -4,9 +4,9 @@ export const previewCopy = {
   title: entry('Screen preview'),
   show: entry('Show screen'),
   hide: entry('Hide screen'),
-  consent: entry('Uses emulator capture and network bandwidth while open.'),
   viewOnly: entry(
-    'View only. This picture does not confirm game recognition or permission to send input.',
+    'View only; uses emulator capture and bandwidth while open.',
+    'This picture does not confirm game recognition or permission to send input. It starts by itself while the emulator is online; Stop preview keeps it off until you start it.',
   ),
   start: entry('Start preview'),
   stop: entry('Stop preview'),
@@ -16,9 +16,6 @@ export const previewCopy = {
   checkBusy: entry('Stop preview before checking availability separately.'),
   offlineWaiting: entry('Emulator offline; the preview starts when it is back.'),
   offlineStopped: entry('Emulator offline. The preview stays stopped until you start it.'),
-  autoStart: entry(
-    'Starts by itself while the emulator is online. Stop preview keeps it off until you start it.',
-  ),
   availabilityFailed: entry('Availability could not be confirmed. Check again or open Emulators.'),
   transportFailed: entry('Preview delivery failed. Reconnect preview to try a new session.'),
   unknownDelivery: entry('Delivery cannot be confirmed from the current frame and status report.'),

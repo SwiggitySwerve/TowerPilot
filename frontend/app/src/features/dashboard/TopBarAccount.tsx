@@ -16,7 +16,6 @@ export function TopBarAccount({ vm }: { readonly vm: TopBarVM }) {
       </span>
     );
   }
-  return (
-    <ServerValue value={vm.account.value} kind="name" label={copy.dashboard.topbar.account.short} />
-  );
+  // The section label names the account; the value stands alone.
+  return <ServerValue value={vm.account.value} kind="name" />;
 }

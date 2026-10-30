@@ -19,6 +19,7 @@ import {
   abilityFieldProblems,
   type AbilityProblem,
 } from '../../store/selectors/abilities.ts';
+import { AbilityHelp } from './AbilityHelp.tsx';
 import { ServerOption, ServerValue } from '../../ui/ServerValue.tsx';
 import type { CopyText } from '../../copy/text.ts';
 
@@ -52,7 +53,7 @@ export function AbilityField({
       requiredFields = list(own(spec, 'required')) ?? [];
     const extra = entries(value).filter(([key]) => !fields.some(([name]) => name === key));
     return (
-      <fieldset id={id} tabIndex={-1}>
+      <fieldset className="tp-abilities__field-group" id={id} tabIndex={-1}>
         <legend>{label}</legend>
         {help === null ? null : (
           <p>
@@ -87,7 +88,7 @@ export function AbilityField({
     const pair = current.kind === 'array' ? current : specNode({ type: 'list' });
     const enabled = onOptional === undefined || (node !== undefined && value !== null);
     return (
-      <fieldset id={id} tabIndex={-1}>
+      <fieldset className="tp-abilities__field-group" id={id} tabIndex={-1}>
         <legend>{label}</legend>
         {onOptional === undefined ? null : (
           <>
@@ -101,7 +102,7 @@ export function AbilityField({
               />
               {t.explicitBounds.short}
             </label>
-            <p>{t.optionalBounds.short}</p>
+            <AbilityHelp subject={t.explicitBounds.short} entries={[t.optionalBounds]} />
           </>
         )}
         {help === null ? null : (
@@ -151,6 +152,7 @@ export function AbilityField({
       </label>
       {type === 'bool' ? (
         <select
+          className="tp-field-control"
           id={id}
           aria-invalid={invalid}
           aria-describedby={`${id}-help`}
@@ -165,6 +167,7 @@ export function AbilityField({
         </select>
       ) : type === 'enum' ? (
         <select
+          className="tp-field-control"
           id={id}
           aria-invalid={invalid}
           aria-describedby={`${id}-help`}
@@ -184,6 +187,7 @@ export function AbilityField({
         </select>
       ) : (
         <input
+          className="tp-field-control"
           id={id}
           type="text"
           inputMode={numeric ? 'decimal' : undefined}

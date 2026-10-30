@@ -248,7 +248,8 @@ test('M6 the screen size is read only on a click, for the configured address, wi
   await target(page).getByRole('button', { name: 'Check screen size' }).click();
   await expect(target(page).locator('[data-resolution]')).toContainText('2560 x 1080');
   await expect(target(page)).toContainText('Not portrait');
-  await expect(target(page)).toContainText('A size is not recognition');
+  await target(page).getByRole('button', { name: 'About Screen size' }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('A size is not recognition');
   expect(checks).toEqual(['?serial=fake%3A1']);
   await target(page).screenshot({ path: path.join(OUT, 'emulators-screen-size-1360.png') });
   expect(await posts(page)).toEqual([]);
@@ -259,7 +260,13 @@ test('M7 SR-5 an invalid frame rate keeps the raw text with its reason and nothi
   page,
 }) => {
   const { problems } = await openEmulators(page, 'emulators');
-  await expect(preview(page)).toContainText('Saved settings for the preview, not a live video');
+  await preview(page)
+    .getByRole('button', { name: 'About Video preview settings', exact: true })
+    .hover();
+  await expect(page.getByRole('tooltip')).toContainText(
+    'Saved settings for the preview, not a live video',
+  );
+  await page.keyboard.press('Escape');
   const fps = preview(page).locator('[data-part="fps"]');
   await fps.fill('0.2');
   await expect(fps).toHaveValue('0.2');

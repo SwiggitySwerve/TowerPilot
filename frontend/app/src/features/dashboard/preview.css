@@ -1,19 +1,7 @@
 .tp-preview {
   min-width: 0;
   max-width: 100%;
-  padding: var(--tp-space-3) var(--tp-space-4);
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-card);
-  background: var(--tp-color-surface);
   overflow-wrap: anywhere;
-}
-.tp-preview h2 {
-  margin: 0 0 var(--tp-space-2);
-  color: var(--tp-color-text-muted);
-  font-size: var(--tp-font-size-12);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 .tp-preview [data-preview-verdict] {
   display: block;
@@ -35,11 +23,6 @@
 .tp-preview .tp-preview__facts p {
   margin: 0;
 }
-.tp-preview__note,
-.tp-preview__note p {
-  color: var(--tp-color-text-muted);
-  font-size: var(--tp-font-size-13);
-}
 .tp-preview p {
   margin: var(--tp-space-2) 0;
 }
@@ -55,13 +38,12 @@
   min-width: 24px;
 }
 .tp-preview select {
-  padding: 0.4rem 0.6rem;
-  border: 1px solid var(--tp-color-border-active);
-  border-radius: var(--tp-radius-control);
-  background: var(--tp-color-surface-strong);
-  color: var(--tp-color-text);
-  font: inherit;
   max-width: 100%;
+}
+/* The title's help icon keeps its own size, not the 32px control floor above. */
+.tp-preview .tp-help__trigger {
+  min-height: 0;
+  min-width: 0;
 }
 /* A disabled preview control looks like every other disabled button. */
 .tp-preview .tp-button:disabled {
@@ -77,8 +59,8 @@
   align-items: center;
   gap: var(--tp-space-2);
 }
-/* Collapsed, Hide screen alone takes the header's end. */
-.tp-preview > h2 + .tp-button {
+/* Collapsed, Hide screen alone takes the header's end (the title's help icon sits between). */
+.tp-preview > .tp-help__trigger + .tp-button {
   margin-inline-start: auto;
 }
 .tp-preview__verdict {

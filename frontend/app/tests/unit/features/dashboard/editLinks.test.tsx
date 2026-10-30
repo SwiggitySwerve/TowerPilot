@@ -22,7 +22,7 @@ describe('S-081 and S-082 edit links on the in-app Runs page', () => {
   it('S-081 RUN-12 every link to saved settings carries its exact run on the new Runs route', async () => {
     await renderPage({ status: () => statusBody(sample('status.off')) });
     const links = [...document.querySelectorAll<HTMLAnchorElement>('a[href]')];
-    const saved = screen.getAllByRole('link', { name: 'Saved settings in Runs' });
+    const saved = screen.getAllByRole('link', { name: 'Edit run' });
     expect(saved.length).toBeGreaterThan(0);
     for (const link of saved) expect(link.getAttribute('href')).toBe('#runs/saved/bp_farm');
     // No link to the previous Runs page claims a run identity it cannot open.
@@ -30,9 +30,9 @@ describe('S-081 and S-082 edit links on the in-app Runs page', () => {
       expect(link.getAttribute('href')).not.toMatch(/runs.+/u);
   });
 
-  it('S-082 no Edit waits: following "Saved settings in Runs" is plain navigation, never deferred or held by the page', async () => {
+  it('S-082 no Edit waits: following "Edit run" is plain navigation, never deferred or held by the page', async () => {
     await renderPage({ status: () => statusBody(sample('status.off')) });
-    for (const link of screen.getAllByRole('link', { name: 'Saved settings in Runs' })) {
+    for (const link of screen.getAllByRole('link', { name: 'Edit run' })) {
       // fireEvent returns false only when a handler prevented the navigation.
       expect(fireEvent.click(link)).toBe(true);
     }

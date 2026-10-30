@@ -346,9 +346,9 @@ for (const width of widths)
     await open(page, 'recognition', width);
     const coverage = page.locator('[data-region="recognition-coverage"]');
     await coverage.getByText('Mapping route coverage', { exact: true }).click();
-    await expect(coverage).toContainText('needs_local_verification');
+    await expect(coverage).toContainText('Needs local verification');
     await coverage.getByText('Interface coverage', { exact: true }).click();
-    await expect(coverage).toContainText('incomplete');
+    await expect(coverage).toContainText('Incomplete');
     await coverage.getByText('Required images', { exact: true }).click();
     const row = coverage.locator('li').filter({ hasText: 'modules/black_hole_digestor.png' });
     await expect(row).toHaveCount(1);

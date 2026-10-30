@@ -75,13 +75,25 @@ export const automation = {
   unscheduled: entry('Will not stop after this run'),
   cancelScheduled: entry('Cancel scheduled stop'),
   cancelUnavailable: entry('Waiting for a valid operation revision'),
-  setup: entry('Setup running:'),
+  setup: entry('Setup running'),
   setupStepUnknown: entry('Step not reported'),
+  /** The labels of one automation target's facts (label beside value, never a fused line). */
+  facts: {
+    wave: entry('Wave'),
+    lastWave: entry('Last wave'),
+    battle: entry('Battle'),
+    started: entry('Started'),
+    pid: entry('PID'),
+    owner: entry('Owner'),
+    scheduledStop: entry('Scheduled stop'),
+  },
+  foreignOwner: entry('Another install'),
+  notRecorded: entry('Not recorded'),
   battle: {
     wave_pending: entry('Wave not reported yet'),
     waiting: entry('Waiting to track a battle'),
     none: entry('No tracked battle'),
-    unknown: entry('Battle: unknown'),
+    unknown: entry('Unknown'),
   },
   started: (created: number, pid: number | null) => {
     const date = new Date(created * 1000);
@@ -93,14 +105,18 @@ export const automation = {
     );
   },
   startUnknown: (pid: number) => made(`Start time not recorded, PID ${String(pid)}`),
+  /** The Started fact's value: the local start time, or that none is recorded. */
+  startedAt: (created: number) => {
+    const date = new Date(created * 1000);
+    return made(Number.isNaN(date.getTime()) ? 'Not recorded' : date.toLocaleString('en-US'));
+  },
   /** Mid-line, after a run name ('Farm - wave 123'). */
   wave: (wave: number) => made(`wave ${wave.toLocaleString('en-US')}`),
-  /** A wave on a line of its own (Automation's row). */
-  waveLine: (wave: number) => made(`Wave ${wave.toLocaleString('en-US')}`),
-  lastWave: (wave: number, age: number | null) =>
-    made(
-      `Last reported wave ${wave.toLocaleString('en-US')}, ${age === null ? 'age not recorded' : ageAgo(age)}`,
-    ),
+  /** The Wave fact's value (Automation's row). */
+  waveValue: (wave: number) => made(wave.toLocaleString('en-US')),
+  /** The Last wave fact's value: the last reported wave and its age. */
+  lastWaveValue: (wave: number, age: number | null) =>
+    made(`${wave.toLocaleString('en-US')}, ${age === null ? 'age not recorded' : ageAgo(age)}`),
   lastIdle: (age: number) => made(`Last known: idle, ${ageAgo(age)}`),
   lastListed: (age: number) => made(`last listed ${ageAgo(age)}`),
   lastRead,

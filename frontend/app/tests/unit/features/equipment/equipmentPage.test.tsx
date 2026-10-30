@@ -123,6 +123,44 @@ function chooseGlobal() {
 }
 
 describe('Equipment Wanted rows', () => {
+  it('keeps exact revisions available for selection and preserves a non-color selected-loadout cue without writes', async () => {
+    const s = await setup();
+    selectLoadout('plain');
+    const vm = selectEquipment(s.equipment.getSnapshot(), Date.now());
+    const revisions = editor().querySelectorAll('.tp-equipment__revision');
+    expect(revisions).toHaveLength(2);
+    const user = userEvent.setup();
+    for (const [index, expected] of [vm.revision, vm.base].entries()) {
+      if (expected === null) throw new Error('Fixture has no revision');
+      const disclosure = revisions[index];
+      if (!(disclosure instanceof HTMLDetailsElement))
+        throw new Error('Missing revision disclosure');
+      expect(disclosure.open).toBe(false);
+      const full = disclosure.querySelector('.tp-equipment__revision-full bdi');
+      expect(full).toHaveTextContent(expected);
+      expect(full).not.toBeVisible();
+      await user.click(within(disclosure).getByText('Full value', { exact: true }));
+      expect(full).toBeVisible();
+      expect(full?.textContent).toBe(expected);
+    }
+    const selected = screen.getByRole('button', { name: 'plain' });
+    expect(selected).toHaveAttribute('aria-pressed', 'true');
+    const selectedRow = selected.closest('.tp-equipment__card');
+    if (!(selectedRow instanceof HTMLElement)) throw new Error('Missing selected row');
+    expect(within(selectedRow).getByText('Selected', { exact: true })).toBeVisible();
+    expect(
+      screen.getByText(
+        'Leave untouched keeps the current game selection; it does not select None.',
+      ),
+    ).toBeVisible();
+    expect(
+      screen.getByText(
+        'Legacy installation settings; separate from the saved-loadout target below.',
+      ),
+    ).toBeVisible();
+    expect(s.fake.writes()).toHaveLength(0);
+    expect(textOutsideCatalogue(document.body)).toEqual([]);
+  });
   it('E4 r10 matching expected_context saves the exact captured request and reads the persisted selection', async () => {
     const s = await setup({
       config: 'equipment_samples.context_config',
@@ -666,7 +704,7 @@ describe('Equipment Wanted rows', () => {
     });
     expect(s.entry()?.draft.values.cards).toBe('');
     expect(s.fake.writes()).toHaveLength(0);
-    expect(screen.getByText(/Select at least one discovered preset/)).toBeVisible();
+    expect(screen.getByText(/Choose at least one preset to save this loadout/)).toBeVisible();
   });
   it('E3 manual conversion requires removal review; Cancel and reopen retain every original field', async () => {
     const s = await setup({ view: 'manual', save: 'equipment_samples.manual_global_saved' });
@@ -867,8 +905,10 @@ describe('Equipment Wanted rows', () => {
     const s = await setup({ view: 'manual' });
     selectLoadout('plain');
     const user = userEvent.setup();
-    await user.click(screen.getByText('How equipment is used', { exact: true }));
-    expect(screen.getByText(/A global preset selects the game/)).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'About equipment selection' }));
+    expect(screen.getByRole('tooltip')).toHaveTextContent(/A global preset selects the game/);
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('tooltip')).toBeNull();
     chooseGlobal();
     const cancel = screen.getByRole('button', { name: 'Cancel edits' });
     cancel.focus();

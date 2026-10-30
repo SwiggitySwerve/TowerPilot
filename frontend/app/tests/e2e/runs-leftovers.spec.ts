@@ -180,9 +180,18 @@ for (const width of WIDTHS) {
     await expect(ad.getByText('Seen on the last battle screen', { exact: true })).toBeVisible();
     await expect(ad.getByText(/; 5 s between looks$/u)).toBeVisible();
     await expect(ad.getByText('offer_still_visible', { exact: true })).toBeVisible();
-    await expect(
-      ad.getByText('Attempts 1, confirmed 0, skipped 0, windows missed 0', { exact: true }),
-    ).toBeVisible();
+    for (const [label, value] of [
+      ['Attempts', '1'],
+      ['Confirmed', '0'],
+      ['Skipped', '0'],
+      ['Windows missed', '0'],
+    ] as const) {
+      const fact = ad
+        .locator('.tp-facts__item')
+        .filter({ has: page.getByText(label, { exact: true }) });
+      await expect(fact.locator('dd')).toHaveText(value);
+      await expect(fact).toBeVisible();
+    }
     await expect(
       ad.getByRole('link', { name: 'Events of this battle on Runtime' }),
     ).toHaveAttribute('href', /offer_id=bd_ad_offer_failed-offer&since=1799999931$/u);
@@ -352,7 +361,7 @@ for (const width of WIDTHS) {
         .getByRole('status', { name: 'Profile validation and save details' })
         .getByText(/^Day plan removed\./u),
     ).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Start a day plan' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start a day plan', exact: true })).toBeVisible();
     expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });
     await page.waitForTimeout(2_000);
     expect(await bodiesTo(page, '/api/profile-patch')).toHaveLength(1);
@@ -373,7 +382,7 @@ for (const width of WIDTHS) {
     await expect(
       page.getByRole('heading', { level: 1, name: 'Schedule', exact: true }),
     ).toBeVisible();
-    const start = page.getByRole('button', { name: 'Start a day plan' });
+    const start = page.getByRole('button', { name: 'Start a day plan', exact: true });
     await expect(start).toBeVisible();
     expect(await axeCounts(page, WCAG_AA_TAGS)).toEqual([]);
     expect(await layoutProblems(page)).toEqual({ overflow: 0, small: [] });

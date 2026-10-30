@@ -1,7 +1,8 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { recognitionAdvanced as t } from '../../../copy/recognitionAdvanced.ts';
 import type { RecognitionAdvancedStore } from '../../../store/recognitionAdvanced.ts';
-import { Region, RegionBody } from '../../../ui/Region.tsx';
+import { RegionBoundary } from '../../../ui/RegionBoundary.tsx';
+import { Tile } from '../../../ui/Tile.tsx';
 import { Analysis } from './Analysis.tsx';
 import { Coverage } from './Coverage.tsx';
 import { CropEditor } from './CropEditor.tsx';
@@ -41,21 +42,27 @@ export function AdvancedRepairs({ store, run }: AdvancedRepairsProps) {
   }, [store]);
   return (
     <div className="tp-advanced">
-      <Region id="recognition-analysis" title={t.analysis.short} fallback={t.unavailable.short}>
-        <RegionBody>
-          <Analysis store={store} state={state} now={now} />
-        </RegionBody>
-      </Region>
-      <Region id="recognition-coverage" title={t.coverage.short} fallback={t.unavailable.short}>
-        <RegionBody>
-          <Coverage store={store} state={state} now={now} />
-        </RegionBody>
-      </Region>
-      <Region id="recognition-crop" title={t.crop.short} fallback={t.unavailable.short}>
-        <RegionBody>
-          <CropEditor store={store} state={state} now={now} />
-        </RegionBody>
-      </Region>
+      <div data-region="recognition-analysis">
+        <Tile titleId="recognition-analysis-title" title={t.analysis.short}>
+          <RegionBoundary fallback={t.unavailable.short}>
+            <Analysis store={store} state={state} now={now} />
+          </RegionBoundary>
+        </Tile>
+      </div>
+      <div data-region="recognition-coverage">
+        <Tile titleId="recognition-coverage-title" title={t.coverage.short}>
+          <RegionBoundary fallback={t.unavailable.short}>
+            <Coverage store={store} state={state} now={now} />
+          </RegionBoundary>
+        </Tile>
+      </div>
+      <div data-region="recognition-crop">
+        <Tile titleId="recognition-crop-title" title={t.crop.short}>
+          <RegionBoundary fallback={t.unavailable.short}>
+            <CropEditor store={store} state={state} now={now} />
+          </RegionBoundary>
+        </Tile>
+      </div>
     </div>
   );
 }

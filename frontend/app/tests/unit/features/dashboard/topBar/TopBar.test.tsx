@@ -232,6 +232,9 @@ it.each(['enabled', 'process', 'unread'])(
     const user = userEvent.setup();
     await user.tab();
     expect(screen.getByRole('link', { name: 'Account details' })).toHaveFocus();
+    // The unconfirmed connection's Why sits beside its chip, before the recovery slot.
+    await user.tab();
+    expect(screen.getByText('Why')).toHaveFocus();
     await user.tab();
     expect(screen.getByRole('link', { name: 'Choose emulator' })).toHaveFocus();
 
@@ -256,7 +259,7 @@ it.each(['enabled', 'process', 'unread'])(
       await user.keyboard(' ');
       expect(page.commands.reconnect).not.toHaveBeenCalled();
     }
-    await user.tab({ shift: availability !== 'unread' });
+    await user.tab({ shift: true });
     expect(screen.getByText(availability === 'unread' ? 'Why' : 'Details')).toHaveFocus();
   },
 );
@@ -280,7 +283,7 @@ it('F-004: a focused Reconnect transfers focus back to the Choose emulator ancho
   expect(choose).toHaveAttribute('href', '#emulators');
   expect(choose).toHaveFocus();
   expect(page.commands.reconnect).not.toHaveBeenCalled();
-  await user.tab();
+  await user.tab({ shift: true });
   expect(screen.getByText('Why')).toHaveFocus();
 });
 

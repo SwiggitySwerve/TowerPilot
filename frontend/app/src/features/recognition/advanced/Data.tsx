@@ -1,4 +1,5 @@
 import { recognitionAdvanced as t } from '../../../copy/recognitionAdvanced.ts';
+import type { CopyEntry } from '../../../copy/text.ts';
 import type { ServerText } from '../../../copy/server.ts';
 import type { Rect, Size } from '../../../core/recognitionImages.ts';
 import { ServerValue } from '../../../ui/ServerValue.tsx';
@@ -12,6 +13,12 @@ export function Data({ value }: { readonly value: Value }) {
   ) : (
     <ServerValue value={value} kind="detail" />
   );
+}
+/** Known server state codes get readable labels; unknown values remain exact server text. */
+export function Status({ value }: { readonly value: Value }) {
+  const labels: Readonly<Record<string, CopyEntry>> = t.statusLabels;
+  const label = typeof value === 'string' ? labels[value] : undefined;
+  return label === undefined ? <Data value={value} /> : <span>{label.short}</span>;
 }
 export function Values({ values }: { readonly values: readonly Value[] }) {
   return values.length === 0 ? (

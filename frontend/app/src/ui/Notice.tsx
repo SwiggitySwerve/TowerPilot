@@ -20,7 +20,7 @@ export interface NoticeProps {
 }
 
 /**
- * A notice or outcome line (spec 3.3, 3.4): chip, one line, Why, actions. It
+ * A notice or outcome line (spec 3.3, 3.4): chip, one line, help, actions. It
  * has no live role of its own; announcements go through the one live region.
  */
 export function Notice({ state, age, lead, line, server, why, actions, focusKey }: NoticeProps) {
@@ -30,14 +30,10 @@ export function Notice({ state, age, lead, line, server, why, actions, focusKey 
         {lead === undefined ? null : <span className="tp-notice__lead">{lead}</span>}
         {state === null ? null : <Chip state={state} {...(age === undefined ? {} : { age })} />}
         <span className="tp-notice__line">{line}</span>
+        <Why why={why} />
         {server === undefined ? null : <span className="tp-notice__server">{server}</span>}
       </div>
-      {why === undefined && actions === undefined ? null : (
-        <div className="tp-notice__actions">
-          {actions}
-          <Why why={why} />
-        </div>
-      )}
+      {actions === undefined ? null : <div className="tp-notice__actions">{actions}</div>}
     </div>
   );
 }

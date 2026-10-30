@@ -22,7 +22,10 @@ const ALLOWED: Readonly<Record<string, { readonly count: number; readonly why: s
   'core/gemSource.ts': { count: 2, why: 'S1 gem-only gem source' },
   'core/readiness.ts': { count: 2, why: 'S1 gem-only readiness' },
   'core/history.ts': { count: 2, why: 'S1 gem confirmation evidence' },
-  'features/dashboard/control/GemSlot.tsx': { count: 4, why: 'S1 consumes the gem overlay' },
+  'features/dashboard/control/GemSlot.tsx': {
+    count: 6,
+    why: 'S1 consumes the gem overlay and compares its reported targets with timing labels',
+  },
   // S2: the shopping queue, its reads and Try once tokens (F6-12 SQ8).
   'core/routines.ts': { count: 2, why: 'S2 shoppingView reads runtime.routines.shopping' },
   'store/selectors/thisBattle.ts': { count: 7, why: 'S2 Try once shopping tokens' },
@@ -34,6 +37,7 @@ const ALLOWED: Readonly<Record<string, { readonly count: number; readonly why: s
   // Brief 2.3: the blueprint's `shopping` policy key, not a routine list.
   'core/runEntry.ts': { count: 3, why: 'blueprint shopping policy key' },
   'core/shoppingLibrary.ts': { count: 1, why: 'blueprint shopping policy key' },
+  'features/runs/RunEntry.tsx': { count: 1, why: 'blueprint shopping policy field display group' },
 };
 
 function sourceFiles(folder: string): readonly string[] {

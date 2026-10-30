@@ -3,7 +3,6 @@ import { entry } from './entry.ts';
 export const shoppingSaved = {
   title: entry('Shopping queue'),
   edit: entry('Edit the saved queue'),
-  scope: entry('Saved for this run; used in future battles.'),
   routines: entry('Shopping on/off and interval are edited in the run controls above.'),
   unsupported: entry(
     'This run does not support a shopping queue. The server does not offer queue editing for this run.',

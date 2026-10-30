@@ -149,13 +149,21 @@ it('SQ7 routine overrides stay visible and a plan save preserves them', async ()
     source = requested;
     return accepted;
   });
-  expect(within(root()).getByText('Automatic shopping is off')).toBeVisible();
-  expect(within(root()).getByText('Shopping interval: 60 seconds')).toBeVisible();
+  const routineOverrides = () => {
+    const routine = document.querySelector(
+      '.tp-run-editor[data-scope-kind="live"] [data-routine="shopping"]',
+    );
+    if (routine === null) throw new Error('missing live shopping routine');
+    expect(routine.querySelector('[data-field="enabled"] input')).not.toBeChecked();
+    expect(routine.querySelector('[data-field="interval_sec"] input')).toHaveValue('60');
+    expect(routine).toBeVisible();
+  };
+  routineOverrides();
   stage(page, 'shopping_plan_preserves_routine_overrides');
   await page.user.click(within(root()).getByRole('button', { name: 'Save queue for this battle' }));
   await page.advance(100);
   expect(postBodies(page.fake, accepted.request.path)).toEqual([accepted.request.body]);
-  expect(within(root()).getByText('Automatic shopping is off')).toBeVisible();
+  routineOverrides();
   expect(selectShoppingLive(page.data.store.getSnapshot()).base.plan?.raw['cash_reserve']).toBe(
     500,
   );
@@ -164,8 +172,7 @@ it('SQ7 routine overrides stay visible and a plan save preserves them', async ()
     page.data.commands.checkBattle();
   });
   await page.advance(100);
-  expect(within(root()).getByText('Automatic shopping is off')).toBeVisible();
-  expect(within(root()).getByText('Shopping interval: 60 seconds')).toBeVisible();
+  routineOverrides();
   expect(selectRunsPage(page.data.store.getSnapshot()).live.outcome?.code).toBe('live_applied');
   expect(textOutsideCatalogue(root())).toEqual([]);
 });

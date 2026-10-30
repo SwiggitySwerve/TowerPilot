@@ -1,12 +1,14 @@
 import type { ErrorInfo } from 'react';
-import type { CopyNode, CopyText } from '../copy/text.ts';
+import type { CopyNode } from '../copy/text.ts';
 import { RegionBoundary } from './RegionBoundary.tsx';
 import './ui.css';
 
 export interface RegionProps {
   /** Stable id: the heading is `${id}-title`, focusable for focus after removal (spec 8.11). */
   readonly id: string;
-  readonly title: CopyText;
+  /** The heading's id when a page already focuses or links to one (default `${id}-title`). */
+  readonly titleId?: string;
+  readonly title: CopyNode;
   /** Drawn in the body area when the region's content throws; keeps its revocations (S-091). */
   readonly fallback: CopyNode;
   readonly resetKey?: string;
@@ -20,10 +22,11 @@ export interface RegionProps {
  * 3.5, S-090): the heading is static catalogue text, so a throw in the
  * region's view model replaces only the count, the header's end and the body.
  */
-export function Region({ id, title, fallback, resetKey, onError, children }: RegionProps) {
+export function Region({ id, titleId, title, fallback, resetKey, onError, children }: RegionProps) {
+  const heading = titleId ?? `${id}-title`;
   return (
-    <section className="tp-region" data-region={id} aria-labelledby={`${id}-title`}>
-      <h2 id={`${id}-title`} className="tp-region__title" tabIndex={-1}>
+    <section className="tp-region" data-region={id} aria-labelledby={heading}>
+      <h2 id={heading} className="tp-region__title" tabIndex={-1}>
         {title}
       </h2>
       <RegionBoundary

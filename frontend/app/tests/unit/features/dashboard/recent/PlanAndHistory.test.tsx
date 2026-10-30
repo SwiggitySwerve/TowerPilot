@@ -13,13 +13,13 @@ function recent(state = regionState()) {
 }
 
 function scheduleRow() {
-  const row = screen.getByText('Schedule:').closest('li');
+  const row = screen.getByRole('heading', { name: 'Schedule' }).closest('li');
   if (row === null) throw new Error('Missing Schedule row');
   return within(row);
 }
 
 function historyRow() {
-  const row = screen.getByText('Last battle:').closest('li');
+  const row = screen.getByRole('heading', { name: 'Last battle' }).closest('li');
   if (row === null) throw new Error('Missing Last battle row');
   return within(row);
 }
@@ -41,10 +41,10 @@ it('F-077: one Schedule line shows the winner, next local clock check and server
   );
   const row = scheduleRow();
   expect(row.getByText('Farm')).toHaveAttribute('data-server-text', 'name');
-  expect(row.getByText('next check 14:00')).toBeInTheDocument();
+  expect(row.getByText('14:00')).toBeInTheDocument();
   expect(row.getByText('(in 1 h 12 m)')).toBeInTheDocument();
-  expect(row.getByText('a switch waits for the run to end')).toBeInTheDocument();
-  expect(row.getByRole('link', { name: 'Schedule' })).toHaveAttribute('href', '#schedule');
+  expect(row.getByText('waits for the run to end')).toBeInTheDocument();
+  expect(row.getByRole('link', { name: 'Schedule page' })).toHaveAttribute('href', '#schedule');
   expect(
     page.view.container.querySelectorAll('[data-region="recent"] > .tp-region__body > ul > li'),
   ).toHaveLength(2);
@@ -79,11 +79,11 @@ it.each([
 
 const expectedSchedule: Readonly<Record<string, readonly [string | null, string]>> = {
   available_no_winner: [null, 'no blocks today'],
-  available_with_winner_and_boundary: [null, 'a switch waits for the run to end'],
+  available_with_winner_and_boundary: [null, 'waits for the run to end'],
   plan_unavailable: ['Blocked', "the day plan can't be read"],
   scheduler_not_observed: ['Unknown', 'Not seen running'],
   scheduler_not_running: ['Stopping', 'scheduler stopping'],
-  scheduler_observation_stale: ['Unknown', 'last seen:'],
+  scheduler_observation_stale: ['Unknown', 'Last seen'],
   scheduler_worker_unavailable: ['Unknown', 'scheduler process not confirmed alive'],
   unknown_emulator: ['Unknown', 'schedule not confirmed'],
 };
@@ -205,26 +205,22 @@ it.each(dashboardCaseNames('battles_history').filter((name) => name !== 'empty')
     ).toBeInTheDocument();
     expect(
       row.getByText(
-        name.startsWith('ended')
-          ? 'wave 187'
-          : name.startsWith('active_row')
-            ? 'wave 77'
-            : 'wave 123',
+        name.startsWith('ended') ? '187' : name.startsWith('active_row') ? '77' : '123',
       ),
     ).toBeInTheDocument();
     expect(row.getByText('age not available')).toBeInTheDocument();
     expect(row.getByRole('link', { name: 'Run history' })).toHaveAttribute('href', '#history');
     expect(page.view.container).not.toHaveTextContent('Interrupted');
-    fireEvent.click(row.getByText('Why'));
+    fireEvent.click(row.getByText('Details'));
     expect(row.getByText(/Recorded end time:/)).toBeVisible();
     await check(page.view.container);
   },
 );
 
 it.each([
-  ['ended', null, 52, 'Ended', 'wave 52'],
-  ['interrupted', null, null, 'tracking stopped, end not seen', 'wave not recorded'],
-  ['future_status', 19, 8, 'tracking ended', 'wave 19'],
+  ['ended', null, 52, 'Ended', '52'],
+  ['interrupted', null, null, 'tracking stopped, end not seen', 'Not recorded'],
+  ['future_status', 19, 8, 'tracking ended', '19'],
 ])(
   'F-079: %s preserves end meaning, wave fallback and unknown waves',
   async (status, final_wave, wave, end, shownWave) => {
@@ -242,9 +238,9 @@ it.each([
     expect(historyRow().getByText('1 m ago')).toBeInTheDocument();
     expect(historyRow().queryByText('Current')).not.toBeInTheDocument();
     expect(historyRow().queryByText('Prepared')).not.toBeInTheDocument();
-    expect(historyRow().queryByText('wave 0')).not.toBeInTheDocument();
+    expect(historyRow().queryByText('0')).not.toBeInTheDocument();
     if (status === 'future_status') {
-      fireEvent.click(historyRow().getByText('Why'));
+      fireEvent.click(historyRow().getByText('Details'));
       expect(historyRow().getByText('future_status')).toHaveAttribute('data-server-text', 'detail');
     }
     await check(page.view.container);
@@ -292,18 +288,18 @@ it.each(['unchecked', 'unavailable', 'empty', 'last known', 'only active'])(
     ).toBeInTheDocument();
     if (kind === 'last known') {
       expect(historyRow().getByText('tracking stopped, end not seen')).toBeInTheDocument();
-      expect(historyRow().getByText('wave 123')).toBeInTheDocument();
+      expect(historyRow().getByText('123')).toBeInTheDocument();
     }
     expect(page.view.container).not.toHaveTextContent(/gem total/i);
     await check(page.view.container);
   },
 );
 
-it('F-080: a poll preserves an open history Why and its focused summary', async () => {
+it('F-080: a poll preserves an open history Details and its focused summary', async () => {
   const state = addCase(regionState(), 'battles', 'battles_history.ended_with_final_wave');
   const page = recent(state);
-  const why = historyRow().getByText('Why').closest('summary');
-  if (why === null) throw new Error('Missing history Why summary');
+  const why = historyRow().getByText('Details').closest('summary');
+  if (why === null) throw new Error('Missing history Details summary');
   fireEvent.click(why);
   why.focus();
   page.setState(tick(state, 15));

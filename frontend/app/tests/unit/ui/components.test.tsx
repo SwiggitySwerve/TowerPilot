@@ -86,18 +86,22 @@ describe('Button', () => {
 });
 
 describe('CopyLine', () => {
-  it('shows the short line and folds the why behind a disclosure', async () => {
+  it('keeps the short line visible and opens its background from a help icon', async () => {
     const { container } = render(<CopyLine entry={copy.errors.regionFailed} />);
     expect(screen.getByText('This part of the page could not be drawn.')).toBeVisible();
-    const details = container.querySelector('details');
-    expect(details).not.toBeNull();
-    expect(details).not.toHaveAttribute('open');
-    expect(screen.getByText('Why')).toBeInTheDocument();
+    const help = screen.getByRole('button', {
+      name: 'About This part of the page could not be drawn.',
+    });
+    expect(screen.queryByRole('tooltip')).toBeNull();
     expect(await axe(container)).toHaveNoViolations();
+    await userEvent.click(help);
+    expect(screen.getByRole('tooltip')).toHaveTextContent(copy.errors.regionFailed.why ?? '');
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('tooltip')).toBeNull();
   });
 
-  it('has no disclosure without a why', () => {
-    const { container } = render(<CopyLine entry={copy.routes.dashboard} />);
-    expect(container.querySelector('details')).toBeNull();
+  it('has no help icon without background', () => {
+    render(<CopyLine entry={copy.routes.dashboard} />);
+    expect(screen.queryByRole('button')).toBeNull();
   });
 });

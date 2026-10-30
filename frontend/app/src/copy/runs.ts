@@ -31,22 +31,22 @@ function rangeWords(min: number | null, max: number | null): string {
 function capital(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
-function count(value: number | null): string {
-  return value === null ? 'not reported' : String(value);
-}
-function seconds(value: number | null): string {
-  return value === null ? 'not reported' : `${String(value)} s`;
-}
 
 /** Catalogue entries of the Runs page (brief backend/logs/reviews/ui-pages/runs-brief.md). */
 export const runs = {
   pageName: entry('Runs'),
+  needsAttention: entry('Needs attention'),
+  entrySections: {
+    identity: entry('Identity'),
+    behavior: entry('Entry behavior'),
+    policies: entry('Policies'),
+  },
+  statistics: entry('Statistics'),
+  alwaysOn: entry('Always on'),
   live: {
+    routines: entry('Live routines'),
     title: entry('This battle'),
-    scope: entry(
-      'Changes this battle only; the saved run stays as it is',
-      'A change here goes to the running battle and applies to it alone. Battles started later use the saved settings below.',
-    ),
+    scope: entry('Changes this battle only'),
     none: entry('No tracked battle - live settings appear here while automation watches a battle'),
     unavailable: entry("The tracked battle can't be read"),
     prepared: entry('The battle has not started yet; live settings open when it is active'),
@@ -97,6 +97,7 @@ export const runs = {
     },
     /** F6-11 RL7 (spec F-062, F-063): what each routine reported in this battle. */
     details: {
+      heading: entry('Battle details'),
       title: (routine: string) => made(`${routine}: battle details`),
       lastKnown: entry(
         'Last known values',
@@ -147,28 +148,22 @@ export const runs = {
       refusal: entry('Latest refusal'),
       noneRecorded: entry('None recorded'),
       counts: entry('Counts'),
-      countsLine: (
-        attempts: number | null,
-        confirmed: number | null,
-        skips: number | null,
-        missed: number | null,
-      ) =>
-        made(
-          `Attempts ${count(attempts)}, confirmed ${count(confirmed)}, skipped ${count(skips)}, windows missed ${count(missed)}`,
-        ),
+      attempts: entry('Attempts'),
+      confirmed: entry('Confirmed'),
+      skipped: entry('Skipped'),
+      windowsMissed: entry('Windows missed'),
       timing: entry('Last timing'),
-      timingLine: (wait: number | null, delay: number | null, verify: number | null) =>
-        made(
-          `Schedule wait ${seconds(wait)}, response delay ${seconds(delay)}, verification ${seconds(verify)}`,
-        ),
+      scheduleWait: entry('Schedule wait'),
+      responseDelay: entry('Response delay'),
+      verification: entry('Verification'),
+      seconds: (value: number | null) =>
+        made(value === null ? 'Not reported' : `${String(value)} s`),
     },
   },
   saved: {
+    routines: entry('Saved routines'),
     title: entry('Saved settings'),
-    scope: entry(
-      'Changes the saved run: battles started later use it',
-      'Saving writes the run in your profile. A battle that is already running keeps its own settings; change those above.',
-    ),
+    scope: entry('Used by future battles'),
     picker: entry('Run'),
     unnamedRun: entry('Run without a name'),
     noRuns: entry('No runs to show yet'),
