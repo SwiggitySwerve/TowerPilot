@@ -75,10 +75,11 @@ portable qualification and acceptance validation, and the prerelease publication
 `tools/qualify_portable.py` first checks the archive and sidecar, then extracts into a
 fresh temporary folder whose name contains spaces. Its bundled `runtime/python.exe`
 runs with a scrubbed environment and no system Python on PATH. Before application
-imports, an audit guard refuses socket operations and child-process launches. It
+imports, an audit guard refuses network connections, socket creation and child-process launches
+(reading the local hostname is allowed). It
 imports bundled dependencies and the dashboard, uses Flask's in-process client to
-check `/api/runtime`, serves every built app file byte-for-byte, and checks that
-`/api/config` seeds the shipped example bytes. Runtime identity must match the build,
+check `/api/runtime`, serves every built app file byte-for-byte, and checks the
+`/api/config` response and first-run seeding of the shipped example bytes. Runtime identity must match the build,
 source and app inventory. Every shipped file must remain unchanged. The child has a
 120-second timeout; the temporary extraction is removed after success or failure.
 

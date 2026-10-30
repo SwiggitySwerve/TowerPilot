@@ -22,14 +22,17 @@ CHECKS = ('archive', 'imports', 'identity', 'app', 'config', 'unchanged')
 PROBE = r'''
 import sys
 def offline(event, args):
-    if event.startswith('socket.') or event in ('subprocess.Popen', 'os.system', 'os.startfile'):
+    # platform.uname reads the local hostname; it does not open a connection.
+    if (event.startswith('socket.') and event != 'socket.gethostname') or event in ('subprocess.Popen', 'os.system', 'os.startfile'):
         raise RuntimeError('qualification refused I/O: ' + event)
 sys.addaudithook(offline)
 import json
 from pathlib import Path
+root = Path.cwd()
+config = root / 'backend/config.yaml'
+assert not config.exists(), 'extraction already configured'
 import cv2, numpy, yaml, psutil, flask, pystray, PIL, UnityPy
 import dashboard
-root = Path.cwd()
 assert Path(sys.executable).resolve() == (root / 'runtime/python.exe').resolve(), 'wrong interpreter'
 client = dashboard.app.test_client()
 dashboard.app.testing = True
@@ -45,8 +48,6 @@ app = root / 'frontend/webui/app'
 for name in ['index.html'] + [p.relative_to(app).as_posix() for p in app.rglob('*') if p.is_file()]:
     response = client.get('/ui/app/' + name)
     assert response.status_code == 200 and response.data == (app / name).read_bytes(), 'app not served: ' + name
-config = root / 'backend/config.yaml'
-assert not config.exists(), 'extraction already configured'
 assert client.get('/api/config').status_code == 200, 'config route failed'
 assert config.read_bytes() == (root / 'backend/config.example.yaml').read_bytes(), 'seed differs'
 print(json.dumps(dict(imports=True, identity=True, app=True, config=True)))

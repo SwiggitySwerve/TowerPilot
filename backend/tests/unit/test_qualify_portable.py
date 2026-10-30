@@ -14,6 +14,12 @@ ROOT = test_paths.REPO
 sys.path.insert(0, str(ROOT / 'tools'))
 
 
+def test_rebuildable_releases_include_qualification_tools():
+    import build_release
+    assert build_release.allowed('tools/qualify_portable.py')
+    assert build_release.allowed('tools/validate_acceptance.py')
+
+
 def test_validator_refuses_stub_report(tmp_path):
     import validate_acceptance
     report = tmp_path / 'acceptance.json'
@@ -88,7 +94,7 @@ def test_complete_forgery_cannot_bypass_execution(package, monkeypatch, tmp_path
     assert len(calls) == 1 and not calls[0].exists()
 
 
-@pytest.mark.parametrize('failure', ['exit', 'timeout', 'incomplete', 'mutated', 'missing-runtime'])
+@pytest.mark.parametrize('failure', ['exit', 'timeout', 'incomplete', 'empty', 'mutated', 'missing-runtime'])
 def test_failed_checks_fail_report_and_clean_up(package, monkeypatch, failure):
     qp, archive = package
     paths = []
@@ -105,6 +111,8 @@ def test_failed_checks_fail_report_and_clean_up(package, monkeypatch, failure):
             return SimpleNamespace(returncode=1, stdout='', stderr='broken import')
         if failure == 'incomplete':
             return SimpleNamespace(returncode=0, stdout='{}', stderr='')
+        if failure == 'empty':
+            return SimpleNamespace(returncode=0, stdout='', stderr='')
         return child_success()
 
     monkeypatch.setattr(qp.subprocess, 'run', child)
@@ -153,3 +161,12 @@ def test_probe_guard_refuses_io_before_any_application_import(action):
                             capture_output=True, text=True, timeout=10)
     assert result.returncode != 0
     assert 'qualification refused I/O:' in result.stderr
+
+
+def test_probe_allows_local_platform_metadata():
+    import qualify_portable as qp
+    guard = qp.PROBE.split('import json')[0]
+    result = subprocess.run([sys.executable, '-I', '-c', guard + '\nimport platform; print(platform.system())'],
+                            capture_output=True, text=True, timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip()

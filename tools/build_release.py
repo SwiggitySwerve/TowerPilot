@@ -71,6 +71,7 @@ def allowed(name):
     if name in {'backend/config.example.yaml', 'backend/profiles/default.yaml',
                 'backend/tests/fixtures/golden_profile.yaml', 'backend/tools/winocr.ps1',
                 'tools/build_release.py', 'tools/build_portable.py', 'tools/check_release_zips.py',
+                'tools/qualify_portable.py', 'tools/validate_acceptance.py',
                 'tools/portable_launcher.py', 'tools/portable_pins.json',
                 'tools/release_archive_policy.py', 'tools/dependency_images.json', 'tools/release_marker_allowlist.json',
                 'tools/generate_dependency_images.py'}:
