@@ -71,12 +71,13 @@ def for_battle(root, battle, *, limit=DEFAULT_LIMIT, action=None):
     not interpreted. (Rows of an adopted battle carry their own `coverage`, `since_adoption`.)
 
     Rows are validated before they are shown (`action_history.validate_history`): a row that cannot belong to this battle (another account, battle or generation, a newer schema, an
-    impossible duration) and a damaged body are left out, as the generic read leaves out a damaged one. The wire shape is unchanged: no key is added for them."""
+    impossible duration) and a damaged body are left out. `refused_count` counts rows omitted across all pages examined by this call, including damaged bodies."""
     path = operations.ledger_path(root)
     meta = Actions.read_meta(path)
     if _newer(meta):
-        return dict(items=None, reason='newer_schema', truncated=False)
+        return dict(items=None, reason='newer_schema', truncated=False, refused_count=0)
     items, truncated, cursor, seen = [], False, None, False
+    refused_count = 0
     if meta is not None:
         before = None
         for _ in range(MAX_REFUSED_PAGES):
@@ -84,19 +85,21 @@ def for_battle(root, battle, *, limit=DEFAULT_LIMIT, action=None):
             # A damaged row is still a row this battle recorded: the battle has history (items may be empty), it was
             # not recorded before the store existed.
             seen = seen or bool(rows or damaged)
-            items = action_history.validate_history(battle, rows, ledger=meta)['items'] if rows else []
+            report = action_history.validate_history(battle, rows, ledger=meta) if rows else None
+            items = report['items'] if report else []
+            refused_count += damaged + (report['refused_count'] if report else 0)
             if items or not truncated:
                 break
             before = cursor          # this page held nothing the battle can show (foreign or damaged rows): the page behind it may
     if seen:
-        block = dict(items=_labelled(items), reason=None, truncated=truncated)
+        block = dict(items=_labelled(items), reason=None, truncated=truncated, refused_count=refused_count)
         if truncated:        # the rest is one generic read away: GET /api/actions/executions?battle_id=<id>&before=<next_before>
             block['next_before'] = cursor
         return block
     reason = action_history.unrecorded_reason(battle, meta)
     if reason:
-        return dict(items=None, reason=reason, truncated=False)
-    return dict(items=[], reason=None, truncated=False)
+        return dict(items=None, reason=reason, truncated=False, refused_count=0)
+    return dict(items=[], reason=None, truncated=False, refused_count=0)
 
 
 def executions(root, context, *, action=None, instance=None, battle_id=None, before=None, limit=None):

@@ -2,4 +2,4 @@
 export {
   historyListAnswerSchema,
   historyDetailAnswerSchema,
-} from './generated/history/dashboard_contract_pages_v1_history.149a71de.ts';
+} from './generated/history/dashboard_contract_pages_v1_history.48cd7089.ts';

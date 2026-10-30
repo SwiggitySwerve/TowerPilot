@@ -285,7 +285,7 @@ def test_a_damaged_row_is_skipped_by_the_read_and_a_newer_ledger_is_not_interpre
         db.execute('UPDATE action_meta SET schema_version=?', (SCHEMA_VERSION + 1,))
     newer = validate_history(host.battle_record(), rows, ledger=Actions.read_meta(str(host.path)))
     assert (newer['status'], newer['reason'], newer['items']) == ('read_only', 'newer_schema', [])
-    assert actions_api.for_battle(tmp_path, host.battle_record()) == dict(items=None, reason='newer_schema', truncated=False)     # the route's rule is the same
+    assert actions_api.for_battle(tmp_path, host.battle_record()) == dict(items=None, reason='newer_schema', truncated=False, refused_count=0)     # the route's rule is the same
 
 
 def test_rows_of_a_newer_schema_in_a_current_ledger_are_rejected_not_interpreted():
