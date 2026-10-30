@@ -47,6 +47,8 @@ jobs:
           }
       - name: Check source release boundary
         run: python -m pytest $env:TEST_RELEASE_CLEAN $env:TEST_RELEASE_BOOTSTRAP
+      - name: Run offline backend suite
+        run: python -m pytest backend/tests/unit
       # The dashboard app (frontend/app, ADR-001), built before the ZIPs. One
       # step per command so any failure stops the release. The steps run when
       # the checked-out release has the app; a tag from before it has none,
@@ -81,6 +83,21 @@ jobs:
       - name: Check release archives
         if: hashFiles('frontend/app/package-lock.json') != ''
         run: python tools/check_release_zips.py
+      - name: Qualify portable archive
+        shell: pwsh
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          python tools/qualify_portable.py --archive "dist/TowerPilot-$version-windows-x64.zip" --report dist/portable-acceptance.json
+          if ($LASTEXITCODE -ne 0) { throw 'Portable qualification failed' }
+          python tools/validate_acceptance.py dist/portable-acceptance.json --archive "dist/TowerPilot-$version-windows-x64.zip"
+          if ($LASTEXITCODE -ne 0) { throw 'Portable acceptance validation failed' }
+      - name: Save portable acceptance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-acceptance
+          path: dist/portable-acceptance.json
+          if-no-files-found: ignore
       - name: Publish prerelease
         shell: pwsh
         env:
