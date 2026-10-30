@@ -153,7 +153,7 @@ def test_a_battle_recorded_before_the_history_existed_says_so_instead_of_reading
     from control import battles
     old, selected, operation = make_battle(dash, 'old')
     status, body = detail(dash, old)
-    assert status == 200 and body['executions'] == dict(items=None, reason='recorded_before_action_history', truncated=False)
+    assert status == 200 and body['executions'] == dict(items=None, reason='recorded_before_action_history', truncated=False, refused_count=0)
     store = Actions(operations.ledger_path(dash.ROOT))              # the store now exists, created after the battle
 
     def execution(battle_id, at, action='ad_gems'):
@@ -162,7 +162,7 @@ def test_a_battle_recorded_before_the_history_existed_says_so_instead_of_reading
                            context=dict(account=selected['account']), started_at=at)
         return store.finish(store.begin(body_)['id'], result='no_op', finished_at=at + 1)['id']
     execution('another-battle', 900.0, 'floating_gems')
-    assert detail(dash, old)[1]['executions'] == dict(items=None, reason='recorded_before_action_history', truncated=False)   # the store knows other battles, not this one
+    assert detail(dash, old)[1]['executions'] == dict(items=None, reason='recorded_before_action_history', truncated=False, refused_count=0)   # the store knows other battles, not this one
     own = execution(old['id'], 1000.0)
     assert [row['id'] for row in detail(dash, old)[1]['executions']['items']] == [own]      # a row of its own decides: it was recorded
     battles.ledger(dash.ROOT).finish(old['id'], 'driver', reason='observed_results', outcome='unknown', status='ended')
@@ -219,7 +219,7 @@ def test_a_battle_on_a_ledger_a_newer_build_wrote_is_not_interpreted(dash):
     db.execute('UPDATE action_meta SET schema_version=99')
     db.commit()
     db.close()
-    assert detail(dash, battle)[1]['executions'] == dict(items=None, reason='newer_schema', truncated=False)
+    assert detail(dash, battle)[1]['executions'] == dict(items=None, reason='newer_schema', truncated=False, refused_count=0)
 
 
 # ============================================ review R11-03: a page is a page of this account's rows, and the cursor loses none

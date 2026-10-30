@@ -346,7 +346,9 @@ class Actions(Operations):
 
     def prune(self, now=None, *, retain_sec=RETAIN_SEC, batch=PRUNE_BATCH):
         """Delete terminal rows older than `retain_sec`, at most `batch` per call. Open rows and every row a durable
-        command receipt names (`battle_commands.request_key`) are kept. Not called by any production path until root
+        command receipt names (`battle_commands.request_key`) are kept. At most min(batch, PRUNE_BATCH)
+        candidate bodies are read (negative batch means PRUNE_BATCH). A growing aggregate may consume
+        a candidate slot without being deleted, so a zero result does not prove retention is complete. Not called by any production path until root
         accepts the retention."""
         cutoff = (time.time() if now is None else now) - retain_sec
         with self._db() as db:
@@ -354,13 +356,14 @@ class Actions(Operations):
             has_commands = has_table(db, 'battle_commands')
             keep = ' AND (request_key IS NULL OR request_key NOT IN (SELECT request_key FROM battle_commands))' if has_commands else ''
             ids, limit = [], int(batch)
-            candidates = db.execute(f'SELECT id, body FROM action_executions WHERE terminal=1 AND started_at < ?{keep} ORDER BY started_at', (cutoff,))
+            limit = PRUNE_BATCH if limit < 0 else min(limit, PRUNE_BATCH)
+            candidates = db.execute(f'SELECT id, body FROM action_executions WHERE terminal=1 AND started_at < ?{keep} ORDER BY started_at, id LIMIT ?', (cutoff, limit))
             for execution_id, raw in candidates:
                 if limit == 0:                       # a batch of none deletes none
                     break
                 if not self._still_counting(raw, cutoff):
                     ids.append(execution_id)
-                    if 0 < limit <= len(ids):         # a negative batch is "no limit", as SQLite's LIMIT was
+                    if 0 < limit <= len(ids):
                         break
             candidates.close()
             db.executemany('DELETE FROM action_executions WHERE id=?', [(item,) for item in ids])

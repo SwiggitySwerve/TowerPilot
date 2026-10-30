@@ -197,7 +197,7 @@ def action_executions_cases(gen):
         w.mp.setattr(actions_module, 'time', w.clock)
         before = Driver(w, 'before-history', origin='started').go_live()
         old = w.get(AX, 'battle_detail_recorded_before_the_action_store_existed', f"/api/battles/{before.battle['id']}").get_json()
-        assert old['executions'] == dict(items=None, reason='recorded_before_action_history', truncated=False)
+        assert old['executions'] == dict(items=None, reason='recorded_before_action_history', truncated=False, refused_count=0)
     for label, name, origin, coverage in (('started', 'a_started_battle_lists_its_executions', 'started', 'full'),
                                            ('adopted', 'an_adopted_battle_lists_its_executions_covered_since_the_adoption', 'adopted', 'since_adoption')):
         with gen.world(f'exec_detail_{label}') as w:
@@ -224,7 +224,7 @@ def action_executions_cases(gen):
                 db.commit()
                 db.close()
                 newer = w.get(AX, 'battle_detail_on_a_ledger_a_newer_build_wrote_is_not_interpreted', f"/api/battles/{driver.battle['id']}").get_json()
-                assert newer['executions'] == dict(items=None, reason='newer_schema', truncated=False)
+                assert newer['executions'] == dict(items=None, reason='newer_schema', truncated=False, refused_count=0)
 
 
 NOTE = (__doc__ or '').split('"""')[0]

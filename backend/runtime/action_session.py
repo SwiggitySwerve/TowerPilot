@@ -190,14 +190,26 @@ class ActionSession:
     @contained('record')
     def record(self, action, instance=None, *, result, reason=None, effect='none', trigger='automatic', occurrence_key=None,
                scheduled_for=None, command_id=None, request_key=None, attempts=0, confirmed=0, evidence=(), refs=None,
-               config_revision=None, policy_revision=None):
-        """An execution already over, as one terminal row. Returns the row, or None when it could not be written."""
+               config_revision=None, policy_revision=None, started_at=None, finished_at=None):
+        """Commit an execution already over before acknowledging it. Never buffers a successful record.
+
+        Hosts may carry the actual wall start/end across their handler; absent timestamps retain the legacy
+        write-time semantics. Duration remains unknown: wall subtraction is not a monotonic measurement.
+        A failed commit returns None and counts/logs the loss through the contained boundary.
+        """
+        body = self._body(action, instance, trigger=trigger, occurrence_key=occurrence_key, scheduled_for=scheduled_for,
+                          command_id=command_id, request_key=request_key, refs=refs, config_revision=config_revision,
+                          policy_revision=policy_revision)
+        if started_at is not None:
+            if action_history.finite_or_none(started_at) is None or started_at < 0:
+                raise ValueError('started_at must be finite and non-negative')
+            body['started_at'] = started_at
+        if finished_at is not None and (action_history.finite_or_none(finished_at) is None or finished_at < 0):
+            raise ValueError('finished_at must be finite and non-negative')
         row = self._actions().record_terminal(
-            self._body(action, instance, trigger=trigger, occurrence_key=occurrence_key, scheduled_for=scheduled_for,
-                       command_id=command_id, request_key=request_key, refs=refs, config_revision=config_revision,
-                       policy_revision=policy_revision),
+            body,
             result=result, reason=reason, effect=effect, attempts=attempts, confirmed=confirmed, evidence=evidence,
-            finished_at=self.clock.wall())
+            finished_at=self.clock.wall() if finished_at is None else finished_at)
         self._remember(row, result=result, reason=reason, effect=effect, trigger=trigger, duration_ms=None)
         return row
 

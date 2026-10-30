@@ -202,7 +202,7 @@ def test_a_toggle_row_is_written_after_the_fact_and_claims_no_measured_duration(
     shared.assert_rows_claim_no_measured_duration(shared.history_rows(session, 'uw_toggle'))
 
 
-def test_rows_are_written_once_after_every_decision_and_stamp_of_the_pass():
+def test_each_returned_toggle_is_recorded_before_the_next_toggle():
     order, holder = [], []
 
     class Session:
@@ -212,7 +212,7 @@ def test_rows_are_written_once_after_every_decision_and_stamp_of_the_pass():
 
     run(shared.live(), SCENARIOS['same_pass_failure_then_a_toggle_with_the_cached_uw_ok'] | dict(steps=[step(0.0, [F, T], window=True)]), Session(),
         lambda kind, weapon, result: order.append((kind, weapon, result)), holder)
-    assert order == [('toggle', 'death_wave', False), ('toggle', 'chain_lightning', True), ('record', 'death_wave', 0, 40.0), ('record', 'chain_lightning', 0, 40.0)]
+    assert order == [('toggle', 'death_wave', False), ('record', 'death_wave', 2, 0.0), ('toggle', 'chain_lightning', True), ('record', 'chain_lightning', 3, 40.0)]
 
 
 def test_no_session_and_a_broken_ledger_run_the_block_exactly_as_before(tmp_path):
@@ -233,16 +233,12 @@ def test_a_toggle_that_returned_before_a_capture_failure_still_leaves_its_row(tm
 
     with pytest.raises(live.capture.CaptureError):
         run(live, SCENARIOS['same_pass_failure_then_a_toggle_with_the_cached_uw_ok'] | dict(steps=[step(0.0, [F, T], window=True)]), session, hook, holder)
-    assert shared.history_rows(session, 'uw_toggle') == []             # the pass was cut short before its flush
-    live.uw_flush_history(holder[0])                                    # what both of main()'s handlers now do
-    assert [row['refs']['weapon'] for row in shared.history_rows(session, 'uw_toggle')] == ['death_wave'] and holder[0].uw_attempts == []
+    assert [row['refs']['weapon'] for row in shared.history_rows(session, 'uw_toggle')] == ['death_wave']  # durable before the pass ends
 
 
-def test_both_exception_handlers_of_the_main_loop_flush_the_buffered_toggle_rows():
+def test_the_main_loop_has_no_volatile_toggle_history_buffer():
     source = Path(shared.live().__file__).read_text(encoding='utf-8')
-    for handler in ('except capture.CaptureError as e:', 'except Exception:\n            uw_flush_history(rs)'):
-        assert handler in source
-    assert 'except capture.CaptureError as e:\n            uw_flush_history(rs)' in source
+    assert 'uw_attempts' not in source and 'uw_flush_history' not in source
 
 
 def test_a_history_row_that_cannot_be_built_never_escapes_into_the_loop():

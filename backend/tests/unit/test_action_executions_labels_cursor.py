@@ -102,12 +102,12 @@ def test_a_complete_battle_block_has_no_cursor_key_at_all(root):
     seed(root, 3)
     block = actions_api.for_battle(root, battle(), limit=3)
     assert block['truncated'] is False and 'next_before' not in block
-    assert set(block) == {'items', 'reason', 'truncated'}
+    assert set(block) == {'items', 'reason', 'truncated', 'refused_count'}
 
 
 def test_the_blocks_without_rows_keep_their_shape(root):
-    assert actions_api.for_battle(root, battle()) == dict(items=None, reason='recorded_before_action_history', truncated=False)
+    assert actions_api.for_battle(root, battle()) == dict(items=None, reason='recorded_before_action_history', truncated=False, refused_count=0)
     seed(root, 1, battle='another-battle')
     meta = Actions.read_meta(operations.ledger_path(root))
-    assert actions_api.for_battle(root, battle(created_at=meta['created_at'] + 1)) == dict(items=[], reason=None, truncated=False)
-    assert json.dumps(actions_api.for_battle(root, battle(created_at=0.0, name='nothing'))) == json.dumps(dict(items=None, reason='recorded_before_action_history', truncated=False))
+    assert actions_api.for_battle(root, battle(created_at=meta['created_at'] + 1)) == dict(items=[], reason=None, truncated=False, refused_count=0)
+    assert json.dumps(actions_api.for_battle(root, battle(created_at=0.0, name='nothing'))) == json.dumps(dict(items=None, reason='recorded_before_action_history', truncated=False, refused_count=0))

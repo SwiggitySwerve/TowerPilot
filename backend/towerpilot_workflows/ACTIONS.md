@@ -3,7 +3,7 @@
 > **Status:** Active (item 6: the pilot, and the control surface generated from the catalog)
 > **Type:** Rules
 > **Created:** 2026-10-22
-> **Updated:** 2026-10-27 (item 7, A3b kind B r18e; item 7, A3b kind A; item 7, A3a; item 6, A2-7: what a page reads)
+> **Updated:** 2026-10-30 (item 7, A3b kind B r18e; item 7, A3b kind A; item 7, A3a; item 6, A2-7: what a page reads)
 > **Owner:** Backend
 > **Spec:** [roadmap-items-6-7/spec.md](../logs/reviews/roadmap-items-6-7/spec.md)
 > **Tags:** actions, scheduling, history, gems, shopping, harvest
@@ -137,12 +137,12 @@ already held and asks the definition; the cadence, guards and logs are the old o
 
 History: one terminal row per CONTACT, written by the host AFTER the input returned and after its own state was updated (`orchestrator.record_upkeep`, outcome `upkeep_outcome`): confirmed is
 `succeeded` with the definition's evidence, anything else `failed` with the effect unknown. A suppression (cooldown, one contact per tick), a retired or rejected rule, a pass without contact,
-a disabled or no-wave Demon Mode pass and an unconfirmed Demon Mode attempt (it does not say whether it tapped) record nothing. UW toggle rows are buffered during the pass and written once at the
-end of it, so no deadline or decision waits on the ledger. Nothing is written before a tap. A host with no ledger operation records nothing; a failing ledger is counted in the session and never raised.
-What a row does and does not say: it is written by `ActionSession.record` after the fact, so `started_at` and `finished_at` are the time of the WRITE (for a UW toggle, the end of the pass) and
-`duration_ms` is null with `duration_basis` `none`; no execution of these actions is claimed as measured, and a test pins that. The Demon Mode history lists CONFIRMED fires only: `fire_button` returns False
-both for a refused tap and for a tap it could not confirm, so an unconfirmed attempt that did tap is absent, and this history is not an attempt log. Recording a start, a duration or that attempt needs
-a session interface (r18h) and a three-way `fire_button` result (r18f); neither is changed here.
+a disabled or no-wave Demon Mode pass and an unconfirmed Demon Mode attempt (it does not say whether it tapped) record nothing. Every returned UW toggle is committed through
+`ActionSession.record` before the host acknowledges it; there is no volatile end-of-pass buffer. Recording failure returns None, increments `unrecorded` and logs the loss,
+without changing the handler's result. Retry deadlines use the toggle's monotonic return time, excluding the durable write's latency. Passes without contact add no ledger I/O.
+`record` accepts the handler's wall `started_at` and `finished_at`; upkeep callers carry both. Legacy callers omitting them retain write-time stamps.
+`duration_ms` stays null with `duration_basis` `none`: wall subtraction never claims a measured duration. The Demon Mode history lists CONFIRMED fires only: `fire_button` returns False
+both for a refused tap and for a tap it could not confirm, so an unconfirmed attempt that did tap is absent, and this history is not an attempt log. Recording an unconfirmed attempt still needs a three-way `fire_button` result; this change preserves which attempts are recorded.
 Nothing here moves a fast-loop timer (`rs.last_fire`, `rs.fleet_try_at`, the Second Wind deadlines stay: r18f) or the death cycle (r18g).
 
 ## Adding an action (what the contract asks, and nothing else)
@@ -177,3 +177,13 @@ the same way before the dispatch was generated (`backend/tests/fixtures/action_d
 python -m pytest backend/tests/unit/test_action_dispatch_capture.py`); `test_action_dispatch_parity.py` replays them.
 Parity, interruption, ownership, ledger, session, route and synthetic-extension tests are the `backend/tests/unit/test_action_*.py` files;
 `test_action_declared_proofs.py` holds the proofs the declaration of item 6 still needed and the map from the declaration to the tests.
+
+---
+
+## History read diagnostics and retention bounds
+
+`validate_history.refused_count` counts rejected rows plus damaged bodies in its input page; adjacent rows provide context and are not counted.
+The battle history block publishes this count across all pages examined in the call, including damaged rows skipped by the ledger reader.
+It is zero for empty or unavailable history and is not a count of all rows in the ledger. `truncated` and `next_before` retain their existing meaning.
+Prune reads at most `min(batch, PRUNE_BATCH)` candidate bodies; negative batch uses `PRUNE_BATCH` (500), rather than disabling the bound.
+Kept aggregates consume candidate slots, so a call may delete fewer rows than its bound, including zero. Open rows and command-referenced rows remain protected.

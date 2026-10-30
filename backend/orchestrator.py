@@ -293,7 +293,6 @@ class RunState:
         if _action_session is not None:
             self.shop.recorder = _action_session.recorder('shopping')
         self.rewards_history = _rewards_history
-        self.uw_attempts = []   # UW toggles of the current pass awaiting their history row (`uw_toggle` buffers, `uw_flush_history` writes)
         self.action_session = _action_session   # the history of the main-loop upkeep (compiled rules, global Demon Mode, UW retry); None records nothing
         if _rewards_history is not None:
             self.mission.on_end = lambda how: reward_flow_ended(self, how)
@@ -1056,15 +1055,15 @@ def _rule_cooldown(rule: dict, a_p: dict) -> float:
     return RULE_REFIRE_SEC
 
 
-def record_upkeep(rs, action: str, instance: str, ok: bool, **refs) -> None:
-    """The history row of one CONTACT of a main-loop upkeep action (compiled rule, global Demon Mode, UW toggle), written by the caller AFTER the input returned and after
-    its own state was updated - never before a tap. A host with no ledger operation (`rs.action_session` None, or a stand-in without it) records nothing; the session
+def record_upkeep(rs, action: str, instance: str, ok: bool, *, started_at=None, finished_at=None, **refs) -> None:
+    """The history row of one CONTACT of a main-loop upkeep action (compiled rule, global Demon Mode, UW toggle), written by the caller AFTER the input returned - never before a tap. A host with no ledger operation (`rs.action_session` None, or a stand-in without it) records nothing; the session
     contains its own failures. What counts as contact, and what `ok` means, is each caller's own rule (`upkeep_outcome` names the row)."""
     session = getattr(rs, "action_session", None)
     if session is None:
         return
     try:
-        session.record(action, instance, refs=refs or None, **action_contract.upkeep_outcome(action, ok))
+        session.record(action, instance, refs=refs or None, started_at=started_at, finished_at=finished_at,
+                       **action_contract.upkeep_outcome(action, ok))
     except Exception as e:   # the history is never worth the live loop: the row is lost and the loss is logged
         logger.event("upkeep_history_failed", action=action, error=repr(e), level="debug")
 
@@ -1564,7 +1563,9 @@ def _run_rules(rs: "RunState", frame, wave: int | None, phase: str) -> bool:
             _rule_suppressed(rs, k, rid, "one_action_per_tick", now,
                              trigger=snap)
             continue
+        started_at = time.time()
         contact, ok = _rule_act(rs, frame, k, rid, a_name, a_p)
+        finished_at = time.time()
         rs.rule_next[k] = schedule.after(now, _rule_cooldown(rule, a_p))
         if ok and t_name == "fleet_mark" and "mark" in snap:
             _rule_mem(rs, "rule_marks").setdefault(k, set()).add(snap["mark"])
@@ -1579,7 +1580,7 @@ def _run_rules(rs: "RunState", frame, wave: int | None, phase: str) -> bool:
             rs.rules_fired.add(k)
         if contact:
             touched = True              # the budget is spent on CONTACT
-            record_upkeep(rs, "compiled_rule", f"compiled_rule@{rid}", ok, rule_id=rid)
+            record_upkeep(rs, "compiled_rule", f"compiled_rule@{rid}", ok, started_at=started_at, finished_at=finished_at, rule_id=rid)
     return touched
 
 
@@ -1971,11 +1972,13 @@ def demon_mode_always(rs: "RunState", frame, wave_now, now) -> bool:
     rs.dm_always_try_at = schedule.after(now)
     if not rs.sprint_ended and detect.intro_sprint_active(frame):
         return False
+    started_at = time.time()
     if not fire_button(frame, "demon_mode", "demon_mode_always", require_ready=True):
         return False
+    finished_at = time.time()
     rs.dm_always_count += 1
     logger.event("demon_mode_always", wave=wave_now, count=rs.dm_always_count)
-    record_upkeep(rs, "demon_mode_always", "demon_mode_always", True)   # a CONFIRMED fire only: fire_button does not say whether an unconfirmed attempt tapped
+    record_upkeep(rs, "demon_mode_always", "demon_mode_always", True, started_at=started_at, finished_at=finished_at)   # a CONFIRMED fire only: fire_button does not say whether an unconfirmed attempt tapped
     return True
 
 
@@ -1991,30 +1994,26 @@ def uw_retry_due(rs: "RunState", now: float) -> bool:
 
 def uw_backoff(rs: "RunState", success: bool) -> None:
     """The result of a UW toggle: a success clears the failure count; a failure counts and moves the shared deadline (10, 20, 40, 80, 120, 120 ... s)."""
+    completed_at = getattr(rs, '_uw_completed_at', None)
+    if completed_at is not None:
+        del rs._uw_completed_at
     if success:
         rs.uw_fails = 0
         return
     rs.uw_fails += 1
-    rs.uw_next_try = uw_retry_schedule().retry_at(time.monotonic(), rs.uw_fails)
+    rs.uw_next_try = uw_retry_schedule().retry_at(time.monotonic() if completed_at is None else completed_at, rs.uw_fails)
 
 
 def uw_toggle(rs: "RunState", weapon: str, want_on, site: str) -> bool:
-    """`shopper.uw_toggle` for one of the three call sites ('cl_normalize', 'uw_wanted', 'cl_toggle'). The history row is BUFFERED here and written once at the end
-    of the pass (`uw_flush_history`), after every decision and deadline of the pass: the cadence never waits for the ledger. Nothing is buffered without a session."""
+    """Run the existing toggle, then acknowledge its history only after ActionSession commits it.
+
+    The durable write is the only added I/O; passes without a toggle write nothing.
+    """
+    started_at = time.time()
     ok = shopper.uw_toggle(weapon, want_on)
-    if getattr(rs, "action_session", None) is not None:
-        pending = getattr(rs, "uw_attempts", None)
-        if pending is None:
-            pending = rs.uw_attempts = []
-        pending.append((weapon, site, bool(ok)))
+    rs._uw_completed_at = time.monotonic()  # the retry deadline excludes bookkeeping latency
+    record_upkeep(rs, "uw_toggle", "uw_toggle", bool(ok), started_at=started_at, finished_at=time.time(), weapon=weapon, site=site)
     return ok
-
-
-def uw_flush_history(rs: "RunState") -> None:
-    """Write the buffered UW toggle rows (one per toggle, one shared instance)."""
-    pending, rs.uw_attempts = getattr(rs, "uw_attempts", None), []
-    for weapon, site, ok in pending or ():
-        record_upkeep(rs, "uw_toggle", "uw_toggle", ok, weapon=weapon, site=site)
 
 
 def watch_frame(rs: "RunState", frame, observation=None) -> str | None:
@@ -3155,7 +3154,6 @@ def main():
                     uw_backoff(rs, False)   # retried after the backoff window
             elif want_cl == rs.cl_on:
                 rs.cl_blocked_logged = False
-            uw_flush_history(rs)
 
             # ---- shopping: sprint LOCKS abilities, not the panel. The sprint
             # spans ~1800 waves - shop aggressively while it's active (waves
@@ -3176,14 +3174,11 @@ def main():
                 logger.shot(frame, f"danger_w{wave}")
 
         except AttachReplaced as e:
-            uw_flush_history(rs)
             logger.event("attach_input_held", reason=str(e))    # the next frame is judged by the boundary checks above
         except capture.CaptureError as e:
-            uw_flush_history(rs)   # a toggle that returned before the failure still happened: write its row, never drop it with the pass
             logger.event("capture_error", error=str(e))
             time.sleep(2)
         except Exception:
-            uw_flush_history(rs)
             logger.event("crash", trace=traceback.format_exc())
             time.sleep(5)
 

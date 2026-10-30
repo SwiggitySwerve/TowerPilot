@@ -36,7 +36,7 @@ function slot(statusCase: string) {
 describe('the Dashboard contract fixture the core tests read', () => {
   it('is the landed fixture (17002FA1...) with the status and config cases these tests cover', () => {
     expect(DASHBOARD_FIXTURE_SHA256).toBe(
-      'a1adee857b2810076eb125970c5dd7f0e0d5439cb16e3e3560ef8c46e593c66c',
+      'e1fe970f063ba915a6de1ae1ba2fe99aa79e4b143790057c834926728f6a7979',
     );
     expect(dashboardCaseNames('config')).toEqual(['taps_false', 'taps_missing', 'taps_true']);
     expect(dashboardCaseNames('status')).toEqual(

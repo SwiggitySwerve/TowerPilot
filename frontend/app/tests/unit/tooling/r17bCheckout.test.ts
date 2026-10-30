@@ -20,19 +20,18 @@ import { REPO } from '../../support/paths.ts';
 
 /**
  * Approved e02b205 dashboard fixtures and the r17c-landed (b23bf8c) synthetic fixture.
- * The pages fixture also appends setup scan metrics; all established families keep their approved bytes.
  * Pins fail closed on changed or missing checkout bytes.
  */
 describe('AC6 landed r17b checkout provenance', () => {
   it.each([
-    [DASHBOARD_FIXTURE_PATH, 'a1adee857b2810076eb125970c5dd7f0e0d5439cb16e3e3560ef8c46e593c66c'],
+    [DASHBOARD_FIXTURE_PATH, 'e1fe970f063ba915a6de1ae1ba2fe99aa79e4b143790057c834926728f6a7979'],
     [
       DASHBOARD_PAGES_FIXTURE_PATH,
-      'd1cc8c995349415bdee534eb435f68b751e93eda6f4c775d793c49e45d062943',
+      '96157baaf763ef1d0229156003c32dbf6ce22c6c2c6ad8bf6f34af2808e4ca30',
     ],
     [
       SYNTHETIC_ACTION_FIXTURE_PATH,
-      '46a200bb4d40204f7c7107ce394ab3ac34fcc2bd9b8944b371961439955da6d8',
+      'fd5327bb2ce9ef45b7e30e2d21ddb23550888ea63156a75cc75e122bd3b7cf14',
     ],
   ])('pins the approved checkout bytes at %s', (file, sha256) => {
     expect(loadJsonWithIdentity(file).identity.sha256).toBe(sha256);
@@ -43,10 +42,10 @@ describe('AC6 landed r17b checkout provenance', () => {
     expect(input?.file).toBe(DASHBOARD_PAGES_FIXTURE_PATH);
     expect(familyIdentity(DASHBOARD_PAGES_FIXTURE_PATH, PAGES_ACTIONS_DESCRIPTOR)).toEqual({
       path: DASHBOARD_PAGES_FIXTURE_PATH,
-      sha256: '86fbbe581e6fbe545016a280ff2d4bf688c45f410aea7f2007a9b17201586dc8',
+      sha256: 'e909ffc056a72289f4f26c1f5136b425f82decc724f02718577c13f12a4aa1c0',
       families: {
-        action_executions: '271D75FE6AADB6E706D10C92A97E96E7836231742247ACB2D06ACABE22117558',
-        action_executions_more: '9CC62825D8266E852BB11224624D3A60D90EBAF9C5EC9ABD44D3E1094F51589E',
+        action_executions: '32EE60CB5317F756E846C3182600B055DA7CD48B680327F4392430B5F69FF345',
+        action_executions_more: '090C193A1159084FD28032FFD9EC0F72E673F0D3264AD900C3153749DA23885C',
         battle_actions_projection:
           'CA68FE30F3463847A682329EB65889BEB6F3956E7D08AEF624171F7EF48B18A8',
       },
@@ -59,7 +58,7 @@ describe('AC6 landed r17b checkout provenance', () => {
     expect(fixture['generated_by']).toBe('backend/tests/test_synthetic_action_contract.py');
     expect(CONTRACT_INPUTS.some(({ file }) => file === SYNTHETIC_ACTION_FIXTURE_PATH)).toBe(false);
     expect(familyHashes(SYNTHETIC_ACTION_FIXTURE_PATH)).toEqual({
-      synthetic_action: '4FCD49C736E877EB86C4F97F9E6822D93CAE9E15FF0503B4DCD68912802E29F6',
+      synthetic_action: '426941C31BD0DBE3F3944A43F7FA0BEC2B30B2D7D52F54C1E6FCEE84A6E0638B',
     });
     const cases = record(fixture['cases']);
     expect(Object.keys(cases)).toEqual(['synthetic_action']);

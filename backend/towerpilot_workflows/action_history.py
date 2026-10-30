@@ -247,6 +247,7 @@ def validate_history(battle, executions, *, context=None, ledger=None, ended_ope
       reason      None, or 'newer_schema'
       items       the rows that are not rejected, in the order given, or None when the battle has no recorded history (`reason` `recorded_before_action_history`)
       rejected    [{id, rules}], flagged [{id, rules}], notes [{id, notes}], damaged (count of rows that are not whole bodies)
+      refused_count rejected rows plus damaged bodies in this page (adjacent rows excluded)
       generations {generation: [row ids]} for the rows kept, in the order given (a battle held by several drivers lists each separately)
       coverage    what the battle's rows can claim: 'full' or 'since_adoption'
     """
@@ -254,7 +255,7 @@ def validate_history(battle, executions, *, context=None, ledger=None, ended_ope
     if len(rows) > MAX_ROWS:
         raise ValueError(f'validate_history takes one bounded page of at most {MAX_ROWS} rows, not {len(rows)}')
     catalog = catalog if catalog is not None else action_contract.catalog()
-    base = dict(status='ok', reason=None, items=[], rejected=[], flagged=[], notes=[], damaged=0, generations={}, coverage=battle_coverage(battle))
+    base = dict(status='ok', reason=None, items=[], rejected=[], flagged=[], notes=[], damaged=0, refused_count=0, generations={}, coverage=battle_coverage(battle))
     if ledger is not None and ledger.get('schema_version') is not None and ledger['schema_version'] > SCHEMA_VERSION:
         return dict(base, status='read_only', reason='newer_schema', items=[])
     scope = dict(device_key=(context or battle['context'])['device_key'], account=(context or battle['context']).get('account'))
@@ -284,5 +285,6 @@ def validate_history(battle, executions, *, context=None, ledger=None, ended_ope
                 rejected=[dict(id=row_id, rules=rules) for row_id, rules in verdict.rejected.items() if row_id in shown],
                 flagged=[dict(id=row_id, rules=rules) for row_id, rules in verdict.flagged.items() if row_id in shown and row_id not in verdict.rejected],
                 notes=[dict(id=row_id, notes=notes) for row_id, notes in verdict.notes.items() if row_id in shown])
+    base['refused_count'] = len(base['rejected']) + base['damaged']
     base['status'] = 'flagged' if base['rejected'] or base['flagged'] or base['damaged'] else 'ok'
     return base
