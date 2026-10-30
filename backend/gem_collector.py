@@ -302,7 +302,10 @@ def main(instance, preset):
 def device_lost(exc):
     """Did the emulator, not this collector's own logic, end the pass? A capture that returned no frame (CaptureError) or an
     adb error is the device layer's own type. A bare OSError (a socket timeout or reset) is the device's only when it was
-    raised through the adb socket code: the same type from the ledger, the logs or the gem routines is a real failure."""
+    raised through the adb socket code: the same type from the ledger, the logs or the gem routines is a real failure, and
+    so is a missing ROI (a setup gap the circuit should stop on)."""
+    if isinstance(exc, capture.RoiNotCalibrated):
+        return False
     if isinstance(exc, (capture.CaptureError, adbclient.AdbError)):
         return True
     trace = exc.__traceback__ if isinstance(exc, OSError) else None

@@ -195,6 +195,16 @@ def test_the_failed_event_still_reports_the_original_error(monkeypatch):
     assert name == 'gem_collector_failed' and kw['error_type'] == 'CaptureError' and 'screencap failed: x' in kw['error']
 
 
+def test_a_missing_roi_is_a_setup_gap_not_a_device_loss(monkeypatch):
+    """A CaptureError subtype, but the circuit must still stop on it: retrying never calibrates the ROI."""
+    from device import capture
+    from towerpilot_workflows.harvest import DeviceUnavailable
+    failure = capture.RoiNotCalibrated("ROI 'wave_box' not calibrated in config.yaml")
+    raised = collector_exit(monkeypatch, failure)
+    assert raised is failure and not isinstance(raised, DeviceUnavailable)
+    assert isinstance(failure, capture.CaptureError)       # every existing `except CaptureError` still catches it
+
+
 @pytest.mark.parametrize('failure', [
     OSError('No space left on device'),                  # the collector's own file work, not the device
     TimeoutError('a lock wait that is not the adb socket'),

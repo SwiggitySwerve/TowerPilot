@@ -15,6 +15,10 @@ class CaptureError(RuntimeError):
     pass
 
 
+class RoiNotCalibrated(CaptureError):
+    """A crop asked for an ROI the config does not have: a setup gap, not a lost device."""
+
+
 _resolved_serial = None
 
 def refresh_display(serial: str | None = None, *,
@@ -246,7 +250,7 @@ def roi(frame: np.ndarray, name: str) -> np.ndarray:
     """Crop a configured ROI from a frame, layout-aware. Raises if uncalibrated."""
     box = CONFIG["rois"].get(name)
     if not box:
-        raise CaptureError(f"ROI '{name}' not calibrated in config.yaml")
+        raise RoiNotCalibrated(f"ROI '{name}' not calibrated in config.yaml")
     x, y, w, h = box
     if name in _SHIFTED:
         y += layout_offset
