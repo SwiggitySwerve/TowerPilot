@@ -4347,10 +4347,10 @@ def _emulator_instances() -> list[dict]:
             # the Start Menu shortcut uses)
             live_keys = set()
             try:
-                import psutil
-                for pr in psutil.process_iter(["name", "cmdline"]):
-                    if "hd-player" in (pr.info["name"] or "").lower():
-                        args = pr.info["cmdline"] or []
+                from runtime.runners import process_rows
+                for _pr, info in process_rows(["name", "cmdline"]):
+                    if "hd-player" in (info["name"] or "").lower():
+                        args = info["cmdline"] or []
                         for i, a in enumerate(args):
                             if a == "--instance" and i + 1 < len(args):
                                 live_keys.add(args[i + 1])
@@ -4515,9 +4515,9 @@ def _prepare_bluestacks(key: str) -> dict:
     if not os.path.exists(path):
         raise FileNotFoundError(f"{path} not found")
     try:
-        import psutil
-        if any("hd-player" in (pr.info["name"] or "").lower()
-               for pr in psutil.process_iter(["name"])):
+        from runtime.runners import process_rows
+        if any("hd-player" in (info["name"] or "").lower()
+               for _pr, info in process_rows(["name"])):
             raise RuntimeError("BlueStacks is running - close every BlueStacks "
                                "window first (it rewrites bluestacks.conf on "
                                "exit and would undo the change)")
@@ -4716,15 +4716,15 @@ def api_wizard_emulators():
     import socket
     running = []
     try:
-        import psutil
         marks = {"MuMu": ("mumu",), "BlueStacks": ("hd-player", "bluestacks"),
                  "LDPlayer": ("dnplayer", "ldplayer")}
         seen = set()
-        for pr in psutil.process_iter(["name"]):
-            n = (pr.info["name"] or "").lower()
+        from runtime.runners import process_rows
+        for _pr, info in process_rows(["name"]):
+            n = (info["name"] or "").lower()
             for label, keys in marks.items():
                 if label not in seen and any(k in n for k in keys):
-                    running.append({"emulator": label, "process": pr.info["name"]})
+                    running.append({"emulator": label, "process": info["name"]})
                     seen.add(label)
     except Exception:                       # noqa: BLE001
         pass

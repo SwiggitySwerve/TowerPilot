@@ -322,16 +322,16 @@ class _Adopted:
 
 def _find_running(phase: str, instance: str):
     """An existing process already doing `phase` for this instance, or None."""
-    import psutil
+    from runtime.runners import process_rows
     # Match on the script's BASENAME: spawn sites vary between the relative
     # registry path (`flows/shard.py`) and an absolute Windows path, and the
     # basename is the one token every spelling contains.
     script = os.path.basename(PHASE_CMD[phase][0])
     me = os.getpid()
-    for p in psutil.process_iter(["pid", "cmdline"]):
-        if p.info["pid"] == me:
+    for p, info in process_rows(["pid", "cmdline"]):
+        if info["pid"] == me:
             continue
-        cl = [str(c) for c in (p.info.get("cmdline") or [])]
+        cl = [str(c) for c in (info.get("cmdline") or [])]
         if not any(script in c for c in cl):
             continue
         if instance not in cl:
@@ -1004,16 +1004,16 @@ def _find_running_block(b, instance: str, others: list | None = None):
     """An existing process already running this block, or None."""
     if b.get("legacy") and not b.get("foreign"):
         return _find_running(b["phase"], instance)
-    import psutil
+    from runtime.runners import process_rows
     # Basename for the same reason as _find_running: every spawn spelling
     # (relative registry path, absolute tray path) contains it.
     script = os.path.basename(flows.script(b["kind"]))
     others = others if others is not None else [b]
     me = os.getpid()
-    for p in psutil.process_iter(["pid", "cmdline"]):
-        if p.info["pid"] == me:
+    for p, info in process_rows(["pid", "cmdline"]):
+        if info["pid"] == me:
             continue
-        cl = [str(c) for c in (p.info.get("cmdline") or [])]
+        cl = [str(c) for c in (info.get("cmdline") or [])]
         if not any(script in c for c in cl):
             continue
         if instance not in cl:

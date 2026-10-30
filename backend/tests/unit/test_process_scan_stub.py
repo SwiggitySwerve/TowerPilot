@@ -90,5 +90,7 @@ def test_tray_orphans_skip_its_own_launcher_and_return_a_whole_stub_pair(monkeyp
              _proc(ME, [REAL, "runtime/tray.py", "--autostart", "main"]),
              *_pair(7000, _orch("main")),
              *_pair(8000, _orch("other"))]
-    monkeypatch.setattr(tray, "psutil", _fake_psutil(table))
+    fake = _fake_psutil(table)
+    monkeypatch.setattr(tray, "psutil", fake)
+    monkeypatch.setitem(sys.modules, "psutil", fake)   # the scan itself goes through runtime.runners.process_rows
     assert [p.pid for p in tray.Instance("main", {}).orphans()] == [7000, 7001]
