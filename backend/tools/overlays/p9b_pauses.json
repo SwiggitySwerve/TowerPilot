@@ -1,0 +1,47 @@
+{
+ "schema_version": 1,
+ "claim": "removing five pause changes",
+ "source_commit": "17befd2",
+ "hunks": [
+  {
+   "id": "H1",
+   "file": "backend/player/card_inventory.py",
+   "old": "            swipe(*scroll_points(frame,direction,spec),ms=900,reason='card calibration: preserve a complete inventory row')\n            # Start observing immediately after the synchronous drag. Two\n",
+   "new": "            swipe(*scroll_points(frame,direction,spec),ms=900,reason='card calibration: preserve a complete inventory row')\n            pause(.8)\n            # Start observing immediately after the synchronous drag. Two\n",
+   "restores": "pause(.8)",
+   "adds_pause_s": 0.8
+  },
+  {
+   "id": "H2",
+   "file": "backend/player/collection_scan.py",
+   "old": "            act.swipe(x+w//2,start,x+w//2,end,650,reason=f'manifest scan: {name} {direction}')\n            frame=settled()\n",
+   "new": "            act.swipe(x+w//2,start,x+w//2,end,650,reason=f'manifest scan: {name} {direction}')\n            scanner.pause(.7)\n            frame=settled()\n",
+   "restores": "scanner.pause(.7)",
+   "adds_pause_s": 0.7
+  },
+  {
+   "id": "H3",
+   "file": "backend/player/mapping_session.py",
+   "old": "    def observe(self):\n        try:\n            frame, self.lines = self.scanner.observed(self.expected)\n",
+   "new": "    def observe(self):\n        self.scanner.pause(.25)\n        try:\n            frame, self.lines = self.scanner.observed(self.expected)\n",
+   "restores": "self.scanner.pause(.25)",
+   "adds_pause_s": 0.25
+  },
+  {
+   "id": "H4",
+   "file": "backend/player/mapping_session.py",
+   "old": "        self.scanner.tap(x, y, reason=f\"manifest scan: {self.edge['action']}\")\n        self.expected = self.edge['destination']\n",
+   "new": "        self.scanner.tap(x, y, reason=f\"manifest scan: {self.edge['action']}\")\n        self.expected = self.edge['destination']\n        self.scanner.pause(.8)\n",
+   "restores": "self.scanner.pause(.8)",
+   "adds_pause_s": 0.8
+  },
+  {
+   "id": "H5",
+   "file": "backend/player/bootstrap.py",
+   "old": "        def grab_panel():\n            self.check_stop()\n            return self.grab()\n        panel=module_descriptor.settled_panel(icon,grab_panel(),grab_panel,self.pause)\n",
+   "new": "        self.pause(.8)\n        panel=self.grab()\n",
+   "restores": "self.pause(.8)\n        panel=self.grab()",
+   "adds_pause_s": 0.8
+  }
+ ]
+}
