@@ -420,3 +420,143 @@ def test_generated_app_notices_waive_only_the_email_marker(checker: ModuleType, 
     artifact[3][APP + 'BUILD_INVENTORY.txt'] = inventory(app)
     refresh_identity(artifact)
     assert check(checker, artifact) == 1
+
+@pytest.mark.parametrize('mutation', ['identical', 'changed', 'build-written', 'other-path', 'forbidden'])
+def test_pinned_content_requires_exact_provenance(
+        checker: ModuleType, artifact: Artifact, monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path, mutation: str) -> None:
+    name = PACKAGES + 'fixture.dist-info/METADATA'
+    data = ('Author: synthetic-author' + chr(64) + 'example.invalid\n').encode()
+    monkeypatch.setattr(checker, 'dependency_files', lambda directory: {
+        name: hashlib.sha256(data).hexdigest()})
+    artifact[3][name] = data
+    options = ()
+    if mutation == 'changed':
+        artifact[3][name] = b'a' + data[1:]
+    elif mutation == 'build-written':
+        artifact[3][PACKAGES + 'fixture.dist-info/RECORD'] = personal_markers()[0][1].encode()
+    elif mutation == 'other-path':
+        artifact[3][PACKAGES + 'fixture/copied.py'] = data
+    elif mutation == 'forbidden':
+        forbid = tmp_path / 'forbid.txt'
+        forbid.write_text('synthetic-author')
+        options = ('--forbid-file', str(forbid))
+    assert check(checker, artifact, *options) == (
+        0 if artifact[2] == 'portable' and mutation == 'identical' else 1)
+
+
+def test_generated_file_provenance_excludes_install_generated_members(
+        checker: ModuleType, tmp_path: Path) -> None:
+    generator = importlib.import_module('generate_dependency_images')
+    wheel = tmp_path / 'fixture-1.0-py3-none-any.whl'
+    members = {'fixture/code.py': b'pass',
+               'fixture-1.0.data/purelib/fixture/extra.py': b'pass',
+               'fixture-1.0.data/scripts/command': b'command',
+               'fixture-1.0.dist-info/RECORD': b'generated',
+               'fixture-1.0.dist-info/INSTALLER': b'generated',
+               'fixture/code.pyc': b'compiled'}
+    with zipfile.ZipFile(wheel, 'w') as archive:
+        for name, data in members.items():
+            archive.writestr(name, data)
+    pins = {'packages': [{'requirement': 'fixture==1.0', 'artifacts': [{
+        'filename': wheel.name, 'sha256': hashlib.sha256(wheel.read_bytes()).hexdigest(),
+        'url': 'https://example.invalid/never-downloaded'}]}]}
+    pins_path = tmp_path / 'portable_pins.json'
+    pins_path.write_text(json.dumps(pins))
+    manifest = generator.generate(pins_path, tmp_path)
+    assert manifest['files'] == {wheel.name: {
+        PACKAGES + 'fixture/code.py': hashlib.sha256(b'pass').hexdigest(),
+        PACKAGES + 'fixture/extra.py': hashlib.sha256(b'pass').hexdigest()}}
+    manifest_path = tmp_path / 'dependency_images.json'
+    manifest_path.write_text(json.dumps(manifest))
+    assert checker.dependency_files(tmp_path) == manifest['files'][wheel.name]
+    original = manifest_path.read_bytes()
+    for name in (PACKAGES + 'fixture-1.0.dist-info/RECORD',
+                 PACKAGES + 'fixture-1.0.dist-info/INSTALLER',
+                 PACKAGES + 'fixture/code.pyc', 'runtime/LICENSE.txt',
+                 PACKAGES + '../escape.py'):
+        manifest['files'][wheel.name][name] = hashlib.sha256(b'synthetic').hexdigest()
+        manifest_path.write_text(json.dumps(manifest))
+        with pytest.raises(ValueError, match='invalid dependency file'):
+            checker.dependency_files(tmp_path)
+        del manifest['files'][wheel.name][name]
+    manifest_path.write_bytes(original)
+    pins_path.write_bytes(pins_path.read_bytes() + b'\n')
+    with pytest.raises(ValueError, match='stale'):
+        checker.dependency_files(tmp_path)
+    pins_path.write_text(json.dumps(pins))
+    manifest['inspected_artifacts'][0]['sha256'] = '0' * 64
+    manifest_path.write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match='provenance'):
+        checker.dependency_files(tmp_path)
+
+
+@pytest.mark.parametrize('mutation', ['crlf', 'text', 'bare-cr'])
+def test_source_metadata_generation_only_accepts_crlf_normalization(
+        checker: ModuleType, tmp_path: Path, mutation: str) -> None:
+    import io
+    import tarfile
+    generator = importlib.import_module('generate_dependency_images')
+    source = tmp_path / 'fixture-1.0.tar.gz'
+    data = ('Author: fixture' + chr(64) + 'example.invalid\n').encode()
+    with tarfile.open(source, 'w:gz') as archive:
+        info = tarfile.TarInfo('fixture-1.0/PKG-INFO')
+        info.size = len(data)
+        archive.addfile(info, io.BytesIO(data))
+    pins = {'packages': [{'requirement': 'fixture==1.0', 'artifacts': [{
+        'filename': source.name, 'sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
+        'url': 'https://example.invalid/never-downloaded'}]}]}
+    pins_path = tmp_path / 'portable_pins.json'
+    pins_path.write_text(json.dumps(pins))
+    name = PACKAGES + 'fixture-1.0.dist-info/METADATA'
+    installed = data.replace(b'\n', b'\r\n')
+    if mutation == 'text':
+        installed += b'changed'
+    elif mutation == 'bare-cr':
+        installed = data.replace(b'\n', b'\r')
+    if mutation != 'crlf':
+        with pytest.raises(ValueError, match='source metadata'):
+            generator.generate(pins_path, tmp_path, {name: installed})
+    else:
+        manifest = generator.generate(pins_path, tmp_path, {name: installed})
+        entry, = manifest['source_metadata']
+        assert entry['path'] == name
+        assert entry['sha256'] == hashlib.sha256(installed).hexdigest()
+        assert entry['verified_as'] == 'sdist-pkg-info-crlf-to-lf'
+        (tmp_path / 'dependency_images.json').write_text(json.dumps(manifest))
+        hashes = checker.dependency_files(tmp_path)
+        import release_archive_policy as policy
+        assert policy.content_problems({name: installed}, (), pinned_files=hashes) == []
+        assert policy.content_problems({name: installed + b' '}, (), pinned_files=hashes)
+        assert policy.content_problems({name: installed}, ('fixture',), pinned_files=hashes)
+
+
+def test_python_license_pin_has_one_exact_member(checker: ModuleType, tmp_path: Path) -> None:
+    generator = importlib.import_module('generate_dependency_images')
+    runtime = tmp_path / 'python-fixture.zip'
+    data = ('License author: fixture' + chr(64) + 'example.invalid\n').encode()
+    with zipfile.ZipFile(runtime, 'w') as archive:
+        archive.writestr('LICENSE.txt', data)
+        archive.writestr('python.exe', b'not eligible')
+    pins = {'packages': [], 'python': {
+        'version': 'fixture', 'filename': runtime.name,
+        'url': 'https://example.invalid/never-downloaded',
+        'sha256': hashlib.sha256(runtime.read_bytes()).hexdigest()}}
+    pins_path = tmp_path / 'portable_pins.json'
+    pins_path.write_text(json.dumps(pins))
+    manifest = generator.generate(pins_path, tmp_path)
+    assert manifest['python_license']['path'] == 'runtime/LICENSE.txt'
+    assert manifest['python_license']['sha256'] == hashlib.sha256(data).hexdigest()
+    (tmp_path / 'dependency_images.json').write_text(json.dumps(manifest))
+    assert checker.dependency_files(tmp_path) == {'runtime/LICENSE.txt': hashlib.sha256(data).hexdigest()}
+    import release_archive_policy as policy
+    hashes = checker.dependency_files(tmp_path)
+    assert policy.content_problems({'runtime/LICENSE.txt': data}, (), pinned_files=hashes) == []
+    assert policy.content_problems({'runtime/LICENSE.txt': data + b' '}, (), pinned_files=hashes)
+    manifest['python_license']['path'] = 'runtime/python.exe'
+    (tmp_path / 'dependency_images.json').write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match='Python license provenance'):
+        checker.dependency_files(tmp_path)
+    runtime.write_bytes(b'mutated')
+    with pytest.raises(ValueError, match='Pinned artifact hash mismatch'):
+        generator.generate(pins_path, tmp_path)

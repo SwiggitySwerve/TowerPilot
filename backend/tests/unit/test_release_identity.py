@@ -320,11 +320,12 @@ def test_a_rehearsal_build_records_dirty_and_the_gate_refuses_it(
 def test_the_command_line_refuses_a_tree_that_is_not_a_clean_checkout(tools: tuple[ModuleType, ModuleType], portable_checkout: Path,
                                                                       tool: str) -> None:
     """The scripts as CI runs them (`python tools/<name>.py`), from a folder that carries its own copy of them. This
-    folder has no .git, so the tree is unknown and the script stops before it reads, copies, downloads or zips anything."""
+    folder has no .git, so the tree is unknown and the script stops before staging, downloading or zipping."""
     if tool == 'build_portable' and not PORTABLE_HOST:
         pytest.skip('the portable build needs 64-bit Python 3.12 on Windows')
     shutil.rmtree(portable_checkout / '.git')       # the revision file is for the builders above; here the folder is an unpacked archive
-    for name in ('tools/build_release.py', 'tools/build_portable.py', 'tools/release_archive_policy.py'):
+    for name in ('tools/build_release.py', 'tools/build_portable.py', 'tools/release_archive_policy.py',
+                 'tools/portable_pins.json'):
         _write(portable_checkout, {name: (REPO / name).read_bytes()})
     environment_ = dict(os.environ, PYTHONDONTWRITEBYTECODE='1')
     environment_.pop('PYTHONPATH', None)
