@@ -67,6 +67,13 @@
   grid-row: 1;
   max-inline-size: 13rem;
 }
+/* In a narrow cell an action (Use the quest default) goes under its control, so the box keeps
+   its width; the run label's Clear stays beside its wide box. */
+.tp-run-entry__field:not([data-entry-field='label']) > .tp-run-entry__actions {
+  grid-column: 1 / -1;
+  grid-row: auto;
+  max-inline-size: none;
+}
 .tp-run-entry__field > legend {
   margin-block-end: var(--tp-space-1);
   padding: 0;

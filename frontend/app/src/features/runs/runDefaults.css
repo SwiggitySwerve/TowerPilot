@@ -9,6 +9,3 @@
   gap: 0 var(--tp-space-1);
   color: var(--tp-color-text-muted);
 }
-.tp-run-defaults__problem > :first-child:not(:last-child)::after {
-  content: ':';
-}

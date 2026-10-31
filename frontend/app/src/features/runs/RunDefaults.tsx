@@ -27,7 +27,12 @@ export function RunDefaults() {
             <ValidationSummary problems={invalid.length} />
             {first?.invalid == null ? null : (
               <span className="tp-run-defaults__problem">
-                {first.label === null ? null : <ServerValue kind="name" value={first.label} />}
+                {first.label === null ? null : (
+                  <span>
+                    <ServerValue kind="name" value={first.label} />
+                    {t.needs.short}
+                  </span>
+                )}
                 <span>{settings.invalid[first.invalid.reason].short}</span>
               </span>
             )}

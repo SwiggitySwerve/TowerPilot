@@ -56,12 +56,13 @@ async function open(entry: DashboardCase, lost = false) {
     },
   });
   await page.advance(100);
-  const element = document.querySelector<HTMLElement>(`[data-entry-field="${path.at(-1)}"]`);
-  if (element === null) throw new Error('missing entry field');
+  const field = path.at(-1);
+  const element = document.querySelector<HTMLElement>(`[data-entry-field="${String(field)}"]`);
+  if (element === null || field === undefined) throw new Error('missing entry field');
   return {
     ...page,
     row: within(element),
-    field: path.at(-1),
+    field,
     setSource: (next: DashboardCase) => {
       source = next;
     },

@@ -211,9 +211,6 @@
 .tp-copy-line p {
   margin: 0;
 }
-.tp-copy-line__tail {
-  white-space: nowrap;
-}
 .tp-copy-line p {
   text-wrap: pretty;
 }

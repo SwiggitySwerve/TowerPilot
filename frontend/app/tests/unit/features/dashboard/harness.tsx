@@ -261,6 +261,7 @@ export function recordingCommands(): RecordingCommands {
     saveSettings: vi.fn(done),
     patchProfile: vi.fn(done),
     patchRunEntry: vi.fn(done),
+    saveRunEntryGroup: vi.fn(done),
     checkRunEntry: vi.fn(() => undefined),
     checkCollection: vi.fn(() => undefined),
     openEmulators: vi.fn(() => undefined),

@@ -143,7 +143,7 @@ for (const width of WIDTHS) {
     page,
   }) => {
     const problems = await openRunsLive(page, 'active_battle_routines', width);
-    const summary = live(page).locator('[data-part=\"runsDetails\"] summary', {
+    const summary = live(page).locator('[data-part="runsDetails"] summary', {
       hasText: 'Ad gems',
     });
     await expect(summary).toBeVisible();
@@ -160,7 +160,7 @@ for (const width of WIDTHS) {
     await details.getByText('Reported values', { exact: true }).click();
     await expect(details.locator('[data-server-text="detail"]')).toContainText('"offer_id"');
     await live(page)
-      .locator('[data-part=\"runsDetails\"] summary', { hasText: 'Floating gems' })
+      .locator('[data-part="runsDetails"] summary', { hasText: 'Floating gems' })
       .click();
     await expect(
       live(page).locator('[data-routine-details="floating_gems"]').getByText('None recorded'),
@@ -182,7 +182,7 @@ for (const width of WIDTHS) {
     page,
   }) => {
     const problems = await openRunsLive(page, 'runs_live_battle_details', width);
-    await live(page).locator('[data-part=\"runsDetails\"] summary', { hasText: 'Ad gems' }).click();
+    await live(page).locator('[data-part="runsDetails"] summary', { hasText: 'Ad gems' }).click();
     const ad = live(page).locator('[data-routine-details="ad_gems"]');
     await expect(ad.getByText('Seen on the last battle screen', { exact: true })).toBeVisible();
     await expect(ad.getByText(/; 5 s between looks$/u)).toBeVisible();
@@ -212,7 +212,7 @@ for (const width of WIDTHS) {
       window.location.hash = '#runs/live';
     });
     await live(page)
-      .locator('[data-part=\"runsDetails\"] summary', { hasText: 'Floating gems' })
+      .locator('[data-part="runsDetails"] summary', { hasText: 'Floating gems' })
       .click();
     await expect(
       live(page)
