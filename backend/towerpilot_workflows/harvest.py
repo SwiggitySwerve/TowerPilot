@@ -72,6 +72,14 @@ class CollectorRefused(RuntimeError):
     'CollectorRefused', which the lifecycle host does not count as a failure."""
 
 
+class DeviceUnavailable(RuntimeError):
+    """A collector lost the emulator: the adb transport timed out, dropped or refused, or no frame came back.
+
+    Raised inside the worker, chained to the device error that caused it; the operation records it as error code
+    'DeviceUnavailable'. The lifecycle host never counts it toward the circuit (the code did not fail, the device did),
+    and it still lengthens the relaunch backoff."""
+
+
 class HarvestStale(Conflict):
     """Bookkeeping was planned under a choice revision that is no longer current."""
 
