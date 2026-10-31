@@ -260,7 +260,7 @@ function RoutineRow({
       <span className="tp-run-row__mark">
         {mark === null ? null : (
           <>
-            <span>{t.live.marks[mark].short}</span>
+            <span>{(mark === 'changed' ? t.live.changedTag : t.live.marks[mark]).short}</span>
             <Why why={t.live.marks[mark].why} />
           </>
         )}
@@ -423,7 +423,11 @@ function OverrideName({
         <ActionName routine={item.routine} label={item.routineLabel} />
       </span>
       <span>
-        <Label server={item.label} code={item.field} table={a.fields} other={a.otherField} />
+        {item.field === 'enabled' && item.label === null ? (
+          t.live.overrides.onOff.short
+        ) : (
+          <Label server={item.label} code={item.field} table={a.fields} other={a.otherField} />
+        )}
       </span>
     </>
   );

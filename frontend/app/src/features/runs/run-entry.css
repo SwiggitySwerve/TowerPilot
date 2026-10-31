@@ -18,13 +18,6 @@
   border: 0;
   overflow-wrap: anywhere;
 }
-/* The tall perk list takes two rows; the short fields fill in beside it. */
-.tp-run-entry__grid {
-  grid-auto-flow: row dense;
-}
-.tp-run-entry__field[data-entry-field='perk_bans'] {
-  grid-row: span 2;
-}
 .tp-run-entry__field > * {
   grid-column: 1 / -1;
 }

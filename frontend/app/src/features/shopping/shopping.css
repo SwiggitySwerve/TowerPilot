@@ -39,6 +39,11 @@
   list-style: none;
 }
 /* One upgrade's range: its name, then each bound as a label and its box on one line. */
+/* A list that follows a grid or a note sits a step away from it. */
+.tp-shop__reasons,
+.tp-shop__waves {
+  margin-block-start: var(--tp-space-2);
+}
 .tp-shop__wave {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

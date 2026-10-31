@@ -249,6 +249,10 @@
   font-weight: 700;
 }
 .tp-disclosure__preview {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--tp-space-2);
   margin-inline-start: 0.5rem;
   color: var(--tp-color-text-muted);
 }
@@ -512,10 +516,11 @@ h3.tp-tile__title {
   margin-inline-start: var(--tp-space-2);
 }
 
-/* CopyLine intro and note: the short line and its help icon on one muted line. */
+/* CopyLine intro and note: the short line and its help icon on one muted line (the icon stays
+   beside the sentence's last line rather than wrapping alone). */
 .tp-copy-line[data-variant] {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: baseline;
   gap: 0 var(--tp-space-2);
   color: var(--tp-color-text-muted);
@@ -728,9 +733,9 @@ h3.tp-tile__title {
  */
 .tp-button[aria-disabled='true'],
 .tp-button:disabled {
-  border-color: color-mix(in srgb, var(--tp-color-border-active) 55%, transparent);
+  border-color: color-mix(in srgb, var(--tp-color-border-active) 40%, transparent);
   border-style: solid;
   background: transparent;
-  color: var(--tp-color-text-muted);
+  color: color-mix(in srgb, var(--tp-color-text-muted) 70%, transparent);
   cursor: not-allowed;
 }

@@ -112,7 +112,7 @@ function EntryField({ field }: { readonly field: FieldVM }) {
               className="tp-field-control"
               id={inputId}
               value={typeof field.raw === 'string' ? field.raw : ''}
-              rows={3}
+              rows={2}
               aria-invalid={invalid || undefined}
               aria-describedby={invalid ? `${helpId} ${reasonId}` : helpId}
               onChange={(event) => {

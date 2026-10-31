@@ -299,7 +299,7 @@ describe('F6-11 RL2 reset every override of this battle at once (r12 candidate r
   const AFTER = () => all('read_after_every_override_was_reset');
   const resetAllButton = () =>
     within(liveRegion()).getByRole('button', {
-      name: "Use the battle's starting values for all 2",
+      name: 'Use starting values for all 2',
     });
 
   it('RL2 a battle with two overrides offers one reset of both; a battle with one does not', async () => {
@@ -321,7 +321,7 @@ describe('F6-11 RL2 reset every override of this battle at once (r12 candidate r
       within(dialog())
         .getAllByRole('listitem')
         .map((item) => item.textContent),
-    ).toEqual(['Ad gemsEvery', 'Floating gemsOn']);
+    ).toEqual(['Ad gemsEvery', 'Floating gemson/off']);
     await page.user.click(within(dialog()).getByRole('button', { name: 'Cancel' }));
     await page.advance(1_000);
     expect(page.fake.writes()).toEqual([]);
@@ -409,7 +409,7 @@ describe('RL2 recorded mixed shopping and routine resets', () => {
   const mixed = (name: string) => dashboardPagesCase(`run_controls_live_reset_all_mixed.${name}`);
   const allButton = () =>
     within(liveRegion()).getByRole('button', {
-      name: "Use the battle's starting values for all 3",
+      name: 'Use starting values for all 3',
     });
 
   it('RL2 mixed reset sends every leaf as null once; acceptance waits for the same-battle applied read', async () => {
@@ -616,13 +616,13 @@ describe('F6-11 RL7 battle details in the live section', () => {
       ),
     ];
     expect(summaries.map((s) => s.textContent)).toEqual([
-      'Abilities: battle details',
-      'Ad gems: battle details',
-      'Floating gems: battle details',
-      'Repeat: battle details',
-      'Rescue: battle details',
-      'Rewards: battle details',
-      'Shopping: battle details',
+      'Abilities',
+      'Ad gems',
+      'Floating gems',
+      'Repeat',
+      'Rescue',
+      'Rewards',
+      'Shopping',
     ]);
     expect(summaries.every((s) => !(s.parentElement as HTMLDetailsElement).open)).toBe(true);
   });
@@ -794,7 +794,7 @@ it.each([false, true])(
     page.fake.route('POST', accepted.request.path, () => 'hold');
     await page.user.click(
       within(liveRegion()).getByRole('button', {
-        name: "Use the battle's starting values for all 3",
+        name: 'Use starting values for all 3',
       }),
     );
     await page.user.click(within(dialog()).getByRole('button', { name: 'Use starting values' }));

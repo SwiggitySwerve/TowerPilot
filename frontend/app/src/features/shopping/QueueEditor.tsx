@@ -282,6 +282,7 @@ function Page({ section, vm, idBase, actions }: Parts & { readonly section: Pick
           {section.items.map((item) =>
             item.excluded && item.exclusionReason !== null ? (
               <li key={item.id} id={`${idBase}:reason:${item.id}`} className="tp-shop__hint">
+                <Mark kind="ban" label={t.excluded.short} />
                 <strong>{nameOf(item.label)}</strong>
                 {t.space}
                 {t.excludedReason.short}

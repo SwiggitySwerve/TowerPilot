@@ -172,7 +172,7 @@ export function SavedShopping() {
                               entry={reasonCopy ?? t.unavailable}
                             />
                           )}
-                          {vm.discard ? null : (
+                          {vm.discard || !vm.save.enabled ? null : (
                             <Reason id={`${idBase}:discard-reason`} entry={t.nothing} />
                           )}
                         </>
@@ -194,7 +194,13 @@ export function SavedShopping() {
                         label={t.discard.short}
                         {...(vm.discard
                           ? {}
-                          : { disabled: true, reasonId: `${idBase}:discard-reason` })}
+                          : {
+                              disabled: true,
+                              // Nothing to save and nothing to discard: the Save's one line says it.
+                              reasonId: vm.save.enabled
+                                ? `${idBase}:discard-reason`
+                                : `${idBase}:save-reason`,
+                            })}
                         onClick={() => {
                           if (vm.scope !== null) commands.discardDraft(vm.scope);
                         }}
