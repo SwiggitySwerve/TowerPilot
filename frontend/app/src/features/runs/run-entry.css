@@ -26,12 +26,16 @@
   grid-column: 1;
   grid-row: 1;
 }
+/* A lone check box is narrow: its Save sits right after it, not across the column. */
+.tp-run-entry__field:has(> .tp-check-field:not(.tp-run-entry__remove)) {
+  grid-template-columns: auto minmax(0, 1fr);
+}
 .tp-run-entry__field > .tp-run-entry__actions {
   grid-column: 2;
   grid-row: 1;
   max-inline-size: 13rem;
 }
-.tp-run-entry__field legend {
+.tp-run-entry__field > legend {
   margin-block-end: var(--tp-space-1);
   padding: 0;
   color: var(--tp-color-text-muted);
