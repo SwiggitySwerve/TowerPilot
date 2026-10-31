@@ -152,10 +152,7 @@ describe('SQ9 shared shopping policies', () => {
     const summary = defaults.querySelector('summary');
     expect(summary).toHaveTextContent('Needs attention');
     expect(summary).toHaveTextContent('1 problem');
-    expect(within(defaults).getByText('Choose one of the listed options')).not.toBeVisible();
-    await page.user.click(
-      within(defaults).getByText('Saved defaults / Machine fallback', { exact: true }),
-    );
+    // A problem is needed to act on, so the disclosure opens itself to show it.
     expect(within(defaults).getByText('Choose one of the listed options')).toBeVisible();
     expect(page.fake.writes()).toEqual([]);
   });

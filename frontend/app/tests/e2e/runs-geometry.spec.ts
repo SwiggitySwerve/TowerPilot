@@ -173,10 +173,9 @@ for (const scenario of SCENARIOS) {
       const list = page.locator('[data-region="runsSaved"] [data-runs-list]');
       await expect(list.locator('.tp-record-row')).toHaveCount(12);
       await expect(list.locator('details')).toHaveCount(0);
-      for (let n = 1; n <= 12; n += 1)
-        await expect(
-          list.getByRole('button', { name: `Edit Run ${String(n)}`, exact: true }),
-        ).toBeVisible();
+      // One run is open for editing (its row says Editing and offers no Edit); every other has Edit.
+      await expect(list.locator('li', { hasText: 'Editing' })).toHaveCount(1);
+      await expect(list.getByRole('button', { name: /^Edit Run \d+$/ })).toHaveCount(11);
       await expect(list.getByText('Coin run').first()).toBeVisible();
       await expect(list.getByText('Ready').first()).toBeVisible();
       await list.getByRole('button', { name: 'Edit Run 7', exact: true }).click();

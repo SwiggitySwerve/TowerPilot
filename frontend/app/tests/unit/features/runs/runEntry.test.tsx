@@ -17,6 +17,7 @@ import {
 } from '../../../support/dashboardFixture.ts';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
 import { enterText, renderPage, type PageOptions } from '../dashboard/harness.tsx';
+import { ENTRY_SAVE, entryDiscard, entrySave } from '../../../support/runEntrySave.ts';
 
 const fenceChecks: (() => void)[] = [];
 afterEach(() => {
@@ -107,7 +108,7 @@ async function open(
   return page;
 }
 async function save(page: Awaited<ReturnType<typeof open>>, field: string) {
-  await page.user.click(row(field).getByRole('button', { name: 'Save field' }));
+  await page.user.click(entrySave(field));
   await page.advance(100);
 }
 function sourceBefore(entry: DashboardCase): DashboardCase {
@@ -238,7 +239,7 @@ describe('PE6 target-bound entry editor', () => {
     });
     await page.user.type(row('label').getByLabelText('Run label'), ' draft');
     hold = true;
-    await page.user.click(row('label').getByRole('button', { name: 'Save field' }));
+    await page.user.click(entrySave('label'));
     act(() => {
       page.data.commands.returnEditingToActive({ epoch: page.data.store.getSnapshot().epoch });
       page.data.commands.pickEditingTarget({
@@ -405,6 +406,57 @@ describe('PE6 target-bound entry editor', () => {
 });
 
 describe('RL3 and RL6 saved entry editor', () => {
+  it('one group Save sends each changed field once, in order, the second expecting the revision the first answered', async () => {
+    const page = await open('farm', {
+      before: (fake) => {
+        let answered = 0;
+        fake.route('POST', PATCH, () => {
+          answered += 1;
+          return {
+            status: 200,
+            body: { ok: true, revision: `after-${String(answered)}`, profile: {}, warnings: [] },
+          };
+        });
+      },
+    });
+    const base = selectRunEntry(page.data.store.getSnapshot()).fields[0]?.revision;
+    await page.user.clear(row('label').getByLabelText('Run label'));
+    await page.user.type(row('label').getByLabelText('Run label'), 'Farm two');
+    await page.user.clear(row('tier').getByLabelText('Run tier'));
+    await page.user.type(row('tier').getByLabelText('Run tier'), '3');
+    expect(entrySave('label')).not.toHaveAttribute('aria-disabled');
+    await page.user.click(entrySave('label'));
+    await page.advance(100);
+    const bodies = page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown);
+    expect(bodies).toHaveLength(2);
+    expect(bodies[0]).toMatchObject({
+      expected_revision: base,
+      path: ['blueprints', 'farm', 'label'],
+      value: 'Farm two',
+    });
+    expect(bodies[1]).toMatchObject({
+      expected_revision: 'after-1',
+      path: ['blueprints', 'farm', 'tier'],
+      value: 3,
+    });
+  });
+
+  it('a refused first patch of a group Save stops the rest; their drafts stay', async () => {
+    const page = await open('farm', {
+      before: (fake) => {
+        fake.route('POST', PATCH, () => sample('stale_revision_409'));
+      },
+    });
+    await page.user.clear(row('label').getByLabelText('Run label'));
+    await page.user.type(row('label').getByLabelText('Run label'), 'Farm two');
+    await page.user.clear(row('tier').getByLabelText('Run tier'));
+    await page.user.type(row('tier').getByLabelText('Run tier'), '3');
+    await page.user.click(entrySave('tier'));
+    await page.advance(100);
+    expect(page.fake.writes()).toHaveLength(1);
+    expect(row('tier').getByLabelText('Run tier')).toHaveValue('3');
+  });
+
   it('RL3 entry groups preserve field order, individual save targets and all settings', async () => {
     const page = await open();
     expect(form().getByRole('heading', { level: 4, name: 'Identity' })).toBeVisible();
@@ -432,10 +484,10 @@ describe('RL3 and RL6 saved entry editor', () => {
     const input = row('label').getByLabelText('Run label');
     expect(input).toHaveValue('');
     expect(input).not.toHaveAttribute('aria-invalid', 'true');
-    expect(row('label').getByRole('button', { name: 'Save field' })).toHaveAccessibleDescription(
-      'Enter a nonblank label.',
-    );
+    // Untouched, nothing in the group changed: its one Save says so.
+    expect(entrySave('label')).toHaveAccessibleDescription('No change to save.');
     await page.user.type(input, ' ');
+    expect(entrySave('label')).toHaveAccessibleDescription('Fix the marked fields to save.');
     expect(input).toHaveAttribute('aria-invalid', 'true');
     expect(row('label').getByRole('alert')).toHaveTextContent('Enter a nonblank label.');
     expect(row('label').getByRole('alert')).toBeVisible();
@@ -465,9 +517,7 @@ describe('RL3 and RL6 saved entry editor', () => {
     const before = selectRunEntry(page.data.store.getSnapshot()).fields.find(
       (field) => field.key === 'perk_bans',
     );
-    expect(row('perk_bans').getByRole('button', { name: 'Save field' })).not.toHaveAttribute(
-      'aria-disabled',
-    );
+    expect(entrySave('perk_bans')).not.toHaveAttribute('aria-disabled');
     expect(before?.command?.value).toEqual(items);
     await save(page, 'perk_bans');
     expect(JSON.parse(page.fake.writes()[0]?.body ?? '{}')).toEqual(entry.request.body);
@@ -608,16 +658,11 @@ describe('RL3 and RL6 saved entry editor', () => {
     await page.user.type(row('tier').getByLabelText('Run tier'), '3');
     await save(page, 'tier');
     expect(row('tier').getByLabelText('Run tier')).toHaveValue('13');
-    expect(row('tier').getByRole('button', { name: 'Save field' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
+    expect(entrySave('tier')).toHaveAttribute('aria-disabled', 'true');
     await page.user.click(form().getByRole('button', { name: 'Read entry settings' }));
     await page.advance(100);
     await page.user.click(row('tier').getByRole('button', { name: 'Continue from the read' }));
-    expect(row('tier').getByRole('button', { name: 'Save field' })).not.toHaveAttribute(
-      'aria-disabled',
-    );
+    expect(entrySave('tier')).not.toHaveAttribute('aria-disabled');
     expect(page.fake.writes()).toHaveLength(1);
   });
 
@@ -697,9 +742,7 @@ describe('RL3 and RL6 saved entry editor', () => {
     await page.user.type(row('tier').getByLabelText('Run tier'), '3');
     await save(page, 'tier');
     await page.user.click(row('tier').getByRole('button', { name: 'Continue from the read' }));
-    expect(row('tier').getByRole('button', { name: 'Save field' })).not.toHaveAttribute(
-      'aria-disabled',
-    );
+    expect(entrySave('tier')).not.toHaveAttribute('aria-disabled');
     expect(root().querySelector('[data-outcome="unknown"]')).not.toBeNull();
     expect(page.fake.writes()).toHaveLength(1);
     expect(page.data.machine.snapshot().at(-1)?.accepted).toBe(true);
@@ -775,10 +818,7 @@ describe('RL3 and RL6 saved entry editor', () => {
     await page.advance(100);
     expect(row('perk_bans').getByLabelText('Perk bans (one per line)')).toHaveValue('coins');
     expect(row('perk_bans').getByLabelText('Leave the game’s perk bans alone')).not.toBeChecked();
-    expect(row('perk_bans').getByRole('button', { name: 'Save field' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
+    expect(entrySave('perk_bans')).toHaveAttribute('aria-disabled', 'true');
     await page.user.click(row('perk_bans').getByRole('button', { name: 'Continue from the read' }));
     expect(
       selectRunEntry(page.data.store.getSnapshot()).fields.find(
@@ -918,10 +958,7 @@ describe('refused RunEntry draft after a failed source reread', () => {
       expect(vm.readFailure).toBeNull();
       expect(vm.fields.every((field) => !field.readOnly)).toBe(true);
       expect(vm.fields.every((field) => field.command === null)).toBe(true);
-      expect(row('label').getByRole('button', { name: 'Save field' })).toHaveAttribute(
-        'aria-disabled',
-        'true',
-      );
+      expect(entrySave('label')).toHaveAttribute('aria-disabled', 'true');
       await save(page, 'label');
       expect(page.fake.writes()).toEqual([]);
     },
@@ -978,10 +1015,10 @@ describe('refused RunEntry draft after a failed source reread', () => {
       form().getByText('The last read is shown read-only. Your draft and save result are kept.'),
     ).toBeVisible();
     expect(form().queryByRole('button', { name: 'Continue from the read' })).toBeNull();
-    for (const button of form().getAllByRole('button', { name: 'Save field' }))
-      expect(button).toBeDisabled();
+    for (const button of form().getAllByRole('button', { name: ENTRY_SAVE }))
+      expect(button).toHaveAttribute('aria-disabled', 'true');
     expect(row('label').getByRole('button', { name: 'Clear label' })).toBeDisabled();
-    expect(row('label').getByRole('button', { name: 'Discard field draft' })).toBeDisabled();
+    expect(entryDiscard('label')).toHaveAttribute('aria-disabled', 'true');
     const vm = selectRunEntry(page.data.store.getSnapshot());
     expect(
       vm.fields.every(
@@ -996,7 +1033,7 @@ describe('refused RunEntry draft after a failed source reread', () => {
     await page.advance(100);
     expect(row('label').getByLabelText('Run label')).toHaveValue('Offline farm');
     expect(row('label').getByLabelText('Run label')).toBeEnabled();
-    expect(row('label').getByRole('button', { name: 'Save field' })).toBeEnabled();
+    expect(entrySave('label')).toBeEnabled();
     expect(form().getByText('Not saved: the account or profile changed')).toBeVisible();
     expect(form().queryByText('The server could not be reached.')).toBeNull();
     expect(page.fake.writes()).toHaveLength(1);

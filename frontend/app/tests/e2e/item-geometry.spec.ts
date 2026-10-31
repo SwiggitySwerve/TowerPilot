@@ -15,7 +15,7 @@ async function openGallery(page: Page) {
 
 const SCENARIOS = [
   { name: 'desktop 1360', width: 1360, touch: false, minimum: 24, columns: 5 },
-  { name: 'tablet 1054', width: 1054, touch: false, minimum: 24, columns: 4 },
+  { name: 'tablet 1054', width: 1054, touch: false, minimum: 24, columns: 3 },
   { name: 'phone 390', width: 390, touch: false, minimum: 44, columns: 1 },
   { name: 'touch desktop 1360', width: 1360, touch: true, minimum: 44, columns: 5 },
 ] as const;

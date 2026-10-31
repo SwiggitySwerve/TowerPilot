@@ -200,6 +200,13 @@ export interface DashboardCommands {
   /** C4 to C6: one profile patch, sent once after a click-time config read still names its context. */
   readonly patchProfile: (command: ProfilePatchCommand) => Promise<void>;
   readonly patchRunEntry: (command: RunEntryCommand) => Promise<void>;
+  /**
+   * One Save for a group of entry fields: each field is still its own profile patch, sent
+   * one after another; each next patch expects the revision the previous one answered, so
+   * the profile fence still judges it against exactly what this page wrote. The first
+   * refusal, unknown outcome or unsent patch stops the rest (their drafts stay).
+   */
+  readonly saveRunEntryGroup: (commands: readonly RunEntryCommand[]) => Promise<void>;
   readonly checkRunEntry: () => void;
   /** Read the settings and the profile source again (a GET each, never a write). */
   readonly checkCollection: () => void;

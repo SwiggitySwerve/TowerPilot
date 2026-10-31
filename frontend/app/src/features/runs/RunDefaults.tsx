@@ -14,15 +14,14 @@ import './runDefaults.css';
 export function RunDefaults() {
   const { vm, status, instancePreset } = useView(selectRunDefaults);
   const { commands } = useDashboard();
+  const problems = vm?.fields.filter((field) => field.invalid !== null).length ?? 0;
   return (
     <div className="tp-run-defaults" data-run-defaults="true">
+      {/* A field that needs attention is shown, not folded away behind its count. */}
       <Disclosure
         label={t.fallback.short}
-        preview={
-          <ValidationSummary
-            problems={vm?.fields.filter((field) => field.invalid !== null).length ?? 0}
-          />
-        }
+        initiallyOpen={problems > 0}
+        preview={<ValidationSummary problems={problems} />}
       >
         {instancePreset === null ? null : (
           <Facts>

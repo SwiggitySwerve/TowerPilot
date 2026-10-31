@@ -12,6 +12,7 @@ import { moreCase, moreSourceBefore } from '../../../support/profileTargetMore.t
 import { withRecordedFence, fencedRuntime } from '../../../support/profilePatchFenced.ts';
 import { renderPage } from '../dashboard/harness.tsx';
 import { textOutsideCatalogue } from '../../copy/renderedText.ts';
+import { entrySave } from '../../../support/runEntrySave.ts';
 
 it('RL9 clearing a label refreshes the active runs catalogue as well as the entry source', async () => {
   const page = await open(parityCase('label_deleted_the_run_id_shows'));
@@ -94,7 +95,7 @@ it.each(cases)('RL9 RL12 RL13 exact fenced request and retained refusal: %s', as
         typeof value === 'string' ? JSON.stringify(value) : String(value),
       );
     }
-    await page.user.click(page.row.getByRole('button', { name: 'Save field' }));
+    await page.user.click(entrySave(page.field));
   }
   await page.advance(100);
   // Parity recordings predate expected_context. Add only that fence, compare every other key.
@@ -158,7 +159,7 @@ it.each(['coin_run_switched_to_dissonance', 'saved_rides', 'saved_cycles'])(
       await page.user.clear(page.row.getByRole('textbox'));
       await page.user.type(page.row.getByRole('textbox'), String(value));
     }
-    await page.user.click(page.row.getByRole('button', { name: 'Save field' }));
+    await page.user.click(entrySave(page.field));
     await page.advance(100);
     page.setSource(paritySourceBefore(entry));
     await act(async () => {
@@ -228,7 +229,7 @@ it('PE6 F6-14c inactive dissonant_tab follows its recorded save', async () => {
   if (element === null) throw new Error('missing inactive field');
   const row = within(element);
   await page.user.selectOptions(row.getByRole('combobox'), 'defense');
-  await page.user.click(row.getByRole('button', { name: 'Save field' }));
+  await page.user.click(entrySave('dissonant_tab'));
   await page.advance(100);
   expect(page.fake.writes().map((write) => JSON.parse(write.body ?? '{}') as unknown)).toEqual([
     save.request.body,

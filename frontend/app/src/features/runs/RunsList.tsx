@@ -57,7 +57,7 @@ function RunRow({ run, selected }: { readonly run: RunChoiceVM; readonly selecte
       kind={
         <>
           <KindTag label={kindLabel(run.kind)} />
-          {selected ? <KindTag tone="ok" label={t.list.editing.short} /> : null}
+          {selected ? <KindTag label={t.list.editing.short} /> : null}
         </>
       }
       summary={
@@ -86,15 +86,18 @@ function RunRow({ run, selected }: { readonly run: RunChoiceVM; readonly selecte
               {t.list.prepare.short}
             </a>
           )}
-          <Button
-            tier="quiet"
-            label={t.list.edit.short}
-            targetId={nameId}
-            focusKey={`runs:edit:${run.key}`}
-            onClick={() => {
-              commands.openRuns(true, run.key);
-            }}
-          />
+          {/* The run being edited is already open below; its row says so instead. */}
+          {selected ? null : (
+            <Button
+              tier="quiet"
+              label={t.list.edit.short}
+              targetId={nameId}
+              focusKey={`runs:edit:${run.key}`}
+              onClick={() => {
+                commands.openRuns(true, run.key);
+              }}
+            />
+          )}
         </>
       }
     />

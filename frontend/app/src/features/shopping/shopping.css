@@ -34,20 +34,23 @@
   padding: 0;
   list-style: none;
 }
+/* One upgrade's range: its name, then each bound as a label and its box on one line. */
 .tp-shop__wave {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--tp-space-1) var(--tp-space-3);
+  gap: var(--tp-space-1) var(--tp-space-2);
 }
 .tp-shop__wave > strong {
-  flex: 1 1 8rem;
+  grid-column: 1 / -1;
   min-width: 0;
 }
 .tp-shop__wave-field {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--tp-space-1);
+  display: contents;
+  font-size: var(--tp-font-size-13);
+}
+.tp-shop__wave-field > span[aria-hidden='true'] {
+  color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);
 }
 .tp-shop__label {

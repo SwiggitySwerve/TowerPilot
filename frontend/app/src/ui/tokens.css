@@ -81,12 +81,13 @@
   --tp-control-padding-block: 0.2rem;
 
   /* Item grids (ChipGrid): one box size for every chip, so rows and columns line up */
-  --tp-chip-min-width: 11rem;
-  /* One box per grid: one line while no chip of the grid is on, two once one holds its fields */
+  /* One box for every chip: a chip that is on holds its fields on its own line, at its end */
+  --tp-chip-min-width: 12.5rem;
+  --tp-chip-min-width-two-fields: 16rem;
   --tp-chip-height: 2.5rem;
-  --tp-chip-height-open: 4.5rem;
   --tp-chip-gap: 0.4rem;
   --tp-chip-field-height: 1.75rem;
+  --tp-chip-field-width: 2.75rem;
   --tp-queue-item-height: 3.25rem;
   --tp-item-button-size: 1.6rem;
 
@@ -98,9 +99,8 @@
 @media (max-width: 600px), (pointer: coarse) {
   :root {
     --tp-control-height: var(--tp-control-height-touch);
-    /* A toggle and its inline fields stack, each a 44 px target */
+    /* The toggle and its inline fields are each a 44 px target */
     --tp-chip-height: 3.25rem;
-    --tp-chip-height-open: 7rem;
     --tp-chip-field-height: var(--tp-control-height-touch);
     --tp-queue-item-height: 3.5rem;
     --tp-item-button-size: var(--tp-control-height-touch);

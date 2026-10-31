@@ -275,6 +275,21 @@ function Page({ section, vm, idBase, actions }: Parts & { readonly section: Pick
           );
         })}
       </ChipGrid>
+      {section.items.some((item) => item.excluded && item.exclusionReason !== null) ? (
+        <ul className="tp-shop__reasons">
+          {section.items.map((item) =>
+            item.excluded && item.exclusionReason !== null ? (
+              <li key={item.id} id={`${idBase}:reason:${item.id}`} className="tp-shop__hint">
+                <strong>{nameOf(item.label)}</strong>
+                {t.space}
+                {t.excludedReason.short}
+                {t.space}
+                <ServerValue kind="message" value={item.exclusionReason} />
+              </li>
+            ) : null,
+          )}
+        </ul>
+      ) : null}
     </Tile>
   );
 }
@@ -306,7 +321,12 @@ function NeverBuy({ vm, idBase, actions }: Parts) {
 /** The wave range of each upgrade of the plan: kept from the earlier editor, folded as few use it. */
 function WaveRanges({ vm, idBase, actions }: Parts) {
   return (
-    <Disclosure label={t.waveRanges.short} count={vm.entries.length} focusKey={`${idBase}:waves`}>
+    <Disclosure
+      label={t.waveRanges.short}
+      count={vm.entries.length}
+      focusKey={`${idBase}:waves`}
+      initiallyOpen={vm.entries.length > 0}
+    >
       <p className="tp-shop__hint">{t.waveRangesHint.short}</p>
       <ul className="tp-shop__waves">
         {vm.entries.map((entry) => (
@@ -356,9 +376,6 @@ export function QueueEditor(props: QueueEditorProps) {
   );
   // The queue lists what will be bought; a left-out entry keeps its place in the plan, unseen.
   const queued = vm.entries.filter((entry) => entry.enabled && !excluded.has(entry.id));
-  const reasons = vm.picker.flatMap((section) =>
-    section.items.filter((item) => item.excluded && item.exclusionReason !== null),
-  );
   const problems = vm.entries.flatMap((entry) =>
     FIELD_ORDER.flatMap((field) => {
       const problem = entry.fields[field].problem;
@@ -447,21 +464,6 @@ export function QueueEditor(props: QueueEditorProps) {
           {vm.picker.map((section) => (
             <Page key={section.key} section={section} {...parts} />
           ))}
-          {reasons.length === 0 ? null : (
-            <ul className="tp-shop__reasons">
-              {reasons.map((item) => (
-                <li key={item.id} id={`${idBase}:reason:${item.id}`} className="tp-shop__hint">
-                  <strong>{nameOf(item.label)}</strong>
-                  {t.space}
-                  {t.excludedReason.short}
-                  {t.space}
-                  {item.exclusionReason === null ? null : (
-                    <ServerValue kind="message" value={item.exclusionReason} />
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
           <NeverBuy {...parts} />
         </Tile>
       </div>

@@ -5,6 +5,7 @@ import { selectCollectionPage } from '../../../../src/store/selectors/collection
 import { selectRunEntry } from '../../../../src/store/selectors/runEntry.ts';
 import { dashboardPagesCase } from '../../../support/dashboardFixture.ts';
 import { renderPage } from '../dashboard/harness.tsx';
+import { ENTRY_SAVE } from '../../../support/runEntrySave.ts';
 
 const recorded = (name: string) => dashboardPagesCase(`profile_target.${name}`);
 const SOURCE = '/api/profile-src/second';
@@ -66,7 +67,7 @@ for (const editor of ['collection', 'runs'] as const) {
         expect(page.view.queryByRole('textbox', { name: 'Run label' })).toBeNull();
         const entry = page.view.container.querySelector<HTMLElement>('[data-run-entry]');
         if (entry === null) throw new Error('entry editor missing');
-        expect(within(entry).queryByRole('button', { name: /Save field/u })).toBeNull();
+        expect(within(entry).queryByRole('button', { name: ENTRY_SAVE })).toBeNull();
       }
       expect(page.fake.writes()).toEqual([]);
       page.fake.next(SOURCE, 'GET').respond(200, recorded('inactive_target_read_after_save').body);

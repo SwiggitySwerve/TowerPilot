@@ -88,9 +88,9 @@
   padding: 0;
   list-style: none;
 }
-/* A chip that is on shows its fields on a second line; every chip of that grid takes the taller box. */
-.tp-chip-grid:has(.tp-toggle-chip__controls) {
-  grid-auto-rows: var(--tp-chip-height-open);
+/* A chip that is on with two fields (tap limit and weight) needs a wider box: the whole grid takes it. */
+.tp-chip-grid:has(.tp-chip-field ~ .tp-chip-field) {
+  --tp-chip-min-width: var(--tp-chip-min-width-two-fields);
 }
 .tp-chip-grid[data-size='cell'] {
   --tp-chip-min-width: 13rem;
@@ -98,13 +98,12 @@
   gap: 0.3rem;
 }
 
-/* Toggle chip: a toggle button, and its inline fields only while it is on (a second line). */
+/* Toggle chip: a toggle button, and its inline fields at its end only while it is on. */
 .tp-toggle-chip {
   display: grid;
-  grid-template-rows: auto;
-  align-content: center;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.3rem;
   padding: 0.25rem 0.5rem;
   font-size: 0.8rem;
 }
@@ -164,7 +163,7 @@
 
 /* A number field inside a chip: compact, and a 44 px target when touch or narrow. */
 .tp-chip-field {
-  inline-size: 3.2rem;
+  inline-size: var(--tp-chip-field-width);
   min-width: 0;
   block-size: var(--tp-chip-field-height);
   min-block-size: 24px;

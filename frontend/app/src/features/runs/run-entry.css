@@ -42,6 +42,19 @@
   font-size: var(--tp-font-size-13);
   font-weight: 600;
 }
+.tp-run-entry__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--tp-space-2) var(--tp-space-6);
+}
+.tp-run-entry__head > * {
+  margin: 0;
+}
+/* A group's one Save, under its fields. */
+.tp-run-entry__bar {
+  margin-block-start: var(--tp-space-3);
+}
 .tp-run-entry__hint {
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);
