@@ -1,5 +1,6 @@
 import { runtimeConfig as t } from '../../copy/runtimeConfig.ts';
 import { runtime } from '../../copy/runtime.ts';
+import { settings } from '../../copy/settings.ts';
 import { selectRunDefaults } from '../../store/selectors/runDefaults.ts';
 import { useDashboard, useView } from '../dashboard/context.ts';
 import { ScopedSettingsModule } from '../settings/ScopedSettingsModule.tsx';
@@ -15,16 +16,21 @@ export function RunDefaults() {
   const { vm, status, instancePreset } = useView(selectRunDefaults);
   const { commands } = useDashboard();
   const invalid = vm?.fields.filter((field) => field.invalid !== null) ?? [];
-  const first = invalid[0]?.label ?? null;
+  const first = invalid[0] ?? null;
   return (
     <div className="tp-run-defaults" data-run-defaults="true">
-      {/* Closed, it still names the first field that needs attention. */}
+      {/* Closed, it still names the first field that needs attention and what it needs. */}
       <Disclosure
         label={t.fallback.short}
         preview={
           <>
             <ValidationSummary problems={invalid.length} />
-            {first === null ? null : <ServerValue kind="name" value={first} />}
+            {first?.invalid == null ? null : (
+              <span className="tp-run-defaults__problem">
+                {first.label === null ? null : <ServerValue kind="name" value={first.label} />}
+                <span>{settings.invalid[first.invalid.reason].short}</span>
+              </span>
+            )}
           </>
         }
       >

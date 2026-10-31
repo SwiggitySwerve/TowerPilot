@@ -117,6 +117,12 @@ export function documentTitle(page: CopyEntry): CopyText {
   return made(`${page.short} - ${copy.app.title.short}`);
 }
 
+/** A line split before its last word, so that word can be kept with what follows it. */
+export function splitLastWord(text: CopyText): readonly [CopyText, CopyText] {
+  const cut = text.lastIndexOf(' ') + 1;
+  return [made(text.slice(0, cut)), made(text.slice(cut))];
+}
+
 /** How long something has taken, in whole seconds: "1 second", "12 seconds". */
 export function elapsedSeconds(seconds: number): CopyText {
   const whole = Math.max(0, Math.round(seconds));

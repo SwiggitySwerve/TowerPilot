@@ -241,9 +241,22 @@ function RoutineRow({
   const edited = group.fields.some((f) => f.edited);
   return (
     <li className="tp-run-row" data-routine={group.routine} data-edited={edited}>
-      <strong id={nameId} className="tp-run-row__name">
-        <ActionName routine={group.routine} label={group.label} />
-      </strong>
+      <span className="tp-run-row__head">
+        <strong id={nameId} className="tp-run-row__name">
+          <ActionName routine={group.routine} label={group.label} />
+        </strong>
+        {/* A change is named, with its undo, in the list below the table (as a switch's is);
+            only a change still waiting to apply is marked in the row itself. */}
+        {mark === 'changed' ? (
+          <span className="tp-visually-hidden">{t.live.marks.changed.short}</span>
+        ) : mark === null ? null : (
+          <span className="tp-run-row__mark">
+            <span>{t.live.marks[mark].short}</span>
+            <Why why={t.live.marks[mark].why} />
+          </span>
+        )}
+        {edited ? <span className="tp-run-row__edited">{t.edited.short}</span> : null}
+      </span>
       {described ? (
         <span className="tp-run-fields">
           {group.cells.map((cell) =>
@@ -257,15 +270,6 @@ function RoutineRow({
       ) : (
         group.fields.map((field) => fieldCell(field, scope, nameId, false))
       )}
-      <span className="tp-run-row__mark">
-        {mark === null ? null : (
-          <>
-            <span>{(mark === 'changed' ? t.live.changedTag : t.live.marks[mark]).short}</span>
-            <Why why={t.live.marks[mark].why} />
-          </>
-        )}
-        {edited ? <span className="tp-run-row__edited">{t.edited.short}</span> : null}
-      </span>
     </li>
   );
 }
@@ -413,10 +417,12 @@ function OverrideName({
         readonly field: string;
         readonly routineLabel: ServerText<'name'> | null;
         readonly label: ServerText<'name'> | null;
+        readonly value?: boolean | number | null;
       }
     | { readonly kind: 'shopping_plan' };
 }) {
   if (!('routine' in item)) return <span>{t.live.overrides.shoppingPlan.short}</span>;
+  const o = t.live.overrides;
   return (
     <>
       <span>
@@ -424,7 +430,7 @@ function OverrideName({
       </span>
       <span>
         {item.field === 'enabled' && item.label === null ? (
-          t.live.overrides.onOff.short
+          (item.value === true ? o.turnedOn : item.value === false ? o.turnedOff : o.onOff).short
         ) : (
           <Label server={item.label} code={item.field} table={a.fields} other={a.otherField} />
         )}

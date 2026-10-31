@@ -211,6 +211,12 @@
 .tp-copy-line p {
   margin: 0;
 }
+.tp-copy-line__tail {
+  white-space: nowrap;
+}
+.tp-copy-line p {
+  text-wrap: pretty;
+}
 /* Native diagnostic disclosures still used for reported server evidence. */
 .tp-copy-line__why {
   color: var(--tp-color-text-muted);
@@ -390,6 +396,10 @@ h3.tp-tile__title {
   margin-inline-start: auto;
   color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);
+}
+/* A title's help icon alone belongs to the title, not the far edge. */
+.tp-tile__head > .tp-tile__end:has(> .tp-help__trigger:only-child) {
+  margin-inline-start: 0;
 }
 .tp-tile > .tp-copy-line {
   margin-block-end: var(--tp-space-2);

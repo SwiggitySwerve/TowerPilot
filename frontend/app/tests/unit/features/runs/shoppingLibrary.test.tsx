@@ -152,11 +152,15 @@ describe('SQ9 shared shopping policies', () => {
     const summary = defaults.querySelector('summary');
     expect(summary).toHaveTextContent('Needs attention');
     expect(summary).toHaveTextContent('1 problem');
-    expect(within(defaults).getByText('Choose one of the listed options')).not.toBeVisible();
+    // Closed, the summary says what the first field needs; the field's own message opens with it.
+    expect(summary).toHaveTextContent('Choose one of the listed options');
+    const message = defaults.querySelector('.tp-settings__invalid');
+    expect(message).toHaveTextContent('Choose one of the listed options');
+    expect(message).not.toBeVisible();
     await page.user.click(
       within(defaults).getByText('Saved defaults / Machine fallback', { exact: true }),
     );
-    expect(within(defaults).getByText('Choose one of the listed options')).toBeVisible();
+    expect(message).toBeVisible();
     expect(page.fake.writes()).toEqual([]);
   });
 

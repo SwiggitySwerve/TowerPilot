@@ -21,7 +21,7 @@ export const runEntry = {
   save: entry('Save field'),
   clearLabel: entry('Clear label'),
   questDefault: entry('Use the quest default'),
-  coin: entry('Coin run (remove the disabled tab)'),
+  coin: entry('None (coin run)'),
   statistics: entry('Statistics are always on for every run.'),
   chainLightning: entry('This policy needs Chain Lightning, which the player does not own.'),
   questValue: entry('Quoted text stays text; the saved profile checks the value.'),
@@ -65,7 +65,7 @@ export const runEntry = {
     choice: entry('Choose one of the available values.'),
     list: entry('Use nonblank perk fragments, one per line.'),
     text: entry('Enter a nonblank label.'),
-    unchanged: entry('No change to save.'),
+    unchanged: entry('No changes to save'),
     unavailable: entry('A current profile and vocabulary read is required.'),
     pending: entry('Wait for the save and its readback, or resolve its Unknown outcome.'),
     revision: entry(

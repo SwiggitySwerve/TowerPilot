@@ -3,14 +3,46 @@
 }
 .tp-run-entry__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
   gap: var(--tp-space-3) var(--tp-space-6);
+  max-inline-size: 72rem;
+}
+/* Four columns wide: the label (with its Clear) and the perk list take two, the list two rows,
+   so every row of a group fills the width and Maximum wave sits under the workshop tab. */
+@media (min-width: 75rem) {
+  .tp-run-entry__field:is([data-entry-field='label'], [data-entry-field='perk_bans']) {
+    grid-column: span 2;
+  }
+  .tp-run-entry__field[data-entry-field='perk_bans'] {
+    grid-row: span 2;
+  }
+  /* Entry behavior reads across: workshop tab, perk bans, maximum wave; the check boxes sit
+     under the workshop tab, so no column holds a lone item over empty space. */
+  [data-entry-section='behavior'] .tp-run-entry__field[data-entry-field='perk_bans'] {
+    grid-column: 2 / span 2;
+    grid-row: 1 / span 2;
+  }
+  [data-entry-section='behavior'] .tp-run-entry__checks {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  [data-entry-section='behavior'] .tp-run-entry__field[data-entry-field='max_wave'] {
+    grid-column: 4;
+    grid-row: 1;
+  }
+}
+/* Adjacent check boxes: one grid cell, stacked, lined up with the controls beside them. */
+.tp-run-entry__checks {
+  display: grid;
+  align-content: start;
+  gap: var(--tp-space-2);
 }
 /* One field: its name, then the control with its Save (and that Save's status) beside it. */
 .tp-run-entry__field {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
+  align-content: start;
   gap: var(--tp-space-1) var(--tp-space-2);
   min-width: 0;
   margin: 0;
@@ -87,9 +119,11 @@
 }
 .tp-run-entry__remove {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--tp-space-2);
   align-items: center;
+}
+.tp-run-entry__remove > span {
+  min-width: 0;
 }
 
 [data-runs-active-only] {

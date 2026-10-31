@@ -485,7 +485,7 @@ describe('RL3 and RL6 saved entry editor', () => {
     expect(input).toHaveValue('');
     expect(input).not.toHaveAttribute('aria-invalid', 'true');
     // Untouched, nothing in the group changed: its one Save says so.
-    expect(entrySave('label')).toHaveAccessibleDescription('No change to save.');
+    expect(entrySave('label')).toHaveAccessibleDescription('No changes to save');
     await page.user.type(input, ' ');
     expect(entrySave('label')).toHaveAccessibleDescription('Fix the marked fields to save.');
     expect(input).toHaveAttribute('aria-invalid', 'true');

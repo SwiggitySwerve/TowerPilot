@@ -162,7 +162,12 @@ export function BattleDetails({
   if (details.length === 0) return null;
   return (
     <div data-part="runsDetails">
-      <Tile className="tp-run-details-all" titleId="runs-battle-details" title={d.heading.short}>
+      <Tile
+        className="tp-run-details-all"
+        titleId="runs-battle-details"
+        title={d.heading.short}
+        intro={d.intro}
+      >
         {lastKnown ? (
           <div className="tp-runs__note">
             <span>{d.lastKnown.short}</span>

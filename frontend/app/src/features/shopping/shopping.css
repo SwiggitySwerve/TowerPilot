@@ -46,7 +46,9 @@
 }
 .tp-shop__wave {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  /* Each box right after the longest bound label, not across the column from it. */
+  grid-template-columns: minmax(0, max-content) auto;
+  justify-content: start;
   align-items: center;
   gap: var(--tp-space-1) var(--tp-space-2);
 }
@@ -96,11 +98,6 @@
   color: var(--tp-color-text-muted);
   font-size: 0.9em;
 }
-.tp-shop__hint--tip {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--tp-space-2);
-}
 .tp-shop__problem {
   color: var(--tp-color-bad);
 }
@@ -136,4 +133,21 @@
   .tp-shop__rules > .tp-tile__body {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* Never buy: the kept-out chips, then the picker that keeps one more out. */
+.tp-shop__never-add > span {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+  font-weight: 600;
+}
+.tp-shop__never-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-2);
+}
+.tp-shop__never-add > select.tp-field-control {
+  inline-size: 16rem;
+  max-inline-size: 100%;
 }

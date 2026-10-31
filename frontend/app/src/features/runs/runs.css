@@ -92,9 +92,22 @@
   font-size: var(--tp-font-size-small);
 }
 
-.tp-run-row__name {
+.tp-run-row__name,
+.tp-run-row__head {
   grid-column: 1;
   align-self: center;
+}
+
+/* A routine's name with its live mark under it: the mark reads as part of its row. */
+.tp-run-row__head {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 0.125rem;
+  min-width: 0;
+}
+.tp-run-row__head > .tp-run-row__name {
+  align-self: start;
 }
 
 .tp-run-cell {
@@ -119,8 +132,6 @@
 }
 
 .tp-run-row__mark {
-  grid-column: 6;
-  align-self: center;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -291,7 +302,8 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     padding-block: var(--tp-space-2);
   }
-  .tp-run-row__name {
+  .tp-run-row__name,
+  .tp-run-row__head {
     grid-column: 1;
     grid-row: 1;
   }
@@ -307,9 +319,6 @@
   .tp-run-row > .tp-run-cell:not([data-field='enabled']) {
     grid-column: 1 / -1;
     grid-row: auto;
-  }
-  .tp-run-row__mark {
-    grid-column: 1 / -1;
   }
   .tp-run-input,
   .tp-run-cell .tp-run-number > .tp-run-input {

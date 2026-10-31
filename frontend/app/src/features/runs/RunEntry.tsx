@@ -299,6 +299,17 @@ function GroupBar({
   );
 }
 
+/** The grid cells of a group: each field alone, except adjacent check boxes, which share one. */
+function cells(fields: readonly FieldVM[]): readonly { head: FieldVM; fields: FieldVM[] }[] {
+  const out: { head: FieldVM; fields: FieldVM[] }[] = [];
+  for (const field of fields) {
+    const last = out.at(-1);
+    if (field.type === 'toggle' && last?.head.type === 'toggle') last.fields.push(field);
+    else out.push({ head: field, fields: [field] });
+  }
+  return out;
+}
+
 /** Saved entry only: the existing routine editor and live battle remain separate. */
 export function RunEntry() {
   const vm = useView(selectRunEntry);
@@ -311,6 +322,7 @@ export function RunEntry() {
         title={t.title.short}
         intro={t.scope}
       >
+        {/* Whose entry this is, which run, and how to read it again: one context line. */}
         <div className="tp-run-entry__head">
           <EditingTargetLine />
           <div data-entry-statistics="true">
@@ -318,28 +330,28 @@ export function RunEntry() {
               <Fact label={copy.runs.statistics.short} value={copy.runs.alwaysOn.short} />
             </Facts>
           </div>
-        </div>
-        <div className="tp-control-row">
-          <label className="tp-runs__picker-label">
-            <span>{t.picker.short}</span>
-            <select
-              className="tp-field-control"
-              value={vm.run ?? ''}
-              onChange={(event) => {
-                commands.openRuns(true, event.currentTarget.value);
-              }}
-            >
-              {vm.unlistedRun === null ? null : (
-                <ServerOption value={vm.run ?? ''} label={vm.unlistedRun} />
-              )}
-              {vm.runs.map((run) =>
-                run.label === null ? null : (
-                  <ServerOption key={run.key} value={run.key} label={run.label} />
-                ),
-              )}
-            </select>
-          </label>
-          <Button tier="quiet" label={t.check.short} onClick={commands.checkRunEntry} />
+          <div className="tp-control-row">
+            <label className="tp-runs__picker-label">
+              <span>{t.picker.short}</span>
+              <select
+                className="tp-field-control"
+                value={vm.run ?? ''}
+                onChange={(event) => {
+                  commands.openRuns(true, event.currentTarget.value);
+                }}
+              >
+                {vm.unlistedRun === null ? null : (
+                  <ServerOption value={vm.run ?? ''} label={vm.unlistedRun} />
+                )}
+                {vm.runs.map((run) =>
+                  run.label === null ? null : (
+                    <ServerOption key={run.key} value={run.key} label={run.label} />
+                  ),
+                )}
+              </select>
+            </label>
+            <Button tier="quiet" label={t.check.short} onClick={commands.checkRunEntry} />
+          </div>
         </div>
         {!vm.readable || vm.fields.length === 0 ? <p>{t.unavailable.short}</p> : null}
         {vm.readFailure === null ? null : (
@@ -361,9 +373,18 @@ export function RunEntry() {
                 level={4}
               >
                 <div className="tp-run-entry__grid">
-                  {fields.map((field) => (
-                    <EntryField key={field.scope} field={field} />
-                  ))}
+                  {cells(fields).map((cell) =>
+                    cell.head.type === 'toggle' ? (
+                      // Adjacent check boxes share one cell, in the owner's order.
+                      <div key={cell.head.scope} className="tp-run-entry__checks">
+                        {cell.fields.map((field) => (
+                          <EntryField key={field.scope} field={field} />
+                        ))}
+                      </div>
+                    ) : (
+                      <EntryField key={cell.head.scope} field={cell.head} />
+                    ),
+                  )}
                 </div>
                 <GroupBar section={section} fields={fields} />
               </Tile>

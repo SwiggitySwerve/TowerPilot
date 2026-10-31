@@ -30,7 +30,7 @@ export function LiveShopping() {
       className="tp-shopping-live"
       titleId="shopping-live-title"
       title={t.title.short}
-      intro={t.scope}
+      {...(vm.supported ? { intro: t.scope } : {})}
     >
       {vm.supported ? (
         <details open className="tp-disclosure">
@@ -90,16 +90,19 @@ export function LiveShopping() {
           <QueueRefusal message={vm.refusal} />
         </details>
       ) : null}
-      {vm.supported || vm.reason === null ? null : (
-        <Reason
-          id="shopping-live-reason"
-          entry={
-            Object.entries(t.reasons).find(([key]) => key === vm.reason)?.[1] ??
-            t.reasons.unsupported
-          }
-        />
-      )}
-      <a href={pageHref('dashboard')}>{t.dashboard.short}</a>
+      {/* Why the queue can't change here, and the one place to act instead, on one line. */}
+      <div className="tp-shopping-live__line">
+        {vm.supported || vm.reason === null ? null : (
+          <Reason
+            id="shopping-live-reason"
+            entry={
+              Object.entries(t.reasons).find(([key]) => key === vm.reason)?.[1] ??
+              t.reasons.unsupported
+            }
+          />
+        )}
+        <a href={pageHref('dashboard')}>{t.dashboard.short}</a>
+      </div>
     </Tile>
   );
 }

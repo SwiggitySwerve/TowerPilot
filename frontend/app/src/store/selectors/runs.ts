@@ -175,6 +175,8 @@ export interface LiveResetVM extends OverrideNamesVM {
   readonly path: string;
   readonly routine: string;
   readonly field: string;
+  /** The value this battle now holds for the path (a switch's override names its side). */
+  readonly value: boolean | number | null;
   readonly reset: CommandVM<ResetLiveCommand>;
   /** The target the reset would be sent to (core liveResetKey), or null while it is not offered. */
   readonly target: string | null;
@@ -1017,6 +1019,7 @@ function liveSection(state: DashboardState, lines: readonly OutcomeLineVM[]): Li
         path: field.path,
         routine: field.routine,
         field: field.field,
+        value: field.value,
         ...names(field.routine, field.field),
         ...(liveFieldNullable(actions, field.routine, field.field)
           ? resetOf([field.path])

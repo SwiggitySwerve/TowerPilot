@@ -4,7 +4,6 @@ import { entryKey, type EntryField, type FieldReview } from '../../core/shopping
 import type {
   ChoiceVM,
   EntryVM,
-  PickerItemVM,
   PickerSectionVM,
   QueueEditorVM,
 } from '../../store/selectors/shoppingQueue.ts';
@@ -297,27 +296,67 @@ function Page({ section, vm, idBase, actions }: Parts & { readonly section: Pick
   );
 }
 
-/** The never-buy list: the same upgrades, switched on to keep them out of every queue. */
+/**
+ * The never-buy list: the upgrades kept out of every queue, each a pressed chip that lets it
+ * back in, and one picker to keep another out (not a second copy of every page).
+ */
 function NeverBuy({ vm, idBase, actions }: Parts) {
-  const items: readonly { readonly item: PickerItemVM; readonly tone: ItemTone }[] =
-    vm.picker.flatMap((section) => section.items.map((item) => ({ item, tone: toneOf(section) })));
-  const count = items.filter(({ item }) => item.excluded).length;
+  const addId = `${idBase}:never-buy-add`;
+  const excluded = vm.picker.flatMap((section) =>
+    section.items.filter((item) => item.excluded).map((item) => ({ item, tone: toneOf(section) })),
+  );
   return (
-    <Disclosure label={t.excluded.short} count={count} focusKey={`${idBase}:never-buy`}>
-      <ChipGrid label={t.excluded.short}>
-        {items.map(({ item, tone }) => (
-          <ToggleChip
-            key={item.id}
-            tone={tone}
-            label={nameOf(item.label)}
-            pressed={item.excluded}
-            onToggle={(next) => {
-              actions.onExclude(item.id, next);
-            }}
-          />
-        ))}
-      </ChipGrid>
-    </Disclosure>
+    // Titled like the pages above it ("Attack", "Defense"): one more set of the same chips.
+    <Tile
+      as="fieldset"
+      className="tp-shop__never"
+      titleId={`${idBase}:never-buy`}
+      title={t.excluded.short}
+      density="compact"
+    >
+      {excluded.length === 0 ? (
+        <p className="tp-shop__hint">{t.noneExcluded.short}</p>
+      ) : (
+        <ChipGrid label={t.excluded.short}>
+          {excluded.map(({ item, tone }) => (
+            <ToggleChip
+              key={item.id}
+              tone={tone}
+              label={nameOf(item.label)}
+              pressed
+              onToggle={(next) => {
+                actions.onExclude(item.id, next);
+                // The chip leaves the list; focus goes to the picker that can put it back.
+                document.getElementById(addId)?.focus();
+              }}
+            />
+          ))}
+        </ChipGrid>
+      )}
+      <label className="tp-shop__never-add" htmlFor={addId}>
+        <span>{t.excludeAdd.short}</span>
+        <select
+          id={addId}
+          className="tp-field-control"
+          value=""
+          onChange={(event) => {
+            const id = event.currentTarget.value;
+            if (id !== '') actions.onExclude(id, true);
+          }}
+        >
+          <option value="">{t.excludePick.short}</option>
+          {vm.picker.map((section) => (
+            <optgroup key={section.key} label={sectionLabel(section)}>
+              {section.items.flatMap((item) =>
+                item.excluded || item.label === null
+                  ? []
+                  : [<ServerOption key={item.id} value={item.id} label={item.label} />],
+              )}
+            </optgroup>
+          ))}
+        </select>
+      </label>
+    </Tile>
   );
 }
 
@@ -462,12 +501,6 @@ export function QueueEditor(props: QueueEditorProps) {
           level={4}
           intro={t.pickerHint}
         >
-          <p className="tp-shop__hint tp-shop__hint--tip">
-            <span>{t.chipFields.short}</span>
-            <HelpTip label={t.chipFields.short}>
-              <p>{t.chipFields.why}</p>
-            </HelpTip>
-          </p>
           {vm.orderProvisional ? <p className="tp-shop__hint">{t.orderProvisional.short}</p> : null}
           {vm.picker.map((section) => (
             <Page key={section.key} section={section} {...parts} />

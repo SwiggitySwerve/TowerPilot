@@ -57,7 +57,7 @@ for (const width of [1360, 1054, 390])
         if (await row.getByRole('combobox').count()) {
           if (key === 'dissonant_tab')
             await expect(
-              row.getByRole('option', { name: 'Coin run (remove the disabled tab)', exact: true }),
+              row.getByRole('option', { name: 'None (coin run)', exact: true }),
             ).toHaveAttribute('value', '');
           await row
             .getByRole('combobox')

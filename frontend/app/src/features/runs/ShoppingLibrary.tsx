@@ -290,6 +290,7 @@ export function ShoppingLibrary() {
     (create.active
       ? (create.copying ? 0 : create.queue.review.problems) + (create.reason === 'id' ? 1 : 0)
       : 0);
+  const firstName = vm.policies.find((policy) => policyProblems(policy) > 0)?.name;
   const apply = (next: QueueDraft) => {
     for (const [key, value] of draftChanges(create.draft, next))
       commands.editDraft(create.scope, key, value);
@@ -313,7 +314,20 @@ export function ShoppingLibrary() {
       <RegionBody>
         <div className="tp-library" data-shopping-library>
           <CopyLine entry={t.scope} variant="intro" />
-          <Disclosure label={t.manage.short} preview={<ValidationSummary problems={problems} />}>
+          <Disclosure
+            label={t.manage.short}
+            preview={
+              <>
+                <ValidationSummary problems={problems} />
+                {firstName == null ? null : (
+                  <span className="tp-library__where">
+                    {t.problemIn.short}
+                    <ServerValue kind="name" value={firstName} />
+                  </span>
+                )}
+              </>
+            }
+          >
             {vm.notSent === null ? null : (
               <p data-library-not-sent>{t.notSent[vm.notSent].short}</p>
             )}
