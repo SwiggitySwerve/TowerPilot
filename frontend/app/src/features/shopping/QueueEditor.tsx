@@ -35,6 +35,8 @@ export interface QueueEditorProps extends QueueEditorActions {
   readonly vm: QueueEditorVM;
   /** Unique per editor on the page (saved run, live battle, library policy). */
   readonly idBase: string;
+  /** The editor's Save row: kept in view under the queue on wide layouts, after the grids when narrow. */
+  readonly footer?: CopyNode;
 }
 
 function Problem({ id, review }: { readonly id: string; readonly review: FieldReview }) {
@@ -423,30 +425,35 @@ export function QueueEditor(props: QueueEditorProps) {
         />
       </Tile>
       <div className="tp-shop__layout">
-        <Tile
-          className="tp-shop__queue"
-          titleId={`${idBase}:queue`}
-          title={t.queue.short}
-          level={4}
-          intro={t.queueHint}
-        >
-          {queued.length === 0 ? <p>{t.emptyQueue.short}</p> : null}
-          <PriorityQueue
-            label={t.queue.short}
-            items={queued.map((entry) => ({
-              id: entry.id,
-              label: nameOf(entry.label),
-              tone: toneOf(sections.get(entry.id)),
-            }))}
-            onMove={(upgrade, toIndex) => {
-              const target = queued[toIndex];
-              const to = vm.entries.findIndex((entry) => entry.id === target?.id);
-              if (to >= 0) props.onMove(upgrade, to);
-            }}
-            onAdd={props.onInclude}
-          />
-          <WaveRanges {...parts} />
-        </Tile>
+        <div className="tp-shop__side">
+          <Tile
+            className="tp-shop__queue"
+            titleId={`${idBase}:queue`}
+            title={t.queue.short}
+            level={4}
+            intro={t.queueHint}
+          >
+            {queued.length === 0 ? <p>{t.emptyQueue.short}</p> : null}
+            <PriorityQueue
+              label={t.queue.short}
+              items={queued.map((entry) => ({
+                id: entry.id,
+                label: nameOf(entry.label),
+                tone: toneOf(sections.get(entry.id)),
+              }))}
+              onMove={(upgrade, toIndex) => {
+                const target = queued[toIndex];
+                const to = vm.entries.findIndex((entry) => entry.id === target?.id);
+                if (to >= 0) props.onMove(upgrade, to);
+              }}
+              onAdd={props.onInclude}
+            />
+            <WaveRanges {...parts} />
+          </Tile>
+          {props.footer === undefined ? null : (
+            <div className="tp-shop__footer">{props.footer}</div>
+          )}
+        </div>
         <Tile
           className="tp-shop__picker"
           titleId={`${idBase}:picker`}

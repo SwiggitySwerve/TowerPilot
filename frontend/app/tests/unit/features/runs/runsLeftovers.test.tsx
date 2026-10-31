@@ -416,8 +416,9 @@ describe('RL2 recorded mixed shopping and routine resets', () => {
     let source = mixed('read_before_the_reset_the_mixed_overrides_are_in_force');
     const accepted = mixed('accepted_null_for_shopping_plan_and_routine_overrides');
     const page = await openLive(() => source, { newKey: () => 'mx-3' });
-    const items = () => liveRegion().querySelector('[data-reset-all-items]');
-    expect(items()?.querySelectorAll('li')).toHaveLength(3);
+    // The undo-all names its count; its confirmation lists every item.
+    const items = () => liveRegion().querySelector('[data-reset-all]');
+    expect(allButton()).toBeVisible();
     await page.user.click(allButton());
     expect(within(dialog()).getAllByRole('listitem')).toHaveLength(3);
     expect(within(dialog()).getByText('Shopping plan')).toBeVisible();
@@ -451,9 +452,7 @@ describe('RL2 recorded mixed shopping and routine resets', () => {
       },
     });
     // The battle read answered; the config read that names the page context has not.
-    expect(
-      liveRegion().querySelector('[data-reset-all-items]')?.querySelectorAll('li'),
-    ).toHaveLength(3);
+    expect(allButton()).toBeVisible();
     expect(allButton()).toHaveAttribute('aria-disabled', 'true');
     expect(
       within(liveRegion()).getAllByText('Waiting for the emulator, account and profile to be read.')
@@ -489,9 +488,7 @@ describe('RL2 recorded mixed shopping and routine resets', () => {
     await page.user.click(within(dialog()).getByRole('button', { name: 'Use starting values' }));
     await page.advance(5_000);
     expect(input).toHaveValue('77');
-    expect(
-      liveRegion().querySelector('[data-reset-all-items]')?.querySelectorAll('li'),
-    ).toHaveLength(3);
+    expect(allButton()).toBeVisible();
     expect(within(liveRegion()).getByText('Not sent - nothing was recorded')).toBeVisible();
     expect(liveRegion().querySelector('[data-outcome]')?.textContent).toContain(
       'Control revision changed',

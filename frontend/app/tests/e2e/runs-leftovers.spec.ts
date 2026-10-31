@@ -78,13 +78,16 @@ for (const width of WIDTHS) {
         name: "Use the battle's starting values for all 3",
       });
       await expect(all).not.toHaveAttribute('aria-disabled', 'true');
-      const items = live(page).locator('[data-reset-all-items]');
-      await expect(items.getByRole('listitem')).toHaveCount(3);
-      await expect(items.getByText('Shopping plan', { exact: true })).toBeVisible();
+      // The undo-all names its count; its confirmation lists every item.
+      const items = live(page).locator('[data-reset-all]');
+      await expect(items).toHaveCount(1);
       if (outcome === 'stale')
         await live(page).getByRole('textbox', { name: 'Shopping Every', exact: true }).fill('77');
       await all.click();
       await expect(page.getByRole('dialog').getByRole('listitem')).toHaveCount(3);
+      await expect(
+        page.getByRole('dialog').getByText('Shopping plan', { exact: true }),
+      ).toBeVisible();
       await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
       expect(await posts(page)).toEqual([]);
       await all.click();
@@ -96,7 +99,7 @@ for (const width of WIDTHS) {
         // Race replay: the genuine 409 used revision 1; the displayed source is already at 2.
         // The client must still send the current read's revision and preserve the complete draft/list.
         await expect(live(page).getByText('Not sent - nothing was recorded')).toBeVisible();
-        await expect(items.getByRole('listitem')).toHaveCount(3);
+        await expect(all).toBeVisible();
         await expect(
           live(page).getByRole('textbox', { name: 'Shopping Every', exact: true }),
         ).toHaveValue('77');

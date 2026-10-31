@@ -13,7 +13,7 @@ export const shoppingLive = {
   ),
   reasons: {
     unsupported: entry(
-      "This battle's automation can't take queue edits. Save a queue above; the next battle uses it.",
+      "This battle's automation can't take queue edits. Edit the saved queue under Saved settings; the next battle uses it.",
     ),
     no_battle: entry('A tracked battle is required'),
     context_unknown: runs.reasons.context_unknown,

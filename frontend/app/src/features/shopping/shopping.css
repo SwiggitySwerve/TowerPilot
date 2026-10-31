@@ -9,6 +9,10 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--tp-space-3);
 }
+/* Weighted split puts two fields in a chip: every section takes the wider box, so they line up. */
+.tp-shop:has(.tp-chip-field ~ .tp-chip-field) {
+  --tp-chip-min-width: var(--tp-chip-min-width-two-fields);
+}
 /* The queue is one column on the left; the chip grids take the rest (the retired editor's two panes). */
 .tp-shop__layout {
   display: grid;
@@ -29,7 +33,7 @@
 .tp-shop__waves {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-1);
+  gap: var(--tp-space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -95,12 +99,28 @@
 .tp-shop__problem {
   color: var(--tp-color-bad);
 }
+/* Narrow: the queue, then the grids, then the Save row (its side wrapper is not a box). */
+.tp-shop__side {
+  display: contents;
+}
+.tp-shop__queue {
+  order: 1;
+}
+.tp-shop__picker {
+  order: 2;
+}
+.tp-shop__footer {
+  order: 3;
+}
 @container (min-width: 40rem) {
   .tp-shop__layout {
     grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
   }
-  /* The queue stays in view beside the grids it is filled from. */
-  .tp-shop__queue {
+  /* Wide: the queue and its Save row stay in view beside the grids they are filled from. */
+  .tp-shop__side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tp-space-3);
     position: sticky;
     top: var(--tp-space-3);
     max-block-size: calc(100vh - 2 * var(--tp-space-3));

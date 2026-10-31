@@ -14,14 +14,19 @@ import './runDefaults.css';
 export function RunDefaults() {
   const { vm, status, instancePreset } = useView(selectRunDefaults);
   const { commands } = useDashboard();
-  const problems = vm?.fields.filter((field) => field.invalid !== null).length ?? 0;
+  const invalid = vm?.fields.filter((field) => field.invalid !== null) ?? [];
+  const first = invalid[0]?.label ?? null;
   return (
     <div className="tp-run-defaults" data-run-defaults="true">
-      {/* A field that needs attention is shown, not folded away behind its count. */}
+      {/* Closed, it still names the first field that needs attention. */}
       <Disclosure
         label={t.fallback.short}
-        initiallyOpen={problems > 0}
-        preview={<ValidationSummary problems={problems} />}
+        preview={
+          <>
+            <ValidationSummary problems={invalid.length} />
+            {first === null ? null : <ServerValue kind="name" value={first} />}
+          </>
+        }
       >
         {instancePreset === null ? null : (
           <Facts>

@@ -161,6 +161,47 @@ export function SavedShopping() {
               <QueueEditor
                 vm={vm.editor}
                 idBase={idBase}
+                footer={
+                  <div className="tp-saved-shopping__actions">
+                    <ActionRow
+                      reason={
+                        <>
+                          {vm.save.enabled ? null : (
+                            <Reason
+                              id={`${idBase}:save-reason`}
+                              entry={reasonCopy ?? t.unavailable}
+                            />
+                          )}
+                          {vm.discard ? null : (
+                            <Reason id={`${idBase}:discard-reason`} entry={t.nothing} />
+                          )}
+                        </>
+                      }
+                    >
+                      <Button
+                        tier="secondary"
+                        label={t.save.short}
+                        {...(vm.save.enabled
+                          ? {}
+                          : { disabled: true, reasonId: `${idBase}:save-reason` })}
+                        busy={vm.save.sending}
+                        onClick={() => {
+                          if (vm.save.command !== null) void commands.saveRun(vm.save.command);
+                        }}
+                      />
+                      <Button
+                        tier="quiet"
+                        label={t.discard.short}
+                        {...(vm.discard
+                          ? {}
+                          : { disabled: true, reasonId: `${idBase}:discard-reason` })}
+                        onClick={() => {
+                          if (vm.scope !== null) commands.discardDraft(vm.scope);
+                        }}
+                      />
+                    </ActionRow>
+                  </div>
+                }
                 onEdit={(key, value) => {
                   stage({ ...vm.draft, [key]: value });
                 }}
@@ -242,44 +283,6 @@ export function SavedShopping() {
                 )}
               </div>
             )}
-            {vm.showEditor ? (
-              <div className="tp-saved-shopping__actions">
-                <ActionRow
-                  reason={
-                    <>
-                      {vm.save.enabled ? null : (
-                        <Reason id={`${idBase}:save-reason`} entry={reasonCopy ?? t.unavailable} />
-                      )}
-                      {vm.discard ? null : (
-                        <Reason id={`${idBase}:discard-reason`} entry={t.nothing} />
-                      )}
-                    </>
-                  }
-                >
-                  <Button
-                    tier="secondary"
-                    label={t.save.short}
-                    {...(vm.save.enabled
-                      ? {}
-                      : { disabled: true, reasonId: `${idBase}:save-reason` })}
-                    busy={vm.save.sending}
-                    onClick={() => {
-                      if (vm.save.command !== null) void commands.saveRun(vm.save.command);
-                    }}
-                  />
-                  <Button
-                    tier="quiet"
-                    label={t.discard.short}
-                    {...(vm.discard
-                      ? {}
-                      : { disabled: true, reasonId: `${idBase}:discard-reason` })}
-                    onClick={() => {
-                      if (vm.scope !== null) commands.discardDraft(vm.scope);
-                    }}
-                  />
-                </ActionRow>
-              </div>
-            ) : null}
             <QueueRefusal message={vm.refusal} />
           </details>
         )}
