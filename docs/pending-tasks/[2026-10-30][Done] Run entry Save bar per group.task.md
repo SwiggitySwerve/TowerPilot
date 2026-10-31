@@ -1,10 +1,20 @@
 # Run entry Save bar per group
 
-> **Status:** Open
+> **Status:** Done
 > **Created:** 2026-10-30
 > **Updated:** 2026-10-30
 > **Priority:** High
 > **Tags:** ui, runs, run-entry, profile-patch, fencing
+
+## Outcome
+
+Done on 2026-10-30 in the Runs page space PR (#38): `commands.saveRunEntryGroup` chains each
+changed field's patch on the revision the previous one answered; `RunEntry.tsx` draws one Save
+and Discard per group; the per-field Save assertions moved to `tests/support/runEntrySave.ts`
+and `tests/e2e/helpers/entry-save.ts`; two unit tests cover the chain and its stop on refusal.
+No new recorded fixtures were needed: the unit tests answer the patches synthetically.
+
+---
 
 ## Problem
 
