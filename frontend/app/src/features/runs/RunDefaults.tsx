@@ -14,14 +14,18 @@ import './runDefaults.css';
 export function RunDefaults() {
   const { vm, status, instancePreset } = useView(selectRunDefaults);
   const { commands } = useDashboard();
+  const invalid = vm?.fields.filter((field) => field.invalid !== null) ?? [];
+  const first = invalid[0]?.label ?? null;
   return (
     <div className="tp-run-defaults" data-run-defaults="true">
+      {/* Closed, it still names the first field that needs attention. */}
       <Disclosure
         label={t.fallback.short}
         preview={
-          <ValidationSummary
-            problems={vm?.fields.filter((field) => field.invalid !== null).length ?? 0}
-          />
+          <>
+            <ValidationSummary problems={invalid.length} />
+            {first === null ? null : <ServerValue kind="name" value={first} />}
+          </>
         }
       >
         {instancePreset === null ? null : (

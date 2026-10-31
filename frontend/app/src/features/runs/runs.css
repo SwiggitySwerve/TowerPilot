@@ -3,8 +3,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--tp-space-4);
-  max-width: 1100px;
+  max-width: var(--tp-page-max-wide);
   min-width: 0;
+}
+
+/* The page's editors (chip grids, the entry form) use a wide monitor; its top bar keeps the same edge. */
+.tp-topbar:has(+ .tp-main .tp-runs) .tp-topbar__row {
+  max-width: var(--tp-page-max-wide);
 }
 
 .tp-region[data-region='runsLive'],
@@ -24,6 +29,24 @@
   align-items: center;
   gap: var(--tp-space-2);
 }
+.tp-runs__picker-label > span {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+
+/* The page's sections are spaced apart, not stacked edge to edge. */
+.tp-runs .tp-region__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-3);
+}
+
+/* An active-only wrapper is not a box of its own: the live section's parts sit in the Region
+   (its battle name on the title line, its body full width) as if the wrapper were not there. */
+.tp-region > [data-runs-active-only]:not(:disabled),
+.tp-region > [data-runs-active-only]:not(:disabled) > div {
+  display: contents;
+}
 
 .tp-runs__readiness,
 .tp-runs__note,
@@ -42,7 +65,8 @@
   margin: var(--tp-space-2) 0;
 }
 
-/* RUN-02: one compact row per routine; the column labels once on wide layouts. */
+/* RUN-02: one compact row per routine; the column labels once on wide layouts. The table is
+   as wide as its columns need, not the page: a wide monitor would part a value from its unit. */
 .tp-run-rows {
   display: flex;
   flex-direction: column;
@@ -55,7 +79,7 @@
 .tp-run-columns {
   display: grid;
   grid-template-columns:
-    minmax(7rem, 0.9fr) minmax(3rem, 0.4fr) repeat(3, minmax(9rem, 1fr))
+    minmax(7rem, 12rem) minmax(3rem, 4rem) repeat(3, minmax(9rem, 14rem))
     minmax(8rem, 1fr);
   align-items: start;
   gap: var(--tp-space-2);
@@ -96,6 +120,7 @@
 
 .tp-run-row__mark {
   grid-column: 6;
+  align-self: center;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -396,6 +421,20 @@
 
 .tp-run-reset--all {
   padding-block-start: var(--tp-space-1);
+}
+/* The undo-all names its items on one muted line, not as a second copy of the list above. */
+.tp-run-reset--all > .tp-run-resets__confirm-list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0 var(--tp-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+}
+.tp-run-reset--all .tp-run-reset__name {
+  font-weight: 400;
 }
 
 .tp-run-resets__confirm-list {

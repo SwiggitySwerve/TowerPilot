@@ -2,7 +2,17 @@ import { entry } from './entry.ts';
 
 export const runEntry = {
   title: entry('Entry and equipment'),
-  scope: entry('Save one field at a time.'),
+  scope: entry(
+    'Each group saves its changed fields together.',
+    'Save sends each changed field of the group as its own profile change, one after another; each next one is checked against the profile the previous one saved. The first one refused or not answered stops the rest, and their drafts stay.',
+  ),
+  saveGroup: {
+    identity: entry('Save identity'),
+    behavior: entry('Save entry behavior'),
+    policies: entry('Save policies'),
+  },
+  discardGroup: entry('Discard changes'),
+  fixFields: entry('Fix the marked fields to save.'),
   unavailable: entry('Read this profile and its field vocabulary to edit entry settings.'),
   readFailed: entry('The last read is shown read-only. Your draft and save result are kept.'),
   check: entry('Read entry settings'),

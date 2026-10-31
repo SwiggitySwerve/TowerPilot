@@ -13,6 +13,7 @@ import {
 import { moreCase, moreNames, moreSourceBefore } from '../../../support/profileTargetMore.ts';
 import { parityCase, paritySourceBefore } from '../../../support/runEntryParity.ts';
 import { enterText, renderPage, type PageOptions } from '../dashboard/harness.tsx';
+import { entrySave } from '../../../support/runEntrySave.ts';
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => {
@@ -193,7 +194,7 @@ async function save(page: Awaited<ReturnType<typeof open>>, entry: DashboardCase
     if (raw !== '' && Array.isArray(value)) await enterText(page.user, input, raw);
     else if (raw !== '') await page.user.type(input, raw);
   }
-  await page.user.click(page.row.getByRole('button', { name: 'Save field' }));
+  await page.user.click(entrySave(page.key));
   await page.advance(100);
 }
 

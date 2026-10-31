@@ -75,16 +75,19 @@ for (const width of WIDTHS) {
       });
       const problems = await openRunsLive(page, 'runs_live_reset_all', width);
       const all = live(page).getByRole('button', {
-        name: "Use the battle's starting values for all 3",
+        name: 'Use starting values for all 3',
       });
       await expect(all).not.toHaveAttribute('aria-disabled', 'true');
-      const items = live(page).locator('[data-reset-all-items]');
-      await expect(items.getByRole('listitem')).toHaveCount(3);
-      await expect(items.getByText('Shopping plan', { exact: true })).toBeVisible();
+      // The undo-all names its count; its confirmation lists every item.
+      const items = live(page).locator('[data-reset-all]');
+      await expect(items).toHaveCount(1);
       if (outcome === 'stale')
         await live(page).getByRole('textbox', { name: 'Shopping Every', exact: true }).fill('77');
       await all.click();
       await expect(page.getByRole('dialog').getByRole('listitem')).toHaveCount(3);
+      await expect(
+        page.getByRole('dialog').getByText('Shopping plan', { exact: true }),
+      ).toBeVisible();
       await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
       expect(await posts(page)).toEqual([]);
       await all.click();
@@ -96,7 +99,7 @@ for (const width of WIDTHS) {
         // Race replay: the genuine 409 used revision 1; the displayed source is already at 2.
         // The client must still send the current read's revision and preserve the complete draft/list.
         await expect(live(page).getByText('Not sent - nothing was recorded')).toBeVisible();
-        await expect(items.getByRole('listitem')).toHaveCount(3);
+        await expect(all).toBeVisible();
         await expect(
           live(page).getByRole('textbox', { name: 'Shopping Every', exact: true }),
         ).toHaveValue('77');
@@ -140,7 +143,9 @@ for (const width of WIDTHS) {
     page,
   }) => {
     const problems = await openRunsLive(page, 'active_battle_routines', width);
-    const summary = live(page).getByText('Ad gems: battle details', { exact: true });
+    const summary = live(page).locator('[data-part=\"runsDetails\"] summary', {
+      hasText: 'Ad gems',
+    });
     await expect(summary).toBeVisible();
     await summary.click();
     const details = live(page).locator('[data-routine-details="ad_gems"]');
@@ -154,7 +159,9 @@ for (const width of WIDTHS) {
     );
     await details.getByText('Reported values', { exact: true }).click();
     await expect(details.locator('[data-server-text="detail"]')).toContainText('"offer_id"');
-    await live(page).getByText('Floating gems: battle details', { exact: true }).click();
+    await live(page)
+      .locator('[data-part=\"runsDetails\"] summary', { hasText: 'Floating gems' })
+      .click();
     await expect(
       live(page).locator('[data-routine-details="floating_gems"]').getByText('None recorded'),
     ).toBeVisible();
@@ -175,7 +182,7 @@ for (const width of WIDTHS) {
     page,
   }) => {
     const problems = await openRunsLive(page, 'runs_live_battle_details', width);
-    await live(page).getByText('Ad gems: battle details', { exact: true }).click();
+    await live(page).locator('[data-part=\"runsDetails\"] summary', { hasText: 'Ad gems' }).click();
     const ad = live(page).locator('[data-routine-details="ad_gems"]');
     await expect(ad.getByText('Seen on the last battle screen', { exact: true })).toBeVisible();
     await expect(ad.getByText(/; 5 s between looks$/u)).toBeVisible();
@@ -204,7 +211,9 @@ for (const width of WIDTHS) {
     await page.evaluate(() => {
       window.location.hash = '#runs/live';
     });
-    await live(page).getByText('Floating gems: battle details', { exact: true }).click();
+    await live(page)
+      .locator('[data-part=\"runsDetails\"] summary', { hasText: 'Floating gems' })
+      .click();
     await expect(
       live(page)
         .locator('[data-routine-details="floating_gems"]')
@@ -218,7 +227,7 @@ for (const width of WIDTHS) {
     page,
   }) => {
     const problems = await openRunsLive(page, 'runs_live_applied', width);
-    const resets = live(page).getByRole('button', { name: "Use the battle's starting value" });
+    const resets = live(page).getByRole('button', { name: 'Use starting value' });
     await expect(resets.first()).toBeVisible();
     const path0 = await live(page).locator('[data-path]').first().getAttribute('data-path');
     if (width === 390) {
@@ -226,9 +235,7 @@ for (const width of WIDTHS) {
       const row = live(page).locator('[data-path]').first();
       const rowBox = await row.boundingBox();
       const nameBox = await row.locator('.tp-run-reset__name').boundingBox();
-      const buttonBox = await row
-        .getByRole('button', { name: "Use the battle's starting value" })
-        .boundingBox();
+      const buttonBox = await row.getByRole('button', { name: 'Use starting value' }).boundingBox();
       expect(buttonBox?.y ?? 0).toBeGreaterThanOrEqual(
         (nameBox?.y ?? 0) + (nameBox?.height ?? 0) - 1,
       );
@@ -265,7 +272,7 @@ for (const width of WIDTHS) {
   }) => {
     const problems = await openRunsLive(page, 'runs_live_reset_all', width);
     const all = live(page).getByRole('button', {
-      name: "Use the battle's starting values for all 2",
+      name: 'Use starting values for all 2',
     });
     await expect(all).toBeVisible();
     if (width === 390) expect((await all.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);

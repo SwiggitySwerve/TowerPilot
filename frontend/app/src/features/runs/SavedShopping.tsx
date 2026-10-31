@@ -137,7 +137,6 @@ export function SavedShopping() {
   return (
     <div data-shopping-saved>
       <Tile className="tp-saved-shopping" titleId={`${idBase}:title`} title={t.title.short}>
-        <p>{t.routines.short}</p>
         {!vm.contextReady ? (
           <p role="status">{copy.runs.reasons.context_unknown.short}</p>
         ) : !vm.scopeReady ? (
@@ -162,6 +161,53 @@ export function SavedShopping() {
               <QueueEditor
                 vm={vm.editor}
                 idBase={idBase}
+                footer={
+                  <div className="tp-saved-shopping__actions">
+                    <ActionRow
+                      reason={
+                        <>
+                          {vm.save.enabled ? null : (
+                            <Reason
+                              id={`${idBase}:save-reason`}
+                              entry={reasonCopy ?? t.unavailable}
+                            />
+                          )}
+                          {vm.discard || !vm.save.enabled ? null : (
+                            <Reason id={`${idBase}:discard-reason`} entry={t.nothing} />
+                          )}
+                        </>
+                      }
+                    >
+                      <Button
+                        tier="secondary"
+                        label={t.save.short}
+                        {...(vm.save.enabled
+                          ? {}
+                          : { disabled: true, reasonId: `${idBase}:save-reason` })}
+                        busy={vm.save.sending}
+                        onClick={() => {
+                          if (vm.save.command !== null) void commands.saveRun(vm.save.command);
+                        }}
+                      />
+                      <Button
+                        tier="quiet"
+                        label={t.discard.short}
+                        {...(vm.discard
+                          ? {}
+                          : {
+                              disabled: true,
+                              // Nothing to save and nothing to discard: the Save's one line says it.
+                              reasonId: vm.save.enabled
+                                ? `${idBase}:discard-reason`
+                                : `${idBase}:save-reason`,
+                            })}
+                        onClick={() => {
+                          if (vm.scope !== null) commands.discardDraft(vm.scope);
+                        }}
+                      />
+                    </ActionRow>
+                  </div>
+                }
                 onEdit={(key, value) => {
                   stage({ ...vm.draft, [key]: value });
                 }}
@@ -181,7 +227,7 @@ export function SavedShopping() {
               />
             ) : vm.conversion === null ? (
               <>
-                <p>{t.createHint.short}</p>
+                <p className="tp-shop__hint">{t.createHint.short}</p>
                 <Button
                   tier="secondary"
                   label={t.create.short}
@@ -243,44 +289,6 @@ export function SavedShopping() {
                 )}
               </div>
             )}
-            {vm.showEditor ? (
-              <div className="tp-saved-shopping__actions">
-                <ActionRow
-                  reason={
-                    <>
-                      {vm.save.enabled ? null : (
-                        <Reason id={`${idBase}:save-reason`} entry={reasonCopy ?? t.unavailable} />
-                      )}
-                      {vm.discard ? null : (
-                        <Reason id={`${idBase}:discard-reason`} entry={t.nothing} />
-                      )}
-                    </>
-                  }
-                >
-                  <Button
-                    tier="secondary"
-                    label={t.save.short}
-                    {...(vm.save.enabled
-                      ? {}
-                      : { disabled: true, reasonId: `${idBase}:save-reason` })}
-                    busy={vm.save.sending}
-                    onClick={() => {
-                      if (vm.save.command !== null) void commands.saveRun(vm.save.command);
-                    }}
-                  />
-                  <Button
-                    tier="quiet"
-                    label={t.discard.short}
-                    {...(vm.discard
-                      ? {}
-                      : { disabled: true, reasonId: `${idBase}:discard-reason` })}
-                    onClick={() => {
-                      if (vm.scope !== null) commands.discardDraft(vm.scope);
-                    }}
-                  />
-                </ActionRow>
-              </div>
-            ) : null}
             <QueueRefusal message={vm.refusal} />
           </details>
         )}

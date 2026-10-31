@@ -26,6 +26,9 @@ function sectionFor(field: FieldVM): (typeof sections)[number] {
     : 'behavior';
 }
 
+/** Reasons that belong to one changed field; the rest are said once, on the group's Save. */
+const FIELD_REASONS: ReadonlySet<string> = new Set(['activeOnly', 'revision']);
+
 function EntryField({ field }: { readonly field: FieldVM }) {
   const { commands } = useDashboard();
   const uid = useId();
@@ -57,9 +60,11 @@ function EntryField({ field }: { readonly field: FieldVM }) {
       data-entry-field={field.key}
       disabled={field.readOnly}
     >
-      <legend tabIndex={-1}>{label.short}</legend>
+      <legend tabIndex={-1} className={field.type === 'toggle' ? 'tp-visually-hidden' : undefined}>
+        {label.short}
+      </legend>
       {field.type === 'toggle' ? (
-        // The shared check field gives the box its full touch target; the legend names the group.
+        // A check box reads like every other one on the page: the box, then its name.
         <label className="tp-check-field">
           <input
             id={inputId}
@@ -69,7 +74,7 @@ function EntryField({ field }: { readonly field: FieldVM }) {
               edit(event.currentTarget.checked);
             }}
           />
-          <span className="tp-visually-hidden">{label.short}</span>
+          <span>{label.short}</span>
         </label>
       ) : (
         <>
@@ -107,7 +112,7 @@ function EntryField({ field }: { readonly field: FieldVM }) {
               className="tp-field-control"
               id={inputId}
               value={typeof field.raw === 'string' ? field.raw : ''}
-              rows={3}
+              rows={2}
               aria-invalid={invalid || undefined}
               aria-describedby={invalid ? `${helpId} ${reasonId}` : helpId}
               onChange={(event) => {
@@ -138,7 +143,11 @@ function EntryField({ field }: { readonly field: FieldVM }) {
           {t.reasons[field.reason].short}
         </p>
       ) : null}
-      {help === null ? null : <div id={helpId}>{help.short}</div>}
+      {help === null ? null : (
+        <div id={helpId} className="tp-run-entry__hint">
+          {help.short}
+        </div>
+      )}
       {field.key !== 'perk_bans' ? null : (
         <label className="tp-run-entry__remove tp-check-field">
           <input
@@ -168,30 +177,22 @@ function EntryField({ field }: { readonly field: FieldVM }) {
         </a>
       )}
       {field.needsChainLightning ? <div>{t.chainLightning.short}</div> : null}
-      <div className="tp-run-entry__actions">
-        <ActionRow
-          reason={
-            <>
-              {field.clearReason === null ||
-              (field.key !== 'label' && field.key !== 'rides') ? null : (
+      {/* A field's own state: why it cannot save now, said once, beside the field. */}
+      {!invalid && field.reason !== null && FIELD_REASONS.has(field.reason) && field.dirty ? (
+        <p id={reasonId} className="tp-run-entry__hint">
+          {t.reasons[field.reason].short}
+        </p>
+      ) : null}
+      {/* Clear (or the quest default) is offered while there is something to clear. */}
+      {(field.key === 'label' || field.key === 'rides') && field.clearReason !== 'unchanged' ? (
+        <div className="tp-run-entry__actions">
+          <ActionRow
+            reason={
+              field.clearReason === null ? null : (
                 <Reason id={`${uid}-clear-reason`} entry={t.reasons[field.clearReason]} />
-              )}
-              {invalid || field.reason === null ? null : (
-                <Reason id={reasonId} entry={t.reasons[field.reason]} />
-              )}
-            </>
-          }
-        >
-          <Button
-            tier="secondary"
-            label={t.save.short}
-            focusKey={`entry:${field.scope}:save`}
-            {...(field.command === null ? { disabled: true, reasonId } : {})}
-            onClick={() => {
-              if (field.command !== null) void commands.patchRunEntry(field.command);
-            }}
-          />
-          {field.key === 'label' || field.key === 'rides' ? (
+              )
+            }
+          >
             <Button
               tier="quiet"
               label={(field.key === 'label' ? t.clearLabel : t.questDefault).short}
@@ -205,18 +206,9 @@ function EntryField({ field }: { readonly field: FieldVM }) {
                 if (field.clearCommand !== null) void commands.patchRunEntry(field.clearCommand);
               }}
             />
-          ) : null}
-          {field.dirty ? (
-            <Button
-              tier="quiet"
-              label={t.discard.short}
-              onClick={() => {
-                commands.discardDraft(field.scope);
-              }}
-            />
-          ) : null}
-        </ActionRow>
-      </div>
+          </ActionRow>
+        </div>
+      ) : null}
       {field.continuation === null ? null : (
         <Button
           tier="quiet"
@@ -242,6 +234,71 @@ function EntryField({ field }: { readonly field: FieldVM }) {
   );
 }
 
+/** Reasons the bar says once for the group (one changed field's own reasons sit beside it). */
+function groupReason(reason: FieldVM['reason']): reason is 'pending' | 'unknown' | 'unavailable' {
+  return reason === 'pending' || reason === 'unknown' || reason === 'unavailable';
+}
+
+/**
+ * One Save and one Discard for a group of fields. Save sends each changed field as its own
+ * profile patch, chained on the revision the previous one answered (commands.saveRunEntryGroup).
+ */
+function GroupBar({
+  section,
+  fields,
+}: {
+  readonly section: (typeof sections)[number];
+  readonly fields: readonly FieldVM[];
+}) {
+  const { commands } = useDashboard();
+  const uid = useId();
+  const reasonId = `${uid}-reason`;
+  // A read-only group (the last read failed) keeps its drafts and offers no action on them.
+  const readOnly = fields.some((field) => field.readOnly);
+  const changed = fields.filter((field) => field.dirty && field.reason !== 'unchanged');
+  const blocked = changed.find((field) => field.command === null);
+  const group = blocked?.reason ?? null;
+  const reason = readOnly
+    ? t.reasons.unavailable
+    : changed.length === 0
+      ? t.reasons.unchanged
+      : groupReason(group)
+        ? t.reasons[group]
+        : blocked === undefined
+          ? null
+          : t.fixFields;
+  const send = changed.flatMap((field) => (field.command === null ? [] : [field.command]));
+  return (
+    <div className="tp-run-entry__bar" data-entry-bar={section}>
+      <ActionRow reason={reason === null ? null : <Reason id={reasonId} entry={reason} />}>
+        <Button
+          tier="secondary"
+          label={t.saveGroup[section].short}
+          focusKey={`entry:${section}:save`}
+          {...(reason === null ? {} : { disabled: true, reasonId })}
+          onClick={() => {
+            if (reason === null) void commands.saveRunEntryGroup(send);
+          }}
+        />
+        {fields.some((field) => field.dirty) ? (
+          <Button
+            tier="quiet"
+            label={t.discardGroup.short}
+            {...(readOnly ? { disabled: true, reasonId } : {})}
+            onClick={() => {
+              if (readOnly) return;
+              for (const field of fields) if (field.dirty) commands.discardDraft(field.scope);
+            }}
+          />
+        ) : null}
+        {changed.length === 0 ? null : (
+          <span className="tp-run-editor__count">{copy.runs.changes(changed.length)}</span>
+        )}
+      </ActionRow>
+    </div>
+  );
+}
+
 /** Saved entry only: the existing routine editor and live battle remain separate. */
 export function RunEntry() {
   const vm = useView(selectRunEntry);
@@ -254,11 +311,13 @@ export function RunEntry() {
         title={t.title.short}
         intro={t.scope}
       >
-        <EditingTargetLine />
-        <div data-entry-statistics="true">
-          <Facts layout="inline">
-            <Fact label={copy.runs.statistics.short} value={copy.runs.alwaysOn.short} />
-          </Facts>
+        <div className="tp-run-entry__head">
+          <EditingTargetLine />
+          <div data-entry-statistics="true">
+            <Facts layout="inline">
+              <Fact label={copy.runs.statistics.short} value={copy.runs.alwaysOn.short} />
+            </Facts>
+          </div>
         </div>
         <div className="tp-control-row">
           <label className="tp-runs__picker-label">
@@ -306,6 +365,7 @@ export function RunEntry() {
                     <EntryField key={field.scope} field={field} />
                   ))}
                 </div>
+                <GroupBar section={section} fields={fields} />
               </Tile>
             </div>
           );

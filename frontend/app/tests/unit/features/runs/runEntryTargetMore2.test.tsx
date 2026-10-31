@@ -9,6 +9,7 @@ import {
 } from '../../../support/dashboardFixture.ts';
 import { more2Case, more2Writes } from '../../../support/runEntryTargetMore2.ts';
 import { renderPage } from '../dashboard/harness.tsx';
+import { entrySave } from '../../../support/runEntrySave.ts';
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => {
@@ -75,7 +76,7 @@ async function open(before: DashboardCase, write: DashboardCase, lost = false) {
       );
     else {
       await edit(remove ? '' : String(own(write.request.body, 'value')));
-      await page.user.click(row().getByRole('button', { name: 'Save field' }));
+      await page.user.click(entrySave(key));
     }
     await page.advance(100);
   };
@@ -177,10 +178,7 @@ it('PE6 F6-14c r12f absent rescue reference offers no deletion', async () => {
   ).toBeUndefined();
   expect(own(write.body, 'revision')).toBe(own(before.body, 'revision'));
   expect(page.row().getByRole('combobox')).toHaveValue('');
-  expect(page.row().getByRole('button', { name: 'Save field' })).toHaveAttribute(
-    'aria-disabled',
-    'true',
-  );
+  expect(entrySave(page.key)).toHaveAttribute('aria-disabled', 'true');
   expect(
     selectRunEntry(page.data.store.getSnapshot()).fields.find((item) => item.key === page.key),
   ).toMatchObject({ reason: 'unchanged', command: null });

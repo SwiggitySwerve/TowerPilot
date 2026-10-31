@@ -31,6 +31,7 @@ import {
 } from '../../support/dashboardFixture.ts';
 import { fencedCase, fencedRuntime, fencedSourceBefore } from '../../support/profilePatchFenced.ts';
 import { textOutsideCatalogue } from '../copy/renderedText.ts';
+import { entrySave } from '../../support/runEntrySave.ts';
 
 // Each case renders a whole page; under the full parallel suite 5 s is not enough.
 vi.setConfig({ testTimeout: 30_000 });
@@ -775,7 +776,7 @@ async function runsPage(name: string) {
       await page.user.clear(row.getByLabelText('Run label', { exact: true }));
       await page.user.type(row.getByLabelText('Run label', { exact: true }), 'Offline farm');
     } else await page.user.click(row.getByLabelText('Leave the game\u2019s perk bans alone'));
-    await page.user.click(row.getByRole('button', { name: 'Save field' }));
+    await page.user.click(entrySave(field));
     await page.advance();
   };
   return { ...page, send, row };

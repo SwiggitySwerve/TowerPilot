@@ -8,6 +8,7 @@ import {
   profilePatchFencedRead,
 } from '../support/fake-backend/profile-patch-fenced-fixtures.mjs';
 import { axeIds, bodiesTo, posts, WCAG_AA_TAGS } from './helpers/helpers.ts';
+import { ENTRY_SAVE, entrySave } from './helpers/entry-save.ts';
 
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results/f6-screens');
 mkdirSync(OUT, { recursive: true });
@@ -72,7 +73,7 @@ async function send(page: Page, name: string) {
     const row = page.locator(`[data-entry-field="${field}"]`);
     if (field === 'label') await row.getByLabel('Run label', { exact: true }).fill('Offline farm');
     else await row.getByLabel('Leave the game’s perk bans alone', { exact: true }).check();
-    await row.getByRole('button', { name: 'Save field', exact: true }).click();
+    await entrySave(row).click();
   } else {
     const uw = name.includes('_uw_');
     await page
@@ -262,7 +263,8 @@ async function savedReadback(page: Page, name: string) {
       await expect(row.getByRole('checkbox')).not.toBeChecked();
     } else {
       await expect(row.getByRole('textbox')).toHaveValue('Offline farm');
-      await expect(row.getByText('No change to save.', { exact: true })).toBeVisible();
+      // The group's one Save says so once the saved value is read back.
+      await expect(entrySave(row)).toHaveAccessibleDescription('No change to save.');
     }
     await expect(row.locator('[data-outcome="saved"]')).toBeVisible();
   }
@@ -409,13 +411,15 @@ test('RunEntry refused draft survives failed source reread and recovery without 
   ).toContainText('theirs');
   for (const button of await page
     .locator('[data-run-entry]')
-    .getByRole('button', { name: 'Save field', exact: true })
+    .getByRole('button', { name: ENTRY_SAVE })
     .all()) {
     await expect(button).toBeDisabled();
   }
   await expect(row.getByRole('button', { name: 'Clear label', exact: true })).toBeDisabled();
   await expect(
-    row.getByRole('button', { name: 'Discard field draft', exact: true }),
+    row
+      .locator('xpath=ancestor::*[@data-entry-section][1]')
+      .getByRole('button', { name: 'Discard changes', exact: true }),
   ).toBeDisabled();
   await check(page, 1054);
   await page.clock.fastForward(60_000);
@@ -438,7 +442,7 @@ test('RunEntry refused draft survives failed source reread and recovery without 
   await completedRead(page, 'active_run_entry_label_saved');
   await expect(input).toHaveValue('Offline farm');
   await expect(input).toBeEnabled();
-  await expect(row.getByRole('button', { name: 'Save field', exact: true })).toBeEnabled();
+  await expect(entrySave(row)).toBeEnabled();
   await expect(refusal).toBeVisible();
   await expect(page.getByText('The server could not be reached.', { exact: true })).toHaveCount(0);
   await page.clock.fastForward(60_000);
@@ -490,10 +494,7 @@ test('RunEntry current source without a revision stays editable with Save blocke
   await expect(input).toBeEnabled();
   await input.fill('Keep editing');
   await expect(input).toHaveValue('Keep editing');
-  await expect(row.getByRole('button', { name: 'Save field', exact: true })).toHaveAttribute(
-    'aria-disabled',
-    'true',
-  );
+  await expect(entrySave(row)).toHaveAttribute('aria-disabled', 'true');
   expect(await bodiesTo(page, PATCH)).toEqual([]);
   await page.screenshot({
     path: path.join(OUT, 'runentry-current-source-no-revision.png'),
@@ -504,9 +505,7 @@ test('RunEntry current source without a revision stays editable with Save blocke
     JSON.stringify({
       value: await input.inputValue(),
       disabled: await input.isDisabled(),
-      saveDisabled: await row
-        .getByRole('button', { name: 'Save field', exact: true })
-        .getAttribute('aria-disabled'),
+      saveDisabled: await entrySave(row).getAttribute('aria-disabled'),
       posts: await bodiesTo(page, PATCH),
     }),
   );

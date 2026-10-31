@@ -9,6 +9,10 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--tp-space-3);
 }
+/* Weighted split puts two fields in a chip: every section takes the wider box, so they line up. */
+.tp-shop:has(.tp-chip-field ~ .tp-chip-field) {
+  --tp-chip-min-width: var(--tp-chip-min-width-two-fields);
+}
 /* The queue is one column on the left; the chip grids take the rest (the retired editor's two panes). */
 .tp-shop__layout {
   display: grid;
@@ -29,31 +33,42 @@
 .tp-shop__waves {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-1);
+  gap: var(--tp-space-2);
   margin: 0;
   padding: 0;
   list-style: none;
 }
+/* One upgrade's range: its name, then each bound as a label and its box on one line. */
+/* A list that follows a grid or a note sits a step away from it. */
+.tp-shop__reasons,
+.tp-shop__waves {
+  margin-block-start: var(--tp-space-2);
+}
 .tp-shop__wave {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--tp-space-1) var(--tp-space-3);
+  gap: var(--tp-space-1) var(--tp-space-2);
 }
 .tp-shop__wave > strong {
-  flex: 1 1 8rem;
+  grid-column: 1 / -1;
   min-width: 0;
 }
 .tp-shop__wave-field {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--tp-space-1);
+  display: contents;
+  font-size: var(--tp-font-size-13);
+}
+.tp-shop__wave-field > span[aria-hidden='true'] {
+  color: var(--tp-color-text-muted);
   font-size: var(--tp-font-size-13);
 }
 .tp-shop__label {
   display: flex;
   align-items: center;
   min-width: 0;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
+  font-weight: 600;
 }
 .tp-shop__field {
   display: flex;
@@ -81,12 +96,40 @@
   color: var(--tp-color-text-muted);
   font-size: 0.9em;
 }
+.tp-shop__hint--tip {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tp-space-2);
+}
 .tp-shop__problem {
   color: var(--tp-color-bad);
+}
+/* Narrow: the queue, then the grids, then the Save row (its side wrapper is not a box). */
+.tp-shop__side {
+  display: contents;
+}
+.tp-shop__queue {
+  order: 1;
+}
+.tp-shop__picker {
+  order: 2;
+}
+.tp-shop__footer {
+  order: 3;
 }
 @container (min-width: 40rem) {
   .tp-shop__layout {
     grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+  }
+  /* Wide: the queue and its Save row stay in view beside the grids they are filled from. */
+  .tp-shop__side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tp-space-3);
+    position: sticky;
+    top: var(--tp-space-3);
+    max-block-size: calc(100vh - 2 * var(--tp-space-3));
+    overflow-y: auto;
   }
 }
 @container (max-width: 560px) {

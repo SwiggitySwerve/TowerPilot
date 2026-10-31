@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { axeIds, bodiesTo, posts, WCAG_AA_TAGS } from './helpers/helpers.ts';
 import { own } from '../../src/core/read.ts';
 import { dashboardPagesCase } from '../support/dashboardFixture.ts';
+import { entrySave } from './helpers/entry-save.ts';
 
 const OUT = process.env['TP_F6_SCREENS_DIR'] ?? path.resolve('test-results', 'f6-screens');
 mkdirSync(OUT, { recursive: true });
@@ -44,10 +45,10 @@ for (const width of [1360, 1054, 390]) {
     const editor = page.locator('[data-run-entry]');
     const row = editor.locator('[data-entry-field="label"]');
     await row.getByLabel('Run label', { exact: true }).fill('Daily coin farm');
-    await row.getByRole('button', { name: 'Save field', exact: true }).focus();
+    await entrySave(row).focus();
     await page.keyboard.press('Enter');
     await expect(row.locator('[data-outcome="saved"]')).toBeVisible();
-    await expect(row.getByRole('button', { name: 'Save field', exact: true })).toBeFocused();
+    await expect(entrySave(row)).toBeFocused();
     expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
       // Supplementary legacy label/value/revision: the fenced recording uses Offline farm.
       // Exact new-family writes at every width live in profile-patch-fenced.spec.ts.
@@ -78,7 +79,7 @@ for (const width of [1360, 1054, 390]) {
     const editor = page.locator('[data-run-entry]');
     const row = editor.locator('[data-entry-field="tier"]');
     await row.getByLabel('Run tier', { exact: true }).fill('3');
-    await row.getByRole('button', { name: 'Save field', exact: true }).click();
+    await entrySave(row).click();
     await expect(row.locator('[data-outcome="refused"]')).toBeVisible();
     await expect(row.getByLabel('Run tier', { exact: true })).toHaveValue('3');
     await expect(row.locator('[data-refusal]')).toHaveText(

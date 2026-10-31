@@ -14,6 +14,7 @@ import {
   moreEntry,
   invalidSourceTests,
 } from './helpers/profile-target-more.ts';
+import { entrySave } from './helpers/entry-save.ts';
 
 invalidSourceTests('runs', proof);
 
@@ -62,7 +63,7 @@ for (const width of [1360, 1054, 390])
             .getByRole('combobox')
             .selectOption(body['op'] === 'delete' ? '' : String(body['value']));
         } else await row.getByRole('textbox').fill(String(body['value']));
-        await row.getByRole('button', { name: 'Save field', exact: true }).click();
+        await entrySave(row).click();
       }
       await expect.poll(() => sent.length).toBe(1);
       expect(sent).toEqual([write.request.body]);
@@ -105,7 +106,7 @@ for (const width of [1360, 1054, 390])
             ? String(value)
             : '';
       await row.getByRole('textbox').fill(raw);
-      await row.getByRole('button', { name: 'Save field', exact: true }).click();
+      await entrySave(row).click();
       await expect(
         row
           .locator('[data-server-text="message"]')
@@ -156,7 +157,7 @@ for (const width of [1360, 1054, 390])
                   ? String(value)
                   : '',
           );
-      await row.getByRole('button', { name: 'Save field', exact: true }).click();
+      await entrySave(row).click();
       await expect(row.locator('[data-outcome="saved"]')).toBeVisible();
       expect(world.sent).toEqual([entry.request.body]);
       const count = world.reads();
@@ -253,13 +254,13 @@ for (const width of [1360, 1054, 390]) {
     await proof(page, 'picked', width);
     const label = field(page, 'label');
     await label.getByLabel('Run label', { exact: true }).fill('Offline farm');
-    await label.getByRole('button', { name: 'Save field', exact: true }).focus();
+    await entrySave(label).focus();
     await page.keyboard.press('Enter');
     await expect(label.locator('[data-outcome="saved"]')).toBeVisible();
-    await expect(label.getByRole('button', { name: 'Save field', exact: true })).toBeFocused();
+    await expect(entrySave(label)).toBeFocused();
     const loadout = field(page, 'loadout');
     await loadout.getByLabel('Run equipment', { exact: true }).selectOption('plain');
-    await loadout.getByRole('button', { name: 'Save field', exact: true }).focus();
+    await entrySave(loadout).focus();
     await page.keyboard.press('Enter');
     await expect(loadout.locator('[data-outcome="saved"]')).toBeVisible();
     expect(await bodiesTo(page, '/api/profile-patch')).toEqual([
@@ -303,7 +304,7 @@ for (const width of [1360, 1054, 390]) {
     await page.route('**/api/config', (route) =>
       route.fulfill({ status: changed.status, json: changed.body }),
     );
-    await field(page, 'label').getByRole('button', { name: 'Save field', exact: true }).click();
+    await entrySave(field(page, 'label')).click();
     await expect(editor(page).getByRole('status')).toContainText('Nothing sent');
     await expect(field(page, 'label').getByLabel('Run label', { exact: true })).toHaveValue(
       'Keep this second draft',
@@ -336,8 +337,7 @@ async function targetRead(page: Page, initial = sample('same_account_inactive_ta
 const check = (page: Page) =>
   editor(page).getByRole('button', { name: 'Read entry settings', exact: true });
 const labelInput = (page: Page) => field(page, 'label').getByLabel('Run label', { exact: true });
-const saveField = (page: Page, key = 'label') =>
-  field(page, key).getByRole('button', { name: 'Save field', exact: true });
+const saveField = (page: Page, key = 'label') => entrySave(field(page, key));
 
 for (const width of [1360, 1054, 390]) {
   test(`PE6 held inactive source loading then empty run library, keyboard and axe at ${width}`, async ({

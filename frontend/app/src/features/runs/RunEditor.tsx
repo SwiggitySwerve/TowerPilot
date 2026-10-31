@@ -260,7 +260,7 @@ function RoutineRow({
       <span className="tp-run-row__mark">
         {mark === null ? null : (
           <>
-            <span>{t.live.marks[mark].short}</span>
+            <span>{(mark === 'changed' ? t.live.changedTag : t.live.marks[mark]).short}</span>
             <Why why={t.live.marks[mark].why} />
           </>
         )}
@@ -345,8 +345,9 @@ function SwitchRow({
                   {t.notReported.short}
                 </span>
               ) : null}
+              {/* The switch's change is named, with its undo, in the list below the table. */}
               {live && field.mark !== null && field.mark !== 'saved' ? (
-                <span className="tp-run-cell__note">{t.live.marks[field.mark].short}</span>
+                <span className="tp-visually-hidden">{t.live.marks[field.mark].short}</span>
               ) : null}
             </label>
           )),
@@ -422,7 +423,11 @@ function OverrideName({
         <ActionName routine={item.routine} label={item.routineLabel} />
       </span>
       <span>
-        <Label server={item.label} code={item.field} table={a.fields} other={a.otherField} />
+        {item.field === 'enabled' && item.label === null ? (
+          t.live.overrides.onOff.short
+        ) : (
+          <Label server={item.label} code={item.field} table={a.fields} other={a.otherField} />
+        )}
       </span>
     </>
   );
@@ -487,13 +492,7 @@ function LiveResets({
       </ul>
       {resetAll === null ? null : (
         <div className="tp-run-reset tp-run-reset--all" data-reset-all="true">
-          <ul className="tp-run-resets__confirm-list" data-reset-all-items="true">
-            {resetAll.items.map((item) => (
-              <li key={item.path} className="tp-run-reset__name">
-                <OverrideName item={item} />
-              </li>
-            ))}
-          </ul>
+          {/* The undo-all names its items in its confirmation (one may have no row above). */}
           {resetAll.reset.enabled ? (
             <Button
               tier="quiet"

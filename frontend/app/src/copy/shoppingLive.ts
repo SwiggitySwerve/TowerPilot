@@ -6,14 +6,14 @@ export const shoppingLive = {
   scope: entry('The queue changes after automation applies the saved request.'),
   save: entry('Save queue for this battle'),
   discard: entry('Discard queue edits'),
-  dashboard: entry('Try once in Dashboard This battle'),
+  dashboard: entry('Try an upgrade once on the Dashboard'),
   check: entry('Check this battle'),
   overrides: entry(
     'Routine overrides keep precedence over this queue. The shopping switch and interval above remain unchanged.',
   ),
   reasons: {
     unsupported: entry(
-      'Live queue editing needs a version 2 queue and shopping plan controls advertised by this automation. Create or convert a saved queue for a later battle.',
+      "This battle's automation can't take queue edits. Edit the saved queue under Saved settings; the next battle uses it.",
     ),
     no_battle: entry('A tracked battle is required'),
     context_unknown: runs.reasons.context_unknown,
