@@ -136,8 +136,12 @@ export function SavedShopping() {
             : t.unavailable;
   return (
     <div data-shopping-saved>
-      <Tile className="tp-saved-shopping" titleId={`${idBase}:title`} title={t.title.short}>
-        <p>{t.routines.short}</p>
+      <Tile
+        className="tp-saved-shopping"
+        titleId={`${idBase}:title`}
+        title={t.title.short}
+        intro={t.routines}
+      >
         {!vm.contextReady ? (
           <p role="status">{copy.runs.reasons.context_unknown.short}</p>
         ) : !vm.scopeReady ? (
@@ -181,7 +185,7 @@ export function SavedShopping() {
               />
             ) : vm.conversion === null ? (
               <>
-                <p>{t.createHint.short}</p>
+                <p className="tp-shop__hint">{t.createHint.short}</p>
                 <Button
                   tier="secondary"
                   label={t.create.short}

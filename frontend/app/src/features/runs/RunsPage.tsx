@@ -203,22 +203,24 @@ function SavedSection() {
           ) : null}
           <ActiveOnly>
             {saved.editor === null ? null : (
-              <RunEditor
-                editor={saved.editor}
-                live={false}
-                saveLabel={t.saved.save}
-                onSave={(command) => {
-                  void commands.saveRun(command);
-                }}
-                extra={
-                  <Button
-                    tier="quiet"
-                    label={t.saved.check.short}
-                    focusKey="runs:check"
-                    onClick={commands.checkRun}
-                  />
-                }
-              />
+              <Tile titleId="runs-saved-editor" title={t.saved.editor.short} level={4}>
+                <RunEditor
+                  editor={saved.editor}
+                  live={false}
+                  saveLabel={t.saved.save}
+                  onSave={(command) => {
+                    void commands.saveRun(command);
+                  }}
+                  extra={
+                    <Button
+                      tier="quiet"
+                      label={t.saved.check.short}
+                      focusKey="runs:check"
+                      onClick={commands.checkRun}
+                    />
+                  }
+                />
+              </Tile>
             )}
           </ActiveOnly>
         </Tile>

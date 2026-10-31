@@ -19,6 +19,7 @@ import {
 } from '../../store/selectors/shoppingLibrary.ts';
 import type { ProfilePatchCommand } from '../../store/selectors/collection.ts';
 import type { QueueEditorVM } from '../../store/selectors/shoppingQueue.ts';
+import { CopyLine } from '../../ui/CopyLine.tsx';
 import { Button } from '../../ui/Button.tsx';
 import { ActionRow, Reason } from '../../ui/ActionRow.tsx';
 import { Fact, Facts } from '../../ui/Facts.tsx';
@@ -311,7 +312,7 @@ export function ShoppingLibrary() {
     >
       <RegionBody>
         <div className="tp-library" data-shopping-library>
-          <p>{t.scope.short}</p>
+          <CopyLine entry={t.scope} variant="intro" />
           <Disclosure label={t.manage.short} preview={<ValidationSummary problems={problems} />}>
             {vm.notSent === null ? null : (
               <p data-library-not-sent>{t.notSent[vm.notSent].short}</p>

@@ -368,6 +368,10 @@ fieldset.tp-tile > .tp-tile__end + * {
   font-size: var(--tp-font-size-13);
   font-weight: 700;
 }
+/* A section tile's title outranks the titles of the groups inside it. */
+h3.tp-tile__title {
+  font-size: var(--tp-font-size-15);
+}
 .tp-tile__title:focus {
   outline: none;
 }

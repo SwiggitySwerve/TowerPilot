@@ -88,20 +88,24 @@
   padding: 0;
   list-style: none;
 }
+/* A chip that is on shows its fields on a second line; every chip of that grid takes the taller box. */
+.tp-chip-grid:has(.tp-toggle-chip__controls) {
+  grid-auto-rows: var(--tp-chip-height-open);
+}
 .tp-chip-grid[data-size='cell'] {
   --tp-chip-min-width: 13rem;
   grid-auto-rows: auto;
   gap: 0.3rem;
 }
 
-/* Toggle chip: a toggle button, and its inline fields only while it is on. */
+/* Toggle chip: a toggle button, and its inline fields only while it is on (a second line). */
 .tp-toggle-chip {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: auto;
+  align-content: center;
   align-items: center;
   gap: 0.2rem;
-  block-size: var(--tp-chip-height);
-  padding: 0.3rem 0.5rem;
+  padding: 0.25rem 0.5rem;
   font-size: 0.8rem;
 }
 .tp-toggle-chip[data-disabled='true'] {
@@ -146,6 +150,10 @@
   flex: none;
   gap: 0.2rem;
   font-size: 0.72rem;
+}
+/* A chip's "on" check is the chip's own state, not the green of ready or connected. */
+.tp-toggle-chip .tp-mark[data-mark='check'] {
+  color: var(--tp-color-text-strong);
 }
 .tp-toggle-chip__controls {
   display: flex;

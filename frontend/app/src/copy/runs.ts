@@ -162,6 +162,7 @@ export const runs = {
   },
   saved: {
     routines: entry('Saved routines'),
+    editor: entry('Routines of the run being edited'),
     title: entry('Saved settings'),
     scope: entry('Used by future battles'),
     picker: entry('Run'),

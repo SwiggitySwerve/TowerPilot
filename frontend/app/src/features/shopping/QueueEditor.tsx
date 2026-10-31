@@ -437,8 +437,8 @@ export function QueueEditor(props: QueueEditorProps) {
           level={4}
           intro={t.pickerHint}
         >
-          <p className="tp-shop__hint">
-            {t.chipFields.short}
+          <p className="tp-shop__hint tp-shop__hint--tip">
+            <span>{t.chipFields.short}</span>
             <HelpTip label={t.chipFields.short}>
               <p>{t.chipFields.why}</p>
             </HelpTip>
@@ -451,7 +451,7 @@ export function QueueEditor(props: QueueEditorProps) {
             <ul className="tp-shop__reasons">
               {reasons.map((item) => (
                 <li key={item.id} id={`${idBase}:reason:${item.id}`} className="tp-shop__hint">
-                  {nameOf(item.label)}
+                  <strong>{nameOf(item.label)}</strong>
                   {t.space}
                   {t.excludedReason.short}
                   {t.space}

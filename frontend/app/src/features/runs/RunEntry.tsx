@@ -138,7 +138,11 @@ function EntryField({ field }: { readonly field: FieldVM }) {
           {t.reasons[field.reason].short}
         </p>
       ) : null}
-      {help === null ? null : <div id={helpId}>{help.short}</div>}
+      {help === null ? null : (
+        <div id={helpId} className="tp-run-entry__hint">
+          {help.short}
+        </div>
+      )}
       {field.key !== 'perk_bans' ? null : (
         <label className="tp-run-entry__remove tp-check-field">
           <input

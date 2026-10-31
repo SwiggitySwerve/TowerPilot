@@ -3,23 +3,44 @@
 }
 .tp-run-entry__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--tp-space-3);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
+  gap: var(--tp-space-3) var(--tp-space-6);
 }
+/* One field: its name, then the control with its Save (and that Save's status) beside it. */
 .tp-run-entry__field {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--tp-space-2);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--tp-space-1) var(--tp-space-2);
   min-width: 0;
   margin: 0;
-  padding: var(--tp-space-3) 0 0;
+  padding: 0;
   border: 0;
-  border-block-start: 1px solid var(--tp-color-border);
   overflow-wrap: anywhere;
 }
+.tp-run-entry__field > * {
+  grid-column: 1 / -1;
+}
+.tp-run-entry__field
+  > :is(select, textarea, .tp-run-entry__input, .tp-check-field:not(.tp-run-entry__remove)) {
+  grid-column: 1;
+  grid-row: 1;
+}
+.tp-run-entry__field > .tp-run-entry__actions {
+  grid-column: 2;
+  grid-row: 1;
+  max-inline-size: 13rem;
+}
 .tp-run-entry__field legend {
+  margin-block-end: var(--tp-space-1);
+  padding: 0;
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
   font-weight: 600;
+}
+.tp-run-entry__hint {
+  color: var(--tp-color-text-muted);
+  font-size: var(--tp-font-size-13);
 }
 .tp-run-entry__error {
   margin: 0;
@@ -52,11 +73,6 @@
   flex-wrap: wrap;
   gap: var(--tp-space-2);
   align-items: center;
-}
-@media (max-width: 1100px) {
-  .tp-run-entry__grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 [data-runs-active-only] {

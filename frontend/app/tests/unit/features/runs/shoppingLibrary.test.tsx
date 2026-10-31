@@ -129,8 +129,8 @@ describe('SQ9 shared shopping policies', () => {
     await page.user.click(within(root()).getByText('Manage policies', { exact: true }));
     expect(summary).toBeVisible();
     expect(reserve).not.toBeVisible();
-    expect(root().querySelector(':scope > p')).toBeVisible();
-    expect(root().querySelector(':scope > p')).toHaveTextContent(
+    expect(root().querySelector(':scope > .tp-copy-line > p')).toBeVisible();
+    expect(root().querySelector(':scope > .tp-copy-line > p')).toHaveTextContent(
       'Shared saves affect these runs in future battles',
     );
     expect(page.fake.writes()).toEqual([]);
