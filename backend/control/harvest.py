@@ -47,7 +47,7 @@ FRESH_SEC = 15           # same freshness the live controls use for routine timi
 SCHEDULE = CATALOG.get('harvest_launch').schedule   # the Backoff policy: the one definition of every number below
 MIN_SPACING_SEC = SCHEDULE.min_spacing     # never launch the collector more often than this
 FAIL_WINDOW_SEC = SCHEDULE.window          # an exit sooner than this counts as a failed attempt
-CIRCUIT = SCHEDULE.circuit                 # consecutive fast failures before relaunching stops
+CIRCUIT = SCHEDULE.circuit                 # consecutive fast failures (device losses excepted) before relaunching stops
 REFUSAL_RETRY_SEC = SCHEDULE.refusal_retry # recheck a launch refusal (taps, digits, guard) this often
 TRANSFER_HOLD_SEC = 20   # how long a run takeover holds off the collector
 TRANSFER_WAIT_SEC = 10   # how long a takeover waits for the collector to release the emulator
@@ -469,8 +469,13 @@ def public_overlay(view):
 
 # ----------------------------------------------------------- assessment
 def _failures(autos):
-    """Consecutive fast failures of this revision's collectors, newest first, and the last exit."""
-    failures, last = 0, None
+    """Consecutive fast failures of this revision's collectors, newest first, the device losses among them, and the last exit.
+
+    A fast exit with error code DeviceUnavailable (the collector lost the emulator) is a device loss: it feeds the backoff
+    delay but the circuit never sees it, and it neither counts as a failure nor ends the streak. A slow one ends the streak
+    like any exit that ran a while."""
+    failures = losses = 0
+    last = None
     for op in autos:
         if op['status'] not in TERMINAL:
             continue
@@ -480,12 +485,15 @@ def _failures(autos):
             last = dict(kind='exited', operation_id=op['id'], status=op['status'], error=error.get('code'),
                         message=str(error['message'])[:300] if error.get('message') else None,
                         ran_sec=round(ran, 1), at=op['updated_at'])
-        refused = (op.get('error') or {}).get('code') == 'CollectorRefused'
-        if SCHEDULE.fast_failure(op['status'], ran, refused):
-            failures += 1
+        code = (op.get('error') or {}).get('code')
+        if SCHEDULE.fast_failure(op['status'], ran, code == 'CollectorRefused'):
+            if code == 'DeviceUnavailable':
+                losses += 1
+            else:
+                failures += 1
         else:
             break
-    return failures, last
+    return failures, losses, last
 
 
 def _base(now, identity, host):
@@ -528,7 +536,7 @@ def evaluate(root, cfg, *, processes, resolve_source, alive=None, now=None, host
         source = resolve_source(cfg, choice['preset'])
         view['source'] = source_view(source, choice)
     plan['source'] = source
-    failures, last = _failures(facts['automatic'])
+    failures, losses, last = _failures(facts['automatic'])
     view.update(failures=failures, attempts=len(facts['automatic']))
     outcomes = [o for o in (last, runtime.get('last_outcome')) if isinstance(o, dict)]   # on a tie the exit is the later event
     view['last_outcome'] = max(outcomes, key=lambda o: o.get('at') if finite(o.get('at')) else 0) if outcomes else None
@@ -539,7 +547,8 @@ def evaluate(root, cfg, *, processes, resolve_source, alive=None, now=None, host
     refusal_at = runtime.get('next_attempt_at') if finite(runtime.get('next_attempt_at')) else None
     schedule, _ = SCHEDULE.evaluate(now, dict(
         newest_created_at=None if newest is None else newest['created_at'],
-        newest_updated_at=None if newest is None else newest['updated_at'], failures=failures, refusal_at=refusal_at))
+        newest_updated_at=None if newest is None else newest['updated_at'], failures=failures, device_losses=losses,
+        refusal_at=refusal_at))
     view.update(next_attempt_at=schedule.next_attempt_at, circuit_open=schedule.kind == 'blocked')
     enabled = bool(choice and choice['enabled'])
 
